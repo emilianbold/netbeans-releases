@@ -47,11 +47,13 @@ import java.lang.ref.SoftReference;
 import java.text.MessageFormat;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -59,9 +61,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Fieldable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
@@ -79,9 +85,7 @@ public final class ClusteredIndexables {
 
     public static final String DELETE = "ci-delete-set";    //NOI18N
     public static final String INDEX = "ci-index-set";      //NOI18N
-
-    private static final Logger LOG = Logger.getLogger(ClusteredIndexables.class.getName());
-
+    
     // -----------------------------------------------------------------------
     // Public implementation
     // -----------------------------------------------------------------------
@@ -90,13 +94,14 @@ public final class ClusteredIndexables {
      * Creates new ClusteredIndexables
      * @param indexables, requires a list with fast {@link List#get(int)} as it heavily calls it.
      */
-    public ClusteredIndexables(List<Indexable> indexables) {
+    public ClusteredIndexables(@NonNull final List<Indexable> indexables) {
         Parameters.notNull("indexables", indexables); //NOI18N  
         this.indexables = indexables;        
         this.sorted = new BitSet(indexables.size());
     }
 
-    public Iterable<Indexable> getIndexablesFor(String mimeType) {
+    @NonNull
+    public Iterable<Indexable> getIndexablesFor(@NullAllowed String mimeType) {
             if (mimeType == null) {
                 mimeType = ALL_MIME_TYPES;
             }
@@ -122,11 +127,18 @@ public final class ClusteredIndexables {
             return new BitSetIterable(cluster);
     }
 
+    @NonNull
     public static AttachableDocumentIndexCache createDocumentIndexCache() {
         return new DocumentIndexCacheImpl();
     }
 
-    public static interface AttachableDocumentIndexCache extends DocumentIndexCache {
+    @NonNull
+    public static IndexDocument createDocument(@NonNull final String primaryKey) {
+        Parameters.notNull("primaryKey", primaryKey);   //NOI18N
+        return new MemIndexDocument(primaryKey);
+    }
+
+    public static interface AttachableDocumentIndexCache extends DocumentIndexCache.WithCustomIndexDocument {
         void attach(@NonNull final String mode, @NonNull final ClusteredIndexables ci);
         void detach();
     }
@@ -134,7 +146,12 @@ public final class ClusteredIndexables {
     // -----------------------------------------------------------------------
     // Private implementation
     // -----------------------------------------------------------------------
+    private static final Logger LOG = Logger.getLogger(ClusteredIndexables.class.getName());
     private static final String ALL_MIME_TYPES = ""; //NOI18N
+    private static final String PROP_CACHE_HEAP_RATIO = "ClusteredIndexables.cacheHeapRatio";  //NOI18N
+    private static final double DEFAULT_CACHE_HEAP_RATIO = 0.1;
+    private static final long DATA_CACHE_SIZE = (long) 
+            (Runtime.getRuntime().maxMemory() * getCacheHeapRatio());
     private final List<Indexable> indexables;
     private final BitSet sorted;
     private final Map<String, BitSet> mimeTypeClusters = new HashMap<String, BitSet>();
@@ -151,10 +168,33 @@ public final class ClusteredIndexables {
         return tmpIt == null ? -1 : tmpIt.index();
     }
 
+    private static double getCacheHeapRatio() {
+        final String sval = System.getProperty(PROP_CACHE_HEAP_RATIO);
+        if (sval != null) {
+            try {
+                final double val = Double.valueOf(sval);
+                if (val < 0.05 || val > 1.0) {
+                    throw new NumberFormatException();
+                }
+                return val;
+            } catch (NumberFormatException nfe) {
+                LOG.log(
+                  Level.INFO,
+                  "Invalid value of {0} property: {1}", //NOI18N
+                  new Object[] {
+                      PROP_CACHE_HEAP_RATIO,
+                      sval
+                  });
+            }
+        }
+        return DEFAULT_CACHE_HEAP_RATIO;
+    }
+
     private static interface IndexedIterator<T> extends Iterator<T> {
         int index();
     }
-    
+
+    //<editor-fold defaultstate="collapsed" desc="All Indexables">
     private static final class AllIndexablesIt implements IndexedIterator<Indexable> {
 
         private final Iterator<? extends Indexable> delegate;
@@ -187,7 +227,7 @@ public final class ClusteredIndexables {
         }
         
     }
-
+    
     private final class AllIndexables implements Iterable<Indexable> {
 
         @Override
@@ -196,7 +236,9 @@ public final class ClusteredIndexables {
         }
 
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="BitSet Based Indexables">
     private final class BitSetIterator implements IndexedIterator<Indexable> {
 
         private final BitSet bs;
@@ -247,20 +289,33 @@ public final class ClusteredIndexables {
             return ClusteredIndexables.this.currentIt = new BitSetIterator(bs);
         }
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="DocumentIndexCache Implementation">
     private static final class DocumentIndexCacheImpl implements AttachableDocumentIndexCache {
+
+        private static final Convertor<IndexDocument, Document> ADD_CONVERTOR =
+                new Convertor<IndexDocument, Document>() {
+                    @NonNull
+                    @Override
+                    public Document convert(@NonNull final IndexDocument doc) {
+                        final ReusableIndexDocument rdoc = (ReusableIndexDocument) doc;
+                        return rdoc.doc;
+                    }
+                };
       
         private ClusteredIndexables deleteIndexables;
         private ClusteredIndexables indexIndexables;
         private BitSet deleteFromDeleted;
         private BitSet deleteFromIndex;
-        private List<IndexDocument> toAdd;
+        private DocumentStore toAdd;
         private List<String> toDeleteOutOfOrder;
-        private Reference<List[]> dataRef;
+        private Reference<Collection[]> dataRef;
 
         private volatile Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
         private volatile Pair<Long,StackTraceElement[]> attachIndexStackTrace;
-        private volatile Pair<Long,StackTraceElement[]> detachStackTrace;
+        private volatile Pair<Long,StackTraceElement[]> detachDeleteStackTrace;
+        private volatile Pair<Long,StackTraceElement[]> detachIndexStackTrace;
 
         private DocumentIndexCacheImpl() {}
 
@@ -279,7 +334,7 @@ public final class ClusteredIndexables {
                     this.deleteIndexables = ci;
                     attachDeleteStackTrace = Pair.<Long,StackTraceElement[]>of(
                             System.nanoTime(),Thread.currentThread().getStackTrace());
-                    detachStackTrace = null;
+                    detachDeleteStackTrace = null;
                 }
             } else if (INDEX.equals(mode)) {
                 ensureNotReBound(this.indexIndexables, ci);
@@ -287,7 +342,7 @@ public final class ClusteredIndexables {
                     this.indexIndexables = ci;
                     attachIndexStackTrace = Pair.<Long,StackTraceElement[]>of(
                             System.nanoTime(),Thread.currentThread().getStackTrace());
-                    detachStackTrace = null;
+                    detachIndexStackTrace = null;
                 }
             } else {
                 throw new IllegalArgumentException(mode);
@@ -299,21 +354,25 @@ public final class ClusteredIndexables {
             if (TransientUpdateSupport.isTransientUpdate()) {
                 return;
             }
-            detachStackTrace = Pair.<Long,StackTraceElement[]>of(
+            detachDeleteStackTrace = detachIndexStackTrace = Pair.<Long,StackTraceElement[]>of(
                 System.nanoTime(),Thread.currentThread().getStackTrace());
+            clear();
             this.deleteIndexables = null;
             this.indexIndexables = null;
         }
 
         @Override
         public boolean addDocument(IndexDocument document) {
-            final boolean shouldFlush = init();
+            if (!(document instanceof MemIndexDocument)) {
+                throw new IllegalArgumentException(document.getClass().getName());
+            }
+            boolean shouldFlush = init();
             handleDelete(
                 indexIndexables,
                 deleteFromIndex,
                 toDeleteOutOfOrder,
                 document.getPrimaryKey());
-            toAdd.add(document);
+            shouldFlush |= toAdd.addDocument(document);
             return shouldFlush;
         }
 
@@ -348,13 +407,24 @@ public final class ClusteredIndexables {
                     deleteFromIndex,
                     attachDeleteStackTrace,
                     attachIndexStackTrace,
-                    detachStackTrace) :
+                    detachDeleteStackTrace,
+                    detachIndexStackTrace) :
                 Collections.<String>emptySet();
         }
 
         @Override
         public Collection<? extends IndexDocument> getAddedDocuments() {
             return toAdd != null ? toAdd : Collections.<IndexDocument>emptySet();
+        }
+
+        @Override
+        public Convertor<IndexDocument, Document> createAddConvertor() {
+            return ADD_CONVERTOR;
+        }
+
+        @Override
+        public Convertor<Document, IndexDocument> createQueryConvertor() {
+            return null;
         }
 
         private static void ensureNotReBound(
@@ -407,25 +477,27 @@ public final class ClusteredIndexables {
                     deleteFromDeleted == null &&
                     deleteFromIndex == null;
                 assert dataRef == null;
-                toAdd = new ArrayList<IndexDocument>();
+                toAdd = new DocumentStore(DATA_CACHE_SIZE);
                 toDeleteOutOfOrder = new ArrayList<String>();
                 deleteFromDeleted = new BitSet();
                 deleteFromIndex = new BitSet();
                 dataRef = new ClearReference(
-                        new List[] {toAdd, toDeleteOutOfOrder},
+                        new Collection[] {toAdd, toDeleteOutOfOrder},
                         this);
             }
             return dataRef.get() == null;
         }
     }
+    //</editor-fold>
 
-    private static final class ClearReference extends SoftReference<List[]> implements Runnable, Callable<Void> {
+    //<editor-fold defaultstate="collapsed" desc="Flushing Soft Reference">
+    private static final class ClearReference extends SoftReference<Collection[]> implements Runnable, Callable<Void> {
 
         private final DocumentIndexCacheImpl owner;
         private final AtomicInteger state = new AtomicInteger();
 
         public ClearReference(
-                @NonNull final List[] data,
+                @NonNull final Collection[] data,
                 @NonNull final DocumentIndexCacheImpl owner) {
             super(data, Utilities.activeReferenceQueue());
             Parameters.notNull("data", data);   //NOI18N
@@ -462,7 +534,9 @@ public final class ClusteredIndexables {
             return null;
         }
     }
-    
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Removed Keys Collection">
     private static class RemovedCollection extends AbstractCollection<String> {
         
         private final List<? extends String> outOfOrder;
@@ -473,7 +547,8 @@ public final class ClusteredIndexables {
 
         private final Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
         private final Pair<Long,StackTraceElement[]> attachIndexStackTrace;
-        private final Pair<Long, StackTraceElement[]> detachStackTrace;
+        private final Pair<Long, StackTraceElement[]> detachDeleteStackTrace;
+        private final Pair<Long, StackTraceElement[]> detachIndexStackTrace;
         
         RemovedCollection(
             @NonNull final List<? extends String> outOfOrder,
@@ -483,7 +558,8 @@ public final class ClusteredIndexables {
             @NonNull final BitSet deleteFromIndex,
             @NullAllowed final Pair<Long,StackTraceElement[]> attachDeleteStackTrace,
             @NullAllowed final Pair<Long, StackTraceElement[]> attachIndexStackTrace,
-            @NullAllowed final Pair<Long, StackTraceElement[]> detachStackTrace) {
+            @NullAllowed final Pair<Long, StackTraceElement[]> detachDeleteStackTrace,
+            @NullAllowed final Pair<Long, StackTraceElement[]> detachIndexStackTrace) {
             assert outOfOrder != null;
             assert deleteFromDeleted != null;
             assert deleteFromIndex != null;
@@ -494,7 +570,8 @@ public final class ClusteredIndexables {
             this.deleteFromIndex = deleteFromIndex;
             this.attachDeleteStackTrace = attachDeleteStackTrace;
             this.attachIndexStackTrace = attachIndexStackTrace;
-            this.detachStackTrace = detachStackTrace;
+            this.detachDeleteStackTrace = detachDeleteStackTrace;
+            this.detachIndexStackTrace = detachIndexStackTrace;
         }
 
         @Override
@@ -507,7 +584,8 @@ public final class ClusteredIndexables {
                 deleteFromIndex,
                 attachDeleteStackTrace,
                 attachIndexStackTrace,
-                detachStackTrace);
+                detachDeleteStackTrace,
+                detachIndexStackTrace);
         }
 
         @Override
@@ -534,7 +612,8 @@ public final class ClusteredIndexables {
 
             private final Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
             private final Pair<Long,StackTraceElement[]> attachIndexStackTrace;
-            private final Pair<Long, StackTraceElement[]> detachStackTrace;
+            private final Pair<Long, StackTraceElement[]> detachDeleteStackTrace;
+            private final Pair<Long, StackTraceElement[]> detachIndexStackTrace;
 
             It(
                 @NonNull final Iterator<? extends String> outOfOrderIt,
@@ -544,7 +623,8 @@ public final class ClusteredIndexables {
                 @NonNull final BitSet deleteFromIndex,
                 @NullAllowed final Pair<Long,StackTraceElement[]> attachDeleteStackTrace,
                 @NullAllowed final Pair<Long, StackTraceElement[]> attachIndexStackTrace,
-                @NullAllowed final Pair<Long, StackTraceElement[]> detachStackTrace) {
+                @NullAllowed final Pair<Long, StackTraceElement[]> detachDeleteStackTrace,
+                @NullAllowed final Pair<Long, StackTraceElement[]> detachIndexStackTrace) {
                 this.outOfOrderIt = outOfOrderIt;
                 this.deleteIndexables = deleteIndexables;
                 this.deleteFromDeleted = deleteFromDeleted;
@@ -552,7 +632,8 @@ public final class ClusteredIndexables {
                 this.deleteFromIndex = deleteFromIndex;
                 this.attachDeleteStackTrace = attachDeleteStackTrace;
                 this.attachIndexStackTrace = attachIndexStackTrace;
-                this.detachStackTrace = detachStackTrace;
+                this.detachDeleteStackTrace = detachDeleteStackTrace;
+                this.detachIndexStackTrace = detachIndexStackTrace;
             }
 
             @Override
@@ -573,17 +654,21 @@ public final class ClusteredIndexables {
                         index = deleteFromDeleted.nextSetBit(index+1);
                         if (index >=0) {
                             if (deleteIndexables == null) {
-                                throw new IllegalStateException(
-                                    MessageFormat.format(
-                                        "Attached at: {0} by: {1}, Detached at: {2} by: {3}",   //NOI18N
-                                        attachDeleteStackTrace == null ? null : attachDeleteStackTrace.first,
-                                        attachDeleteStackTrace == null ? null : attachDeleteStackTrace.second,
-                                        detachStackTrace == null ? null : detachStackTrace.first,
-                                        detachStackTrace == null ? null : detachStackTrace.second));
+                                throwIllegalState(
+                                    "No deleteIndexables",  //NOI18N
+                                    attachDeleteStackTrace,
+                                    detachDeleteStackTrace);
                             }
-                            final Indexable file = deleteIndexables.get(index);
-                            current = file.getRelativePath();
-                            return true;
+                            try {
+                                final Indexable file = deleteIndexables.get(index);
+                                current = file.getRelativePath();
+                                return true;
+                            } catch (IndexOutOfBoundsException e) {
+                                throwIllegalState(
+                                    "Wrong deleteIndexables",  //NOI18N
+                                    attachDeleteStackTrace,
+                                    detachDeleteStackTrace);
+                            }
                         } else {
                             index = -1;
                             state = 2;
@@ -592,17 +677,21 @@ public final class ClusteredIndexables {
                         index = deleteFromIndex.nextSetBit(index+1);
                         if (index >= 0) {
                             if (indexIndexables == null) {
-                                throw new IllegalStateException(
-                                    MessageFormat.format(
-                                        "Attached at: {0} by: {1}, Detached at: {2} by: {3}",   //NOI18N
-                                        attachIndexStackTrace == null ? null : attachIndexStackTrace.first,
-                                        attachIndexStackTrace == null ? null : attachIndexStackTrace.second,
-                                        detachStackTrace == null ? null : detachStackTrace.first,
-                                        detachStackTrace == null ? null : detachStackTrace.second));
+                                throwIllegalState(
+                                    "No indexIndexables",   //NOI18N
+                                    attachIndexStackTrace,
+                                    detachIndexStackTrace);
                             }
-                            final Indexable file = indexIndexables.get(index);
-                            current = file.getRelativePath();
-                            return true;
+                            try {
+                                final Indexable file = indexIndexables.get(index);
+                                current = file.getRelativePath();
+                                return true;
+                            } catch (IndexOutOfBoundsException e) {
+                                throwIllegalState(
+                                    "Wrong indexIndexables",   //NOI18N
+                                    attachIndexStackTrace,
+                                    detachIndexStackTrace);
+                            }
                         } else {
                             index = -1;
                             state = 3;
@@ -627,10 +716,284 @@ public final class ClusteredIndexables {
             public void remove() {
                 throw new UnsupportedOperationException("Immutable collection");    //NOI18N
             }
+
+            private static void throwIllegalState(
+                @NonNull final String reason,
+                @NullAllowed final Pair<Long,StackTraceElement[]> attach,
+                @NullAllowed final Pair<Long,StackTraceElement[]> detach) {
+                throw new IllegalStateException(
+                    MessageFormat.format(
+                        "{0} : Attached at: {1} by: {2}, Detached at: {3} by: {4}",   //NOI18N
+                        reason,
+                        attach == null ? null : attach.first,
+                        attach == null ? null : Arrays.asList(attach.second),
+                        detach == null ? null : detach.first,
+                        detach == null ? null : Arrays.asList(detach.second)));
+            }
             
         }
     }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Input IndexDocument (inserted into cache)">
+    private static final class MemIndexDocument implements IndexDocument {
+
+        private static final String[] EMPTY = new String[0];
+        static final String FIELD_PRIMARY_KEY = "_sn";  //NOI18N
+
+        private final List<Fieldable> fields = new ArrayList<Fieldable>();
+
+        MemIndexDocument(@NonNull final String primaryKey) {
+            Parameters.notNull("primaryKey", primaryKey);   //NOI18N
+            fields.add(sourceNameField(primaryKey));
+        }
+
+        public List<Fieldable> getFields() {
+            return fields;
+        }
+
+        @Override
+        public String getPrimaryKey() {
+            return getValue(FIELD_PRIMARY_KEY);
+        }
+
+        @Override
+        public void addPair(String key, String value, boolean searchable, boolean stored) {
+            final Field field = new Field (key, value,
+                    stored ? Field.Store.YES : Field.Store.NO,
+                    searchable ? Field.Index.NOT_ANALYZED_NO_NORMS : Field.Index.NO);
+            fields.add (field);
+        }
+
+        @Override
+        public String getValue(String key) {
+            for (Fieldable field : fields) {
+                if (field.name().equals(key)) {
+                    return field.stringValue();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String[] getValues(String key) {
+            final List<String> result = new ArrayList<String>();
+            for (Fieldable field : fields) {
+                if (field.name().equals(key)) {
+                    result.add(field.stringValue());
+                }
+            }
+            return result.toArray(result.isEmpty() ? EMPTY : new String[result.size()]);
+        }
+
+        private Fieldable sourceNameField(@NonNull String primaryKey) {
+            return new Field(FIELD_PRIMARY_KEY, primaryKey, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
+        }
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Output IndexDocument (output of the cache)">
+    //@NotThreadSafe
+    private static final class ReusableIndexDocument implements IndexDocument {
+
+        private final Document doc = new Document();
+
+        @Override
+        public String getPrimaryKey() {
+            return doc.get(MemIndexDocument.FIELD_PRIMARY_KEY);
+        }
+
+        @Override
+        public String getValue(String key) {
+            return doc.get(key);
+        }
+
+        @Override
+        public String[] getValues(String key) {
+            return doc.getValues(key);
+        }
+
+        @Override
+        public void addPair(String key, String value, boolean searchable, boolean stored) {
+            doc.add(new Field (
+                key,
+                value,
+                stored ? Field.Store.YES : Field.Store.NO,
+                searchable ? Field.Index.NOT_ANALYZED_NO_NORMS : Field.Index.NO));
+        }
+
+        void clear() {
+            doc.getFields().clear();
+        }
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Added IndexDocuments Collection (optimized for high number of fields).">
+    /*test*/ static final class DocumentStore extends AbstractCollection<IndexDocument>{
+
+        private static final int INITIAL_DOC_COUNT = 100;
+        private static final int INITIAL_DATA_SIZE = 1<<10;
+
+        private final long dataCacheSize;
+        private final Map<String,Integer> fieldNames;
+        private int[] docs;
+        private char[] data;
+        private int nameIndex;
+        private int docsPointer;
+        private int dataPointer;
+        private int size;
 
 
+        DocumentStore(final long dataCacheSize) {
+            this.dataCacheSize = dataCacheSize;
+            this.fieldNames = new LinkedHashMap<String, Integer>();
+            this.docs = new int[INITIAL_DOC_COUNT];
+            this.data = new char[INITIAL_DATA_SIZE];
+            LOG.log(
+                Level.FINE,
+                "DocumentStore flush size: {0}",    //NOI18N
+                dataCacheSize);
+        }
+
+        @Override
+        public boolean add(@NonNull final IndexDocument doc) {
+            addDocument(doc);
+            return true;
+        }
+        
+        boolean addDocument(@NonNull final IndexDocument doc) {
+            boolean res = false;
+            if (!(doc instanceof MemIndexDocument)) {
+                throw new IllegalArgumentException();
+            }
+            for (Fieldable fld : ((MemIndexDocument)doc).getFields()) {
+                final String fldName = fld.name();
+                final boolean stored = fld.isStored();
+                final boolean indexed = fld.isIndexed();
+                final String fldValue = fld.stringValue();
+                int index;
+                Integer indexBoxed = fieldNames.get(fldName);
+                if (indexBoxed == null) {
+                    index = nameIndex++;
+                    fieldNames.put(fldName, index);
+                } else {
+                    index = indexBoxed;
+                }
+                index = (index << 3) | (stored ? 4 : 0) | (indexed ? 2 : 0) | 1;
+
+                if (docs.length < docsPointer + 2) {
+                    docs = Arrays.copyOf(docs, docs.length << 1);
+                }
+                docs[docsPointer] = index;
+                docs[docsPointer + 1] = dataPointer;
+                docsPointer += 2;
+                if (data.length < dataPointer + fldValue.length()) {
+                    data = Arrays.copyOf(data, newLength(data.length,dataPointer + fldValue.length()));
+                    res = data.length<<1 > dataCacheSize;
+                    LOG.log(
+                        Level.FINE,
+                        "New data size: {0}, flush: {1}",   //NOI18N
+                        new Object[] {
+                            data.length,
+                            res
+                        });
+                }
+                fldValue.getChars(0, fldValue.length(), data, dataPointer);
+                dataPointer += fldValue.length();
+            }
+            if (docs.length < docsPointer + 1) {
+                docs = Arrays.copyOf(docs, docs.length << 1);
+            }
+            docs[docsPointer++] = 0;
+            size++;
+            return res;
+        }
+
+        @Override
+        public Iterator<IndexDocument> iterator() {
+            return new It();
+        }
+
+        @Override
+        public void clear() {
+            fieldNames.clear();
+            docs = new int[INITIAL_DOC_COUNT];
+            data = new char[INITIAL_DATA_SIZE];
+            docsPointer = 0;
+            dataPointer = 0;
+            nameIndex = 0;
+            size = 0;
+        }
+
+        @Override
+        public int size() {
+            return size;
+        }
+               
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException("Remove not supported.");   //NOI18N
+        }
+
+        private static int newLength(
+                int currentLength,
+                final int minimalLength) {
+            do {
+                currentLength <<= 1;
+            } while (currentLength < minimalLength);
+            return currentLength;
+        }
+
+        //<editor-fold defaultstate="collapsed" desc="Added IndexDocuments Iterator">
+        private class It implements Iterator<IndexDocument> {
+
+            private int cur = 0;
+            private final List<String> names;
+            private final ReusableIndexDocument doc;
+
+            It() {
+                names = new ArrayList<String>(fieldNames.keySet());
+                doc = new ReusableIndexDocument();
+            }
+
+            @Override
+            public boolean hasNext() {
+                return cur<docsPointer;
+            }
+            
+            @Override
+            public IndexDocument next() {
+                if (cur>=docsPointer) {
+                    throw new NoSuchElementException();
+                }
+                doc.clear();
+                int nameIndex;
+                while ((nameIndex=docs[cur++]) != 0) {
+                    final boolean stored = (nameIndex & 4) == 4;
+                    final boolean indexed = (nameIndex & 2) == 2;
+                    nameIndex >>>= 3;
+                    final int dataStart = docs[cur++];
+                    final int dataEnd = docs[cur] != 0 ?
+                            docs[cur+1] :
+                            cur+1 == docsPointer ?
+                                dataPointer :
+                                docs[cur+2];
+                    final String value = new String (data,dataStart, dataEnd - dataStart);
+                    doc.addPair(
+                            names.get(nameIndex),
+                            value,
+                            indexed,
+                            stored);
+                }
+                return doc;
+            }
+
+            @Override
+            public void remove() {
+            }
+        }
+        //</editor-fold>        
+    }
+    //</editor-fold>
 
 }

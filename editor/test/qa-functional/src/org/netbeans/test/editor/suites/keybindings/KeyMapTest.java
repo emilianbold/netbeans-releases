@@ -137,7 +137,7 @@ public class KeyMapTest extends EditorTestCase {
             new EventTool().waitNoEvent(2000);
             editor.requestFocus();
             new EventTool().waitNoEvent(100);
-            editor.setCaretPosition(7, 1);
+            editor.setCaretPosition(55, 1);
             ValueResolver vr = new ValueResolver() {
 
                 public Object getValue() {
@@ -188,7 +188,7 @@ public class KeyMapTest extends EditorTestCase {
             editor.requestFocus();
             new EventTool().waitNoEvent(100);
             // Check Ctrl+Alt+M works for select line
-            editor.setCaretPosition(7, 1);
+            editor.setCaretPosition(55, 1);
             ValueResolver vr = new ValueResolver() {
 
                 public Object getValue() {
@@ -205,7 +205,7 @@ public class KeyMapTest extends EditorTestCase {
             String text = editor.txtEditorPane().getSelectedText();
             assertEquals("public class Main {", text.trim());
             // Check Ctrl+Shift+G works for select line
-            editor.setCaretPosition(12, 1);
+            editor.setCaretPosition(55, 1);
             vr = new ValueResolver() {
 
                 public Object getValue() {
@@ -254,7 +254,7 @@ public class KeyMapTest extends EditorTestCase {
                 editor.requestFocus();
                 new EventTool().waitNoEvent(100);
                 // Check Ctrl+Shift+G works for select line
-                editor.setCaretPosition(12, 1);
+                editor.setCaretPosition(55, 1);
                 ValueResolver vr = new ValueResolver() {
 
                     @Override
@@ -280,9 +280,9 @@ public class KeyMapTest extends EditorTestCase {
                 editor.requestFocus();
                 new EventTool().waitNoEvent(100);
                 // Check Ctrl+Alt+M works for select line
-                editor.setCaretPosition(12, 2);
+                editor.setCaretPosition(55, 2);
                 sleep(200);
-                editor.setCaretPosition(12, 1);
+                editor.setCaretPosition(55, 1);
                 waitMaxMilisForValue(3000, vr, Boolean.TRUE);
                 text = editor.txtEditorPane().getSelectedText();
                 if (text == null) {
@@ -324,7 +324,7 @@ public class KeyMapTest extends EditorTestCase {
             editor.requestFocus();
             new EventTool().waitNoEvent(100);
             // Check ALT+Shift+G works for select line
-            editor.setCaretPosition(12, 1);
+            editor.setCaretPosition(55, 1);
             ValueResolver vr = new ValueResolver() {
 
                 @Override

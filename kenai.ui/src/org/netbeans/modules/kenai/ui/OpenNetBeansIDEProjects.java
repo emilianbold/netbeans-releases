@@ -66,7 +66,6 @@ import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Node for a open other project
@@ -103,7 +102,7 @@ public class OpenNetBeansIDEProjects extends LeafNode {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                Utilities.getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
                         ProgressHandle handle = null;

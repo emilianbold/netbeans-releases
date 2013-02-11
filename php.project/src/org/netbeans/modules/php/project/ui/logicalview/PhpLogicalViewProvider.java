@@ -71,12 +71,12 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -301,7 +301,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                 public DataObject convert(PhpProject obj) {
                     try {
                         final FileObject fo = obj.getProjectDirectory();
-                        return fo == null ? null : DataObject.find(fo);
+                        return fo != null && fo.isValid() ? DataObject.find(fo) : null;
                     } catch (DataObjectNotFoundException ex) {
                         LOGGER.log(Level.WARNING, null, ex);
                         return null;
@@ -382,7 +382,15 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         }
 
         private void addCodeCoverageAction(List<Action> actions) {
-            if (CommandUtils.getPhpUnit(project, false) != null) {
+            boolean coverageSupported = false;
+            PhpModule phpModule = project.getPhpModule();
+            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+                if (testingProvider.isCoverageSupported(phpModule)) {
+                    coverageSupported = true;
+                    break;
+                }
+            }
+            if (coverageSupported) {
                 int activeConfigActionIndex = actions.size();
                 for (int i = 0; i < actions.size(); i++) {
                     Action action = actions.get(i);

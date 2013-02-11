@@ -800,7 +800,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
         for (String name : names) {
-            props.add(propertyGet(url, name));
+            ISVNProperty prop = propertyGet(url, name);
+            if (prop != null) {
+                props.add(prop);
+            }
         }
         return props.toArray(new ISVNProperty[props.size()]);
     }
@@ -1211,7 +1214,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
         for (String name : names) {
-            props.add(propertyGet(url, name));
+            ISVNProperty prop = propertyGet(url, name);
+            if (prop != null) {
+                props.add(prop);
+            }
         }
         return props.toArray(new ISVNProperty[props.size()]);
     }
@@ -1380,7 +1386,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public void mergeReintegrate(SVNUrl arg0, SVNRevision arg1, File arg2, boolean arg3, boolean arg4) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new SVNClientException("Reintegrating branch is not supported by the commandline client.\nPlease switch to SVNKit or JavaHL.");
     }
 
     @Override

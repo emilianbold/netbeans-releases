@@ -72,4 +72,10 @@ public class CloneExpression extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "clone " + getExpression(); //NOI18N
+    }
+
 }

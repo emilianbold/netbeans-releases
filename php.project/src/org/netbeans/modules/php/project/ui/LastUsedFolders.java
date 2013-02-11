@@ -60,12 +60,6 @@ public final class LastUsedFolders {
     public static final String PROJECT_INCLUDE_PATH = "nb.php.project.includePath";
     // debugger
     public static final String DEBUGGER_PATH_MAPPING = "nb.php.debugger.pathMapping";
-    // unit tests
-    public static final String PHPUNIT = "nb.php.phpunit";
-    public static final String PHPUNIT_BOOTSTRAP = "nb.php.phpunit.bootstrap";
-    public static final String PHPUNIT_CONFIGURATION = "nb.php.phpunit.configuration";
-    public static final String PHPUNIT_SUITE = "nb.php.phpunit.suite";
-    public static final String PHPUNIT_PROJECT_SCRIPT = "nb.php.phpunit.projectScript";
     // remote connections
     public static final String REMOTE_SFTP_IDENTITY_FILE = "nb.php.remote.sftp.identityFile";
     public static final String REMOTE_SFTP_KNOWN_HOSTS = "nb.php.remote.sftp.knownHosts";

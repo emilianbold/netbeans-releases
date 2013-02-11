@@ -41,8 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.Node;
+import java.text.MessageFormat;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.Node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -86,9 +87,12 @@ public final class Model {
             if (root != null) {
                 root.accept(visitor);
             }
+            long startResolve = System.currentTimeMillis();
             resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
             long end = System.currentTimeMillis();
-            LOGGER.log(Level.FINE, "Building model took {0}ms.", (end - start));
+            if(LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms", new Object[]{(end - start), (end - startResolve)}));
+            }
         }
         return visitor;
     }
@@ -134,7 +138,7 @@ public final class Model {
      * @return name of the node if it supports it
      */
     public List<Identifier> getNodeName(Node node) {
-        return getModelVisitor().getNodeName(node);
+        return ModelVisitor.getNodeName(node, parserResult);
     }
 
 }

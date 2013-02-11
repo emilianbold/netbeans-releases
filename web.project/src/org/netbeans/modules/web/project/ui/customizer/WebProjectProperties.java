@@ -103,6 +103,7 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListC
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.modules.web.project.UpdateProjectImpl;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -213,6 +214,7 @@ final public class WebProjectProperties {
     public static final String DEPLOY_ANT_PROPS_FILE = "deploy.ant.properties.file"; //NOI18N
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
+    public static final String SELECTED_BROWSER = "selected.browser"; //NOI18N
     
     private static Logger LOGGER = Logger.getLogger(WebProjectProperties.class.getName());
     private static RequestProcessor RP = new RequestProcessor("WebProjectProperties", 5);
@@ -285,6 +287,7 @@ final public class WebProjectProperties {
     ButtonModel DISPLAY_BROWSER_MODEL;
     JToggleButton.ToggleButtonModel DEPLOY_ON_SAVE_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
+    WebBrowserSupport.BrowserComboBoxModel BROWSERS_MODEL;
     Document RUNMAIN_JVM_MODEL;
     
     // for ui logging added frameworks
@@ -487,6 +490,7 @@ final public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
+        BROWSERS_MODEL = WebBrowserSupport.createBrowserModel(projectProperties.get(SELECTED_BROWSER));
         loadingFrameworksTask = RP.post(new Runnable() {
                 public void run() {
                     loadCurrentFrameworks();
@@ -785,6 +789,8 @@ final public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
+
+        projectProperties.setProperty(SELECTED_BROWSER, BROWSERS_MODEL.getSelectedBrowserId());
 
         projectProperties.putAll(additionalProperties);
 

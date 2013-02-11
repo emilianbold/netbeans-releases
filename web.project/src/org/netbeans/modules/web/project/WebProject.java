@@ -49,6 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -150,12 +152,20 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport.DeployOnSaveListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
+import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.DelagatingProjectClassPathModifierImpl;
@@ -177,8 +187,8 @@ import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -206,6 +216,7 @@ public final class WebProject implements Project {
     private Lookup lookup;
     private final ProjectWebModule webModule;
     private final CopyOnSaveSupport css;
+    private final ClientSideDevelopmentSupport easelSupport;
     private final ArtifactCopyOnSaveSupport artifactSupport;
     private final DeployOnSaveSupport deployOnSaveSupport;
     private final EjbJarProvider webEjbJarProvider;
@@ -400,6 +411,7 @@ public final class WebProject implements Project {
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         cpMod = new DelagatingProjectClassPathModifierImpl(cpModTemp, libMod);
+        easelSupport = new ClientSideDevelopmentSupport();
         lookup = createLookup(aux, cpProvider);
         css = new CopyOnSaveSupport();
         artifactSupport = new ArtifactCopySupport();
@@ -609,7 +621,8 @@ public final class WebProject implements Project {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
-            new ProjectWebRootProviderImpl()
+            new ProjectWebRootProviderImpl(),
+            easelSupport,
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -1515,7 +1528,7 @@ public final class WebProject implements Project {
      * Class should not request project lock from FS listener methods
      * (deadlock prone).
      */
-    private class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {
+    private class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener, DeployOnSaveListener {
 
         private FileObject docBase = null;
 
@@ -1565,36 +1578,31 @@ public final class WebProject implements Project {
             resources = getWebModule().getResourceDirectory();
             buildWeb = evaluator().getProperty(WebProjectProperties.BUILD_WEB_DIR);
 
-            FileSystem docBaseFileSystem = null;
             if (docBase != null) {
-                docBaseFileSystem = docBase.getFileSystem();
-                docBaseFileSystem.addFileChangeListener(this);
+                docBase.addRecursiveListener(this);
             }
 
-            if (webInf != null) {
-                if (!webInf.getFileSystem().equals(docBaseFileSystem)) {
-                    webInf.getFileSystem().addFileChangeListener(this);
-                }
+            if (webInf != null && !FileUtil.isParentOf(docBase, webInf)) {
+                webInf.addRecursiveListener(this);
             }
 
             if (resources != null) {
                 FileUtil.addFileChangeListener(this, resources);
             }
 
+            // Add deployed resources notification listener
+            webModule.getConfigSupport().addDeployOnSaveListener(this);
+
             LOGGER.log(Level.FINE, "Web directory is {0}", docBaseValue);
             LOGGER.log(Level.FINE, "WEB-INF directory is {0}", webInfValue);
         }
 
         public void cleanup() throws FileStateInvalidException {
-            FileSystem docBaseFileSystem = null;
             if (docBase != null) {
-                docBaseFileSystem = docBase.getFileSystem();
-                docBaseFileSystem.removeFileChangeListener(this);
+                docBase.removeRecursiveListener(this);
             }
-            if (webInf != null) {
-                if (!webInf.getFileSystem().equals(docBaseFileSystem)) {
-                    webInf.getFileSystem().removeFileChangeListener(this);
-                }
+            if (webInf != null && !FileUtil.isParentOf(docBase, webInf)) {
+                webInf.removeRecursiveListener(this);
             }
             if (resources != null) {
                 FileUtil.removeFileChangeListener(this, resources);
@@ -1602,6 +1610,8 @@ public final class WebProject implements Project {
             }
 
             WebProject.this.evaluator().removePropertyChangeListener(this);
+
+            webModule.getConfigSupport().removeDeployOnSaveListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -1909,6 +1919,41 @@ public final class WebProject implements Project {
             }
             assert current != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
             return current;
+        }
+
+        public void deployed(Iterable<Artifact> artifacts) {
+            if (!easelSupport.canReload()) {
+                return;
+            }
+            for (Artifact artifact : artifacts) {
+                FileObject fileObject = getReloadFileObject(artifact);
+                if (fileObject != null) {
+                    easelSupport.reload(fileObject);
+                }
+            }
+        }
+
+        private FileObject getReloadFileObject(Artifact artifact) {
+            File file = artifact.getFile();
+            FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            if (fileObject == null) {
+                return null;
+            }
+            return getWebDocFileObject(fileObject);
+        }
+
+        private FileObject getWebDocFileObject(FileObject artifact) {
+            FileObject webBuildBase = buildWeb == null ? null : helper.resolveFileObject(buildWeb);
+            if (docBase != null && webBuildBase != null) {
+                if (!FileUtil.isParentOf(webBuildBase, artifact)) {
+                    return null;
+                } else {
+                    String path = FileUtil.getRelativePath(webBuildBase, artifact);
+                    return docBase.getFileObject(path);
+                }
+            } else {
+                return null;
+            }
         }
     }
 
@@ -2294,6 +2339,137 @@ public final class WebProject implements Project {
                     null;
             }
             return null;
+        }
+
+    }
+
+    private class ClientSideDevelopmentSupport implements ServerURLMappingImplementation, 
+            URLDisplayerImplementation, PageInspectorCustomizer {
+
+        private String projectRootURL = null;
+        private FileObject webDocumentRoot;
+        private boolean initialized = false;
+        private BrowserSupport browserSupport = null;
+        private boolean browserSupportInitialized = false;
+
+        public ClientSideDevelopmentSupport() {
+            evaluator().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (WebProjectProperties.SELECTED_BROWSER.equals(evt.getPropertyName())) {
+                        resetBrowserSupport();
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void showURL(URL applicationRootURL, URL urlToOpenInBrowser, FileObject context) {
+            projectRootURL = WebUtils.urlToString(applicationRootURL);
+            if (projectRootURL != null && !projectRootURL.endsWith("/")) {
+                projectRootURL += "/";
+            }
+            BrowserSupport bs = getBrowserSupport();
+            if (bs != null) {
+                bs.load(urlToOpenInBrowser, context);
+            } else {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(urlToOpenInBrowser);
+            }
+        }
+
+        @Override
+        public URL toServer(int projectContext, FileObject projectFile) {
+            init();
+            if (projectRootURL == null || webDocumentRoot == null) {
+                return null;
+            }
+            String relPath = FileUtil.getRelativePath(webDocumentRoot, projectFile);
+            try {
+                return new URL(projectRootURL + relPath);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+
+        @Override
+        public FileObject fromServer(int projectContext, URL serverURL) {
+            init();
+            if (projectRootURL == null || webDocumentRoot == null) {
+                return null;
+            }
+            String u = WebUtils.urlToString(serverURL);
+            if (u.startsWith(projectRootURL)) {
+                return webDocumentRoot.getFileObject(u.substring(projectRootURL.length()));
+            }
+            return null;
+        }
+
+        boolean canReload() {
+            String selectedBrowser = evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
+            return WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
+        }
+
+        void reload(FileObject fo) {
+            BrowserSupport bs = getBrowserSupport();
+            if (bs == null) {
+                return;
+            }
+            URL u = bs.getBrowserURL(fo, true);
+            if (u != null) {
+                assert bs.canReload(u) : u;
+                bs.reload(u);
+            }
+        }
+
+        private FileObject getWebRoot() {
+            WebModule webModule = WebModule.getWebModule(getProjectDirectory());
+            return webModule != null ? webModule.getDocumentBase() : null;
+        }
+
+        private void init() {
+            if (initialized) {
+                return;
+            }
+            webDocumentRoot = getWebRoot();
+            initialized = true;
+        }
+
+        @Override
+        public boolean isHighlightSelectionEnabled() {
+            return true;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+        }
+
+        private synchronized void resetBrowserSupport() {
+            if (browserSupport != null) {
+                browserSupport.close(false);
+            }
+            browserSupport = null;
+            browserSupportInitialized = false;
+        }
+
+        private synchronized BrowserSupport getBrowserSupport() {
+            if (browserSupportInitialized) {
+                return browserSupport;
+            }
+            String selectedBrowser = evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
+            WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
+            boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
+            if (browser == null) {
+                browserSupport = null;
+            } else {
+                browserSupport = BrowserSupport.create(browser, !integrated);
+            }
+            browserSupportInitialized = true;
+            return browserSupport;
         }
 
     }

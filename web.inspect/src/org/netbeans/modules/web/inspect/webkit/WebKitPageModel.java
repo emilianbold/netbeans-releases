@@ -73,13 +73,13 @@ import org.openide.util.RequestProcessor;
  */
 public class WebKitPageModel extends PageModel {
     /** Request processor used by this class. */
-    private RequestProcessor RP = new RequestProcessor(WebKitPageModel.class);
+    private final RequestProcessor RP = new RequestProcessor(WebKitPageModel.class);
     /** Entry point to WebKit debugging API. */
     WebKitDebugging webKit;
     /** Document node. */
     private DOMNode documentNode;
     /** Nodes of the document (maps ID of the node to the node itself).*/
-    private Map<Integer,DOMNode> nodes = Collections.synchronizedMap(new HashMap<Integer,DOMNode>());
+    private final Map<Integer,DOMNode> nodes = Collections.synchronizedMap(new HashMap<Integer,DOMNode>());
     /** Selected nodes. */
     private List<? extends org.openide.nodes.Node> selectedNodes = Collections.EMPTY_LIST;
     /** Highlighted nodes. */
@@ -91,26 +91,26 @@ public class WebKitPageModel extends PageModel {
     /** Selector of the highlighted rule. */
     private String highlightedSelector;
     /** WebKit DOM domain listener. */
-    private DOM.Listener domListener;
+    private final DOM.Listener domListener;
     /** WebKit CSS domain listener. */
-    private CSS.Listener cssListener;
+    private final CSS.Listener cssListener;
     /** Determines whether the selection mode is switched on. */
     private boolean selectionMode;
     /** Determines whether the selection between the IDE and the browser pane is synchronized. */
     private boolean synchronizeSelection;
     /** Owner project of the inspected page. */
-    private Project project;
+    private final Project project;
     /** Page context. */
-    private Lookup pageContext;
+    private final Lookup pageContext;
     /** Updater of the stylesheets in the browser according to changes of the corresponding source files. */
-    private CSSUpdater cSSUpdater = CSSUpdater.getDefault();
+    private final CSSUpdater cSSUpdater = CSSUpdater.getDefault();
     /**
      * Map with content documents in the inspected page. Maps node ID of
      * the document node to the corresponding {@code RemoteObject}.
      */
-    private Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
+    private final Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
     /** Maps a node ID to pseudoclasses forced for the node. */
-    private Map<Integer,EnumSet<CSS.PseudoClass>> pseudoClassMap = Collections.synchronizedMap(
+    private final Map<Integer,EnumSet<CSS.PseudoClass>> pseudoClassMap = Collections.synchronizedMap(
             new HashMap<Integer,EnumSet<CSS.PseudoClass>>());
     /** Logger used by this class */
     static final Logger LOG = Logger.getLogger(WebKitPageModel.class.getName());
@@ -777,7 +777,7 @@ public class WebKitPageModel extends PageModel {
     }
 
     /** Determines whether this page model corresponds to a page in an external browser. */
-    private boolean external;
+    private final boolean external;
     
     /**
      * Determines whether this page model corresponds to a page in an external browser.

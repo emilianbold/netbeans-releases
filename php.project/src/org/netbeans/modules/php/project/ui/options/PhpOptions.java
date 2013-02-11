@@ -43,14 +43,11 @@
 package org.netbeans.modules.php.project.ui.options;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpPreferences;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
-import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -93,10 +90,6 @@ public final class PhpOptions {
     public static final String PHP_DEBUGGER_SHOW_URLS = "phpDebuggerShowUrls"; // NOI18N
     public static final String PHP_DEBUGGER_SHOW_CONSOLE = "phpDebuggerShowConsole"; // NOI18N
 
-    // php unit
-    public static final String PHP_UNIT = "phpUnit"; // NOI18N
-    public static final String PHP_UNIT_SKEL_GEN = "phpUnitSkelGen.path"; // NOI18N
-
     // global include path
     public static final String PHP_GLOBAL_INCLUDE_PATH = "phpGlobalIncludePath"; // NOI18N
 
@@ -107,8 +100,6 @@ public final class PhpOptions {
     private static final PhpOptions INSTANCE = new PhpOptions();
 
     private volatile boolean phpInterpreterSearched = false;
-    private volatile boolean phpUnitSearched = false;
-    private volatile boolean phpUnitSkelGenSearched = false;
     private volatile boolean phpGlobalIncludePathEnsured = false;
 
     private PhpOptions() {
@@ -144,39 +135,6 @@ public final class PhpOptions {
 
     public void setPhpInterpreter(String phpInterpreter) {
         getPreferences().put(PHP_INTERPRETER, phpInterpreter);
-    }
-
-    public synchronized String getPhpUnit() {
-        String phpUnit = getPreferences().get(PHP_UNIT, null);
-        if (phpUnit == null && !phpUnitSearched) {
-            phpUnitSearched = true;
-            phpUnit = PhpEnvironment.get().getAnyPhpUnit();
-            if (phpUnit != null) {
-                setPhpUnit(phpUnit);
-            }
-        }
-        return phpUnit;
-    }
-
-    public void setPhpUnit(String phpUnit) {
-        getPreferences().put(PHP_UNIT, phpUnit);
-    }
-
-    public synchronized String getPhpUnitSkelGen() {
-        String phpUnitSkelGen = getPreferences().get(PHP_UNIT_SKEL_GEN, null);
-        if (phpUnitSkelGen == null && !phpUnitSkelGenSearched) {
-            phpUnitSearched = true;
-            List<String> scripts = FileUtils.findFileOnUsersPath(PhpUnitSkelGen.SCRIPT_NAME, PhpUnitSkelGen.SCRIPT_NAME_LONG);
-            if (!scripts.isEmpty()) {
-                phpUnitSkelGen = scripts.get(0);
-                setPhpUnitSkelGen(phpUnitSkelGen);
-            }
-        }
-        return phpUnitSkelGen;
-    }
-
-    public void setPhpUnitSkelGen(String phpUnitSkelGen) {
-        getPreferences().put(PHP_UNIT_SKEL_GEN, phpUnitSkelGen);
     }
 
     public boolean isOpenResultInOutputWindow() {
@@ -300,8 +258,9 @@ public final class PhpOptions {
             return;
         }
         phpGlobalIncludePathEnsured = true;
-        if (PropertyUtils.getGlobalProperties().getProperty(PhpProjectProperties.GLOBAL_INCLUDE_PATH) == null) {
-            setPhpGlobalIncludePath(getPhpGlobalIncludePath());
+        String phpGlobalIncludePath = getPhpGlobalIncludePath();
+        if (!phpGlobalIncludePath.equals(PropertyUtils.getGlobalProperties().getProperty(PhpProjectProperties.GLOBAL_INCLUDE_PATH))) {
+            setPhpGlobalIncludePath(phpGlobalIncludePath);
         }
     }
 

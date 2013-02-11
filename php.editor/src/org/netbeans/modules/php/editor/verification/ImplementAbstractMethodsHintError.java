@@ -93,7 +93,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous, Ondrej Brejla
  */
-public class ImplementAbstractMethodsHintError extends AbstractHintError {
+public class ImplementAbstractMethodsHintError extends HintErrorRule {
 
     private static final String ABSTRACT_PREFIX = "abstract "; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(ImplementAbstractMethodsHintError.class.getName());
@@ -111,7 +111,7 @@ public class ImplementAbstractMethodsHintError extends AbstractHintError {
         "# {2} - Owner (class) of abstract method",
         "ImplementAbstractMethodsHintDesc={0} is not abstract and does not override abstract method {1} in {2}"
     })
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         FileScope fileScope = context.fileScope;
         FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
         if (fileScope != null && fileObject != null) {

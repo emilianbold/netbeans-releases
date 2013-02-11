@@ -62,6 +62,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -424,7 +426,46 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         String line = cu.getCommandLine();
         if (line != null && line.length()>0){
             if (storage != null) {
-                handler = storage.putCompileLine(line);
+                List<String> args = DiscoveryUtils.scanCommandLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+                //List<String> args = ImportUtils.parseArgs(line);
+                StringBuilder buf = new StringBuilder();
+                for (int i = 0; i < args.size(); i++) {
+                    if (buf.length() > 0) {
+                        buf.append(' ');// NOI18N
+                    }
+                    String s = args.get(i);
+                    if (s.startsWith("-D")) {// NOI18N
+                        int j = s.indexOf("=");// NOI18N
+                        if (j > 0) {
+                            String key = s.substring(0, j+1);
+                            key = DiscoveryUtils.removeEscape(key);
+                            String value = s.substring(j+1);
+                            if (value.startsWith("'") && value.endsWith("'") && value.length() > 1) {// NOI18N
+                                value = value.substring(1, value.length()-1);
+                                value = DiscoveryUtils.removeEscape(value);
+                                s = key+value;
+                            } else {
+                                s = key+value;
+                            }
+                        } else {
+                            s = DiscoveryUtils.removeEscape(s);
+                        }
+                    }
+                    String s2 = CndPathUtilitities.quoteIfNecessary(s);
+                    if (s.equals(s2)) {
+                        if (s.indexOf('"') > 0) {// NOI18N
+                            int j = s.indexOf("\\\"");// NOI18N
+                            if (j < 0) {
+                                s = s.replace("\"", "\\\"");// NOI18N
+                            }
+                        }
+                    } else {
+                        s = s2;
+                    }
+                    buf.append(s);
+                }
+                
+                handler = storage.putCompileLine(buf.toString());
             }
             gatherLine(line);
             if (cu instanceof CompilationUnit) {
@@ -449,20 +490,16 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
             DwarfSource.LOG.log(Level.FINE, "Process command line {0}", line); // NOI18N
         }
-        List<String> aUserIncludes = new ArrayList<String>();
-        Map<String, String> aUserMacros = new HashMap<String, String>();
-        List<String> languageArtifacts = new ArrayList<String>();
-        List<String> aUndefinedMacros = new ArrayList<String>();
-        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine, aUserIncludes, aUserMacros, aUndefinedMacros,
-                null, languageArtifacts, compilerSettings.getProjectBridge(), this.language == LanguageKind.CPP);
-        for(String s : aUserIncludes) {
+        Artifacts artifacts = new Artifacts();
+        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine, artifacts, compilerSettings.getProjectBridge(), this.language == LanguageKind.CPP);
+        for(String s : artifacts.userIncludes) {
             String include = PathCache.getString(s);
             addUserIncludePath(include);
         }
-        for(String s : aUndefinedMacros) {
+        for(String s : artifacts.undefinedMacros) {
             undefinedMacros.add(PathCache.getString(s));
         }
-        for(Map.Entry<String, String> entry : aUserMacros.entrySet()) {
+        for(Map.Entry<String, String> entry : artifacts.userMacros.entrySet()) {
             userMacros.put(PathCache.getString(entry.getKey()), entry.getValue());
         }
     }

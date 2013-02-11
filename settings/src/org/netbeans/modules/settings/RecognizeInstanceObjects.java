@@ -34,11 +34,14 @@
 
 package org.netbeans.modules.settings;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.ModuleManager;
+import org.netbeans.core.startup.Main;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -51,10 +54,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -109,15 +109,23 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
     }
     
     private static final class OverObjects extends ProxyLookup 
-    implements LookupListener, FileChangeListener {
-        private static Lookup.Result<ClassLoader> CL = Lookup.getDefault().lookupResult(ClassLoader.class);
-        
+    implements PropertyChangeListener, FileChangeListener {
         private final String path;
         
         public OverObjects(String path) {
             super(delegates(path));
             this.path = path;
-            CL.addLookupListener(WeakListeners.create(LookupListener.class, this, CL));
+            try {
+                ModuleSystem ms = Main.getModuleSystem(false);
+                if (ms != null) {
+                    ModuleManager man = ms.getManager();
+                    man.addPropertyChangeListener(WeakListeners.propertyChange(this, man));
+                } else {
+                    LOG.log(Level.WARNING, "Not listening on module system");
+                }
+            } catch (Throwable e) {
+                LOG.log(Level.WARNING, "Can't listen on module system", e);
+            }
             try {
                 FileSystem sfs = FileUtil.getConfigRoot().getFileSystem();
                 sfs.addFileChangeListener(FileUtil.weakFileChangeListener(this, sfs));
@@ -128,20 +136,17 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
         
         @SuppressWarnings("deprecation")
         private static Lookup[] delegates(String path) {
-            Collection<? extends ClassLoader> allCL = CL.allInstances();
-            LOG.log(Level.FINEST, "allCL: {0}", allCL);
-            if (allCL.isEmpty()) {
-                ClassLoader ccl = Thread.currentThread().getContextClassLoader();
-                LOG.log(Level.FINEST, "ccl: {0}", ccl);
-                if (ccl != null) {
-                    allCL = Collections.singleton(ccl);
-                }
+            ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+            LOG.log(Level.FINEST, "lkp loader: {0}", loader);
+            if (loader == null) {
+                loader = Thread.currentThread().getContextClassLoader();
+                LOG.log(Level.FINEST, "ccl: {0}", loader);
             }
-            if (allCL.isEmpty()) {
-                allCL = Collections.singleton(RecognizeInstanceObjects.class.getClassLoader());
+            if (loader == null) {
+                loader = RecognizeInstanceObjects.class.getClassLoader();
             }
-            LOG.log(Level.FINER, "metaInfServices for {0}", allCL);
-            Lookup base = Lookups.metaInfServices(allCL.iterator().next(), "META-INF/namedservices/" + path); // NOI18N
+            LOG.log(Level.FINER, "metaInfServices for {0}", loader);
+            Lookup base = Lookups.metaInfServices(loader, "META-INF/namedservices/" + path); // NOI18N
             FileObject fo = FileUtil.getConfigFile(path);
             if (fo == null) {
                 return new Lookup[] {base};
@@ -156,7 +161,7 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
         }
     
         @Override
-        public void resultChanged(LookupEvent ev) {
+        public void propertyChange(PropertyChangeEvent ev) {
             setLookups(delegates(path));
         }
 

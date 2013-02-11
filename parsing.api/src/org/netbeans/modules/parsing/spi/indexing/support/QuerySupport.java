@@ -406,7 +406,7 @@ public final class QuerySupport {
                     if (srcRoots != null) {
                         LOG.log(Level.FINE, "Translating {0} -> {1}", new Object [] { binRootUrl, srcRoots }); //NOI18N
                         for(URL srcRootUrl : srcRoots) {
-                            FileObject srcRoot = URLCache.getInstance().findFileObject(srcRootUrl);
+                            FileObject srcRoot = URLCache.getInstance().findFileObject(srcRootUrl, false);
                             if (srcRoot != null) {
                                 roots.add(srcRoot);
                             }
@@ -434,7 +434,7 @@ public final class QuerySupport {
             roots = new HashSet<FileObject>();
             Set<URL> urls = PathRegistry.getDefault().getRootsMarkedAs(classpathId);
             for(URL url : urls) {
-                FileObject f = URLCache.getInstance().findFileObject(url);
+                FileObject f = URLCache.getInstance().findFileObject(url, false);
                 if (f != null) {
                     roots.add(f);
                 }
@@ -485,8 +485,8 @@ public final class QuerySupport {
         }
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         public Iterable<? extends Pair<URL, LayeredDocumentIndex>> getIndices(List<? extends URL> roots) {
             synchronized (root2index) {
                 List<Pair<URL, LayeredDocumentIndex>> indices = new LinkedList<Pair<URL, LayeredDocumentIndex>>();
@@ -525,8 +525,8 @@ public final class QuerySupport {
 
         private final String indexerId;
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         private final Map<URL, Reference<LayeredDocumentIndex>> root2index = new HashMap<URL, Reference<LayeredDocumentIndex>>();
 
         private IndexerQuery(String indexerId) {

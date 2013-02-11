@@ -378,8 +378,12 @@ class LayoutRegion implements LayoutConstants {
         int[] pos2 = r2.positions[dimension];
         int p2L = pos2[LEADING];
         int p2T = pos2[TRAILING];
-        assert pos1[LEADING] != UNKNOWN && pos1[TRAILING] != UNKNOWN
+        boolean defined = pos1[LEADING] != UNKNOWN && pos1[TRAILING] != UNKNOWN
                && p2L != UNKNOWN && p2T != UNKNOWN;
+        assert defined; // we want bug reports on use of undefined regions,
+        if (!defined) { // but in final product should be able to cope with it
+            return false;
+        }
         int p1L = pos1[LEADING] - margin;
         int p1T = pos1[TRAILING] + margin;
         return (p1T > p2L && p1L < p2T)

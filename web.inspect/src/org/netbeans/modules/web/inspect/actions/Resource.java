@@ -61,9 +61,9 @@ import org.openide.filesystems.FileUtil;
  */
 public final class Resource {
     /** URI of the resource. */
-    private String name;
+    private final String name;
     /** Owning project of the resource. */
-    private Project project;
+    private final Project project;
 
     /**
      * Creates a new {@code Resource}.

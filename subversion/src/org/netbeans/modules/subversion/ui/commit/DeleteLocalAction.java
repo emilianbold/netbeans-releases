@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -100,9 +101,9 @@ public final class DeleteLocalAction extends ContextAction {
         support.start(createRequestProcessor(ctx));
     }
     
-    public static void performDelete(Context ctx, SvnProgressSupport support) {
+    public static void performDelete(Context ctx, final SvnProgressSupport support) {
 
-        SvnClient client;
+        final SvnClient client;
         try {
             client = Subversion.getInstance().getClient(ctx, support);
         } catch (SVNClientException ex) {
@@ -113,32 +114,42 @@ public final class DeleteLocalAction extends ContextAction {
         if(support.isCanceled()) {
             return;
         }
-        File[] files = ctx.getFiles();
-        for (int i = 0; i < files.length; i++) {
-            if(support.isCanceled()) {
-                return;
-            }
-        
-            File file = files[i];
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo != null) {
-                FileLock lock = null;
-                try {
-                    try {
-                        client.revert(file, false);
-                    } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, true);
+        final File[] files = ctx.getFiles();
+        try {
+            SvnUtils.runWithoutIndexing(new Callable<Void>() {
+                @Override
+                public Void call () throws Exception {
+                    for (int i = 0; i < files.length; i++) {
+                        if(support.isCanceled()) {
+                            return null;
+                        }
+
+                        File file = files[i];
+                        FileObject fo = FileUtil.toFileObject(file);
+                        if (fo != null) {
+                            FileLock lock = null;
+                            try {
+                                try {
+                                    client.revert(file, false);
+                                } catch (SVNClientException ex) {
+                                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                                }
+                                lock = fo.lock();                    
+                                fo.delete(lock);       
+                            } catch (IOException e) {
+                                Subversion.LOG.log(Level.SEVERE, NbBundle.getMessage(DeleteLocalAction.class, "MSG_Cannot_lock", file.getAbsolutePath()), e); // NOI18N
+                            } finally {
+                                if (lock != null) {
+                                    lock.releaseLock();
+                                }
+                            }
+                        }
                     }
-                    lock = fo.lock();                    
-                    fo.delete(lock);       
-                } catch (IOException e) {
-                    Subversion.LOG.log(Level.SEVERE, NbBundle.getMessage(DeleteLocalAction.class, "MSG_Cannot_lock", file.getAbsolutePath()), e); // NOI18N
-                } finally {
-                    if (lock != null) {
-                        lock.releaseLock();
-                    }
+                    return null;
                 }
-            }
+            }, files);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, false);
         }
     }
     

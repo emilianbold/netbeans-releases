@@ -3629,6 +3629,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 if (isCore) {
                     state().isCore = true;
                 }
+                
+                if ((getNDI().getAction() & NativeDebuggerManager.LOAD) != 0) {
+                    getFullPath(null);
+                }
 
 		gdb.startProgressManager().finishProgress();
                 session().setTarget(fprogram);

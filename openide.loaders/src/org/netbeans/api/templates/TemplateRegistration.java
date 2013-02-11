@@ -126,4 +126,9 @@ public @interface TemplateRegistration {
      */
     String[] category() default {};
 
+    /**
+     * Set to false if the template can be instantiated without a project.
+     * @since 7.46
+     */
+    boolean requireProject() default true;
 }

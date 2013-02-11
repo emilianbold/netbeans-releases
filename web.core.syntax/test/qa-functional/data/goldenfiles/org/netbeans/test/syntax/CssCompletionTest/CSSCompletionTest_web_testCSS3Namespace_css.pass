@@ -1,4 +1,4 @@
-[|, "http://netbeans.org" foo, foo, 79]
+[|, "http://netbeans.org" foo, foo, 84]
 "http://netbeans.org" foo
 *
 a
@@ -345,9 +345,10 @@ xor
 @media
 @namespace
 @page
-End cursor position = 83
-[color: |, color blue, color: blue, 131]
+End cursor position = 88
+[color: |, color blue, color: blue, 136]
 color color chooser
+color hash_color_code
 color activeborder
 color activecaption
 color aliceblue
@@ -416,7 +417,6 @@ color graytext
 color green
 color greenyellow
 color grey
-color hash_color_code
 color highlight
 color highlighttext
 color honeydew
@@ -430,6 +430,8 @@ color indianred
 color indigo
 color infobackground
 color infotext
+color inherit
+color initial
 color ivory
 color khaki
 color lavender
@@ -530,4 +532,4 @@ color windowframe
 color windowtext
 color yellow
 color yellowgreen
-End cursor position = 143
+End cursor position = 148

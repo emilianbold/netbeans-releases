@@ -515,49 +515,59 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         }
     }
 
-    private void gatherSubFolders(FileObject d, HashSet<String> set, Map<String,String> result, AtomicBoolean cancel){
-        if (cancel.get()) {
-            return;
-        }
-        if (d != null && d.isFolder() && d.canRead()){
-            //String path = d.getPath();
-            String path;
-            try {
-                path = FileSystemProvider.getCanonicalPath(d);
-            } catch (IOException ex) {
-                return;
-            }
-            path = path.replace('\\', '/'); // NOI18N
-            if (!set.contains(path)){
-                set.add(path);
-                FileObject[] ff = d.getChildren();
-                if (ff != null) {
-                    for (int i = 0; i < ff.length; i++) {
-                        if (cancel.get()) {
-                            return;
-                        }
-                        String ffPath = ff[i].getPath();
-                        if (set.contains(ffPath)){
-                            continue;
-                        }
-                        String name = ff[i].getNameExt();
-                        if (result.containsKey(name)) {
-                           result.put(name, ffPath);
-                            boolean finished = true;
-                            for (Map.Entry<String,String> entry : result.entrySet()) {
-                                if (entry.getValue() == null) {
-                                    finished = false;
-                                    break;
+    private void gatherSubFolders(FileObject startRoot, HashSet<String> set, Map<String, String> result, AtomicBoolean cancel) {
+        List<FileObject> down = new ArrayList<FileObject>();
+        down.add(startRoot);
+        while (!down.isEmpty()) {
+            ArrayList<FileObject> next = new ArrayList<FileObject>();
+            for (FileObject folder : down) {
+                if (cancel.get()) {
+                    return;
+                }
+                if (folder != null && folder.isFolder() && folder.canRead()) {
+                    String path;
+                    try {
+                        path = FileSystemProvider.getCanonicalPath(folder);
+                    } catch (IOException ex) {
+                        continue;
+                    }
+                    path = path.replace('\\', '/'); // NOI18N
+                    if (!set.contains(path)) {
+                        set.add(path);
+                        FileObject[] fileList = folder.getChildren();
+                        if (fileList != null) {
+                            for (int i = 0; i < fileList.length; i++) {
+                                if (cancel.get()) {
+                                    return;
+                                }
+                                String ffPath = fileList[i].getPath();
+                                if (set.contains(ffPath)) {
+                                    continue;
+                                }
+                                if (fileList[i].isFolder()) {
+                                    next.add(fileList[i]);
+                                } else {
+                                    String name = fileList[i].getNameExt();
+                                    if (result.containsKey(name)) {
+                                        result.put(name, ffPath);
+                                        boolean finished = true;
+                                        for (Map.Entry<String, String> entry : result.entrySet()) {
+                                            if (entry.getValue() == null) {
+                                                finished = false;
+                                                break;
+                                            }
+                                        }
+                                        if (finished) {
+                                            return;
+                                        }
+                                    }
                                 }
                             }
-                            if (finished) {
-                                return;
-                            }
                         }
-                        gatherSubFolders(ff[i], set, result, cancel);
                     }
                 }
             }
+            down = next;
         }
     }
 

@@ -1,0 +1,10 @@
+Code completion result for source line:
+|
+        ){}
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+PACKAGE    Froo                            [PUBLIC]   null
+PACKAGE    Trest                           [PUBLIC]   null
+CLASS      Bar                             [PUBLIC]   Froo
+CLASS      TestClass                       [PUBLIC]   Trest
+------------------------------------
+KEYWORD    callable                                   Language Construct

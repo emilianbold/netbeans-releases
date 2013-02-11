@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -310,7 +311,11 @@ public final class CodeUtils {
 
     @CheckForNull // null for RelectionVariable
     public static String extractVariableName(Variable var) {
-        return VariableNameVisitor.getInstance().findName(var);
+        String variableName = VariableNameVisitor.getInstance().findName(var);
+        if (variableName == null) {
+            LOGGER.log(Level.INFO, "Can not retrieve variable name: {0}", var);
+        }
+        return variableName;
     }
 
 

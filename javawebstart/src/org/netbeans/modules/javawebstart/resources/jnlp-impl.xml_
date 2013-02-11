@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -56,6 +56,21 @@ made subject to such option by the copyright holder.
         <echo message="Default target is not set, you must specify which target you want to run."/>
     </target>
 
+    <target name="-check-operating-system">
+        <condition property="running.on.mac">
+            <os family="mac"/>
+        </condition>
+        <condition property="running.on.unix">
+            <os family="unix"/>
+        </condition>
+        <condition property="running.on.windows">
+            <os family="windows"/>
+        </condition>
+        <echo message="running.on.mac = ${running.on.mac}" level="verbose"/>
+        <echo message="running.on.unix = ${running.on.unix}" level="verbose"/>
+        <echo message="running.on.windows = ${running.on.windows}" level="verbose"/>
+    </target>
+
     <target name="-substitute-platform-home" unless="platform.home">
         <property name="platform.home" value="${java.home}"/>
     </target>
@@ -80,6 +95,155 @@ made subject to such option by the copyright holder.
             </and>
         </condition>
         <fail message="Error:${line.separator}JDK 7u4 Mac does not support WebStart technology.${line.separator}Please upgrade to JDK 7u6 or later." if="have-jdk-7u4-mac"/>
+    </target>
+
+    <!-- Check availability of WebStart executable -->
+
+    <target name="-check-webstart-in-platform-home-jre" if="platform.home">
+        <condition property="do.set.webstart.in.platform.home.jre">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <or>
+                    <available file="${platform.home}${file.separator}jre${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${platform.home}${file.separator}jre${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-platform-home-jre" depends="-check-webstart-in-platform-home-jre" if="do.set.webstart.in.platform.home.jre">
+        <property name="active.webstart.executable" value="${platform.home}${file.separator}jre${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-platform-home" if="platform.home">
+        <condition property="do.set.webstart.in.platform.home">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <or>
+                    <available file="${platform.home}${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${platform.home}${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-platform-home" depends="-set-webstart-in-platform-home-jre,-check-webstart-in-platform-home" if="do.set.webstart.in.platform.home">
+        <property name="active.webstart.executable" value="${platform.home}${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-platform-home-220918workaround" if="platform.home">
+        <condition property="do.set.webstart.in.platform.home.220918workaround">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <or>
+                    <available file="${platform.home}${file.separator}..${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${platform.home}${file.separator}..${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-platform-home-220918workaround" depends="-set-webstart-in-platform-home,-check-webstart-in-platform-home-220918workaround" if="do.set.webstart.in.platform.home.220918workaround">
+        <property name="active.webstart.executable" value="${platform.home}${file.separator}..${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-jre" unless="active.webstart.executable">
+        <condition property="do.set.webstart.in.jre">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <or>
+                    <available file="${java.home}${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${java.home}${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-jre" depends="-set-webstart-in-platform-home-220918workaround,-check-webstart-in-jre" if="do.set.webstart.in.jre">
+        <property name="active.webstart.executable" value="${java.home}${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-probjdk" unless="active.webstart.executable">
+        <condition property="do.set.webstart.in.probjdk">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <or>
+                    <available file="${java.home}${file.separator}..${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${java.home}${file.separator}..${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-probjdk" depends="-set-webstart-in-jre,-check-webstart-in-probjdk" if="do.set.webstart.in.probjdk">
+        <property name="active.webstart.executable" value="${java.home}${file.separator}..${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-envjdk" unless="active.webstart.executable">
+        <property environment="env"/>
+        <condition property="do.set.webstart.in.envjdk">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <or>
+                    <available file="${env.JAVA_HOME}${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${env.JAVA_HOME}${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-envjdk" depends="-set-webstart-in-probjdk,-check-webstart-in-envjdk" if="do.set.webstart.in.envjdk">
+        <property name="active.webstart.executable" value="${env.JAVA_HOME}${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-check-webstart-in-usr-bin" unless="active.webstart.executable">
+        <condition property="do.set.webstart.in.usr.bin">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <available file="${file.separator}usr${file.separator}bin${file.separator}javaws"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-webstart-in-usr-bin" depends="-set-webstart-in-envjdk,-check-webstart-in-usr-bin" if="do.set.webstart.in.usr.bin">
+        <property name="active.webstart.executable" value="${file.separator}usr${file.separator}bin${file.separator}javaws"/>
+    </target>
+    <target name="-pre-check-webstart-in-unix" depends="-check-operating-system,-set-webstart-in-usr-bin" unless="active.webstart.executable">
+        <condition property="running.on.unix-active.webstart.executable">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <isset property="running.on.unix"/>
+            </and>
+        </condition>
+    </target>
+    <target name="-check-webstart-in-unix" depends="-pre-check-webstart-in-unix" if="running.on.unix-active.webstart.executable">
+        <local name="exec.which.javaws.result"/>
+        <exec executable="which" failifexecutionfails="false" failonerror="false" resultproperty="exec.which.javaws.result" outputproperty="exec.which.javaws.output">
+            <arg value="javaws"/>
+        </exec>
+        <condition property="do.set.webstart.in.unix">
+            <and>
+                <not><isset property="active.webstart.executable"/></not>
+                <isset property="exec.which.javaws.result"/>
+                <equals arg1="${exec.which.javaws.result}" arg2="0"/>
+                <isset property="exec.which.javaws.output"/>
+                <not><equals arg1="${exec.which.javaws.output}" arg2=""/></not>
+            </and>
+        </condition>
+        <echo message="do.set.webstart.in.unix = ${do.set.webstart.in.unix}" level="verbose"/>
+    </target>
+    <target name="-set-webstart-in-unix" depends="-set-webstart-in-envjdk,-check-webstart-in-unix" if="do.set.webstart.in.unix">
+        <property name="active.webstart.executable" value="${exec.which.javaws.output}"/>
+    </target>
+    <target name="-pre-check-webstart" depends="-set-webstart-in-unix">
+        <echo message="active.webstart.executable = ${active.webstart.executable}" level="verbose"/>
+    </target>
+
+    <target name="-check-webstart" depends="-pre-check-webstart">
+        <condition property="webstart-available">
+            <and>
+                <or>
+                    <isset property="do.set.webstart.in.platform.home.jre"/>
+                    <isset property="do.set.webstart.in.platform.home"/>
+                    <isset property="do.set.webstart.in.platform.home.220918workaround"/>
+                    <isset property="do.set.webstart.in.jre"/>
+                    <isset property="do.set.webstart.in.probjdk"/>
+                    <isset property="do.set.webstart.in.envjdk"/>
+                    <isset property="do.set.webstart.in.usr.bin"/>
+                    <isset property="do.set.webstart.in.unix"/>
+                </or>
+                <isset property="active.webstart.executable"/>
+            </and>
+        </condition>
+        <fail message="Error:${line.separator}WebStart executable could not be found." unless="webstart-available"/>
+        <echo message="webstart-available = ${webstart-available}" level="verbose"/>
     </target>
 
     <!-- Main target -->
@@ -377,9 +541,10 @@ made subject to such option by the copyright holder.
     
     <!-- Running/Debugging -->
     
-    <target name="jws-run" depends="jar,-verify-jnlp-enabled,-verify-codebase,-init-platform" description="Start javaws execution">
-        <exec executable="${platform.home}/bin/javaws">
-            <arg file="${jnlp.dest.dir}/${jnlp.file}"/>
+    <target name="jws-run" depends="jar,-verify-jnlp-enabled,-verify-codebase,-init-platform,-check-webstart" description="Start javaws execution">
+        <echo message="Executing ${jnlp.dest.dir}${file.separator}${jnlp.file} using ${active.webstart.executable}"/>
+        <exec executable="${active.webstart.executable}">
+            <arg file="${jnlp.dest.dir}${file.separator}${jnlp.file}"/>
         </exec>
     </target>
     
@@ -407,11 +572,12 @@ made subject to such option by the copyright holder.
         </condition>
     </target>
 
-    <target name="-debug-javaws-debuggee" depends="-init-debug-args,-init-platform">
-        <exec executable="${platform.home}/bin/javaws">
+    <target name="-debug-javaws-debuggee" depends="-init-debug-args,-init-platform,-check-webstart">
+        <echo message="Executing ${jnlp.dest.dir}${file.separator}${jnlp.file} in debug mode using ${active.webstart.executable}"/>
+        <exec executable="${active.webstart.executable}">
             <env key="JAVAWS_VM_ARGS" value="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <arg value="-wait"/>
-            <arg file="${jnlp.dest.dir}/${jnlp.file}"/>
+            <arg file="${jnlp.dest.dir}${file.separator}${jnlp.file}"/>
         </exec>
     </target>
     

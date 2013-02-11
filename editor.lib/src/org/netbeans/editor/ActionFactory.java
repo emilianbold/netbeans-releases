@@ -56,8 +56,6 @@ import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,14 +63,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -100,13 +95,11 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -1189,144 +1182,6 @@ public class ActionFactory {
         }
     }
 
-    @EditorActionRegistration(name = BaseKit.findNextAction,
-            iconResource = "org/netbeans/modules/editor/resources/find_next.png") // NOI18N
-    public static class FindNextAction extends LocalBaseAction {
-
-        static final long serialVersionUID =6878814427731642684L;
-
-        public FindNextAction() {
-            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
-                if (eui.getComponent().getClientProperty("AsTextField") == null)  { //NOI18N
-                    EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
-                }
-                openFindIfNecessary(eui, evt);
-                EditorFindSupport.getInstance().find(null, false);
-            }
-        }
-    }
-    
-    private static void openFindIfNecessary(EditorUI eui, ActionEvent evt) {
-        Object findWhat = EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);
-        if (findWhat == null || !(findWhat instanceof String) || ((String) findWhat).isEmpty()) {
-
-            Action findAction = ((BaseKit) eui.getComponent().getUI().getEditorKit(
-                    eui.getComponent())).getActionByName("find");
-            if (findAction != null) {
-                findAction.actionPerformed(evt);
-            }
-        }
-    }
-    
-    @EditorActionRegistration(name = BaseKit.findPreviousAction,
-            iconResource = "org/netbeans/modules/editor/resources/find_previous.png") // NOI18N
-    public static class FindPreviousAction extends LocalBaseAction {
-
-        static final long serialVersionUID =-43746947902694926L;
-
-        public FindPreviousAction() {
-            super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
-                if (eui.getComponent().getClientProperty("AsTextField") == null)  { //NOI18N
-                    EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
-                }
-                openFindIfNecessary(eui, evt);
-                EditorFindSupport.getInstance().find(null, true);
-            }
-        }
-    }
-
-    /** Finds either selection or if there's no selection it finds
-    * the word where the cursor is standing.
-    */
-    @EditorActionRegistration(name = BaseKit.findSelectionAction,
-            iconResource = "org/netbeans/modules/editor/resources/find_selection.png") // NOI18N
-    public static class FindSelectionAction extends LocalBaseAction {
-
-        static final long serialVersionUID =-5601618936504699565L;
-
-        public FindSelectionAction() {
-            super();
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                EditorFindSupport findSupport = EditorFindSupport.getInstance();
-                Caret caret = target.getCaret();
-                int dotPos = caret.getDot();
-                HashMap props = new HashMap(findSupport.createDefaultFindProperties());
-                String searchWord = null;
-                boolean revert = false;
-                Boolean originalValue = null;
-                Map revertMap = (Map)props.get(EditorFindSupport.REVERT_MAP);
-                Boolean revertValue = revertMap != null ? (Boolean)revertMap.get(EditorFindSupport.FIND_WHOLE_WORDS) : null;
-
-                if (Utilities.isSelectionShowing(caret)) { // valid selection
-                    searchWord = target.getSelectedText();
-                    originalValue = (Boolean)props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
-                    if (Boolean.FALSE.equals(revertValue)) {
-                        revertMap.remove(EditorFindSupport.FIND_WHOLE_WORDS);
-                    } else {
-                        revert = !Boolean.FALSE.equals(originalValue);
-                    }
-                } else { // no selection, get current word
-                    try {
-                        searchWord = Utilities.getIdentifier((BaseDocument)target.getDocument(),
-                                                             dotPos);
-                        originalValue = (Boolean)props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.TRUE);
-                        if (Boolean.TRUE.equals(revertValue)) {
-                            revertMap.remove(EditorFindSupport.FIND_WHOLE_WORDS);
-                        } else {
-                            revert = !Boolean.TRUE.equals(originalValue);
-                        }
-
-                    } catch (BadLocationException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (searchWord != null) {
-                    int n = searchWord.indexOf( '\n' );
-                    if (n >= 0 ) 
-                        searchWord = searchWord.substring(0, n);
-                    props.put(EditorFindSupport.FIND_WHAT, searchWord);
-                
-                    if (revert){
-                        revertMap = new HashMap();
-                        revertMap.put(EditorFindSupport.FIND_WHOLE_WORDS, originalValue != null ? originalValue : Boolean.FALSE);
-                        props.put(EditorFindSupport.REVERT_MAP, revertMap);
-                    }
-                    
-                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
-                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
-                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
-
-                    EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
-                    if (eui.getComponent().getClientProperty("AsTextField") == null) { //NOI18N
-                        findSupport.setFocusedTextComponent(eui.getComponent());
-                    }
-                    findSupport.putFindProperties(props);
-                    if (findSupport.find(null, false)) {
-                        findSupport.addToHistory(new EditorFindSupport.SPW((String) props.get(EditorFindSupport.FIND_WHAT),
-                                (Boolean) props.get(EditorFindSupport.FIND_WHOLE_WORDS), (Boolean) props.get(EditorFindSupport.FIND_MATCH_CASE), (Boolean) props.get(EditorFindSupport.FIND_REG_EXP)));
-                    }
-                }
-            }
-        }
-    }
-
     // Cannot easily use EditorActionRegistration yet for toggle buttons
     public static class ToggleRectangularSelectionAction extends LocalBaseAction
     implements Presenter.Toolbar, ContextAwareAction, PropertyChangeListener {
@@ -1400,103 +1255,6 @@ public class ActionFactory {
         
         
     }    
-
-// suspending the use of EditorActionRegistration due to #167063
-//    @EditorActionRegistration(name = BaseKit.toggleHighlightSearchAction,
-//            iconResource = "org/netbeans/modules/editor/resources/toggle_highlight.png")
-    public static class ToggleHighlightSearchAction extends LocalBaseAction implements Presenter.Toolbar {
-
-        static final long serialVersionUID =4603809175771743200L;
-
-        public ToggleHighlightSearchAction() {
-            super(BaseKit.toggleHighlightSearchAction, CLEAR_STATUS_TEXT);
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/toggle_highlight.png", false)); //NOI18N
-            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-        }
-
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                Boolean cur = (Boolean)EditorFindSupport.getInstance().getFindProperty(
-                                  EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
-                if (cur == null || cur.booleanValue() == false) {
-                    cur = Boolean.TRUE;
-                } else {
-                    cur = Boolean.FALSE;
-                }
-                EditorFindSupport.getInstance().putFindProperty(
-                    EditorFindSupport.FIND_HIGHLIGHT_SEARCH, cur);
-            }
-        }
-
-        public Component getToolbarPresenter() {
-            JToggleButton b = new MyGaGaButton();
-            b.setModel(new HighlightButtonModel());
-            b.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
-            b.setAction(this);
-            
-            return b;
-        }
-        
-        private static final class HighlightButtonModel extends JToggleButton.ToggleButtonModel implements PropertyChangeListener {
-            
-            public HighlightButtonModel() {
-                EditorFindSupport efs = EditorFindSupport.getInstance();
-                efs.addPropertyChangeListener(WeakListeners.propertyChange(this, efs));
-                propertyChange(null);
-            }
-        
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt == null || evt.getPropertyName() == null || evt.getPropertyName().equals(EditorFindSupport.FIND_HIGHLIGHT_SEARCH)) {
-                    Boolean value = (Boolean) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
-                    setSelected(value == null ? false : value.booleanValue());
-                }
-            }
-        } // End of HighlightButtonModel class
-        
-        private static final class MyGaGaButton extends JToggleButton implements ChangeListener {
-            
-            public MyGaGaButton() {
-                
-            }
-            
-            @Override
-            public void setModel(ButtonModel model) {
-                ButtonModel oldModel = getModel();
-                if (oldModel != null) {
-                    oldModel.removeChangeListener(this);
-                }
-                
-                super.setModel(model);
-                
-                ButtonModel newModel = getModel();
-                if (newModel != null) {
-                    newModel.addChangeListener(this);
-                }
-                
-                stateChanged(null);
-            }
-
-            public void stateChanged(ChangeEvent evt) {
-                boolean selected = isSelected();
-                super.setContentAreaFilled(selected);
-                super.setBorderPainted(selected);
-            }
-
-            @Override
-            public void setBorderPainted(boolean arg0) {
-                if (!isSelected()) {
-                    super.setBorderPainted(arg0);
-                }
-            }
-
-            @Override
-            public void setContentAreaFilled(boolean arg0) {
-                if (!isSelected()) {
-                    super.setContentAreaFilled(arg0);
-                }
-            }
-        }
-    } // End of ToggleHighlightSearchAction class
 
     public static class UndoAction extends LocalBaseAction {
 

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -224,6 +225,20 @@ public class NameHolder {
                     public CsmObject getClosestTopLevelObject() {
                         return decl;
                     }
+
+                    @Override
+                    public String toString() {
+                        FileImpl file = fileContent.getFile();
+                        String strSt = "" + start; // NOI18N
+                        String strEnd = "" + end; // NOI18N
+                        if (file != null) {
+                            int[] lineColumnSt = file.getLineColumn(start);
+                            int[] lineColumnEnd = file.getLineColumn(end);
+                            strSt = lineColumnSt[0] + ":" + lineColumnSt[1] + "/" + start; // NOI18N
+                            strEnd = lineColumnEnd[0] + ":" + lineColumnEnd[1] + "/" + end; // NOI18N
+                        }
+                        return "NameRef{" + name + "[" + strSt + "-" + strEnd + "] " + kind + ":" + decl + "}"; // NOI18N
+                    }
                 };
                 fileContent.addReference(ref, decl);
             }
@@ -282,7 +297,7 @@ public class NameHolder {
         start = OffsetableBase.getStartOffset(operator);
         isMacroExpanded = isMacroExpandedToken(operator);
         end = OffsetableBase.getEndOffset(operator);
-	StringBuilder sb = new StringBuilder(operator.getText());
+	StringBuilder sb = new StringBuilder(AstUtil.getText(operator));
 	sb.append(' ');
 	begin:
 	for( AST next = operator.getNextSibling(); next != null; next = next.getNextSibling() ) {
@@ -303,12 +318,12 @@ public class NameHolder {
                 case CPPTokenTypes.LITERAL___const:
                 case CPPTokenTypes.LITERAL___const__:
                     end = OffsetableBase.getEndOffset(next);
-		    sb.append(next.getText());
+		    sb.append(AstUtil.getText(next));
 		    break;
 		default:
 		    sb.append(' ');
                     end = OffsetableBase.getEndOffset(next);
-		    sb.append(next.getText());
+		    sb.append(AstUtil.getText(next));
 	    }
 	}
 	return sb.toString();
@@ -324,7 +339,7 @@ public class NameHolder {
 	    }
 	    else {
                 end = OffsetableBase.getEndOffset(child);
-		String text = child.getText();
+		CharSequence text = AstUtil.getText(child);
 		assert text != null;
 		assert text.length() > 0;
 		if( sb.length() > 0 ) {
@@ -386,11 +401,11 @@ public class NameHolder {
                         start = OffsetableBase.getStartOffset(operator);
                         isMacroExpanded = isMacroExpandedToken(operator);
                         end = OffsetableBase.getEndOffset(operator);
-                        StringBuilder sb = new StringBuilder(operator.getText());
+                        StringBuilder sb = new StringBuilder(AstUtil.getText(operator));
                         sb.append(' ');
                         boolean first = true;
                         for( AST next = operator.getNextSibling(); next != null && (first || next.getType() != CPPTokenTypes.LESSTHAN) ; next = next.getNextSibling() ) {
-                            sb.append(next.getText());
+                            sb.append(AstUtil.getText(next));
                             end = OffsetableBase.getEndOffset(next);
                             first = false;
                         }
@@ -479,12 +494,12 @@ public class NameHolder {
                             start = OffsetableBase.getStartOffset(first);
                             isMacroExpanded = isMacroExpandedToken(first);
                             end = OffsetableBase.getEndOffset(first);
-                            StringBuilder sb = new StringBuilder(first.getText());
+                            StringBuilder sb = new StringBuilder(AstUtil.getText(first));
                             sb.append(' ');
                             AST next = first.getNextSibling();
                             if( next != null ) {
                                 end = OffsetableBase.getEndOffset(next);
-                                sb.append(next.getText());
+                                sb.append(AstUtil.getText(next));
                             }
                             return sb.toString();
                         } else if (first.getType() == CPPTokenTypes.IDENT){

@@ -78,7 +78,7 @@ public class PHPHintsTestBase extends PHPTestBase {
         super.checkHints(hint, TEST_DIRECTORY + fileName, selStartLine, selEndLine);
     }
 
-    protected void checkSuggestion(AbstractSuggestion suggestion, String fileName, String caretLine) throws Exception {
+    protected void checkSuggestion(SuggestionRule suggestion, String fileName, String caretLine) throws Exception {
         checkHints(this, suggestion, TEST_DIRECTORY + fileName, caretLine);
     }
 

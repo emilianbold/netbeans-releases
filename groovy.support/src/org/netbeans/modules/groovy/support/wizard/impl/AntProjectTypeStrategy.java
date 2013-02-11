@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.groovy.support.wizard.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -104,19 +103,21 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
     }
 
     @Override
-    protected boolean existsGroovyTestFolder(List<SourceGroup> groups) {
+    public boolean existsGroovyTestFolder(List<SourceGroup> groups) {
         return existsFolder(groups, "test"); // NOI18N
     }
 
     @Override
-    protected boolean existsGroovySourceFolder(List<SourceGroup> groups) {
+    public boolean existsGroovySourceFolder(List<SourceGroup> groups) {
         return existsFolder(groups, "src"); // NOI18N
     }
 
     private boolean existsFolder(List<SourceGroup> groups, String folderName) {
         for (SourceGroup group : groups) {
             final String groupPath = group.getRootFolder().getPath();
-            if (groupPath.endsWith(File.separator + folderName) || groupPath.contains(File.separator + folderName + File.separator)) {
+
+            // Two check because of issue #221727
+            if (groupPath.endsWith("/" + folderName) || groupPath.contains("/" + folderName + "/")) { // NOI18N
                 return true;
             }
         }
@@ -124,12 +125,12 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
     }
 
     @Override
-    protected void createGroovyTestFolder() {
+    public void createGroovyTestFolder() {
         createFolder(project.getProjectDirectory(), "test"); // NOI18N
     }
 
     @Override
-    protected void createGroovySourceFolder() {
+    public void createGroovySourceFolder() {
         createFolder(project.getProjectDirectory(), "src"); // NOI18N
     }
 
@@ -141,12 +142,12 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
      * @return reordered source groups
      */
     @Override
-    protected List<SourceGroup> moveTestFolderAsFirst(List<SourceGroup> groups) {
+    public List<SourceGroup> moveTestFolderAsFirst(List<SourceGroup> groups) {
         return moveAsFirst(groups, "/test").subList(0, 1); // #219766
     }
 
     @Override
-    protected List<SourceGroup> moveSourceFolderAsFirst(List<SourceGroup> groups) {
+    public List<SourceGroup> moveSourceFolderAsFirst(List<SourceGroup> groups) {
         return moveAsFirst(groups, "/src");
     }
 

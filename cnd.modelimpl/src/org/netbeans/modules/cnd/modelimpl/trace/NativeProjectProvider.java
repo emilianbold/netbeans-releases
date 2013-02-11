@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -71,6 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * 
@@ -81,14 +81,23 @@ public final class NativeProjectProvider {
     /** Creates a new instance of NativeProjectProvider */
     private NativeProjectProvider() {
     }
-    
+
     public static NativeProject createProject(String projectRoot, List<File> files,
             List<String> libProjectsPaths,
 	    List<String> sysIncludes, List<String> usrIncludes,
 	    List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros, boolean pathsRelCurFile) throws IOException {
+
+        return createProject(projectRoot, files, libProjectsPaths, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, null);
+    }
+    
+    public static NativeProject createProject(String projectRoot, List<File> files,
+            List<String> libProjectsPaths,
+	    List<String> sysIncludes, List<String> usrIncludes,
+	    List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros, boolean pathsRelCurFile,
+            Lookup lookup) throws IOException {
 	
         NativeProjectImpl project = new NativeProjectImpl(projectRoot, libProjectsPaths,
-		sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile);
+		sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, lookup);
 	
 	project.addFiles(files);
 	
@@ -161,7 +170,7 @@ public final class NativeProjectProvider {
         return getDataObject(CndFileUtils.toFileObject(file));
     }
     
-    public static final class NativeProjectImpl implements NativeProject {
+    public static final class NativeProjectImpl implements NativeProject, Lookup.Provider {
 	
 	private final List<String> sysIncludes;
 	private final List<String> usrIncludes;
@@ -178,12 +187,22 @@ public final class NativeProjectProvider {
 
         private static final class Lock {}
         private final Object listenersLock = new Lock();
-	
+        
+        private final Lookup lookup;
+
 	public NativeProjectImpl(String projectRoot,
                 List<String> libProjectsPaths,
 		List<String> sysIncludes, List<String> usrIncludes, 
 		List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros,
 		boolean pathsRelCurFile) {
+            this(projectRoot, libProjectsPaths, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros, pathsRelCurFile, null);
+        }
+        
+	public NativeProjectImpl(String projectRoot,
+                List<String> libProjectsPaths,
+		List<String> sysIncludes, List<String> usrIncludes, 
+		List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros,
+		boolean pathsRelCurFile, Lookup lookup) {
 
 	    this.projectRoot = projectRoot;
             List<NativeProject> libs = new ArrayList<NativeProject>();
@@ -211,8 +230,9 @@ public final class NativeProjectProvider {
 	    this.sysMacros = new ArrayList<String>(sysMacros);
 	    this.usrMacros = new ArrayList<String>(usrMacros);
             this.name = initName(projectRoot);
-	}
-	
+            this.lookup = (lookup == null) ? Lookups.fixed() : lookup;
+        }
+        
         private String initName(String projectRoot) {
             String out = System.getProperty("cnd.modelimpl.tracemodel.project.name"); // NOI18N
             if (out == null) { 
@@ -255,8 +275,13 @@ public final class NativeProjectProvider {
 	
         @Override
         public Lookup.Provider getProject() {
-            return null;
+            return this;
         }
+
+        @Override
+        public Lookup getLookup() {
+            return lookup;
+        }        
 
         @Override
         public FileSystem getFileSystem() {

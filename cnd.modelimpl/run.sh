@@ -67,6 +67,11 @@ done
 while [ -n "$1" ]
 do
     case "$1" in
+        --cxx|-cxx)
+                echo "use new straight parser"
+                PARAMS="${PARAMS} -J-Dcnd.modelimpl.cpp.parser.new.grammar=true"
+                PARAMS="${PARAMS} -J-Dcnd.modelimpl.parse.headers.with.sources=true"
+                ;;
         --gdb)
                 echo "Enable GDB-window and do not delete gdb-cmds logs"
                 PARAMS="${PARAMS} -J-Dgdb.console.window=true -J-Dgdb.console.savelog=true"

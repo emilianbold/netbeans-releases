@@ -632,4 +632,39 @@ public class TinyTest extends NbTestCase {
                 .run(Tiny.class)
                 .assertWarnings("4:20-4:25:verifier:ERR_SleepInLoop");
     }
+    
+    public void testFieldCanBeFinal1() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     private int i;\n" +
+                       "     public Test() {\n" +
+                       "         i = 0;\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .findWarning("2:17-2:18:verifier:" + Bundle.ERR_CanBeFinal("i"))
+                .applyFix(Bundle.FIX_CanBeFinal("i"))
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "     private final int i;\n" +
+                              "     public Test() {\n" +
+                              "         i = 0;\n" +
+                              "     }\n" +
+                              "}\n");
+    }
+    public void testFieldCanBeFinalNoPublic() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     public int i;\n" +
+                       "     public Test() {\n" +
+                       "         i = 0;\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings();
+    }
 }

@@ -128,10 +128,10 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         Arrays.sort(keys);
 
         for (String key : keys) {
-            ref("File: " + key + "\n");
+            ref("File: " + key);
             List<String> list = map.get(key);
             for (String row : list) {
-                ref(row + "\n");
+                ref(row);
             }
         }
     }

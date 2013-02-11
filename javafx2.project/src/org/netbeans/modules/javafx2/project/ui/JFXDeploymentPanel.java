@@ -135,12 +135,12 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         checkBoxUpgradeBackground.setModel(jfxProps.getBackgroundUpdateCheckModel());
         checkBoxNoInternet.setModel(jfxProps.getAllowOfflineModel());
 
-        textFieldIcon.setDocument(jfxProps.getIconDocumentModel());
         checkBoxUnrestrictedAcc.setSelected(jfxProps.getSigningEnabled());
         labelSigning.setEnabled(jfxProps.getSigningEnabled());
         labelSigningMessage.setEnabled(jfxProps.getSigningEnabled());
         buttonSigning.setEnabled(jfxProps.getSigningEnabled());
         refreshSigningLabel();
+        refreshIconsLabel();
         setupNativeBundlingCombo();
     }
 
@@ -166,10 +166,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         jPanel2 = new javax.swing.JPanel();
         checkBoxNoInternet = new javax.swing.JCheckBox();
         checkBoxUpgradeBackground = new javax.swing.JCheckBox();
-        labelIcon = new javax.swing.JLabel();
-        textFieldIcon = new javax.swing.JTextField();
-        buttonIcon = new javax.swing.JButton();
-        labelIconRemark = new javax.swing.JLabel();
         panelBottom = new javax.swing.JPanel();
         checkBoxUnrestrictedAcc = new javax.swing.JCheckBox();
         labelSigning = new javax.swing.JLabel();
@@ -183,6 +179,9 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         buttonDownloadMode = new javax.swing.JButton();
         checkBoxBundle = new javax.swing.JCheckBox();
         comboBoxBundle = new javax.swing.JComboBox();
+        labelIcons = new javax.swing.JLabel();
+        labelIconsMessage = new javax.swing.JLabel();
+        buttonIcons = new javax.swing.JButton();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
 
         setLayout(new java.awt.GridBagLayout());
@@ -304,50 +303,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 10, 0);
         panelTop.add(jPanel2, gridBagConstraints);
 
-        labelIcon.setLabelFor(textFieldIcon);
-        org.openide.awt.Mnemonics.setLocalizedText(labelIcon, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelIcon.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
-        panelTop.add(labelIcon, gridBagConstraints);
-        labelIcon.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.labelIcon.text")); // NOI18N
-        labelIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelIcon.text")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        panelTop.add(textFieldIcon, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(buttonIcon, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
-        buttonIcon.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonIconActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        panelTop.add(buttonIcon, gridBagConstraints);
-        buttonIcon.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
-        buttonIcon.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
-
-        labelIconRemark.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelIconRemark.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 15, 0);
-        panelTop.add(labelIconRemark, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -368,7 +323,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -382,7 +337,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         org.openide.awt.Mnemonics.setLocalizedText(labelSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelSigning.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 37, 20, 10);
         panelBottom.add(labelSigning, gridBagConstraints);
@@ -393,7 +348,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelSigningMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         panelBottom.add(labelSigningMessage, gridBagConstraints);
@@ -406,7 +361,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 0);
         panelBottom.add(buttonSigning, gridBagConstraints);
@@ -417,7 +372,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         org.openide.awt.Mnemonics.setLocalizedText(labelCustomJS, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelCustomJS.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 15, 10);
         panelBottom.add(labelCustomJS, gridBagConstraints);
@@ -428,7 +383,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelCustomJSMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         panelBottom.add(labelCustomJSMessage, gridBagConstraints);
@@ -441,7 +396,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 0);
         panelBottom.add(buttonCustomJSMessage, gridBagConstraints);
@@ -452,7 +407,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         org.openide.awt.Mnemonics.setLocalizedText(labelDownloadMode, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelDownloadMode.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 10);
         panelBottom.add(labelDownloadMode, gridBagConstraints);
@@ -463,7 +418,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelDownloadModeMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         panelBottom.add(labelDownloadModeMessage, gridBagConstraints);
 
@@ -475,7 +430,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
         panelBottom.add(buttonDownloadMode, gridBagConstraints);
@@ -491,7 +446,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 10, 0);
         panelBottom.add(checkBoxBundle, gridBagConstraints);
@@ -505,11 +460,45 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         panelBottom.add(comboBoxBundle, gridBagConstraints);
+
+        labelIcons.setLabelFor(labelDownloadModeMessage);
+        org.openide.awt.Mnemonics.setLocalizedText(labelIcons, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelIcons.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 22, 15, 10);
+        panelBottom.add(labelIcons, gridBagConstraints);
+        labelIcons.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelIcons.AccessibleContext.accessibleName")); // NOI18N
+
+        labelIconsMessage.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelIconsMessage.text")); // NOI18N
+        labelIconsMessage.setPreferredSize(new java.awt.Dimension(200, 14));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
+        panelBottom.add(labelIconsMessage, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(buttonIcons, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.buttonIcons.text")); // NOI18N
+        buttonIcons.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonIconsActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 0);
+        panelBottom.add(buttonIcons, gridBagConstraints);
+        buttonIcons.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
+        buttonIcons.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.buttonIcon.text")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -526,30 +515,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.weighty = 0.1;
         add(filler1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-private void buttonIconActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonIconActionPerformed
-    JFileChooser chooser = new JFileChooser();
-    chooser.setCurrentDirectory(null);
-    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-    chooser.setMultiSelectionEnabled(false);
-    chooser.setFileFilter(new IconFileFilter());
-    if (lastImageFolder != null) {
-        chooser.setSelectedFile(lastImageFolder);
-    } else { // ???
-        // workDir = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
-        // chooser.setSelectedFile(new File(workDir));
-    }
-    chooser.setDialogTitle(NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_Select_Icon_Image")); // NOI18N
-    if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-        File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-        try {
-            textFieldIcon.setText(file.toURI().toURL().toString());
-        } catch (MalformedURLException ex) {
-            LOGGER.log(Level.WARNING, "File {0} URL could not be retrieved for use as FX icon in JFXDeploymentPanel", file.toString()); // NOI18N
-        }
-        lastImageFolder = file.getParentFile();
-    }
-}//GEN-LAST:event_buttonIconActionPerformed
 
 private void buttonSigningActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSigningActionPerformed
     JFXSigningPanel panel = new JFXSigningPanel(jfxProps);
@@ -638,6 +603,19 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
         }
     }//GEN-LAST:event_comboBoxBundleActionPerformed
 
+    private void buttonIconsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonIconsActionPerformed
+        JFXIconsPanel panel = new JFXIconsPanel(jfxProps, lastImageFolder);
+        panel.registerDocumentListeners();
+        DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JFXIconsPanel.class, "TITLE_JFXIconsPanel"), true, null); // NOI18N
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+        dialog.setVisible(true);
+        if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
+            panel.store();
+            refreshIconsLabel();
+        }
+        panel.unregisterDocumentListeners();
+    }//GEN-LAST:event_buttonIconsActionPerformed
+
     private void refreshCustomJSLabel() {
         int jsDefs = 0;
         for (Map.Entry<String,String> entry : jfxProps.getJSCallbacks().entrySet()) {
@@ -664,6 +642,25 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
         }
     }
 
+    private void refreshIconsLabel() {
+        String msg = ""; // NOI18N
+        if(jfxProps.getWSIconPath() != null && !jfxProps.getWSIconPath().isEmpty()) {
+            msg = NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_IconsJNLPDefined"); // NOI18N
+        }
+        if(jfxProps.getSplashImagePath() != null && !jfxProps.getSplashImagePath().isEmpty()) {
+            msg = msg.isEmpty() ? NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_IconsSplashDefined") : //NOI18N
+                    msg + ", " + NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_IconsSplashDefined"); // NOI18N
+        }
+        if(jfxProps.getNativeIconPath() != null && !jfxProps.getNativeIconPath().isEmpty()) {
+            msg = msg.isEmpty() ? NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_IconsNativeDefined") : // NOI18N
+                    msg + ", " + NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_IconsNativeDefined"); // NOI18N
+        }
+        if(msg.isEmpty()) {
+            msg = NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_IconsUndefined"); // NOI18N
+        }
+        labelIconsMessage.setText(msg);
+    }
+
     private void setupNativeBundlingCombo() {
         comboBoxNativeBundlingActionRunning = true;
         comboBoxBundle.removeAllItems ();
@@ -683,7 +680,7 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCustomJSMessage;
     private javax.swing.JButton buttonDownloadMode;
-    private javax.swing.JButton buttonIcon;
+    private javax.swing.JButton buttonIcons;
     private javax.swing.JButton buttonSigning;
     private javax.swing.JCheckBox checkBoxBundle;
     private javax.swing.JCheckBox checkBoxDeskShortcut;
@@ -700,8 +697,8 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     private javax.swing.JLabel labelCustomJSMessage;
     private javax.swing.JLabel labelDownloadMode;
     private javax.swing.JLabel labelDownloadModeMessage;
-    private javax.swing.JLabel labelIcon;
-    private javax.swing.JLabel labelIconRemark;
+    private javax.swing.JLabel labelIcons;
+    private javax.swing.JLabel labelIconsMessage;
     private javax.swing.JLabel labelInitialRemark;
     private javax.swing.JLabel labelInitialRemarkSwing;
     private javax.swing.JLabel labelProperties;
@@ -710,7 +707,6 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     private javax.swing.JLabel labelSigningMessage;
     private javax.swing.JPanel panelBottom;
     private javax.swing.JPanel panelTop;
-    private javax.swing.JTextField textFieldIcon;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -718,27 +714,4 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
         return new HelpCtx(JFXDeploymentPanel.class.getName());
     }
 
-    private static class IconFileFilter extends FileFilter {
-
-        // XXX should check size of images?
-        public boolean accept(File f) {
-            if (f.isDirectory()) {
-                return true;
-            }
-            String name = f.getName();
-            int index = name.lastIndexOf('.');
-            if (index > 0 && index < name.length() - 1) {
-                String ext = name.substring(index+1).toLowerCase();
-                if ("gif".equals(ext) || "png".equals(ext) || "jpg".equals(ext) || "ico".equals(ext)) { // NOI18N
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public String getDescription() {
-            return NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_IconFileFilter_Description"); // NOI18N
-        }
-
-    }
 }

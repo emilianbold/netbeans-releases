@@ -50,9 +50,9 @@ import org.json.simple.JSONObject;
  */
 public final class StyleId {
     /** Identifier of the enclosing styleheet. */
-    private String styleSheetId;
+    private final String styleSheetId;
     /** Style ordinal within the stylesheet. */
-    private int ordinal;
+    private final int ordinal;
 
     /**
      * Creates a new {@code StyleId} that corresponds to the given JSONObject.

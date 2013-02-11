@@ -62,8 +62,4 @@ class ConfigActionSelenium extends ConfigActionTest {
         return ProjectPropertiesSupport.getSeleniumDirectory(project, showCustomizer);
     }
 
-    @Override
-    protected boolean isCoverageEnabled() {
-        return false;
-    }
 }

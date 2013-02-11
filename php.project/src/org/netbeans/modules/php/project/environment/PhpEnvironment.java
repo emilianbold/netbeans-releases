@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -145,29 +144,6 @@ public abstract class PhpEnvironment {
         }
         // return the first one
         return allPhpInterpreters.get(0);
-    }
-
-    /**
-     * Get the list of all found PHP Unit scripts. The list can be empty.
-     * @return list of all found PHP Unit scripts, never <code>null</code>.
-     * @see #getAnyPhpUnit()
-     */
-    public List<String> getAllPhpUnits() {
-        // simple detection - just try to find phpunit it on user's PATH
-        return FileUtils.findFileOnUsersPath(PhpUnit.SCRIPT_NAME, PhpUnit.SCRIPT_NAME_LONG);
-    }
-
-    /**
-     * Get any PHP Unit script.
-     * @return PHP Unit script or <code>null</code> if none found.
-     */
-    public String getAnyPhpUnit() {
-        List<String> allPhpUnits = getAllPhpUnits();
-        if (allPhpUnits.isEmpty()) {
-            return null;
-        }
-        // return the first one
-        return allPhpUnits.get(0);
     }
 
     protected abstract List<DocumentRoot> getDocumentRoots(String projectName);

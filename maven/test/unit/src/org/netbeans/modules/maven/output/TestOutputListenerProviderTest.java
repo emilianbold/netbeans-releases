@@ -42,6 +42,11 @@
 package org.netbeans.modules.maven.output;
 
 import junit.framework.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 
 /**
@@ -112,4 +117,38 @@ public class TestOutputListenerProviderTest extends TestCase {
         provider.sequenceFail("mojo-execute#surefire:test", visitor);
         
     }
+    
+    public void testFailfafeSeparateTestOuput() {
+        OutputVisitor visitor = new OutputVisitor();
+        visitor.resetVisitor();
+        provider.sequenceStart("mojo-execute#failsafe:integration-test", visitor);
+        assertNull(visitor.getOutputListener());
+        visitor.resetVisitor();
+        provider.processLine("Failsafe report directory: /home/mkleint/src/mevenide/mevenide2/netbeans/nb-project/target/failsafe-reports", visitor);
+        assertNull(visitor.getOutputListener());
+        assertEquals(provider.outputDir, "/home/mkleint/src/mevenide/mevenide2/netbeans/nb-project/target/failsafe-reports");
+        visitor.resetVisitor();
+        
+        provider.processLine("Running org.codehaus.mevenide.netbeans.output.JavaOutputListenerProviderIT", visitor);
+        assertEquals(provider.runningTestClass, "org.codehaus.mevenide.netbeans.output.JavaOutputListenerProviderIT");
+        assertNull(visitor.getOutputListener());
+        visitor.resetVisitor();
+        
+        provider.processLine("Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.038 sec", visitor);
+        assertNull(visitor.getOutputListener());
+        visitor.resetVisitor();
+        provider.processLine("Running org.codehaus.mevenide.netbeans.execute.OutputHandlerIT", visitor);
+        assertEquals(provider.runningTestClass, "org.codehaus.mevenide.netbeans.execute.OutputHandlerIT");
+        assertNull(visitor.getOutputListener());
+        visitor.resetVisitor();
+        provider.processLine("Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.057 sec <<< FAILURE!        ", visitor);
+        assertNotNull(visitor.getOutputListener());
+        visitor.resetVisitor();
+        provider.processLine("Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.057 sec \r\r\t\n\r\n<<< FAILURE!        ", visitor);
+        assertNotNull(visitor.getOutputListener());
+        
+        provider.sequenceFail("mojo-execute#surefire:test", visitor);
+        
+    }
+    
 }

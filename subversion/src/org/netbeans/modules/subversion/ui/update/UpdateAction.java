@@ -53,6 +53,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
@@ -178,7 +179,7 @@ public class UpdateAction extends ContextAction {
         update(roots, progress, contextDisplayName, repositoryUrl, revision);
     }
 
-    private static void update(File[] roots, SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl, SVNRevision revision) {
+    private static void update(File[] roots, final SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl, final SVNRevision revision) {
         File[][] split = Utils.splitFlatOthers(roots);
         final List<File> recursiveFiles = new ArrayList<File>();
         final List<File> flatFiles = new ArrayList<File>();
@@ -194,7 +195,7 @@ public class UpdateAction extends ContextAction {
         }
                         
         
-        SvnClient client;
+        final SvnClient client;
         UpdateOutputListener listener = new UpdateOutputListener();
         try {
             client = Subversion.getInstance().getClient(repositoryUrl); 
@@ -214,11 +215,20 @@ public class UpdateAction extends ContextAction {
             UpdateNotifyListener l = new UpdateNotifyListener();            
             client.addNotifyListener(l);            
             try {
-                updateRoots(recursiveFiles, progress, client, true, revision);
-                if(progress.isCanceled()) {                
+                SvnUtils.runWithoutIndexing(new Callable<Void>() {
+                    @Override
+                    public Void call () throws Exception {
+                        updateRoots(recursiveFiles, progress, client, true, revision);
+                        if(progress.isCanceled()) {
+                            return null;
+                        }
+                        updateRoots(flatFiles, progress, client, false, revision);
+                        return null;
+                    }
+                }, roots);
+                if(progress.isCanceled()) {
                     return;
                 }
-                updateRoots(flatFiles, progress, client, false, revision);
             } finally {
                 client.removeNotifyListener(l);
                 client.removeNotifyListener(progress);

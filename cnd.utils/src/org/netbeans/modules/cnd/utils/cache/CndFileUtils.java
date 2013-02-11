@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -85,6 +86,8 @@ public final class CndFileUtils {
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
     private static final FileChangeListener FSL = new FSListener();
     private static final FileSystem fileFileSystem;
+    public static final int FS_TIME_OUT = 15;
+    public static final String LS_FOLDER_UTILS_PERFORMANCE_EVENT = "LS_FOLDER_UTILS_PERFORMANCE_EVENT"; //NOI18N
     static {
         FileSystem afileFileSystem = null;
         File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); //NOI18N
@@ -541,14 +544,21 @@ public final class CndFileUtils {
     private static CndFileSystemProvider.FileInfo[] listFilesImpl(File file) {
         CndFileSystemProvider.FileInfo[] info = CndFileSystemProvider.getChildInfo(file.getAbsolutePath());
         if (info == null) {
-            File[] children = file.listFiles();
-            if (children != null) {
-                info = new CndFileSystemProvider.FileInfo[children.length];
-                for (int i = 0; i < children.length; i++) {
-                    info[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory(), children[i].isFile());
+            PerformanceLogger.PerformaceAction lsPerformanceEvent = PerformanceLogger.getLogger().start(CndFileUtils.LS_FOLDER_UTILS_PERFORMANCE_EVENT, file);
+            File[] children = null;
+            try { 
+                lsPerformanceEvent.setTimeOut(CndFileUtils.FS_TIME_OUT);
+                children = file.listFiles();
+                if (children != null) {
+                    info = new CndFileSystemProvider.FileInfo[children.length];
+                    for (int i = 0; i < children.length; i++) {
+                        info[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory(), children[i].isFile());
+                    }
+                } else {
+                    info = new CndFileSystemProvider.FileInfo[0];
                 }
-            } else {
-                info = new CndFileSystemProvider.FileInfo[0];
+            } finally {
+                lsPerformanceEvent.log(children == null ? 0 : children.length);
             }
         }
         return info;

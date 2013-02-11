@@ -49,7 +49,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
@@ -175,7 +174,8 @@ public final class ResultView extends TopComponent {
             setBackground(macBackground);
             setOpaque(true);
         } else {
-            emptyPanel.setBackground(SystemColor.text);
+            emptyPanel.setBackground(
+                    UIManager.getColor("Tree.textBackground"));         //NOI18N
         }
         contentCards.show(this, CARD_NAME_EMPTY);
         associateLookup(Lookups.proxy(lookupProvider));

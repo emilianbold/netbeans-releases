@@ -78,7 +78,7 @@ class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel<AddT
             // wizard API: set the caption and index of this panel
             categorySelector.setName(PaletteUtils.getBundleString("CTL_SelectCategory_Caption")); // NOI18N
             categorySelector.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
-                                               new Integer(2));
+                                               Integer.valueOf(2));
 
             categorySelector.getExplorerManager().addPropertyChangeListener(
                 new PropertyChangeListener() {

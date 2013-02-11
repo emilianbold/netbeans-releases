@@ -68,10 +68,10 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHP54UnhandledError extends AbstractUnhandledError {
+public class PHP54UnhandledError extends UnhandledErrorRule {
 
     @Override
-    void compute(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
+    public void invoke(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -89,7 +89,7 @@ public class PHP54UnhandledError extends AbstractUnhandledError {
     }
 
     private static class CheckVisitor extends DefaultVisitor {
-        private List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
+        private List<VerificationError> errors = new ArrayList<VerificationError>();
         private static final String BINARY_PREFIX = "0b"; //NOI18N
         private boolean checkAnonymousObjectVariable;
         private final FileObject fileObject;
@@ -98,7 +98,7 @@ public class PHP54UnhandledError extends AbstractUnhandledError {
             this.fileObject = fileObject;
         }
 
-        public Collection<PHPVerificationError> getErrors() {
+        public Collection<VerificationError> getErrors() {
             return Collections.unmodifiableCollection(errors);
         }
 
@@ -166,7 +166,7 @@ public class PHP54UnhandledError extends AbstractUnhandledError {
         }
 
         private  void createError(int startOffset, int endOffset) {
-            PHPVerificationError error = new PHP54VersionError(fileObject, startOffset, endOffset);
+            VerificationError error = new PHP54VersionError(fileObject, startOffset, endOffset);
             errors.add(error);
         }
 
@@ -177,7 +177,7 @@ public class PHP54UnhandledError extends AbstractUnhandledError {
 
     }
 
-    private static final class PHP54VersionError extends PHPVerificationError {
+    private static final class PHP54VersionError extends VerificationError {
 
         private static final String KEY = "Php.Version.54"; //NOI18N
 

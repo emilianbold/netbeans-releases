@@ -56,10 +56,26 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="module-system-check">
+        <api name="bridge"/>
+        <summary>Main.getModuleSystem(false)</summary>
+        <version major="1" minor="47"/>
+        <date day="10" month="1" year="2013"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Method <code>getModuleSystem(false)</code> to get existing module
+            system without initializing it.
+        </p>
+        </description>
+        <class package="org.netbeans.core.startup" name="Main"/>
+        <issue number="224479"/>
+    </change>
      <change id="async-shutdown">
         <api name="bridge"/>
-        <summary>getDefault</summary>
-        <version major="1" minor="44"/>
+        <summary>Asynchronous shutdown</summary>
+        <version major="1" minor="45"/>
         <date day="12" month="11" year="2012"/>
         <author login="jtulach"/>
         <compatibility addition="yes" binary="compatible" semantic="compatible" />
@@ -67,7 +83,8 @@ made subject to such option by the copyright holder.
         <p>
             Method <code>shutDownAsync</code> to allow asynchronous tasks to
             accessp EDT. Also in <code>ModuleInstaller</code> and 
-            <code>ModuleManager</code>.
+            <code>ModuleManager</code>. Also adding method <code>markForRestart</code>
+            into <code>ModuleSystem</code>.
         </p>
         </description>
         <class package="org.netbeans.core.startup" name="ModuleSystem"/>

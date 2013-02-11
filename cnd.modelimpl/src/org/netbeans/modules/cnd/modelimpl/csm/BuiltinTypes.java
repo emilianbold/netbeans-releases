@@ -151,7 +151,7 @@ public class BuiltinTypes {
             if( sb.length() > 0 ) {
                 sb.append(' ');
             }
-            sb.append(token.getText());
+            sb.append(AstUtil.getText(token));
         }
         assert sb.length() > 0 : "no name in " + AstUtil.toString(ast);
         return getBuiltIn(sb.toString());

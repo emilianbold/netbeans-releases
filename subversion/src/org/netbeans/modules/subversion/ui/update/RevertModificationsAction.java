@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.Subversion;
@@ -156,8 +157,8 @@ public class RevertModificationsAction extends ContextAction {
      * @param ctx
      * @param support 
      */
-    public static void performRevert(RevertModifications.RevisionInterval revisions, boolean revertNewFiles, boolean onlySelectedFiles, Context ctx, SvnProgressSupport support) {
-        SvnClient client;
+    public static void performRevert(final RevertModifications.RevisionInterval revisions, boolean revertNewFiles, final boolean onlySelectedFiles, final Context ctx, final SvnProgressSupport support) {
+        final SvnClient client;
         try {
             client = Subversion.getInstance().getClient(ctx, support);
         } catch (SVNClientException ex) {
@@ -166,76 +167,87 @@ public class RevertModificationsAction extends ContextAction {
         }
         
         File files[] = ctx.getFiles();
-        File[][] split;
+        final File[][] split;
         if (onlySelectedFiles) {
             split = new File[2][0];
         } else {
             split = Utils.splitFlatOthers(files);
         }
-        for (int c = 0; c<split.length; c++) {
-            if(support.isCanceled()) {
-                return;
-            }
-            files = split[c];
-            boolean recursive = c == 1;
-            if (!recursive && revisions == null) {
-                // not recursively
-                if (onlySelectedFiles) {
-                    // ONLY the selected files, no children
-                    files = ctx.getFiles();
-                } else {
-                    // get selected files and it's direct descendants for flat folders
-                    files = SvnUtils.flatten(files, FileInformation.STATUS_REVERTIBLE_CHANGE);
-                }
-            }
-            
-            try {
-                if(revisions != null) {
-                    for (int i= 0; i < files.length; i++) {
+        try {
+            SvnUtils.runWithoutIndexing(new Callable<Void>() {
+
+                @Override
+                public Void call () throws Exception {
+                    for (int c = 0; c<split.length; c++) {
                         if(support.isCanceled()) {
-                            return;
+                            return null;
                         }
-                        SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
-                        RevertModifications.RevisionInterval targetInterval = recountStartRevision(client, url, revisions);
-                        if(files[i].exists()) {
-                            client.merge(url, targetInterval.endRevision,
-                                         url, targetInterval.startRevision,
-                                         files[i], false, recursive);
-                        } else {
-                            assert targetInterval.startRevision instanceof SVNRevision.Number
-                                   : "The revision has to be a Number when trying to undelete file!";
-                            client.copy(url, files[i], targetInterval.startRevision);
+                        File[] files = split[c];
+                        boolean recursive = c == 1;
+                        if (!recursive && revisions == null) {
+                            // not recursively
+                            if (onlySelectedFiles) {
+                                // ONLY the selected files, no children
+                                files = ctx.getFiles();
+                            } else {
+                                // get selected files and it's direct descendants for flat folders
+                                files = SvnUtils.flatten(files, FileInformation.STATUS_REVERTIBLE_CHANGE);
+                            }
+                        }
+
+                        try {
+                            if(revisions != null) {
+                                for (int i= 0; i < files.length; i++) {
+                                    if(support.isCanceled()) {
+                                        return null;
+                                    }
+                                    SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
+                                    RevertModifications.RevisionInterval targetInterval = recountStartRevision(client, url, revisions);
+                                    if(files[i].exists()) {
+                                        client.merge(url, targetInterval.endRevision,
+                                                     url, targetInterval.startRevision,
+                                                     files[i], false, recursive);
+                                    } else {
+                                        assert targetInterval.startRevision instanceof SVNRevision.Number
+                                               : "The revision has to be a Number when trying to undelete file!";
+                                        client.copy(url, files[i], targetInterval.startRevision);
+                                    }
+                                }
+                            } else {
+                                if(support.isCanceled()) {
+                                    return null;
+                                }
+                                if(files.length > 0 ) {                        
+                                    // check for deleted files, we also want to undelete their parents
+                                    Set<File> deletedFiles = new HashSet<File>();
+                                    for(File file : files) {
+                                        deletedFiles.addAll(getDeletedParents(file));
+                                    }                        
+
+                                    // XXX JAVAHL client.revert(files, recursive);
+                                    for (File file : files) {
+                                        client.revert(file, recursive);
+                                    }
+
+                                    // revert also deleted parent folders
+                                    // for all undeleted files
+                                    if(deletedFiles.size() > 0) {
+                                        // XXX JAVAHL client.revert(deletedFiles.toArray(new File[deletedFiles.size()]), false);
+                                        for (File file : deletedFiles) {
+                                            client.revert(file, false);
+                                        }    
+                                    }
+                                }
+                            }
+                        } catch (SVNClientException ex) {
+                            support.annotate(ex);
                         }
                     }
-                } else {
-                    if(support.isCanceled()) {
-                        return;
-                    }
-                    if(files.length > 0 ) {                        
-                        // check for deleted files, we also want to undelete their parents
-                        Set<File> deletedFiles = new HashSet<File>();
-                        for(File file : files) {
-                            deletedFiles.addAll(getDeletedParents(file));
-                        }                        
-                                
-                        // XXX JAVAHL client.revert(files, recursive);
-                        for (File file : files) {
-                            client.revert(file, recursive);
-                        }
-                        
-                        // revert also deleted parent folders
-                        // for all undeleted files
-                        if(deletedFiles.size() > 0) {
-                            // XXX JAVAHL client.revert(deletedFiles.toArray(new File[deletedFiles.size()]), false);
-                            for (File file : deletedFiles) {
-                                client.revert(file, false);
-                            }    
-                        }
-                    }
+                    return null;
                 }
-            } catch (SVNClientException ex) {
-                support.annotate(ex);
-            }
+            }, files);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, false);
         }
         
         if(support.isCanceled()) {

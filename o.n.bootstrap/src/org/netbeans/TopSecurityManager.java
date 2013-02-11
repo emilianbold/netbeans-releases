@@ -54,6 +54,7 @@ import java.net.UnknownHostException;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.AllPermission;
+import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -407,7 +408,6 @@ public class TopSecurityManager extends SecurityManager {
 
     private final Set<Class> warnedSunMisc = new WeakSet<Class>();
     private final Set<String> callerWhiteList = createCallerWhiteList();
-    private final Set<String> callerBlackList = createCallerBlackList();
     @Override
     public void checkMemberAccess(Class<?> clazz, int which) {
         final String n = clazz.getName();
@@ -423,9 +423,14 @@ public class TopSecurityManager extends SecurityManager {
                     break;
                 }
             }
-            final String msg = "Dangerous reflection access to " + n + " by " + caller + " detected!";
-            if (caller != null && callerBlackList.contains(caller.getName())) {
-                throw new SecurityException(msg);
+            StringBuilder msg = new StringBuilder();
+            msg.append("Dangerous reflection access to ").append(n).append(" by ").append(caller).append(" detected!");
+            if (caller != null && caller.getProtectionDomain() != null) {
+                CodeSource cs = caller.getProtectionDomain().getCodeSource();
+                msg.append("\ncode location: ").append(cs.getLocation());
+            }
+            if (caller != null && isDangerous(caller.getName(), n)) {
+                throw new SecurityException(msg.toString());
             }
             Level l;
             if (caller != null && callerWhiteList.contains(caller.getName())) {
@@ -435,10 +440,10 @@ public class TopSecurityManager extends SecurityManager {
                 assert (l = Level.INFO) != null;
             }
             if (!warnedSunMisc.add(caller)) {
-                LOG.log(l, msg);
+                LOG.log(l, msg.toString());
                 return; 
             }
-            Exception ex = new Exception(msg); // NOI18N
+            Exception ex = new Exception(msg.toString()); // NOI18N
             LOG.log(l, null, ex);
         }
         super.checkMemberAccess(clazz, which);
@@ -459,10 +464,15 @@ public class TopSecurityManager extends SecurityManager {
         wl.add("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport$ParserClassLoader"); //#218690 // NOI18N
         return wl;
     }
-    private static Set<String> createCallerBlackList() {
-        Set<String> wl = new HashSet<String>();
-        wl.add("com.sun.istack.tools.ProtectedTask");             //NOI18N
-        return wl;
+    private static boolean isDangerous(String caller, String accessTo) {
+        if ("com.sun.istack.tools.ProtectedTask".equals(caller)) { // NOI18N
+            if ("sun.misc.ClassLoaderUtil".equals(accessTo)) { // NOI18N
+                // calling ClassLoaderUtil is allowed
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
     
     public @Override void checkPermission(Permission perm) {

@@ -68,10 +68,16 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
     private String commitMessage;
     private GitUser user;
     private String errorMessage;
+    private final boolean preferredCommitMessage;
 
-    public GitCommitParameters(Preferences preferences, String commitMessage, GitUser user) {
+    GitCommitParameters(Preferences preferences, String commitMessage, GitUser user) {
+        this(preferences, commitMessage, false, user);
+    }
+
+    GitCommitParameters(Preferences preferences, String commitMessage, boolean preferredCommitMessage, GitUser user) {
         super(preferences);
         this.commitMessage = commitMessage;
+        this.preferredCommitMessage = preferredCommitMessage;
         this.user = user;
     }
 
@@ -82,6 +88,7 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
             
             ((JTextField) panel.authorComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
             ((JTextField) panel.commiterComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
+            panel.amendCheckBox.addItemListener(this);
             panel.authorComboBox.addItemListener(this);
             panel.commiterComboBox.addItemListener(this);
         }
@@ -113,12 +120,16 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
     
     @Override
     protected CommitPanel createPanel() {
-        return new CommitPanel(this, commitMessage, getUserString(user));
+        return new CommitPanel(this, commitMessage, preferredCommitMessage, getUserString(user));
     }
 
     @Override
     public String getCommitMessage() {
         return ((CommitPanel) getPanel()).messageTextArea.getText();
+    }
+
+    public boolean isAmend() {
+        return getPanel().amendCheckBox.isSelected();
     }
     
     public GitUser getAuthor() {

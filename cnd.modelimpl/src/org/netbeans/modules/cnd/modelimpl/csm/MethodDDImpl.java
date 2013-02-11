@@ -45,7 +45,12 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -178,12 +183,39 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
 
         private CompoundStatementBuilder bodyBuilder;
         
+        private List<Token> bodyTokens = new ArrayList<Token>();
+        
         public void setBodyBuilder(CompoundStatementBuilder builder) {
             bodyBuilder = builder;
         }
 
         public CompoundStatementBuilder getBodyBuilder() {
             return bodyBuilder;
+        }
+        
+        public void addBodyToken(Token token) {
+            bodyTokens.add(token);
+        }
+        
+        public TokenStream getBodyTokenStream() {
+            if(bodyTokens.isEmpty()) {
+                return null;
+            } else {
+                return new TokenStream() {
+
+                    int index = 0;
+
+                    @Override
+                    public Token nextToken() throws TokenStreamException {
+                        if(bodyTokens.size() > index) {
+                            index++;
+                            return bodyTokens.get(index - 1);                        
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }
         }
         
         @Override

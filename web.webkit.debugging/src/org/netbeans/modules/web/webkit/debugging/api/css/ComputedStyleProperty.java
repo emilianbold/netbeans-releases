@@ -50,9 +50,9 @@ import org.json.simple.JSONObject;
  */
 public class ComputedStyleProperty {
     /** Name of the property. */
-    private String name;
+    private final String name;
     /** Value of the property. */
-    private String value;
+    private final String value;
 
     /**
      * Creates a new {@code ComputedStyleProperty} that corresponds to the given JSONObject.

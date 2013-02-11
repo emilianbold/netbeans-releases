@@ -137,6 +137,6 @@ public final class ResolvedPath {
     
     @Override
     public String toString(){
-        return path + " in " + folder + " at " + fileSystem; // NOI18N
+        return "ResPath{" + path + " in " + folder + (CndFileUtils.isLocalFileSystem(fileSystem) ? "" : fileSystem) + "}"; // NOI18N
     }
 }

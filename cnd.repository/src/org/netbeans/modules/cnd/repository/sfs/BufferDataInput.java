@@ -48,6 +48,7 @@ import java.io.*;
 import java.nio.*;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import static org.netbeans.modules.cnd.repository.sfs.SharedStringBuffer.BUFFER_SIZE;
 
 /**
  * ByteBuffer based DataInput implementation
@@ -172,22 +173,26 @@ public class BufferDataInput implements RepositoryDataInput, SharedStringBuffer 
         return unitCodec.maskByRepositoryID(readInt());
     }
 
-    private static final int sharedArrySize = 1024;
-    private final byte[] sharedByteArray = new byte[sharedArrySize];
-    private final char[] sharedCharArray = new char[sharedArrySize];
+    private byte[] sharedByteArray;
+    private char[] sharedCharArray;
     
     @Override
-    public final byte[] getSharedByteArray() {
+    public final byte[] getSharedByteArray(int size) {
+        if (sharedByteArray == null) {
+            sharedByteArray = new byte[size+BUFFER_SIZE];
+        } else if (sharedByteArray.length < size) {
+            sharedByteArray = new byte[size+BUFFER_SIZE];
+        }
         return sharedByteArray;
     }
 
     @Override
-    public final char[] getSharedCharArray() {
+    public final char[] getSharedCharArray(int size) {
+        if (sharedCharArray == null) {
+            sharedCharArray = new char[size+BUFFER_SIZE];
+        } else if (sharedCharArray.length < size) {
+            sharedCharArray = new char[size+BUFFER_SIZE];
+        }
         return sharedCharArray;
-    }
-
-    @Override
-    public final int getSharedArrayLehgth() {
-        return sharedArrySize;
     }
 }

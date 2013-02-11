@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.BreakStatement;
@@ -63,37 +62,33 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LoopOnlyKeywordsUnhandledError extends AbstractUnhandledError {
+public class LoopOnlyKeywordsUnhandledError extends UnhandledErrorRule {
 
     @Override
-    void compute(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
+    public void invoke(PHPRuleContext context, List<org.netbeans.modules.csl.api.Error> errors) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        if (fileObject != null && appliesTo(fileObject)) {
+        if (fileObject != null) {
             LoopOnlyKeywordsUnhandledError.CheckVisitor checkVisitor = new LoopOnlyKeywordsUnhandledError.CheckVisitor(fileObject);
             phpParseResult.getProgram().accept(checkVisitor);
             errors.addAll(checkVisitor.getErrors());
         }
     }
 
-    private boolean appliesTo(FileObject fileObject) {
-        return CodeUtils.isPhp52(fileObject);
-    }
-
     private static class CheckVisitor extends DefaultTreePathVisitor {
         private final FileObject fileObject;
         private static final String CONTINUE = "continue"; //NOI18N
         private static final String BREAK = "break"; //NOI18N
-        private final List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
+        private final List<VerificationError> errors = new ArrayList<VerificationError>();
 
         public CheckVisitor(FileObject fileObject) {
             this.fileObject = fileObject;
         }
 
-        public Collection<PHPVerificationError> getErrors() {
+        public Collection<VerificationError> getErrors() {
             return Collections.unmodifiableCollection(errors);
         }
 
@@ -150,7 +145,7 @@ public class LoopOnlyKeywordsUnhandledError extends AbstractUnhandledError {
 
     }
 
-    private static class LoopOnlyKeywordsError extends PHPVerificationError {
+    private static class LoopOnlyKeywordsError extends VerificationError {
 
         private static final String KEY = "Loop.Only.Keywors.Error"; //NOI18N
         private final String nameOfKeyword;

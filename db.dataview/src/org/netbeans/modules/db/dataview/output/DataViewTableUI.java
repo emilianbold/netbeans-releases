@@ -62,6 +62,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -154,11 +155,29 @@ final class DataViewTableUI extends ResultSetJXTable {
 
     private static class UpdatedResultSetCellRenderer extends ResultSetCellRenderer {
         static int borderThickness = 1;
-        static Color green = new Color(0, 128, 0);
-        static Color gray = new Color(245, 245, 245);
+        static Color emptyNullForeground;
+        static Color selectedForeground;
+        static Color unselectedForeground;
         private JComponent holder = new JComponent() {};
         DataView dataView;
 
+        static {
+            Color emptyNullFromMngr = UIManager.getColor(
+                    "nb.dataview.tablecell.edited.selected.emptyNull.foreground"); //NOI18N
+            emptyNullForeground = emptyNullFromMngr != null
+                    ? emptyNullFromMngr
+                    : new Color(245, 245, 245); // gray color
+            Color selectedFgFromMngr = UIManager.getColor(
+                    "nb.dataview.tablecell.edited.selected.foreground"); //NOI18N
+            selectedForeground = selectedFgFromMngr != null
+                    ? selectedFgFromMngr
+                    : Color.ORANGE;
+            Color unselectedFgFromMngr = UIManager.getColor(
+                    "nb.dataview.tablecell.edited.unselected.foreground"); //NOI18N
+            unselectedForeground = unselectedFgFromMngr != null
+                    ? unselectedFgFromMngr
+                    : new Color(0, 128, 0); // green color
+        }
         public UpdatedResultSetCellRenderer(DataView dView) {
             dataView = dView;
             holder.setLayout(new BorderLayout());
@@ -176,17 +195,17 @@ final class DataViewTableUI extends ResultSetJXTable {
 
             if (isSelected) {
                 if ((obj == null && value == null) || (obj != null && value != null && value.equals(obj))) {
-                    color = gray;
+                    color = emptyNullForeground;
                     override = true;
                 } else {
-                    color = Color.ORANGE;
+                    color = selectedForeground;
                     override = true;
                 }
             } else {
                 if ((obj == null && value == null) || (obj != null && value != null && value.equals(obj))) {
                     color = table.getForeground();
                 } else {
-                    color = green;
+                    color = unselectedForeground;
                     override = true;
                 }
             }
@@ -274,8 +293,8 @@ final class DataViewTableUI extends ResultSetJXTable {
             }
 
             if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
-                int first = e.getFirstIndex();
-                if (first >= 0 && tablePanel.isEditable()) {
+                boolean rowSelected = table.getSelectedRows().length > 0;
+                if (rowSelected && tablePanel.isEditable()) {
                     tablePanel.enableDeleteBtn(true);
                 } else {
                     tablePanel.enableDeleteBtn(false);

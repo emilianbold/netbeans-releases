@@ -1,8 +1,8 @@
 Usages of Test [3 occurrences]
     RefactoringTest
         SubClass.java
-                53:  super();
+            53: super();
         Test.java
-                63:  this();
+            63: this();
         User.java
-                53:  new Test().method();
+            53: new Test().method();

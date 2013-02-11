@@ -70,10 +70,10 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHP53UnhandledError extends AbstractUnhandledError {
+public class PHP53UnhandledError extends UnhandledErrorRule {
 
     @Override
-    void compute(PHPRuleContext context, List<Error> errors) {
+    public void invoke(PHPRuleContext context, List<Error> errors) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -188,7 +188,7 @@ public class PHP53UnhandledError extends AbstractUnhandledError {
 
     }
 
-    private static class PhpVersionError extends PHPVerificationError {
+    private static class PhpVersionError extends VerificationError {
         private static final String ERROR_KEY = "Php.Version.53"; //NOI18N
 
         public PhpVersionError(FileObject fileObject, int startOffset, int endOffset) {

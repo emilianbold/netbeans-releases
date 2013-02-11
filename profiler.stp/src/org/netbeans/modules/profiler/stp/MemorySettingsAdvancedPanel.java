@@ -500,6 +500,11 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         threadsMonitoringCheckbox.setToolTipText(Bundle.StpMonitorTooltip());
         threadsMonitoringCheckbox.setOpaque(false);
         threadsMonitoringCheckbox.addActionListener(getSettingsChangeListener());
+        threadsMonitoringCheckbox.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    updateEnabling();
+                }
+            });
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -542,5 +547,6 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
     private void updateEnabling() {
         defineDepthSpinner.setEnabled(definedDepthRadio.isSelected() && recordStackTracesLabel.isEnabled());
         defineDepthLabel.setEnabled(definedDepthRadio.isSelected() && recordStackTracesLabel.isEnabled());
+        threadsSamplingCheckbox.setEnabled(threadsMonitoringCheckbox.isSelected() && threadsMonitoringCheckbox.isEnabled());
     }
 }

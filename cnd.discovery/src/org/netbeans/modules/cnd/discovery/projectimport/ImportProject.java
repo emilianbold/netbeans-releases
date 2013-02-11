@@ -51,6 +51,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,6 +66,8 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.actions.CMakeAction;
@@ -108,6 +111,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.SnapShot;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -135,7 +139,9 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -187,6 +193,7 @@ public class ImportProject implements PropertyChangeListener {
     private String sourceFoldersFilter = null;
     private FileObject configureFileObject;
     private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
+    private Task initSourceRootTask;
 
     public ImportProject(WizardDescriptor wizard) {
         pathMode = MakeProjectOptions.getPathMode();
@@ -299,7 +306,8 @@ public class ImportProject implements PropertyChangeListener {
             buildResult = CndPathUtilitities.normalizeSlashes(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
-        extConf.getProfile().setRunDirectory(workingDirRel);        
+        extConf.getProfile().setRunDirectory(workingDirRel);       
+        extConf.getProfile().setBuildFirst(false);
         // Include directories
         if (includeDirectories != null && includeDirectories.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(includeDirectories, ";"); // NOI18N
@@ -344,7 +352,8 @@ public class ImportProject implements PropertyChangeListener {
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
         prjParams
                 .setConfiguration(extConf)
-                .setSourceFolders(sources)
+                .setSourceFolders(Collections.<SourceFolderInfo>emptyList().iterator())
+//                .setSourceFolders(sources)
                 .setSourceFoldersFilter(sourceFoldersFilter)
                 .setTestFolders(tests)
                 .setImportantFiles(importantItemsIterator)
@@ -402,7 +411,22 @@ public class ImportProject implements PropertyChangeListener {
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.getConfigurationDescriptor();
             if (pdp.gotDescriptor()) {
-                if (pdp.getConfigurationDescriptor().getActiveConfiguration() != null) {
+                final MakeConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
+                if (sources != null) {
+                    initSourceRootTask = RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ImportProject.class, "ImportProject.Progress.AnalyzeRoot"));
+                            handle.start();
+                            while(sources.hasNext()) {
+                                SourceFolderInfo next = sources.next();
+                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), false, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                            }
+                            handle.finish();
+                        }
+                    });
+                }
+                if (configurationDescriptor.getActiveConfiguration() != null) {
                     if (runConfigure && configurePath != null && configurePath.length() > 0 &&
                             configureFileObject != null && configureFileObject.isValid()) {
                         postConfigure();
@@ -906,7 +930,7 @@ public class ImportProject implements PropertyChangeListener {
                 if (execLog != null) {
                     ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
                     MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-                    vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration())); // NOI18N
+                    vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration(), executionEnvironment)); // NOI18N
                     if (executionEnvironment.isLocal()) {
                         vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
                     } else {
@@ -950,7 +974,7 @@ public class ImportProject implements PropertyChangeListener {
         if (execLog != null) {
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-            vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration())); // NOI18N
+            vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration(), executionEnvironment)); // NOI18N
             if (executionEnvironment.isLocal()) {
                 vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
             } else {
@@ -1015,6 +1039,9 @@ public class ImportProject implements PropertyChangeListener {
         // Make sure that descriptor was stored and readed
         ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         provider.getConfigurationDescriptor(true);
+        if (initSourceRootTask != null) {
+            initSourceRootTask.waitFinished();
+        }
     }
 
     private void discovery(int rc, File makeLog, File execLog) {
@@ -1310,6 +1337,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
+                    setBuildResults((List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS));
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
@@ -1324,6 +1352,31 @@ public class ImportProject implements PropertyChangeListener {
         return done;
     }
 
+    private void setBuildResults(List<String> buildArtifacts) {
+        if (buildArtifacts == null || buildArtifacts.isEmpty()) {
+            return;
+        }
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        if (buildArtifacts.size() == 1) {
+            MakeConfiguration activeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
+            if (activeConfiguration != null) {
+                String value = activeConfiguration.getMakefileConfiguration().getOutput().getValue();
+                if (value == null || value.isEmpty()) {
+                    buildResult = buildArtifacts.get(0);
+                    buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(buildResult), pathMode);
+                    buildResult = CndPathUtilitities.normalizeSlashes(buildResult);
+                    activeConfiguration.getMakefileConfiguration().getOutput().setValue(buildResult);
+                }
+            }
+        }
+        //Folder externalFileItems = makeConfigurationDescriptor.getExternalFileItems();
+        //for(String binary : buildArtifacts) {
+        //    externalFileItems.addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(),binary));
+        //}
+     }
+
+    
     private boolean discoveryByDwarfOrBuildLog(boolean done) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
@@ -1375,6 +1428,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
+                    setBuildResults((List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS));
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);

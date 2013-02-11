@@ -146,7 +146,12 @@ public class Utils {
         String jspRelativePath = url;
         WebModule wm = WebModule.getWebModule (fo);
         if (wm != null) {
-            jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
+            FileObject documentBase = wm.getDocumentBase();
+            if (documentBase != null) {
+                jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
+            } else { // doc base is invalid
+                return null;
+            }
         }
         JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (fo);
         if (finder != null) {

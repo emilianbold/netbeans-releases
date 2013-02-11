@@ -45,52 +45,37 @@ package org.netbeans.modules.groovy.editor.language;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.options.CodeStyle;
 import org.openide.util.Exceptions;
 
 
 /**
  * Formatting and indentation for Groovy.
- * 
- * @todo tab press is just 2
- * @todo bodies of case statements (in switch) are not indented 
+ *
+ * @todo bodies of case statements (in switch) are not indented
  * @todo formats javadoc
- * 
+ *
  * @author Tor Norbye
  * @author Martin Adamek
  * @author Gopalakrishnan Sankaran
  */
-public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
-    private boolean isGspDocument;
-    private CodeStyle codeStyle;
-    private int rightMarginOverride = -1;
+public class GroovyFormatter implements Formatter {
 
-    public GroovyFormatter() {
-        this.codeStyle = null;
-    }
-    
-    public GroovyFormatter(CodeStyle codeStyle, int rightMarginOverride) {
-        assert codeStyle != null;
-        this.codeStyle = codeStyle;
-        this.rightMarginOverride = rightMarginOverride;
-    }
-    
     @Override
     public boolean needsParserResult() {
         return false;
@@ -98,40 +83,22 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
 
     @Override
     public void reindent(Context context) {
-        if (codeStyle != null) {
-            reindent(context, null, true);
-        } else {
-            GroovyFormatter f = new GroovyFormatter(CodeStyle.get(context.document()), -1);
-            f.reindent(context, null, true);
-        }
+        reindent(context, null, true);
     }
 
     @Override
     public void reformat(Context context, ParserResult compilationInfo) {
-        if (codeStyle != null) {
-            reindent(context, compilationInfo, false);
-        } else {
-            GroovyFormatter f = new GroovyFormatter(CodeStyle.get(context.document()), -1);
-            f.reindent(context, compilationInfo, false);
-        }
+        reindent(context, compilationInfo, false);
     }
-    
+
     @Override
     public int indentSize() {
-        if (codeStyle != null) {
-            return codeStyle.getIndentSize();
-        } else {
-            return CodeStyle.get((Document) null).getIndentSize();
-        }
+        return IndentUtils.indentLevelSize(null);
     }
-    
+
     @Override
     public int hangingIndentSize() {
-        if (codeStyle != null) {
-            return codeStyle.getContinuationIndentSize();
-        } else {
-            return CodeStyle.get((Document) null).getContinuationIndentSize();
-        }
+        return CodeStylePreferences.get((Document) null).getPreferences().getInt("continuationIndentSize", 4);
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -190,84 +157,47 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
 
         return 0;
     }
-    
+
     // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
     private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
         int balance = 0;
 
-        if (isGspDocument) {
-            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-            // Probably an GSP file - gotta process it in sections since I can have lines
-            // made up of both whitespace, groovy, html and delimiters and all groovy sections
-            // can affect the token balance
-            TokenSequence<?> t = th.tokenSequence();
-            if (t == null) {
-                return 0;
-            }
-            t.move(begin);
-            if (!t.moveNext()) {
-                return 0;
-            }
-            
-            do {
-                Token<?> token = t.token();
-                TokenId id = token.id();
-                
-                if (id.primaryCategory().equals("groovy")) { // NOI18N
-                    TokenSequence<GroovyTokenId> ts = t.embedded(GroovyTokenId.language());
-                    ts.move(begin);
-                    ts.moveNext();
-                    do {
-                        Token<GroovyTokenId> groovyToken = ts.token();
-                        if (groovyToken == null) {
-                            break;
-                        }
-                        TokenId groovyId = groovyToken.id();
-
-                        balance += getTokenBalanceDelta(groovyId, groovyToken, doc, ts, includeKeywords);
-                    } while (ts.moveNext() && (ts.offset() < end));
-                }
-
-            } while (t.moveNext() && (t.offset() < end));
-        } else {
-            TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
-            if (ts == null) {
-                return 0;
-            }
-            
-            ts.move(begin);
-
-            if (!ts.moveNext()) {
-                return 0;
-            }
-
-            do {
-                Token<GroovyTokenId> token = ts.token();
-                TokenId id = token.id();
-                
-                balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords);
-            } while (ts.moveNext() && (ts.offset() < end));
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
+        if (ts == null) {
+            return 0;
         }
+
+        ts.move(begin);
+
+        if (!ts.moveNext()) {
+            return 0;
+        }
+
+        do {
+            Token<GroovyTokenId> token = ts.token();
+            TokenId id = token.id();
+
+            balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords);
+        } while (ts.moveNext() && (ts.offset() < end));
 
         return balance;
     }
 
     // This method will indent lines beginning with * by 1 space
-    private boolean isJavaDocComment(BaseDocument doc, int offset, int endOfLine) 
-            throws BadLocationException {
+    private boolean isJavaDocComment(BaseDocument doc, int offset, int endOfLine) throws BadLocationException {
         int pos = Utilities.getRowFirstNonWhite(doc, offset);
-        if(pos != -1) {
+        if (pos != -1) {
             Token<GroovyTokenId> token = LexUtilities.getToken(doc, pos);
-            if(token != null) {
+            if (token != null) {
                 TokenId id = token.id();
-                if(id == GroovyTokenId.BLOCK_COMMENT) {
+                if (id == GroovyTokenId.BLOCK_COMMENT) {
                     String text = doc.getText(offset, endOfLine - offset);
-                    if(text.trim().startsWith("*")) {
+                    if (text.trim().startsWith("*")) {
                         return true;
-                    }                        
+                    }
                 }
             }
-        }        
+        }
         return false;
     }
 
@@ -293,15 +223,15 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if ((id == GroovyTokenId.STRING_LITERAL) ||
-                        id == GroovyTokenId.DOCUMENTATION ||
-                        (id == GroovyTokenId.QUOTED_STRING_LITERAL) ||
-                        (id == GroovyTokenId.REGEXP_LITERAL)) {
+                if (id == GroovyTokenId.STRING_LITERAL
+                 || id == GroovyTokenId.DOCUMENTATION
+                 || id == GroovyTokenId.QUOTED_STRING_LITERAL
+                 || id == GroovyTokenId.REGEXP_LITERAL) {
                     // No indentation for literal strings in Groovy, since they can
                     // contain newlines. Leave it as is.
                     return true;
                 }
-                
+
                 if (id == GroovyTokenId.STRING_END || id == GroovyTokenId.QUOTED_STRING_END) {
                     // Possibly a heredoc
                     TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, pos);
@@ -328,10 +258,10 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if ((id == GroovyTokenId.STRING_LITERAL) ||
-                        id == GroovyTokenId.DOCUMENTATION ||
-                        (id == GroovyTokenId.QUOTED_STRING_LITERAL) ||
-                        (id == GroovyTokenId.REGEXP_LITERAL)) {
+                if (id == GroovyTokenId.STRING_LITERAL
+                 || id == GroovyTokenId.DOCUMENTATION
+                 || id == GroovyTokenId.QUOTED_STRING_LITERAL
+                 || id == GroovyTokenId.REGEXP_LITERAL) {
                     // No indentation for literal strings in Groovy, since they can
                     // contain newlines. Leave it as is.
                     return true;
@@ -341,45 +271,17 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
 
         return false;
     }
-    
-    /** 
-     * Get the first token on the given line. 
-     */
-    private Token<GroovyTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
-        int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
-
-        if (lineBegin != -1) {
-            if (isGspDocument) {
-                TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, lineBegin);
-                if (ts != null) {
-                    ts.moveNext();
-                    Token<GroovyTokenId> token = ts.token();
-                    while (token != null && token.id() == GroovyTokenId.WHITESPACE) {
-                        if (!ts.moveNext()) {
-                            return null;
-                        }
-                        token = ts.token();
-                    }
-                    return token;
-                }
-            } else {
-                return LexUtilities.getToken(doc, lineBegin);
-            }
-        }
-        
-        return null;
-    }
 
     private boolean isEndIndent(BaseDocument doc, int offset) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
-            Token<GroovyTokenId> token = getFirstToken(doc, offset);
-            
+            Token<GroovyTokenId> token = LexUtilities.getToken(doc, lineBegin);
+
             if (token == null) {
                 return false;
             }
-            
+
             TokenId id = token.id();
 
             // If the line starts with an end-marker, such as "end", "}", "]", etc.,
@@ -388,18 +290,16 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             return (LexUtilities.isIndentToken(id) && !LexUtilities.isBeginToken(id, doc, offset)) ||
                 id == GroovyTokenId.RBRACE || id == GroovyTokenId.RBRACKET || id == GroovyTokenId.RPAREN;
         }
-        
+
         return false;
     }
-    
+
     private boolean isLineContinued(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
-        // TODO RHTML - this isn't going to work for rhtml embedded strings...
         offset = Utilities.getRowLastNonWhite(doc, offset);
         if (offset == -1) {
             return false;
         }
 
-        
         TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts == null) {
@@ -415,15 +315,15 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
 
         if (token != null) {
             TokenId id = token.id();
-            
+
             // http://www.netbeans.org/issues/show_bug.cgi?id=115279
             boolean isContinuationOperator = (id == GroovyTokenId.NONUNARY_OP || id == GroovyTokenId.DOT);
-            
+
             if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
                 // Continued lines have different token types
                 isContinuationOperator = true;
             }
-            
+
             if (token.length() == 1 && id == GroovyTokenId.IDENTIFIER && token.text().toString().equals(",")) {
                 // If there's a comma it's a continuation operator, but inside arrays, hashes or parentheses
                 // parameter lists we should not treat it as such since we'd "double indent" the items, and
@@ -436,7 +336,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
                     isContinuationOperator = true;
                 }
             }
-            
+
             if (isContinuationOperator) {
                 // Make sure it's not a case like this:
                 //    alias eql? ==
@@ -463,25 +363,22 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
     }
 
     private void reindent(final Context context, ParserResult info, final boolean indentOnly) {
-        assert codeStyle != null;
-        
         Document document = context.document();
         final int endOffset = Math.min(context.endOffset(), document.getLength());
-        isGspDocument = false;
 
         try {
-            final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
+            final BaseDocument doc = (BaseDocument) document;
 
             final int startOffset = Utilities.getRowStart(doc, context.startOffset());
-            final int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
+            final int lineStart = startOffset;
             int initialOffset = 0;
             int initialIndent = 0;
             if (startOffset > 0) {
-                int prevOffset = Utilities.getRowStart(doc, startOffset-1);
+                int prevOffset = Utilities.getRowStart(doc, startOffset - 1);
                 initialOffset = getFormatStableStart(doc, prevOffset);
                 initialIndent = GsfUtilities.getLineIndent(doc, initialOffset);
             }
-            
+
             // Build up a set of offsets and indents for lines where I know I need
             // to adjust the offset. I will then go back over the document and adjust
             // lines that are different from the intended indent. By doing piecemeal
@@ -498,10 +395,9 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             boolean indentEmptyLines = (startOffset != 0 || endOffset != doc.getLength());
 
             boolean includeEnd = endOffset == doc.getLength() || indentOnly;
-            
+
             // TODO - remove initialbalance etc.
-            computeIndents(doc, initialIndent, initialOffset, endOffset, info, 
-                    offsets, indents, indentEmptyLines, includeEnd, indentOnly);
+            computeIndents(doc, initialIndent, initialOffset, endOffset, info, offsets, indents, indentEmptyLines, includeEnd, indentOnly);
 
             doc.runAtomic(new Runnable() {
                 @Override
@@ -529,13 +425,13 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
                                 // in the middle of "incorrectly" indented code (e.g. different
                                 // size than the IDE is using) and the newline position ending
                                 // up "out of sync"
-                                int prevOffset = offsets.get(i-1);
-                                int prevIndent = indents.get(i-1);
+                                int prevOffset = offsets.get(i - 1);
+                                int prevIndent = indents.get(i - 1);
                                 int actualPrevIndent = GsfUtilities.getLineIndent(doc, prevOffset);
                                 if (actualPrevIndent != prevIndent) {
                                     // For blank lines, indentation may be 0, so don't adjust in that case
                                     if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
-                                        indent = actualPrevIndent + (indent-prevIndent);
+                                        indent = actualPrevIndent + (indent - prevIndent);
                                         if (indent < 0) {
                                             indent = 0;
                                         }
@@ -550,10 +446,6 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
                                 context.modifyIndent(lineBegin, indent);
                             }
                         }
-
-                        if (!indentOnly && codeStyle.isReformatComments()) {
-                            reformatComments(doc, startOffset, endOffset);
-                        }
                     } catch (BadLocationException ble) {
                         Exceptions.printStackTrace(ble);
                     }
@@ -564,7 +456,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         }
     }
 
-    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult info,
+    private void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult info,
             List<Integer> offsets,
             List<Integer> indents,
             boolean indentEmptyLines, boolean includeEnd, boolean indentOnly
@@ -577,7 +469,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         try {
             // Algorithm:
             // Iterate over the range.
-            // Accumulate a token balance ( {,(,[, and keywords like class, case, etc. increases the balance, 
+            // Accumulate a token balance ( {,(,[, and keywords like class, case, etc. increases the balance,
             //      },),] and "end" decreases it
             // If the line starts with an end marker, indent the line to the level AFTER the token
             // else indent the line to the level BEFORE the token (the level being the balance * indentationSize)
@@ -590,10 +482,10 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             // State:
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
             int end = endOffset;
-            
-            int indentSize = codeStyle.getIndentSize();
-            int hangingIndentSize = codeStyle.getContinuationIndentSize();
-            
+
+            int indentSize = IndentUtils.indentLevelSize(doc);
+            int hangingIndentSize = hangingIndentSize();
+
             // Pending - apply comment formatting too?
 
 
@@ -610,50 +502,37 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             // The bracket balance at the offset ( parens, bracket, brace )
             int bracketBalance = 0;
             boolean continued = false;
-            boolean indentHtml = false;
-            if (isGspDocument) {
-                indentHtml = codeStyle.isIndentHtml();
-            }
 
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
-
                 int hangingIndent = continued ? (hangingIndentSize) : 0;
 
-                if (isGspDocument && !indentOnly) {
-                    // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
-                    initialIndent = GsfUtilities.getLineIndent(doc, offset);
-                }
-                
                 if (isInLiteral(doc, offset)) {
-                    // Skip this line - leave formatting as it is prior to reformatting 
+                    // Skip this line - leave formatting as it is prior to reformatting
                     indent = GsfUtilities.getLineIndent(doc, offset);
 
-                    if (isGspDocument && indentHtml && balance > 0) {
-                        indent += balance * indentSize;
-                    }
                 } else if (isEndIndent(doc, offset)) {
-                    indent = (balance-1) * indentSize + hangingIndent + initialIndent;
+                    indent = (balance - 1) * indentSize + hangingIndent + initialIndent;
                 } else {
                     indent = balance * indentSize + hangingIndent + initialIndent;
                 }
-                
+
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
-                
-                if (isJavaDocComment(doc,offset, endOfLine)) {
-                    indent ++;
+
+                if (isJavaDocComment(doc, offset, endOfLine)) {
+                    indent++;
                 }
-                
+
                 if (indent < 0) {
                     indent = 0;
                 }
-                
+
                 int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
                 // Insert whitespace on empty lines too -- needed for abbreviations expansion
                 if (lineBegin != -1 || indentEmptyLines) {
                     // Don't do a hanging indent if we're already indenting beyond the parent level?
-                    
+
                     indents.add(Integer.valueOf(indent));
                     offsets.add(Integer.valueOf(offset));
                 }
@@ -672,12 +551,4 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             Exceptions.printStackTrace(ble);
         }
     }
-
-    void reformatComments(BaseDocument doc, int start, int end) {
-        int rightMargin = rightMarginOverride != -1 ? rightMarginOverride : codeStyle.getRightMargin();
-
-//        ReflowParagraphAction action = new ReflowParagraphAction();
-//        action.reflowComments(doc, start, end, rightMargin);
-    }
-
 }

@@ -108,6 +108,7 @@ function classpath() {
     fi
     
 
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-jumpto.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectuiapi.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectapi.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectui.jar
@@ -119,6 +120,9 @@ function classpath() {
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-api-java-classpath.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-parsing-lucene.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-libs-lucene.jar
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-libs-antlr3-runtime.jar
+    CP=${CP}${path_sep}${ide}/modules/com-jcraft-jsch.jar
+    CP=${CP}${path_sep}${ide}/modules/ext/antlr-runtime-3.4.jar
 
     CP=${CP}${path_sep}${platform}/lib/org-openide-util.jar
     CP=${CP}${path_sep}${platform}/lib/org-openide-util-lookup.jar
@@ -247,6 +251,15 @@ function params() {
 	    -J*)
 		    DEFS="${DEFS} ${1#-J}"
 		    ;;
+            -c|--clean)
+                    echo "clean userdir ${USERDIR}"
+                    rm -rf $USERDIR
+                    ;;
+            --cxx|-cxx)
+                    echo "use new straight parser"
+                    DEFS="${DEFS} -Dcnd.modelimpl.cpp.parser.new.grammar=true"
+                    DEFS="${DEFS} -Dcnd.modelimpl.parse.headers.with.sources=true"
+                    ;;
 	    --nb)
 		    shift
 		    echo "Using NB from $1"
@@ -300,7 +313,7 @@ function params() {
                     echo "using $1 parser threads"
                     DEFS="${DEFS} -Dcnd.modelimpl.parser.threads=$1"
                     ;;
-            --quite|--q*) 
+            --quite|-q*) 
                     QUITE="y"
                     ;;
 	    *)
@@ -323,10 +336,11 @@ function main() {
     PARAMS=""
     
     DBGPORT=${DBGPORT-5858}
+    USERDIR=/tmp/${USER}/cnd-userdir
 
     DEFS="${DEFS} -Dnetbeans.dirs=${nbdist}:${cnddist}:${dlightdist}"
     DEFS="${DEFS} -Dnetbeans.home=${nbdist}/platform"
-    DEFS="${DEFS} -Dnetbeans.user=/tmp/${USER}/cnd-userdir"
+    DEFS="${DEFS} -Dnetbeans.user=${USERDIR}"
     #DEFS="${DEFS} -Dcnd.modelimpl.trace=true"
     #DEFS="${DEFS} -Dparser.cache=true"
     DEFS="${DEFS} -Dparser.report.errors=true"

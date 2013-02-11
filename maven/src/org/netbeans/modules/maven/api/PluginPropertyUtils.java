@@ -108,7 +108,7 @@ public class PluginPropertyUtils {
     public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, parameter, goal, expressionProperty);
+        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, simpleProperty(parameter), goal, simpleDefaultProperty(expressionProperty));
     }    
 
     /**
@@ -129,11 +129,11 @@ public class PluginPropertyUtils {
      * @param expressionProperty expression property that once defined (and plugin configuration is omited) is used. only value, no ${}
      */
     public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
-        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, parameter, goal, expressionProperty);
+        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, simpleProperty(parameter), goal, simpleDefaultProperty(expressionProperty));
     }
 
-    private static @CheckForNull String getPluginPropertyImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
-        String toRet = null;
+    private static @CheckForNull <T> T getPluginPropertyImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull ConfigurationBuilder<T> builder, @NullAllowed String goal, @NullAllowed ExternalDefaultBuilder<T> external) {
+        T toRet = null;
         if (prj.getBuildPlugins() == null) {
             return toRet;
         }
@@ -141,13 +141,13 @@ public class PluginPropertyUtils {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 for (PluginExecution exe : getPluginExecutions(plug, goal)) {
-                    toRet = checkConfiguration(eval, exe.getConfiguration(), parameter);
+                    toRet = builder.build((Xpp3Dom)exe.getConfiguration(), eval);
                     if (toRet != null) {
                         break;
                     }
                 }
                 if (toRet == null) {
-                    toRet = checkConfiguration(eval, plug.getConfiguration(), parameter);
+                    toRet = builder.build((Xpp3Dom)plug.getConfiguration(), eval);
                 }
             }
         }
@@ -159,19 +159,45 @@ public class PluginPropertyUtils {
                 for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
-                        toRet = checkConfiguration(eval, plug.getConfiguration(), parameter);
+                        toRet = builder.build((Xpp3Dom)plug.getConfiguration(), eval);
                         break;
                     }
                 }
             }
         }
-        if (toRet == null && expressionProperty != null) {
-            Properties prop = prj.getProperties();
-            if (prop != null) {
-                toRet = prop.getProperty(expressionProperty);                
-            }
+        if (toRet == null && external != null) {
+            toRet = external.externalValue(prj);
         }
         return toRet;
+    }
+    
+    /**
+     * tries to figure out if the property of the given plugin is customized in
+     * the current project and returns it's value if so, otherwise null
+     *
+     * @param parameter the name of the plugin parameter to look for
+     * @param expressionProperty expression property that once defined (and
+     * plugin configuration is omited) is used. only value, no ${}
+     * @since 2.70
+     */
+    public static <T> T getPluginPropertyBuildable(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, 
+            @NullAllowed String goal, @NonNull ConfigurationBuilder<T> builder) {
+        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        assert project != null : "Requires a maven project instance"; //NOI18N
+        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, builder, goal, null);
+    }
+
+    /**
+     * builder responsible for converting Xpp3Dom from Maven to custom object trees
+     * @param <T> 
+     * @since 2.70
+     */
+    public static interface ConfigurationBuilder<T> {
+        T build(Xpp3Dom configRoot, ExpressionEvaluator eval);
+    }
+    
+    private static interface ExternalDefaultBuilder<T> {
+        T externalValue(MavenProject prj);
     }
 
     /**
@@ -181,7 +207,7 @@ public class PluginPropertyUtils {
     public static @CheckForNull String getReportPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String report) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getReportPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, property, report);
+        return getReportPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, simpleProperty(property), report);
     }
 
     /**
@@ -191,18 +217,18 @@ public class PluginPropertyUtils {
      * the variant with <code>Project</code> as parameter is preferable. Faster and less prone to deadlock.     
      */
     public static @CheckForNull String getReportPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String report) {
-        return getReportPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, property, report);
+        return getReportPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, simpleProperty(property), report);
     }
 
-    private static @CheckForNull String getReportPluginPropertyImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String property, @NullAllowed String report) {
-        String toRet = null;
+    private static @CheckForNull <T> T  getReportPluginPropertyImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull ConfigurationBuilder<T> builder, @NullAllowed String report) {
+        T toRet = null;
         for (ReportPlugin plug : getEffectiveReportPlugins(prj)) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getReportSets() != null) {
                     for (ReportSet exe : plug.getReportSets()) {
                         if (exe.getReports().contains(report)) {
-                            toRet = checkConfiguration(eval, exe.getConfiguration(), property);
+                            toRet = builder.build((Xpp3Dom)exe.getConfiguration(), eval);
                             if (toRet != null) {
                                 break;
                             }
@@ -210,7 +236,7 @@ public class PluginPropertyUtils {
                     }
                 }
                 if (toRet == null) {
-                    toRet = checkConfiguration(eval, plug.getConfiguration(), property);
+                    toRet = builder.build((Xpp3Dom)plug.getConfiguration(), eval);
                 }
             }
         }
@@ -264,28 +290,121 @@ public class PluginPropertyUtils {
         return null;
     }
     
-    private static @CheckForNull String checkConfiguration(@NonNull ExpressionEvaluator eval, @NullAllowed Object conf, @NonNull String property) {
-        if (conf != null) {
-            Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
-            Xpp3Dom source = dom.getChild(property);
-            if (source != null) {
-                String value = source.getValue();
-                if (value == null) {
-                    return null;
+    static @NonNull ConfigurationBuilder<String> simpleProperty(final @NonNull String property) {
+        return new ConfigurationBuilder<String>() {
+
+            @Override
+            public String build(Xpp3Dom configRoot, ExpressionEvaluator eval) {
+                if (configRoot != null) {
+                    Xpp3Dom source = configRoot.getChild(property);
+                    if (source != null) {
+                        String value = source.getValue();
+                        if (value == null) {
+                            return null;
+                        }
+                        String valueT = value.trim();
+                        try {
+                            Object evaluated = eval.evaluate(valueT);
+                            return evaluated != null ? evaluated.toString() : valueT;
+                        } catch (ExpressionEvaluationException ex) {
+                            Exceptions.printStackTrace(ex);
+                            return valueT;
+                        }
+                    }
                 }
-                String valueT = value.trim();
-                try {
-                    Object evaluated = eval.evaluate(valueT);
-                    return evaluated != null ? evaluated.toString() : valueT;
-                } catch (ExpressionEvaluationException ex) {
-                    Exceptions.printStackTrace(ex);
-                    return valueT;
-                }
+                return null;
             }
-        }
-        return null;
+        };
     }
     
+    static @NonNull ExternalDefaultBuilder<String> simpleDefaultProperty(final @NullAllowed String expressionProperty) {
+        return new ExternalDefaultBuilder<String>() {
+            @Override
+            public String externalValue(MavenProject prj) {
+                if (expressionProperty == null) {
+                    return null;
+                }
+                Properties prop = prj.getProperties();
+                if (prop != null) {
+                    return prop.getProperty(expressionProperty);
+                }
+                return null;
+            }
+        };
+    }
+    
+    static @NonNull ConfigurationBuilder<String[]> listProperty(final @NonNull String multiProperty, final @NonNull String singleProperty) {
+        return new ConfigurationBuilder<String[]>() {
+            @Override
+            public String[] build(Xpp3Dom conf, ExpressionEvaluator eval) {
+                if (conf != null) {
+                    Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
+                    Xpp3Dom source = dom.getChild(multiProperty);
+                    if (source != null) {
+                        List<String> toRet = new ArrayList<String>();
+                        Xpp3Dom[] childs = source.getChildren(singleProperty);
+                        for (Xpp3Dom ch : childs) {
+                            try {
+                                String chvalue = ch.getValue() == null ? "" : ch.getValue().trim();  //NOI18N
+                                Object evaluated = eval.evaluate(chvalue);
+                                toRet.add(evaluated != null ? ("" + evaluated) : chvalue);  //NOI18N
+                            } catch (ExpressionEvaluationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        return toRet.toArray(new String[toRet.size()]);
+                    }
+                }
+                return null;
+            }
+        };
+    } 
+    
+    static @NonNull ConfigurationBuilder<Properties> propertiesBuilder(final @NonNull String propertyParameter) {
+        return new ConfigurationBuilder<Properties>() {
+            @Override
+            public Properties build(Xpp3Dom conf, ExpressionEvaluator eval) {
+                if (conf != null) {
+
+                    Xpp3Dom source = conf.getChild(propertyParameter);
+                    if (source != null) {
+                        Properties toRet = new Properties();
+                        Xpp3Dom[] childs = source.getChildren();
+                        for (Xpp3Dom ch : childs) {
+                            try {
+                                String val = ch.getValue();
+                                if (val == null) {
+                                    //#168036
+                                    //we have the "property" named element now.
+                                    if (ch.getChildCount() == 2) {
+                                        Xpp3Dom nameDom = ch.getChild("name"); //NOI18N
+                                        Xpp3Dom valueDom = ch.getChild("value"); //NOI18N
+                                        if (nameDom != null && valueDom != null) {
+                                            String name = nameDom.getValue();
+                                            String value = valueDom.getValue();
+                                            Object evaluated = eval.evaluate(value);
+                                            if (name != null && value != null) {
+                                                toRet.put(name, evaluated != null ? ("" + evaluated) : value);  //NOI18N
+                                            }
+                                        }
+                                    }
+                                    // #153063, #187648
+                                    toRet.put(ch.getName(), "");
+                                    continue;
+                                }
+                                Object evaluated = eval.evaluate(val.trim());
+                                toRet.put(ch.getName(), evaluated != null ? ("" + evaluated) : ch.getValue().trim());  //NOI18N
+                            } catch (ExpressionEvaluationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        return toRet;
+                    }
+                }
+                return null;
+            }
+        };
+    }
 
     /**
      * gets the list of values for the given property, if configured in the current project.
@@ -295,7 +414,7 @@ public class PluginPropertyUtils {
     public static @CheckForNull String[] getPluginPropertyList(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, multiproperty, singleproperty, goal);
+        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, listProperty(multiproperty, singleproperty), goal, null);
     }
 
     /**
@@ -306,43 +425,7 @@ public class PluginPropertyUtils {
      * @param singleproperty - list's single value element (eg. "sourceRoot")
      */
     public static @CheckForNull String[] getPluginPropertyList(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
-        return getPluginPropertyListImpl(prj, createEvaluator(prj), groupId, artifactId, multiproperty, singleproperty, goal);
-    }
-
-    private static @CheckForNull String[] getPluginPropertyListImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
-        String[] toRet = null;
-        if (prj.getBuildPlugins() == null) {
-            return toRet;
-        }
-        for (Plugin plug : prj.getBuildPlugins()) {
-            if (artifactId.equals(plug.getArtifactId()) &&
-                   groupId.equals(plug.getGroupId())) {
-                for (PluginExecution exe : getPluginExecutions(plug, goal)) {
-                    toRet = checkListConfiguration(eval, exe.getConfiguration(), multiproperty, singleproperty);
-                    if (toRet != null) {
-                        break;
-                    }
-                }
-                if (toRet == null) {
-                    toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
-                }
-            }
-        }
-        if (toRet == null &&
-                //TODO - the plugin configuration probably applies to
-                //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
-                LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
-            if (prj.getPluginManagement() != null) {
-                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
-                    if (artifactId.equals(plug.getArtifactId()) &&
-                        groupId.equals(plug.getGroupId())) {
-                        toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
-                        break;
-                    }
-                }
-            }
-        }
-        return toRet;
+        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, listProperty(multiproperty, singleproperty), goal, null);
     }
 
     /**
@@ -353,7 +436,7 @@ public class PluginPropertyUtils {
     public static @CheckForNull String[] getReportPluginPropertyList(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getReportPluginPropertyListImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, multiproperty, singleproperty, goal);
+        return getReportPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, listProperty(multiproperty, singleproperty), goal);
     }
 
     /**
@@ -364,66 +447,8 @@ public class PluginPropertyUtils {
      * @param singleproperty - list's single value element (eg. "sourceRoot")
      */
     public static @CheckForNull String[] getReportPluginPropertyList(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
-        return getReportPluginPropertyListImpl(prj, createEvaluator(prj), groupId, artifactId, multiproperty, singleproperty, goal);
+        return getReportPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, listProperty(multiproperty, singleproperty), goal);
     }
-
-    private static @CheckForNull String[] getReportPluginPropertyListImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String multiproperty, @NonNull String singleproperty, @NullAllowed String goal) {
-        String[] toRet = null;
-        for (ReportPlugin plug : getEffectiveReportPlugins(prj)) {
-            if (artifactId.equals(plug.getArtifactId()) &&
-                   groupId.equals(plug.getGroupId())) {
-                if (plug.getReportSets() != null) {
-                    for (ReportSet exe : plug.getReportSets()) {
-                        if (exe.getReports().contains(goal)) {
-                            toRet = checkListConfiguration(eval, exe.getConfiguration(), multiproperty, singleproperty);
-                            if (toRet != null) {
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (toRet == null) {
-                    toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
-                }
-            }
-        }
-        if (toRet == null) {  //NOI18N
-            if (prj.getPluginManagement() != null) {
-                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
-                    if (artifactId.equals(plug.getArtifactId()) &&
-                        groupId.equals(plug.getGroupId())) {
-                        toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
-                        break;
-                    }
-                }
-            }
-        }
-        return toRet;
-    }
-
-
-    private static @CheckForNull String[] checkListConfiguration(ExpressionEvaluator eval, @NullAllowed Object conf, @NonNull String multiproperty, @NonNull String singleproperty) {
-        if (conf != null) {
-            Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
-            Xpp3Dom source = dom.getChild(multiproperty);
-            if (source != null) {
-                List<String> toRet = new ArrayList<String>();
-                Xpp3Dom[] childs = source.getChildren(singleproperty);
-                for (Xpp3Dom ch : childs) {
-                    try {
-                        String chvalue = ch.getValue()==null ? "" : ch.getValue().trim();  //NOI18N
-                        Object evaluated = eval.evaluate(chvalue);
-                        toRet.add(evaluated != null ? ("" + evaluated) : chvalue);  //NOI18N
-                    } catch (ExpressionEvaluationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                return toRet.toArray(new String[toRet.size()]);
-            }
-        }
-        return null;
-    }
-
 
     /**
      * Loads name/value pairs from plugin configuration.
@@ -436,7 +461,7 @@ public class PluginPropertyUtils {
     public static @CheckForNull Properties getPluginPropertyParameter(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
-        return getPluginPropertyParameterImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, propertyParameter, goal);
+        return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, propertiesBuilder(propertyParameter), goal, null);
     }
     /**
      * Loads name/value pairs from plugin configuration. 
@@ -449,85 +474,7 @@ public class PluginPropertyUtils {
      * @return properties
      */
     public static @CheckForNull Properties getPluginPropertyParameter(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
-        return getPluginPropertyParameterImpl(prj, createEvaluator(prj), groupId, artifactId, propertyParameter, goal);
-    }
-
-    private static @CheckForNull Properties getPluginPropertyParameterImpl(@NonNull MavenProject prj, @NonNull ExpressionEvaluator eval, @NonNull String groupId, @NonNull String artifactId, @NonNull String propertyParameter, @NullAllowed String goal) {
-        //TODO we might need to merge the props from various locations..
-        Properties toRet = null;
-        if (prj.getBuildPlugins() == null) {
-            return toRet;
-        }
-        for (Plugin plug : prj.getBuildPlugins()) {
-            if (artifactId.equals(plug.getArtifactId()) &&
-                   groupId.equals(plug.getGroupId())) {
-                for (PluginExecution exe : getPluginExecutions(plug, goal)) {
-                    toRet = checkPropertiesConfiguration(eval, exe.getConfiguration(), propertyParameter);
-                    if (toRet != null) {
-                        break;
-                    }
-                }
-                if (toRet == null) {
-                    toRet = checkPropertiesConfiguration(eval, plug.getConfiguration(), propertyParameter);
-                }
-            }
-        }
-        if (toRet == null && 
-                //TODO - the plugin configuration probably applies to 
-                //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
-                LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
-            if (prj.getPluginManagement() != null) {
-                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
-                    if (artifactId.equals(plug.getArtifactId()) &&
-                        groupId.equals(plug.getGroupId())) {
-                        toRet = checkPropertiesConfiguration(eval, plug.getConfiguration(), propertyParameter);
-                        break;
-                    }
-                }
-            }
-        }
-        return toRet;
-    }
-    
-    private static @CheckForNull Properties checkPropertiesConfiguration(@NonNull ExpressionEvaluator eval, @NullAllowed Object conf, @NonNull String propertyParameter) {
-        if (conf != null) {
-            Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
-            Xpp3Dom source = dom.getChild(propertyParameter);
-            if (source != null) {
-                Properties toRet = new Properties();
-                Xpp3Dom[] childs = source.getChildren();
-                for (Xpp3Dom ch : childs) {
-                    try {
-                        String val = ch.getValue();
-                        if (val == null) {
-                            //#168036
-                            //we have the "property" named element now.
-                            if (ch.getChildCount() == 2) {
-                                Xpp3Dom nameDom = ch.getChild("name"); //NOI18N
-                                Xpp3Dom valueDom = ch.getChild("value"); //NOI18N
-                                if (nameDom != null && valueDom != null) {
-                                    String name = nameDom.getValue();
-                                    String value = valueDom.getValue();
-                                    Object evaluated = eval.evaluate(value);
-                                    if (name != null && value != null) {
-                                        toRet.put(name, evaluated != null ? ("" + evaluated) : value);  //NOI18N
-                                    }
-                                }
-                            }
-                            // #153063, #187648
-                            toRet.put(ch.getName(), "");
-                            continue;
-                        }
-                        Object evaluated = eval.evaluate(val.trim());
-                        toRet.put(ch.getName(), evaluated != null ? ("" + evaluated) : ch.getValue().trim());  //NOI18N
-                    } catch (ExpressionEvaluationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                return toRet;
-            }
-        }
-        return null;
+        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, propertiesBuilder(propertyParameter), goal, null);
     }
 
     /**

@@ -76,18 +76,24 @@ public final class CharSequences {
         byte[] b = new byte[n];
         boolean bytes = true;
         int o;
+        int d;
+        boolean id = true;
         // check 2 bytes vs 1 byte chars
         for (int i = 0; i < n; i++) {
             o = buf[start + i];
-            if ((o & 0xFF) != o) {
+            d = o & 0xFF;
+            if (d != o) {
                 // can not compact this char sequence
                 bytes = false;
                 break;
             }
+            if (id) {
+                id = is6BitChar(d);
+            }
             b[i] = (byte) o;
         }
         if (bytes) {
-            return createFromBytes(b, n);
+            return createFromBytes(b, n, id);
         }
         char[] v = new char[count];
         System.arraycopy(buf, start, v, 0, count);
@@ -113,16 +119,22 @@ public final class CharSequences {
         byte[] b = new byte[n];
         boolean bytes = true;
         int o;
+        int d;
+        boolean id = true;
         for (int i = 0; i < n; i++) {
             o = s.charAt(i);
-            if ((o & 0xFF) != o) {
+            d = o & 0xFF;
+            if (d != o) {
                 bytes = false;
                 break;
+            }
+            if (id) {
+                id = is6BitChar(d);
             }
             b[i] = (byte) o;
         }
         if (bytes) {
-            return createFromBytes(b, n);
+            return createFromBytes(b, n, id);
         }
         char[] v = new char[n];
         for (int i = 0; i < n; i++) {
@@ -204,7 +216,16 @@ public final class CharSequences {
         return -1;
     }
 
-    private static CompactCharSequence createFromBytes(byte[] b, int n) {
+    private static CompactCharSequence createFromBytes(byte[] b, int n, boolean id) {
+        if (id && n > 0) {
+            if (n <= 10) {
+                return new Fixed6Bit_1_10(b, n);
+            } else if (n <= 20) {
+                return new Fixed6Bit_11_20(b, n);
+            } else if (n <= 30) {
+                return new Fixed6Bit_21_30(b, n);
+            }
+        }
         if (n < 8) {
             return new Fixed_0_7(b, n);
         } else if (n < 16) {
@@ -219,26 +240,27 @@ public final class CharSequences {
     // Memory efficient implementations of CharSequence
     // Comparision between Fixed and String memory consumption:
     // 32-bit JVM
-    //String    String CharSequence
-    //Length     Size    Size
-    //1..2        40      16
-    //3..6        48      16
-    //7..7        56      16
-    //8..10       56      24
-    //11..14      64      24
-    //15..15      72      24
-    //16..18      72      32
-    //19..22      80      32
-    //23..23      88      32
-    //24..26      88      56
-    //27..28      96      56
-    //29..30      96      64
-    //31..34     104      64
-    //35..36     112      64
-    //37..38     112      72
-    //39..42     120      72
-    //......................
-    //79..82   - 200     112
+    //String    String CharSequence  ASCII' CharSequence
+    //Length     Size    Size          Size
+    //1..2        40      16            16
+    //3..6        48      16            16
+    //7..7        56      16            16
+    //8..10       56      24            16
+    //11..14      64      24            24
+    //15..15      72      24            24
+    //16..18      72      32            24
+    //19..20      80      32            24
+    //21..22      80      32            32
+    //23..23      88      32            32
+    //24..26      88      56            32
+    //27..28      96      56            32
+    //29..30      96      64            32
+    //31..34     104      64            64
+    //35..36     112      64            64
+    //37..38     112      72            72
+    //39..42     120      72            72
+    //....................................
+    //79..82     200     112           112
     //
     // 64-bit JVM
     //1           72      24
@@ -369,6 +391,563 @@ public final class CharSequences {
             }
             return hash;
             //            return (i1 >> 4) + (i1 >> 8) + (i2 << 5) - i2;
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return CharSequences.create(toString().substring(start, end));
+        }
+
+        @Override
+        public int compareTo(CharSequence o) {
+            return Comparator.compare(this, o);
+        }
+    }
+
+    private static final long[] encodeTable = new long[] {
+           -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+           -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+           -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1,
+            0,  1,  2,  3,  4,  5,  6,  7,  8,  9, -1, -1, -1, -1, -1, -1,
+           -1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+           25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, 63,
+           -1, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+           51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1
+    };
+
+    private static final char[] decodeTable = new char[] {
+          '0','1','2','3','4','5','6','7','8','9',
+              'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O',
+          'P','Q','R','S','T','U','V','W','X','Y','Z',
+              'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o',
+          'p','q','r','s','t','u','v','w','x','y','z',
+                                                                  '.',     // for 'file.ext' names
+                                                                      '_'
+    };
+    
+    private static boolean is6BitChar(int d) {
+        return d < 128 && encodeTable[d] >= 0;
+    }
+    
+    private static long encode6BitChar(int d) {
+        return encodeTable[d];
+    }
+
+    private static char decode6BitChar(int d) {
+        return decodeTable[d];
+    }
+    
+    private static final class Fixed6Bit_1_10 implements CompactCharSequence, Comparable<CharSequence> {
+
+        // Length is in lower 4bits
+        // then 6bits per symbol
+        private final long i;
+
+        @SuppressWarnings("fallthrough")
+        private Fixed6Bit_1_10(byte[] b, int n) {
+            long a = n;
+            switch (n) {
+                case 10:
+                    a |= encode6BitChar(b[9]) << 58;
+                case 9:
+                    a |= encode6BitChar(b[8]) << 52;
+                case 8:
+                    a |= encode6BitChar(b[7]) << 46;
+                case 7:
+                    a |= encode6BitChar(b[6]) << 40;
+                case 6:
+                    a |= encode6BitChar(b[5]) << 34;
+                case 5:
+                    a |= encode6BitChar(b[4]) << 28;
+                case 4:
+                    a |= encode6BitChar(b[3]) << 22;
+                case 3:
+                    a |= encode6BitChar(b[2]) << 16;
+                case 2:
+                    a |= encode6BitChar(b[1]) << 10;
+                case 1:
+                    a |= encode6BitChar(b[0]) << 4;
+                    break;
+                case 0:
+                default:
+                    throw new IllegalArgumentException();
+            }
+            i = a;
+        }
+
+        @Override
+        public int length() {
+            return (int) (i & 0x0FL);
+        }
+
+        @Override
+        public char charAt(int index) {
+            int r = 0;
+            switch (index) {
+                case 0:
+                    r = (int) ((i >> 4) & 0x3FL);
+                    break;
+                case 1:
+                    r = (int) ((i >> 10) & 0x3FL);
+                    break;
+                case 2:
+                    r = (int) ((i >> 16) & 0x3FL);
+                    break;
+                case 3:
+                    r = (int) ((i >> 22) & 0x3FL);
+                    break;
+                case 4:
+                    r = (int) ((i >> 28) & 0x3FL);
+                    break;
+                case 5:
+                    r = (int) ((i >> 34) & 0x3FL);
+                    break;
+                case 6:
+                    r = (int) ((i >> 40) & 0x3FL);
+                    break;
+                case 7:
+                    r = (int) ((i >> 46) & 0x3FL);
+                    break;
+                case 8:
+                    r = (int) ((i >> 52) & 0x3FL);
+                    break;
+                case 9:
+                    r = (int) ((i >> 58) & 0x3FL);
+                    break;
+            }
+            return decode6BitChar(r);
+        }
+
+        @Override
+        public String toString() {
+            int n = length();
+            char[] r = new char[n];
+            for (int j = 0; j < n; j++) {
+                r[j] = charAt(j);
+            }
+            return new String(r);
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) {
+                return true;
+            }
+            if (object instanceof Fixed6Bit_1_10) {
+                Fixed6Bit_1_10 otherString = (Fixed6Bit_1_10) object;
+                return i == otherString.i;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 0;
+            for (int j = 0; j < length(); j++) {
+                hash = 31 * hash + charAt(j);
+            }
+            return hash;
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return CharSequences.create(toString().substring(start, end));
+        }
+
+        @Override
+        public int compareTo(CharSequence o) {
+            return Comparator.compare(this, o);
+        }
+    }
+    
+    private static final class Fixed6Bit_11_20 implements CompactCharSequence, Comparable<CharSequence> {
+
+        // Length is in lower 4bits of i1 and l2
+        // then 6 bits per character
+        private final long i1;
+        private final long i2;
+
+        @SuppressWarnings("fallthrough")
+        private Fixed6Bit_11_20(byte[] b, int n) {
+            long a1 = n & 0x0F;
+            long a2 = (n >> 4) & 0x0F;
+            switch (n) {
+                case 20:
+                    a2 |= encode6BitChar(b[19]) << 58;
+                case 19:
+                    a2 |= encode6BitChar(b[18]) << 52;
+                case 18:
+                    a2 |= encode6BitChar(b[17]) << 46;
+                case 17:
+                    a2 |= encode6BitChar(b[16]) << 40;
+                case 16:
+                    a2 |= encode6BitChar(b[15]) << 34;
+                case 15:
+                    a2 |= encode6BitChar(b[14]) << 28;
+                case 14:
+                    a2 |= encode6BitChar(b[13]) << 22;
+                case 13:
+                    a2 |= encode6BitChar(b[12]) << 16;
+                case 12:
+                    a2 |= encode6BitChar(b[11]) << 10;
+                case 11:
+                    a2 |= encode6BitChar(b[10]) << 4;
+                case 10:
+                    a1 |= encode6BitChar(b[9]) << 58;
+                case 9:
+                    a1 |= encode6BitChar(b[8]) << 52;
+                case 8:
+                    a1 |= encode6BitChar(b[7]) << 46;
+                case 7:
+                    a1 |= encode6BitChar(b[6]) << 40;
+                case 6:
+                    a1 |= encode6BitChar(b[5]) << 34;
+                case 5:
+                    a1 |= encode6BitChar(b[4]) << 28;
+                case 4:
+                    a1 |= encode6BitChar(b[3]) << 22;
+                case 3:
+                    a1 |= encode6BitChar(b[2]) << 16;
+                case 2:
+                    a1 |= encode6BitChar(b[1]) << 10;
+                case 1:
+                    a1 |= encode6BitChar(b[0]) << 4;
+                    break;
+                case 0:
+                default:
+                    throw new IllegalArgumentException();
+            }
+            i1 = a1;
+            i2 = a2;
+        }
+
+        @Override
+        public int length() {
+            return (int) ((i1 & 0x0FL) + ((i2 & 0x0FL) << 4));
+        }
+
+        @Override
+        public char charAt(int index) {
+            int r = 0;
+            switch (index) {
+                case 0:
+                    r = (int) ((i1 >> 4) & 0x3FL);
+                    break;
+                case 1:
+                    r = (int) ((i1 >> 10) & 0x3FL);
+                    break;
+                case 2:
+                    r = (int) ((i1 >> 16) & 0x3FL);
+                    break;
+                case 3:
+                    r = (int) ((i1 >> 22) & 0x3FL);
+                    break;
+                case 4:
+                    r = (int) ((i1 >> 28) & 0x3FL);
+                    break;
+                case 5:
+                    r = (int) ((i1 >> 34) & 0x3FL);
+                    break;
+                case 6:
+                    r = (int) ((i1 >> 40) & 0x3FL);
+                    break;
+                case 7:
+                    r = (int) ((i1 >> 46) & 0x3FL);
+                    break;
+                case 8:
+                    r = (int) ((i1 >> 52) & 0x3FL);
+                    break;
+                case 9:
+                    r = (int) ((i1 >> 58) & 0x3FL);
+                    break;
+                case 10:
+                    r = (int) ((i2 >> 4) & 0x3FL);
+                    break;
+                case 11:
+                    r = (int) ((i2 >> 10) & 0x3FL);
+                    break;
+                case 12:
+                    r = (int) ((i2 >> 16) & 0x3FL);
+                    break;
+                case 13:
+                    r = (int) ((i2 >> 22) & 0x3FL);
+                    break;
+                case 14:
+                    r = (int) ((i2 >> 28) & 0x3FL);
+                    break;
+                case 15:
+                    r = (int) ((i2 >> 34) & 0x3FL);
+                    break;
+                case 16:
+                    r = (int) ((i2 >> 40) & 0x3FL);
+                    break;
+                case 17:
+                    r = (int) ((i2 >> 46) & 0x3FL);
+                    break;
+                case 18:
+                    r = (int) ((i2 >> 52) & 0x3FL);
+                    break;
+                case 19:
+                    r = (int) ((i2 >> 58) & 0x3FL);
+                    break;
+            }
+            return decode6BitChar(r);
+        }
+
+        @Override
+        public String toString() {
+            int n = length();
+            char[] r = new char[n];
+            for (int j = 0; j < n; j++) {
+                r[j] = charAt(j);
+            }
+            return new String(r);
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) {
+                return true;
+            }
+            if (object instanceof Fixed6Bit_11_20) {
+                Fixed6Bit_11_20 otherString = (Fixed6Bit_11_20) object;
+                return i1 == otherString.i1 && i2 == otherString.i2;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            long res = i1 + 31 * i2;
+            res = (res + (res >> 32)) & 0xFFFFFFFFL;
+            return (int) res;
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return CharSequences.create(toString().substring(start, end));
+        }
+
+        @Override
+        public int compareTo(CharSequence o) {
+            return Comparator.compare(this, o);
+        }
+    }
+
+    private static final class Fixed6Bit_21_30 implements CompactCharSequence, Comparable<CharSequence> {
+
+        // Length is in lower 4bits of i1 and l2
+        // then 6 bits per character in i1, i2 and i3
+        private final long i1;
+        private final long i2;
+        private final long i3;
+
+        @SuppressWarnings("fallthrough")
+        private Fixed6Bit_21_30(byte[] b, int n) {
+            long a1 = n & 0x0F;
+            long a2 = (n >> 4) & 0x0F;
+            long a3 = 0;
+            switch (n) {
+                case 30:
+                    a3 |= encode6BitChar(b[29]) << 58;
+                case 29:
+                    a3 |= encode6BitChar(b[28]) << 52;
+                case 28:
+                    a3 |= encode6BitChar(b[27]) << 46;
+                case 27:
+                    a3 |= encode6BitChar(b[26]) << 40;
+                case 26:
+                    a3 |= encode6BitChar(b[25]) << 34;
+                case 25:
+                    a3 |= encode6BitChar(b[24]) << 28;
+                case 24:
+                    a3 |= encode6BitChar(b[23]) << 22;
+                case 23:
+                    a3 |= encode6BitChar(b[22]) << 16;
+                case 22:
+                    a3 |= encode6BitChar(b[21]) << 10;
+                case 21:
+                    a3 |= encode6BitChar(b[20]) << 4;
+                case 20:
+                    a2 |= encode6BitChar(b[19]) << 58;
+                case 19:
+                    a2 |= encode6BitChar(b[18]) << 52;
+                case 18:
+                    a2 |= encode6BitChar(b[17]) << 46;
+                case 17:
+                    a2 |= encode6BitChar(b[16]) << 40;
+                case 16:
+                    a2 |= encode6BitChar(b[15]) << 34;
+                case 15:
+                    a2 |= encode6BitChar(b[14]) << 28;
+                case 14:
+                    a2 |= encode6BitChar(b[13]) << 22;
+                case 13:
+                    a2 |= encode6BitChar(b[12]) << 16;
+                case 12:
+                    a2 |= encode6BitChar(b[11]) << 10;
+                case 11:
+                    a2 |= encode6BitChar(b[10]) << 4;
+                case 10:
+                    a1 |= encode6BitChar(b[9]) << 58;
+                case 9:
+                    a1 |= encode6BitChar(b[8]) << 52;
+                case 8:
+                    a1 |= encode6BitChar(b[7]) << 46;
+                case 7:
+                    a1 |= encode6BitChar(b[6]) << 40;
+                case 6:
+                    a1 |= encode6BitChar(b[5]) << 34;
+                case 5:
+                    a1 |= encode6BitChar(b[4]) << 28;
+                case 4:
+                    a1 |= encode6BitChar(b[3]) << 22;
+                case 3:
+                    a1 |= encode6BitChar(b[2]) << 16;
+                case 2:
+                    a1 |= encode6BitChar(b[1]) << 10;
+                case 1:
+                    a1 |= encode6BitChar(b[0]) << 4;
+                    break;
+                case 0:
+                default:
+                    throw new IllegalArgumentException();
+            }
+            i1 = a1;
+            i2 = a2;
+            i3 = a3;
+        }
+
+        @Override
+        public int length() {
+            return (int) ((i1 & 0x0FL) + ((i2 & 0x0FL) << 4));
+        }
+
+        @Override
+        public char charAt(int index) {
+            int r = 0;
+            switch (index) {
+                case 0:
+                    r = (int) ((i1 >> 4) & 0x3FL);
+                    break;
+                case 1:
+                    r = (int) ((i1 >> 10) & 0x3FL);
+                    break;
+                case 2:
+                    r = (int) ((i1 >> 16) & 0x3FL);
+                    break;
+                case 3:
+                    r = (int) ((i1 >> 22) & 0x3FL);
+                    break;
+                case 4:
+                    r = (int) ((i1 >> 28) & 0x3FL);
+                    break;
+                case 5:
+                    r = (int) ((i1 >> 34) & 0x3FL);
+                    break;
+                case 6:
+                    r = (int) ((i1 >> 40) & 0x3FL);
+                    break;
+                case 7:
+                    r = (int) ((i1 >> 46) & 0x3FL);
+                    break;
+                case 8:
+                    r = (int) ((i1 >> 52) & 0x3FL);
+                    break;
+                case 9:
+                    r = (int) ((i1 >> 58) & 0x3FL);
+                    break;
+                case 10:
+                    r = (int) ((i2 >> 4) & 0x3FL);
+                    break;
+                case 11:
+                    r = (int) ((i2 >> 10) & 0x3FL);
+                    break;
+                case 12:
+                    r = (int) ((i2 >> 16) & 0x3FL);
+                    break;
+                case 13:
+                    r = (int) ((i2 >> 22) & 0x3FL);
+                    break;
+                case 14:
+                    r = (int) ((i2 >> 28) & 0x3FL);
+                    break;
+                case 15:
+                    r = (int) ((i2 >> 34) & 0x3FL);
+                    break;
+                case 16:
+                    r = (int) ((i2 >> 40) & 0x3FL);
+                    break;
+                case 17:
+                    r = (int) ((i2 >> 46) & 0x3FL);
+                    break;
+                case 18:
+                    r = (int) ((i2 >> 52) & 0x3FL);
+                    break;
+                case 19:
+                    r = (int) ((i2 >> 58) & 0x3FL);
+                    break;
+                case 20:
+                    r = (int) ((i3 >> 4) & 0x3FL);
+                    break;
+                case 21:
+                    r = (int) ((i3 >> 10) & 0x3FL);
+                    break;
+                case 22:
+                    r = (int) ((i3 >> 16) & 0x3FL);
+                    break;
+                case 23:
+                    r = (int) ((i3 >> 22) & 0x3FL);
+                    break;
+                case 24:
+                    r = (int) ((i3 >> 28) & 0x3FL);
+                    break;
+                case 25:
+                    r = (int) ((i3 >> 34) & 0x3FL);
+                    break;
+                case 26:
+                    r = (int) ((i3 >> 40) & 0x3FL);
+                    break;
+                case 27:
+                    r = (int) ((i3 >> 46) & 0x3FL);
+                    break;
+                case 28:
+                    r = (int) ((i3 >> 52) & 0x3FL);
+                    break;
+                case 29:
+                    r = (int) ((i3 >> 58) & 0x3FL);
+                    break;
+            }
+            return decode6BitChar(r);
+        }
+
+        @Override
+        public String toString() {
+            int n = length();
+            char[] r = new char[n];
+            for (int j = 0; j < n; j++) {
+                r[j] = charAt(j);
+            }
+            return new String(r);
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) {
+                return true;
+            }
+            if (object instanceof Fixed6Bit_21_30) {
+                Fixed6Bit_21_30 otherString = (Fixed6Bit_21_30) object;
+                return i1 == otherString.i1 && i2 == otherString.i2 && i3 == otherString.i3;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            long res = i1 + 31 * (i2 + i3 * 31);
+            res = (res + (res >> 32)) & 0xFFFFFFFFL;
+            return (int) res;
         }
 
         @Override

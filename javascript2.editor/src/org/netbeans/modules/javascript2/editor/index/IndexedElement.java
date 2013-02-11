@@ -66,14 +66,16 @@ public class IndexedElement extends JsElementImpl {
     private final JsElement.Kind jsKind;
     private final String fqn;
     private final boolean isAnonymous;
+    private final boolean isPlatform;
     private final Collection<TypeUsage> assignments;
     
-    public IndexedElement(FileObject fileObject, String name, String fqn, boolean isDeclared, boolean isAnonymous, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<TypeUsage> assignments) {
+    public IndexedElement(FileObject fileObject, String name, String fqn, boolean isDeclared, boolean isAnonymous, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<TypeUsage> assignments, boolean isPlatform) {
         super(fileObject, name, isDeclared, offsetRange, modifiers);
         this.jsKind = kind;
         this.fqn = fqn;
         this.isAnonymous = isAnonymous;
         this.assignments = assignments;
+        this.isPlatform = isPlatform;
     }
 
     @Override
@@ -92,9 +94,12 @@ public class IndexedElement extends JsElementImpl {
     public Collection<TypeUsage> getAssignments() {
         return assignments;
     }
-    
-     
-    
+
+    @Override
+    public boolean isPlatform() {
+        return isPlatform;
+    }
+
     public static IndexDocument createDocument(JsObject object, IndexingSupport support, Indexable indexable) {
         IndexDocument elementDocument = support.createDocument(indexable);
         elementDocument.addPair(JsIndex.FIELD_BASE_NAME, object.getName(), true, true);
@@ -102,12 +107,14 @@ public class IndexedElement extends JsElementImpl {
         elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (ModelUtils.isGlobal(object.getParent()) ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
         elementDocument.addPair(JsIndex.FIELD_FLAG, Integer.toString(Flag.getFlag(object)), false, true);
+        StringBuilder sb = new StringBuilder();
         for (JsObject property : object.getProperties().values()) {
             if (!property.getModifiers().contains(Modifier.PRIVATE)) {
-                elementDocument.addPair(JsIndex.FIELD_PROPERTY, codeProperty(property), false, true);
+                sb.append(codeProperty(property)).append("#@#");
             }
         }
-        StringBuilder sb = new StringBuilder();
+        elementDocument.addPair(JsIndex.FIELD_PROPERTY, sb.toString(), false, true);
+        sb = new StringBuilder();
         for (TypeUsage type : object.getAssignments()) {
             sb.append(type.getType());
             sb.append(":"); //NOI18N
@@ -142,9 +149,10 @@ public class IndexedElement extends JsElementImpl {
         Set<Modifier> modifiers = Flag.getModifiers(flag);
         int offset = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_OFFSET));
         Collection<TypeUsage> assignments = getAssignments(indexResult);
+        boolean isPlatform = Flag.isPlatform(flag);
         IndexedElement result;
         if (!kind.isFunction()) {
-            result = new IndexedElement(fo, name, fqn, isDeclared, isAnonymous, kind, new OffsetRange(offset, offset + name.length()), modifiers, assignments);
+            result = new IndexedElement(fo, name, fqn, isDeclared, isAnonymous, kind, new OffsetRange(offset, offset + name.length()), modifiers, assignments, isPlatform);
         } else {
             Collection<TypeUsage> returnTypes = getReturnTypes(indexResult);
             Collection<String>rTypes = new ArrayList<String>();
@@ -161,8 +169,14 @@ public class IndexedElement extends JsElementImpl {
     public static Collection<IndexedElement> createProperties(IndexResult indexResult, String fqn) {
         Collection<IndexedElement> result = new ArrayList<IndexedElement>();
         FileObject fo = indexResult.getFile();
-        for(String sProperty : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
-            result.add(decodeProperty(sProperty, fo, fqn));
+        for(String sProperties : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
+            String[] split = sProperties.split("#@#");
+            for (int i = 0; i < split.length; i++) {
+                if  (!split[i].isEmpty()) {
+                    result.add(decodeProperty(split[i], fo, fqn));
+                }
+            }
+            
         }
         return result;
     }
@@ -305,7 +319,7 @@ public class IndexedElement extends JsElementImpl {
                 return new FunctionIndexedElement(fo, name, fqnOfProperty, OffsetRange.NONE, flag, parameters, returnTypes, assignments);
             }
         }
-        return new IndexedElement(fo, name, fqnOfProperty, Flag.isDeclared(flag), Flag.isAnonymous(flag), jsKind,OffsetRange.NONE, Flag.getModifiers(flag), assignments);
+        return new IndexedElement(fo, name, fqnOfProperty, Flag.isDeclared(flag), Flag.isAnonymous(flag), jsKind,OffsetRange.NONE, Flag.getModifiers(flag), assignments, Flag.isPlatform(flag));
     }
     
     public static class FunctionIndexedElement extends IndexedElement {
@@ -313,7 +327,7 @@ public class IndexedElement extends JsElementImpl {
         private final Collection<String> returnTypes;
         
         public FunctionIndexedElement(FileObject fileObject, String name, String fqn,OffsetRange offsetRange, int flag,  LinkedHashMap<String, Collection<String>> parameters, Collection<String> returnTypes, Collection<TypeUsage> assignments) {
-            super(fileObject, name, fqn, Flag.isDeclared(flag), Flag.isAnonymous(flag), Flag.getJsKind(flag), offsetRange, Flag.getModifiers(flag), assignments);
+            super(fileObject, name, fqn, Flag.isDeclared(flag), Flag.isAnonymous(flag), Flag.getJsKind(flag), offsetRange, Flag.getModifiers(flag), assignments, Flag.isPlatform(flag));
             this.parameters = parameters;
             this.returnTypes = returnTypes;
         }
@@ -353,7 +367,9 @@ public class IndexedElement extends JsElementImpl {
         private static final int PARAMETER = 1 << 17;
         private static final int PROPERTY_GETTER = 1 << 18;
         private static final int PROPERTY_SETTER = 1 << 19;
-        
+
+        private static final int PLATFORM = 1 << 20;
+
         public static int getFlag(JsObject object) {
             int value = 0;
             
@@ -381,6 +397,9 @@ public class IndexedElement extends JsElementImpl {
             if (kind == JsElement.Kind.PROPERTY_GETTER) value = value | PROPERTY_GETTER;
             if (kind == JsElement.Kind.PROPERTY_SETTER) value = value | PROPERTY_SETTER;
             if (kind == JsElement.Kind.VARIABLE) value = value | VARIABLE;
+
+            if (object.isPlatform()) value = value | PLATFORM;
+
             return value;
         }
         
@@ -405,7 +424,11 @@ public class IndexedElement extends JsElementImpl {
         public static boolean isAnonymous(int flag) {
             return (flag & ANONYMOUS) != 0;
         }
-        
+
+        public static boolean isPlatform(int flag) {
+            return (flag & PLATFORM) != 0;
+        }
+
         public static JsElement.Kind getJsKind(int flag) {
             JsElement.Kind result = JsElement.Kind.VARIABLE;
             if ((flag & ANONYMOUS_OBJECT) != 0) result = JsElement.Kind.ANONYMOUS_OBJECT;

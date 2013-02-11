@@ -82,6 +82,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -114,7 +115,10 @@ public class PushAction extends SingleRepositoryAction {
         });
     }
     
-    public void push (File repository, final String remote, final Collection<PushMapping> pushMappins, final List<String> fetchRefSpecs) {
+    @NbBundle.Messages({
+        "# {0} - repository name", "LBL_PushAction.progressName=Pushing - {0}"
+    })
+    public Task push (File repository, final String remote, final Collection<PushMapping> pushMappins, final List<String> fetchRefSpecs) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
@@ -352,6 +356,6 @@ public class PushAction extends SingleRepositoryAction {
                 }
             }
         };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(PushAction.class, "LBL_PushAction.progressName")); //NOI18N
+        return supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_PushAction_progressName(repository.getName()));
     }
 }

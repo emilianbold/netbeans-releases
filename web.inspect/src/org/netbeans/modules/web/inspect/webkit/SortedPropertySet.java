@@ -53,7 +53,7 @@ import org.openide.nodes.Node;
  */
 abstract class SortedPropertySet<T extends Node.Property> extends Node.PropertySet {
     /** Property name to property map sorted according to property names. */
-    private SortedMap<String,T> properties;
+    private final SortedMap<String,T> properties;
     /** Determines whether this property set has been initialized. */
     protected boolean initialized;
 

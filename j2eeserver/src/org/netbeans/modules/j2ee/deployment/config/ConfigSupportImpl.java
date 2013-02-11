@@ -1009,22 +1009,4 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return allRelativePaths;
     }
 
-    // XXX commented out - there does not seem to be any client for 7.3
-    // once this is going to be used move to J2eeModuleProvider
-    /**
-     * The listener interface to listen for deploy on save operations.
-     *
-     * @since 1.91
-     */
-    public static interface DeployOnSaveListener {
-
-        /**
-         * Invoked when a deploy on save operation has been successfully
-         * performed by the infrastructure.
-         *
-         * @param artifacts artifacts affected by the deploy
-         */
-        public void deployed(Iterable<ArtifactListener.Artifact> artifacts);
-
-    }
 }

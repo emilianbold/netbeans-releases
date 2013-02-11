@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.languages.neon;
+package org.netbeans.modules.languages.neon.lexer;
 
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -152,7 +152,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %}
 
-IDENTIFIER=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_#\x7f-\xff\.]*"!"?
+IDENTIFIER=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_#\-\\\x7f-\xff\.]*"!"?
 KEYWORD=("true" | "TRUE" | "false" | "FALSE" | "yes" | "YES" | "no" | "NO" | "null" | "NULL" | "not" | "self")
 WHITESPACE=[ \t]+
 NEWLINE=("\r"|"\n"|"\r\n")
@@ -171,8 +171,8 @@ LITERAL=([^%\"',=\[\]\{\}\(\)\<\>\t\n\r@ ])+
 ARRAY_CLOSE_DELIM = ("]" | "}" | ")")
 ARRAY_MINUS_DELIM="-"
 ARRAY_ITEM_DELIM=","
-D_STRING="\""([^"\r""\n""\r\n""\""]|"\\\"")*"\""
-S_STRING="'"([^"\r""\n""\r\n""'"]|"\\'")*"'"
+D_STRING="\""([^"\r""\n""\r\n""\"""\\"]|"\\\\")*"\""
+S_STRING="'"([^"\r""\n""\r\n""'"])*"'"
 STRING = {D_STRING} | {S_STRING}
 VARIABLE="%"{LITERAL}"%"?
 ARRAY_KEY=({REFERENCE} | {LITERAL} | {STRING} | {NUMBER}){WHITESPACE}*(":"|"=")

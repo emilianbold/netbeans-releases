@@ -105,6 +105,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     private final Folder folder;
     private final MakeLogicalViewProvider provider;
     private final String pathPostfix;
+    private RequestProcessor.Task updateTask;
 
     public LogicalFolderNode(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
         super(new LogicalViewChildren(folder, provider), createLFNLookup(folderNode, folder, provider), MakeLogicalViewProvider.ANNOTATION_RP);
@@ -155,7 +156,10 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     }
 
     private void updateAnnotationFiles() {
-        MakeLogicalViewProvider.ANNOTATION_RP.post(new FileAnnotationUpdater(this));
+        if (updateTask == null) {
+            updateTask = MakeLogicalViewProvider.ANNOTATION_RP.create(new FileAnnotationUpdater(this));
+        }
+        updateTask.schedule(BaseMakeViewChildren.WAIT_DELAY); // batch by 50 ms
     }
 
     private final class FileAnnotationUpdater implements Runnable {
@@ -187,6 +191,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             while (iter.hasNext()) {
                 iter.next().addChangeListener(logicalFolderNode);
             }
+            EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
         }
     }
 
@@ -205,9 +210,6 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         updateAnnotationFiles();
-        EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
-//            fireIconChange(); // LogicalFolderNode
-//            fireOpenedIconChange();
     }
 
     public Folder getFolder() {

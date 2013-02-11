@@ -50,21 +50,21 @@ import org.json.simple.JSONObject;
  */
 public class Property {
     /** Name of the property. */
-    private String name;
+    private final String name;
     /** Value of the property. */
-    private String value;
+    private final String value;
     /** Priority of the property. */
-    private String priority;
+    private final String priority;
     /** Determines whether the property is implicit. */
     private boolean implicit;
     /** Full property text as specified in the style. */
-    private String text;
+    private final String text;
     /** Determines whether the property is understood by the browser. */
-    private boolean parsedOk;
+    private final boolean parsedOk;
     /** Status of the property. */
-    private Status status;
+    private final Status status;
     /** Related shorthand property name (or {@code null} if the property is not a longhand). */
-    private String shorthandName;
+    private final String shorthandName;
     /** Entire property range in the enclosing style declaration (if available). */
     private SourceRange range;
 

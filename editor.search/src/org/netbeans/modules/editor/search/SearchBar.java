@@ -72,7 +72,6 @@ import org.netbeans.api.search.SearchPattern;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.MultiKeymap;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.search.SearchPropertiesSupport.SearchProperties;
 import org.openide.awt.CloseButtonFactory;
 import org.openide.awt.Mnemonics;
@@ -185,7 +184,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         leftSeparator.setOrientation(SwingConstants.VERTICAL);
         add(leftSeparator);
 
-        findPreviousButton = createFindButton("org/netbeans/modules/editor/resources/find_previous.png", "CTL_FindPrevious"); // NOI18N
+        findPreviousButton = createFindButton("org/netbeans/modules/editor/search/resources/find_previous.png", "CTL_FindPrevious"); // NOI18N
         findPreviousButton.addActionListener(new ActionListener() {
 
             @Override
@@ -194,7 +193,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             }
         });
         add(findPreviousButton);
-        findNextButton = createFindButton("org/netbeans/modules/editor/resources/find_next.png", "CTL_FindNext"); // NOI18N
+        findNextButton = createFindButton("org/netbeans/modules/editor/search/resources/find_next.png", "CTL_FindNext"); // NOI18N
         findNextButton.addActionListener(new ActionListener() {
 
             @Override
@@ -421,7 +420,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                     MultiKeymap multiKeymap = (MultiKeymap) keymap;
 
                     Action[] actions = lastFocusedComponent.getActions();
-                    for (Action action : actions) { // Discover the keyStrokes for incremental-search-forward
+                    for (Action action : actions) { 
                         String actionName = (String) action.getValue(Action.NAME);
                         if (actionName == null) {
                             LOG.log(Level.WARNING, "SearchBar: Null Action.NAME property of action: {0}\n", action); //NOI18N
@@ -945,9 +944,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                     if (isClosingSearchType()) {
                         String findWhat = (String) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);
                         if (findWhat != null && findWhat.length() > 0) {
-                            incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
                             incSearchTextField.setText(findWhat);
-                            incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
                         }
                     }
 

@@ -48,6 +48,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -69,6 +70,8 @@ public class NamingFactoryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        Object res = CharSequences.create("0123456789012345678901234567890123456789");
+        assertTrue("Contains Byte: " + res.getClass(), res.getClass().getName().contains("Byte"));
     }
     
     public void registerSecurityManager() {

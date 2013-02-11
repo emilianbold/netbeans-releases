@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.repository.access;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
@@ -98,18 +97,18 @@ public class CloseProjectWhenParsingLib extends RepositoryAccessTestBase  {
 	    // the assertion won't appear either
 	    // waitLibsParsed(project);
 	    traceModel.resetProject(true);
-	    waitCloseAndClear(libs, traceModel);
+	    waitCloseAndClear(libs);
 	    assertNoExceptions();
 	}
 	assertNoExceptions();
     }
     
-    private void waitCloseAndClear(Collection<CsmProject> libs, TraceModelBase traceModel) {
+    private void waitCloseAndClear(Collection<CsmProject> libs) {
         for( CsmProject lib : libs ) {
 	    lib.waitParse();
 	}
         for( CsmProject lib : libs ) {
-	    traceModel.closeProject(lib, true);
+	    TraceModelBase.closeProject(lib, true);
 	}
     }
     

@@ -57,7 +57,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -83,13 +82,11 @@ import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.bookmarks.BookmarkChange;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
 import org.netbeans.modules.editor.bookmarks.BookmarkManagerEvent;
 import org.netbeans.modules.editor.bookmarks.BookmarkManagerListener;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
-import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
 import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
 import org.netbeans.swing.etable.ETable;
 import org.openide.cookies.EditorCookie;
@@ -104,7 +101,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -137,10 +133,8 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         if (bookmarksView == null) {
             bookmarksView = (BookmarksView) create();
         }
-        bookmarksView.findInitialSelection();
         bookmarksView.open();
         bookmarksView.requestActive();
-        bookmarksView.doInitialSelection();
         return bookmarksView;
     }
     
@@ -170,12 +164,12 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     private transient BookmarkInfo displayedBookmarkInfo;
     
     private transient boolean initialSelectionDone;
-    private transient FileObject initialSelectionFileObject;
     
     BookmarksView() {
 //        getActionMap().put("rename", SystemAction.get(RenameAction.class));
         nodeTree = new BookmarksNodeTree();
         explorerManager = new ExplorerManager();
+        explorerManager.setRootContext(nodeTree.rootNode());
         ActionMap actionMap = getActionMap();
         actionMap.put("delete", ExplorerUtils.actionDelete(explorerManager, false)); //NOI18N
         associateLookup(ExplorerUtils.createLookup(explorerManager, actionMap));
@@ -272,12 +266,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
 
     @Override
     public void bookmarksChanged(final BookmarkManagerEvent evt) {
-        SwingUtilities.invokeLater(new Runnable() { // Can come within project's mutex lock
-            @Override
-            public void run() {
-                updateTreeRootContext(evt.getBookmarkChanges());
-            }
-        });
+        updateTreeRootContext(evt);
     }
     
     private void setTreeViewVisible(boolean treeViewVisible) {
@@ -300,13 +289,13 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
                     container = (TreeOrTableContainer) treeView.getParent();
                 }
 
-            } else { // Table view visible
+            } else { // Tree view visible
                 create = (tableView == null);
                 if (create) {
                     tableView = new BookmarksTableView();
                     container = new TreeOrTableContainer();
                     container.add(tableView);
-                    updateTableEntries();
+                    rebuildTableEntries();
                     initTableView();
                 } else {
                     container = (TreeOrTableContainer) tableView.getParent();
@@ -325,13 +314,29 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         }
     }
     
-    private void updateTreeRootContext(List<BookmarkChange> changes) {
-        nodeTree.rebuild(explorerManager);
-        // Update table nodes as well if they exist
-        updateTableEntries();
+    private void updateTreeRootContext(BookmarkManagerEvent evt) {
+        boolean structureChange = (evt == null) || evt.isStructureChange();
+        if (structureChange) {
+            updateNodeTree();
+
+        } else {
+            // Only update bookmark node properties (no project access)
+            nodeTree.updateBookmarkNodes(evt);
+            notifyTableEntriesChanged(evt);
+        }
     }
     
-    private void updateTableEntries() {
+    private void updateNodeTree() {
+        nodeTree.updateNodeTree();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                rebuildTableEntries();
+            }
+        });
+    }
+    
+    private void rebuildTableEntries() {
         if (tableView != null) {
             BookmarksTable table = tableView.getTable();
             int selectedIndex = Math.max(table.getSelectedRow(), 0); // If no selection request first row selection
@@ -339,6 +344,18 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
             selectedIndex = Math.min(selectedIndex, table.getRowCount() - 1);
             if (selectedIndex >= 0) {
                 table.getSelectionModel().setSelectionInterval(selectedIndex, selectedIndex);
+            }
+        }
+    }
+    
+    private void notifyTableEntriesChanged(BookmarkManagerEvent evt) {
+        if (tableView != null) {
+            BookmarksTable table = tableView.getTable();
+            BookmarksTableModel model = (BookmarksTableModel) table.getModel();
+            for (int i = model.getEntryCount() - 1; i >= 0; i--) {
+                if (evt.getChange(model.getEntry(i).getBookmarkInfo()) != null) {
+                    model.fireTableRowsUpdated(i, i);
+                }
             }
         }
     }
@@ -444,8 +461,14 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     @Override
     protected void componentShowing() {
         // Ensure all bookmarks from all projects loaded
-        BookmarksPersistence.get().ensureAllOpenedProjectsBookmarksLoaded();
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            lockedBookmarkManager.keepOpenProjectsBookmarksLoaded();
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
         initLayoutAndComponents();
+        doInitialSelection();
         super.componentShowing();
     }
 
@@ -568,29 +591,25 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         return null;
     }
     
-    private void findInitialSelection() { // Perform initial selection
-        if (!initialSelectionDone) {
-            Lookup lookup = org.openide.util.Utilities.actionsGlobalContext();
-            initialSelectionFileObject = lookup.lookup(FileObject.class);
-        }
-    }
-
     private void doInitialSelection() { // Perform initial selection
         if (!initialSelectionDone) {
             if (treeViewShowing) {
+                FileObject selectedFileObject;
                 Node selectedNode = getTreeSelectedNode();
                 if (selectedNode instanceof BookmarkNode) {
                     initialSelectionDone = true;
-                } else if (initialSelectionFileObject != null) {
+                } else if ((selectedFileObject = org.openide.util.Utilities.
+                        actionsGlobalContext().lookup(FileObject.class)) != null)
+                {
                     BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
                     try {
                         ProjectBookmarks projectBookmarks = lockedBookmarkManager.
-                                getProjectBookmarks(initialSelectionFileObject);
+                                getProjectBookmarks(selectedFileObject);
                         Node bNode = nodeTree.findFirstBookmarkNode(
-                                projectBookmarks, initialSelectionFileObject);
+                                projectBookmarks, selectedFileObject);
                         if (bNode != null) {
                             initialSelectionDone = true;
-                            initialSelectionFileObject = null;
+                            selectedFileObject = null;
                             try {
                                 explorerManager.setSelectedNodes(new Node[] { bNode });
                             } catch (PropertyVetoException ex) {

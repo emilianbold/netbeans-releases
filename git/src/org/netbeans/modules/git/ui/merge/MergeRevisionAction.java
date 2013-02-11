@@ -50,6 +50,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -99,24 +100,30 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                 @Override
                 protected void perform () {
                     try {
-                        GitClient client = getClient();
-                        client.addNotificationListener(new DefaultFileListener(new File[] { repository }));
-                        revision = mergeRevision.getRevision();
-                        LOG.log(Level.FINE, "Merging revision {0} into HEAD", revision); //NOI18N
-                        boolean cont;
-                        MergeResultProcessor mrp = new MergeResultProcessor(client, repository, revision, getLogger(), getProgressMonitor());
-                        do {
-                            cont = false;
-                            try {
-                                GitMergeResult result = client.merge(revision, getProgressMonitor());
-                                mrp.processResult(result);
-                            } catch (GitException.CheckoutConflictException ex) {
-                                if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
-                                }
-                                cont = mrp.resolveLocalChanges(ex.getConflicts());
+                        GitUtils.runWithoutIndexing(new Callable<Void>() {
+                            @Override
+                            public Void call () throws Exception {
+                                GitClient client = getClient();
+                                client.addNotificationListener(new DefaultFileListener(new File[] { repository }));
+                                revision = mergeRevision.getRevision();
+                                LOG.log(Level.FINE, "Merging revision {0} into HEAD", revision); //NOI18N
+                                boolean cont;
+                                MergeResultProcessor mrp = new MergeResultProcessor(client, repository, revision, getLogger(), getProgressMonitor());
+                                do {
+                                    cont = false;
+                                    try {
+                                        GitMergeResult result = client.merge(revision, getProgressMonitor());
+                                        mrp.processResult(result);
+                                    } catch (GitException.CheckoutConflictException ex) {
+                                        if (LOG.isLoggable(Level.FINE)) {
+                                            LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
+                                        }
+                                        cont = mrp.resolveLocalChanges(ex.getConflicts());
+                                    }
+                                } while (cont);
+                                return null;
                             }
-                        } while (cont);
+                        }, repository);
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {

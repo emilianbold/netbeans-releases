@@ -82,7 +82,6 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
-import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -222,13 +221,21 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                             final PhpClass type = phpVariable.getType();
                             if (variable != null) {
                                 variable.indexedElement = VariableElementImpl.create(
-                                         varName, phpVariable.getOffset(), phpVariable.getFile(),
-                                        null, type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet());
+                                        varName,
+                                        phpVariable.getOffset(),
+                                        phpVariable.getFile(),
+                                        null,
+                                        type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet(),
+                                        false);
                             } else {
                                 int offset = namespaceScope.getOffset();
                                 VariableElementImpl var = VariableElementImpl.create(
-                                         varName, offset, phpVariable.getFile(),
-                                        null, type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet());
+                                        varName,
+                                        offset,
+                                        phpVariable.getFile(),
+                                        null,
+                                        type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet(),
+                                        false);
                                 namespaceScope.createElement(var);
                             }
                         }
@@ -667,10 +674,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 occurencesBuilder.prepare(nodeInfo, createElement);
             }
         } else {
-            List<? extends ClassConstantDeclarationInfo> constantDeclarationInfos = ClassConstantDeclarationInfo.create(node);
-            for (ClassConstantDeclarationInfo nodeInfo : constantDeclarationInfos) {
-                occurencesBuilder.prepare(nodeInfo, ModelElementFactory.create(nodeInfo, modelBuilder));
-            }
+            modelBuilder.build(node, occurencesBuilder);
         }
         super.visit(node);
     }
@@ -1356,19 +1360,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (possibleScope && blockRange.containsInclusive(offset)
                             && (retval == null || retval.getBlockRange().overlaps(varScope.getBlockRange()))) {
                         retval = varScope;
-                    }
-                }
-            } else if (modelElement instanceof ClassScope) {
-                //TODO: remove this block of code
-                assert false : "This block of code should be never called (ClassScope extends VariableScope)";
-                ClassScope clsScope = (ClassScope) modelElement;
-                Collection<? extends MethodScope> allMethods = clsScope.getDeclaredMethods();
-                for (MethodScope methodScope : allMethods) {
-                    OffsetRange blockRange = methodScope.getBlockRange();
-                    if (blockRange != null && blockRange.containsInclusive(offset)) {
-                        if (retval == null || retval.getBlockRange().overlaps(methodScope.getBlockRange())) {
-                            retval = methodScope;
-                        }
                     }
                 }
             }

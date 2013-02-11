@@ -115,4 +115,9 @@ public abstract class MakeProjectCustomizerAdaptor implements MakeProjectCustomi
     public boolean isStandardManagedConfiguration() {
         return false;
     }
+
+    @Override
+    public boolean isApplicationConfiguration() {
+        return false;
+    }
 }

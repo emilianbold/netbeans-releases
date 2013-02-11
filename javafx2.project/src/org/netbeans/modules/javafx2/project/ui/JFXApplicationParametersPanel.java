@@ -47,21 +47,59 @@
  */
 package org.netbeans.modules.javafx2.project.ui;
 
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties.PropertiesTableModel;
+import org.netbeans.modules.javafx2.project.JFXProjectProperties.PropertyCellEditor;
+import org.netbeans.modules.javafx2.project.JFXProjectProperties.PropertyCellRenderer;
+import org.openide.DialogDescriptor;
 
 /**
  *
  * @author Petr Somol
  */
-public class JFXApplicationParametersPanel extends javax.swing.JPanel {
+public class JFXApplicationParametersPanel extends javax.swing.JPanel implements TableModelListener {
 
     private PropertiesTableModel tableModel;
+    private PropertyCellEditor cellEditor;
+    private DialogDescriptor desc;
     
     /** Creates new form JFXApplicationParametersPanel */
-    public JFXApplicationParametersPanel(PropertiesTableModel mdl) {
+    public JFXApplicationParametersPanel(@NonNull PropertiesTableModel mdl) {
         this.tableModel = mdl;
         initComponents();
+        cellEditor = new PropertyCellEditor();
+        tableParams.setDefaultRenderer(Object.class, new PropertyCellRenderer());
+        tableParams.setDefaultEditor(Object.class, cellEditor);
         tableParams.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        updateRemoveButton();
+    }
+
+    void setDialogDescriptor(DialogDescriptor desc) {
+        this.desc = desc;
+        updateDialogButtons();
+        updateAddButton();
+    }
+
+    void registerListeners() {
+        tableModel.addTableModelListener(this);
+        tableParams.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent lse) {
+                if (!lse.getValueIsAdjusting()) {
+                    updateRemoveButton();
+                }
+            }
+        });
+        cellEditor.registerCellEditorListener();
+    }
+    
+    void unregisterListeners() {
+        tableModel.removeTableModelListener(this);
+        cellEditor.unregisterCellEditorListener();
     }
 
     /** This method is called from within the constructor to
@@ -147,14 +185,15 @@ public class JFXApplicationParametersPanel extends javax.swing.JPanel {
 
 private void buttonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddActionPerformed
     tableModel.addRow();
-    tableModel.fireTableDataChanged();
+    tableParams.requestFocusInWindow();
+    //tableParams.changeSelection(WIDTH, WIDTH, true, true);
 }//GEN-LAST:event_buttonAddActionPerformed
 
 private void buttonRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoveActionPerformed
     int selIndex = tableParams.getSelectedRow();
     if (selIndex != -1) {
         tableModel.removeRow(selIndex);
-        tableModel.fireTableDataChanged();
+        tableParams.requestFocusInWindow();
     }
 }//GEN-LAST:event_buttonRemoveActionPerformed
 
@@ -166,4 +205,31 @@ private void buttonRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JLabel labelRemark;
     private javax.swing.JTable tableParams;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void tableChanged(TableModelEvent e) {
+        updateDialogButtons();
+        updateAddButton();
+    }
+
+    private void updateDialogButtons() {
+        if(tableModel.isValid()) {
+           desc.setValid(true);
+        } else {
+           desc.setValid(false);
+        }
+    }
+    
+    private void updateRemoveButton() {
+        int selIndex = tableParams.getSelectedRow();
+        buttonRemove.setEnabled(selIndex != -1);
+    }
+    
+    private void updateAddButton() {
+        if(tableModel.isLastRowEmpty()) {
+            buttonAdd.setEnabled(false);
+        } else {
+            buttonAdd.setEnabled(true);
+        }
+    }
 }

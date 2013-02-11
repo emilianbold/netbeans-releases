@@ -67,17 +67,17 @@ import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
  */
 public class DOM {
     /** Transport used by this instance. */
-    private TransportHelper transport;
+    private final TransportHelper transport;
     /** WebKit debugging this instance belongs to. */
-    private WebKitDebugging webKit;
+    private final WebKitDebugging webKit;
     /** Callback for DOM event notifications. */
-    private ResponseCallback callback;
+    private final ResponseCallback callback;
     /** Registered listeners. */
-    private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
+    private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
     /** Document node */
     private Node documentNode;
     /** Known nodes - maps node ID to Node. */
-    private Map<Integer,Node> nodes = new HashMap<Integer,Node>();
+    private final Map<Integer,Node> nodes = new HashMap<Integer,Node>();
 
     /**
      * Creates a new wrapper for the DOM domain of WebKit Remote Debugging Protocol.
@@ -635,6 +635,9 @@ public class DOM {
         synchronized (this) {
             int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
             node = nodes.get(nodeId);
+            if (node == null) {
+                return;
+            }
             name = (String)params.get("name"); // NOI18N
             node.removeAttribute(name);
         }
@@ -646,6 +649,9 @@ public class DOM {
         synchronized (this) {
             int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
             node = nodes.get(nodeId);
+            if (node == null) {
+                return;
+            }
             String characterData = (String)params.get("characterData"); // NOI18N
             node.setNodeValue(characterData);
         }

@@ -124,7 +124,7 @@ public class ResultSetJXTable extends JXTableDecorator {
         setAutoResizeMode(JXTable.AUTO_RESIZE_OFF);
         setFillsViewportHeight(true);
 
-        setHighlighters(HighlighterFactory.createAlternateStriping(Color.WHITE, ALTERNATE_ROW_COLOR));
+        setHighlighters(HighlighterFactory.createAlternateStriping(ROW_COLOR, ALTERNATE_ROW_COLOR));
         addHighlighter(new ColorHighlighter(HighlightPredicate.ROLLOVER_ROW, ROLLOVER_ROW_COLOR, null));
 
         setDefaultCellRenderers();

@@ -124,15 +124,22 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     }
 
     protected Node getProjectNode(String projectName) {
-        if(projectsTab==null)
+        if(projectsTab==null) {
             projectsTab = ScriptingUtilities.invokePTO();
-        
+        }
         return projectsTab.getProjectRootNode(projectName);
     }
 
     public void test_JScript_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "javascript20kb.js";
+        nodePath = "Web Pages";
+        doMeasurement();        
+    }
+    
+    public void test_JScript_EditorTypingBig() {
+        testProject = Projects.SCRIPTING_PROJECT;
+        fileName = "javascript_200kb.js";
         nodePath = "Web Pages";
         doMeasurement();        
     }

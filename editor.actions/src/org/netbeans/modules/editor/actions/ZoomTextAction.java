@@ -38,6 +38,7 @@
 package org.netbeans.modules.editor.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.Map;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
@@ -62,7 +63,7 @@ public class ZoomTextAction extends AbstractEditorAction {
     
     private static final long serialVersionUID = 1L;
     private static final String TEXT_ZOOM_PROPERTY = "text-zoom"; // Defined in DocumentView in editor.lib2
-
+    
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         String actionName = actionName();

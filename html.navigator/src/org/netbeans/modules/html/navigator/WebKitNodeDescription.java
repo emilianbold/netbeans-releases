@@ -115,7 +115,7 @@ public class WebKitNodeDescription extends DOMNodeDescription {
         changeSupport.addChangeListener( listener );
     }
     
-    public void removePropertyChangeListener(ChangeListener listener ) {
+    public void removeChangeListener(ChangeListener listener ) {
         changeSupport.removeChangeListener( listener );
     }
 

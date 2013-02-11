@@ -52,6 +52,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.nio.charset.Charset;
 import org.netbeans.api.progress.ProgressHandle;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -121,7 +122,7 @@ public final class ContextualPatch {
                     if(ph != null) {
                         ph.progress(patch.targetPath, i + 1);
                     }
-                    report.add(new PatchReport(patch.targetFile, computeBackup(patch.targetFile), patch.binary, PatchStatus.Patched, null));
+                    report.add(new PatchReport(patch.targetFile, computeBackup(patch.rename ? patch.sourceFile : patch.targetFile), patch.binary, PatchStatus.Patched, null));
                 } catch (Exception e) {
                     report.add(new PatchReport(patch.targetFile, null, patch.binary, PatchStatus.Failure, e));
                 }
@@ -155,8 +156,16 @@ public final class ContextualPatch {
     private void applyPatch(SinglePatch patch, boolean dryRun) throws IOException, PatchException {
         lastPatchedLine = 1;
         List<String> target;
+        patch.sourceFile = computeSourceFile(patch);
         patch.targetFile = computeTargetFile(patch);
-        if (patch.targetFile.exists() && !patch.binary) {
+        if (patch.sourceFile != null && patch.sourceFile.exists()) {
+            if (patch.binary) {
+                target = new ArrayList<String>();
+            } else {
+                target = readFile(patch.sourceFile);
+                if (patchCreatesNewFileThatAlreadyExists(patch, target)) return;
+            }
+        } else if (patch.targetFile.exists() && !patch.binary) {
             target = readFile(patch.targetFile);
             if (patchCreatesNewFileThatAlreadyExists(patch, target)) return;
         } else {
@@ -168,6 +177,9 @@ public final class ContextualPatch {
             }
         }
         if (!dryRun) {
+            if (patch.sourceFile != null) {
+                backup(patch.sourceFile);
+            }
             backup(patch.targetFile);
             writeFile(patch, target);
         }
@@ -209,7 +221,22 @@ public final class ContextualPatch {
          * Writes the patched using a FileObject object, not directly through a File object,
          * so the FileSystem could be notified of any file changes being made.
          */
-        FileObject fo = FileUtil.toFileObject(patch.targetFile);
+        FileObject fo = null;
+        if (patch.rename) {
+            FileObject src = FileUtil.toFileObject(patch.sourceFile);
+            FileObject target = FileUtil.toFileObject(patch.targetFile.getParentFile());
+            if (src != null && target != null) {
+                FileLock lock = src.lock();
+                try {
+                    fo = src.move(lock, target, patch.targetFile.getName(), null);
+                } finally {
+                    lock.releaseLock();
+                }
+            }
+        }
+        if (fo == null) {
+            fo = FileUtil.toFileObject(patch.targetFile);
+        }
         if (fo == null) {
             fo = FileUtil.createData(patch.targetFile);
         }
@@ -218,7 +245,10 @@ public final class ContextualPatch {
         }
         if (patch.binary) {
             if (patch.hunks.length == 0) {
-                fo.delete();
+                if (!patch.rename) {
+                    // do not delete, it was a plain rename
+                    fo.delete();
+                }
             } else {
                 byte [] content = Base64.decode(patch.hunks[0].lines);
                 copyStreamsCloseAll(fo.getOutputStream(), new ByteArrayInputStream(content));
@@ -341,7 +371,12 @@ public final class ContextualPatch {
         SinglePatch patch = new SinglePatch();
         for (;;) {
             String line = readPatchLine();
-            if (line == null) return null;
+            if (line == null) {
+                if (!patch.rename || patch.sourcePath == null || patch.targetPath == null) {
+                    patch = null;
+                }
+                break;
+            }
             
             if (line.startsWith("Index:")) {
                 patch.targetPath = line.substring(6).trim();
@@ -361,6 +396,11 @@ public final class ContextualPatch {
                 unreadPatchLine();
                 readNormalPatchContent(patch);
                 break;
+            } else if (line.startsWith("rename from ")) {
+                patch.sourcePath = line.substring(12);
+                patch.rename = true;
+            } else if (line.startsWith("rename to ")) {
+                patch.targetPath = line.substring(10);
             }
         }
         return patch;
@@ -701,6 +741,14 @@ public final class ContextualPatch {
         context = bestContext;
     }
 
+    private File computeSourceFile (SinglePatch patch) {
+        if (patch.sourcePath == null) {
+            return null;
+        }
+        if (context.isFile()) return context;
+        return new File(context, patch.sourcePath);
+    }
+    
     private File computeTargetFile(SinglePatch patch) {
         if (patch.targetPath == null) {
             patch.targetPath = context.getAbsolutePath();
@@ -710,13 +758,15 @@ public final class ContextualPatch {
     }
 
     private class SinglePatch {
-        String      targetIndex;
         String      targetPath;
-        Hunk []     hunks;
+        Hunk []     hunks = new Hunk[0];
         boolean     targetMustExist = true;     // == false if the patch contains one hunk with just additions ('+' lines)
         File        targetFile;                 // computed later
         boolean     noEndingNewline;            // resulting file should not end with a newline
         boolean     binary;                  // binary patches contain one encoded Hunk
+        boolean     rename;
+        String      sourcePath;
+        File        sourceFile;                 // computed later
     }
 
     public static enum PatchStatus { Patched, Missing, Failure };

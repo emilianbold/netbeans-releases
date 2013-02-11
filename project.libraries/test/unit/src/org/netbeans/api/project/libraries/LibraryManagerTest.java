@@ -44,7 +44,6 @@
 
 package org.netbeans.api.project.libraries;
 
-import org.netbeans.modules.openide.filesystems.RecognizeInstanceFiles;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 import static org.netbeans.modules.project.libraries.TestUtil.*;
@@ -54,7 +53,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;

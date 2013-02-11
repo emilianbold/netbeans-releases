@@ -482,7 +482,7 @@ public class RADVisualComponent extends RADComponent {
         @Override
         public Object getValue() {
             int size = getComponent().getLayoutInterval(dimension).getPreferredSize();
-            return new Integer(size);
+            return Integer.valueOf(size);
         }
 
         @Override
@@ -492,7 +492,7 @@ public class RADVisualComponent extends RADComponent {
         
         @Override
         public void restoreDefaultValue() {
-            setValue(new Integer(LayoutConstants.NOT_EXPLICITLY_DEFINED));
+            setValue(Integer.valueOf(LayoutConstants.NOT_EXPLICITLY_DEFINED));
         }
         
         @Override
@@ -523,7 +523,7 @@ public class RADVisualComponent extends RADComponent {
                 @Override
                 public void setAsText(String str) {
                     if (notExplicitelyDefined.equals(str)) {
-                        setValue(new Integer(LayoutConstants.NOT_EXPLICITLY_DEFINED));
+                        setValue(Integer.valueOf(LayoutConstants.NOT_EXPLICITLY_DEFINED));
                     } else {
                         try {
                             int size = Integer.parseInt(str);

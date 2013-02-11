@@ -110,6 +110,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="DocumentIndexCache-WithCustomIndexDocument">
+    <api name="LuceneSupport"/>
+    <summary>Added possibility to use the default <code>DocumentIndex</code> with custom <code>IndexDocument</code>s.</summary>
+    <version major="2" minor="22"/>
+    <date day="6" month="2" year="2013"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added a possibility to use the default <code>DocumentIndex</code> created by <code>IndexManager</code>
+            with a custom <code>IndexDocument</code> implementation.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="DocumentIndexCache"/>
+  </change>
   <change id="TransactionalDocumentIndex-clear">
     <api name="LuceneSupport"/>
     <summary>Added <code>DocumentIndex.Transactional.clear</code> to allow complete index clean up.</summary>

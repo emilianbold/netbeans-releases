@@ -46,6 +46,7 @@ package org.netbeans.modules.mercurial.ui.update;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -57,8 +58,6 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -144,7 +143,7 @@ public class RevertModificationsAction extends ContextAction {
         performRevert(repository, revStr, revertFiles, doBackup, removeNewFiles, logger);
     }
     
-    public static void performRevert(File repository, String revStr, List<File> revertFiles, boolean doBackup, boolean removeNewFiles, OutputLogger logger) {
+    public static void performRevert(final File repository, final String revStr, final List<File> revertFiles, final boolean doBackup, final boolean removeNewFiles, final OutputLogger logger) {
         try{
             logger.outputInRed(
                     NbBundle.getMessage(RevertModificationsAction.class,
@@ -187,15 +186,23 @@ public class RevertModificationsAction extends ContextAction {
             }
             logger.output(""); // NOI18N
 
-            HgCommand.doRevert(repository, revertFiles, revStr, doBackup, logger);
-            if (removeNewFiles) {
-                HgCommand.doPurge(repository, revertFiles, logger);
-            }
-            FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-            File[] conflictFiles = cache.listFiles(revertFiles.toArray(new File[0]), FileInformation.STATUS_VERSIONED_CONFLICT);
-            if (conflictFiles.length != 0) {
-                ConflictResolvedAction.conflictResolved(repository, conflictFiles);
-            }
+            HgUtils.runWithoutIndexing(new Callable<Void>() {
+
+                @Override
+                public Void call () throws HgException {
+                    HgCommand.doRevert(repository, revertFiles, revStr, doBackup, logger);
+                    if (removeNewFiles) {
+                        HgCommand.doPurge(repository, revertFiles, logger);
+                    }
+                    FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+                    File[] conflictFiles = cache.listFiles(revertFiles.toArray(new File[0]), FileInformation.STATUS_VERSIONED_CONFLICT);
+                    if (conflictFiles.length != 0) {
+                        ConflictResolvedAction.conflictResolved(repository, conflictFiles);
+                    }
+                    return null;
+                }
+                
+            }, revertFiles);
         } catch (HgException.HgCommandCanceledException ex) {
             // canceled by user, do nothing
         } catch (HgException ex) {

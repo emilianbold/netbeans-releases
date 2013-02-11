@@ -81,21 +81,35 @@ import org.openide.filesystems.FileUtil;
 public class JBDeploymentFactory implements DeploymentFactory {
 
     public static final String URI_PREFIX = "jboss-deployer:"; // NOI18N
-
+    
     private static final String DISCONNECTED_URI = "jboss-deployer:http://localhost:8080&"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(JBDeploymentFactory.class.getName());
 
-    private static final Map<InstanceProperties, JBDeploymentFactory.JBClassLoader> JB_CLASSLOADER_CACHE = new WeakHashMap<InstanceProperties, JBDeploymentFactory.JBClassLoader>();
+    /**
+     * Mapping of a instance properties to a deployment factory.
+     * <i>GuardedBy(JBDeploymentFactory.class)</i>
+     */
+    private final Map<InstanceProperties, DeploymentFactory> factoryCache =
+            new WeakHashMap<InstanceProperties, DeploymentFactory>();
 
     /**
-     * Mapping of a server installation directory to a deployment factory
+     * Mapping of a instance properties to a deployment manager.
+     * <i>GuardedBy(JBDeploymentFactory.class)</i>
      */
-    private static Map<InstanceProperties, DeploymentFactory> FACTORIES_CACHE = new WeakHashMap<InstanceProperties, DeploymentFactory>();
+    private final Map<InstanceProperties, JBDeploymentManager> managerCache =
+            new WeakHashMap<InstanceProperties, JBDeploymentManager>();
+
+    private final Map<InstanceProperties, JBDeploymentFactory.JBClassLoader> classLoaderCache =
+            new WeakHashMap<InstanceProperties, JBDeploymentFactory.JBClassLoader>();
 
     private static JBDeploymentFactory instance;
 
-    public static synchronized DeploymentFactory create() {
+    private JBDeploymentFactory() {
+        super();
+    }
+
+    public static synchronized JBDeploymentFactory getInstance() {
         if (instance == null) {
             instance = new JBDeploymentFactory();
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
@@ -128,10 +142,10 @@ public class JBDeploymentFactory implements DeploymentFactory {
        }
     }
 
-    public static synchronized JBClassLoader getJBClassLoader(InstanceProperties ip) {
-        JBClassLoader cl = JB_CLASSLOADER_CACHE.get(ip);
+    public synchronized JBClassLoader getJBClassLoader(InstanceProperties ip) {
+        JBClassLoader cl = classLoaderCache.get(ip);
         if (cl == null) {
-            DeploymentFactory factory = FACTORIES_CACHE.get(ip);
+            DeploymentFactory factory = factoryCache.get(ip);
             if (factory != null) {
                 cl = (JBClassLoader) factory.getClass().getClassLoader();
             }
@@ -139,7 +153,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 cl = createJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
                             ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
             }
-            JB_CLASSLOADER_CACHE.put(ip, cl);
+            classLoaderCache.put(ip, cl);
         }
         return cl;
     }
@@ -147,14 +161,19 @@ public class JBDeploymentFactory implements DeploymentFactory {
     public static JBClassLoader createJBClassLoader(String serverRoot, String domainRoot) {
         try {
 
-            Version JBVer = JBPluginUtils.getServerVersion(new File (serverRoot));
-            boolean version5Above = (JBVer != null && JBVer.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0);
+            Version jbossVersion = JBPluginUtils.getServerVersion(new File (serverRoot));
+            boolean version5Above = (jbossVersion != null && jbossVersion.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0);
 
             // dom4j.jar library for JBoss Application Server 4.0.4 and lower and JBoss Application Server 5.0
             File domFile = new File(serverRoot , JBPluginUtils.LIB + "dom4j.jar"); // NOI18N
             if (!domFile.exists()) {
                 // dom4j.jar library for JBoss Application Server 4.0.5
                 domFile = new File(domainRoot, JBPluginUtils.LIB + "dom4j.jar"); // NOI18N
+            }
+
+            String sep = File.separator;
+            if (!domFile.exists() && jbossVersion != null && "7".equals(jbossVersion.getMajorNumber())) {
+                domFile = new File(serverRoot, JBPluginUtils.MODULES + "org" + sep + "dom4j" + sep + "main" + sep + "dom4j-1.6.1.jar"); // NOI18N
             }
             if (!domFile.exists()) {
                 domFile = null;
@@ -175,11 +194,36 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
             List<URL> urlList = new ArrayList<URL>();
 
-              if (domFile != null) {
+            if (domFile != null) {
                 urlList.add(domFile.toURI().toURL());
             }
 
-            if  (version5Above) {
+            if (jbossVersion != null && "7".equals(jbossVersion.getMajorNumber())) {
+                File org = new File(serverRoot, JBPluginUtils.MODULES + "org");
+                File jboss = new File(org, "jboss");
+                File as = new File(jboss, "as");
+                String versionString = jbossVersion.getMajorNumber()+"."+jbossVersion.getMinorNumber()+"."+jbossVersion.getMicroNumber()+"."+jbossVersion.getUpdate();
+                
+                if (domFile != null && domFile.exists()) {
+                    urlList.add(domFile.toURI().toURL());
+                }
+                
+                urlList.add(new File(serverRoot, "jboss-modules.jar").toURI().toURL());
+                urlList.add(new File(serverRoot, "bin"+sep+"client"+sep+"jboss-client.jar").toURI().toURL());
+                urlList.add(new File(jboss, "logging" + sep + "main" + sep + "jboss-logging-3.1.0.GA.jar").toURI().toURL());
+                urlList.add(new File(jboss, "threads" + sep + "main" + sep + "jboss-threads-2.0.0.GA.jar").toURI().toURL());
+                urlList.add(new File(jboss, "remoting3" + sep + "main" + sep + "jboss-remoting-3.2.3.GA.jar").toURI().toURL());
+                urlList.add(new File(jboss, "xnio" + sep + "main" + sep + "xnio-api-3.0.3.GA.jar").toURI().toURL());
+                urlList.add(new File(jboss, "xnio" + sep + "nio" + sep + "main" + sep + "xnio-nio-3.0.3.GA.jar").toURI().toURL());
+                urlList.add(new File(jboss, "dmr" + sep + "main"+ sep + "jboss-dmr-1.1.1.Final.jar").toURI().toURL());
+                urlList.add(new File(jboss, "msc" + sep + "main" + sep + "jboss-msc-1.0.2.GA.jar").toURI().toURL());
+                urlList.add(new File(jboss, "common-core" + sep + "main" + sep + "jboss-common-core-2.2.17.GA.jar").toURI().toURL());
+                urlList.add(new File(as, "ee" + sep + "deployment" + sep + "main" + sep + "jboss-as-ee-deployment-" + versionString + ".jar").toURI().toURL());
+                urlList.add(new File(as, "naming" + sep + "main" + sep + "jboss-as-naming-" + versionString + ".jar").toURI().toURL());
+                urlList.add(new File(as, "controller-client" + sep + "main" + sep + "jboss-as-controller-client-" + versionString + ".jar").toURI().toURL());
+                urlList.add(new File(as, "protocol" + sep + "main" + sep + "jboss-as-protocol-" + versionString + ".jar").toURI().toURL());
+
+            } else if (version5Above) {
                 // get lient class path for Jboss 5.0
                 List<URL> clientClassUrls = JBPluginUtils.getJB5ClientClasspath(
                         serverRoot);
@@ -223,22 +267,6 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 }
             }
 
-//            if (sxClient50.exists()) {
-//                urlList.add(sxClient50.toURI().toURL());
-//            }
-//
-//            if (client50.exists()) {
-//                urlList.add(client50.toURI().toURL());
-//            }
-//
-//            if (core50.exists()) {
-//                urlList.add(core50.toURI().toURL());
-//            }
-//
-//            if (logging50.exists()) {
-//                urlList.add(logging50.toURI().toURL());
-//            }
-
             JBClassLoader loader = new JBClassLoader(urlList.toArray(new URL[] {}), JBDeploymentFactory.class.getClassLoader());
             return loader;
         } catch (Exception e) {
@@ -247,7 +275,87 @@ public class JBDeploymentFactory implements DeploymentFactory {
         return null;
     }
 
-    public DeploymentFactory getFactory(String instanceURL) {
+    public boolean handlesURI(String uri) {
+        if (uri != null && uri.startsWith(URI_PREFIX)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) throws DeploymentManagerCreationException {
+        if (!handlesURI(uri)) {
+            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
+        }
+
+        synchronized (JBDeploymentFactory.class) {
+            InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+            if (ip != null) {
+                JBDeploymentManager dm = managerCache.get(ip);
+                if (dm != null) {
+                    return dm;
+                }
+            }
+
+            try {
+                DeploymentFactory df = getFactory(uri);
+                if (df == null) {
+                    throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
+                }
+
+                String jbURI = uri;
+                try {
+                    jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
+                } catch (Exception e) {
+                    LOGGER.log(Level.INFO, null, e);
+                }
+
+                JBDeploymentManager dm = new JBDeploymentManager(df, uri, jbURI, uname, passwd);
+                if (ip != null) {
+                    managerCache.put(ip, dm);
+                }
+                return dm;
+            } catch (NoClassDefFoundError e) {
+                DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N
+                dmce.initCause(e);
+                throw dmce;
+            }
+        }
+    }
+
+    @Override
+    public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
+        if (!handlesURI(uri)) {
+            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
+        }
+
+        try {
+            InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+            if (ip == null) {
+                // null ip either means that the instance is not registered, or that this is the disconnected URL
+                if (!DISCONNECTED_URI.equals(uri)) {
+                    throw new DeploymentManagerCreationException("JBoss instance " + uri + " is not registered in the IDE."); // NOI18N
+                }
+            }
+
+            return new JBDeploymentManager(null, uri, null, null, null);
+        } catch (NoClassDefFoundError e) {
+            DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N
+            dmce.initCause(e);
+            throw dmce;
+        }
+    }
+
+    public String getProductVersion() {
+        return NbBundle.getMessage (JBDeploymentFactory.class, "LBL_JBossFactoryVersion");
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(JBDeploymentFactory.class, "SERVER_NAME"); // NOI18N
+    }
+
+    private DeploymentFactory getFactory(String instanceURL) {
         DeploymentFactory jbossFactory = null;
         try {
             String jbossRoot = InstanceProperties.getInstanceProperties(instanceURL).
@@ -259,27 +367,36 @@ public class JBDeploymentFactory implements DeploymentFactory {
             // if jbossRoot is null, then we are in a server instance registration process, thus this call
             // is made from InstanceProperties creation -> JBPluginProperties singleton contains
             // install location of the instance being registered
-            if (jbossRoot == null)
+            if (jbossRoot == null) {
                 jbossRoot = JBPluginProperties.getInstance().getInstallLocation();
+            }
 
             // if domainRoot is null, then we are in a server instance registration process, thus this call
             // is made from InstanceProperties creation -> JBPluginProperties singleton contains
             // install location of the instance being registered
-            if (domainRoot == null)
+            if (domainRoot == null) {
                 domainRoot = JBPluginProperties.getInstance().getDomainLocation();
+            }
 
             InstanceProperties ip = InstanceProperties.getInstanceProperties(instanceURL);
-            synchronized(JBDeploymentFactory.class) {
+            synchronized (JBDeploymentFactory.class) {
                 if (ip != null) {
-                    jbossFactory = (DeploymentFactory) FACTORIES_CACHE.get(ip);
+                    jbossFactory = (DeploymentFactory) factoryCache.get(ip);
                 }
                 if (jbossFactory == null) {
+                    Version version = JBPluginUtils.getServerVersion(new File(jbossRoot));
                     URLClassLoader loader = (ip != null) ? getJBClassLoader(ip) : createJBClassLoader(jbossRoot, domainRoot);
-                    jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
+                    if(version!= null && "7".equals(version.getMajorNumber())) {
+                        Class<?> c = loader.loadClass("org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl");
+                        c.getMethod("register").invoke(null);
+                        jbossFactory = (DeploymentFactory) c.newInstance();//NOI18N
+                    } else {
+                        jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
+                    }
 
-                    
+
                     if (ip != null) {
-                        FACTORIES_CACHE.put(ip, jbossFactory);
+                        factoryCache.put(ip, jbossFactory);
                     }
                 }
             }
@@ -288,86 +405,6 @@ public class JBDeploymentFactory implements DeploymentFactory {
         }
 
         return jbossFactory;
-    }
-
-    public boolean handlesURI(String uri) {
-        if (uri != null && uri.startsWith(URI_PREFIX)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) throws DeploymentManagerCreationException {
-        if (!handlesURI(uri)) {
-            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
-        }
-
-        try {
-            DeploymentFactory df = getFactory(uri);
-            if (df == null)
-                throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
-
-            String jbURI = uri;
-            try {
-                jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
-            }
-            catch (Exception e) {
-                LOGGER.log(Level.INFO, null, e);
-            }
-
-            return new JBDeploymentManager(df.getDeploymentManager(jbURI, uname, passwd), uri, uname, passwd);
-        } catch (NoClassDefFoundError e) {
-            DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N
-            dmce.initCause(e);
-            throw dmce;
-        }
-    }
-
-    public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
-        if (!handlesURI(uri)) {
-            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
-        }
-
-        try {
-            DeploymentFactory df = null;
-            InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
-            if (ip == null) {
-                // null ip either means that the instance is not registered, or that this is the disconnected URL
-                if (!DISCONNECTED_URI.equals(uri)) {
-                    throw new DeploymentManagerCreationException("JBoss instance " + uri + " is not registered in the IDE."); // NOI18N
-                }
-            }
-            else {
-                df = getFactory(uri);
-                if (df == null) {
-                    throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
-                }
-            }
-
-            String jbURI = uri;
-            try {
-                jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
-            }
-            catch (Exception e) {
-                LOGGER.log(Level.INFO, null, e);
-            }
-
-            return new JBDeploymentManager((df != null ? df.getDisconnectedDeploymentManager(jbURI) : null), uri, null, null);
-        } catch (NoClassDefFoundError e) {
-            DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N
-            dmce.initCause(e);
-            throw dmce;
-        }
-    }
-
-    public String getProductVersion() {
-
-        return NbBundle.getMessage (JBDeploymentFactory.class, "LBL_JBossFactoryVersion");
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(JBDeploymentFactory.class, "SERVER_NAME"); // NOI18N
     }
 
     private static final String INSTALL_ROOT_PROP_NAME = "org.netbeans.modules.j2ee.jboss4.installRoot"; // NOI18N

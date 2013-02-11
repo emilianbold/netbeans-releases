@@ -57,26 +57,10 @@ import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ContinueStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -86,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWithPreferences {
+public class AccidentalAssignmentHint extends HintRule implements CustomisableRule {
 
     private static final String HINT_ID = "Accidental.Assignment.Hint"; //NOI18N
     private static final String CHECK_ASSIGNMENTS_IN_SUB_STATEMENTS = "php.verification.check.assignments.in.sub.statements"; //NOI18N
@@ -97,7 +81,7 @@ public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWit
     private Preferences preferences;
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -136,7 +120,14 @@ public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWit
         })
         private void createHint(Assignment assignment) {
             OffsetRange offsetRange = new OffsetRange(assignment.getStartOffset(), assignment.getEndOffset());
-            hints.add(new Hint(AccidentalAssignmentHint.this, Bundle.AccidentalAssignmentHintCustom(asText(assignment)), fileObject, offsetRange, createFixes(assignment), 500));
+            if (showHint(offsetRange, doc)) {
+                hints.add(new Hint(
+                        AccidentalAssignmentHint.this,
+                        Bundle.AccidentalAssignmentHintCustom(asText(assignment)),
+                        fileObject,
+                        offsetRange,
+                        createFixes(assignment), 500));
+            }
         }
 
         private String asText(Assignment assignment) {
@@ -204,86 +195,6 @@ public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWit
                 processCondition(node.getCondition());
             }
             scan(node.getBody());
-        }
-
-        @Override
-        public void visit(ConstantDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(ContinueStatement node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(FieldsDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(GotoLabel node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(GotoStatement node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(InterfaceDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocBlock node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocTypeTag node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocMethodTag node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocVarTypeTag node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocStaticAccessType node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPVarComment node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(SingleFieldDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(StaticFieldAccess node) {
-            // intetionally
-        }
-
-        @Override
-        public void visit(UseStatement node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(UseStatementPart node) {
-            // intentionally
         }
 
     }

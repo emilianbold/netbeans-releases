@@ -48,14 +48,18 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -67,6 +71,7 @@ import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -77,13 +82,20 @@ import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Represents a project group.
@@ -175,7 +187,7 @@ public abstract class Group {
             switchingGroup.set(true);
             OpenProjectList.getDefault().fireProjectGroupChanging(old, getActiveGroup());
             try {
-                open(nue);
+                open(nue, old != null ? old.getName() : null);
             } finally {
                 switchingGroup.set(false);
                 OpenProjectList.getDefault().fireProjectGroupChanged(old, getActiveGroup());
@@ -254,6 +266,84 @@ public abstract class Group {
         } else {
             return sanitizedId;
         }
+    }
+
+    private static void persistDocumentsInGroup(Project p, Set<DataObject> get, String oldGroupName) {
+        Set<String> urls = new HashSet<String>();
+        if (get != null) {
+            for (DataObject dob : get) {
+                //same way of creating string as in ProjectUtilities
+                urls.add(dob.getPrimaryFile().toURL().toExternalForm());
+            }
+        }
+        ProjectUtilities.storeProjectOpenFiles(p, urls, oldGroupName);
+    }
+
+    private static Map<Project, Set<DataObject>> getOpenedDocuments(final Set<Project> listOfProjects) {
+        final Map<Project, Set<DataObject>> toRet = new HashMap<Project, Set<DataObject>>();
+        assert !SwingUtilities.isEventDispatchThread();
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    WindowManager wm = WindowManager.getDefault();
+                    for (Mode mode : wm.getModes()) {
+                        //#84546 - this condituon should allow us to close just editor related TCs that are in any imaginable mode.
+                        if (!wm.isEditorMode(mode)) {
+                            continue;
+                        }
+                        for (TopComponent tc : wm.getOpenedTopComponents(mode)) {
+                            DataObject dobj = tc.getLookup().lookup(DataObject.class);
+
+                            if (dobj != null) {
+                                FileObject fobj = dobj.getPrimaryFile();
+                                Project owner = FileOwnerQuery.getOwner(fobj);
+
+                                if (listOfProjects.contains(owner)) {
+                                    if (!toRet.containsKey(owner)) {
+                                        // add project
+                                        toRet.put(owner, new LinkedHashSet<DataObject>());
+                                    }
+                                    toRet.get(owner).add(dobj);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return toRet;
+    }
+
+    private static void closeDocuments(Set<DataObject> toCloseDocuments) {
+        for (DataObject dobj : toCloseDocuments) {
+            if (!dobj.isModified()) {
+                //the modified files would force user to decide about saving..
+                CloseCookie cook = dobj.getLookup().lookup(CloseCookie.class);
+                if (cook != null) {
+                    cook.close();
+                }
+            }
+        }   
+    }
+
+    private static Set<DataObject> openDocumentsInGroup(Project p, Group g) {
+        Set<FileObject> files = ProjectUtilities.openProjectFiles(p, g);
+        Set<DataObject> dobjs = new HashSet<DataObject>();
+        for (FileObject file : files) {
+            try {
+                DataObject dobj = DataObject.find(file);
+                if (dobj != null) {
+                    dobjs.add(dobj);
+                }
+            } catch (DataObjectNotFoundException ex) {
+            }
+        }
+        return dobjs;
     }
 
     protected final String id;
@@ -386,7 +476,7 @@ public abstract class Group {
         "# {0} - count", "Group.progress_closing=Closing {0} old projects",
         "# {0} - count", "Group.progress_opening=Opening {0} new projects"
     })
-    private static void open(final Group g) {
+    private static void open(final Group g, String oldGroupName) {
         EventQueue.invokeLater(new Runnable() {
             @Override public void run() {
                 ProjectTab.findDefault(ProjectTab.ID_LOGICAL).setGroup(g);
@@ -404,20 +494,38 @@ public abstract class Group {
             ProjectUtilities.WaitCursor.show();
             final OpenProjectList opl = OpenProjectList.getDefault();
             Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(opl.getOpenProjects()));
+            //TODO switching to no group always clears the opened project list.
             Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : Collections.<Project>emptySet();
             final Set<Project> toClose = new HashSet<Project>(oldOpen);
             toClose.removeAll(newOpen);
             final Set<Project> toOpen = new HashSet<Project>(newOpen);
             toOpen.removeAll(oldOpen);
+            final Set<Project> stayOpened = new HashSet<Project>(newOpen);
+            stayOpened.retainAll(oldOpen);
             assert !toClose.contains(null) : toClose;
             assert !toOpen.contains(null) : toOpen;
             IndexingBridge.Lock lock = IndexingBridge.getDefault().protectedMode();
             try {
                 h.progress(Group_progress_closing(toClose.size()), 110);
-                opl.close(toClose.toArray(new Project[toClose.size()]), false);
+                //close and remember the last opened files in the old group
+                opl.close(toClose.toArray(new Project[toClose.size()]), false, oldGroupName);
                 h.switchToIndeterminate();
                 h.progress(Group_progress_opening(toOpen.size()));
+                //open the projects with current group
                 opl.open(toOpen.toArray(new Project[toOpen.size()]), false, h, null);
+                
+                //for old and new group project intersection, save the old files list,
+                // compare to the new one and only close the files missing in the new one and open files missing in old one..
+                Map<Project, Set<DataObject>> documents = getOpenedDocuments(stayOpened);
+                for (Project p : stayOpened) {
+                    Set<DataObject> oldDocuments = documents.get(p);
+                    persistDocumentsInGroup(p, oldDocuments, oldGroupName);
+                    Set<DataObject> newDocuments = openDocumentsInGroup(p, g);
+                    Set<DataObject> toCloseDocuments = new HashSet<DataObject>(oldDocuments != null ? oldDocuments : Collections.<DataObject>emptySet());
+                    toCloseDocuments.removeAll(newDocuments);
+                    closeDocuments(toCloseDocuments);
+                }
+                
                 if (g != null) {
                     opl.setMainProject(g.getMainProject());
                 }

@@ -107,6 +107,9 @@ public interface DiscoveryDescriptor {
     List<String> getDependencies();
     void setDependencies(List<String> dependencies);
 
+    List<String> getBuildArtifacts();
+    void setBuildArtifacts(List<String> buildArtifacts);
+
     List<String> getSearchPaths();
     void setSearchPaths(List<String> searchPaths);
 

@@ -379,14 +379,15 @@ public class JavaCustomIndexer extends CustomIndexer {
         File root = null;
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
-                File file = Utilities.toFile(indexable.getURL().toURI());
-                return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.getJavaFileFilter(), javaContext.getEncoding()), indexable);
+                return new CompileTuple(
+                    FileObjects.fileFileObject(
+                        indexable,
+                        root,
+                        javaContext.getJavaFileFilter(),
+                        javaContext.getEncoding()),
+                    indexable);
             } catch (Exception ex) {
-            } catch (AssertionError ae) {
-                //Add more debug messages
-                throw Exceptions.attachMessage(ae, "Root FileObject: " + FileUtil.getFileDisplayName(context.getRoot()) +   //NOI18N
-                                                   " Indexable URL: " + indexable.getURL() +    //NOI18N
-                                                   " Normalized root: " + FileUtil.normalizeFile(root).getAbsolutePath());  //NOI18N
+                //pass
             }
         }
         FileObject fo = URLMapper.findFileObject(indexable.getURL());

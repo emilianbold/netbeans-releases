@@ -70,7 +70,6 @@ import javax.swing.text.Element;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
-import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -378,57 +377,6 @@ public class BaseKit extends DefaultEditorKit {
     
     private boolean keyBindingsUpdaterInited;
 
-//    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
-//        public void settingsChange(SettingsChangeEvent evt) {
-//            String settingName = (evt != null) ? evt.getSettingName() : null;
-//
-//            boolean clearActions = (settingName == null
-//                    || SettingsNames.CUSTOM_ACTION_LIST.equals(settingName)
-//                    || SettingsNames.MACRO_MAP.equals(settingName));
-//
-//            if (clearActions || SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
-//                kitKeymaps.clear();
-//            }
-//
-//            if (clearActions) {
-//                kitActions.clear();
-//                kitActionMaps.clear();
-//            } else { // only refresh action settings
-//                Iterator i = kitActions.entrySet().iterator();
-//                while (i.hasNext()) {
-//                    Map.Entry me = (Map.Entry)i.next();
-//                    updateActionSettings((Action[])me.getValue(), evt, (Class)me.getKey());
-//                }
-//            }
-//        }
-//    };
-//
-//    static {
-//        Settings.addSettingsChangeListener(settingsListener);
-//    }
-    
-    private void updateActionSettings(Action[] actions) {
-        for(Action a : actions) {
-            if (a instanceof BaseAction) {
-                for(Method m : a.getClass().getDeclaredMethods()) {
-                    if (m.getName().equals("settingsChange") && m.getParameterTypes().length == 2 && m.getParameterTypes()[1] == Class.class) { //NOI18N
-                        try {
-                            m.setAccessible(true);
-                            m.invoke(a, null, getClass());
-                        } catch (Exception e) {
-                            LOG.log(Level.FINE, null, e);
-                        }
-                        break;
-                    }
-                }
-//                Iterator i = kitActions.entrySet().iterator();
-//                while (i.hasNext()) {
-//                    Map.Entry me = (Map.Entry)i.next();
-//                    updateActionSettings((Action[])me.getValue(), evt, (Class)me.getKey());
-//                }
-            }
-        }
-    }
 
     /**
      * Gets an editor kit from its implemetation class.
@@ -931,7 +879,6 @@ public class BaseKit extends DefaultEditorKit {
                    new PreviousWordAction(selectionPreviousWordAction),
                    new ActionFactory.RemoveWordNextAction(),
                    new ActionFactory.RemoveWordPreviousAction(),
-                   new ActionFactory.ToggleHighlightSearchAction(),
                    new ActionFactory.ToggleRectangularSelectionAction(),
 
                    // Self test actions
@@ -1022,7 +969,6 @@ public class BaseKit extends DefaultEditorKit {
 
                 // At this moment the actions are constructed completely
                 // The actions will be updated now if necessary
-                updateActionSettings(actions);
                 updateActions();
             }
             
@@ -1164,8 +1110,14 @@ public class BaseKit extends DefaultEditorKit {
 
                     try {
                     final Position insertionOffset = doc.createPosition(computeInsertionOffset(target.getCaret()), Position.Bias.Backward);
+                    String replacedText = "";
+                    if (Utilities.isSelectionShowing(target.getCaret())) {
+                        int p0 = Math.min(target.getCaret().getDot(), target.getCaret().getMark());
+                        int p1 = Math.max(target.getCaret().getDot(), target.getCaret().getMark());
+                        replacedText = doc.getText(p0, p1 - p0);
+                    }
                     final TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
-                            target, insertionOffset, cmd);
+                            target, insertionOffset, cmd, replacedText);
                     
                     try {
                         if (!transaction.beforeInsertion()) {
@@ -1810,6 +1762,14 @@ public class BaseKit extends DefaultEditorKit {
                     return;
                 }
 
+                if (LOG.isLoggable(Level.FINER)) {
+                    StringBuilder sb = new StringBuilder("DeleteCharAction stackTrace: \n");
+                    for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+                        sb.append(ste.toString()).append("\n");
+                    }
+                    LOG.log(Level.FINER, sb.toString());
+                }
+
 		final BaseDocument doc = (BaseDocument)target.getDocument();
 		final Caret caret = target.getCaret();
 		final int dot = caret.getDot();
@@ -2035,8 +1995,10 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int caretPosition = target.getCaretPosition();
                     boolean emptySelection = !Utilities.isSelectionShowing(target);
+                    boolean disableNoSelectionCopy =
+                            Boolean.getBoolean("org.netbeans.editor.disable.no.selection.copy");
                     // If there is no selection then pre-select a current line including newline
-                    if (emptySelection) {
+                    if (emptySelection && !disableNoSelectionCopy) {
                         Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
                                 caretPosition);
                         if (!Utilities.isRowWhite((BaseDocument) target.getDocument(), elem.getStartOffset())) {
@@ -2044,7 +2006,7 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     }
                     target.copy();
-                    if (emptySelection) {
+                    if (emptySelection && !disableNoSelectionCopy) {
                         target.setCaretPosition(caretPosition);
                     }
                 } catch (BadLocationException ble) {
@@ -2069,7 +2031,14 @@ public class BaseKit extends DefaultEditorKit {
                     target.getToolkit().beep();
                     return;
                 }
-                
+
+                if (LOG.isLoggable(Level.FINER)) {
+                    StringBuilder sb = new StringBuilder("PasteAction stackTrace: \n");
+                    for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+                        sb.append(ste.toString()).append("\n");
+                    }
+                    LOG.log(Level.FINER, sb.toString());
+                }
                 
                 final BaseDocument doc = Utilities.getDocument(target);
                 if (doc==null) return;

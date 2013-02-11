@@ -45,6 +45,7 @@ package org.netbeans.modules.mercurial.ui.update;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -137,8 +138,15 @@ public class UpdateAction extends ContextAction {
                                 NbBundle.getMessage(UpdateAction.class,
                                 "MSG_UPDATE_FORCED", root.getAbsolutePath())); // NOI18N  
                     }
-                    List<String> list = HgCommand.doUpdateAll(root, doForcedUpdate, revStr);
                     
+                    List<String> list = HgUtils.runWithoutIndexing(new Callable<List<String>>() {
+
+                        @Override
+                        public List<String> call () throws HgException {
+                            return HgCommand.doUpdateAll(root, doForcedUpdate, revStr);
+                        }
+
+                    }, root);
                     if (list != null && !list.isEmpty()){
                         bNoUpdates = HgCommand.isNoUpdates(list.get(0));
                         // Force Status Refresh from this dir and below

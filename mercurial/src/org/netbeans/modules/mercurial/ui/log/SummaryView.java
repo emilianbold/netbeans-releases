@@ -54,7 +54,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
 import org.netbeans.modules.mercurial.HgModuleConfig;
@@ -64,9 +63,7 @@ import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
-import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
-import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
@@ -190,14 +187,8 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                         diffPrevious(master, revision);
                     }
                 });
-                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_BackoutRevision")) { //NOI18N
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        backout(revision);
-                    }
-                });
             }
+            actions.addAll(Arrays.asList(revision.getActions()));
             return actions.toArray(new Action[actions.size()]);
         }
 
@@ -296,51 +287,13 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         public Action[] getUserActions () {
             List<Action> actions = new ArrayList<Action>();
             if (!master.isIncomingSearch()) {
-                boolean viewEnabled = event.getFile() != null && event.getChangedPath().getAction() != HgLogMessage.HgDelStatus;
                 actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious")) { // NOI18N
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         diffPrevious(master, event);
                     }
                 });
-                if (event.getFile() != null) {
-                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", event.getLogInfoHeader().getLog().getRevisionNumber())) { // NOI18N
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            revertModifications(event);
-                        }                
-                    });
-                }
-                if (viewEnabled) {
-                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { //NOI18N
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    view(event, false);
-                                }
-                            });
-                        }
-                    });
-                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    view(event, true);
-                                }
-                            });
-                        }
-                        });
-                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ExportFileDiff")) { // NOI18N
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            exportFileDiff(event);
-                        }
-                    });
-                }
+                actions.addAll(Arrays.asList(event.getActions()));
             }
             return actions.toArray(new Action[actions.size()]);
         }
@@ -434,9 +387,6 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     @Override
     protected void onPopup (JComponent invoker, Point p, final Object[] selection) {
-        if (master.isIncomingSearch()) {
-            return;
-        }
         JPopupMenu menu = new JPopupMenu();
         
         String previousRevision = null;
@@ -488,101 +438,83 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         final boolean annotationsEnabled = viewEnabled;
         final boolean diffToPrevEnabled = selection.length == 1;
         
-        if (revision > 0) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", "" + previousRevision )) { // NOI18N
-                {
-                    setEnabled(diffToPrevEnabled);
+        if (master.isIncomingSearch()) {
+            if (revisionSelected) {
+                for (Action a : container.getActions()) {
+                    menu.add(new JMenuItem(a));
                 }
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    diffPrevious(master, selection[0]);
-                }
-            }));
-        }
+            } else {
+                return;
+            }
+        } else {
+            if (revision > 0) {
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", "" + previousRevision )) { // NOI18N
+                    {
+                        setEnabled(diffToPrevEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        diffPrevious(master, selection[0]);
+                    }
+                }));
+            }
 
-        if (revisionSelected) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
+            if (revisionSelected) {
+                for (Action a : container.getActions()) {
+                    menu.add(new JMenuItem(a));
+                }
+            } else {
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
+                    {                    
+                        setEnabled(revertToEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        revertModifications(selection);
+                    }                
+                }));
 
-                {
-                    setEnabled(backoutChangeEnabled);
-                }
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    backout(container);
-                }
-            }));
-        }else{
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
-                {                    
-                    setEnabled(revertToEnabled);
-                }
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    revertModifications(selection);
-                }                
-            }));
-            
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
-                {
-                    setEnabled(viewEnabled);
-                }
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            view(drev[0], false);
-                        }
-                    });
-                }
-            }));
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
-                {
-                    setEnabled(annotationsEnabled);
-                }
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            view(drev[0], true);
-                        }
-                    });
-                }
-            }));
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ExportFileDiff")) { // NOI18N
-                {
-                    setEnabled(viewEnabled);
-                }
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    exportFileDiff(drev[0]);
-                }
-            }));
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
+                    {
+                        setEnabled(viewEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                drev[0].viewFile(false);
+                            }
+                        });
+                    }
+                }));
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                    {
+                        setEnabled(annotationsEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                drev[0].viewFile(true);
+                            }
+                        });
+                    }
+                }));
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ExportFileDiff")) { // NOI18N
+                    {
+                        setEnabled(viewEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        exportFileDiff(drev[0]);
+                    }
+                }));
+            }
         }
 
         menu.show(invoker, p.x, p.y);
-    }
-    
-    /**
-     * Rollback this changeset only
-     *
-     * @param event
-     */
-    private static void backout (RepositoryRevision repoRev) {
-        BackoutAction.backout(repoRev);
-    }
-    
-    static void backout (final RepositoryRevision.Event event) {
-        RepositoryRevision repoRev = event.getLogInfoHeader();
-        BackoutAction.backout(repoRev);
-    }
-
-    static void revertModifications(final RepositoryRevision.Event event) {
-        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
-        events.add(event);
-        revert(null, (RepositoryRevision.Event[]) events.toArray(new RepositoryRevision.Event[events.size()]));
     }
 
     public void revertModifications(Object[] selection) {
@@ -672,13 +604,6 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         
     }
 
-    private static void view (RepositoryRevision.Event drev, boolean showAnnotations) {
-        try {
-            HgUtils.openInRevision(drev.getFile(), -1, drev.getLogInfoHeader().getLog().getHgRevision(), showAnnotations);
-        } catch (IOException ex) {
-            // Ignore if file not available in cache
-        }
-    }
     private static void diffPrevious (SearchHistoryPanel master, Object o) {
         if (o instanceof RepositoryRevision.Event) {
             RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
@@ -693,10 +618,6 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             RepositoryRevision container = (RepositoryRevision) o;
             master.showDiff(container);
         }
-    }
-
-    private void exportDiffs (RepositoryRevision repoRev) {
-        ExportDiffAction.exportDiffRevision(repoRev, master.getRoots());
     }
     
     private static void exportFileDiff(RepositoryRevision.Event drev) {

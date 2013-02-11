@@ -76,4 +76,13 @@ public class TraitConflictResolutionDeclaration extends Statement {
         visitor.visit(this);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Expression expression : getSuppressedTraitNames()) {
+            sb.append(expression).append(","); //NOI18N
+        }
+        return getPreferredTraitName() + "::" + getMethodName() + " insteadof " + sb.toString(); //NOI18N
+    }
+
 }

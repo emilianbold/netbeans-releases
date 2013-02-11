@@ -52,6 +52,7 @@ import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -70,8 +71,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
-import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ContinueStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -80,25 +79,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -109,7 +96,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UninitializedVariableHint extends AbstractHint implements PHPRuleWithPreferences {
+public class UninitializedVariableHint extends HintRule implements CustomisableRule {
 
     private static final String HINT_ID = "Uninitialized.Variable.Hint"; //NOI18N
     private static final String CHECK_VARIABLES_INITIALIZED_BY_REFERENCE = "php.verification.check.variables.initialized.by.reference"; //NOI18N
@@ -135,7 +122,7 @@ public class UninitializedVariableHint extends AbstractHint implements PHPRuleWi
     }
 
     @Override
-    void compute(PHPRuleContext context, List<Hint> hints) {
+    public void invoke(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -144,7 +131,7 @@ public class UninitializedVariableHint extends AbstractHint implements PHPRuleWi
         if (fileObject == null) {
             return;
         }
-        CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel());
+        CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel(), context.doc);
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());
     }
@@ -158,10 +145,12 @@ public class UninitializedVariableHint extends AbstractHint implements PHPRuleWi
         private final List<Hint> hints = new LinkedList<Hint>();
         private final Model model;
         private final Map<String, Set<BaseFunctionElement>> invocationCache = new HashMap<String, Set<BaseFunctionElement>>();
+        private final BaseDocument baseDocument;
 
-        private CheckVisitor(FileObject fileObject, Model model) {
+        private CheckVisitor(FileObject fileObject, Model model, BaseDocument baseDocument) {
             this.fileObject = fileObject;
             this.model = model;
+            this.baseDocument = baseDocument;
         }
 
         private Collection<? extends Hint> getHints() {
@@ -171,15 +160,21 @@ public class UninitializedVariableHint extends AbstractHint implements PHPRuleWi
             return hints;
         }
 
+        private void createHints(List<Variable> uninitializedVariables) {
+            for (Variable variable : uninitializedVariables) {
+                createHint(variable);
+            }
+        }
+
         @Messages({
             "# {0} - Name of the variable",
             "UninitializedVariableVariableHintCustom=Variable ${0} seems to be uninitialized"
         })
-        private void createHints(List<Variable> uninitializedVariables) {
-            for (Variable variable : uninitializedVariables) {
-                int start = variable.getStartOffset() + 1;
-                int end = variable.getEndOffset();
-                OffsetRange offsetRange = new OffsetRange(start, end);
+        private void createHint(Variable variable) {
+            int start = variable.getStartOffset() + 1;
+            int end = variable.getEndOffset();
+            OffsetRange offsetRange = new OffsetRange(start, end);
+            if (showHint(offsetRange, baseDocument)) {
                 hints.add(new Hint(UninitializedVariableHint.this, Bundle.UninitializedVariableVariableHintCustom(getVariableName(variable)), fileObject, offsetRange, null, 500));
             }
         }
@@ -301,6 +296,16 @@ public class UninitializedVariableHint extends AbstractHint implements PHPRuleWi
             }
         }
 
+        @Override
+        public void visit(FieldsDeclaration node) {
+            // intentionally - variables in fields shouldn't be checked
+        }
+
+        @Override
+        public void visit(StaticFieldAccess node) {
+            // intentionally - variables in fields shouldn't be checked
+        }
+
         private void processAllFunctions(Set<BaseFunctionElement> allFunctions, List<Expression> invocationParametersExp) {
             if (allFunctions != null && !allFunctions.isEmpty()) {
                 BaseFunctionElement methodElement = ModelUtils.getFirst(allFunctions);
@@ -324,91 +329,15 @@ public class UninitializedVariableHint extends AbstractHint implements PHPRuleWi
             }
         }
 
-        @Override
-        public void visit(ConstantDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(ContinueStatement node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(FieldsDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(GotoLabel node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(GotoStatement node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(InterfaceDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocBlock node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocTypeTag node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocMethodTag node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocVarTypeTag node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocStaticAccessType node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPVarComment node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(SingleFieldDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(StaticFieldAccess node) {
-            // intetionally
-        }
-
-        @Override
-        public void visit(UseStatement node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(UseStatementPart node) {
-            // intentionally
-        }
-
         private boolean isProcessableVariable(Variable node) {
             Identifier identifier = getIdentifier(node);
-            return identifier != null && !UNCHECKED_VARIABLES.contains(identifier.getName()) && !isInitialized(node) && !isUninitialized(node);
+            return !isInGlobalContext() && identifier != null && !UNCHECKED_VARIABLES.contains(identifier.getName())
+                    && !isInitialized(node) && !isUninitialized(node);
         }
 
+        private boolean isInGlobalContext() {
+            return (parentNodes.peek() instanceof Program) || (parentNodes.peek() instanceof NamespaceDeclaration);
+        }
 
         private void initializeVariable(Variable variable) {
             if (!isInitialized(variable) && !isUninitialized(variable)) {

@@ -107,4 +107,10 @@ public class IfStatement extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "if (" + getCondition() + ")" + getTrueStatement() + (getFalseStatement() == null ? "" : " else " + getFalseStatement()); //NOI18N
+    }
+
 }

@@ -96,4 +96,10 @@ public class ConditionalExpression extends Expression {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return getCondition() + " ? " + getIfTrue() + " : " + getIfFalse(); //NOI18N
+    }
+
 }

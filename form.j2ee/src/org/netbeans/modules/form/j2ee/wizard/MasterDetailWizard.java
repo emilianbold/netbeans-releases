@@ -84,13 +84,13 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.JoinColumn;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
@@ -334,96 +334,84 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
     public Set instantiate0() throws IOException {
         needClassPathInit = (delegateIterator == null);
         Set resultSet = null;
-        try {
-            DatabaseConnection connection = (DatabaseConnection)wizard.getProperty("connection"); // NOI18N
-            String masterTableName = (String)wizard.getProperty("master"); // NOI18N
-            String detailFKTable = (String)wizard.getProperty("detailFKTable"); // NOI18N
-            joinColumn = (String)wizard.getProperty("detailFKColumn"); // NOI18N
-            referencedColumn = (String)wizard.getProperty("detailPKColumn"); // NOI18N
+        DatabaseConnection connection = (DatabaseConnection)wizard.getProperty("connection"); // NOI18N
+        String masterTableName = (String)wizard.getProperty("master"); // NOI18N
+        String detailFKTable = (String)wizard.getProperty("detailFKTable"); // NOI18N
+        joinColumn = (String)wizard.getProperty("detailFKColumn"); // NOI18N
+        referencedColumn = (String)wizard.getProperty("detailPKColumn"); // NOI18N
 
-            if (delegateIterator == null) {
-                Logger logger = Logger.getLogger("org.netbeans.ui.metrics.swingapp"); // NOI18N
-                LogRecord rec = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_JDA"); // NOI18N
-                rec.setLoggerName(logger.getName());
-                rec.setParameters(new Object[] {"JDA_APP_TYPE_CRUD"}); // NOI18N
-                logger.log(rec);
-            } else {
-                Logger logger = Logger.getLogger("org.netbeans.ui.metrics.form.j2ee"); // NOI18N
-                LogRecord rec = new LogRecord(Level.INFO, "USG_FORM_CREATED"); // NOI18N
-                rec.setLoggerName(logger.getName());
-                rec.setParameters(new Object[] {Templates.getTemplate(wizard).getName()});
-                logger.log(rec);
-            }
-
-            FileObject javaFile;
-            if (delegateIterator != null) {
-                resultSet = delegateIterator.instantiate();
-                javaFile = (FileObject)resultSet.iterator().next();
-            }
-            else {
-                resultSet = new HashSet();
-                javaFile = (FileObject) wizard.getProperty("mainForm"); // NOI18N
-                resultSet.add(javaFile);
-            }
-            javaFile.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
-            DataObject dob = null;
-            try {
-                dob = DataObject.find(javaFile);
-            } catch (DataObjectNotFoundException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex); // should not happen
-            }
-            FileObject formFile = FileUtil.findBrother(dob.getPrimaryFile(), "form"); // NOI18N
-
-            String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
-
-            if (entity[0] == null) {
-                Logger.getLogger(getClass().getName()).log(
-                    Level.INFO, "WARNING: Cannot find entity: {0}", masterTableName); // NOI18N
-                entity[0] = new String[] {"Object", Object.class.getName()}; // NOI18N
-            }
-            if ((detailFKTable != null) && (entity[1] == null)) {
-                Logger.getLogger(getClass().getName()).log(
-                    Level.INFO, "WARNING: Cannot find entity: {0}", detailFKTable); // NOI18N
-                entity[1] = new String[] {"Object", Object.class.getName()}; // NOI18N
-            }
-
-            String masterClass = entity[0][1];
-            String masterEntity = entity[0][0];
-            String detailClass = null;
-            String detailEntity = null;
-            
-            if (entity[1] != null) {
-                detailClass = entity[1][1];
-                detailEntity = entity[1][0];
-            }
-            MasterDetailGenerator generator = new MasterDetailGenerator(formFile, javaFile,
-                masterClass, detailClass, masterEntity, detailEntity,
-                (joinInfo == null) ? null : joinInfo[0], (joinInfo == null) ? null : joinInfo[1], unitName);
-
-            List<String> masterColumnNames = (List<String>)wizard.getProperty("masterColumns"); // NOI18N
-            List<String> masterColumns = J2EEUtils.propertiesForColumns(mappings, masterEntity, masterColumnNames);
-            generator.setMasterColumns(masterColumns);
-
-            List<String> masterColumnTypes = J2EEUtils.typesOfProperties(javaFile, masterClass, masterColumns);
-            generator.setMasterColumnTypes(masterColumnTypes);
-
-            List<String> detailColumnNames = (List<String>)wizard.getProperty("detailColumns"); // NOI18N
-            List<String> detailColumns = J2EEUtils.propertiesForColumns(mappings, (detailEntity == null) ? masterEntity : detailEntity, detailColumnNames);
-            generator.setDetailColumns(detailColumns);
-
-            if (detailClass != null) {
-                List<String> detailColumnTypes = J2EEUtils.typesOfProperties(javaFile, detailClass, detailColumns);
-                generator.setDetailColumnTypes(detailColumnTypes);
-            }
-
-            generator.generate();
-        } catch (Exception ex) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-        } finally {
-// issue #195818 - commented out the following cleanup
-//            postJavaInfrastructureCleanup();
+        if (delegateIterator == null) {
+            Logger logger = Logger.getLogger("org.netbeans.ui.metrics.swingapp"); // NOI18N
+            LogRecord rec = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_JDA"); // NOI18N
+            rec.setLoggerName(logger.getName());
+            rec.setParameters(new Object[] {"JDA_APP_TYPE_CRUD"}); // NOI18N
+            logger.log(rec);
+        } else {
+            Logger logger = Logger.getLogger("org.netbeans.ui.metrics.form.j2ee"); // NOI18N
+            LogRecord rec = new LogRecord(Level.INFO, "USG_FORM_CREATED"); // NOI18N
+            rec.setLoggerName(logger.getName());
+            rec.setParameters(new Object[] {Templates.getTemplate(wizard).getName()});
+            logger.log(rec);
         }
-        
+
+        FileObject javaFile;
+        if (delegateIterator != null) {
+            resultSet = delegateIterator.instantiate();
+            javaFile = (FileObject)resultSet.iterator().next();
+        }
+        else {
+            resultSet = new HashSet();
+            javaFile = (FileObject) wizard.getProperty("mainForm"); // NOI18N
+            resultSet.add(javaFile);
+        }
+        javaFile.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
+        DataObject dob = DataObject.find(javaFile);
+        FileObject formFile = FileUtil.findBrother(dob.getPrimaryFile(), "form"); // NOI18N
+
+        String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
+
+        if (entity[0] == null) {
+            Logger.getLogger(getClass().getName()).log(
+                Level.INFO, "WARNING: Cannot find entity: {0}", masterTableName); // NOI18N
+            entity[0] = new String[] {"Object", Object.class.getName()}; // NOI18N
+        }
+        if ((detailFKTable != null) && (entity[1] == null)) {
+            Logger.getLogger(getClass().getName()).log(
+                Level.INFO, "WARNING: Cannot find entity: {0}", detailFKTable); // NOI18N
+            entity[1] = new String[] {"Object", Object.class.getName()}; // NOI18N
+        }
+
+        String masterClass = entity[0][1];
+        String masterEntity = entity[0][0];
+        String detailClass = null;
+        String detailEntity = null;
+
+        if (entity[1] != null) {
+            detailClass = entity[1][1];
+            detailEntity = entity[1][0];
+        }
+        MasterDetailGenerator generator = new MasterDetailGenerator(formFile, javaFile,
+            masterClass, detailClass, masterEntity, detailEntity,
+            (joinInfo == null) ? null : joinInfo[0], (joinInfo == null) ? null : joinInfo[1], unitName);
+
+        List<String> masterColumnNames = (List<String>)wizard.getProperty("masterColumns"); // NOI18N
+        List<String> masterColumns = J2EEUtils.propertiesForColumns(mappings, masterEntity, masterColumnNames);
+        generator.setMasterColumns(masterColumns);
+
+        List<String> masterColumnTypes = J2EEUtils.typesOfProperties(javaFile, masterClass, masterColumns);
+        generator.setMasterColumnTypes(masterColumnTypes);
+
+        List<String> detailColumnNames = (List<String>)wizard.getProperty("detailColumns"); // NOI18N
+        List<String> detailColumns = J2EEUtils.propertiesForColumns(mappings, (detailEntity == null) ? masterEntity : detailEntity, detailColumnNames);
+        generator.setDetailColumns(detailColumns);
+
+        if (detailClass != null) {
+            List<String> detailColumnTypes = J2EEUtils.typesOfProperties(javaFile, detailClass, detailColumns);
+            generator.setDetailColumnTypes(detailColumnTypes);
+        }
+
+        generator.generate();
+
         return resultSet;
     }
 
@@ -497,8 +485,6 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 if (entityInfo == null) {
                     // Generates a Java class for the entity
                     J2EEUtils.createEntity(folder, scope, unit, connection, table, relatedTables);
-
-                    entityInfo = J2EEUtils.findEntity(mappings, table);
                 } else {
                     // Add the entity into the persistence unit if it is not there already
                     J2EEUtils.addEntityToUnit(entityInfo[1], unit, project);
@@ -528,8 +514,10 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             }
 
             return result;
-        } catch (Exception ex) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+        } catch (IOException ioex) {
+            Logger.getLogger(MasterDetailWizard.class.getName()).log(Level.INFO, null, ioex);
+        } catch (InvalidPersistenceXmlException ipxex) {
+            Logger.getLogger(MasterDetailWizard.class.getName()).log(Level.INFO, null, ipxex);
         }
         return null;
     }
@@ -552,35 +540,6 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 });
                 GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {
                     cpInfo.getClassPath(PathKind.SOURCE)
-                });
-            } catch (InterruptedException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            } catch (ExecutionException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            } catch (MetadataModelException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            }
-        }
-    }
-
-    private void postJavaInfrastructureCleanup() throws IOException {
-        if (needClassPathInit && mappings != null) {
-            try {
-                ClasspathInfo cpInfo = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, ClasspathInfo>() {
-                    @Override
-                    public ClasspathInfo run(EntityMappingsMetadata metadata) {
-                        return metadata.createJavaSource().getClasspathInfo();
-                    }
-                }).get();
-
-                GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {
-                    cpInfo.getClassPath(PathKind.SOURCE)
-                });
-                GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[] {
-                    cpInfo.getClassPath(PathKind.COMPILE)
-                });
-                GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, new ClassPath[] {
-                    cpInfo.getClassPath(PathKind.BOOT)
                 });
             } catch (InterruptedException ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);

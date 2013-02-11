@@ -62,13 +62,13 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.NbiThread;
-import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.UiMode;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_NO_CANCEL_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
 import static javax.swing.JOptionPane.NO_OPTION;
 import static javax.swing.JOptionPane.CANCEL_OPTION;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 
 
 /**
@@ -81,6 +81,7 @@ public final class UiUtils {
     // Static
     private static boolean lookAndFeelInitialized = false;
     private static LookAndFeelType lookAndFeelType = null;
+    private static boolean uiUnavailable;
     
     public static boolean showMessageDialog(
             final String message,
@@ -253,6 +254,7 @@ public final class UiUtils {
             LogManager.indent();
             switch (UiMode.getCurrentUiMode()) {
                 case SWING:
+                    uiUnavailable = true;
                     String className = System.getProperty(LAF_CLASS_NAME_PROPERTY);
                     if (className == null) {
                         LogManager.log("... custom look and feel class name was not specified, using system default");
@@ -429,6 +431,11 @@ public final class UiUtils {
                     }
                     break;
             }
+        } catch (LinkageError err) {
+            uiUnavailable = true;
+            LogManager.log(ErrorLevel.ERROR, err);
+            throw new InitializationException(ResourceUtils.getString(UiUtils.class,
+                    RESOURCE_FAILED_TO_INITIALIZE_UI_LINKERR, err.getLocalizedMessage()), err);
         } finally {
             LogManager.unindent();
             LogManager.log("... initializing L&F finished");
@@ -512,7 +519,7 @@ public final class UiUtils {
             }
             lookAndFeelType = LookAndFeelType.DEFAULT;
 
-            if (UiMode.getCurrentUiMode() == UiMode.SWING) {
+            if (!uiUnavailable && UiMode.getCurrentUiMode() == UiMode.SWING) {
                 LookAndFeel laf = UIManager.getLookAndFeel();
                 if (laf != null) {
                     String id = laf.getID();
@@ -656,4 +663,6 @@ public final class UiUtils {
             "UI.silent.default.no";//NOI18N
     private static final String RESOURCE_SILENT_DEFAULT_CANCEL = 
             "UI.silent.default.cancel";//NOI18N
+    private static final String RESOURCE_FAILED_TO_INITIALIZE_UI_LINKERR =
+            "UI.error.failed.to.initialize.ui.linkerr"; // NOI18N
 }
