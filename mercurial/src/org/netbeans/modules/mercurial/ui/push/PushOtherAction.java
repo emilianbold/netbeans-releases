@@ -144,7 +144,7 @@ public class PushOtherAction extends ContextAction {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { 
-               PushAction.performPush(root, pushPath, fromPrjName, toPrjName, null, this.getLogger(), false);
+               PushAction.performPush(root, pushPath, fromPrjName, toPrjName, null, null, this.getLogger(), false);
             } 
         };
 

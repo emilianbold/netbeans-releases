@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.php.project.connections.common;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -181,50 +185,75 @@ public final class RemoteUtils {
     }
 
     public static boolean hasHttpProxy() {
-        return NetworkSettings.getProxyHost(URI_FOR_HTTP_PROXY) != null;
+        return getHttpProxy() != null;
     }
 
     @CheckForNull
     public static ProxyInfo getHttpProxy() {
-        String proxyHost = NetworkSettings.getProxyHost(URI_FOR_HTTP_PROXY);
-        if (proxyHost == null) {
-            // no proxy
-            return null;
-        }
-        return new ProxyInfo(proxyHost,
-                Integer.parseInt(NetworkSettings.getProxyPort(URI_FOR_HTTP_PROXY)),
-                NetworkSettings.getAuthenticationUsername(URI_FOR_HTTP_PROXY),
-                NetworkSettings.getKeyForAuthenticationPassword(URI_FOR_HTTP_PROXY));
+        return getProxy(Proxy.Type.HTTP);
     }
 
     @CheckForNull
     public static ProxyInfo getSocksProxy() {
-        String proxyHost = NetworkSettings.getProxyHost(URI_FOR_SOCKS_PROXY);
-        if (proxyHost == null) {
-            // no proxy
+        return getProxy(Proxy.Type.SOCKS);
+    }
+
+    // #226006 - avoid nb apis, does not work correctly
+    private static ProxyInfo getProxy(Proxy.Type type) {
+        assert type != null;
+        assert type != Proxy.Type.DIRECT;
+        URI uri;
+        switch (type) {
+            case HTTP:
+                uri = URI_FOR_HTTP_PROXY;
+                break;
+            case SOCKS:
+                uri = URI_FOR_SOCKS_PROXY;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected proxy type: " + type);
+        }
+        List<Proxy> proxies = ProxySelector.getDefault().select(uri);
+        if (proxies.isEmpty()) {
             return null;
         }
-        return new ProxyInfo(proxyHost,
-                Integer.parseInt(NetworkSettings.getProxyPort(URI_FOR_SOCKS_PROXY)),
-                NetworkSettings.getAuthenticationUsername(URI_FOR_SOCKS_PROXY),
-                NetworkSettings.getKeyForAuthenticationPassword(URI_FOR_SOCKS_PROXY));
+        for (Proxy proxy : proxies) {
+            if (proxy.type() == type) {
+                SocketAddress address = proxy.address();
+                if (address instanceof InetSocketAddress) {
+                    InetSocketAddress inetAddress = (InetSocketAddress) address;
+                    return new ProxyInfo(proxy.type(), inetAddress.getHostName(), inetAddress.getPort(),
+                            NetworkSettings.getAuthenticationUsername(uri), NetworkSettings.getKeyForAuthenticationPassword(uri));
+                }
+            }
+        }
+        return null;
     }
 
     //~ Inner classes
 
     public static final class ProxyInfo {
 
+        private final Proxy.Type type;
         private final String host;
         private final int port;
         private final String username;
         private final String passwordKey;
 
 
-        public ProxyInfo(String host, int port, String username, String passwordKey) {
+        public ProxyInfo(Proxy.Type type, String host, int port, String username, String passwordKey) {
+            assert type != null;
+            assert host != null;
+
+            this.type = type;
             this.host = host;
             this.port = port;
             this.username = username;
             this.passwordKey = passwordKey;
+        }
+
+        public Proxy.Type getType() {
+            return type;
         }
 
         public String getHost() {
@@ -248,6 +277,11 @@ public final class RemoteUtils {
                 return null;
             }
             return new String(chars);
+        }
+
+        @Override
+        public String toString() {
+            return "ProxyInfo{" + "type=" + type + ", host=" + host + ", port=" + port + ", username=" + username + ", passwordKey=" + passwordKey + '}'; // NOI18N
         }
 
     }

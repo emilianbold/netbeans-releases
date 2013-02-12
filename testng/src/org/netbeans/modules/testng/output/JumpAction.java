@@ -76,7 +76,12 @@ final class JumpAction extends AbstractAction {
         } else if (node instanceof CallstackFrameNode){
             OutputUtils.openCallstackFrame(node, callstackFrameInfo);
         } else if (node instanceof TestNGMethodNode){
-            OutputUtils.openTestMethod((TestNGMethodNode)node);
+            if (((TestNGMethodNode) node).getTestcase().getTrouble() != null) {
+                // method failed, find failing line within the testMethod using the stacktrace
+                OutputUtils.openCallstackFrame(node, "");
+            } else {
+                OutputUtils.openTestMethod((TestNGMethodNode) node);
+            }
         }
     }
 

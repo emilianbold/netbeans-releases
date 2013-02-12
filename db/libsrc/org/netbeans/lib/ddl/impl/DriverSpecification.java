@@ -91,30 +91,40 @@ public class DriverSpecification {
         if (catalog == null || dmd == null) {
             this.catalog = catalog;
             return;
-        } else
-            catalog.trim();
+        } else {
+            catalog = catalog.trim();
+        }
 
-        ResultSet result;
+        ResultSet result = null;
         List<String> list = new LinkedList<String>();
 
         try {
             result = dmd.getCatalogs();
-            while (result.next())
-                list.add(result.getString(1).trim());
+            while (result.next()) {
+                String candidate = result.getString(1);
+                if(candidate != null) {
+                    list.add(candidate.trim());
+                }
+            }
             result.close();
         } catch (SQLException exc) {
             Logger.getLogger("global").log(Level.INFO, null, exc);
-            
-//            this.catalog = catalog;
             this.catalog = null;  //hack for IBM ODBC driver
-            result = null;
             return;
+        } finally {
+            try {
+                if (result != null) {
+                    result.close();
+                }
+            } catch (Exception ex) {
+            }
         }
 
-        if (list.contains(catalog))
+        if (list.contains(catalog)) {
             this.catalog = catalog;
-        else
+        } else {
             this.catalog = null; //hack for Sybase ODBC driver
+        }
     }
 
     public String getCatalog() {
@@ -122,7 +132,40 @@ public class DriverSpecification {
     }
 
     public void setSchema(String schema) {
-        this.schema = schema;
+        if (schema == null || dmd == null) {
+            this.schema = schema;
+            return;
+        } else {
+            schema = schema.trim();
+        }
+        ResultSet result = null;
+        List<String> list = new LinkedList<String>();
+
+        try {
+            result = dmd.getSchemas();
+            while (result.next()) {
+                String candidate = result.getString(1);
+                if (candidate != null) {
+                    list.add(candidate.trim());
+                }
+            }
+        } catch (SQLException exc) {
+            Logger.getLogger("global").log(Level.INFO, null, exc);      //NOI18N
+            this.schema = null;  //hack for Access ODBC driver
+            return;
+        } finally {
+            try {
+                if (result != null) {
+                    result.close();
+                }
+            } catch (Exception ex) {
+            }
+        }
+        if (list.contains(schema)) {
+            this.schema = schema;
+        } else {
+            this.schema = null; //hack for Sybase ODBC driver
+        }
     }
 
     public String getSchema() {
