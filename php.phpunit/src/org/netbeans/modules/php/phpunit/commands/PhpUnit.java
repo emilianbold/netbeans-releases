@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -115,17 +116,19 @@ public final class PhpUnit {
     private static final String SUITE_FILE_SUFFIX = SUITE_CLASS_SUFFIX + ".php"; // NOI18N
 
     // cli options
+    private static final String COLORS_PARAM = "--colors"; // NOI18N
     private static final String JUNIT_LOG_PARAM = "--log-junit"; // NOI18N
     private static final String FILTER_PARAM = "--filter"; // NOI18N
     private static final String COVERAGE_LOG_PARAM = "--coverage-clover"; // NOI18N
     private static final String LIST_GROUPS_PARAM = "--list-groups"; // NOI18N
     private static final String GROUP_PARAM = "--group"; // NOI18N
-
     // bootstrap & config
     private static final String BOOTSTRAP_PARAM = "--bootstrap"; // NOI18N
     private static final String BOOTSTRAP_FILENAME = "bootstrap%s.php"; // NOI18N
     private static final String CONFIGURATION_PARAM = "--configuration"; // NOI18N
     private static final String CONFIGURATION_FILENAME = "configuration%s.xml"; // NOI18N
+
+    private static final List<String> DEFAULT_PARAMS = Arrays.asList(COLORS_PARAM);
 
     // output files
     public static final File XML_LOG;
@@ -261,7 +264,7 @@ public final class PhpUnit {
             return null;
         }
 
-        List<String> params = new ArrayList<String>();
+        List<String> params = createParams(true);
         params.add(JUNIT_LOG_PARAM);
         params.add(XML_LOG.getAbsolutePath());
         addBootstrap(phpModule, params);
@@ -350,7 +353,7 @@ public final class PhpUnit {
 
         phpUnit.workDir(FileUtil.toFile(runInfo.getWorkingDirectory()));
 
-        List<String> params = new ArrayList<String>();
+        List<String> params = createParams(true);
         addBootstrap(phpModule, params);
         addConfiguration(phpModule, params);
         params.add(LIST_GROUPS_PARAM);
@@ -389,6 +392,14 @@ public final class PhpUnit {
         return new PhpExecutable(phpUnitPath)
                 .optionsSubcategory(PhpUnitOptionsPanelController.OPTIONS_SUB_PATH)
                 .displayName(title);
+    }
+
+    private List<String> createParams(boolean withDefaults) {
+        List<String> params = new ArrayList<String>();
+        if (withDefaults) {
+            params.addAll(DEFAULT_PARAMS);
+        }
+        return params;
     }
 
     private void addBootstrap(PhpModule phpModule, List<String> params) {
