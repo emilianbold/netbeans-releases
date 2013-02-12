@@ -48,14 +48,13 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.*;
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.util.Context;
 import javax.lang.model.element.*;
@@ -121,7 +120,7 @@ public class ElementsService {
         if ((m.flags() & Flags.STATIC) == 0) {
             ClassSymbol owner = (ClassSymbol) m.owner;
             for (Type sup = jctypes.supertype(m.owner.type);
-                 sup.tag == TypeTags.CLASS;
+                 sup.hasTag(TypeTag.CLASS);
                  sup = jctypes.supertype(sup)) {
                 for (Scope.Entry e = sup.tsym.members().lookup(m.name);
                      e.scope != null; e = e.next()) {
@@ -176,7 +175,7 @@ public class ElementsService {
 	// Check if this method overrides a deprecated method. 
 	TypeSymbol owner = sym.enclClass();
 	for (Type sup = jctypes.supertype(owner.type);
-	     sup.tag == TypeTags.CLASS;
+	     sup.hasTag(TypeTag.CLASS);
 	     sup = jctypes.supertype(sup)) {
 	    for (Scope.Entry e = sup.tsym.members().lookup(sym.name);
 		 e.scope != null; e = e.next()) {
@@ -210,7 +209,7 @@ public class ElementsService {
     public ExecutableElement getOverriddenMethod(ExecutableElement method) {
         MethodSymbol m = (MethodSymbol)method;
 	ClassSymbol origin = (ClassSymbol)m.owner;
-	for (Type t = jctypes.supertype(origin.type); t.tag == TypeTags.CLASS; t = jctypes.supertype(t)) {
+	for (Type t = jctypes.supertype(origin.type); t.hasTag(TypeTag.CLASS); t = jctypes.supertype(t)) {
 	    TypeSymbol c = t.tsym;
 	    Scope.Entry e = c.members().lookup(m.name);
 	    while (e.scope != null) {

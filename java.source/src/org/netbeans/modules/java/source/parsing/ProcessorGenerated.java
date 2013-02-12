@@ -129,13 +129,13 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     public void bind(
          @NonNull final ClasspathInfo  owner,
          @NonNull final ClassPath userSources,
-         @NonNull final ClassPath aptSources) {
+         @NullAllowed final ClassPath aptSources) {
         Parameters.notNull("owner", owner);             //NOI18N
         Parameters.notNull("userSources", userSources); //NOI18N
         if (!canWrite()) {
             return;
         }
-        if (this.owner != null) {
+        if (this.owner != null && !this.owner.equals(owner)) {
             throw new IllegalStateException(MessageFormat.format(
                 "Previous owner: {0}({1}), New owner: {2}({3})",                //NOI18N
                 this.owner,
@@ -143,9 +143,6 @@ public final class ProcessorGenerated extends TransactionContext.Service {
                 owner,
                 System.identityHashCode(owner)));
         }
-        assert this.userSources == null;
-        assert this.aptSources == null;
-        
         this.userSources = userSources;
         this.aptSources = aptSources;
         this.owner = owner;

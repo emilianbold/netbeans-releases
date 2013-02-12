@@ -2174,6 +2174,80 @@ public class IntroduceHintTest extends NbTestCase {
         performSimpleSelectionVerificationTest("package test; public class Test {public void test() {int y = 3; y =|  2   |; }}", true);
     }
     
+    public void testVariableNullTypeVariable221440() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method(String... args) {\n" +
+                       "        args = |null|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void method(String... args) {\n" +
+                        "        String[] name = null;\n" +
+                        "        args = name;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("name", true, false, true),
+                       5, 0);
+    }
+    
+    public void testVariableNullTypeConstant221440() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method(String... args) {\n" +
+                       "        args = |null|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    private static final String[] name = null;\n" +
+                        "    public void method(String... args) {\n" +
+                        "        args = name;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("name", true, false, true),
+                       5, 1);
+    }
+    
+    public void testVariableNullTypeField221440() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method(String... args) {\n" +
+                       "        args = |null|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    private final String[] name = null;\n" +
+                        "    public void method(String... args) {\n" +
+                        "        args = name;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("name", IntroduceFieldPanel.INIT_FIELD, true, null, true, true),
+                       5, 2);
+    }
+    
+    public void testVariableNullTypeMethod221440() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method(String... args) {\n" +
+                       "        args = |null|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void method(String... args) {\n" +
+                        "        args = name();\n" +
+                        "    }\n" +
+                        "    private String[] name() {\n" +
+                        "        return null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", null, true),
+                       5, 3);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
 

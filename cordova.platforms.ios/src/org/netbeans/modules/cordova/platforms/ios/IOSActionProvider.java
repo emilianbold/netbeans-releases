@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cordova.platforms.ios;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
@@ -73,7 +75,8 @@ public class IOSActionProvider implements ActionProvider {
 
     @NbBundle.Messages({
         "ERR_NotMac=iOS Development is available only on Mac OS X",
-        "ERR_Title=Error"
+        "ERR_Title=Error",
+        "LBL_Opening=Opening url"    
     })
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
@@ -88,7 +91,7 @@ public class IOSActionProvider implements ActionProvider {
                 DialogDisplayer.getDefault().notify(not);
                 return;
         }
-        BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
+        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
         assert build != null;
         if (COMMAND_BUILD.equals(command)) {
             build.perform(BuildPerformer.BUILD_IOS, p);
@@ -98,7 +101,12 @@ public class IOSActionProvider implements ActionProvider {
             if (build.isPhoneGapBuild(p)) {
                 build.perform(build.RUN_IOS,p);
             } else {
-                IOSDevice.IPHONE.openUrl(build.getUrl(p));
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        IOSDevice.IPHONE.openUrl(build.getUrl(p));
+                    }
+                }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
             }
         }
     }

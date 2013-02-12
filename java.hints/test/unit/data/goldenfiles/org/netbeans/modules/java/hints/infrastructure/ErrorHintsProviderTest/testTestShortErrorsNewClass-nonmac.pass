@@ -1,4 +1,4 @@
 10:8-10:39:error:constructor TestShortErrorsNewClass in class TestShortErrorsNewClass cannot be applied to given types;
   required:String
   found:Object
-  reason:actual argument Object cannot be converted to String by method invocation conversion
+  reason:argument mismatch; Object cannot be converted to String

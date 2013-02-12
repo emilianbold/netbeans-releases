@@ -59,6 +59,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -278,11 +279,11 @@ public class ClassFileUtil {
 		break;
 	    case DECLARED:
             {
-		sb.append('L');	    // NOI18N
-		TypeElement te = (TypeElement) ((DeclaredType)type).asElement();
-		encodeClassName(te, sb,'/');
-		sb.append(';');	    // NOI18N
-		break;
+                sb.append('L');	    // NOI18N
+                TypeElement te = (TypeElement) ((DeclaredType)type).asElement();
+                encodeClassName(te, sb,'/');
+                sb.append(';');	    // NOI18N
+                break;
             }
 	    case TYPEVAR:
             {
@@ -306,6 +307,11 @@ public class ClassFileUtil {
                     sb.append(';');	    // NOI18N
                     break;
                 }                
+            }
+            case INTERSECTION:
+            {
+                encodeType(((IntersectionType) type).getBounds().get(0), sb);
+                break;
             }
 	    default:
 		throw new IllegalArgumentException ();

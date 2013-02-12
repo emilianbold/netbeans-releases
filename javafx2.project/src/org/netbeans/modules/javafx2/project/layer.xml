@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
                 </file>
 
                 <file name="fxml.xml">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/Project/JavaFX/fxml.xml"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.fxml.Bundle#Templates/Project/JavaFX/fxml.xml"/>
                     <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png"/>
                     <attr name="position" intvalue="305"/>
                     <attr name="template" boolvalue="true"/>
@@ -132,13 +132,13 @@ made subject to such option by the copyright holder.
             </file>
 
             <file name="FXML.java" url="templates/FXML_java_1.template">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx/FXML.java"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.fxml.Bundle#Templates/javafx/FXML.java"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXML.html"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.FXMLTemplateWizardIterator.create"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.fxml.FXMLTemplateWizardIterator.create"/>
                 <attr name="templateCategory" stringvalue="javafx"/>
             </file>
 
