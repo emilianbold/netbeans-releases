@@ -45,6 +45,9 @@ import org.openide.filesystems.FileObject;
 
 public final class RefreshOnSaveSupport {
 
+    private RefreshOnSaveSupport() {
+    }
+
     /**
      * This is a filter which checks whether file can be refreshed on
      * save in browser or not.
