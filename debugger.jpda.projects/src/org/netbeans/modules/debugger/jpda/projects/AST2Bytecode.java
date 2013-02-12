@@ -97,8 +97,12 @@ class AST2Bytecode {
         Types types = ci.getTypes();
         SourcePositions sp = trees.getSourcePositions();
         //List<Tree> treeNodes = linearizeTree(expTrees);
-        if (treeNodes == null) return null;
-        if (indexes == null) return null;
+        if (treeNodes == null) {
+            return null;
+        }
+        if (indexes == null) {
+            return null;
+        }
         int length = treeNodes.size();
         List<EditorContext.Operation> operations = new ArrayList<EditorContext.Operation>(length);
         LineMap lineMap = cu.getLineMap();
@@ -153,7 +157,7 @@ class AST2Bytecode {
                                 methodNameInBytecode = constantPool.getMethodName(constantPoolIndex);
                                 methodDescriptorInBytecode = constantPool.getMethodDescriptor(constantPoolIndex);
                             } catch (IndexOutOfBoundsException ioobex) {
-                                ioobex = Exceptions.attachMessage(ioobex, "While matching "+java.util.Arrays.asList(treeNodes)+". Please attach the code where this happens to http://www.netbeans.org/issues/show_bug.cgi?id=161839");
+                                ioobex = Exceptions.attachMessage(ioobex, "While matching "+treeNodes+". Please attach the code where this happens to http://www.netbeans.org/issues/show_bug.cgi?id=161839");
                                 Exceptions.printStackTrace(ioobex);
                             }
                         }
@@ -272,7 +276,7 @@ class AST2Bytecode {
                                             methodNameInBytecode = constantPool.getMethodName(constantPoolIndex);
                                             methodDescriptorInBytecode = constantPool.getMethodDescriptor(constantPoolIndex);
                                         } catch (IndexOutOfBoundsException ioobex) {
-                                            ioobex = Exceptions.attachMessage(ioobex, "While matching "+java.util.Arrays.asList(treeNodes)+". Please attach the code where this happens to http://www.netbeans.org/issues/show_bug.cgi?id=161839");
+                                            ioobex = Exceptions.attachMessage(ioobex, "While matching "+treeNodes+". Please attach the code where this happens to http://www.netbeans.org/issues/show_bug.cgi?id=161839");
                                             Exceptions.printStackTrace(ioobex);
                                             break;
                                         }
