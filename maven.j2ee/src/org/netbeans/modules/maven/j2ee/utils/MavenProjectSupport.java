@@ -360,12 +360,12 @@ public class MavenProjectSupport {
                 
                 FileObject webXml = webModuleImpl.getDeploymentDescriptor();
                 if (webXml == null) {
-                    AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-                    String j2eeVersion = props.get(MavenJavaEEConstants.HINT_J2EE_VERSION, false);
+                    String j2eeVersion = readJ2eeVersion(project);
                     webXml = DDHelper.createWebXml(Profile.fromPropertiesString(j2eeVersion), webInf);
     
                     // this should never happend if valid j2eeVersion has been parsed - see also issue #214600
-                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version" + j2eeVersion + ", Profile.fromPropertiesString(j2eeVersion) returns: " + Profile.fromPropertiesString(j2eeVersion);
+                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version: " + j2eeVersion
+                            + ", Profile.fromPropertiesString(j2eeVersion) returns: " + Profile.fromPropertiesString(j2eeVersion);
                 }
 
             } catch (IOException ex) {
