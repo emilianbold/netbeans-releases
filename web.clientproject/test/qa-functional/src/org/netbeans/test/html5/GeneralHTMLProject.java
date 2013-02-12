@@ -78,6 +78,7 @@ public class GeneralHTMLProject extends JellyTestCase {
     public static final String SAMPLES = "Samples";
     public static final String SAMPLES_CATEGORY = "HTML5";
     public static String current_project = "";
+    public boolean inEmbeddedBrowser = false;
     public static final Logger LOGGER = Logger.getLogger(GeneralHTMLProject.class.getName());
 
     public GeneralHTMLProject(String arg0) {
@@ -242,6 +243,11 @@ public class GeneralHTMLProject extends JellyTestCase {
                 }
                 propertiesDialogOper.ok();
                 waitScanFinished();
+                if (browserName.equalsIgnoreCase("Embedded WebKit Browser")) {
+                    this.inEmbeddedBrowser = true;
+                } else {
+                    this.inEmbeddedBrowser = false;
+                }
                 return;
             }
         }
