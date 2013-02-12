@@ -64,6 +64,7 @@ public final class RemoteUtils {
     private static final Logger LOGGER = Logger.getLogger(RemoteUtils.class.getName());
 
     private static final URI URI_FOR_HTTP_PROXY = URI.create("http://oracle.com"); // NOI18N
+    private static final URI URI_FOR_SOCKS_PROXY = URI.create("socks://oracle.com"); // NOI18N
 
 
     private RemoteUtils() {
@@ -184,21 +185,34 @@ public final class RemoteUtils {
     }
 
     @CheckForNull
-    public static HttpProxyInfo getHttpProxy() {
+    public static ProxyInfo getHttpProxy() {
         String proxyHost = NetworkSettings.getProxyHost(URI_FOR_HTTP_PROXY);
         if (proxyHost == null) {
             // no proxy
             return null;
         }
-        return new HttpProxyInfo(proxyHost,
+        return new ProxyInfo(proxyHost,
                 Integer.parseInt(NetworkSettings.getProxyPort(URI_FOR_HTTP_PROXY)),
                 NetworkSettings.getAuthenticationUsername(URI_FOR_HTTP_PROXY),
                 NetworkSettings.getKeyForAuthenticationPassword(URI_FOR_HTTP_PROXY));
     }
 
+    @CheckForNull
+    public static ProxyInfo getSocksProxy() {
+        String proxyHost = NetworkSettings.getProxyHost(URI_FOR_SOCKS_PROXY);
+        if (proxyHost == null) {
+            // no proxy
+            return null;
+        }
+        return new ProxyInfo(proxyHost,
+                Integer.parseInt(NetworkSettings.getProxyPort(URI_FOR_SOCKS_PROXY)),
+                NetworkSettings.getAuthenticationUsername(URI_FOR_SOCKS_PROXY),
+                NetworkSettings.getKeyForAuthenticationPassword(URI_FOR_SOCKS_PROXY));
+    }
+
     //~ Inner classes
 
-    public static final class HttpProxyInfo {
+    public static final class ProxyInfo {
 
         private final String host;
         private final int port;
@@ -206,7 +220,7 @@ public final class RemoteUtils {
         private final String passwordKey;
 
 
-        public HttpProxyInfo(String host, int port, String username, String passwordKey) {
+        public ProxyInfo(String host, int port, String username, String passwordKey) {
             this.host = host;
             this.port = port;
             this.username = username;
