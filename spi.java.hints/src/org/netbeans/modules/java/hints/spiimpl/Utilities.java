@@ -84,7 +84,8 @@ import com.sun.tools.javac.parser.Parser;
 import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.parser.ScannerFactory;
-import com.sun.tools.javac.parser.Token;
+import com.sun.tools.javac.parser.Tokens.Token;
+import com.sun.tools.javac.parser.Tokens.TokenKind;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
@@ -97,10 +98,10 @@ import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Names;
-import com.sun.tools.javac.util.Position.LineMap;
 import com.sun.tools.javadoc.Messager;
 import java.io.File;
 import java.io.IOException;
@@ -134,8 +135,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
-import javax.tools.DiagnosticCollector;
-import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
@@ -159,8 +158,8 @@ import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.VariableWildcard;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.lib.nbjavac.services.CancelService;
+import org.netbeans.lib.nbjavac.services.NBParserFactory.NBJavacParser;
 import org.netbeans.lib.nbjavac.services.NBParserFactory;
-import org.netbeans.lib.nbjavac.services.NBParserFactory.NBEndPosParser;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.AnnotationWildcard;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.FakeBlock;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -547,18 +546,17 @@ public class Utilities {
         }.scan(t, null);
     }
 
-    private static JCStatement parseStatement(Context context, CharSequence stmt, SourcePositions[] pos, List<Diagnostic<? extends JavaFileObject>> errors) {
+    private static JCStatement parseStatement(Context context, CharSequence stmt, SourcePositions[] pos, final List<Diagnostic<? extends JavaFileObject>> errors) {
         if (stmt == null || (pos != null && pos.length != 1))
             throw new IllegalArgumentException();
         JavaCompiler compiler = JavaCompiler.instance(context);
         JavaFileObject prev = compiler.log.useSource(new DummyJFO());
-        DiagnosticListener<? super JavaFileObject> oldDiag = compiler.log.getDiagnosticListener();
-        int origNErrors = compiler.log.nerrors;
-        int origNWarnings = compiler.log.nwarnings;
-        boolean origDeferDiagnostic = compiler.log.deferDiagnostics;
-
-        compiler.log.deferDiagnostics = false;
-        compiler.log.setDiagnosticListener(new DiagnosticListenerImpl(errors));
+        Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(compiler.log) {
+            @Override
+            public void report(JCDiagnostic diag) {
+                errors.add(diag);
+            }            
+        };
         try {
             CharBuffer buf = CharBuffer.wrap((stmt+"\u0000").toCharArray(), 0, stmt.length());
             ParserFactory factory = ParserFactory.instance(context);
@@ -573,25 +571,21 @@ public class Utilities {
             return null;
         } finally {
             compiler.log.useSource(prev);
-            compiler.log.setDiagnosticListener(oldDiag);
-            compiler.log.nerrors = origNErrors;
-            compiler.log.nwarnings = origNWarnings;
-            compiler.log.deferDiagnostics = origDeferDiagnostic;
+            compiler.log.popDiagnosticHandler(discardHandler);
         }
     }
 
-    private static JCExpression parseExpression(Context context, CharSequence expr, boolean onlyFullInput, SourcePositions[] pos, List<Diagnostic<? extends JavaFileObject>> errors) {
+    private static JCExpression parseExpression(Context context, CharSequence expr, boolean onlyFullInput, SourcePositions[] pos, final List<Diagnostic<? extends JavaFileObject>> errors) {
         if (expr == null || (pos != null && pos.length != 1))
             throw new IllegalArgumentException();
         JavaCompiler compiler = JavaCompiler.instance(context);
         JavaFileObject prev = compiler.log.useSource(new DummyJFO());
-        DiagnosticListener<? super JavaFileObject> oldDiag = compiler.log.getDiagnosticListener();
-        int origNErrors = compiler.log.nerrors;
-        int origNWarnings = compiler.log.nwarnings;
-        boolean origDeferDiagnostic = compiler.log.deferDiagnostics;
-
-        compiler.log.deferDiagnostics = false;
-        compiler.log.setDiagnosticListener(new DiagnosticListenerImpl(errors));
+        Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(compiler.log) {
+            @Override
+            public void report(JCDiagnostic diag) {
+                errors.add(diag);
+            }            
+        };
         try {
             CharBuffer buf = CharBuffer.wrap((expr+"\u0000").toCharArray(), 0, expr.length());
             ParserFactory factory = ParserFactory.instance(context);
@@ -604,30 +598,26 @@ public class Utilities {
                     pos[0] = new ParserSourcePositions((JavacParser)parser);
                 JCExpression result = parser.parseExpression();
 
-                if (!onlyFullInput || scanner.token() == Token.EOF) {
+                if (!onlyFullInput || scanner.token().kind == TokenKind.EOF) {
                     return result;
                 }
             }
             return null;
         } finally {
             compiler.log.useSource(prev);
-            compiler.log.setDiagnosticListener(oldDiag);
-            compiler.log.nerrors = origNErrors;
-            compiler.log.nwarnings = origNWarnings;
-            compiler.log.deferDiagnostics = origDeferDiagnostic;
+            compiler.log.popDiagnosticHandler(discardHandler);
         }
     }
 
-    private static TypeMirror attributeTree(JavacTaskImpl jti, Tree tree, Scope scope, List<Diagnostic<? extends JavaFileObject>> errors) {
+    private static TypeMirror attributeTree(JavacTaskImpl jti, Tree tree, Scope scope, final List<Diagnostic<? extends JavaFileObject>> errors) {
         Log log = Log.instance(jti.getContext());
         JavaFileObject prev = log.useSource(new DummyJFO());
-        DiagnosticListener<? super JavaFileObject> oldDiag = log.getDiagnosticListener();
-        int origNErrors = log.nerrors;
-        int origNWarnings = log.nwarnings;
-        boolean origDeferDiagnostic = log.deferDiagnostics;
-
-        log.deferDiagnostics = false;
-        log.setDiagnosticListener(new DiagnosticListenerImpl(errors));
+        Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(log) {
+            @Override
+            public void report(JCDiagnostic diag) {
+                errors.add(diag);
+            }            
+        };
         try {
             Attr attr = Attr.instance(jti.getContext());
             Env<AttrContext> env = ((JavacScope) scope).getEnv();
@@ -636,10 +626,7 @@ public class Utilities {
             return attr.attribStat((JCTree) tree,env);
         } finally {
             log.useSource(prev);
-            log.setDiagnosticListener(oldDiag);
-            log.nerrors = origNErrors;
-            log.nwarnings = origNWarnings;
-            log.deferDiagnostics = origDeferDiagnostic;
+            log.popDiagnosticHandler(discardHandler);
         }
     }
 
@@ -722,21 +709,13 @@ public class Utilities {
         Context context = jti.getContext();
         JavaCompiler compiler = JavaCompiler.instance(context);
         Log log = Log.instance(context);
-        int origNErrors = log.nerrors;
-        int origNWarnings = log.nwarnings;
-        boolean origDeferDiagnostic = compiler.log.deferDiagnostics;
-
-        compiler.log.deferDiagnostics = false;
-        log.nerrors = 0;
+        Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(compiler.log);
 
         JavaFileObject jfo = FileObjects.memoryFileObject("$", "$", new File("/tmp/$" + count + ".java").toURI(), System.currentTimeMillis(), clazz.toString());
 
-        DiagnosticListener<? super JavaFileObject> old = log.getDiagnosticListener();
         boolean oldSkipAPs = compiler.skipAnnotationProcessing;
-        DiagnosticCollector<JavaFileObject> dc = new DiagnosticCollector<JavaFileObject>();
 
         try {
-            log.setDiagnosticListener(dc);
             compiler.skipAnnotationProcessing = true;
             
             JCCompilationUnit cut = compiler.parse(jfo);
@@ -763,10 +742,7 @@ public class Utilities {
 
             return res;
         } finally {
-            log.setDiagnosticListener(old);
-            log.nerrors = origNErrors;
-            log.nwarnings = origNWarnings;
-            log.deferDiagnostics = origDeferDiagnostic;
+            log.popDiagnosticHandler(discardHandler);
             compiler.skipAnnotationProcessing = oldSkipAPs;
         }
     }
@@ -1228,28 +1204,30 @@ public class Utilities {
         }
     }
 
-    private static class JackpotJavacParser extends NBEndPosParser {
+    private static class JackpotJavacParser extends NBJavacParser {
 
         private final Context ctx;
+        private final com.sun.tools.javac.util.Name dollar;
         public JackpotJavacParser(Context ctx, NBParserFactory fac,
                          Lexer S,
                          boolean keepDocComments,
                          boolean keepLineMap,
                          CancelService cancelService,
                          Names names) {
-            super(fac, new PushbackLexer(S), keepDocComments, keepLineMap, cancelService);
+            super(fac, S, keepDocComments, keepLineMap, true, cancelService);
             this.ctx = ctx;
+            this.dollar = names.fromString("$");
         }
 
         @Override
         protected JCModifiers modifiersOpt(JCModifiers partial) {
-            if (S.token() == Token.IDENTIFIER) {
-                String ident = S.stringVal();
+            if (token.kind == TokenKind.IDENTIFIER) {
+                String ident = token.name().toString();
 
                 if (Utilities.isMultistatementWildcard(ident)) {
-                    com.sun.tools.javac.util.Name name = S.name();
+                    com.sun.tools.javac.util.Name name = token.name();
 
-                    S.nextToken();
+                    nextToken();
                     
                     JCModifiers result = super.modifiersOpt(partial);
                     
@@ -1262,60 +1240,40 @@ public class Utilities {
             return super.modifiersOpt(partial);
         }
 
-        protected JCVariableDecl formalParameter() {
-            if (S.token() == Token.IDENTIFIER) {
-                String ident = S.stringVal();
+        @Override
+        public JCVariableDecl formalParameter(boolean lambdaParam) {
+            if (token.kind == TokenKind.IDENTIFIER) {
+                if (token.name().startsWith(dollar)) {
+                    com.sun.tools.javac.util.Name name = token.name();
 
-                if (ident.startsWith("$")) {
-                    com.sun.tools.javac.util.Name name = S.name();
-                    int identPos = S.pos();
+                    Token peeked = S.token(1);
 
-                    S.nextToken();
-
-                    if (S.token() == Token.COMMA || S.token() == Token.RPAREN) {
+                    if (peeked.kind == TokenKind.COMMA || peeked.kind == TokenKind.RPAREN) {
+                        nextToken();
                         return new VariableWildcard(ctx, name, F.Ident(name));
                     }
-                    
-                    ((PushbackLexer) S).add(Token.IDENTIFIER, identPos, name);
-                    ((PushbackLexer) S).add(null, -1, null);
-                    S.nextToken();
                 }
             }
 
-            return super.formalParameter();
+            return super.formalParameter(lambdaParam);
         }
 
         @Override
         protected JCCatch catchClause() {
-            if (S.token() == Token.CATCH) {
-                int origPos = S.pos();
-//                S.pushState();
+            if (token.kind == TokenKind.CATCH) {
+                Token peeked = S.token(1);
                 
-                Token peeked;
-                String ident;
-                
-//                try {
-                    S.nextToken();
-
-                    peeked =  S.token();
-                    ident = S.stringVal();
-//                } finally {
-//                    S.popState();
-//                }
-                
-                if (   peeked == Token.IDENTIFIER
-                    && Utilities.isMultistatementWildcard(ident)) {
-                    accept(Token.CATCH);
+                if (   peeked.kind == TokenKind.IDENTIFIER
+                    && Utilities.isMultistatementWildcard(peeked.name().toString())) {
+                    accept(TokenKind.CATCH);
                     
-                    com.sun.tools.javac.util.Name name = S.name();
+                    com.sun.tools.javac.util.Name name = token.name();
 
-                    accept(Token.IDENTIFIER);
+                    accept(TokenKind.IDENTIFIER);
 
                     return new CatchWildcard(ctx, name, F.Ident(name));
                 } else {
-                    ((PushbackLexer) S).add(Token.CATCH, origPos, null);
-                    ((PushbackLexer) S).add(null, -1, null);
-                    S.nextToken();
+                    nextToken();
                 }
             }
             return super.catchClause();
@@ -1323,24 +1281,18 @@ public class Utilities {
 
         @Override
         public com.sun.tools.javac.util.List<JCTree> classOrInterfaceBodyDeclaration(com.sun.tools.javac.util.Name className, boolean isInterface) {
-            if (S.token() == Token.IDENTIFIER) {
-                int identPos = S.pos();
-                String ident = S.stringVal();
+            if (token.kind == TokenKind.IDENTIFIER) {
+                if (token.name().startsWith(dollar)) {
+                    com.sun.tools.javac.util.Name name = token.name();
 
-                if (ident.startsWith("$")) {
-                    com.sun.tools.javac.util.Name name = S.name();
+                    Token peeked = S.token(1);
 
-                    S.nextToken();
-                    
-                    if (S.token() == Token.SEMI) {
-                        S.nextToken();
+                    if (peeked.kind == TokenKind.SEMI) {
+                        nextToken();
+                        nextToken();
                         
                         return com.sun.tools.javac.util.List.<JCTree>of(F.Ident(name));
                     }
-                    
-                    ((PushbackLexer) S).add(Token.IDENTIFIER, identPos, name);
-                    ((PushbackLexer) S).add(null, -1, null);
-                    S.nextToken();
                 }
             }
             return super.classOrInterfaceBodyDeclaration(className, isInterface);
@@ -1348,7 +1300,7 @@ public class Utilities {
         
         @Override
         protected JCExpression checkExprStat(JCExpression t) {
-            if (t.getTag() == JCTree.IDENT) {
+            if (t.getTag() == JCTree.Tag.IDENT) {
                 if (((IdentifierTree) t).getName().toString().startsWith("$")) {
                     return t;
                 }
@@ -1358,31 +1310,27 @@ public class Utilities {
 
         @Override
         protected JCCase switchBlockStatementGroup() {
-            if (S.token() == Token.CASE) {
-                int origPos = S.pos();
+            if (token.kind == TokenKind.CASE) {
+                Token peeked = S.token(1);
 
-                S.nextToken();
-
-                if (S.token() == Token.IDENTIFIER) {
-                    String ident = S.stringVal();
+                if (peeked.kind == TokenKind.IDENTIFIER) {
+                    String ident = peeked.name().toString();
 
                     if (ident.startsWith("$") && ident.endsWith("$")) {
-                        int pos = S.pos();
-                        com.sun.tools.javac.util.Name name = S.name();
+                        nextToken();
+                        
+                        int pos = token.pos;
+                        com.sun.tools.javac.util.Name name = token.name();
 
-                        S.nextToken();
+                        nextToken();
 
-                        if (S.token() == Token.SEMI) {
-                            S.nextToken();
+                        if (token.kind == TokenKind.SEMI) {
+                            nextToken();
                         }
 
                         return new JackpotTrees.CaseWildcard(ctx, name, F.at(pos).Ident(name));
                     }
                 }
-
-                ((PushbackLexer) S).add(Token.CASE, origPos, null);
-                ((PushbackLexer) S).add(null, -1, null);
-                S.nextToken();
             }
 
             return super.switchBlockStatementGroup();
@@ -1391,15 +1339,14 @@ public class Utilities {
 
         @Override
         protected JCTree resource() {
-            if (S.token() == Token.IDENTIFIER && S.stringVal().startsWith("$")) {
-                //XXX: should inspect the next token, not next character:
-                char[] maybeSemicolon = S.getRawCharacters(S.endPos(), S.endPos() + 1);
+            if (token.kind == TokenKind.IDENTIFIER && token.name().startsWith(dollar)) {
+                Token peeked = S.token(1);
 
-                if (maybeSemicolon[0] == ';' || maybeSemicolon[0] == ')') {
-                    int pos = S.pos();
-                    com.sun.tools.javac.util.Name name = S.name();
+                if (peeked.kind == TokenKind.SEMI || peeked.kind == TokenKind.RPAREN) {
+                    int pos = token.pos;
+                    com.sun.tools.javac.util.Name name = token.name();
 
-                    S.nextToken();
+                    nextToken();
 
                     return F.at(pos).Ident(name);
                 }
@@ -1407,109 +1354,6 @@ public class Utilities {
             return super.resource();
         }
 
-    }
-
-    private static final class PushbackLexer implements Lexer {
-
-        private final Lexer delegate;
-        private final List<Token> tokenBuffer;
-        private final List<Integer> posBuffer;
-        private final List<com.sun.tools.javac.util.Name> nameBuffer;
-        private Token currentBufferToken;
-        private int   currentBufferPos;
-        private com.sun.tools.javac.util.Name currentBufferName;
-
-        public PushbackLexer(Lexer delegate) {
-            this.delegate = delegate;
-            this.tokenBuffer = new LinkedList<Token>();
-            this.posBuffer = new LinkedList<Integer>();
-            this.nameBuffer = new LinkedList<com.sun.tools.javac.util.Name>();
-        }
-
-        public void add(Token token, int pos, com.sun.tools.javac.util.Name name) {
-            tokenBuffer.add(token);
-            posBuffer.add(pos);
-            nameBuffer.add(name);
-        }
-        
-        public void token(Token token) {
-            delegate.token(token);
-        }
-
-        public Token token() {
-            if (currentBufferToken != null) return currentBufferToken;
-            return delegate.token();
-        }
-
-        public String stringVal() {
-            if (currentBufferToken != null) return currentBufferName != null ? currentBufferName.toString() : null;
-            return delegate.stringVal();
-        }
-
-        public void resetDeprecatedFlag() {
-            delegate.resetDeprecatedFlag();
-        }
-
-        public int radix() {
-            return delegate.radix();
-        }
-
-        public int prevEndPos() {
-            return delegate.prevEndPos();
-        }
-
-        public int pos() {
-            if (currentBufferToken != null) return currentBufferPos;
-            return delegate.pos();
-        }
-
-        public void nextToken() {
-            if (!tokenBuffer.isEmpty()) {
-                currentBufferToken = tokenBuffer.remove(0);
-                currentBufferPos = posBuffer.remove(0);
-                currentBufferName  = nameBuffer.remove(0);
-            }
-            else delegate.nextToken();
-        }
-
-        public com.sun.tools.javac.util.Name name() {
-            if (currentBufferToken != null) return currentBufferName;
-            return delegate.name();
-        }
-
-        public char[] getRawCharacters(int beginIndex, int endIndex) {
-            return delegate.getRawCharacters(beginIndex, endIndex);
-        }
-
-        public char[] getRawCharacters() {
-            return delegate.getRawCharacters();
-        }
-
-        public LineMap getLineMap() {
-            return delegate.getLineMap();
-        }
-
-        public void errPos(int pos) {
-            delegate.errPos(pos);
-        }
-
-        public int errPos() {
-            return delegate.errPos();
-        }
-
-        public int endPos() {
-            return delegate.endPos();
-        }
-
-        public String docComment() {
-            return delegate.docComment();
-        }
-
-        public boolean deprecatedFlag() {
-            return delegate.deprecatedFlag();
-        }
-        
-        
     }
 
     private static final class DummyJFO extends SimpleJavaFileObject {
@@ -1559,7 +1403,7 @@ public class Utilities {
                     IdentifierTree it = (IdentifierTree) mit.getMethodSelect();
 
                     if ("super".equals(it.getName().toString())) {
-                        return ((JCCompilationUnit) cut).endPositions.get(tree) == (-1);
+                        return ((JCCompilationUnit) cut).endPositions.getEndPos(tree) == (-1);
                     }
                 }
             }
@@ -1590,18 +1434,6 @@ public class Utilities {
         }
 
         return wildcardTreeName.toString().startsWith("$$");
-    }
-
-    private static final class DiagnosticListenerImpl implements DiagnosticListener<JavaFileObject> {
-        private final Collection<Diagnostic<? extends JavaFileObject>> errors;
-
-        public DiagnosticListenerImpl(Collection<Diagnostic<? extends JavaFileObject>> errors) {
-            this.errors = errors;
-        }
-
-        public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
-            errors.add(diagnostic);
-        }
     }
 
     private static final class OffsetSourcePositions implements SourcePositions {

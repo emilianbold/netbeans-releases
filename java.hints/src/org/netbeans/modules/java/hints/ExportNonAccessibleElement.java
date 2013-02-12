@@ -55,10 +55,12 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.NullType;
 import javax.lang.model.type.PrimitiveType;
@@ -326,7 +328,16 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
     public Boolean visitUnknown(TypeMirror arg0, Void arg1) {
         return false;
     }
-    
+
+    @Override
+    public Boolean visitIntersection(IntersectionType t, Void p) {
+        return false;
+    }
+
+    @Override
+    public Boolean visitAnnotated(AnnotatedType t, Void p) {
+        return t.getUnderlyingType().accept(this, p);
+    }
     
     private boolean isVisible(Element... arr) {
         return isVisible(Arrays.asList(arr));
@@ -336,6 +347,8 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
             if (stop) {
                 return false;
             }
+            
+            if (el == null) continue; //XXX: function types
             
             if (el.getModifiers().contains(Modifier.PUBLIC) || 
                 (el.getModifiers().contains(Modifier.PROTECTED) && //#175818: protected elements of final classes are effectivelly-package private:

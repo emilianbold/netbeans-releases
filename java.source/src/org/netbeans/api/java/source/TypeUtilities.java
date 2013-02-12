@@ -55,6 +55,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -129,7 +130,25 @@ public final class TypeUtilities {
         return Types.instance(info.impl.getJavacTask().getContext()).subst((Type)type, l1, l2);
     }
 
-    /**Get textual representation of the given type.
+    /**
+     * Find the type of the method descriptor associated to the functional interface.
+     * 
+     * @param origin functional interface type
+     * @return associated method descriptor type or <code>null</code> if the <code>origin</code> is not a functional interface.
+     * @since 0.112
+     */
+    public ExecutableType getDescriptorType(DeclaredType origin) {
+        Types types = Types.instance(info.impl.getJavacTask().getContext());
+        if (types.isFunctionalInterface(((Type)origin).tsym)) {
+            Type dt = types.findDescriptorType((Type)origin);
+            if (dt != null && dt.getKind() == TypeKind.EXECUTABLE) {
+                return (ExecutableType)dt;
+            }
+        }
+        return null;
+    }
+    
+   /**Get textual representation of the given type.
      *
      * @param type to print
      * @param options allows to specify various adjustments to the output text
@@ -269,5 +288,11 @@ public final class TypeUtilities {
             }
             return DEFAULT_VALUE;
         }
+
+        @Override
+        public StringBuilder visitUnknown(TypeMirror t, Boolean p) {
+            return DEFAULT_VALUE.append("<unknown>");
+        }
+
     }
 }

@@ -386,6 +386,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree visitLabeledStatement(LabeledStatementTree tree, Object p) {
 	return rewriteChildren(tree);
     }
+    public Tree visitLambdaExpression(LambdaExpressionTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
     public Tree visitSwitch(SwitchTree tree, Object p) {
 	return rewriteChildren(tree);
     }
@@ -455,8 +458,15 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree visitInstanceOf(InstanceOfTree tree, Object p) {
 	return rewriteChildren(tree);
     }
+    public Tree visitIntersectionType(IntersectionTypeTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
     public Tree visitArrayAccess(ArrayAccessTree tree, Object p) {
 	return rewriteChildren(tree);
+    }
+    @Override
+    public Tree visitMemberReference(MemberReferenceTree tree, Object p) {
+        return rewriteChildren(tree);
     }
     public Tree visitMemberSelect(MemberSelectTree tree, Object p) {
         if (tree instanceof QualIdentTree) {
@@ -495,6 +505,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	return rewriteChildren(tree);
     }
     public Tree visitWildcard(WildcardTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
+    public Tree visitAnnotatedType(AnnotatedTypeTree tree, Object p) {
         return rewriteChildren(tree);
     }
     public Tree visitAnnotation(AnnotationTree tree, Object p) {
@@ -735,6 +748,22 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    tree = n;
 	}
 	return tree;
+    }
+
+    protected final LambdaExpressionTree rewriteChildren(LambdaExpressionTree tree) {
+        Tree body = translate(tree.getBody());
+        List<? extends VariableTree> parameters = translate(tree.getParameters());
+
+        if (body != tree.getBody() ||
+            parameters != tree.getParameters())
+        {
+            LambdaExpressionTree n = make.LambdaExpression(parameters, body);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+        }
+        return tree;
     }
 
     protected final SwitchTree rewriteChildren(SwitchTree tree) {
@@ -1059,6 +1088,18 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	return tree;
     }
     
+    protected final IntersectionTypeTree rewriteChildren(IntersectionTypeTree tree) {
+	List<? extends Tree> bounds = translate(tree.getBounds());
+	if (!safeEquals(bounds, tree.getBounds())) {
+	    IntersectionTypeTree n = make.IntersectionType(bounds);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+	}
+	return tree;
+    }
+    
     protected final ArrayAccessTree rewriteChildren(ArrayAccessTree tree) {
 	ExpressionTree array = (ExpressionTree)translate(tree.getExpression());
 	ExpressionTree index = (ExpressionTree)translate(tree.getIndex());
@@ -1157,13 +1198,28 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
         return tree;
     }
     
+    protected final AnnotatedTypeTree rewriteChildren(AnnotatedTypeTree tree) {
+        List<? extends AnnotationTree> annotations = translate(tree.getAnnotations());
+        ExpressionTree underlyingType = (ExpressionTree)translate(tree.getUnderlyingType());
+        if (!annotations.equals(tree.getAnnotations()) || underlyingType != tree.getUnderlyingType()) {
+            AnnotatedTypeTree n = make.AnnotatedType(annotations, underlyingType);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+        }
+        return tree;
+    }
+    
     protected final AnnotationTree rewriteChildren(AnnotationTree tree) {
         Tree annotationType = translate(tree.getAnnotationType());
 	List<? extends ExpressionTree> args = translate(tree.getArguments());
 	if (annotationType!=tree.getAnnotationType() || !args.equals(tree.getArguments())) {
             if (args != tree.getArguments())
                 args = optimize(args);
-	    AnnotationTree n = make.Annotation(annotationType, args);
+	    AnnotationTree n = tree.getKind() == Kind.ANNOTATION
+                    ? make.Annotation(annotationType, args)
+                    : make.TypeAnnotation(annotationType, args);
             model.setType(n, model.getType(tree));
 	    copyCommentTo(tree,n);
 	    tree = n;
@@ -1198,6 +1254,22 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    tree = n;
 	}
 	return tree;
+    }
+
+    private Tree rewriteChildren(MemberReferenceTree node) {
+        ExpressionTree qualifierExpression = (ExpressionTree) translate(node.getQualifierExpression());
+        List<ExpressionTree> typeArguments = (List<ExpressionTree>) translate(node.getTypeArguments());
+
+        if (qualifierExpression != node.getQualifierExpression() ||
+            typeArguments != node.getTypeArguments())
+        {
+	    MemberReferenceTree n = make.MemberReference(node.getMode(), node.getName(), qualifierExpression, typeArguments);
+            model.setType(n, model.getType(node));
+	    copyCommentTo(node,n);
+            copyPosTo(node,n);
+	    node = n;
+	}
+	return node;
     }
 
 
