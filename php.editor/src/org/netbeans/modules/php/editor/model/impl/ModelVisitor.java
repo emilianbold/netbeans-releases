@@ -630,7 +630,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             Expression name = functionName.getName();
             if (name instanceof Variable) {
                 Variable variable = (Variable) name;
-                if (variable.isDollared()) {
+                if (variable.isDollared() || (name instanceof ReflectionVariable)) {
                     result = false;
                 } else {
                     result = true;
@@ -764,15 +764,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         }
         scan(node.getDispatcher());
-    }
-
-    @Override
-    public void visit(FunctionName node) {
-        //intentionally ommited - if deleted, golden tests will fail and will show the reason
-        //super.visit(node);
-        if (node.getName() instanceof Variable) {
-            occurencesBuilder.prepare((Variable) node.getName(), modelBuilder.getCurrentScope());
-        }
     }
 
     private Map<String, AssignmentImpl> getAssignmentMap(Scope scope, final VariableBase leftHandSide) {
@@ -1342,10 +1333,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     public VariableScope getVariableScope(int offset) {
+        return getVariableScope(getFileScope().getElements(), offset);
+    }
+
+    private VariableScope getVariableScope(List<? extends ModelElement> elements, int offset) {
         VariableScope retval = null;
-        List<ModelElement> elements = new ArrayList<ModelElement>();
-        elements.add(getFileScope());
-        elements.addAll(ModelUtils.getElements(getFileScope(), true));
+        List<ModelElement> subElements = new LinkedList<ModelElement>();
         for (ModelElement modelElement : elements) {
             if (modelElement instanceof VariableScope) {
                 VariableScope varScope = (VariableScope) modelElement;
@@ -1360,11 +1353,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (possibleScope && blockRange.containsInclusive(offset)
                             && (retval == null || retval.getBlockRange().overlaps(varScope.getBlockRange()))) {
                         retval = varScope;
+                        subElements.addAll(varScope.getElements());
                     }
                 }
             }
         }
-        return retval;
+        VariableScope subResult = subElements.isEmpty() ? null : getVariableScope(subElements, offset);
+        return subResult == null ? retval : subResult;
     }
 
     private void buildCodeMarks(final int offset) {

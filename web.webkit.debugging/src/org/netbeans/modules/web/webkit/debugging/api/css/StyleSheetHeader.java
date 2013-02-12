@@ -50,17 +50,17 @@ import org.json.simple.JSONObject;
  */
 public class StyleSheetHeader {
     /** Stylesheet identifier. */
-    private String styleSheetId;
+    private final String styleSheetId;
     /** Owner frame identifier. */
-    private String frameId;
+    private final String frameId;
     /** Stylesheet resource URL. */
-    private String sourceURL;
+    private final String sourceURL;
     /** Stylesheet origin. */
-    private StyleSheetOrigin origin;
+    private final StyleSheetOrigin origin;
     /** Stylesheet title. */
-    private String title;
+    private final String title;
     /** Determines whether the stylesheet is disabled. */
-    private boolean disabled;
+    private final boolean disabled;
 
     /**
      * Creates a new {@code StyleSheetHeader} that corresponds to the given JSONObject.

@@ -181,107 +181,111 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
     /** check data dir */
     @Override
     public void run() {
-        final String path = tfBaseDirectory.getText().trim();
-        log.log(Level.FINEST, "Running check for {0}", path);
-        showStatus(NbBundle.getMessage(getClass(), "CHECK_IN_PROGRESS", path));
-        long time = System.currentTimeMillis();
-        if (path.length() == 0) {
-            log.log(Level.FINEST, "Done check for {0} - the path is empty", path);
-            showError(NbBundle.getMessage(getClass(), "BASE_EMPTY"));
-            return;
-        }        
-        if (!FileSystemProvider.isAbsolute(csm.getExecutionEnvironment(), path)) {
-            showError(NbBundle.getMessage(getClass(), "BASE_RELATIVE"));
-            return;
-        }
-        FileObject fileObject = FileSystemProvider.getFileObject(csm.getExecutionEnvironment(), path);
-        if (fileObject == null || !fileObject.isValid() || !fileObject.isFolder()) {
-            showError(NbBundle.getMessage(getClass(), "REMOTEBASE_INVALID_FOLDER", path));
-            return;
-        }
-        if (local) {
-            List<CompilerFlavor> flavors = CompilerSetFactory.getCompilerSetFlavor(path, csm.getPlatform());
-            if (flavors.isEmpty() && CndFileUtils.createLocalFile(path).exists()) {
-                CompilerFlavor flavor = CompilerFlavor.getUnknown(csm.getPlatform());
-                if (flavor != null) {
-                    flavors = Collections.<CompilerFlavor>singletonList(flavor);
-                }
-            }
-            if (flavors.size() > 0) {
-                flavors = moveBestFlavorFirst(flavors);
-                String compilerSetName = getCompilerSetName().trim();
-                CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(path, flavors.get(0), compilerSetName);
-                ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
-                synchronized (lastFoundLock) {
-                    lastFoundRemoteCompilerSet = cs;
-                    lastFoundRemoteCompilerSets.clear();
-                    lastFoundRemoteCompilerSets.add(cs);
-                    for(int i = 1; i < flavors.size(); i++) {
-                        cs = CompilerSetFactory.getCustomCompilerSet(path, flavors.get(i), compilerSetName);
-                        ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
-                        lastFoundRemoteCompilerSets.add(cs);
-                    }
-                }
-            }
-        } else {
-            if (!checkConnection()) {
-                log.log(Level.FINEST, "Done check for {0} - no connection to host", path);
-                showError(NbBundle.getMessage(getClass(), "CANNOT_CONNECT"));
+        try {
+            final String path = tfBaseDirectory.getText().trim();
+            log.log(Level.FINEST, "Running check for {0}", path);
+            showStatus(NbBundle.getMessage(getClass(), "CHECK_IN_PROGRESS", path));
+            long time = System.currentTimeMillis();
+            if (path.length() == 0) {
+                log.log(Level.FINEST, "Done check for {0} - the path is empty", path);
+                showError(NbBundle.getMessage(getClass(), "BASE_EMPTY"));
+                return;
+            }        
+            if (!FileSystemProvider.isAbsolute(csm.getExecutionEnvironment(), path)) {
+                showError(NbBundle.getMessage(getClass(), "BASE_RELATIVE"));
                 return;
             }
-            List<CompilerSet> css = csm.findRemoteCompilerSets(path);
-            //check if we are not shutdowned already
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                log.log(Level.FINEST, "Interrupted (1) check for {0}", path);
-            }
-            if (Thread.interrupted()) {
-                log.log(Level.FINEST, "Interrupted (2) check for {0}", path);
-                showError(NbBundle.getMessage(getClass(), "CANCELLED"));
+            FileObject fileObject = FileSystemProvider.getFileObject(csm.getExecutionEnvironment(), path);
+            if (fileObject == null || !fileObject.isValid() || !fileObject.isFolder()) {
+                showError(NbBundle.getMessage(getClass(), "REMOTEBASE_INVALID_FOLDER", path));
                 return;
             }
-            if (css.size() > 0) {
-                css = moveBestCompilerSetFirst(css);
-                synchronized (lastFoundLock) {
-                    lastFoundRemoteCompilerSet = css.get(0);
-                    lastFoundRemoteCompilerSets.clear();
-                    for(int i = 0; i < css.size(); i++) {
-                        lastFoundRemoteCompilerSets.add(css.get(i));
+            if (local) {
+                List<CompilerFlavor> flavors = CompilerSetFactory.getCompilerSetFlavor(path, csm.getPlatform());
+                if (flavors.isEmpty() && CndFileUtils.createLocalFile(path).exists()) {
+                    CompilerFlavor flavor = CompilerFlavor.getUnknown(csm.getPlatform());
+                    if (flavor != null) {
+                        flavors = Collections.<CompilerFlavor>singletonList(flavor);
                     }
                 }
-            } else {
-                CompilerFlavor flavor = CompilerFlavor.getUnknown(csm.getPlatform());
-                if (flavor != null) {
-                    String baseDirectory = getBaseDirectory();
+                if (flavors.size() > 0) {
+                    flavors = moveBestFlavorFirst(flavors);
                     String compilerSetName = getCompilerSetName().trim();
-                    CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(baseDirectory, flavor, compilerSetName);
+                    CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(path, flavors.get(0), compilerSetName);
+                    ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
                     synchronized (lastFoundLock) {
                         lastFoundRemoteCompilerSet = cs;
                         lastFoundRemoteCompilerSets.clear();
+                        lastFoundRemoteCompilerSets.add(cs);
+                        for(int i = 1; i < flavors.size(); i++) {
+                            cs = CompilerSetFactory.getCustomCompilerSet(path, flavors.get(i), compilerSetName);
+                            ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
+                            lastFoundRemoteCompilerSets.add(cs);
+                        }
+                    }
+                }
+            } else {
+                if (!checkConnection()) {
+                    log.log(Level.FINEST, "Done check for {0} - no connection to host", path);
+                    showError(NbBundle.getMessage(getClass(), "CANNOT_CONNECT"));
+                    return;
+                }
+                List<CompilerSet> css = csm.findRemoteCompilerSets(path);
+                //check if we are not shutdowned already
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    log.log(Level.FINEST, "Interrupted (1) check for {0}", path);
+                }
+                if (Thread.interrupted()) {
+                    log.log(Level.FINEST, "Interrupted (2) check for {0}", path);
+                    showError(NbBundle.getMessage(getClass(), "CANCELLED"));
+                    return;
+                }
+                if (css.size() > 0) {
+                    css = moveBestCompilerSetFirst(css);
+                    synchronized (lastFoundLock) {
+                        lastFoundRemoteCompilerSet = css.get(0);
+                        lastFoundRemoteCompilerSets.clear();
+                        for(int i = 0; i < css.size(); i++) {
+                            lastFoundRemoteCompilerSets.add(css.get(i));
+                        }
+                    }
+                } else {
+                    CompilerFlavor flavor = CompilerFlavor.getUnknown(csm.getPlatform());
+                    if (flavor != null) {
+                        String baseDirectory = getBaseDirectory();
+                        String compilerSetName = getCompilerSetName().trim();
+                        CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(baseDirectory, flavor, compilerSetName);
+                        synchronized (lastFoundLock) {
+                            lastFoundRemoteCompilerSet = cs;
+                            lastFoundRemoteCompilerSets.clear();
+                        }
                     }
                 }
             }
-        }
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                showStatus(""); //NOI18N
-                if (lastFoundRemoteCompilerSet != null) {
-                    cbFamily.setSelectedItem(lastFoundRemoteCompilerSet.getCompilerFlavor());
-                } else {
-                    cbFamily.setSelectedItem(CompilerFlavor.getUnknown(csm.getPlatform()));
+
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    showStatus(""); //NOI18N
+                    if (lastFoundRemoteCompilerSet != null) {
+                        cbFamily.setSelectedItem(lastFoundRemoteCompilerSet.getCompilerFlavor());
+                    } else {
+                        cbFamily.setSelectedItem(CompilerFlavor.getUnknown(csm.getPlatform()));
+                    }
+                    updateDataFamily();
+                    if (!dialogDescriptor.isValid()) {
+                        tfName.setText("");
+                    }
                 }
-                updateDataFamily();
-                if (!dialogDescriptor.isValid()) {
-                    tfName.setText("");
-                }
+            });
+            if (log.isLoggable(Level.FINEST)) {
+                time = System.currentTimeMillis() - time;
+                log.log(Level.FINEST, "Done check for {0}; check took {1} ms", new Object[] { path, time });
             }
-        });
-        if (log.isLoggable(Level.FINEST)) {
-            time = System.currentTimeMillis() - time;
-            log.log(Level.FINEST, "Done check for {0}; check took {1} ms", new Object[] { path, time });
+        } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
         }
     }
 

@@ -54,9 +54,9 @@ import org.json.simple.JSONObject;
  */
 public class PseudoIdRules {
     /** Pseudo style identifier. */
-    private int pseudoId;
+    private final int pseudoId;
     /** Rules applicable to the pseudo style. */
-    private List<Rule> rules;
+    private final List<Rule> rules;
 
     /**
      * Creates a new {@code PseudoIdRules} that corresponds to the given JSONObject.

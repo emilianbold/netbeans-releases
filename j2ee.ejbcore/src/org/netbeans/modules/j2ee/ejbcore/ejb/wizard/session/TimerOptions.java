@@ -141,10 +141,11 @@ public final class TimerOptions {
 
     private static int getCountOfQuotes(String string) {
         int count = string.split("\"").length - 1; //NOI18N
-        if (string.endsWith("\"") || string.startsWith("\"")) //NOI18N
+        if (string.endsWith("\"") || string.startsWith("\"")) { //NOI18N
             return count + 1;
-        else
+        } else {
             return count;
+        }
     }
 
     private static boolean parseSectionsIntoMap(String[] sections, Map<String, String> map) {
@@ -174,8 +175,7 @@ public final class TimerOptions {
         }
     }
 
-    @Override
-    public String toString() {
+    public String getAnnotationValue() {
         StringBuilder sb = new StringBuilder();
         Iterator<Entry<String, String>> iterator = timerOptions.entrySet().iterator();
         while (iterator.hasNext()) {

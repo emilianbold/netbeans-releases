@@ -111,7 +111,7 @@ public class JsStructureScanner implements StructureScanner {
                         collectedItems.add(new JsFunctionStructureItem(function, children, result));
                     }
                 }
-            } else if (((child.getJSKind() == JsElement.Kind.OBJECT && hasDeclaredProperty(child)) || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
+            } else if (((child.getJSKind() == JsElement.Kind.OBJECT && children.size() > 0) || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
                     && (children.size() > 0 || child.isDeclared())) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {

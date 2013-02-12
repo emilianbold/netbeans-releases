@@ -76,8 +76,8 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
             final int offset,
             final String fileUrl,
             final ElementQuery elementQuery,
-            final List<ParameterElement> parameters,
-            final Set<TypeResolver> returnTypes,
+            final BaseFunctionElementSupport.Parameters parameters,
+            final BaseFunctionElementSupport.ReturnTypes returnTypes,
             final boolean isDeprecated) {
         super(qualifiedName.toName().toString(), qualifiedName.toNamespaceName().toString(),
                 fileUrl, offset, elementQuery, isDeprecated);
@@ -109,7 +109,7 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         if (matchesQuery(query, signParser)) {
             retval = new FunctionElementImpl(signParser.getQualifiedName(),
                     signParser.getOffset(), indexResult.getUrl().toString(),
-                    indexScopeQuery, signParser.getParameters(), signParser.getReturnTypes(),
+                    indexScopeQuery,  new ParametersFromSignature(signParser), new ReturnTypesFromSignature(signParser),
                     signParser.isDeprecated());
         }
         return retval;
@@ -122,8 +122,8 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         final QualifiedName fullyQualifiedName = namespace != null ? namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
         return new FunctionElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
-                fileQuery.getURL().toExternalForm(), fileQuery, info.getParameters(),
-                TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node)),
+                fileQuery.getURL().toExternalForm(), fileQuery, BaseFunctionElementSupport.ParametersImpl.create(info.getParameters()),
+                BaseFunctionElementSupport.ReturnTypesImpl.create(TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node))),
                 VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node));
     }
 
@@ -231,5 +231,42 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         boolean isDeprecated() {
             return signature.integer(6) == 1;
         }
+    }
+
+    private static final class ParametersFromSignature implements BaseFunctionElementSupport.Parameters {
+        private final FunctionSignatureParser functionSignatureParser;
+        //@GuardedBy("this")
+        private List<ParameterElement> retrievedParameters = null;
+
+        public ParametersFromSignature(FunctionSignatureParser functionSignatureParser) {
+            this.functionSignatureParser = functionSignatureParser;
+        }
+
+        @Override
+        public synchronized List<ParameterElement> getParameters() {
+            if (retrievedParameters == null) {
+                retrievedParameters = functionSignatureParser.getParameters();
+            }
+            return retrievedParameters;
+        }
+    }
+
+    private static final class ReturnTypesFromSignature implements BaseFunctionElementSupport.ReturnTypes {
+        private final FunctionSignatureParser functionSignatureParser;
+        //@GuardedBy("this")
+        private Set<TypeResolver> retrievedReturnTypes = null;
+
+        public ReturnTypesFromSignature(FunctionSignatureParser functionSignatureParser) {
+            this.functionSignatureParser = functionSignatureParser;
+        }
+
+        @Override
+        public synchronized Set<TypeResolver> getReturnTypes() {
+            if (retrievedReturnTypes == null) {
+                retrievedReturnTypes = functionSignatureParser.getReturnTypes();
+            }
+            return retrievedReturnTypes;
+        }
+
     }
 }

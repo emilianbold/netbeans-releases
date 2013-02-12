@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRepositoryState;
@@ -106,10 +107,11 @@ public class CommitAction extends SingleRepositoryAction {
 
     @Override
     protected void performAction (final File repository, final File[] roots, final VCSContext context) {
-        if (!canCommit(repository)) {
+        RepositoryInfo info = RepositoryInfo.getInstance(repository);
+        info.refresh();
+        if (!canCommit(repository, info)) {
             return;
         }
-        RepositoryInfo info = RepositoryInfo.getInstance(repository);
         final GitRepositoryState state = info.getRepositoryState();
         final GitUser user = identifyUser(repository);
         final String mergeCommitMessage = getMergeCommitMessage(repository, state);
@@ -344,9 +346,15 @@ public class CommitAction extends SingleRepositoryAction {
         }, 100);
     }
 
-    private boolean canCommit (File repository) {
+    @NbBundle.Messages({
+        "# {0} - repository folder name",
+        "MSG_CommitAction.detachedHeadState.warning=HEAD is detached in the repository {0}.\n"
+            + "It is recommended to switch to a branch before committing your changes.\n\n"
+            + "Do you still want to commit?",
+        "LBL_CommitAction.detachedHeadState.title=Detached HEAD State"
+    })
+    private boolean canCommit (File repository, RepositoryInfo info) {
         boolean commitPermitted = true;
-        RepositoryInfo info = RepositoryInfo.getInstance(repository);
         GitRepositoryState state = info.getRepositoryState();
         if (!state.canCommit()) {
             commitPermitted = false;
@@ -376,6 +384,12 @@ public class CommitAction extends SingleRepositoryAction {
             if (retval == NotifyDescriptor.YES_OPTION) {
                 GitUtils.openInVersioningView(conflicts.keySet(), repository, GitUtils.NULL_PROGRESS_MONITOR);
             }
+        } else if (GitBranch.NO_BRANCH == info.getActiveBranch().getName()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(Bundle.MSG_CommitAction_detachedHeadState_warning(repository.getName()),
+                    Bundle.LBL_CommitAction_detachedHeadState_title(),
+                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+            Object retval = DialogDisplayer.getDefault().notify(nd);
+            commitPermitted = retval == NotifyDescriptor.YES_OPTION;
         }
         return commitPermitted;
     }

@@ -53,12 +53,11 @@ import java.util.ArrayList;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTabbedPane;
-import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.core.CoreBridgeImpl;
 import org.netbeans.core.windows.FloatingWindowTransparencyManager;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -477,8 +476,8 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         int selLaFIndex = comboLaf.getSelectedIndex();
         if( selLaFIndex != defaultLookAndFeelIndex ) {
             LookAndFeelInfo li = lafs.get( comboLaf.getSelectedIndex() );
-            NbPreferences.forModule( CoreBridgeImpl.class ).put( "laf", li.getClassName() ); //NOI18N
-            NbPreferences.forModule( CoreBridgeImpl.class ).putBoolean( "theme.dark", li == DARK_METAL || li == DARK_NIMBUS ); //NOI18N
+            NbPreferences.root().node( "laf" ).put( "laf", li.getClassName() ); //NOI18N
+            NbPreferences.root().node( "laf" ).putBoolean( "theme.dark", li == DARK_METAL || li == DARK_NIMBUS ); //NOI18N
             askForRestart();
         }
 
@@ -611,6 +610,18 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             public void actionPerformed( ActionEvent e ) {
                 LifecycleManager.getDefault().markForRestart();
                 LifecycleManager.getDefault().exit();
+            }
+        });
+    }
+
+    void selectDarkLookAndFeel() {
+        comboLaf.setSelectedItem( DARK_METAL.getName() );
+        comboLaf.requestFocusInWindow();
+        SwingUtilities.invokeLater( new Runnable() {
+
+            @Override
+            public void run() {
+                comboLaf.setPopupVisible( true );
             }
         });
     }

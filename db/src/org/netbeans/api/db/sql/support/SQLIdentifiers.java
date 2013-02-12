@@ -124,16 +124,22 @@ public final class SQLIdentifiers {
         public String unquote(String identifier) {
             Parameters.notNull("identifier", identifier);
 
+            boolean startQuoted = false;
+
             String result = identifier;
 
             if (result.startsWith(quoteString)) {
                 result = result.substring(quoteString.length());
+                startQuoted = true;
             }
 
             if (result.endsWith(quoteString)) {
                 result = result.substring(0, result.lastIndexOf(quoteString));
             }
 
+            if(startQuoted) {
+                result = result.replace(quoteString + quoteString, quoteString);
+            }
             return result;
         }
 
@@ -147,7 +153,9 @@ public final class SQLIdentifiers {
         }
 
         String doQuote(String identifier) {
-            return quoteString + identifier + quoteString;
+            return quoteString
+                    + identifier.replace(quoteString, quoteString + quoteString)
+                    + quoteString;
         }
     }
 

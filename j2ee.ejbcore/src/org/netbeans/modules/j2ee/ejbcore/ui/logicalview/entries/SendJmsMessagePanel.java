@@ -70,7 +70,8 @@ import org.openide.util.NbBundle;
 public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeListener {
     
     public static final String IS_VALID = SendJmsMessagePanel.class.getName() + ".IS_VALID";
-    
+
+    private final Project project;
     private final J2eeModuleProvider provider;
     private final Set<MessageDestination> moduleDestinations;
     private final Set<MessageDestination> serverDestinations;
@@ -82,10 +83,11 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     private String warningMsg;
     
     // private because correct initialization is needed
-    private SendJmsMessagePanel(J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations,
-            Set<MessageDestination> serverDestinations, String lastLocator, ClasspathInfo cpInfo) {
+    private SendJmsMessagePanel(Project project, J2eeModuleProvider provider, Set<MessageDestination>
+            moduleDestinations, Set<MessageDestination> serverDestinations, String lastLocator, ClasspathInfo cpInfo) {
         initComponents();
-        
+
+        this.project = project;
         this.provider = provider;
         this.moduleDestinations = moduleDestinations;
         this.serverDestinations = serverDestinations;
@@ -129,9 +131,11 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
      * @param lastLocator name of the service locator.
      * @return SendJmsMessagePanel instance.
      */
-    public static SendJmsMessagePanel newInstance(final J2eeModuleProvider provider, final Set<MessageDestination> moduleDestinations,
-            final Set<MessageDestination> serverDestinations, final String lastLocator, ClasspathInfo cpInfo) {
+    public static SendJmsMessagePanel newInstance(final Project project, final J2eeModuleProvider provider,
+            final Set<MessageDestination> moduleDestinations, final Set<MessageDestination> serverDestinations,
+            final String lastLocator, ClasspathInfo cpInfo) {
         SendJmsMessagePanel sjmp = new SendJmsMessagePanel(
+                project,
                 provider,
                 moduleDestinations,
                 serverDestinations,
@@ -502,7 +506,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         MessageDestination destination =
-                SendJMSMessageUiSupport.createMessageDestination(provider, moduleDestinations, serverDestinations);
+                SendJMSMessageUiSupport.prepareMessageDestination(project, provider, moduleDestinations, serverDestinations);
         if (destination != null) {
             moduleDestinations.add(destination);
             SendJMSMessageUiSupport.populateDestinations(moduleDestinations, projectDestinationsCombo, destination);

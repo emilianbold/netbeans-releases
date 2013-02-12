@@ -345,12 +345,16 @@ public class WebProjectUtilities {
     }
 
     public static Set<FileObject> ensureWelcomePage(FileObject webRoot, FileObject dd) throws IOException {
+        return ensureWelcomePage(webRoot, dd, null);
+    }
+
+    public static Set<FileObject> ensureWelcomePage(FileObject webRoot, FileObject dd, Profile profile) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
 
         if (dd == null) {
-            FileObject indexJsp = createIndexJSP(webRoot);
-            if (indexJsp != null) {
-                resultSet.add(indexJsp);
+            FileObject indexFile = createWelcomeFile(webRoot, profile);
+            if (indexFile != null) {
+                resultSet.add(indexFile);
             }
             return resultSet;
         }
@@ -363,12 +367,12 @@ public class WebProjectUtilities {
                 ddRoot.setWelcomeFileList(welcomeFiles);
             }
             if (welcomeFiles.sizeWelcomeFile() == 0) {
-                //create default index.jsp
-                FileObject indexJSPFo = createIndexJSP(webRoot);
-                if (indexJSPFo != null) {
-                    // Returning FileObject of index.jsp, will be called its preferred action
-                    resultSet.add(indexJSPFo);
-                    welcomeFiles.addWelcomeFile("index.jsp"); //NOI18N
+                //create default welcome file
+                FileObject indexFo = createWelcomeFile(webRoot, profile);
+                if (indexFo != null) {
+                    // Returning FileObject of welcome file, will be called its preferred action
+                    resultSet.add(indexFo);
+                    welcomeFiles.addWelcomeFile(indexFo.getNameExt()); //NOI18N
                     ddRoot.write(dd);
                 }
             }
@@ -378,14 +382,16 @@ public class WebProjectUtilities {
         return resultSet;
     }
     
-    private static FileObject createIndexJSP(FileObject webFolder) throws IOException {
-        FileObject jspTemplate = FileUtil.getConfigFile( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
+    private static FileObject createWelcomeFile(FileObject webFolder, Profile profile) throws IOException {
+        FileObject template = profile != null && Util.isAtLeastJavaEE7Web(profile) ?
+                FileUtil.getConfigFile( "Templates/JSP_Servlet/Html.html" ) :
+                FileUtil.getConfigFile( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
         
-        if (jspTemplate == null) {
+        if (template == null) {
             return null; // Don't know the template
         }
         
-        DataObject mt = DataObject.find(jspTemplate);
+        DataObject mt = DataObject.find(template);
         DataFolder webDf = DataFolder.findFolder(webFolder);
         return mt.createFromTemplate(webDf, "index").getPrimaryFile(); // NOI18N
     }

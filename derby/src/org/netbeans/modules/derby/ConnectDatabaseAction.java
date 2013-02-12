@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.derby;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +51,8 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -101,7 +102,8 @@ public class ConnectDatabaseAction extends NodeAction {
             {
                 JDBCDriver drivers[] = JDBCDriverManager.getDefault().getDrivers(DerbyOptions.DRIVER_CLASS_NET);
                 if (drivers.length == 0) {
-                    throw new IllegalStateException("The " + DerbyOptions.DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N
+                    showDriverNotFoundDialog();
+                    return;
                 }
                 final DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:" + // NOI18N
                         RegisterDerby.getDefault().getPort() +
@@ -130,6 +132,24 @@ public class ConnectDatabaseAction extends NodeAction {
             LOGGER.log(Level.INFO, dbe.getMessage(), dbe);
         } finally {
             // Refresh in case the state of the server changed... (e.g. the connection was lost)
+        }
+    }
+
+    /**
+     * If Derby driver cannot be found, show info message and ask user whether
+     * they want to open the Add Driver dialog.
+     *
+     * See bug #225609.
+     */
+    private void showDriverNotFoundDialog() {
+        String msg = NbBundle.getMessage(ConnectDatabaseAction.class,
+                "ERR_DerbyDriverNotFoundConfigure", //NOI18N
+                DerbyOptions.DRIVER_DISP_NAME_NET);
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                msg, NotifyDescriptor.YES_NO_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
+        if (NotifyDescriptor.YES_OPTION.equals(nd.getValue())) {
+            JDBCDriverManager.getDefault().showAddDriverDialog();
         }
     }
 

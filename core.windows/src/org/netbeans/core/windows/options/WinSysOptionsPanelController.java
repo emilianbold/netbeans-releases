@@ -47,6 +47,7 @@ package org.netbeans.core.windows.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.WindowSystem;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -54,6 +55,7 @@ import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
     displayName="#AdvancedOption_DisplayName_WinSys",
+    id="Windows",
     keywords="#KW_WindowOptions",
     keywordsCategory="Advanced/Windows"
 //    toolTip="#AdvancedOption_Tooltip_WinSys"
@@ -121,6 +123,18 @@ public final class WinSysOptionsPanelController extends OptionsPanelController {
             panel = new WinSysPanel(this);
         }
         return panel;
+    }
+
+    @Override
+    protected void setCurrentSubcategory( String subpath ) {
+        if( "LaF".equals( subpath ) ) { //NOI18N
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    getPanel().selectDarkLookAndFeel();
+                }
+            });
+        }
     }
 
     void changed() {
