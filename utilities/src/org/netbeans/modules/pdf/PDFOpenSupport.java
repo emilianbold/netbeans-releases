@@ -47,6 +47,8 @@ package org.netbeans.modules.pdf;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.OpenCookie;
@@ -65,6 +67,8 @@ import org.openide.util.NbBundle;
  */
 class PDFOpenSupport implements OpenCookie {
 
+    private static final Logger LOG = Logger.getLogger(
+            PDFOpenSupport.class.getName());
     static final String FILENAME_PLACEHOLDER = "$file";                 //NOI18N
     private static final String DATA_FOLDER =
             "org-netbeans-modules-pdf";                                 //NOI18N
@@ -83,6 +87,7 @@ class PDFOpenSupport implements OpenCookie {
         try {
             this.dObj = DataObject.find(FileUtil.toFileObject(f));
         } catch (DataObjectNotFoundException ex) {
+            LOG.log(Level.INFO, null, ex);
         }
     }
 
@@ -99,6 +104,7 @@ class PDFOpenSupport implements OpenCookie {
         try {
             Desktop.getDesktop().open(f);
         } catch (Exception ex) {
+            LOG.log(Level.INFO, "java.awt.Desktop.open() failed.", ex); //NOI18N
             openFallback(f);
         }
     }
