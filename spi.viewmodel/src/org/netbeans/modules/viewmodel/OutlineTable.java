@@ -984,6 +984,9 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
             int visibleOrder = columnVisibleMap[i];
             logger.log(Level.FINE, "  visibleOrder[{0}] = {1}, ", new Object[]{i, visibleOrder});
+            if (visibleOrder >= tcm.getColumnCount()) {
+                continue;
+            }
             TableColumn tc;
             try {
                 tc = tcm.getColumn (visibleOrder);
