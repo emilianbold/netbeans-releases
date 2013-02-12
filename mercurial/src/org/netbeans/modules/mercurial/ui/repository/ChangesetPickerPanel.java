@@ -155,6 +155,13 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
         return rev;
     }
 
+    public String getSelectedRevisionCSetId () {
+        HgLogMessage selectedRevision = getSelectedRevision();
+        return selectedRevision == NO_REVISION // has a label instead of a cset id
+                ? null 
+                : selectedRevision.getCSetShortID();
+    }
+
     protected String getRefreshLabel () {
         return NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Refreshing_Revisions"); //NOI18N
     }
@@ -619,6 +626,9 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                         break; // just one tag
                     }
                     sb.append(" (").append(labels).append(labels.length() == 0 ? "" : "- ").append(message.getCSetShortID().substring(0, 7)).append(")"); //NOI18N
+                    if (!message.getShortMessage().isEmpty()) {
+                        sb.append(" - ").append(message.getShortMessage()); //NOI18N
+                    }
                     value = sb.toString();
                 }
             }

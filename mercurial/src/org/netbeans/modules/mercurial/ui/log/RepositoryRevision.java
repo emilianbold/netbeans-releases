@@ -226,7 +226,7 @@ public class RepositoryRevision {
         HgProgressSupport supp = new HgProgressSupport() {
             @Override
             protected void perform () {
-                PushAction.getDefaultAndPerformPush(repositoryRoot, revision, getLogger());
+                PushAction.getDefaultAndPerformPush(repositoryRoot, revision, null, getLogger());
             }
         };
         supp.start(Mercurial.getInstance().getRequestProcessor(repositoryRoot), repositoryRoot, Bundle.MSG_SearchHistory_pushing(revision));
@@ -237,7 +237,7 @@ public class RepositoryRevision {
         HgProgressSupport supp = new HgProgressSupport() {
             @Override
             protected void perform () {
-                PullAction.getDefaultAndPerformPull(repositoryRoot, revision, this);
+                PullAction.getDefaultAndPerformPull(repositoryRoot, revision, null, this);
             }
         };
         supp.start(Mercurial.getInstance().getRequestProcessor(repositoryRoot), repositoryRoot, Bundle.MSG_SearchHistory_pulling(revision));

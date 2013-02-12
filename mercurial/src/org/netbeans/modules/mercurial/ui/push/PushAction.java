@@ -123,7 +123,8 @@ public class PushAction extends ContextAction {
                     HgProgressSupport support = new HgProgressSupport() {
                         @Override
                         public void perform() {
-                            getDefaultAndPerformPush(repository, null, this.getLogger());
+                            getDefaultAndPerformPush(repository, null, null,
+                                    this.getLogger());
                             canceled[0] = isCanceled();
                         }
                     };
@@ -136,7 +137,8 @@ public class PushAction extends ContextAction {
         });
     }
 
-    public static void getDefaultAndPerformPush(File root, String revisionToPush, OutputLogger logger) {
+    public static void getDefaultAndPerformPush(File root, String revisionToPush,
+            String branchToPush, OutputLogger logger) {
         // If the repository has no default push path then inform user
         String tmpPushPath = HgRepositoryContextCache.getInstance().getPushDefault(root);
         if (isNullOrEmpty(tmpPushPath)) {
@@ -164,7 +166,8 @@ public class PushAction extends ContextAction {
         final String toPrjName = pushTarget.isFile()
                                  ? HgProjectUtils.getProjectName(new File(pushTarget.getPath()))
                                  : null;
-        performPush(root, pushTarget, fromPrjName, toPrjName, revisionToPush, logger, true);
+        performPush(root, pushTarget, fromPrjName, toPrjName, revisionToPush,
+                branchToPush, logger, true);
 
     }
 
@@ -205,7 +208,9 @@ public class PushAction extends ContextAction {
      * @param logger
      * @param showSaveCredsOption
      */
-    static void performPush(File root, HgURL pushUrl, String fromPrjName, String toPrjName, String revision, OutputLogger logger, boolean showSaveCredsOption) {
+    static void performPush(File root, HgURL pushUrl, String fromPrjName,
+            String toPrjName, String revision, String branch,
+            OutputLogger logger, boolean showSaveCredsOption) {
         try {
             boolean bLocalPush = pushUrl.isFile();
             String pushPath = bLocalPush ? pushUrl.getPath() : null;
@@ -230,7 +235,8 @@ public class PushAction extends ContextAction {
                                            : pushUrl));
             }
 
-            List<String> listOutgoing = HgCommand.doOutgoing(root, pushUrl, revision, logger, showSaveCredsOption);
+            List<String> listOutgoing = HgCommand.doOutgoing(root, pushUrl, 
+                    revision, branch, logger, showSaveCredsOption);
             if ((listOutgoing == null) || listOutgoing.isEmpty()) {
                 return;
             }
@@ -281,7 +287,8 @@ public class PushAction extends ContextAction {
                         // XXX handle veto
                     }
                 }
-                list = HgCommand.doPush(root, pushUrl, revision, logger, showSaveCredsOption);
+                list = HgCommand.doPush(root, pushUrl, revision, branch, 
+                        logger, showSaveCredsOption);
             }
             if (!list.isEmpty() && (HgCommand.isErrorAbortPush(list.get(list.size() - 1))
                     || list.size() > 1 && HgCommand.isErrorAbortPush(list.get(list.size() - 2)))) {

@@ -133,6 +133,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
         ProjectSourcesClassPathProvider prov = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         assert prov != null;
         ClassPath sourceCp = prov.getProjectSourcesClassPath(ClassPath.SOURCE);
+        //does not apply to test sources.
         if (!sourceCp.contains(file)) {
             return null;
         }     
@@ -238,6 +239,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
             nonTransitivePackages.addAll(dir.allPackages);
             nonPrivatePackages.addAll(dir.allPackages);
         }
+        directCPs.clear();
         for (NBMWrapper nbm : nbms ) {
             Set<String> allPackages = new HashSet<String>(nbm.allPackages);
             //merge unknowns into their respective wrapper modules..
@@ -279,6 +281,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
                 }
             }
         }
+        nbms.clear();
         
         //now remove all packages from bootclasspath that clash with private/transitive packages..
         // happens for javax.swing for example which is part of the tabcontrol module
