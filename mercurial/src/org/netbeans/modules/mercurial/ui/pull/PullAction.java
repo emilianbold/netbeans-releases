@@ -148,7 +148,7 @@ public class PullAction extends ContextAction {
                     HgProgressSupport support = new HgProgressSupport() {
                         @Override
                         public void perform() {
-                            getDefaultAndPerformPull(repository, null, this);
+                            getDefaultAndPerformPull(repository, null, null, this);
                         }
                     };
                     support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")).waitFinished(); //NOI18N
@@ -219,7 +219,8 @@ public class PullAction extends ContextAction {
         logger.output("");
     }
 
-    public static void getDefaultAndPerformPull(File root, String revision, HgProgressSupport supp) {
+    public static void getDefaultAndPerformPull(File root, String revision, 
+            String branch, HgProgressSupport supp) {
         OutputLogger logger = supp.getLogger();
         final String pullSourceString = HgRepositoryContextCache.getInstance().getPullDefault(root);
         // If the repository has no default pull path then inform user
@@ -256,7 +257,8 @@ public class PullAction extends ContextAction {
             pullType = PullType.OTHER;
         }
         final String toPrjName = HgProjectUtils.getProjectName(root);
-        performPull(pullType, root, pullSource, fromPrjName, toPrjName, revision, supp);
+        performPull(pullType, root, pullSource, fromPrjName, toPrjName, 
+                revision, branch, supp);
     }
 
     private static void notifyDefaultPullUrlNotSpecified(OutputLogger logger) {
@@ -301,7 +303,9 @@ public class PullAction extends ContextAction {
         "MSG_PullAction.pulling=Pulling changesets",
         "MSG_PullAction.pushingPatches=Pushing patches"
     })
-    static void performPull(final PullType type, final File root, final HgURL pullSource, final String fromPrjName, final String toPrjName, final String revision, final HgProgressSupport supp) {
+    static void performPull(final PullType type, final File root, 
+    final HgURL pullSource, final String fromPrjName, final String toPrjName, 
+    final String revision, final String branch, final HgProgressSupport supp) {
         if(root == null || pullSource == null) return;
         File bundleFile = null; 
         final OutputLogger logger = supp.getLogger();
@@ -325,7 +329,7 @@ public class PullAction extends ContextAction {
 
             final List<String> listIncoming;
             if(type == PullType.LOCAL){
-                listIncoming = HgCommand.doIncoming(root, revision, logger);
+                listIncoming = HgCommand.doIncoming(root, revision, branch, logger);
             }else{
                 for (int i = 0; i < 10000; i++) {
                     if (!new File(root.getParentFile(), root.getName() + "_bundle" + i).exists()) { // NOI18N
@@ -333,7 +337,7 @@ public class PullAction extends ContextAction {
                         break;
                     }
                 }
-                listIncoming = HgCommand.doIncoming(root, pullSource, revision, bundleFile, logger, false);
+                listIncoming = HgCommand.doIncoming(root, pullSource, revision, branch, bundleFile, logger, false);
             }
             if (listIncoming == null || listIncoming.isEmpty()) return;
             
@@ -373,7 +377,7 @@ public class PullAction extends ContextAction {
                         }
                         List<String> list;
                         if(type == PullType.LOCAL){
-                            list = HgCommand.doPull(root, revision, logger);
+                            list = HgCommand.doPull(root, revision, branch, logger);
                         }else{
                             list = HgCommand.doUnbundle(root, fileToUnbundle, logger);
                         }

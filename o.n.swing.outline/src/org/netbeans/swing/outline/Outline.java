@@ -839,7 +839,19 @@ public class Outline extends ETable {
         return false;
     }
 
-    private boolean checkAt(int row, int column, MouseEvent me) {
+    /**
+     * Perform a selection/deselection of a check box on the given row and column,
+     * if a check box exists on the given position.
+     * @param row The row of the check box
+     * @param column The column of the check box
+     * @param me The mouse event that performs the check, or <code>null</code>.
+     * @return <code>true</code> if a {@link CheckRenderDataProvider} is found
+     *         on the given row and column, is checkable and enabled and the
+     *         mouse event is either <code>null</code> or upon the check-box
+     *         location. Returns <code>false</code> otherwise.
+     * @since 1.25
+     */
+    protected final boolean checkAt(int row, int column, MouseEvent me) {
         RenderDataProvider render = getRenderDataProvider();
         TableCellRenderer tcr = getDefaultRenderer(Object.class);
         if (render instanceof CheckRenderDataProvider && tcr instanceof DefaultOutlineCellRenderer) {
@@ -863,8 +875,7 @@ public class Outline extends ETable {
                     int chEnd = chStart + chWidth;
                     //TODO: Translate x/y to position of column if non-0
 
-                    chBoxPosition = (me.getX() > ins.left && me.getX() >= chStart && me.getX() <= chEnd) &&
-                                    me.getClickCount() == 1;
+                    chBoxPosition = (me.getX() > ins.left && me.getX() >= chStart && me.getX() <= chEnd);
                 }
                 if (chBoxPosition) {
                     Boolean selected = crender.isSelected(value);

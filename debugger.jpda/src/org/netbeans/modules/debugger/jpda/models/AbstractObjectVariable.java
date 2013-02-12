@@ -153,6 +153,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                 this.valueTypeName = TypeWrapper.name(valueType);
             } catch (InternalExceptionWrapper ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (ObjectCollectedExceptionWrapper ex) {
             } catch (VMDisconnectedExceptionWrapper ex) {
             }
             this.valueTypeLoaded[0] = true;

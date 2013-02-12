@@ -155,19 +155,31 @@ public final class OutputUtils {
     }
 
     static void openCallstackFrame(Node node, String frameInfo) {
-            JUnitTestMethodNode methodNode = getTestMethodNode(node);
-            FileLocator locator =  methodNode.getTestcase().getSession().getFileLocator();
-            if (locator == null){
-                return;
+        // #213935 - copied from org.netbeans.modules.maven.junit.nodes.OutputUtils
+        JUnitTestMethodNode methodNode = getTestMethodNode(node);
+        FileLocator locator = methodNode.getTestcase().getSession().getFileLocator();
+        if (locator == null) {
+            return;
+        }
+        FileObject testfo = methodNode.getTestcase().getClassFileObject();
+        final int[] lineNumStorage = new int[1];
+        FileObject file = getFile(frameInfo, lineNumStorage, locator);
+        //lineNumStorage -1 means no regexp for stacktrace was matched.
+        if ((file == null) && (methodNode.getTestcase().getTrouble() != null) && lineNumStorage[0] == -1) {
+            //213935 we could not recognize the stack trace line and map it to known file
+            //if it's a failure text, grab the testcase's own line from the stack.
+            String[] st = methodNode.getTestcase().getTrouble().getStackTrace();
+            if ((st != null) && (st.length > 0)) {
+                int index = st.length - 1;
+                //213935 we need to find the testcase linenumber to jump to.
+                // and ignore the infrastructure stack lines in the process
+                while (!testfo.equals(file) && index != -1) {
+                    file = getFile(st[index], lineNumStorage, locator);
+                    index = index - 1;
+                }
             }
-            final int[] lineNumStorage = new int[1];
-            FileObject file = getFile(frameInfo, lineNumStorage, locator);
-            if ((file == null) && (methodNode.getTestcase().getTrouble() != null)){
-                String[] st = methodNode.getTestcase().getTrouble().getStackTrace();
-                if ((st != null) && (st.length > 0))
-                file = getFile(st[st.length - 1], lineNumStorage, locator);
-            }
-            Utils.openFile(file, lineNumStorage[0]);
+        }
+        Utils.openFile(file, lineNumStorage[0]);
     }
 
     /**

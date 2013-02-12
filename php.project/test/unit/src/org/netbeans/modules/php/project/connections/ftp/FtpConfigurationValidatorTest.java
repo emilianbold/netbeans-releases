@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.php.project.connections.ftp;
 
-import java.net.URI;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.validation.ValidationResult;
-import org.openide.util.NetworkSettings;
+import org.openide.util.NetworkSettings.ProxyCredentialsProvider;
 import org.openide.util.test.MockLookup;
 
 public class FtpConfigurationValidatorTest extends NbTestCase {
@@ -60,6 +59,18 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public FtpConfigurationValidatorTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        cleanupProxy();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        cleanupProxy();
     }
 
     public void testValidate() {
@@ -170,39 +181,15 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
     }
 
     private void setupProxy() {
-        MockLookup.init();
-        MockLookup.setInstances(new ProxyCredentialsProvider());
+        System.getProperties().put("proxySet", "true");
+        System.getProperties().put("proxyHost", "http://some.proxy.org");
+        System.getProperties().put("proxyPort", "8080");
     }
 
-    //~ Inner classes
-
-    private static final class ProxyCredentialsProvider extends NetworkSettings.ProxyCredentialsProvider {
-
-        @Override
-        protected String getProxyUserName(URI u) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        protected char[] getProxyPassword(URI u) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        protected boolean isProxyAuthentication(URI u) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        protected String getProxyHost(URI u) {
-            return "http://some.proxy.com";
-        }
-
-        @Override
-        protected String getProxyPort(URI u) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
+    private void cleanupProxy() {
+        System.getProperties().put("proxySet", "false");
+        System.getProperties().put("proxyHost", "");
+        System.getProperties().put("proxyPort", "");
     }
 
 }

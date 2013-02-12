@@ -120,10 +120,10 @@ public final class FixImportsHelper {
                 missingClass, NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class));
 
         for (ElementHandle<TypeElement> typeName : typeNames) {
-            ElementKind ek = typeName.getKind();
+            ElementKind kind = typeName.getKind();
 
-            if (ek == ElementKind.CLASS || ek == ElementKind.INTERFACE) {
-                addAsImportCandidate(missingClass, typeName.getQualifiedName(), ek, result);
+            if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE || kind == ElementKind.ANNOTATION_TYPE) {
+                addAsImportCandidate(missingClass, typeName.getQualifiedName(), kind, result);
             }
         }
 

@@ -329,7 +329,7 @@ public class Mercurial {
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() {
-                PushAction.getDefaultAndPerformPush(repository, null, this.getLogger());
+                PushAction.getDefaultAndPerformPush(repository, null, null, this.getLogger());
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")).waitFinished(); //NOI18N

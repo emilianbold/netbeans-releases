@@ -148,6 +148,9 @@ public class Generate {
         Map<String, Set<Class>> InterfaceTypeExceptions = new LinkedHashMap<String, Set<Class>>();
         InterfaceTypeExceptions.put("superinterfaces", Collections.singleton((Class) com.sun.jdi.ClassNotPreparedException.class));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.InterfaceType.class.getName(), InterfaceTypeExceptions);
+        Map<String, Set<Class>> TypeExceptions = new LinkedHashMap<String, Set<Class>>();
+        TypeExceptions.put("*", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.Type.class.getName(), TypeExceptions);
 
         Map<String, Set<Class>> ObjectReferenceExceptions = new LinkedHashMap<String, Set<Class>>();
         ObjectReferenceExceptions.put("setValue", Collections.singleton((Class) java.lang.IllegalArgumentException.class));
