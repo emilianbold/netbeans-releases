@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
@@ -290,4 +291,14 @@ public class LibraryUtils {
         return declaredLibraries;
     }
 
+    /**
+     * Returns an array of opened projects which have associated a JsfSupport object.
+     * 
+     * @since 1.19
+     * @return array of {@link Project}, never null.
+     */
+    public static Project[] getOpenedJSFProjects() {
+        //may not return all projects as they are weakly held in the cache.
+       return JsfSupportProvider.CACHE.keySet().toArray(new Project[]{});
+    }
 }
