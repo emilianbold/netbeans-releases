@@ -49,6 +49,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.openide.filesystems.FileObject;
@@ -66,7 +68,7 @@ public abstract class JsfSupportProvider {
     //note: JsfSupport DOES hold a strong reference to the Project (which is not really 
     //necessary, may be got from FEQ all the time) so I cannot hold the JsfSupport strongly
     //in the WeakHashMap - it would never GC due to the strong ref in this GC root.
-    private static final Map<Project, Reference<JsfSupport>> CACHE = new WeakHashMap<Project, Reference<JsfSupport>>();
+    static final Map<Project, Reference<JsfSupport>> CACHE = new WeakHashMap<Project, Reference<JsfSupport>>();
 
     public static JsfSupport get(Source source) {
         FileObject fo = source.getFileObject();
