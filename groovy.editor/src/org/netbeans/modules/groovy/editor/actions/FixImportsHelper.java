@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,14 +34,18 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.groovy.editor.actions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
@@ -70,11 +74,11 @@ import org.openide.filesystems.FileObject;
  *
  * @author schmidtm
  */
-public class FixImportsHelper {
+public final class FixImportsHelper {
 
     private static final Logger LOG = Logger.getLogger(FixImportsHelper.class.getName());
 
-    
+
     private FixImportsHelper() {
     }
 
@@ -82,10 +86,10 @@ public class FixImportsHelper {
         LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
         List<ImportCandidate> result = new ArrayList<ImportCandidate>();
-        
+
         ClasspathInfo pathInfo = getClasspathInfoForFileObject(fo);
-        
-        if(pathInfo == null){
+
+        if (pathInfo == null) {
             LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
             return result;
         }
@@ -126,7 +130,7 @@ public class FixImportsHelper {
         return result;
     }
 
-    private static ClasspathInfo getClasspathInfoForFileObject ( FileObject fo) {
+    private static ClasspathInfo getClasspathInfoForFileObject(FileObject fo) {
         ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
         ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
         ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
@@ -140,7 +144,7 @@ public class FixImportsHelper {
     private static void addAsImportCandidate(String missingClass, String fqnName, ElementKind kind, List<ImportCandidate> result) {
         int level = getImportanceLevel(fqnName);
         Icon icon = ElementIcons.getElementIcon(kind, null);
-        
+
         result.add(new ImportCandidate(missingClass, fqnName, icon, level));
     }
 
@@ -159,12 +163,12 @@ public class FixImportsHelper {
     }
 
     public static String getMissingClassName(String errorMessage) {
-        String ERR_PREFIX = "unable to resolve class "; // NOI18N
+        String errorPrefix = "unable to resolve class "; // NOI18N
         String missingClass = null;
 
-        if (errorMessage.startsWith(ERR_PREFIX)) {
+        if (errorMessage.startsWith(errorPrefix)) {
 
-            missingClass = errorMessage.substring(ERR_PREFIX.length());
+            missingClass = errorMessage.substring(errorPrefix.length());
             int idx = missingClass.indexOf(" ");
 
             if (idx != -1) {
@@ -203,26 +207,26 @@ public class FixImportsHelper {
         }
 
         int lineOffset = 0;
-        
+
         // nothing set:
         if (importEnd == -1 && packageOffset == -1) {
             // place imports in the first line
             LOG.log(Level.FINEST, "importEnd == -1 && packageOffset == -1");
             return 0;
 
-        } // only package set:
-        else if (importEnd == -1 && packageOffset != -1) {
+        } else if (importEnd == -1 && packageOffset != -1) {
+            // only package set:
             // place imports behind package statement
             LOG.log(Level.FINEST, "importEnd == -1 && packageOffset != -1");
             useOffset = packageOffset;
             lineOffset++; // we want to have first import two lines behind package statement
-        } // only imports set:
-        else if (importEnd != -1 && packageOffset == -1) {
+        } else if (importEnd != -1 && packageOffset == -1) {
+            // only imports set:
             // place imports after the last import statement
             LOG.log(Level.FINEST, "importEnd != -1 && packageOffset == -1");
             useOffset = importEnd;
-        } // both package & import set:
-        else if (importEnd != -1 && packageOffset != -1) {
+        } else if (importEnd != -1 && packageOffset != -1) {
+            // both package & import set:
             // place imports right after the last import statement
             LOG.log(Level.FINEST, "importEnd != -1 && packageOffset != -1");
             useOffset = importEnd;
@@ -240,11 +244,11 @@ public class FixImportsHelper {
         return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
     }
 
-    public static void doImport(FileObject fo, String fqnName) throws MissingResourceException {
+    public static void doImport(FileObject fo, String fqnName) {
         doImports(fo, Collections.singletonList(fqnName));
     }
 
-    public static void doImports(FileObject fo, List<String> fqnNames) throws MissingResourceException {
+    public static void doImports(FileObject fo, List<String> fqnNames) {
         BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
         if (baseDoc == null) {
             return;

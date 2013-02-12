@@ -46,6 +46,9 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Proxy;
+import com.jcraft.jsch.ProxyHTTP;
+import com.jcraft.jsch.ProxySOCKS5;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
@@ -151,6 +154,8 @@ public class SftpClient implements RemoteClient {
             if (StringUtils.hasText(password)) {
                 sftpSession.setPassword(password);
             }
+            // proxy
+            setProxy();
             sftpSession.setUserInfo(new SftpUserInfo(configuration));
             sftpSession.setTimeout(timeout);
             // keep-alive
@@ -173,6 +178,33 @@ public class SftpClient implements RemoteClient {
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotConnect", configuration.getHost()), exc);
         }
 
+    }
+
+    private void setProxy() {
+        Proxy proxy = null;
+        // first, socks must be tested - see #226006
+        RemoteUtils.ProxyInfo proxyInfo = RemoteUtils.getSocksProxy();
+        if (proxyInfo != null) {
+            LOGGER.log(Level.FINE, "SOCKS proxy will be used");
+            ProxySOCKS5 socksProxy = new ProxySOCKS5(proxyInfo.getHost(), proxyInfo.getPort());
+            if (StringUtils.hasText(proxyInfo.getUsername())) {
+                socksProxy.setUserPasswd(proxyInfo.getUsername(), proxyInfo.getPassword());
+            }
+            proxy = socksProxy;
+        } else {
+            proxyInfo = RemoteUtils.getHttpProxy();
+            if (proxyInfo != null) {
+                LOGGER.log(Level.FINE, "HTTP proxy will be used");
+                ProxyHTTP httpProxy = new ProxyHTTP(proxyInfo.getHost(), proxyInfo.getPort());
+                if (StringUtils.hasText(proxyInfo.getUsername())) {
+                    httpProxy.setUserPasswd(proxyInfo.getUsername(), proxyInfo.getPassword());
+                }
+                proxy = httpProxy;
+            }
+        }
+        if (proxy != null) {
+            sftpSession.setProxy(proxy);
+        }
     }
 
     @Override
