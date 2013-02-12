@@ -626,6 +626,9 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                         break; // just one tag
                     }
                     sb.append(" (").append(labels).append(labels.length() == 0 ? "" : "- ").append(message.getCSetShortID().substring(0, 7)).append(")"); //NOI18N
+                    if (!message.getShortMessage().isEmpty()) {
+                        sb.append(" - ").append(message.getShortMessage()); //NOI18N
+                    }
                     value = sb.toString();
                 }
             }
