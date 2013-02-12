@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.debug;
 
+import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -69,7 +70,9 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -92,6 +95,7 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -212,7 +216,15 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         return -1;
     }
     
-    private static final class NodeChilren extends Children.Keys<Node> {
+    static Node nodeForElement(CompilationInfo info, Element el) {
+        if (el != null) {
+            return new ElementNode(info, el, Collections.<Node>emptyList());
+        } else {
+            return new NotFoundElementNode(NbBundle.getMessage(TreeNode.class, "Cannot_Resolve_Element"));
+        }
+    }
+        
+    static final class NodeChilren extends Children.Keys<Node> {
         
         public NodeChilren(List<Node> nodes) {
             setKeys(nodes);
@@ -365,6 +377,7 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingElement(below);
             addCorrespondingType(below);
             addCorrespondingComments(below);
+            addCorrespondingJavadoc(below);
             
             super.visitClass(tree, below);
             
@@ -531,6 +544,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         }
 
         @Override
+        public Void visitLambdaExpression(LambdaExpressionTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitLambdaExpression(tree, below);
+
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
         public Void visitLiteral(LiteralTree tree, List<Node> d) {
             List<Node> below = new ArrayList<Node>();
             
@@ -543,12 +568,27 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         }
 
         @Override
+        public Void visitMemberReference(MemberReferenceTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+
+            addCorrespondingElement(below);
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+
+            super.visitMemberReference(tree, below);
+
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
         public Void visitMethod(MethodTree tree, List<Node> d) {
             List<Node> below = new ArrayList<Node>();
             
             addCorrespondingElement(below);
             addCorrespondingType(below);
             addCorrespondingComments(below);
+            addCorrespondingJavadoc(below);
             
             super.visitMethod(tree, below);
             
@@ -805,6 +845,7 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingElement(below);
             addCorrespondingType(below);
             addCorrespondingComments(below);
+            addCorrespondingJavadoc(below);
             
             super.visitVariable(tree, below);
             
@@ -836,14 +877,20 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             return null;
         }
         
+        private void addCorrespondingJavadoc(List<Node> below) {
+            DocCommentTree docCommentTree = ((DocTrees) info.getTrees()).getDocCommentTree(getCurrentPath());
+            
+            if (docCommentTree != null) {
+                below.add(new DocTreeNode(info, getCurrentPath(), docCommentTree));
+            } else {
+                below.add(new NotFoundJavadocNode("<javadoc-not-found>"));
+            }
+        }
+
         private void addCorrespondingElement(List<Node> below) {
             Element el = info.getTrees().getElement(getCurrentPath());
             
-            if (el != null) {
-                below.add(new ElementNode(info, el, Collections.<Node>emptyList()));
-            } else {
-                below.add(new NotFoundElementNode(NbBundle.getMessage(TreeNode.class, "Cannot_Resolve_Element")));
-            }
+            below.add(nodeForElement(info, el));
         }
 
         private void addCorrespondingType(List<Node> below) {
@@ -860,6 +907,17 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             below.add(new CommentsNode(NbBundle.getMessage(TreeNode.class, "NM_Preceding_Comments"), info.getTreeUtilities().getComments(getCurrentPath().getLeaf(), true)));
             below.add(new CommentsNode(NbBundle.getMessage(TreeNode.class, "NM_Trailing_Comments"), info.getTreeUtilities().getComments(getCurrentPath().getLeaf(), false)));
         }
+    }
+    
+    private static class NotFoundJavadocNode extends AbstractNode {
+        
+        public NotFoundJavadocNode(String name) {
+            super(Children.LEAF);
+            setName(name);
+            setDisplayName(name);
+//            setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/element.png"); //NOI18N
+        }
+        
     }
     
     private static class NotFoundElementNode extends AbstractNode {

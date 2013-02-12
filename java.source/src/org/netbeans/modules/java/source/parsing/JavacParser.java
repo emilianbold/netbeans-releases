@@ -53,6 +53,9 @@ import com.sun.tools.javac.api.DuplicateClassChecker;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTool;
 import com.sun.tools.javac.api.JavacTrees;
+import com.sun.tools.javac.parser.LazyDocCommentTable;
+import com.sun.tools.javac.parser.Tokens.Comment;
+import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -97,7 +100,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
-import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -733,7 +735,6 @@ public class JavacParser extends Parser {
         JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, dcc, parser == null ? null : new DefaultCancelService(parser), APTUtils.get(root));
         Context context = javacTask.getContext();
         TreeLoader.preRegister(context, cpInfo, detached);
-        com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
     }
 
@@ -751,6 +752,7 @@ public class JavacParser extends Parser {
         if (!backgroundCompilation) {
             options.add("-Xjcov"); //NOI18N, Make the compiler store end positions
             options.add("-XDallowStringFolding=false"); //NOI18N
+            options.add("-XDkeepComments=true"); //NOI18N
             assert options.add("-XDdev") || true; //NOI18N
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N
@@ -799,14 +801,16 @@ public class JavacParser extends Parser {
             options.add("-proc:none"); // NOI18N, Disable annotation processors
         }
 
-        JavaCompiler tool = JavacTool.create();
-        JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, 
+        Context context = new Context();
+        //need to preregister the Messages here, because the getTask below requires Log instance:
+        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+        JavacTaskImpl task = (JavacTaskImpl)JavacTool.create().getTask(null, 
                 ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo),
-                diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
+                diagnosticListener, options, null, Collections.<JavaFileObject>emptySet(),
+                context);
         if (aptEnabled) {
             task.setProcessors(processors);
         }
-        Context context = task.getContext();
         NBClassReader.preRegister(context, !backgroundCompilation);
         if (cnih != null) {
             context.put(ClassNamesForFileOraculum.class, cnih);
@@ -817,7 +821,6 @@ public class JavacParser extends Parser {
         if (cancelService != null) {
             DefaultCancelService.preRegister(context, cancelService);
         }
-        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         NBAttr.preRegister(context);
         NBClassWriter.preRegister(context);
         NBParserFactory.preRegister(context);
@@ -1016,7 +1019,7 @@ public class JavacParser extends Parser {
                     assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
                     long start = System.currentTimeMillis();
-                    Map<JCTree,String> docComments = new HashMap<JCTree, String>();
+                    Map<JCTree,LazyDocCommentTable.Entry> docComments = new HashMap<JCTree, LazyDocCommentTable.Entry>();
                     block = pr.reparseMethodBody(cu, orig, newBody, firstInner, docComments);
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.log(Level.FINER, "Reparsed method in: {0}", fo);     //NOI18N
@@ -1031,15 +1034,15 @@ public class JavacParser extends Parser {
                         }
                         return false;
                     }
-                    ((JCTree.JCCompilationUnit)cu).docComments.keySet().removeAll(fav.docOwners);
-                    ((JCTree.JCCompilationUnit)cu).docComments.putAll(docComments);
+                    ((LazyDocCommentTable) ((JCTree.JCCompilationUnit)cu).docComments).table.keySet().removeAll(fav.docOwners);
+                    ((LazyDocCommentTable) ((JCTree.JCCompilationUnit)cu).docComments).table.putAll(docComments);
                     long end = System.currentTimeMillis();
                     if (fo != null) {
                         logTime (fo,Phase.PARSED,(end-start));
                     }
                     final int newEndPos = (int) jt.getSourcePositions().getEndPosition(cu, block);
                     final int delta = newEndPos - origEndPos;
-                    final Map<JCTree,Integer> endPos = ((JCCompilationUnit)cu).endPositions;
+                    final EndPosTable endPos = ((JCCompilationUnit)cu).endPositions;
                     final TranslatePositionsVisitor tpv = new TranslatePositionsVisitor(orig, endPos, delta);
                     tpv.scan(cu, null);
                     ((JCMethodDecl)orig).body = block;
@@ -1076,7 +1079,7 @@ public class JavacParser extends Parser {
                     //fix CompilationUnitTree.getLineMap:
                     long startM = System.currentTimeMillis();
                     char[] chars = snapshot.getText().toString().toCharArray();
-                    ((LineMapImpl) cu.getLineMap()).build(chars, chars.length, '\0');
+                    ((LineMapImpl) cu.getLineMap()).build(chars, chars.length);
                     LOGGER.log(Level.FINER, "Rebuilding LineMap took: {0}", System.currentTimeMillis() - startM);
 
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).endPartialReparse (delta);

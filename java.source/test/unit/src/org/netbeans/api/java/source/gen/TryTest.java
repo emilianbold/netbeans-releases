@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.prefs.Preferences;
@@ -804,6 +805,53 @@ public class TryTest extends GeneratorTestMDRCompat {
                 TryTree tt = (TryTree) method.getBody().getStatements().get(0);
                 TryTree nue = make.addTryCatch(tt, make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", make.Type("java.lang.Exception"), null), make.Block(Collections.<StatementTree>emptyList(), false)));
                 workingCopy.rewrite(tt, nue);
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddNewResourceToTWR() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try (InputStream in = new FileInputStream(\"\"); OutputStream out = new FileOutputStream(\"\")) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try (InputStream in = new FileInputStream(\"\"); OutputStream out = new FileOutputStream(\"\"); InputStream other = new FileInputStream(\"\")) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                TryTree tt = (TryTree) method.getBody().getStatements().get(0);
+                List<Tree> resources = new ArrayList<Tree>(tt.getResources());
+                resources.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "other", make.Identifier("InputStream"), make.Identifier("new FileInputStream(\"\")")));
+                workingCopy.rewrite(tt, make.Try(resources, tt.getBlock(), tt.getCatches(), tt.getFinallyBlock()));
             }
 
         };

@@ -46,6 +46,7 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import static com.sun.source.tree.Tree.*;
 
 import com.sun.source.util.SourcePositions;
@@ -131,6 +132,18 @@ public final class TreeMaker {
      */
     public AnnotationTree Annotation(Tree type, List<? extends ExpressionTree> arguments) {
         return delegate.Annotation(type, arguments);
+    }
+    
+    /** 
+     * Creates a new type AnnotationTree.
+     *
+     * @param type the annotation type.
+     * @param arguments the arguments for this annotation, or an empty list.
+     * @see com.sun.source.tree.AnnotationTree
+     * @since 0.112
+     */
+    public AnnotationTree TypeAnnotation(Tree type, List<? extends ExpressionTree> arguments) {
+        return delegate.TypeAnnotation(type, arguments);
     }
     
     /**
@@ -620,7 +633,18 @@ public final class TreeMaker {
     public LabeledStatementTree LabeledStatement(CharSequence label, StatementTree statement) {
         return delegate.LabeledStatement(label, statement);
     }
-    
+
+    /**Creates a new LambdaExpressionTree
+     * 
+     * @param parameters the lambda's formal arguments
+     * @param body the lambda's body
+     * @return the LambdaExpressionTree
+     * @since 0.112
+     */
+    public LambdaExpressionTree LambdaExpression(List<? extends VariableTree> parameters, Tree body) {
+        return delegate.LambdaExpression(parameters, body);
+    }
+
     /**
      * Creates a new LiteralTree.  Only literals which are wrappers for 
      * primitive types (Integer, Boolean, etc.) and String instances can
@@ -632,6 +656,19 @@ public final class TreeMaker {
      */
     public LiteralTree Literal(Object value) {
         return delegate.Literal(value);
+    }
+    
+    /**Creates a new MemberReferenceTree.
+     * 
+     * @param refMode the desired {@link ReferenceMode reference mode}
+     * @param expression the class (or expression), from which a member is to be referenced
+     * @param name the name of the referenced member
+     * @param typeArguments the reference's type arguments
+     * @return the MemberReferenceTree
+     * @since 0.112
+     */
+    public MemberReferenceTree MemberReference(ReferenceMode refMode, ExpressionTree expression, CharSequence name, List<? extends ExpressionTree> typeArguments) {
+        return delegate.MemberReference(refMode, name, expression, typeArguments);
     }
     
     /**
@@ -2573,7 +2610,7 @@ public final class TreeMaker {
      * <tt>aLabel</tt> argument. Throws <tt>IllegalArgumentException</tt> if
      * <tt>node</tt>'s kind is invalid. Valid <tt>node</tt>'s kinds are:<br>
      * BREAK, CLASS, CONTINUE, IDENTIFIER, LABELED_STATEMENT,
-     * MEMBER_SELECT, METHOD, TYPE_PARAMETER, VARIABLE.<p>
+     * MEMBER_SELECT, METHOD, TYPE_PARAMETER, VARIABLE, MEMBER_REFERENCE (since 0.112).<p>
      *
      * Consider you want to change name of  method <tt>fooMet</tt> to
      * <tt>fooMethod</tt>:
@@ -2700,6 +2737,16 @@ public final class TreeMaker {
                 N clone = (N) MemberSelect(
                         (ExpressionTree) t.getExpression(),
                         aLabel
+                        );
+                return clone;
+            }
+            case MEMBER_REFERENCE: {
+                MemberReferenceTree t = (MemberReferenceTree) node;
+                N clone = (N) MemberReference(
+                        t.getMode(),
+                        t.getQualifierExpression(),
+                        aLabel,
+                        t.getTypeArguments()
                         );
                 return clone;
             }
@@ -3061,5 +3108,77 @@ public final class TreeMaker {
             return super.scan(tree, p);
         }
 
+    }
+
+    /**
+     * Appends specified element <tt>parameter</tt>
+     * to the end of parameters list.
+     *
+     * @param  method        lambda expression tree containing parameters list.
+     * @param  parameter     element to be appended to parameters list.
+     * @return lambda expression tree with modified parameters.
+     * @since 0.112
+     */
+    public LambdaExpressionTree addLambdaParameter(LambdaExpressionTree method, VariableTree parameter) {
+        return delegate.addLambdaParameter(method, parameter);
+    }
+    
+    /**
+     * Inserts the specified element <tt>parameter</tt> 
+     * at the specified position in parameters list.
+     *
+     * @param  method lambda expression tree containing parameters list.
+     * @param  index  index at which the specified elements is to be inserted.
+     * @param  parameter   element to be inserted to parameters list.
+     * @return lambda expression  tree with modified parameters.
+     *
+     * @throws    IndexOutOfBoundsException if the index is out of range
+     *		  (index &lt; 0 || index &gt; size()).
+     * @since 0.112
+     */
+    public LambdaExpressionTree insertLambdaParameter(LambdaExpressionTree method, int index, VariableTree parameter) {
+        return delegate.insertLambdaParameter(method, index, parameter);
+    }
+    
+    /**
+     * Removes the first occurrence in parameters list of the specified 
+     * elements. If this list do not contain the element, it is
+     * unchanged.
+     *
+     * @param   method lambda expression tree containing parameters list.
+     * @param   parameter   element to be removed from this list, if present.
+     * @return  lambda expression tree with modified parameters and type parameters.
+     * @since 0.112
+     */
+    public LambdaExpressionTree removeLambdaParameter(LambdaExpressionTree method, VariableTree parameter) {
+        return delegate.removeLambdaParameter(method, parameter);
+    }
+    
+    /**
+     * Removes the element at the specified position in parameters list.
+     * Returns the modified lambda expression tree.
+     *
+     * @param   method lambda expression tree containing parameters list.
+     * @param   index  the index of the element to be removed.
+     * @return  method tree with modified parameters.
+     * 
+     * @throws IndexOutOfBoundsException if the index is out of range (index
+     *            &lt; 0 || index &gt;= size()).
+     * @since 0.112
+     */
+    public LambdaExpressionTree removeLambdaParameter(LambdaExpressionTree method, int index) {
+        return delegate.removeLambdaParameter(method, index);
+    }
+    
+    /**Creates a new lambda expression as a copy of the given lambda expression
+     * with the specified body.
+     * 
+     * @param method the source lambda expression
+     * @param newBody the new body
+     * @return new lambda expression tree with the new body
+     * @since 0.112
+     */
+    public LambdaExpressionTree setLambdaBody(LambdaExpressionTree method, Tree newBody) {
+        return delegate.setLambdaBody(method, newBody);
     }
 }

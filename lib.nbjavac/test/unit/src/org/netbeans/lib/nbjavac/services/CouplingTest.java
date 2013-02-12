@@ -150,7 +150,6 @@ public class CouplingTest extends TestCase {
     }
 
     private Set<String> testCoupling(String code, boolean loadFromClasses, List<String> fqns) throws IOException {
-        final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
         final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
         assert tool != null;
 
@@ -161,14 +160,7 @@ public class CouplingTest extends TestCase {
             std.setLocation(StandardLocation.CLASS_PATH, Collections.singleton(workingDir));
         }
 
-        JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, std, null, Arrays.asList("-bootclasspath",  bootPath, "-Xjcov", "-XDshouldStopPolicy=GENERATE"), null, Arrays.asList(new MyFileObject(code)));
-
-        NBParserFactory.preRegister(ct.getContext());
-        NBTreeMaker.preRegister(ct.getContext());
-        NBJavadocEnter.preRegister(ct.getContext());
-        PrintWriter w = new PrintWriter(System.out);
-        Messager.preRegister(ct.getContext(), null, w, w, w);
-        JavadocClassReader.preRegister(ct.getContext(), true);
+        JavacTaskImpl ct = Utilities.createJavac(std, Utilities.fileObjectFor(code));
         
         if (loadFromClasses) {
             for (String fqn : fqns) {

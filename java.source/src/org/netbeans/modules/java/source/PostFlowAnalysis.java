@@ -200,7 +200,7 @@ public class PostFlowAnalysis extends TreeScanner {
                 Symbol c = meth.owner;
                 if (c.hasOuterInstance()) {
                     checkThis = false;
-                    if (tree.meth.getTag() != JCTree.SELECT && ((c.owner.kind & (Kinds.MTH | Kinds.VAR)) != 0 || methName == names._this)) {
+                    if (tree.meth.getTag() != JCTree.Tag.SELECT && ((c.owner.kind & (Kinds.MTH | Kinds.VAR)) != 0 || methName == names._this)) {
                         checkThis(tree.meth.pos(), c.type.getEnclosingType().tsym);
                     }
                 }
@@ -214,7 +214,7 @@ public class PostFlowAnalysis extends TreeScanner {
     @Override
     public void visitSelect(JCFieldAccess tree) {
         super.visitSelect(tree);
-        if ((tree.name == names._this || tree.name == names._super) && tree.selected.type != null)
+        if (tree.selected.type != null && (tree.name == names._this || (tree.name == names._super && !types.isDirectSuperInterface(tree.selected.type.tsym, currentClass))))
             checkThis(tree.pos(), tree.selected.type.tsym);
     }
 

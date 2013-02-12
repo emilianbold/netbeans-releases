@@ -522,9 +522,6 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         List<Tree> oldMembers = new ArrayList<Tree>(nct.getClassBody().getMembers());
         
-        //remove def. constructor:
-        oldMembers.remove(0);
-        
         ModifiersTree constructorModifiers = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
         
         MethodTree constr = make.Method(constructorModifiers, "<init>", null, Collections.<TypeParameterTree>emptyList(), constrArguments, Collections.<ExpressionTree>emptyList(), make.Block(constrBodyStatements, false), null); // NOI18N
