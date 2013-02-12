@@ -49,6 +49,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.JavacTask;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Scope;
@@ -166,7 +167,7 @@ public class TreeLoader extends LazyTreeLoader {
                 }
                 try {
                     FileObject fo = SourceUtils.getFile(clazz, cpInfo);
-                    final JavacTaskImpl jti = context.get(JavacTaskImpl.class);
+                    final JavacTaskImpl jti = (JavacTaskImpl) context.get(JavacTask.class);
                     JavaCompiler jc = JavaCompiler.instance(context);
                     if (fo != null && jti != null) {
                         final Log log = Log.instance(context);
