@@ -101,7 +101,7 @@ public class PushCurrentBranchAction extends ContextAction {
                         HgProgressSupport support = new HgProgressSupport() {
                             @Override
                             public void perform() {
-                                PushAction.getDefaultAndPerformPush(root, branch, this.getLogger());
+                                PushAction.getDefaultAndPerformPush(root, null, branch, this.getLogger());
                                 canceled[0] = isCanceled();
                             }
                         };

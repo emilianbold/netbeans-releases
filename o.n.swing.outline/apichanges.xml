@@ -108,6 +108,21 @@ is the proper place.
 
 <changes>
 
+    <change id="checkAtProtected">
+      <api name="etable_outline"/>
+      <summary>A protected checkAt() method added to Outline</summary>
+      <version major="1" minor="25"/>
+      <date day="1" month="2" year="2013"/>
+      <author login="mentlicher"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        <p>Outline has a checkAt() method to perform a selection/deselection of
+           a check box on the given row and column.
+        </p>
+      </description>
+      <class package="org.netbeans.swing.outline" name="Outline"/>
+      <issue number="223021"/>
+    </change>
     <change id="fireQuickFilterChange">
       <api name="etable_outline"/>
       <summary>Ability to listen on changes of Quick Filter</summary>
