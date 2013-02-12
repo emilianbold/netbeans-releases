@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.php.editor.parser;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java_cup.runtime.*;
 import org.netbeans.modules.php.editor.*;
@@ -94,7 +94,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
 %state ST_IN_SHORT_ECHO
 %state ST_HALTED_COMPILER
 %{
-    private final List commentList = new LinkedList();
+    private final List commentList = new ArrayList();
     private String heredoc = null;
     private String nowdoc = null;
     private int nowdoc_len  = 0;
