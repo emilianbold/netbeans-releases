@@ -132,6 +132,7 @@ public class NBParserFactory extends ParserFactory {
 
                     @Override
                     protected void setErrorEndPos(int errPos) {
+                        super.setErrorEndPos(errPos);
                         ((EndPosTableImpl)endPos).setErrorEndPos(errPos);
                     }
                 };
