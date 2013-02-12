@@ -80,16 +80,12 @@ import org.openide.util.NbBundle;
 public class FixImportsAction extends BaseAction {
 
     protected static final String ACTION_NAME = "fix-groovy-imports"; //NOI18N
-    private static final Logger LOG = Logger.getLogger(FixImportsAction.class.getName());
-
-    private final List<String> missingNames;
     private final AtomicBoolean cancel;
-    
+
 
     public FixImportsAction() {
         super(MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-        
-        missingNames = new ArrayList<String>();
+
         cancel = new AtomicBoolean();
     }
 
@@ -105,8 +101,9 @@ public class FixImportsAction extends BaseAction {
         final FileObject fo = NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile();
         final Source source = Source.create(fo);
 
+        final List<String> missingNames = new ArrayList<String>();
         try {
-            ParserManager.parse(Collections.singleton(source), new CollectMissingImportsTask());
+            ParserManager.parse(Collections.singleton(source), new CollectMissingImportsTask(missingNames));
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -146,7 +143,14 @@ public class FixImportsAction extends BaseAction {
         }
     }
 
-    private class CollectMissingImportsTask extends UserTask {
+    private final class CollectMissingImportsTask extends UserTask {
+
+        private final List<String> missingNames;
+
+        public CollectMissingImportsTask(List<String> missingNames) {
+            this.missingNames = missingNames;
+        }
+
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
@@ -166,7 +170,6 @@ public class FixImportsAction extends BaseAction {
         }
 
         private void collectMissingImports(List errors) {
-            missingNames.clear();
             for (Object error : errors) {
                 if (error instanceof SyntaxErrorMessage) {
                     SyntaxException se = ((SyntaxErrorMessage) error).getCause();
