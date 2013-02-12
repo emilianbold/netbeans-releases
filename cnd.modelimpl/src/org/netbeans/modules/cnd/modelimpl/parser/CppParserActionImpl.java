@@ -1754,7 +1754,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         end_declarator(token);
     }
     @Override public void noptr_abstract_declarator(Token token) {
-        end_declarator(token);
+        declarator(token);
     }
     @Override public void noptr_abstract_declarator(int kind, Token token) {
     }
