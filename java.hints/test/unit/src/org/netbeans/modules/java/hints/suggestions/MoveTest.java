@@ -157,4 +157,34 @@ public class MoveTest extends NbTestCase {
                 + "    }\n"
                 + "}\n");
     }
+    
+    public void testMoveToNewConstructorAnonymous222391() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n"
+                + "public class Test {\n"
+                + "    {\n"
+                + "        new Runnable() {\n"
+                + "            private String mess|age = \"Hello World!\";\n"
+                + "            public void run() {}\n"
+                + "        };\n"
+                + "    }\n"
+                + "}\n")
+                .run(Move.class)
+                .findWarning("4:31-4:31:hint:Move initializer to constructor(s)")
+                .applyFix("Move initializer to constructor(s)")
+                .assertCompilable()
+                .assertOutput("package test;\n"
+                + "public class Test {\n"
+                + "    {\n"
+                + "        new Runnable() {\n"
+                + "            private String message;\n"
+                + "            {\n"
+                + "                this.message = \"Hello World!\";\n"
+                + "            }\n"
+                + "            public void run() {}\n"
+                + "        };\n"
+                + "    }\n"
+                + "}\n");
+    }
 }
