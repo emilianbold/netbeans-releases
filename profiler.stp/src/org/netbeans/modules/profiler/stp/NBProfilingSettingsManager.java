@@ -53,7 +53,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.netbeans.modules.profiler.api.ProfilingSettingsManager.ProfilingSettingsDescriptor;
@@ -95,7 +95,7 @@ public class NBProfilingSettingsManager extends ProfilingSettingsManagerProvider
     // --- Public interface ------------------------------------------------------
     @Override
     public ProfilingSettingsDescriptor getProfilingSettings(Lookup.Provider project) {
-        final List<ProfilingSettings> profilingSettings = new LinkedList();
+        final List<ProfilingSettings> profilingSettings = new ArrayList();
         final int[] lastSelectedProfilingSettingsIndex = new int[] { -1 };
 
         try {

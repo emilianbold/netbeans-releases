@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,57 +34,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.heapwalk.details.netbeans;
 
-package org.netbeans.modules.profiler.projectsupport;
-
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.DataFilesProviderImplementation;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.filesystems.FileObject;
+import org.netbeans.lib.profiler.heap.Instance;
+import org.netbeans.lib.profiler.heap.PrimitiveArrayInstance;
+import org.netbeans.modules.profiler.heapwalk.details.InstanceDetailsProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author Tomas Hurka
  */
-public abstract class AbstractProjectLookupProvider implements LookupProvider {
-    private DataFilesProviderImplementation getDataFilesProviderImplementation(final Project project) {
-        return new DataFilesProviderImplementation() {
-                public List<FileObject> getMetadataFiles() {
-                    List<FileObject> metadataFilesList = new ArrayList<FileObject>();
-                    FileObject buildBackupFile = (project == null) ? null
-                                                                   : project.getProjectDirectory()
-                                                                            .getFileObject("build-before-profiler.xml"); // NOI18N
+@ServiceProvider(service=InstanceDetailsProvider.class)
+public class JavacDetailsProvider extends InstanceDetailsProvider{
 
-                    if ((buildBackupFile != null) && buildBackupFile.isValid()) {
-                        metadataFilesList.add(buildBackupFile);
-                    }
-
-                    return metadataFilesList;
+    @Override
+    public String getDetailsString(Instance instance) {
+        if (isInstanceOf(instance, "com.sun.tools.javac.util.SharedNameTable$NameImpl")) { // NOI18N
+            Integer length = (Integer) instance.getValueOfField("length"); // NOI18N
+            Integer index = (Integer) instance.getValueOfField("index"); // NOI18N
+            Instance table = (Instance) instance.getValueOfField("table"); // NOI18N
+            
+            if (length != null && index != null && table != null) {
+                PrimitiveArrayInstance bytes = (PrimitiveArrayInstance) table.getValueOfField("bytes"); // NOI18N
+                List elements = bytes.getValues();
+                byte[] data = new byte[length];
+                
+                for (int i = 0; i < length; i++) {
+                    String el = (String) elements.get(index+i);
+                    data[i] = Byte.valueOf(el).byteValue();
                 }
-
-                public List<FileObject> getDataFiles() {
-                    return Collections.EMPTY_LIST;
+                try {
+                    return new String(data, "UTF-8");
+                } catch (UnsupportedEncodingException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            };
+            }
+        }
+        return null;
     }
     
-    protected abstract List getAdditionalLookups(Project project);
-    
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        List lookUps = new ArrayList();
-        Project project = baseContext.lookup(Project.class);
-        lookUps.add(getDataFilesProviderImplementation(project));
-        lookUps.addAll(getAdditionalLookups(project));
-        return Lookups.fixed(lookUps.toArray());
-    }
 }

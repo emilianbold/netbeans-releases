@@ -43,11 +43,10 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-//import org.netbeans.lib.profiler.client.MonitoredData;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.results.DataManagerListener;
-import java.util.LinkedList;
-import java.util.List;
 import org.netbeans.lib.profiler.client.MonitoredData;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
@@ -65,8 +64,8 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private List<TimedGlobalProfilingPoint> scheduledTimedPPs = new LinkedList();
-    private List<TriggeredGlobalProfilingPoint> scheduledTriggeredPPs = new LinkedList();
+    private List<TimedGlobalProfilingPoint> scheduledTimedPPs = new ArrayList();
+    private List<TriggeredGlobalProfilingPoint> scheduledTriggeredPPs = new ArrayList();
     private ProfilingSettings profilingSettings;
     private Lookup.Provider profiledProject;
     private GlobalProfilingPoint[] gpp;
@@ -187,7 +186,7 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
             checkForStop();
 
             if (isRunning) {
-                List<TimedGlobalProfilingPoint> rescheduledTimedPPs = new LinkedList();
+                List<TimedGlobalProfilingPoint> rescheduledTimedPPs = new ArrayList();
 
                 for (TimedGlobalProfilingPoint tgpp : scheduledTimedPPs) {
                     if (timeConditionMet(tgpp.getCondition())) {
@@ -237,7 +236,7 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
             checkForStop();
 
             if (isRunning) {
-                List<TriggeredGlobalProfilingPoint> rescheduledTriggeredPPs = new LinkedList();
+                List<TriggeredGlobalProfilingPoint> rescheduledTriggeredPPs = new ArrayList();
 
                 for (TriggeredGlobalProfilingPoint tgpp : scheduledTriggeredPPs) {
                     if (triggerConditionMet(tgpp.getCondition())) {
