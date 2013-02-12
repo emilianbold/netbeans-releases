@@ -166,6 +166,7 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
+import org.netbeans.modules.web.clientproject.spi.RefreshOnSaveSupport;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
@@ -2434,6 +2435,9 @@ public final class WebProject implements Project {
         }
 
         void reload(FileObject fo) {
+            if (!RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fo)) {
+                return;
+            }
             BrowserSupport bs = getBrowserSupport();
             if (bs == null) {
                 return;
