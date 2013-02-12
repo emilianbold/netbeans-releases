@@ -43,27 +43,53 @@
  */
 package org.netbeans.modules.el.lexer;
 
-
 /**
+ * Represents single state of the EL lexer.
  * @author ads
- *
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-class ELState {
-    
-    ELState( int state , int conditionalCount){
-        myState = state;
-        myConditionalCount = conditionalCount;
+public class ELState {
+
+    private int state;
+    private int conditionalCount;
+
+    public ELState(int state, int conditionalCount) {
+        this.state = state;
+        this.conditionalCount = conditionalCount;
     }
-    
-    int getState(){
-        return myState;
+
+    public int getState() {
+        return state;
     }
-    
-    int getConditionalCount(){
-        return myConditionalCount;
+
+    public int getConditionalCount() {
+        return conditionalCount;
     }
-    
-    private int myState;
-    private int myConditionalCount;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ELState other = (ELState) obj;
+        if (this.state != other.state) {
+            return false;
+        }
+        if (this.conditionalCount != other.conditionalCount) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 13 * hash + this.state;
+        hash = 13 * hash + this.conditionalCount;
+        return hash;
+    }
 
 }

@@ -60,16 +60,15 @@ public class ELLexerBatchTest extends TestCase {
     public ELLexerBatchTest(String testName) {
         super(testName);
     }
-    
-    protected void setUp() throws java.lang.Exception {
+
+    @Override
+    protected void setUp() throws Exception {
         // Set-up testing environment
         LexerTestUtilities.setTesting(true);
     }
 
-    protected void tearDown() throws java.lang.Exception {
-    }
 
-    public void testExpressions() {
+    public void testExpressions() throws Exception {
         String text = "session";
         TokenSequence ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "session");
@@ -79,7 +78,7 @@ public class ELLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "myBean");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.DOT, ".");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "property");
-        
+
         text = "(6 * 0x5) + 05";
         ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.LPAREN, "(");
@@ -93,8 +92,6 @@ public class ELLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.PLUS, "+");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.OCTAL_LITERAL, "05");
-        
-        
     }
-    
+
 }
