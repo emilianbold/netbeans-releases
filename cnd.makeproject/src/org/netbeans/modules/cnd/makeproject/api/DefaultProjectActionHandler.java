@@ -157,6 +157,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
         if (actionType != ProjectActionEvent.PredefinedType.RUN
                 && actionType != ProjectActionEvent.PredefinedType.BUILD
+                && actionType != ProjectActionEvent.PredefinedType.COMPILE_SINGLE
                 && actionType != ProjectActionEvent.PredefinedType.CLEAN
                 && actionType != ProjectActionEvent.PredefinedType.BUILD_TESTS
                 && actionType != ProjectActionEvent.PredefinedType.TEST) {
@@ -263,7 +264,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
         LineConvertor converter = null;
 
-        if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
+        if (actionType == ProjectActionEvent.PredefinedType.BUILD ||
+            actionType == ProjectActionEvent.PredefinedType.COMPILE_SINGLE ||
+            actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             converter = new CompilerLineConvertor(
                     pae.getProject(), conf.getCompilerSet().getCompilerSet(),
                     execEnv, RemoteFileUtil.getFileObject(runDirectory, pae.getProject()));
@@ -292,7 +295,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 unbufferOutput(unbuffer).setStatusEx(statusEx).
                 addNativeProcessListener(processChangeListener);
 
+        StringBuilder buf = new StringBuilder();
         if (commandLine != null) {
+            buf.append(commandLine);
             npb.setCommandLine(commandLine);
         } else {
             String exe = pae.getExecutable();
@@ -300,9 +305,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 args = pae.getArguments();
             }
             npb.setExecutable(exe).setArguments(args.toArray(new String[args.size()]));
+            buf.append(exe);
+            for(String a : args) {
+                buf.append(' ');
+                buf.append(a);
+            }
         }
         
-        if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
+        if (actionType == ProjectActionEvent.PredefinedType.BUILD ||
+            actionType == ProjectActionEvent.PredefinedType.BUILD ||
+            actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             npb.redirectError();
         }
 
@@ -331,7 +343,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 || actionType == PredefinedType.DEBUG_TEST
                 || actionType == PredefinedType.DEBUG_STEPINTO_TEST
                 || actionType == PredefinedType.CUSTOM_ACTION);
-
+        
         NativeExecutionDescriptor descr =
                 new NativeExecutionDescriptor().controllable(true).
                 frontWindow(true).
@@ -346,7 +358,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 outConvertorFactory(processChangeListener).
                 keepInputOutputOnFinish();
 
-        if (actionType == PredefinedType.BUILD || actionType == PredefinedType.CLEAN) {
+        if (actionType == PredefinedType.BUILD ||
+            actionType == PredefinedType.COMPILE_SINGLE ||
+            actionType == PredefinedType.CLEAN) {
             descr.noReset(true);
             if (cs != null) {
                 descr.charset(cs.getEncoding());
@@ -357,6 +371,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             if (cs != null) {
                 descr.charset(cs.getEncoding());
             }
+        }
+        
+        if (actionType == PredefinedType.COMPILE_SINGLE) {
+            io.getOut().println(buf.toString());
         }
 
         NativeExecutionService es =

@@ -74,6 +74,7 @@ public final class ProjectActionEvent {
 
     public static enum PredefinedType implements Type {
         BUILD("Build"), // NOI18N
+        COMPILE_SINGLE("CompileSingle"), // NOI18N
         CLEAN("Clean"), // NOI18N
         RUN("Run"), // NOI18N
         DEBUG("Debug"), // NOI18N
@@ -126,8 +127,11 @@ public final class ProjectActionEvent {
 	this.profile = profile;
 	this.wait = wait;
         this.context = context;
-        if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || 
-            type == PredefinedType.BUILD_TESTS || type == PredefinedType.TEST) {
+        if (type == PredefinedType.BUILD ||
+            type == PredefinedType.COMPILE_SINGLE ||
+            type == PredefinedType.CLEAN || 
+            type == PredefinedType.BUILD_TESTS || 
+            type == PredefinedType.TEST) {
             if (profile != null && profile.getConsoleType().getValue() != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                 assert false : type + " must not be run in " + profile.getConsoleType().getName() + " use OutputWindow instead";
             }
