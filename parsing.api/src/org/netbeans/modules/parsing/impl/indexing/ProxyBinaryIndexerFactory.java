@@ -229,7 +229,12 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
     private ConstrainedBinaryIndexer getDelegate() {
         final Object delegate = params.get(ATTR_DELEGATE);
         if (!(delegate instanceof ConstrainedBinaryIndexer)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(
+                String.format(
+                    "Invalid indexer %s registered as %s %d",   //NOI18N
+                    delegate,
+                    indexerName,
+                    indexerVersion));
         }
         return (ConstrainedBinaryIndexer) delegate;
     }
