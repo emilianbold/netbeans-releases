@@ -71,6 +71,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.ModuleInfo;
 import org.openide.modules.Places;
 import org.openide.modules.api.PlacesTestUtils;
 import org.openide.util.test.MockLookup;
@@ -184,7 +185,7 @@ public class ModuleListTest extends SetupHid {
         assertFile(new File(data, "org-bar_disabled.xml"), FileUtil.toFile(bar));
         // Check that changes in disk are parsed and applied (#13921)
         LoggedPCListener listener2 = new LoggedPCListener();
-        Module m1 = mgr.get("org.foo");
+        ModuleInfo m1 = mgr.findCodeNameBase("org.foo");
         m1.addPropertyChangeListener(listener2);
         copy(new File(data, "org-foo.xml"), foo);
         /* Does not seem to refresh reliably enough:
