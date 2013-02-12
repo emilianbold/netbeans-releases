@@ -103,6 +103,7 @@ import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowserSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
+import org.netbeans.modules.web.clientproject.spi.RefreshOnSaveSupport;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -921,8 +922,7 @@ public final class PhpProject implements Project {
 
         // possible browser reload, if nb integration is present
         private void browserReload(FileObject file) {
-            if (file.hasExt("css")) { // NOI18N
-                // #217284 - ignore changes in CSS
+            if (!RefreshOnSaveSupport.canRefreshOnSaveFileFilter(file)) {
                 return;
             }
             ClientSideDevelopmentSupport easelSupport = PhpProject.this.getLookup().lookup(ClientSideDevelopmentSupport.class);
