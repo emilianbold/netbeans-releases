@@ -41,9 +41,9 @@
  */
 
 /**
- * C++ grammar.
+ * Original C++ grammar.
  * @author Fedor Sergeev
- * C++11 standard extensions.
+ * C++ grammar. C++11 standard extensions.
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 
@@ -191,6 +191,39 @@ import org.netbeans.modules.cnd.modelimpl.parser.*;
 //        $Declaration::type_specifiers_count++;
 //        trace("store_type_specifier->", $Declaration::type_specifiers_count);
     }
+
+    public boolean isTemplateTooDeep(int currentLevel, int maxLevel) {
+        return isTemplateTooDeep(currentLevel, maxLevel, 0);
+    }
+
+    public static int TEMPLATE_PREVIEW_POS_LIMIT = 4096;
+    public boolean isTemplateTooDeep(int currentLevel, int maxLevel, int startPos) {
+        int level = currentLevel;
+        int pos = startPos;            
+        while(pos < TEMPLATE_PREVIEW_POS_LIMIT) {
+            int token = input.LA(pos);
+            pos++;
+            if(token == EOF || token == 0) {
+                break;
+            }
+            if(token == LCURLY || token == RCURLY) {
+                break;
+            }
+            if(token == LESSTHAN) {
+                level++;
+            } else if(token == GREATERTHAN) {
+                level--;
+            } 
+            if(level == 0) {
+                return false;
+            }
+            if(level >= maxLevel) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
 compilation_unit: translation_unit;
@@ -265,11 +298,12 @@ expression_statement
 
 expression_or_declaration_statement
     :
-        (declaration_statement) => declaration_statement
-    |
-        {action.expression_statement(input.LT(1));}
+        (expression SEMICOLON) => 
+                                                                                {action.expression_statement(input.LT(1));}
         expression SEMICOLON
-        {action.end_expression_statement(input.LT(0));}
+                                                                                {action.end_expression_statement(input.LT(0));}
+    |
+        declaration_statement
     ;
 
 
@@ -478,11 +512,70 @@ block_declaration
 id_expression
     :                                                                           {action.id_expression(input.LT(1));}
     (
-        // TODO: review temp predicate
-        ((simple_template_id_or_IDENT)? SCOPE) => qualified_id
-    |
-        unqualified_id
+        unqualified_or_qualified_id
     )                                                                           {action.end_id_expression(input.LT(0));}
+    ;
+
+unqualified_or_qualified_id
+@init {Token t = input.LT(1);}
+    :
+        (LITERAL_OPERATOR operator_id)=>
+            operator_function_id
+    |
+        conversion_function_id
+    |
+        literal_operator_id
+    |
+        TILDE class_name
+    |
+        simple_template_id_or_IDENT
+        (
+            SCOPE 
+            (
+                LITERAL_template? 
+                (
+                    (LITERAL_OPERATOR operator_id)=>
+                        operator_function_id
+                |
+                    conversion_function_id
+                |
+                    literal_operator_id
+                |
+                    TILDE class_name
+                |
+                    simple_template_id_or_IDENT_nested[t]
+                )
+            )
+        )*
+    |
+        SCOPE (
+            (simple_template_id_or_IDENT SCOPE) =>
+            nested_name_specifier LITERAL_template? unqualified_id
+        |
+            (LITERAL_OPERATOR STRING_LITERAL IDENT) =>
+            literal_operator_id
+        |
+            simple_template_id_or_IDENT
+        )
+    ;
+
+
+
+
+nested_simple_template_id_or_IDENT
+@init {Token startToken = input.LT(1);}
+    :
+        simple_template_id_or_IDENT
+        (
+            SCOPE 
+            (
+                (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> 
+                    LITERAL_template simple_template_id_nocheck
+            |   
+                simple_template_id_or_IDENT_nested[startToken]
+            )
+        )*
+        
     ;
 
 unqualified_id:
@@ -1669,68 +1762,6 @@ member_specification[boolean class_late_binding_lookup]
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
 
-protected
-literal_asm : LITERAL_asm | LITERAL__asm | LITERAL___asm|LITERAL___asm__;
-
-protected
-literal_cdecl : LITERAL__cdecl | LITERAL___cdecl;
-
-protected
-literal_const : LITERAL_const | LITERAL___const | LITERAL___const__;
-
-protected
-literal_declspec : LITERAL__declspec | LITERAL___declspec;
-
-protected
-literal_far : LITERAL__far | LITERAL___far;
-
-protected
-literal_inline : LITERAL_inline | LITERAL__inline | LITERAL___inline | LITERAL___inline__ | LITERAL___forceinline;
-
-protected
-literal_int64 : LITERAL__int64 | LITERAL___int64;
-
-protected
-literal_signed: LITERAL_signed | LITERAL___signed | LITERAL___signed__;
-
-protected
-literal_unsigned: LITERAL_unsigned | LITERAL___unsigned__;
-
-protected
-literal_near : LITERAL__near | LITERAL___near;
-
-protected
-literal_pascal : LITERAL_pascal | LITERAL__pascal | LITERAL___pascal;
-
-protected
-literal_stdcall : LITERAL__stdcall | LITERAL___stdcall;
-
-protected
-literal_clrcall : LITERAL___clrcall;
-
-protected
-literal_volatile : LITERAL_volatile | LITERAL___volatile | LITERAL___volatile__;
-
-protected
-literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
-
-protected
-literal_restrict : LITERAL_restrict | LITERAL___restrict | LITERAL___restrict__;
-
-protected
-literal_complex : LITERAL__Complex | LITERAL___complex__ | LITERAL___complex;
-
-protected
-literal_attribute : LITERAL___attribute | LITERAL___attribute__;
-
-protected
-literal_try : LITERAL_try | LITERAL___try;
-
-protected
-literal_finally : LITERAL___finally;
-
-protected
-literal_decltype : LITERAL_decltype | LITERAL___decltype;
 
 /*
  * original rule (part that was rewritten)
@@ -1905,9 +1936,7 @@ class_or_decltype
         (
             SCOPE                                                               {action.class_or_decltype(action.CLASS_OR_DECLTYPE__SCOPE, input.LT(0));}
         )? 
-        // TODO: review temp predicate
-        ((simple_template_id_or_IDENT SCOPE) => nested_name_specifier)?
-        class_name
+        nested_simple_template_id_or_IDENT
     |
         decltype_specifier
     )                                                                           {action.end_class_or_decltype(input.LT(0));}
@@ -2129,6 +2158,22 @@ simple_template_id_or_IDENT
         )
     ;
 
+simple_template_id_or_IDENT_nested [Token t]
+    :
+        ( (IDENT LESSTHAN) => 
+                ( { action.identifier_is(IDT_TEMPLATE_NAME, t) }? =>
+                IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
+                LESSTHAN                                                        {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+                template_argument_list?
+                GREATERTHAN                                                     {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
+            |   
+                IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
+            )
+        |   
+            IDENT                                                               {action.simple_template_id_or_ident(input.LT(0));}
+        )
+    ;
+
 lookup_simple_template_id_or_IDENT
     :
         IDENT
@@ -2163,6 +2208,13 @@ template_argument_list
 template_argument
     :                                                                           {action.template_argument(input.LT(1));}
     (
+        {(isTemplateTooDeep(1, 10))}? 
+        (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY))* 
+        (
+            lazy_template 
+            (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY | COMMA | ELLIPSIS))*
+        )+
+    |
         // id_exression is included into assignment_expression, thus we need to explicitly rule it up
         (id_expression ELLIPSIS? (COMMA | GREATERTHAN))=> id_expression
     |
@@ -2762,6 +2814,82 @@ skip_balanced_Curl
             )*
             RCURLY                                                              {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
         ;
+
+
+
+lazy_template
+    :
+        LESSTHAN
+        (
+            (   ~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY)
+            |   lazy_template
+            )*
+        )
+        GREATERTHAN
+    ;
+
+protected
+literal_asm : LITERAL_asm | LITERAL__asm | LITERAL___asm|LITERAL___asm__;
+
+protected
+literal_cdecl : LITERAL__cdecl | LITERAL___cdecl;
+
+protected
+literal_const : LITERAL_const | LITERAL___const | LITERAL___const__;
+
+protected
+literal_declspec : LITERAL__declspec | LITERAL___declspec;
+
+protected
+literal_far : LITERAL__far | LITERAL___far;
+
+protected
+literal_inline : LITERAL_inline | LITERAL__inline | LITERAL___inline | LITERAL___inline__ | LITERAL___forceinline;
+
+protected
+literal_int64 : LITERAL__int64 | LITERAL___int64;
+
+protected
+literal_signed: LITERAL_signed | LITERAL___signed | LITERAL___signed__;
+
+protected
+literal_unsigned: LITERAL_unsigned | LITERAL___unsigned__;
+
+protected
+literal_near : LITERAL__near | LITERAL___near;
+
+protected
+literal_pascal : LITERAL_pascal | LITERAL__pascal | LITERAL___pascal;
+
+protected
+literal_stdcall : LITERAL__stdcall | LITERAL___stdcall;
+
+protected
+literal_clrcall : LITERAL___clrcall;
+
+protected
+literal_volatile : LITERAL_volatile | LITERAL___volatile | LITERAL___volatile__;
+
+protected
+literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
+
+protected
+literal_restrict : LITERAL_restrict | LITERAL___restrict | LITERAL___restrict__;
+
+protected
+literal_complex : LITERAL__Complex | LITERAL___complex__ | LITERAL___complex;
+
+protected
+literal_attribute : LITERAL___attribute | LITERAL___attribute__;
+
+protected
+literal_try : LITERAL_try | LITERAL___try;
+
+protected
+literal_finally : LITERAL___finally;
+
+protected
+literal_decltype : LITERAL_decltype | LITERAL___decltype;
 
 // $>
 // ==============
