@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -238,6 +239,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         private Set<TypeElement> getDeprecatedTypes() {
+            if (isCancelled()) {
+                return Collections.EMPTY_SET;
+            }
             if (deprecatedTypes == null) {
                 deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
             }
@@ -245,6 +249,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         private Set<MethodElement> getDeprecatedMethods() {
+            if (isCancelled()) {
+                return Collections.EMPTY_SET;
+            }
             if (deprecatedMethods == null) {
                 deprecatedMethods = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getMethods(NameKind.empty()));
             }
@@ -252,6 +259,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         private Set<FieldElement> getDeprecatedFields() {
+            if (isCancelled()) {
+                return Collections.EMPTY_SET;
+            }
             if (deprecatedFields == null) {
                 deprecatedFields = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getFields(NameKind.empty()));
             }
@@ -259,6 +269,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         private Set<TypeConstantElement> getDeprecatedConstants() {
+            if (isCancelled()) {
+                return Collections.EMPTY_SET;
+            }
             if (deprecatedConstants == null) {
                 deprecatedConstants = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypeConstants(NameKind.empty()));
             }
@@ -275,7 +288,17 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         @Override
+        public void scan(ASTNode node) {
+            if (!isCancelled()) {
+                super.scan(node);
+            }
+        }
+
+        @Override
         public void visit(Program program) {
+            if (isCancelled()) {
+                return;
+            }
             scan(program.getStatements());
             scan(program.getComments());
             // are there unused private methods?
@@ -335,6 +358,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         private Set<ColoringAttributes> createTypeNameColoring(Identifier typeName) {
+            if (isCancelled()) {
+                return Collections.EMPTY_SET;
+            }
             Set<ColoringAttributes> result;
             if (isDeprecatedTypeDeclaration(typeName)) {
                 result = DEPRECATED_CLASS_SET;
@@ -346,12 +372,14 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedTypeDeclaration(Identifier typeName) {
             boolean isDeprecated = false;
-            VariableScope variableScope = model.getVariableScope(typeName.getStartOffset());
-            QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), typeName.getStartOffset(), variableScope);
-            for (TypeElement typeElement : getDeprecatedTypes()) {
-                if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
-                    isDeprecated = true;
-                    break;
+            if (!isCancelled()) {
+                VariableScope variableScope = model.getVariableScope(typeName.getStartOffset());
+                QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), typeName.getStartOffset(), variableScope);
+                for (TypeElement typeElement : getDeprecatedTypes()) {
+                    if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
+                        isDeprecated = true;
+                        break;
+                    }
                 }
             }
             return isDeprecated;
@@ -359,6 +387,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         @Override
         public void visit(MethodDeclaration md) {
+            if (isCancelled()) {
+                return;
+            }
             scan(md.getFunction().getFormalParameters());
             boolean isPrivate = Modifier.isPrivate(md.getModifier());
             Identifier identifier = md.getFunction().getFunctionName();
@@ -382,6 +413,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         private Set<ColoringAttributes> createMethodDeclarationColoring(MethodDeclaration methodDeclaration) {
+            if (isCancelled()) {
+                return Collections.EMPTY_SET;
+            }
             boolean isDeprecated = isDeprecatedMethodDeclaration(methodDeclaration.getFunction().getFunctionName());
             Set<ColoringAttributes> coloring = isDeprecated ? DEPRECATED_METHOD_SET : ColoringAttributes.METHOD_SET;
             if (Modifier.isStatic(methodDeclaration.getModifier())) {
@@ -392,12 +426,17 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedMethodDeclaration(Identifier methodName) {
             boolean isDeprecated = false;
-            VariableScope variableScope = model.getVariableScope(methodName.getStartOffset());
-            QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeDeclaration.getName()), methodName.getStartOffset(), variableScope);
-            for (MethodElement methodElement : getDeprecatedMethods()) {
-                if (methodElement.getName().equals(methodName.getName()) && methodElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
-                    isDeprecated = true;
-                    break;
+            if (!isCancelled()) {
+                VariableScope variableScope = model.getVariableScope(methodName.getStartOffset());
+                QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
+                        QualifiedName.create(typeDeclaration.getName()),
+                        methodName.getStartOffset(),
+                        variableScope);
+                for (MethodElement methodElement : getDeprecatedMethods()) {
+                    if (methodElement.getName().equals(methodName.getName()) && methodElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
+                        isDeprecated = true;
+                        break;
+                    }
                 }
             }
             return isDeprecated;
@@ -405,6 +444,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         @Override
         public void visit(TraitMethodAliasDeclaration node) {
+            if (isCancelled()) {
+                return;
+            }
             if (node.getNewMethodName() != null) {
                 addOffsetRange(node.getNewMethodName(), ColoringAttributes.METHOD_SET);
             }
@@ -412,6 +454,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         @Override
         public void visit(MethodInvocation node) {
+            if (isCancelled()) {
+                return;
+            }
             Identifier identifier = null;
             if (node.getMethod().getFunctionName().getName() instanceof Variable) {
                 Variable variable = (Variable) node.getMethod().getFunctionName().getName();
@@ -435,11 +480,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedMethodInvocation(Collection<? extends TypeScope> typeScopes, Identifier identifier) {
             boolean isDeprecated = false;
-            for (TypeScope typeScope : typeScopes) {
-                for (MethodScope methodScope : typeScope.getMethods()) {
-                    if (methodScope.getName().equals(identifier.getName()) && methodScope.isDeprecated()) {
-                        isDeprecated = true;
-                        break;
+            if (!isCancelled()) {
+                for (TypeScope typeScope : typeScopes) {
+                    for (MethodScope methodScope : typeScope.getMethods()) {
+                        if (methodScope.getName().equals(identifier.getName()) && methodScope.isDeprecated()) {
+                            isDeprecated = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -499,6 +546,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         private Set<ColoringAttributes> createFieldDeclarationColoring(Variable variable, boolean isStatic) {
+            if (isCancelled()) {
+                return Collections.EMPTY_SET;
+            }
             boolean isDeprecated = isDeprecatedFieldDeclaration(variable);
             Set<ColoringAttributes> coloring = isDeprecated ? DEPRECATED_FIELD_SET : ColoringAttributes.FIELD_SET;
             if (isStatic) {
@@ -509,16 +559,18 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedFieldDeclaration(Variable variable) {
             boolean isDeprecated = false;
-            String variableName = CodeUtils.extractVariableName(variable);
-            VariableScope variableScope = model.getVariableScope(variable.getStartOffset());
-            QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
-                    QualifiedName.create(typeDeclaration.getName()),
-                    variable.getStartOffset(),
-                    variableScope);
-            for (FieldElement fieldElement : getDeprecatedFields()) {
-                if (fieldElement.getName().equals(variableName) && fieldElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
-                    isDeprecated = true;
-                    break;
+            if (!isCancelled()) {
+                String variableName = CodeUtils.extractVariableName(variable);
+                VariableScope variableScope = model.getVariableScope(variable.getStartOffset());
+                QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
+                        QualifiedName.create(typeDeclaration.getName()),
+                        variable.getStartOffset(),
+                        variableScope);
+                for (FieldElement fieldElement : getDeprecatedFields()) {
+                    if (fieldElement.getName().equals(variableName) && fieldElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
+                        isDeprecated = true;
+                        break;
+                    }
                 }
             }
             return isDeprecated;
@@ -542,20 +594,22 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedFieldAccess(Collection<? extends TypeScope> typeScopes, String variableName) {
             boolean isDeprecated = false;
-            for (TypeScope typeScope : typeScopes) {
-                Collection<? extends org.netbeans.modules.php.editor.model.FieldElement> declaredFields = null;
-                if (typeScope instanceof ClassScope) {
-                    ClassScope classScope = (ClassScope) typeScope;
-                    declaredFields = classScope.getDeclaredFields();
-                } else if (typeScope instanceof TraitScope) {
-                    TraitScope traitScope = (TraitScope) typeScope;
-                    declaredFields = traitScope.getDeclaredFields();
-                }
-                if (declaredFields != null) {
-                    for (org.netbeans.modules.php.editor.model.FieldElement fieldElement : declaredFields) {
-                        if (fieldElement.getName().equals(variableName) && fieldElement.isDeprecated()) {
-                            isDeprecated = true;
-                            break;
+            if (!isCancelled()) {
+                for (TypeScope typeScope : typeScopes) {
+                    Collection<? extends org.netbeans.modules.php.editor.model.FieldElement> declaredFields = null;
+                    if (typeScope instanceof ClassScope) {
+                        ClassScope classScope = (ClassScope) typeScope;
+                        declaredFields = classScope.getDeclaredFields();
+                    } else if (typeScope instanceof TraitScope) {
+                        TraitScope traitScope = (TraitScope) typeScope;
+                        declaredFields = traitScope.getDeclaredFields();
+                    }
+                    if (declaredFields != null) {
+                        for (org.netbeans.modules.php.editor.model.FieldElement fieldElement : declaredFields) {
+                            if (fieldElement.getName().equals(variableName) && fieldElement.isDeprecated()) {
+                                isDeprecated = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -585,6 +639,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         @Override
         public void visit(PHPVarComment node) {
+            if (isCancelled()) {
+                return;
+            }
             int start = node.getVariable().getStartOffset();
             int end = start + 4;
             int startTranslated = snapshot.getOriginalOffset(start);
@@ -596,6 +653,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         @Override
         public void visit(StaticFieldAccess node) {
+            if (isCancelled()) {
+                return;
+            }
             Expression expr = node.getField().getName();
             if (expr instanceof ArrayAccess) {
                 ArrayAccess arrayAccess = (ArrayAccess) expr;
@@ -611,6 +671,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         @Override
         public void visit(ConstantDeclaration node) {
+            if (isCancelled()) {
+                return;
+            }
             ASTNode parentNode = null;
             List<ASTNode> path = getPath();
             if (path != null && path.size() > 1) {
@@ -629,20 +692,25 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         private Set<ColoringAttributes> createConstantDeclarationColoring(Identifier constantName) {
+            if (isCancelled()) {
+                return Collections.EMPTY_SET;
+            }
             return isDeprecatedConstantDeclaration(constantName) ? DEPRECATED_STATIC_FIELD_SET : ColoringAttributes.STATIC_FIELD_SET;
         }
 
         private boolean isDeprecatedConstantDeclaration(Identifier constantName) {
             boolean isDeprecated = false;
-            VariableScope variableScope = model.getVariableScope(constantName.getStartOffset());
-            QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
-                    QualifiedName.create(typeDeclaration.getName()),
-                    constantName.getStartOffset(),
-                    variableScope);
-            for (TypeConstantElement constantElement : getDeprecatedConstants()) {
-                if (constantElement.getName().equals(constantName.getName()) && constantElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
-                    isDeprecated = true;
-                    break;
+            if (!isCancelled()) {
+                VariableScope variableScope = model.getVariableScope(constantName.getStartOffset());
+                QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
+                        QualifiedName.create(typeDeclaration.getName()),
+                        constantName.getStartOffset(),
+                        variableScope);
+                for (TypeConstantElement constantElement : getDeprecatedConstants()) {
+                    if (constantElement.getName().equals(constantName.getName()) && constantElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
+                        isDeprecated = true;
+                        break;
+                    }
                 }
             }
             return isDeprecated;
@@ -650,6 +718,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         @Override
         public void visit(StaticConstantAccess node) {
+            if (isCancelled()) {
+                return;
+            }
             Identifier constant = node.getConstant();
             if (constant != null) {
                 Collection<? extends TypeScope> resolvedTypes = ModelUtils.resolveType(model, node);
@@ -661,11 +732,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedConstantAccess(Collection<? extends TypeScope> typeScopes, String constantName) {
             boolean isDeprecated = false;
-            for (TypeScope typeScope : typeScopes) {
-                for (ClassConstantElement constantElement : typeScope.getDeclaredConstants()) {
-                    if (constantElement.getName().equals(constantName) && constantElement.isDeprecated()) {
-                        isDeprecated = true;
-                        break;
+            if (!isCancelled()) {
+                for (TypeScope typeScope : typeScopes) {
+                    for (ClassConstantElement constantElement : typeScope.getDeclaredConstants()) {
+                        if (constantElement.getName().equals(constantName) && constantElement.isDeprecated()) {
+                            isDeprecated = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -702,12 +775,14 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedType(QualifiedName qualifiedName, int offset) {
             boolean isDeprecated = false;
-            VariableScope variableScope = model.getVariableScope(offset);
-            QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(qualifiedName, offset, variableScope);
-            for (TypeElement typeElement : getDeprecatedTypes()) {
-                if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
-                    isDeprecated = true;
-                    break;
+            if (!isCancelled()) {
+                VariableScope variableScope = model.getVariableScope(offset);
+                QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(qualifiedName, offset, variableScope);
+                for (TypeElement typeElement : getDeprecatedTypes()) {
+                    if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
+                        isDeprecated = true;
+                        break;
+                    }
                 }
             }
             return isDeprecated;
