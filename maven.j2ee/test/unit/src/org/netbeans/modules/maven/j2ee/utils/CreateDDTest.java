@@ -52,41 +52,41 @@ public class CreateDDTest extends JavaEEMavenTestBase {
     public CreateDDTest(String name) {
         super(name);
     }
-    
-    
+
+
     /***********************************************************************************************************
-     * Calling createDDIfRequired with server set in auxiliary properties but without passing him as a parameter
+     * Calling createDDIfRequired with server set in auxiliary properties but without passing him as a parameter.
      ***********************************************************************************************************/
     public void testCreateDDIfRequired_nullServerPassed_webLogic() {
         MavenProjectSupport.setServerID(project, WEBLOGIC);
         MavenProjectSupport.createDDIfRequired(project, null);
-        
+
         assertEquals(true, isWebDDpresent(project));
     }
-    
+
     public void testCreateDDIfRequired_nullServerPassed_glassfish() {
         MavenProjectSupport.setServerID(project, GLASSFISH);
         MavenProjectSupport.createDDIfRequired(project, null);
-        
+
         assertEquals(false, isWebDDpresent(project));
     }
-    
+
     public void testCreateDDIfRequired_nullServerPassed_tomcat() {
         MavenProjectSupport.setServerID(project, TOMCAT);
         MavenProjectSupport.createDDIfRequired(project, null);
-        
+
         assertEquals(false, isWebDDpresent(project));
     }
-    
+
     public void testCreateDDIfRequired_nullServerPassed_jboss() {
         MavenProjectSupport.setServerID(project, JBOSS);
         MavenProjectSupport.createDDIfRequired(project, null);
-        
+
         assertEquals(false, isWebDDpresent(project));
     }
-    
-    
-    
+
+
+
     /****************************************************************************
      * Calling createDDIfRequired with server passed to the method as a parameter
      ****************************************************************************/
@@ -94,17 +94,17 @@ public class CreateDDTest extends JavaEEMavenTestBase {
         MavenProjectSupport.createDDIfRequired(project, WEBLOGIC);
         assertEquals(true, isWebDDpresent(project));
     }
-    
+
     public void testCreateDDIfRequired_glassfishPassed() {
         MavenProjectSupport.createDDIfRequired(project, GLASSFISH);
         assertEquals(false, isWebDDpresent(project));
     }
-    
+
     public void testCreateDDIfRequired_tomcatPassed() {
         MavenProjectSupport.createDDIfRequired(project, TOMCAT);
         assertEquals(false, isWebDDpresent(project));
     }
-    
+
     public void testCreateDDIfRequired_jbossPassed() {
         MavenProjectSupport.createDDIfRequired(project, JBOSS);
         assertEquals(false, isWebDDpresent(project));
