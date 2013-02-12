@@ -203,11 +203,18 @@ public final class ImportHelper {
 
         EditList edits = new EditList(baseDoc);
 
-        for (String fqnName : fqnNames) {
+        // Shitty for-loop because after the last line I want to add additional \n
+        for (int i = 0; i < fqnNames.size(); i++) {
             int importPosition = getImportPosition(baseDoc);
             if (importPosition != -1) {
                 LOG.log(Level.FINEST, "Importing here: {0}", importPosition);
-                edits.replace(importPosition, 0, "import " + fqnName + "\n", false, 0);
+
+                // Last import means one additiona \n
+                if (i == fqnNames.size() - 1) {
+                    edits.replace(importPosition, 0, "import " + fqnNames.get(i) + "\n\n", false, 0);
+                } else {
+                    edits.replace(importPosition, 0, "import " + fqnNames.get(i) + "\n", false, 0);
+                }
             }
         }
         edits.apply();
