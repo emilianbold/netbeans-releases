@@ -237,7 +237,7 @@ public class MavenProjectSupport {
         }
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue
-        String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
+        String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, true);
         if (val != null) {
             return new String[] {val, null};
         }
