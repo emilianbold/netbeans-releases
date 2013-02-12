@@ -343,6 +343,9 @@ class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory {
         else if (JSFConfigQNames.JSF_2_1_NS.equals(element.getNamespaceURI())){
             return jsfqname.getQName(JSFVersion.JSF_2_1).equals(qname);
         }
+        else if (JSFConfigQNames.JSF_2_2_NS.equals(element.getNamespaceURI())){
+            return jsfqname.getQName(JSFVersion.JSF_2_2).equals(qname);
+        }
         return jsfqname.getLocalName().equals(qname.getLocalPart());
     }
 

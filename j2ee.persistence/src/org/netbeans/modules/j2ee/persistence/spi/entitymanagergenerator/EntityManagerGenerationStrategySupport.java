@@ -266,7 +266,12 @@ public abstract class EntityManagerGenerationStrategySupport implements EntityMa
      * @param emName the name of the entity manager
      */
     protected String generateCallLines(String emName) {
-        String version=this.persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit ? Persistence.VERSION_2_0 : Persistence.VERSION_1_0;
+        String version = Persistence.VERSION_1_0;
+        if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit) {// we have persistence unit with specific version, should use it
+            version =  Persistence.VERSION_2_1;
+        } else if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) {// we have persistence unit with specific version, should use it
+            version =  Persistence.VERSION_2_0;
+        }
         return MessageFormat.format(getGenerationOptions().getOperation().getBody(version), new Object[] {
             emName,
             getGenerationOptions().getParameterName(),

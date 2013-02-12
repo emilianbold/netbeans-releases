@@ -51,7 +51,7 @@ import org.netbeans.modules.web.jsfapi.spi.TagFeatureProvider;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * {@link TagFeatureProvider} for JSF 2.1.
+ * {@link TagFeatureProvider} for JSF 2.2.
  * 
  * @author petrpodzimek
  */
