@@ -50,6 +50,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
 import java.util.*;
+import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -79,6 +80,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -113,6 +115,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
 //    public static final String JUNIT_TEST_FRAMEWORK = "JUnit";             //NOI18N
 //    public static final String TESTNG_TEST_FRAMEWORK = "TestNG";             //NOI18N
     private String selectedTestingFramework = null;
+    public static final String PROP_TESTING_FRAMEWORK = "testingFramework";  //NOI18N
     
     /**
      * is at least one target folder/source group available?
@@ -339,6 +342,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         
         if (returned == btnOK) {
             rememberCheckBoxStates();
+	    setLastSelectedTestingFramework();
             testClassName = (tfClassName != null) ? tfClassName.getText() 
                                                   : null;
             return true;
@@ -459,7 +463,19 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             break;
         }
     }
-    
+
+    private void setLastSelectedTestingFramework() {
+	getPreferences().put(PROP_TESTING_FRAMEWORK, selectedTestingFramework);
+    }
+
+    private String getLastSelectedTestingFramework() {
+	return getPreferences().get(PROP_TESTING_FRAMEWORK, "");
+    }
+
+    private static Preferences getPreferences() {
+	return NbPreferences.forModule(CommonTestsCfgOfCreate.class);
+    }
+
     /**
      * Loads a resource bundle so that it can be used during intialization
      * of this panel.
@@ -580,6 +596,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             testingFrameworks.add(testingFramework);
         }
         cboxFramework.setModel(new DefaultComboBoxModel(testingFrameworks.toArray()));
+	cboxFramework.setSelectedItem(getLastSelectedTestingFramework());
         fireFrameworkChanged();
     }
     
