@@ -490,7 +490,11 @@ final public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
-        BROWSERS_MODEL = WebBrowserSupport.createBrowserModel(projectProperties.get(SELECTED_BROWSER));
+        String selectedBrowser = projectProperties.get(SELECTED_BROWSER);
+        if (selectedBrowser == null) {
+            selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
+        }
+        BROWSERS_MODEL = WebBrowserSupport.createBrowserModel(selectedBrowser);
         loadingFrameworksTask = RP.post(new Runnable() {
                 public void run() {
                     loadCurrentFrameworks();

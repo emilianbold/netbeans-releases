@@ -81,7 +81,7 @@ made subject to such option by the copyright holder.
                 <subpackages>com.sun.faces</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jsf-2_1/javax.faces.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jsf-2_2/javax.faces.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

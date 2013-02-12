@@ -366,8 +366,8 @@ public class FaceletsLibrarySupport {
 
         //process the found documents
         FaceletsTaglibConfigProcessor processor = new FaceletsTaglibConfigProcessor(this);
-        processor.process(null, documents);
-
+        processor.process(new EmptyServletContext(), documents);
+        
         Map<String, AbstractFaceletsLibrary> libsMap = new HashMap<String, AbstractFaceletsLibrary>();
         for (AbstractFaceletsLibrary lib : processor.compiler.libraries) {
             libsMap.put(lib.getNamespace(), lib);

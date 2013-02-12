@@ -87,8 +87,8 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
             final int flags,
             final String fileUrl,
             final ElementQuery elementQuery,
-            final List<ParameterElement> parameters,
-            final Set<TypeResolver> returnTypes,
+            final BaseFunctionElementSupport.Parameters parameters,
+            final BaseFunctionElementSupport.ReturnTypes returnTypes,
             final boolean isDeprecated) {
         super(methodName, enclosingType.getName(), fileUrl, offset, elementQuery, isDeprecated);
         final boolean isFromInterface = enclosingType.isInterface();
@@ -118,8 +118,17 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
     }
 
     public static MethodElement createMagicMethod(final TypeElement type, String methodName, int flags, String... arguments) {
-        MethodElement retval = new MethodElementImpl(type, methodName, true, 0, flags, //NOI18N
-                type.getFilenameUrl(), null, fromParameterNames(arguments), Collections.<TypeResolver>emptySet(), type.isDeprecated());
+        MethodElement retval = new MethodElementImpl(
+                type,
+                methodName,
+                true,
+                0,
+                flags,
+                type.getFilenameUrl(),
+                null,
+                BaseFunctionElementSupport.ParametersImpl.create(fromParameterNames(arguments)),
+                BaseFunctionElementSupport.ReturnTypes.NONE,
+                type.isDeprecated());
         return retval;
     }
 
@@ -159,7 +168,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         if (matchesQuery(query, signParser)) {
             retval = new MethodElementImpl(type, signParser.getMethodName(), false,
                     signParser.getOffset(), signParser.getFlags(), indexResult.getUrl().toString(),
-                    indexScopeQuery, signParser.getParameters(), signParser.getReturnTypes(), signParser.isDeprecated());
+                    indexScopeQuery, new ParametersFromSignature(signParser), new ReturnTypesFromSignature(signParser), signParser.isDeprecated());
         }
         return retval;
     }
@@ -170,9 +179,16 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         Parameters.notNull("fileQuery", fileQuery);
         MethodDeclarationInfo info = MethodDeclarationInfo.create(fileQuery.getResult().getProgram(), node, type.isInterface());
         return new MethodElementImpl(
-                type, info.getName(), false, info.getRange().getStart(), info.getAccessModifiers().toFlags(),
-                fileQuery.getURL().toExternalForm(), fileQuery, info.getParameters(),
-                TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node.getFunction())),
+                type,
+                info.getName(),
+                false,
+                info.getRange().getStart(),
+                info.getAccessModifiers().toFlags(),
+                fileQuery.getURL().toExternalForm(),
+                fileQuery,
+                BaseFunctionElementSupport.ParametersImpl.create(info.getParameters()),
+                BaseFunctionElementSupport.ReturnTypesImpl.create(
+                    TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node.getFunction()))),
                 VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node.getFunction()));
     }
 
@@ -197,7 +213,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         final MethodSignatureParser signParser = new MethodSignatureParser(sig);
         final MethodElement retval = new MethodElementImpl(type, MethodElementImpl.CONSTRUCTOR_NAME, false,
                 signParser.getOffset(), signParser.getFlags(), indexResult.getUrl().toString(),
-                indexScopeQuery, signParser.getParameters(), signParser.getReturnTypes(), signParser.isDeprecated());
+                indexScopeQuery, new ParametersFromSignature(signParser), new ReturnTypesFromSignature(signParser), signParser.isDeprecated());
         return retval;
     }
 
@@ -378,5 +394,42 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
             assert getPhpModifiers().toFlags() == parser.getFlags();
             assert getParameters().size() == parser.getParameters().size();
         }
+    }
+
+    private static final class ParametersFromSignature implements BaseFunctionElementSupport.Parameters {
+        private final MethodSignatureParser methodSignatureParser;
+        //@GuardedBy("this")
+        private List<ParameterElement> retrievedParameters = null;
+
+        public ParametersFromSignature(MethodSignatureParser methodSignatureParser) {
+            this.methodSignatureParser = methodSignatureParser;
+        }
+
+        @Override
+        public synchronized List<ParameterElement> getParameters() {
+            if (retrievedParameters == null) {
+                retrievedParameters = methodSignatureParser.getParameters();
+            }
+            return retrievedParameters;
+        }
+    }
+
+    private static final class ReturnTypesFromSignature implements BaseFunctionElementSupport.ReturnTypes {
+        private final MethodSignatureParser methodSignatureParser;
+        //@GuardedBy("this")
+        private Set<TypeResolver> retrievedReturnTypes = null;
+
+        public ReturnTypesFromSignature(MethodSignatureParser methodSignatureParser) {
+            this.methodSignatureParser = methodSignatureParser;
+        }
+
+        @Override
+        public synchronized Set<TypeResolver> getReturnTypes() {
+            if (retrievedReturnTypes == null) {
+                retrievedReturnTypes = methodSignatureParser.getReturnTypes();
+            }
+            return retrievedReturnTypes;
+        }
+
     }
 }

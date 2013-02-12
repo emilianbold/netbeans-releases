@@ -268,7 +268,16 @@ public class JavacParser extends Parser {
         }
         this.filterListener = filter != null ? new FilterListener (filter) : null;
         this.listener = ec != null ? new DocListener(ec) : null;
-        this.cpInfoListener = new ClasspathInfoListener (listeners);
+        this.cpInfoListener = new ClasspathInfoListener (
+            listeners,
+            new Runnable() {
+                @Override
+                public void run() {
+                    if (sourceCount == 0) {
+                        invalidate(true);
+                    }
+                }
+            });
     }
 
     private void init (final Snapshot snapshot, final Task task, final boolean singleSource) {
@@ -299,8 +308,7 @@ public class JavacParser extends Parser {
                 }
                 initialized = true;
             }
-        }
-        else if (singleSource && !explicitCpInfo) {     //tzezula: MultiSource should ever be explicitCpInfo, but JavaSource.create(CpInfo, List<Fo>) allows null!
+        } else if (singleSource && !explicitCpInfo) {     //tzezula: MultiSource should ever be explicitCpInfo, but JavaSource.create(CpInfo, List<Fo>) allows null!
             //Recheck ClasspathInfo if still valid
             assert this.file != null;
             assert cpInfo != null;
@@ -328,17 +336,37 @@ public class JavacParser extends Parser {
         }
     }
 
-    private void invalidate () {
+    private void init(final Task task) {
+        if (!initialized) {
+            ClasspathInfo _tmpInfo = null;
+            if (task instanceof ClasspathInfoProvider &&
+                (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
+                if (cpInfo != null && weakCpListener != null) {
+                    cpInfo.removeChangeListener(weakCpListener);
+                    this.weakCpListener = null;
+                }
+                cpInfo = _tmpInfo;
+                this.weakCpListener = WeakListeners.change(cpInfoListener, cpInfo);
+                cpInfo.addChangeListener (this.weakCpListener);                
+            } else {
+                throw new IllegalArgumentException("No classpath provided by task: " + task);
+            }
+            initialized = true;
+        }
+    }
+
+    private void invalidate (final boolean reinit) {
         this.invalid = true;
+        if (reinit) {
+            this.initialized = false;
+        }
     }
 
     //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
     @Override
     public void parse(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws ParseException {
-        try {
-            if (shouldParse(task)) {
-                parseImpl(snapshot, task, event);
-            }
+        try {            
+            parseImpl(snapshot, task);
         } catch (FileObjects.InvalidFileException ife) {
             //pass - already invalidated in parseImpl
         } catch (IOException ioe) {
@@ -347,10 +375,7 @@ public class JavacParser extends Parser {
     }
     
     
-    private boolean shouldParse(@NonNull Task task) {
-        if (sourceCount > 0) {
-            return true;
-        }
+    private boolean shouldParse(@NonNull Task task) {        
         if (invalid) {
             currentSource = null;
             return true;
@@ -375,7 +400,9 @@ public class JavacParser extends Parser {
         }
     }
     
-    private void parseImpl(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws IOException {        
+    private void parseImpl(
+            final Snapshot snapshot,
+            final Task task) throws IOException {
         assert task != null;
         assert privateParser || Utilities.holdsParserLock();
         parseId++;
@@ -390,14 +417,9 @@ public class JavacParser extends Parser {
         try {
             switch (this.sourceCount) {
                 case 0:
-                    ClasspathInfo _tmpInfo = null;
-                    if (task instanceof ClasspathInfoProvider &&
-                        (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
-                        cpInfo = _tmpInfo;
+                    if (shouldParse(task)) {
+                        init(task);
                         ciImpl = new CompilationInfoImpl(cpInfo);
-                    }
-                    else {
-                        throw new IllegalArgumentException("No classpath provided by task: " + task);
                     }
                     break;
                 case 1:
@@ -427,9 +449,7 @@ public class JavacParser extends Parser {
             }
             success = true;
         } finally {
-            if (!success) {
-                invalidate();
-            }
+            invalid = !success;
             if (oldInfo != ciImpl && oldInfo != null) {
                 oldInfo.dispose();
             }
@@ -452,26 +472,22 @@ public class JavacParser extends Parser {
 
         //Assumes that caller is synchronized by the Parsing API lock
         if (invalid || isClasspathInfoProvider) {
-            boolean reparse = false;        //Needs reparse?
+            if (invalid) {
+                LOGGER.fine ("Invalid, reparse");    //NOI18N
+            }
             if (isClasspathInfoProvider) {
                 final ClasspathInfo providedInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
                 if (providedInfo != null && !providedInfo.equals(cpInfo)) {
                     if (sourceCount != 0) {
                         LOGGER.log (Level.FINE, "Task {0} has changed ClasspathInfo form: {1} to:{2}", new Object[]{task, cpInfo, providedInfo}); //NOI18N
                     }
-                    initialized = false;        //Reset initialized, world has changed.
-                    reparse = true;             //Force reparse
+                    invalidate(true); //Reset initialized, world has changed.
                 }
-            }
+            }            
             if (invalid) {
-                LOGGER.fine ("\t:invalid, reparse");    //NOI18N
-                invalid = false;
-                reparse = true;                 //Force reparse
-            }
-            if (reparse) {
                 assert cachedSnapShot != null || sourceCount == 0;
                 try {
-                    parseImpl(cachedSnapShot, task, null);
+                    parseImpl(cachedSnapShot, task);
                 } catch (FileObjects.InvalidFileException ife) {
                     //Deleted file
                     LOGGER.warning(ife.getMessage());
@@ -653,7 +669,7 @@ public class JavacParser extends Parser {
             return currentPhase;
         } catch (CancelAbort ca) {
             currentPhase = Phase.MODIFIED;
-            invalidate();
+            invalidate(false);
         } catch (Abort abort) {
             parserError = currentPhase;
         } catch (IOException ex) {
