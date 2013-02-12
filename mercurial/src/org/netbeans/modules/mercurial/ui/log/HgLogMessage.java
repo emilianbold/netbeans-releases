@@ -68,19 +68,20 @@ public class HgLogMessage {
 
     private final List<HgLogMessageChangedPath> paths;
     private final List<HgLogMessageChangedPath> dummyPaths;
-    private HgRevision rev;
-    private String author;
-    private String username;
-    private String desc;
-    private Date date;
+    private final HgRevision rev;
+    private final String author;
+    private final String username;
+    private final String desc;
+    private final String shortdesc;
+    private final Date date;
     private String timeZoneOffset;
 
     private HgRevision parentOneRev;
     private HgRevision parentTwoRev;
-    private boolean bMerged;
-    private String rootURL;
+    private final boolean bMerged;
+    private final String rootURL;
     private OutputLogger logger;
-    private HashMap<File, HgRevision> ancestors = new HashMap<File, HgRevision>();
+    private final HashMap<File, HgRevision> ancestors = new HashMap<File, HgRevision>();
     private final String[] branches;
     private final String[] tags;
 
@@ -99,6 +100,7 @@ public class HgLogMessage {
         this.author = auth;
         this.username = username;
         this.desc = desc;
+        this.shortdesc = getFirstLine(desc);
         this.date = new Date(Long.parseLong(date.split(" ")[0]) * 1000); // UTC in miliseconds
         String[] parentSplits;
         parentSplits = parents != null ? parents.split(" ") : null;
@@ -267,6 +269,10 @@ public class HgLogMessage {
         return desc;
     }
 
+    public String getShortMessage () {
+        return shortdesc;
+    }
+
     public String getTimeZoneOffset() {
         return timeZoneOffset;
     }
@@ -334,6 +340,14 @@ public class HgLogMessage {
         paths.clear();
         dummyPaths.clear();
         paths.addAll(Arrays.asList(newPaths));
+    }
+
+    private static String getFirstLine (String desc) {
+        String firstLine = ""; //NOI18N
+        if (desc != null) {
+            firstLine = desc.split("\n")[0]; //NOI18N
+        }
+        return firstLine;
     }
     
     public static class HgRevision {
