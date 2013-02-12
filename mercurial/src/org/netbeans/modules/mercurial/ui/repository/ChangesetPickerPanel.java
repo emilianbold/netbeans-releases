@@ -155,6 +155,13 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
         return rev;
     }
 
+    public String getSelectedRevisionCSetId () {
+        HgLogMessage selectedRevision = getSelectedRevision();
+        return selectedRevision == NO_REVISION // has a label instead of a cset id
+                ? null 
+                : selectedRevision.getCSetShortID();
+    }
+
     protected String getRefreshLabel () {
         return NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Refreshing_Revisions"); //NOI18N
     }
