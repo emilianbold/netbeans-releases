@@ -43,8 +43,6 @@ package org.netbeans.modules.odcs.client.api;
 
 import java.net.PasswordAuthentication;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.odcs.ODCSClientImpl;
 import org.openide.util.Lookup;
 
@@ -71,8 +69,8 @@ public abstract class ODCSFactory {
                 instance = new ODCSFactory() {
                     @Override
                     public synchronized ODCSClient createClient (String url, PasswordAuthentication auth) {
-                        return new ODCSClientImpl(url, auth);
-                    }
+                            return new ODCSClientImpl(url, auth);
+                        }
 
                     @Override
                     public boolean isAvailable() {
