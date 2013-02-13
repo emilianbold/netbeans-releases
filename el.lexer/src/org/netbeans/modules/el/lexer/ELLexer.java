@@ -670,8 +670,17 @@ public class ELLexer implements Lexer<ELTokenId> {
                 case ISI_BRACKET_ISI_DOULE_EXP_ISA_SIGN:
                     if (!Character.isDigit(actChar)){
                         lexerState = (lexerState == ISI_BRACKET_ISI_DOULE_EXP_ISA_SIGN) ? ISI_BRACKET : INIT;
-                        input.backup(1);
-                        return token(ELTokenId.DOUBLE_LITERAL);
+                        switch (actChar) {
+                            case 'f':
+                            case 'F':
+                                return token(ELTokenId.FLOAT_LITERAL);
+                            case 'd':
+                            case 'D':
+                                return token(ELTokenId.DOUBLE_LITERAL);
+                            default:
+                                input.backup(1);
+                                return token(ELTokenId.DOUBLE_LITERAL);
+                        }
                     }
                     break;
                     
