@@ -39,61 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.odcs.client.mock;
+package org.netbeans.libs.odcs.jersey;
 
-import org.netbeans.modules.odcs.client.mock.ODCSMockClientFactory;
-import org.netbeans.modules.odcs.client.mock.ODCSMockClient;
-import com.tasktop.c2c.server.profile.domain.project.Project;
-import java.io.File;
-import java.util.List;
-import java.util.logging.Level;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.libs.odcs.jersey.ODCSJerseyClient;
+import org.netbeans.libs.odcs.jackson.ODCSJacksonClientFactory;
+import org.netbeans.libs.odcs.jackson.ODCSJacksonClient;
+import java.net.PasswordAuthentication;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.odcs.client.api.ODCSFactory;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 
 /**
  *
- * @author jpeska
+ * @author tomas
  */
-public class CloudClientMockTest extends NbTestCase {
-    private String url;
-
-    public CloudClientMockTest(String arg0) {
-        super(arg0);
-    }
-
-    protected Level logLevel() {
-        return Level.ALL;
-    }
-
-    protected void setUp() throws Exception {
-        super.setUp();
-        url = new File(getDataDir(), "odcs-json").getAbsolutePath();
+public class ODCSJacksonTest extends AbstractODCSClientTest {
+    
+    public static Test suite() {
+        return NbModuleSuite
+                    .emptyConfiguration()
+                    .gui(false)
+                    .addTest(ODCSJacksonTest.class)
+                    .suite();
     }
     
-    public void testMockClient() throws Exception {
-        assertTrue(getClient() instanceof ODCSMockClient);
+    public ODCSJacksonTest(String testName) {
+        super(testName);
     }
     
-    public void testGetMyProjects() throws Exception {
-        List<Project> projects = getClient().getMyProjects();
-        assertNotNull(projects);
-        assertEquals(2, projects.size());
-    }
-    
-    public void testGetProjectById () throws Exception {
-        Project project = getClient().getProjectById("anagram-game");
-        assertNotNull(project);
-        assertEquals("anagram-game", project.getIdentifier());
-    }
-    
-    private ODCSClient getClient() {
-        System.setProperty(ODCSMockClientFactory.ID, "true");
-        ODCSClient client = ODCSFactory.getInstance().createClient(url, null);
-        assertEquals(ODCSMockClient.class, client.getClass());
+    @Override
+    protected ODCSClient getClient() {
+        System.setProperty(ODCSJacksonClientFactory.ID, "true");
+        ODCSClient client = ODCSFactory.getInstance().createClient(URL, new PasswordAuthentication(uname, passw.toCharArray()));
+        assertEquals(ODCSJacksonClient.class, client.getClass());
         return client;
     }
-    
     
 }
