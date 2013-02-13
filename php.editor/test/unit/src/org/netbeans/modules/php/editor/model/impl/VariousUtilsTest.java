@@ -264,4 +264,8 @@ public class VariousUtilsTest extends ModelTestBase{
         assertFalse(VariousUtils.isSemiType("\\NS\\Foo"));
     }
 
+    public void testNullIsNotSemiType() throws Exception {
+        assertFalse(VariousUtils.isSemiType(null));
+    }
+
 }
