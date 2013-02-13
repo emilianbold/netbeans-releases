@@ -329,7 +329,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (assignment != null) {
                         String typeName = assignment.typeNameFromUnion();
                         if (typeName != null) {
-                            if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+                            if (!VariousUtils.isSemiType(typeName)) {
                                 return typeName;
                             } else {
                                 String variableName = getName(typeName, VariousUtils.Kind.VAR, true);
@@ -369,7 +369,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 String[] split = semiType.split(prefix, 2);
                 if (split.length > 1) {
 
-                    if (split[1].contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {
+                    if (VariousUtils.isSemiType(split[1])) {
                         if (strict) {
                             return null;
                         } else {
