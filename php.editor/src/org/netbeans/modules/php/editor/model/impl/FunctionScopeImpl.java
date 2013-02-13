@@ -161,17 +161,17 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     @Override
-    public Collection<? extends TypeScope> getReturnTypes(boolean resolve, Collection<? extends TypeScope> callerTypes) {
+    public Collection<? extends TypeScope> getReturnTypes(boolean resolveSemiTypes, Collection<? extends TypeScope> callerTypes) {
         assert callerTypes != null;
         String types = getReturnType();
-        Collection<? extends TypeScope> result = getReturnTypesDescriptor(types, resolve).getModifiedResult(callerTypes);
+        Collection<? extends TypeScope> result = getReturnTypesDescriptor(types, resolveSemiTypes).getModifiedResult(callerTypes);
         updateReturnTypes(types, result);
         return result;
     }
 
     private static Set<String> recursionDetection = new HashSet<String>(); //#168868
 
-    private ReturnTypesDescriptor getReturnTypesDescriptor(String types, boolean resolve) {
+    private ReturnTypesDescriptor getReturnTypesDescriptor(String types, boolean resolveSemiTypes) {
         ReturnTypesDescriptor result = null;
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
         if (types != null && types.length() > 0) {
@@ -193,7 +193,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                                 result = new CommonTypesDescriptor(retval);
                                 break;
                             }
-                            if (resolve && VariousUtils.isSemiType(typeName)) {
+                            if (resolveSemiTypes && VariousUtils.isSemiType(typeName)) {
                                 retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
                             } else {
                                 String modifiedTypeName = typeName;
