@@ -599,6 +599,21 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
 	cboxFramework.setSelectedItem(getLastSelectedTestingFramework());
         fireFrameworkChanged();
     }
+
+    public void setPreselectedLocation(Object location) {
+	if (location != null) {
+	    cboxLocation.setSelectedItem(location);
+	    cboxLocation.setEnabled(false);
+	}
+    }
+
+    public void setPreselectedFramework(String testingFramework) {
+	if (testingFramework != null) {
+	    cboxFramework.setSelectedItem(testingFramework);
+	    cboxFramework.setEnabled(false);
+	    setSelectedTestingFramework();
+	}
+    }
     
     /**
      */
