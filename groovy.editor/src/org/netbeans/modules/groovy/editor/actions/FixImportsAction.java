@@ -115,7 +115,7 @@ public class FixImportsAction extends BaseAction {
         final Map<String, List<ImportCandidate>> multipleCandidates = new HashMap<String, List<ImportCandidate>>();
 
         for (String name : missingNames) {
-            List<ImportCandidate> importCandidates = FixImportsHelper.getImportCandidate(fo, name);
+            List<ImportCandidate> importCandidates = ImportHelper.getImportCandidate(fo, name);
 
             switch (importCandidates.size()) {
                 case 0: continue;
@@ -137,7 +137,7 @@ public class FixImportsAction extends BaseAction {
 
                 @Override
                 public void run() {
-                    FixImportsHelper.doImports(fo, singleCandidates);
+                    ImportHelper.doImports(fo, singleCandidates);
                 }
             }, "Fix All Imports", cancel, false);
         }
@@ -175,7 +175,7 @@ public class FixImportsAction extends BaseAction {
                     SyntaxException se = ((SyntaxErrorMessage) error).getCause();
 
                     if (se != null) {
-                        String missingClassName = FixImportsHelper.getMissingClassName(se.getMessage());
+                        String missingClassName = ImportHelper.getMissingClassName(se.getMessage());
 
                         if (missingClassName != null) {
                             if (!missingNames.contains(missingClassName)) {

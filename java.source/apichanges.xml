@@ -108,6 +108,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+         <change id="LambdaEnhancements">
+             <api name="general"/>
+             <summary>Added several methods to support Java 8 features.</summary>
+             <version major="0" minor="112"/>
+             <date day="13" month="2" year="2013"/>
+             <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added several new methods to support Java 8 features. Namely: <code>ElementUtilities.isEffectivelyFinal</code>,
+                 <code>TreeMaker.TypeAnnotation</code>, <code>TreeMaker.LambdaExpression</code>,
+                 <code>TreeMaker.addLambdaParameter</code>, <code>TreeMaker.insertLambdaParameter</code>,
+                 <code>TreeMaker.removeLambdaParameter</code>, <code>TreeMaker.setLambdaBody</code>,
+                 <code>TreeMaker.MemberReference</code> and <code>TypeUtilities.getDescriptorType</code>.
+                 <code>TreeMaker.setLabel</code> was updated to understand MemberReferences.
+             </description>
+             <issue number="225533"/>
+        </change>
          <change id="SourceUtils-getDependentRoots">
              <api name="general"/>
              <summary>Added overloaded method <code>SourceUtils.getDependentRoots</code>.</summary>

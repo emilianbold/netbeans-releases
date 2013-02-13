@@ -1394,14 +1394,6 @@ abstract_declarator returns [declarator_type_t type]
 noptr_abstract_declarator returns [declarator_type_t type]
     :                                                                           {action.noptr_abstract_declarator(input.LT(1));}
     (
-        ( 
-            parameters_and_qualifiers 
-    |
-            LSQUARE                                                             {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__LSQUARE, input.LT(0));}
-            constant_expression? 
-            RSQUARE                                                             {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__RSQUARE, input.LT(0));}
-        )+
-    |
         (LPAREN abstract_declarator RPAREN)=>
             LPAREN                                                              {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__LPAREN, input.LT(0));}
             abstract_declarator 
@@ -1413,6 +1405,14 @@ noptr_abstract_declarator returns [declarator_type_t type]
                 constant_expression? 
                 RSQUARE                                                         {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__RSQUARE, input.LT(0));}
         )*
+    |
+        ( 
+            parameters_and_qualifiers 
+    |
+            LSQUARE                                                             {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__LSQUARE, input.LT(0));}
+            constant_expression? 
+            RSQUARE                                                             {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__RSQUARE, input.LT(0));}
+        )+
     )                                                                           {action.end_noptr_abstract_declarator(input.LT(0));}
     ;
 

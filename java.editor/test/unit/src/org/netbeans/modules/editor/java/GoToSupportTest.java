@@ -849,6 +849,39 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
     }
 
+    public void testMethodReference() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        this.sourceLevel = "1.8";
+        final String code = "package test;\n" +
+                      "public class Test {\n" +
+                      "    private static void method() {\n" +
+                      "        javax.swing.SwingUtilities.invokeLater(Test::m|ethod);\n" +
+                      "    }\n" +
+                      "}\n";
+
+        performTest(code, new UiUtilsCaller() {
+            @Override public boolean open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(code.indexOf("private static "), pos);
+                wasCalled[0] = true;
+                return true;
+            }
+
+            @Override public void beep(boolean goToSource, boolean goToJavadoc) {
+                fail("Should not be called.");
+            }
+            @Override public boolean open(ClasspathInfo info, ElementHandle<?> el) {
+                fail("Should not be called.");
+                return true;
+            }
+            @Override public void warnCannotOpen(String displayName) {
+                fail("Should not be called.");
+            }
+        }, false, false);
+
+        assertTrue(wasCalled[0]);
+    }
+
     public void testGoToCannotOpen1() throws Exception {
         final boolean[] wasCalled = new boolean[1];
 
@@ -974,6 +1007,7 @@ public class GoToSupportTest extends NbTestCase {
         assertEquals(golden, tooltip);
     }
 
+    private String sourceLevel = "1.5";
     private FileObject source;
     
     private String performTest(String sourceCode, final int offset, final OrigUiUtilsCaller validator, boolean tooltip) throws Exception {
@@ -1009,6 +1043,16 @@ public class GoToSupportTest extends NbTestCase {
         return performTest(sourceCode, offset, validator, tooltip, false);
     }
 
+    private String performTest(String sourceCode, final UiUtilsCaller validator, boolean tooltip, boolean doCompileRecursively) throws Exception {
+        int offset = sourceCode.indexOf('|');
+
+        assertNotSame(-1, offset);
+
+        sourceCode = sourceCode.replace("|", "");
+
+        return performTest(sourceCode, offset, validator, tooltip, doCompileRecursively);
+    }
+
     private String performTest(String sourceCode, final int offset, final UiUtilsCaller validator, boolean tooltip, boolean doCompileRecursively) throws Exception {
         GoToSupport.CALLER = validator;
         
@@ -1026,6 +1070,9 @@ public class GoToSupportTest extends NbTestCase {
 
         TestUtilities.copyStringToFile(source, sourceCode);
         TestUtilities.copyStringToFile(auxiliarySource, "package test; public class Auxiliary {}"); //test go to "syntetic" constructor
+
+        SourceUtilsTestUtil.setSourceLevel(source, sourceLevel);
+        SourceUtilsTestUtil.setSourceLevel(auxiliarySource, sourceLevel);
         
         SourceUtilsTestUtil.prepareTest(sourceDir, buildDir, cacheDir, new FileObject[0]);
 

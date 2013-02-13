@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.source;
 
 import com.sun.javadoc.ClassDoc;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -53,12 +54,9 @@ import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
-import com.sun.tools.javac.util.Position;
 import com.sun.tools.javadoc.AnnotationTypeDocImpl;
 import com.sun.tools.javadoc.AnnotationTypeElementDocImpl;
 import com.sun.tools.javadoc.ClassDocImpl;
@@ -121,16 +119,16 @@ public class JavadocEnv extends DocEnv {
     }
     
     @Override
-    protected void makeClassDoc(ClassSymbol clazz, String docComment, JCClassDecl tree, Position.LineMap lineMap) {
+    protected void makeClassDoc(ClassSymbol clazz, TreePath treePath) {
         ClassDocImpl result = classMap.get(clazz);
         if (result != null) {
-            if (docComment != null) result.setRawCommentText(docComment);
+            if (treePath != null) result.setTreePath(treePath);
             return;
         }
-        if (isAnnotationType(tree)) {	// flags of clazz may not yet be set
-            result = new JavadocAnnotation(this, clazz, docComment);
+        if (isAnnotationType((JCClassDecl)treePath.getLeaf())) {	// flags of clazz may not yet be set
+            result = new JavadocAnnotation(this, clazz, treePath);
         } else {
-            result = new JavadocClass(this, clazz, docComment);
+            result = new JavadocClass(this, clazz, treePath);
         }
         classMap.put(clazz, result);
     }
@@ -145,12 +143,12 @@ public class JavadocEnv extends DocEnv {
     }
 
     @Override
-    protected void makeFieldDoc(VarSymbol var, String docComment, JCVariableDecl tree, Position.LineMap lineMap) {
+    protected void makeFieldDoc(VarSymbol var, TreePath treePath) {
         FieldDocImpl result = fieldMap.get(var);
         if (result != null) {
-            if (docComment != null) result.setRawCommentText(docComment);
+            if (treePath != null) result.setTreePath(treePath);
         } else {
-            result = new JavadocField(this, var, docComment);
+            result = new JavadocField(this, var, treePath);
             fieldMap.put(var, result);
         }
     }
@@ -168,12 +166,12 @@ public class JavadocEnv extends DocEnv {
     }
     
     @Override
-    protected void makeMethodDoc(MethodSymbol meth, String docComment, JCMethodDecl tree, Position.LineMap lineMap) {
+    protected void makeMethodDoc(MethodSymbol meth, TreePath treePath) {
         MethodDocImpl result = (MethodDocImpl)methodMap.get(meth);
         if (result != null) {
-            if (docComment != null) result.setRawCommentText(docComment);
+            if (treePath != null) result.setTreePath(treePath);
         } else {
-            result = new JavadocMethod(this, meth, docComment);
+            result = new JavadocMethod(this, meth, treePath);
             methodMap.put(meth, result);
         }
     }
@@ -191,12 +189,12 @@ public class JavadocEnv extends DocEnv {
     }
 
     @Override
-    protected void makeConstructorDoc(MethodSymbol meth, String docComment, JCMethodDecl tree, Position.LineMap lineMap) {
+    protected void makeConstructorDoc(MethodSymbol meth, TreePath treePath) {
         ConstructorDocImpl result = (ConstructorDocImpl)methodMap.get(meth);
         if (result != null) {
-            if (docComment != null) result.setRawCommentText(docComment);
+            if (treePath != null) result.setTreePath(treePath);
         } else {
-            result = new JavadocConstructor(this, meth, docComment);
+            result = new JavadocConstructor(this, meth, treePath);
             methodMap.put(meth, result);
         }
     }
@@ -214,12 +212,12 @@ public class JavadocEnv extends DocEnv {
     }
     
     @Override
-    protected void makeAnnotationTypeElementDoc(MethodSymbol meth, String docComment, JCMethodDecl tree, Position.LineMap lineMap) {
+    protected void makeAnnotationTypeElementDoc(MethodSymbol meth, TreePath treePath) {
         AnnotationTypeElementDocImpl result = (AnnotationTypeElementDocImpl)methodMap.get(meth);
         if (result != null) {
-            if (docComment != null) result.setRawCommentText(docComment);
+            if (treePath != null) result.setTreePath(treePath);
         } else {
-            result = new JavadocAnnotationTypeElement(this, meth, docComment);
+            result = new JavadocAnnotationTypeElement(this, meth, treePath);
             methodMap.put(meth, result);
         }
     }
@@ -277,11 +275,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocClass extends ClassDocImpl implements ElementHolder {
         
         private JavadocClass(DocEnv env, ClassSymbol sym) {
-            super(env, sym, null, null, null);            
+            super(env, sym);
         }
         
-        private JavadocClass(DocEnv env, ClassSymbol sym, String docComment) {
-            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
+        private JavadocClass(DocEnv env, ClassSymbol sym, TreePath treePath) {
+            super(env, sym, treePath);
         }
         
         @Override
@@ -300,11 +298,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocAnnotation extends AnnotationTypeDocImpl implements ElementHolder {
         
         private JavadocAnnotation(DocEnv env, ClassSymbol sym) {
-            super(env, sym, null, null, null);
+            super(env, sym);
         }
         
-        private JavadocAnnotation(DocEnv env, ClassSymbol sym, String docComment) {
-            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
+        private JavadocAnnotation(DocEnv env, ClassSymbol sym, TreePath treePath) {
+            super(env, sym, treePath);
         }
         
         @Override
@@ -323,11 +321,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocField extends FieldDocImpl implements ElementHolder {
 
         private JavadocField(DocEnv env, VarSymbol sym) {
-            super(env, sym, null, null, null);
+            super(env, sym);
         }
         
-        private JavadocField(DocEnv env, VarSymbol sym, String docComment) {
-            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
+        private JavadocField(DocEnv env, VarSymbol sym, TreePath treePath) {
+            super(env, sym, treePath);
         }
 
         @Override
@@ -346,11 +344,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocMethod extends MethodDocImpl implements ElementHolder {
 
         private JavadocMethod(DocEnv env, MethodSymbol sym) {
-            super(env, sym, null, null, null);
+            super(env, sym);
         }
         
-        private JavadocMethod(DocEnv env, MethodSymbol sym, String docComment) {
-            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
+        private JavadocMethod(DocEnv env, MethodSymbol sym, TreePath treePath) {
+            super(env, sym, treePath);
         }
 
         @Override
@@ -369,11 +367,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocConstructor extends ConstructorDocImpl implements ElementHolder {
 
         private JavadocConstructor(DocEnv env, MethodSymbol sym) {
-            super(env, sym, null, null, null);
+            super(env, sym);
         }
         
-        private JavadocConstructor(DocEnv env, MethodSymbol sym, String docComment) {
-            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
+        private JavadocConstructor(DocEnv env, MethodSymbol sym, TreePath treePath) {
+            super(env, sym, treePath);
         }
 
         @Override
@@ -392,11 +390,11 @@ public class JavadocEnv extends DocEnv {
     private class JavadocAnnotationTypeElement extends AnnotationTypeElementDocImpl implements ElementHolder {
 
         private JavadocAnnotationTypeElement(DocEnv env, MethodSymbol sym) {
-            super(env, sym, null, null, null);
+            super(env, sym);
         }
         
-        private JavadocAnnotationTypeElement(DocEnv env, MethodSymbol sym, String docComment) {
-            super(env, sym, docComment != null ? docComment : "", null, null); //NOI18N
+        private JavadocAnnotationTypeElement(DocEnv env, MethodSymbol sym, TreePath treePath) {
+            super(env, sym, treePath);
         }
 
         @Override

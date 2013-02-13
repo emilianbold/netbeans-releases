@@ -68,23 +68,7 @@ public class AnonymousNumberingTest extends TestCase {
         super(name);
     }
 
-    static class MyFileObject extends SimpleJavaFileObject {
-        private String text;
-        public MyFileObject(String text) {
-            super(URI.create("myfo:/Test.java"), JavaFileObject.Kind.SOURCE);
-            this.text = text;
-        }
-        @Override
-        public CharSequence getCharContent(boolean ignoreEncodingErrors) {
-            return text;
-        }
-    }
-
     public void testCorrectAnonymousIndicesForMethodInvocations() throws IOException {
-        final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
-        final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
-        assert tool != null;
-
         String code = "package test;\n" +
                       "public class Test {\n" +
                       "    public Test main(Object o) {\n" +
@@ -100,14 +84,7 @@ public class AnonymousNumberingTest extends TestCase {
                       "    }\n" +
                       "}";
 
-        JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, null, null, Arrays.asList("-bootclasspath",  bootPath, "-Xjcov"), null, Arrays.asList(new MyFileObject(code)));
-
-        NBParserFactory.preRegister(ct.getContext());
-        NBTreeMaker.preRegister(ct.getContext());
-        NBJavadocEnter.preRegister(ct.getContext());
-        PrintWriter w = new PrintWriter(System.out);
-        Messager.preRegister(ct.getContext(), null, w, w, w);
-        JavadocClassReader.preRegister(ct.getContext(), true);
+        JavacTaskImpl ct = Utilities.createJavac(null, Utilities.fileObjectFor(code));
         
         ct.analyze();
         
@@ -120,10 +97,6 @@ public class AnonymousNumberingTest extends TestCase {
     }
 
     public void testCorrectAnonymousIndicesForMultipleMethods() throws IOException {
-        final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
-        final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
-        assert tool != null;
-
         String code = "package test;\n" +
                       "public class Test {\n" +
                       "    public Test main1(Object o) {\n" +
@@ -145,14 +118,7 @@ public class AnonymousNumberingTest extends TestCase {
                       "    }\n" +
                       "}";
 
-        JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, null, null, Arrays.asList("-bootclasspath",  bootPath, "-Xjcov"), null, Arrays.asList(new MyFileObject(code)));
-
-        NBParserFactory.preRegister(ct.getContext());
-        NBTreeMaker.preRegister(ct.getContext());
-        NBJavadocEnter.preRegister(ct.getContext());
-        PrintWriter w = new PrintWriter(System.out);
-        Messager.preRegister(ct.getContext(), null, w, w, w);
-        JavadocClassReader.preRegister(ct.getContext(), true);
+        JavacTaskImpl ct = Utilities.createJavac(null, Utilities.fileObjectFor(code));
 
         ct.analyze();
 
@@ -167,10 +133,6 @@ public class AnonymousNumberingTest extends TestCase {
     }
 
     public void testCorrectNameForAnonymous() throws IOException {
-        final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
-        final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
-        assert tool != null;
-
         String code = "package test;\n" +
                       "public class Test {\n" +
                       "    public Test main1(Object o) {\n" +
@@ -187,14 +149,7 @@ public class AnonymousNumberingTest extends TestCase {
                       "    }\n" +
                       "}";
 
-        JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, null, null, Arrays.asList("-bootclasspath",  bootPath, "-Xjcov"), null, Arrays.asList(new MyFileObject(code)));
-
-        NBParserFactory.preRegister(ct.getContext());
-        NBTreeMaker.preRegister(ct.getContext());
-        NBJavadocEnter.preRegister(ct.getContext());
-        PrintWriter w = new PrintWriter(System.out);
-        Messager.preRegister(ct.getContext(), null, w, w, w);
-        JavadocClassReader.preRegister(ct.getContext(), true);
+        JavacTaskImpl ct = Utilities.createJavac(null, Utilities.fileObjectFor(code));
         
         ct.analyze();
 

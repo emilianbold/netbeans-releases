@@ -42,12 +42,19 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.TypeElement;
+import javax.swing.text.Document;
 import javax.tools.Diagnostic;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -55,10 +62,15 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -78,7 +90,7 @@ public class JavacParserTest extends NbTestCase {
         prepareTest();
     }
 
-    public void test1() throws Exception {
+    public void Dtest1() throws Exception {
         FileObject f1 = createFile("test/Test1.java", "package test; class Test1");
         FileObject f2 = createFile("test/Test2.java", "package test; class Test2{}");
         FileObject f3 = createFile("test/Test3.java", "package test; class Test3{}");
@@ -126,7 +138,152 @@ public class JavacParserTest extends NbTestCase {
             }
         }, true);
     }
+    
+    public void testPartialReparseSanity() throws Exception {
+        FileObject f2 = createFile("test/Test2.java", "package test; class Test2 { private void test() { System.err.println(\"\"); System.err.println(1); } }");
+        DataObject d = DataObject.find(f2);
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        Document doc = ec.openDocument();
+        JavaSource js = JavaSource.forFileObject(f2);
 
+        doc.putProperty(Language.class, JavaTokenId.language());
+        
+        //initialize the tokens hierarchy:
+        TokenSequence<?> ts = TokenHierarchy.get(doc).tokenSequence();
+        
+        ts.moveStart();
+        
+        while (ts.moveNext());
+        
+        final AtomicReference<CompilationUnitTree> tree = new AtomicReference<CompilationUnitTree>();
+        
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {
+                assertTrue(Phase.RESOLVED.compareTo(parameter.toPhase(Phase.RESOLVED)) <= 0);
+                tree.set(parameter.getCompilationUnit());
+            }
+        }, true);
+        
+        doc.insertString(doc.getText(0, doc.getLength()).indexOf("\"") + 1, "aaaaaaaa", null);
+        
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(final CompilationController parameter) throws Exception {
+                assertTrue(Phase.RESOLVED.compareTo(parameter.toPhase(Phase.RESOLVED)) <= 0);
+                
+                assertSame(tree.get(), parameter.getCompilationUnit());
+                
+                new TreePathScanner<Void, long[]>() {
+
+                    @Override
+                    public Void scan(Tree tree, long[] parentSpan) {
+                        if (tree == null) return null;
+                        if (parameter.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), tree))) return null;
+                        long start = parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), tree);
+                        long end   = parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), tree);
+                        assertTrue(start <= end);
+                        if (parentSpan != null) {
+                            assertTrue(parentSpan[0] <= start);
+                            assertTrue(end <= parentSpan[1]);
+                        }
+                        return super.scan(tree, new long[] {start, end});
+                    }
+                    
+                }.scan(parameter.getCompilationUnit(), null);
+            }
+        }, true);
+    }
+    
+    public void testPartialReparseAnonymous() throws Exception {
+        FileObject f2 = createFile("test/Test2.java", "package test; class Test2 { private void test() { new Runnable() { public void run() {} }; } }");
+        DataObject d = DataObject.find(f2);
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        Document doc = ec.openDocument();
+        JavaSource js = JavaSource.forFileObject(f2);
+
+        doc.putProperty(Language.class, JavaTokenId.language());
+        
+        //initialize the tokens hierarchy:
+        TokenSequence<?> ts = TokenHierarchy.get(doc).tokenSequence();
+        
+        ts.moveStart();
+        
+        while (ts.moveNext());
+        
+        final AtomicReference<CompilationUnitTree> tree = new AtomicReference<CompilationUnitTree>();
+        
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {
+                assertTrue(Phase.RESOLVED.compareTo(parameter.toPhase(Phase.RESOLVED)) <= 0);
+                tree.set(parameter.getCompilationUnit());
+            }
+        }, true);
+        
+        doc.insertString(doc.getText(0, doc.getLength()).indexOf("new"), "int i = 0;", null);
+        
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(final CompilationController parameter) throws Exception {
+                assertTrue(Phase.RESOLVED.compareTo(parameter.toPhase(Phase.RESOLVED)) <= 0);
+                System.err.println(parameter.getText());
+                assertSame(tree.get(), parameter.getCompilationUnit());
+                assertEquals(parameter.getDiagnostics().toString(), 0, parameter.getDiagnostics().size());
+            }
+        }, true);
+    }
+
+    public void testPartialReparseSanity225977() throws Exception {
+        FileObject f2 = createFile("test/Test2.java", "package test; class Test2 { private void test() { TreePath toSplit = null; if (toSplit == null) { toSplit =  } }");
+        DataObject d = DataObject.find(f2);
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        Document doc = ec.openDocument();
+        JavaSource js = JavaSource.forFileObject(f2);
+
+        doc.putProperty(Language.class, JavaTokenId.language());
+        
+        //initialize the tokens hierarchy:
+        TokenSequence<?> ts = TokenHierarchy.get(doc).tokenSequence();
+        
+        ts.moveStart();
+        
+        while (ts.moveNext());
+        
+        final AtomicReference<CompilationUnitTree> tree = new AtomicReference<CompilationUnitTree>();
+        
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {
+                assertTrue(Phase.RESOLVED.compareTo(parameter.toPhase(Phase.RESOLVED)) <= 0);
+                tree.set(parameter.getCompilationUnit());
+            }
+        }, true);
+        
+        doc.insertString(doc.getText(0, doc.getLength()).indexOf("if"), " ", null);
+        
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(final CompilationController parameter) throws Exception {
+                assertTrue(Phase.RESOLVED.compareTo(parameter.toPhase(Phase.RESOLVED)) <= 0);
+                
+                assertSame(tree.get(), parameter.getCompilationUnit());
+                
+                new TreePathScanner<Void, long[]>() {
+
+                    @Override
+                    public Void scan(Tree tree, long[] parentSpan) {
+                        if (tree == null) return null;
+                        if (parameter.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), tree))) return null;
+                        long start = parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), tree);
+                        long end   = parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), tree);
+                        assertTrue(tree.toString() + ":" + start + "-" + end, start <= end);
+                        if (parentSpan != null) {
+                            assertTrue(parentSpan[0] <= start);
+                            assertTrue(end <= parentSpan[1]);
+                        }
+                        return super.scan(tree, new long[] {start, end});
+                    }
+                    
+                }.scan(parameter.getCompilationUnit(), null);
+            }
+        }, true);
+    }
+    
     private FileObject createFile(String path, String content) throws Exception {
         FileObject file = FileUtil.createData(sourceRoot, path);
         TestUtilities.copyStringToFile(file, content);
