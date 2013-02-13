@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.internal.MemoryPreferencesFactory;
@@ -369,6 +370,30 @@ public class IntroduceHintTest extends NbTestCase {
                         "                return name;\n" +
                         "        }\n" +
                         "        return null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("name", true, false, true),
+                       4, 0);
+    }
+    
+    //note the comment assignment done for this test in prepareTest
+    public void testCommentVariable() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method(Object object) {\n" +
+                       "        System.err.println(\"1\");\n" +
+                       "        //comment 1\n" +
+                       "        |object.toString()|; //comment 2\n" +
+                       "        //comment 3\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                       "    public void method(Object object) {\n" +
+                       "        System.err.println(\"1\");\n" +
+                       "        //comment 1\n" +
+                       "        String name = object.toString(); //comment 2\n" +
+                       "        //comment 3\n" +
                         "    }\n" +
                         "}\n").replaceAll("[ \t\n]+", " "),
                        new DialogDisplayerImpl("name", true, false, true),
@@ -2306,6 +2331,10 @@ public class IntroduceHintTest extends NbTestCase {
                 .toString(), info
                 .getDiagnostics()
                 .isEmpty());
+        
+        if (getName().equals("testCommentVariable")) {
+            info.getTreeUtilities().getComments(info.getCompilationUnit(), true);
+        }
     }
     private CompilationInfo info;
     private Document doc;
