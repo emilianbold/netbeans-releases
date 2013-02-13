@@ -6,6 +6,11 @@
             <code-name-base>org.netbeans.modules.odcs</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>com.tasktop.c2c.client.commons</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>com.tasktop.c2c.server.cloud.api</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
@@ -74,6 +79,36 @@
                         <specification-version>8.16</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.beans</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.context</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.context.support</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.core</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.security.core</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.web</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>                  
             </module-dependencies>
             <test-dependencies>
                 <test-type>

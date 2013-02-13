@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.odcs;
 
+import com.tasktop.c2c.client.commons.client.CredentialsInjector;
 import com.tasktop.c2c.server.common.service.domain.QueryRequest;
 import com.tasktop.c2c.server.common.service.domain.QueryResult;
 import com.tasktop.c2c.server.common.service.web.AbstractRestServiceClient;
@@ -80,12 +81,12 @@ import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.openide.util.NetworkSettings;
-//import org.springframework.context.support.ClassPathXmlApplicationContext;
-//import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-//import org.springframework.security.core.Authentication;
-//import org.springframework.security.core.context.SecurityContextHolder;
-//import org.springframework.security.core.userdetails.User;
-//import org.springframework.web.client.RestTemplate;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -103,24 +104,24 @@ public final class ODCSClientImpl implements ODCSClient {
     private ScmServiceClient scmClient;
     private TaskServiceClient taskClient;
 
-//    private static ClassPathXmlApplicationContext appContext;
+    private static ClassPathXmlApplicationContext appContext;
     
     public ODCSClientImpl(String url, PasswordAuthentication auth) {
-//        if (!url.endsWith("/")) { //NOI18N
-//            url = url + '/';
-//        }
-//        location = new WebLocation(url, 
-//                auth.getUserName(), 
-//                auth.getPassword() == null ? "" : new String(auth.getPassword()), 
-//                new ProxyProvider());
-//        // maybe proxy credentials weel need to be provided somehow
-//        ClassPathXmlApplicationContext context = getContext();
-//        profileClient = context.getBean(ProfileWebServiceClient.class);
-//        activityClient = context.getBean(ActivityServiceClient.class);
-//        hudsonClient = context.getBean(HudsonServiceClient.class);
-//        scmClient = context.getBean(ScmServiceClient.class);
-//        taskClient = context.getBean(TaskServiceClient.class);
-//        CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
+        if (!url.endsWith("/")) { //NOI18N
+            url = url + '/';
+        }
+        location = new WebLocation(url, 
+                auth.getUserName(), 
+                auth.getPassword() == null ? "" : new String(auth.getPassword()), 
+                new ProxyProvider());
+        // maybe proxy credentials weel need to be provided somehow
+        ClassPathXmlApplicationContext context = getContext();
+        profileClient = context.getBean(ProfileWebServiceClient.class);
+        activityClient = context.getBean(ActivityServiceClient.class);
+        hudsonClient = context.getBean(HudsonServiceClient.class);
+        scmClient = context.getBean(ScmServiceClient.class);
+        taskClient = context.getBean(TaskServiceClient.class);
+        CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
     }
 
     @Override
@@ -324,53 +325,52 @@ public final class ODCSClientImpl implements ODCSClient {
     }
     
     private <T> T run (Callable<T> callable, AbstractRestServiceClient client, String service) throws ODCSException {
-        return null;
-//        try {
-//            Authentication auth = null;
-//            AuthenticationCredentials credentials = location.getCredentials(AuthenticationType.REPOSITORY);
-//            if (credentials != null && !credentials.getUserName().trim().isEmpty()) {
-//                String password = credentials.getPassword();
-//                auth = new UsernamePasswordAuthenticationToken(new User(credentials.getUserName(), password, true, true, true, true, 
-//                    Collections.EMPTY_LIST), password);
-//            }
-//            SecurityContextHolder.getContext().setAuthentication(auth);
-//            try {
-//                client.setBaseUrl(location.getUrl() + service);
-//                return callable.call();
-//            } finally {
-//                client.setBaseUrl(location.getUrl());
-//                SecurityContextHolder.getContext().setAuthentication(null);
-//            }
-//        } catch (RuntimeException ex) {
-//            if (ex.getCause() instanceof InterruptedException) {
-//                throw new ODCSException.ODCSCanceledException(ex);
-//            } else {
-//                throw new ODCSException(ex);
-//            }
-//        } catch (Exception ex) {
-//            throw new ODCSException(ex);
-//        }
+        try {
+            Authentication auth = null;
+            AuthenticationCredentials credentials = location.getCredentials(AuthenticationType.REPOSITORY);
+            if (credentials != null && !credentials.getUserName().trim().isEmpty()) {
+                String password = credentials.getPassword();
+                auth = new UsernamePasswordAuthenticationToken(new User(credentials.getUserName(), password, true, true, true, true, 
+                    Collections.EMPTY_LIST), password);
+            }
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            try {
+                client.setBaseUrl(location.getUrl() + service);
+                return callable.call();
+            } finally {
+                client.setBaseUrl(location.getUrl());
+                SecurityContextHolder.getContext().setAuthentication(null);
+            }
+        } catch (RuntimeException ex) {
+            if (ex.getCause() instanceof InterruptedException) {
+                throw new ODCSException.ODCSCanceledException(ex);
+            } else {
+                throw new ODCSException(ex);
+            }
+        } catch (Exception ex) {
+            throw new ODCSException(ex);
+        }
     }
     
     private static String buildUrl (String urlTemplate, String projectName) {
         return String.format(urlTemplate, projectName);
     }
 
-//    private static ClassPathXmlApplicationContext createContext(String[] resourceNames, ClassLoader classLoader) {
-//        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
-//        context.setClassLoader(classLoader);
-//        context.setConfigLocations(resourceNames);
-//        context.refresh();
-//        return context;
-//    }
-//
-//    private static ClassPathXmlApplicationContext getContext () {
-//        if (appContext == null) {
-//            appContext = createContext(new String[] { 
-//                "org/netbeans/modules/odcs/defs-clients.xml" }, Thread.currentThread().getContextClassLoader());
-//        }
-//        return appContext;
-//    }
+    private static ClassPathXmlApplicationContext createContext(String[] resourceNames, ClassLoader classLoader) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
+        context.setClassLoader(classLoader);
+        context.setConfigLocations(resourceNames);
+        context.refresh();
+        return context;
+    }
+    
+    private static ClassPathXmlApplicationContext getContext () {
+        if (appContext == null) {
+            appContext = createContext(new String[] { 
+                "org/netbeans/modules/odcs/defs-clients.xml" }, Thread.currentThread().getContextClassLoader());
+        }
+        return appContext;
+    }
     
     private static class ProxyProvider implements IProxyProvider {
 

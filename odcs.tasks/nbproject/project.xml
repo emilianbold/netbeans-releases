@@ -210,6 +210,36 @@
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.springframework.beans</code-name-base>
+                        <compile-dependency/>
+                        <run-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.springframework.context</code-name-base>
+                        <compile-dependency/>
+                        <run-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.springframework.context.support</code-name-base>
+                        <compile-dependency/>
+                        <run-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.springframework.core</code-name-base>
+                        <compile-dependency/>
+                        <run-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.springframework.security.core</code-name-base>
+                        <compile-dependency/>
+                        <run-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.springframework.web</code-name-base>
+                        <compile-dependency/>
+                        <run-dependency/>
+                    </test-dependency>                    
                 </test-type>
             </test-dependencies>
             <public-packages>
