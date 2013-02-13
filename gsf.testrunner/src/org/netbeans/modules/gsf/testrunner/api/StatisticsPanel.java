@@ -84,6 +84,7 @@ final class StatisticsPanel extends JPanel {
     private JToggleButton btnShowSkipped;
 
     private JToggleButton btnAlwaysOpenTRW;
+    private JToggleButton btnAlwaysOpenNewTab;
 
     /**
      * Rerun button for running (all) tests again.
@@ -102,6 +103,9 @@ final class StatisticsPanel extends JPanel {
 
     public static final String PROP_ALWAYS_OPEN_TRW = "alwaysOpenTRW"; //NOI18N
     private static final Icon alwaysOpenTRWIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/testResults.png", true);
+
+    public static final String PROP_ALWAYS_OPEN_NEW_TAB = "alwaysOpenNewTab"; //NOI18N
+    private static final Icon alwaysOpenNewTabIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/newTab.png", true);
 
     private static final Icon rerunIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/rerun.png", true);
     private static final Icon rerunFailedIcon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(
@@ -167,6 +171,7 @@ final class StatisticsPanel extends JPanel {
         toolbar.add(nextFailure);
         toolbar.add(new JToolBar.Separator());
         toolbar.add(btnAlwaysOpenTRW);
+	toolbar.add(btnAlwaysOpenNewTab);
         
         toolbar.setFocusable(false);
         toolbar.setRollover(true);
@@ -183,6 +188,11 @@ final class StatisticsPanel extends JPanel {
 		Bundle.btnAlwaysOpenTRW_tooltip(),
 		Bundle.btnAlwaysOpenTRW_ACSN(),
 		PROP_ALWAYS_OPEN_TRW);
+	btnAlwaysOpenNewTab = newOptionButton(
+		alwaysOpenNewTabIcon,
+		Bundle.btnAlwaysOpenNewTab_tooltip(),
+		Bundle.btnAlwaysOpenNewTab_ACSN(),
+		PROP_ALWAYS_OPEN_NEW_TAB);
     }
 
     private JToggleButton newOptionButton(Icon icon, String tooltip, String accessibleName, final String property) {
@@ -214,6 +224,8 @@ final class StatisticsPanel extends JPanel {
     public void updateOptionStatus(String property, boolean selected) {
 	if(property.equals(PROP_ALWAYS_OPEN_TRW)) {
 	    btnAlwaysOpenTRW.setSelected(selected);
+	} else if (property.equals(PROP_ALWAYS_OPEN_NEW_TAB)) {
+	    btnAlwaysOpenNewTab.setSelected(selected);
 	}
     }
     
