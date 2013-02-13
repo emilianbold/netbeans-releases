@@ -56,12 +56,14 @@ import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.odcs.tasks.C2C;
 import org.openide.util.Lookup;
 
 /** Provides access to extended methods not available on {@link AbstractRepositoryConnector}
@@ -73,6 +75,7 @@ public abstract class C2CExtender<Data> {
     
     public static final String TASKTOP_EXTENDER = "org.netbeans.modules.odcs.tasks.tasktop.TaskTopExtender"; // NOI18N
     public static final String NETBEANS_EXTENDER = "org.netbeans.modules.odcs.tasks.nb.NbExtender"; // NOI18N
+    private static boolean extenderLogged;
     
     protected C2CExtender() {
     }
@@ -117,11 +120,21 @@ public abstract class C2CExtender<Data> {
         if(!preferedExtenderName.isEmpty()) {
             for (C2CExtender extender : extenders) {
                 if(extender.getClass().getName().equals(preferedExtenderName)) {
+                    if(!extenderLogged) {
+                        C2C.LOG.log(Level.FINE, "found extender {0}", preferedExtenderName); // NOI18N
+                        extenderLogged = true;
+                    }
                     return extender;
                 }
             }
         }
-        return extenders.iterator().next();
+        C2CExtender e = extenders.iterator().next();
+        
+        if(!extenderLogged) {
+            C2C.LOG.log(Level.FINE, "falling back on extender {0}", e.getClass().getName()); // NOI18N
+            extenderLogged = true;
+        }
+        return e;
     }
 
     /** For subclasses to create instance of C2CData data.

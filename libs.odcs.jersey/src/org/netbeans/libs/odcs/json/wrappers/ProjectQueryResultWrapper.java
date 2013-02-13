@@ -39,35 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.odcs.jersey;
+package org.netbeans.libs.odcs.json.wrappers;
 
-import java.net.PasswordAuthentication;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.odcs.client.api.ODCSFactory;
-import org.netbeans.modules.odcs.client.api.ODCSClient;
-import org.openide.util.lookup.ServiceProvider;
+import com.tasktop.c2c.server.common.service.domain.QueryResult;
+import com.tasktop.c2c.server.profile.domain.project.Project;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondrej Vrabec
  */
-@ServiceProvider(service=ODCSFactory.class)
-public class ODCSJerseyClientFactory extends ODCSFactory {
-
-    public final static String ID = "odcs.useJersey";
-    @Override
-    public boolean isAvailable() {
-        return Boolean.getBoolean(ID);
-    }
-
-    @Override
-    public ODCSClient createClient(String url, PasswordAuthentication auth) {
-        try {
-            return new ODCSJerseyClient(url, auth);
-        } finally {
-            Logger.getLogger(this.getClass().getName()).log(Level.FINE, "created ODCSJerseyClient for {0}", url);
-        }
-    }
-    
+public class ProjectQueryResultWrapper {
+    public QueryResult<Project> queryResult;
 }

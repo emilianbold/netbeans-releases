@@ -39,14 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.odcs.jersey.wrappers;
+package org.netbeans.libs.odcs.jersey;
 
-import com.tasktop.c2c.server.profile.domain.project.Profile;
+import org.netbeans.libs.odcs.jackson.ODCSJacksonClientFactory;
+import org.netbeans.libs.odcs.jackson.ODCSJacksonClient;
+import java.net.PasswordAuthentication;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.odcs.client.api.ODCSFactory;
+import org.netbeans.modules.odcs.client.api.ODCSClient;
 
 /**
  *
  * @author tomas
  */
-public class ProfileWrapper {
-    public Profile profile;
+public class ODCSJacksonTest extends AbstractODCSClientTest {
+    
+    public static Test suite() {
+        return NbModuleSuite
+                    .emptyConfiguration()
+                    .gui(false)
+                    .addTest(ODCSJacksonTest.class)
+                    .suite();
+    }
+    
+    public ODCSJacksonTest(String testName) {
+        super(testName);
+    }
+    
+    @Override
+    protected ODCSClient getClient() {
+        System.setProperty(ODCSJacksonClientFactory.ID, "true");
+        ODCSClient client = ODCSFactory.getInstance().createClient(URL, new PasswordAuthentication(uname, passw.toCharArray()));
+        assertEquals(ODCSJacksonClient.class, client.getClass());
+        return client;
+    }
+    
 }

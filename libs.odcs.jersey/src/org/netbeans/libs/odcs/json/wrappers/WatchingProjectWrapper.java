@@ -39,16 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.odcs.jersey.wrappers;
-
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
-import com.tasktop.c2c.server.profile.domain.activity.ScmActivity;
+package org.netbeans.libs.odcs.json.wrappers;
 
 /**
  *
- * @author tomas
+ * @author Ondrej Vrabec
  */
-public class ActivityWrapper {
-    public ProjectActivity[] projectActivityList;
-    public ScmActivity[] commits;
+public class WatchingProjectWrapper {
+    
+    public boolean isWatching;
 }

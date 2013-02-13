@@ -63,15 +63,13 @@ public class CloudClientMockTest extends NbTestCase {
         super(arg0);
     }
 
-    @Override
     protected Level logLevel() {
         return Level.ALL;
     }
 
-    @Override
     protected void setUp() throws Exception {
-        url = new File(getDataDir(), "odcs-json").getAbsolutePath();
         super.setUp();
+        url = new File(getDataDir(), "odcs-json").getAbsolutePath();
     }
     
     public void testMockClient() throws Exception {
