@@ -88,7 +88,6 @@ import com.sun.source.util.Trees;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.WeakHashMap;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -169,7 +168,7 @@ public class EditorContextImpl extends EditorContext {
         System.getProperty ("netbeans.debugger.fronting", "true");
 
     private PropertyChangeSupport   pcs;
-    private Map                     annotationToURL = new HashMap ();
+    private Map<Annotation, String> annotationToURL = new HashMap<Annotation, String>();
     private PropertyChangeListener  dispatchListener;
     private EditorContextDispatcher contextDispatcher;
     private final Map<JavaSource, JavaSourceUtil.Handle> sourceHandles = new WeakHashMapActive<JavaSource, JavaSourceUtil.Handle>();
@@ -435,7 +434,7 @@ public class EditorContextImpl extends EditorContext {
         if (timeStamp == null) {
             return line.getLineNumber () + 1;
         }
-        String url = (String) annotationToURL.get (annotation);
+        String url = annotationToURL.get ((Annotation) annotation);
         Line.Set lineSet = LineTranslations.getTranslations().getLineSet (url, timeStamp);
         return lineSet.getOriginalLineNumber (line) + 1;
     }
@@ -2053,7 +2052,7 @@ public class EditorContextImpl extends EditorContext {
         try {
             CompilationController ci = getPreferredCompilationController(fo, js);
             //t2 = System.nanoTime();
-            final ParseExpressionTask task = new ParseExpressionTask(expression, line, context);
+            final ParseExpressionTask<D> task = new ParseExpressionTask<D>(expression, line, context);
             if (fo != null && SourceUtils.isScanInProgress()) {
                 final StyledDocument doc = findDocument(fo);
                 if (doc == null) {

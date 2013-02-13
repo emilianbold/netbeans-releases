@@ -358,6 +358,10 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     }
 
     private static void writeAuxiliaryData(AuxiliaryConfiguration conf, boolean shared, List<M2Configuration> configs) {
+        if (configs.isEmpty()) {//#226017
+            conf.removeConfigurationFragment(ROOT, NAMESPACE, shared);
+            return;
+        }
         Element el = conf.getConfigurationFragment(ROOT, NAMESPACE, shared);
         if (el == null) {
             el = XMLUtil.createDocument(ROOT, NAMESPACE, null, null).getDocumentElement();

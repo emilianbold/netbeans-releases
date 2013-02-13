@@ -60,7 +60,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
@@ -70,8 +69,6 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.ui.ViewFactory;
-
-import org.openide.util.ImageUtilities;
 
 
 // <RAVE>
@@ -143,7 +140,9 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     @Override
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow ();
-        if (contentComponent == null) return false;
+        if (contentComponent == null) {
+            return false;
+        }
         return contentComponent.requestFocusInWindow ();
     }
 

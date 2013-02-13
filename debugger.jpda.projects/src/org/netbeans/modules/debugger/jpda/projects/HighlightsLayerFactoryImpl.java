@@ -41,6 +41,7 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
  */
 public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
     
+    @Override
     public HighlightsLayer[] createLayers(Context context) {
         return new HighlightsLayer[] {
             HighlightsLayer.create(DebuggerAnnotation.class.getName(),

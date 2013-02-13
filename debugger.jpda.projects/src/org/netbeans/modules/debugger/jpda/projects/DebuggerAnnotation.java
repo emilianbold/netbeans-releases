@@ -116,16 +116,17 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
     
     @Override
     public String getShortDescription () {
-        if (type == EditorContext.CURRENT_LINE_ANNOTATION_TYPE)
+        if (type == EditorContext.CURRENT_LINE_ANNOTATION_TYPE) {
             return NbBundle.getMessage 
                 (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
-        if (type == EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE)
+        }
+        if (type == EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE) {
             return NbBundle.getMessage 
                 (DebuggerAnnotation.class, "TOOLTIP_CURRENT_EXP_LINE"); // NOI18N
-        else
-        if (type == EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE)
+        } else if (type == EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE) {
             return NbBundle.getBundle (DebuggerAnnotation.class).getString 
                 ("TOOLTIP_CALLSITE"); // NOI18N
+        }
         if (type == EditorContext.OTHER_THREAD_ANNOTATION_TYPE) {
             return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_OTHER_THREAD", thread.getName());
         }

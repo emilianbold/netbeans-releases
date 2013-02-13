@@ -81,7 +81,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
@@ -140,10 +139,12 @@ public class FixActionProvider extends ActionsProviderSupport {
         EditorContextDispatcher.getDefault().removePropertyChangeListener (listener);
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_FIX);
     }
     
+    @Override
     public void doAction (Object action) {
         if (!isFixCommandSupported) {
             Set<FileObject> sourceRootsFO = getSourceRootsFO(sp);
@@ -155,6 +156,7 @@ public class FixActionProvider extends ActionsProviderSupport {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         invokeAction();
                     }
@@ -174,7 +176,7 @@ public class FixActionProvider extends ActionsProviderSupport {
             return ((SourcePathProviderImpl) sp).getSourceRootsFO();
         } else {
             String[] sourceRoots = sp.getSourceRoots();
-            Set<FileObject> fos = new HashSet();
+            Set<FileObject> fos = new HashSet<FileObject>();
             for (String root : sourceRoots) {
                 FileObject fo;
                 int jarIndex = root.indexOf("!/");
@@ -209,8 +211,10 @@ public class FixActionProvider extends ActionsProviderSupport {
      */ 
     private Project getCurrentProject() {
         Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
-        if (nodes == null || nodes.length == 0) return MainProjectManager.getDefault().getMainProject();
-        DataObject dao = (DataObject) nodes[0].getCookie(DataObject.class);
+        if (nodes == null || nodes.length == 0) {
+            return MainProjectManager.getDefault().getMainProject();
+        }
+        DataObject dao = (DataObject) nodes[0].getLookup().lookup(DataObject.class);
         if (dao == null || !dao.isValid()) {
             return MainProjectManager.getDefault().getMainProject();
         }
@@ -219,7 +223,9 @@ public class FixActionProvider extends ActionsProviderSupport {
     
     private boolean shouldBeEnabled () {
         // check if current debugger supports this action
-        if (!debugger.canFixClasses()) return false;
+        if (!debugger.canFixClasses()) {
+            return false;
+        }
         // check if current project supports this action
         isFixCommandSupported = false;
         Project p = getCurrentProject();
@@ -259,11 +265,12 @@ public class FixActionProvider extends ActionsProviderSupport {
     private Lookup getLookup () {
         Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
         int i, k = nodes.length;
-        ArrayList l = new ArrayList ();
+        ArrayList<DataObject> l = new ArrayList<DataObject>();
         for (i = 0; i < k; i++) {
-            DataObject dobj = (DataObject)nodes [i].getCookie (DataObject.class);
-            if (dobj != null && dobj.isValid())
+            DataObject dobj = nodes [i].getLookup().lookup (DataObject.class);
+            if (dobj != null && dobj.isValid()) {
                 l.add (dobj);
+            }
         }
         if (l.isEmpty()) {
             FileObject fo = EditorContextDispatcher.getDefault().getMostRecentFile();
@@ -274,11 +281,11 @@ public class FixActionProvider extends ActionsProviderSupport {
                 } catch (DataObjectNotFoundException ex) {}
             }
         }
-        return Lookups.fixed (l.toArray (new DataObject [l.size ()]));
+        return Lookups.fixed ((Object[]) l.toArray (new DataObject [l.size ()]));
     }
     
     static void reloadClasses(final JPDADebugger debugger, Map<String, FileObject> classes) {
-        final Map map = new HashMap();
+        final Map<String, byte[]> map = new HashMap<String, byte[]>();
         for (String className : classes.keySet()) {
             FileObject fo = classes.get(className);
             InputStream is = null;
@@ -303,7 +310,7 @@ public class FixActionProvider extends ActionsProviderSupport {
             }
         }
 
-        if (map.size() == 0) {
+        if (map.isEmpty()) {
             //System.out.println(" No class to reload");
             return ;
         }
@@ -318,6 +325,7 @@ public class FixActionProvider extends ActionsProviderSupport {
         }
 
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 String error = null;
                 try {
@@ -363,24 +371,36 @@ public class FixActionProvider extends ActionsProviderSupport {
     DebuggerManagerListener {
         public Listener () {}
         
+        @Override
         public void propertyChange (PropertyChangeEvent e) {
             boolean en = shouldBeEnabled ();
             setEnabled (
                 ActionsManager.ACTION_FIX,
                 en
             );
-            if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) 
+            if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
                 destroy ();
+            }
         }
+        @Override
         public void sessionRemoved (Session session) {}
+        @Override
         public void breakpointAdded (Breakpoint breakpoint) {}
+        @Override
         public void breakpointRemoved (Breakpoint breakpoint) {}
+        @Override
         public Breakpoint[] initBreakpoints () {return new Breakpoint [0];}
+        @Override
         public void initWatches () {}
+        @Override
         public void sessionAdded (Session session) {}
+        @Override
         public void watchAdded (Watch watch) {}
+        @Override
         public void watchRemoved (Watch watch) {}
+        @Override
         public void engineAdded (DebuggerEngine engine) {}
+        @Override
         public void engineRemoved (DebuggerEngine engine) {}
     }
 

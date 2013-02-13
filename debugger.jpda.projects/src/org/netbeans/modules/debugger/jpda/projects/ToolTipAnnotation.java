@@ -46,7 +46,6 @@ package org.netbeans.modules.debugger.jpda.projects;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.awt.event.ActionEvent;
@@ -104,7 +103,6 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.util.Exceptions;
 
 
 public class ToolTipAnnotation extends Annotation implements Runnable {
@@ -125,6 +123,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     private Part lp;
     private EditorCookie ec;
 
+    @Override
     public String getShortDescription () {
         // [TODO] hack for org.netbeans.modules.debugger.jpda.actions.MethodChooser that disables tooltips
         if ("true".equals(System.getProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips"))) { // NOI18N
@@ -132,19 +131,28 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
-        if (currentEngine == null) return null;
+        if (currentEngine == null) {
+            return null;
+        }
         JPDADebugger d = currentEngine.lookupFirst(null, JPDADebugger.class);
-        if (d == null) return null;
+        if (d == null) {
+            return null;
+        }
 
         Part lp = (Part) getAttachedAnnotatable();
-        if (lp == null) return null;
+        if (lp == null) {
+            return null;
+        }
         Line line = lp.getLine ();
         DataObject dob = DataEditorSupport.findDataObject (line);
-        if (dob == null) return null;
-        EditorCookie ec = dob.getCookie(EditorCookie.class);
-        if (ec == null)
+        if (dob == null) {
+            return null;
+        }
+        EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+        if (ec == null) {
             return null;
             // Only for editable dataobjects
+        }
 
         this.lp = lp;
         this.ec = ec;
@@ -157,9 +165,12 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         return null;
     }
 
+    @Override
     public void run () {
         ObjectVariable tooltipVariable = null;
-        if (lp == null || ec == null) return ;
+        if (lp == null || ec == null) {
+            return ;
+        }
         StyledDocument doc;
         try {
             doc = ec.openDocument();
@@ -167,14 +178,22 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             return ;
         }
         final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor ();
-        if (ep == null || ep.getDocument() != doc) return ;
+        if (ep == null || ep.getDocument() != doc) {
+            return ;
+        }
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
-        if (currentEngine == null) return;
+        if (currentEngine == null) {
+            return;
+        }
         final JPDADebugger d = currentEngine.lookupFirst(null, JPDADebugger.class);
-        if (d == null) return;
+        if (d == null) {
+            return;
+        }
         JPDAThread t = d.getCurrentThread();
-        if (t == null || !t.isSuspended()) return;
+        if (t == null || !t.isSuspended()) {
+            return;
+        }
 
         int offset;
         boolean[] isMethodPtr = new boolean[] { false };
@@ -188,9 +207,11 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             ) + lp.getColumn (),
             isMethodPtr
         );
-        if (expression == null) return;
+        if (expression == null) {
+            return;
+        }
 
-        String toolTipText = null;
+        String toolTipText;
         try {
             Variable v = null;
             List<Operation> operations = t.getLastOperations();
@@ -211,7 +232,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 }
                 v = d.evaluate (expression);
             }
-            if (v == null) return ; // Something went wrong...
+            if (v == null) {
+                return ; // Something went wrong...
+            }
             String type = v.getType ();
             if (v instanceof ObjectVariable) {
                 tooltipVariable = (ObjectVariable) v;
@@ -249,6 +272,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             final ObjectVariable var = tooltipVariable;
             final String toolTip = toolTipText;
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTip);
                     et.addExpansionListener(new ActionListener() {
@@ -287,6 +311,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }
     }
 
+    @Override
     public String getAnnotationType () {
         return null; // Currently return null annotation type
     }
@@ -302,8 +327,12 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         String t = null;
         if ( (ep.getSelectionStart () <= offset) &&
              (offset <= ep.getSelectionEnd ())
-        )   t = ep.getSelectedText ();
-        if (t != null) return t;
+        ) {
+            t = ep.getSelectedText ();
+        }
+        if (t != null) {
+            return t;
+        }
         int line = NbDocument.findLineNumber (
             doc,
             offset
@@ -317,7 +346,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 NbDocument.findLineRootElement (doc).
                 getElement (line);
 
-            if (lineElem == null) return null;
+            if (lineElem == null) {
+                return null;
+            }
             int lineStartOffset = lineElem.getStartOffset ();
             int lineLen = lineElem.getEndOffset() - lineStartOffset;
             t = doc.getText (lineStartOffset, lineLen);
@@ -336,10 +367,14 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 identEnd++;
             }
 
-            if (identStart == identEnd) return null;
+            if (identStart == identEnd) {
+                return null;
+            }
 
             int newOffset = NbDocument.findLineOffset(doc, line) + identStart + 1;
-            if (!isValidTooltipLocation(debugger, doc, newOffset)) return null;
+            if (!isValidTooltipLocation(debugger, doc, newOffset)) {
+                return null;
+            }
 
             String ident = t.substring (identStart, identEnd);
             if (JAVA_KEYWORDS.contains(ident)) {
@@ -369,13 +404,15 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
         final boolean[] isValid = new boolean[]{true};
         final String[] className = new String[]{""};
-        Future<Void> parsingTask = null;
+        Future<Void> parsingTask;
         try {
             parsingTask = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     Result res = resultIterator.getParserResult(offset);
-                    if (res == null) return;
+                    if (res == null) {
+                        return;
+                    }
                     CompilationController controller = CompilationController.get(res);
                     if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         return;
@@ -410,7 +447,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     }
                     // check whether offset is in a preceding comment
                     for (Comment comm : treeUtilities.getComments(tree, true)) {
-                        if (comm.pos() < 0) continue;
+                        if (comm.pos() < 0) {
+                            continue;
+                        }
                         if (comm.pos() <= offset && offset <= comm.endPos()) {
                             isValid[0] = false;
                             return;
@@ -418,7 +457,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     }
                     // check whether offset is in a trailing comment
                     for (Comment comm : treeUtilities.getComments(tree, false)) {
-                        if (comm.pos() < 0) continue;
+                        if (comm.pos() < 0) {
+                            continue;
+                        }
                         if (comm.pos() <= offset && offset <= comm.endPos()) {
                             isValid[0] = false;
                             return;
@@ -445,7 +486,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             return false;
         }
         parsingTask.cancel(false); // for the case that scanning has not finished yet
-        if (!isValid[0]) return false;
+        if (!isValid[0]) {
+            return false;
+        }
         if (className[0].length() > 0) {
             Set<String> superTypeNames = new HashSet<String>();
             This thisVar = currentFrame.getThisVariable();
@@ -461,7 +504,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             } else {
                 addClassNames(currentFrame.getClassName(), superTypeNames);
             }
-            if (!superTypeNames.contains(className[0])) return false;
+            if (!superTypeNames.contains(className[0])) {
+                return false;
+            }
         }
         return true;
     }
@@ -487,7 +532,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     Result res = resultIterator.getParserResult(offset);
-                    if (res == null) return;
+                    if (res == null) {
+                        return;
+                    }
                     CompilationController controller = CompilationController.get(res);
                     if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         return;

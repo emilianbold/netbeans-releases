@@ -49,7 +49,6 @@ import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.datatransfer.PasteType;
 

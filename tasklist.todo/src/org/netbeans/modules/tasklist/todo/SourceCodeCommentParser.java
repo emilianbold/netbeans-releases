@@ -250,14 +250,14 @@ final class SourceCodeCommentParser {
 
                 reg.start = matcher.start();
 
-                if (lineComment != null && lineComment.equals(token)) {
+                if (!lineComment.isEmpty() && lineComment.equals(token)) {
                     int idx = text.indexOf("\n", reg.start);
                     if (idx != -1) {
                         reg.stop = idx;
                     } else {
                         reg.stop = text.length();
                     }
-                } else if (blockStart != null) {
+                } else if (!blockStart.isEmpty()) {
                     int idx = text.indexOf(blockEnd, reg.start);
                     if (idx != -1) {
                         reg.stop = idx + blockEnd.length();

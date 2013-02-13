@@ -75,7 +75,6 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
@@ -89,8 +88,8 @@ import org.openide.util.WeakSet;
 
 
 /**
- * This class is called when some file in editor is openend. It changes if
- * some LineBreakpoints with annotations should be readed.
+ * This class is called when some file in editor is opened. It changes if
+ * some LineBreakpoints with annotations should be read.
  *
  * @author Jan Jancura, Martin Entlicher
  */
@@ -106,6 +105,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     private RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
     private RequestProcessor contextWaitingProcessor = new RequestProcessor("Annotation Refresh Context Waiting", 1);
 
+    @Override
     public void annotate (Line.Set set, Lookup lookup) {
         final FileObject fo = lookup.lookup(FileObject.class);
         if (fo != null) {
@@ -113,6 +113,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             if (dobj != null) {
                 PropertyChangeListener pchl = new PropertyChangeListener() {
                     /** annotate renamed files. */
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
                             DataObject dobj = (DataObject) evt.getSource();
@@ -174,6 +175,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
         }
     }
 
+    @Override
     public void breakpointAdded(Breakpoint breakpoint) {
         if (isAnnotatable(breakpoint)) {
             JPDABreakpoint b = (JPDABreakpoint) breakpoint;
@@ -186,6 +188,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
         }
     }
 
+    @Override
     public void breakpointRemoved(Breakpoint breakpoint) {
         if (isAnnotatable(breakpoint)) {
             JPDABreakpoint b = (JPDABreakpoint) breakpoint;
@@ -198,9 +201,12 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName ();
-        if (propertyName == null) return;
+        if (propertyName == null) {
+            return;
+        }
         if ( (!JPDABreakpoint.PROP_ENABLED.equals (propertyName)) &&
              (!JPDABreakpoint.PROP_VALIDITY.equals (propertyName)) &&
              (!LineBreakpoint.PROP_CONDITION.equals (propertyName)) &&
@@ -212,7 +218,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
              (!MethodBreakpoint.PROP_CLASS_EXCLUSION_FILTERS.equals (propertyName)) &&
              (!MethodBreakpoint.PROP_METHOD_NAME.equals (propertyName)) &&
              (!MethodBreakpoint.PROP_METHOD_SIGNATURE.equals (propertyName))
-        ) return;
+        ) {
+            return;
+        }
         JPDABreakpoint b = (JPDABreakpoint) evt.getSource ();
         DebuggerManager manager = DebuggerManager.getDebuggerManager();
         Breakpoint[] bkpts = manager.getBreakpoints();
@@ -241,11 +249,14 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             this.add = add;
         }
 
+        @Override
         public void run() {
             synchronized (breakpointToAnnotations) {
                 if (remove) {
                     removeAnnotations(b);
-                    if (!add) breakpointToAnnotations.remove(b);
+                    if (!add) {
+                        breakpointToAnnotations.remove(b);
+                    }
                 }
                 if (add) {
                     breakpointToAnnotations.put(b, new WeakSet<Annotation>());
@@ -290,7 +301,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
         } else {
             throw new IllegalStateException(b.toString());
         }
-        if (isInvalid && b.isEnabled ()) annotationType += "_broken";
+        if (isInvalid && b.isEnabled ()) {
+            annotationType += "_broken";
+        }
         return annotationType;
     }
     
@@ -344,23 +357,24 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                     if (futurelns != null) {
                         if (!futurelns.isDone()) {
                             delayedAnnotation2(b, fo, futurelns);
-                        } else
-                        try {
-                            newlns = futurelns.get();
-                            if (newlns == null) {
-                                continue;
+                        } else {
+                            try {
+                                newlns = futurelns.get();
+                                if (newlns == null) {
+                                    continue;
+                                }
+                                if (lns.length == 0) {
+                                    lns = newlns;
+                                } else {
+                                    int[] ln = new int[lns.length + newlns.length];
+                                    System.arraycopy(lns, 0, ln, 0, lns.length);
+                                    System.arraycopy(newlns, 0, ln, lns.length, newlns.length);
+                                    lns = ln;
+                                }
+                            } catch (InterruptedException ex) {
+                            } catch (ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
-                            if (lns.length == 0) {
-                                lns = newlns;
-                            } else {
-                                int[] ln = new int[lns.length + newlns.length];
-                                System.arraycopy(lns, 0, ln, 0, lns.length);
-                                System.arraycopy(newlns, 0, ln, lns.length, newlns.length);
-                                lns = ln;
-                            }
-                        } catch (InterruptedException ex) {
-                        } catch (ExecutionException ex) {
-                            Exceptions.printStackTrace(ex);
                         }
                     }
                 }
@@ -379,23 +393,24 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                     if (futurelns != null) {
                         if (!futurelns.isDone()) {
                             delayedAnnotation(b, fo, futurelns);
-                        } else
-                        try {
-                            newline = futurelns.get();
-                            if (newline == null) {
-                                continue;
+                        } else {
+                            try {
+                                newline = futurelns.get();
+                                if (newline == null) {
+                                    continue;
+                                }
+                                if (lns.length == 0) {
+                                    lns = new int[] { newline };
+                                } else {
+                                    int[] ln = new int[lns.length + 1];
+                                    System.arraycopy(lns, 0, ln, 0, lns.length);
+                                    ln[lns.length] = newline;
+                                    lns = ln;
+                                }
+                            } catch (InterruptedException ex) {
+                            } catch (ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
-                            if (lns.length == 0) {
-                                lns = new int[] { newline };
-                            } else {
-                                int[] ln = new int[lns.length + 1];
-                                System.arraycopy(lns, 0, ln, 0, lns.length);
-                                ln[lns.length] = newline;
-                                lns = ln;
-                            }
-                        } catch (InterruptedException ex) {
-                        } catch (ExecutionException ex) {
-                            Exceptions.printStackTrace(ex);
                         }
                     }
                 }
@@ -474,8 +489,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             Logger.getLogger(BreakpointAnnotationProvider.class.getName()).log(Level.INFO, "No DO for "+fo, donfex);
             return ;
         }
-        LineCookie lc = dataObject.getCookie(LineCookie.class);
-        if (lc == null) return;
+        LineCookie lc = dataObject.getLookup().lookup(LineCookie.class);
+        if (lc == null) {
+            return;
+        }
         List<DebuggerBreakpointAnnotation> annotations = new ArrayList<DebuggerBreakpointAnnotation>();
         for (int l : lines) {
             try {
@@ -486,7 +503,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             } catch (IllegalArgumentException e) {
             }
         }
-        if (annotations.size() == 0) {
+        if (annotations.isEmpty()) {
             return ;
         }
         Set<Annotation> bpAnnotations = breakpointToAnnotations.get(b);
@@ -501,7 +518,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     // Is called under synchronized (breakpointToAnnotations)
     private void removeAnnotations(JPDABreakpoint b) {
         Set<Annotation> annotations = breakpointToAnnotations.remove(b);
-        if (annotations == null) return ;
+        if (annotations == null) {
+            return ;
+        }
         for (Annotation a : annotations) {
             a.detach();
         }
@@ -509,27 +528,35 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     
 
     // Not used
+    @Override
     public Breakpoint[] initBreakpoints() { return new Breakpoint[] {}; }
 
     // Not used
+    @Override
     public void initWatches() {}
 
     // Not used
+    @Override
     public void watchAdded(Watch watch) {}
 
     // Not used
+    @Override
     public void watchRemoved(Watch watch) {}
 
     // Not used
+    @Override
     public void sessionAdded(Session session) {}
 
     // Not used
+    @Override
     public void sessionRemoved(Session session) {}
 
     // Not used
+    @Override
     public void engineAdded(DebuggerEngine engine) {}
 
     // Not used
+    @Override
     public void engineRemoved(DebuggerEngine engine) {}
 
 }

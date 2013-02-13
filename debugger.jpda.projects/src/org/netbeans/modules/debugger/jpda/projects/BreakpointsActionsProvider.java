@@ -70,7 +70,6 @@ import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -86,9 +85,11 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
         loc("CTL_Breakpoint_GoToSource_Label"), // NOI18N
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
                 return true;
             }
+            @Override
             public void perform (Object[] nodes) {
                 goToSource ((JPDABreakpoint) nodes [0]);
             }
@@ -97,14 +98,15 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     );
         
     private static String loc(String key) {
-        return NbBundle.getBundle(BreakpointsActionsProvider.class).getString(key);
+        return NbBundle.getMessage(BreakpointsActionsProvider.class, key);
     }
 
+    @Override
     public Action[] getActions (NodeActionsProvider original, Object node) 
     throws UnknownTypeException {
-        if (!(node instanceof JPDABreakpoint) || node instanceof ThreadBreakpoint)
+        if (!(node instanceof JPDABreakpoint) || node instanceof ThreadBreakpoint) {
             return original.getActions (node);
-        
+        }
         Action[] oas = original.getActions (node);
         Action[] as = new Action [oas.length + 2];
         as [0] = GO_TO_SOURCE_ACTION;
@@ -113,11 +115,13 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         return as;
     }
     
+    @Override
     public void performDefaultAction (NodeActionsProvider original, Object node) throws UnknownTypeException {
-        if (node instanceof JPDABreakpoint && !(node instanceof ThreadBreakpoint)) 
+        if (node instanceof JPDABreakpoint && !(node instanceof ThreadBreakpoint)) {
             goToSource ((JPDABreakpoint) node);
-        else
+        } else {
             original.performDefaultAction (node);
+        }
     }
 
     private static void goToSource (JPDABreakpoint b) {
@@ -128,18 +132,18 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             LineBreakpoint lb = (LineBreakpoint) b;
             url = lb.getURL();
             lineNumber = lb.getLineNumber();
-            if (lineNumber < 1) lineNumber = 1;
+            if (lineNumber < 1) {
+                lineNumber = 1;
+            }
         } else if (b instanceof FieldBreakpoint) {
             FieldBreakpoint fb = (FieldBreakpoint) b;
             String fieldName = fb.getFieldName();
             String className = fb.getClassName ();
             FileObject fo = getFileObject(getRelativePath (className));
-            if (fo == null) return ;
-            try {
-                url = fo.getURL ().toString ();
-            } catch (FileStateInvalidException e) {
+            if (fo == null) {
                 return ;
             }
+            url = fo.toURL ().toString ();
             Future<Integer> fi = EditorContextImpl.getFieldLineNumber (
                 fo,
                 className,
@@ -162,15 +166,15 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             MethodBreakpoint mb = (MethodBreakpoint) b;
             String methodName = mb.getMethodName();
             String[] classFilters = mb.getClassFilters();
-            if (classFilters.length < 1) return ;
-            String className = classFilters[0];
-            FileObject fo = getFileObject(getRelativePath (className));
-            if (fo == null) return ;
-            try {
-                url = fo.getURL ().toString ();
-            } catch (FileStateInvalidException e) {
+            if (classFilters.length < 1) {
                 return ;
             }
+            String className = classFilters[0];
+            FileObject fo = getFileObject(getRelativePath (className));
+            if (fo == null) {
+                return ;
+            }
+            url = fo.toURL ().toString ();
             Future<int[]> fi = EditorContextImpl.getMethodLineNumbers(
                 fo,
                 className,
@@ -182,8 +186,11 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
                 int[] lineNumbers;
                 try {
                     lineNumbers = fi.get();
-                    if (lineNumbers.length == 0) lineNumber = 1;
-                    else lineNumber = lineNumbers[0];
+                    if (lineNumbers.length == 0) {
+                        lineNumber = 1;
+                    } else {
+                        lineNumber = lineNumbers[0];
+                    }
                 } catch (InterruptedException ex) {
                     lineNumber = 1;
                 } catch (ExecutionException ex) {
@@ -198,26 +205,24 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             ExceptionBreakpoint eb = (ExceptionBreakpoint) b;
             String className = eb.getExceptionClassName();
             FileObject fo = getFileObject(getRelativePath (className));
-            if (fo == null) return ;
-            try {
-                url = fo.getURL ().toString ();
-            } catch (FileStateInvalidException e) {
+            if (fo == null) {
                 return ;
             }
+            url = fo.toURL ().toString ();
             // TODO: EditorContextImpl.getClassLineNumber(fo, className);
             lineNumber = 1;
         } else if (b instanceof ClassLoadUnloadBreakpoint) {
             ClassLoadUnloadBreakpoint cb = (ClassLoadUnloadBreakpoint) b;
             String[] classNames = cb.getClassFilters();
-            if (classNames.length == 0) return;
+            if (classNames.length == 0) {
+                return;
+            }
             String className = classNames[0];
             FileObject fo = getFileObject(getRelativePath (className));
-            if (fo == null) return ;
-            try {
-                url = fo.getURL ().toString ();
-            } catch (FileStateInvalidException e) {
+            if (fo == null) {
                 return ;
             }
+            url = fo.toURL ().toString ();
             // TODO: EditorContextImpl.getClassLineNumber(fo, className);
             lineNumber = 1;
         } else {
@@ -227,6 +232,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             final Future future = futureLineNumber;
             final String u = url;
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         Object lineObj = future.get();
@@ -242,6 +248,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
                             }
                         }
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 EditorContextImpl.showSourceLine (
                                     u,
@@ -263,7 +270,6 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
             lineNumber,
             null
         );
-        return ;
     }
     
     private static FileObject getFileObject(String classRelPath) {
@@ -294,7 +300,9 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
 
     private static String getRelativePath (String className) {
         int i = className.indexOf ('$');
-        if (i > 0) className = className.substring (0, i);
+        if (i > 0) {
+            className = className.substring (0, i);
+        }
         String sourceName = className.replace 
             ('.', '/') + ".java";
         return sourceName;
