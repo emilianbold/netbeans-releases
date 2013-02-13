@@ -45,10 +45,12 @@ package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -125,7 +127,7 @@ final class FileObjectKeeper implements FileChangeListener {
          }
 
          File file = Watcher.wrap(root.getFileName().getFile(), root);
-         LinkedList<File> arr = new LinkedList<File>();
+         List<File> arr = new ArrayList<File>();
          long ts = root.getProvidedExtensions().refreshRecursively(file, previous, arr);
          try {
              for (File f : arr) {
@@ -200,7 +202,7 @@ final class FileObjectKeeper implements FileChangeListener {
         assert Thread.holdsLock(FileObjectKeeper.this);
         assert kept == null : "Already listening to " + kept + " now requested for " + root;
         kept = new HashSet<FolderObj>();
-        LinkedList<File> it = new LinkedList<File>();
+        Queue<File> it = new ArrayDeque<File>();
         listenTo(root, true, it);
         FileObjectFactory factory = null;
         for (;;) {
@@ -256,7 +258,7 @@ final class FileObjectKeeper implements FileChangeListener {
         if (folder instanceof FolderObj) {
             FolderObj obj = (FolderObj)folder;
             synchronized (this) {
-                LinkedList<File> it = new LinkedList<File>();
+                Queue<File> it = new ArrayDeque<File>();
                 listenTo(obj, true, it);
                 FileObjectFactory factory = null;
                 for (;;) {
