@@ -71,6 +71,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.IOContainer;
@@ -215,6 +216,14 @@ final class ResultWindow extends TopComponent {
             }
         }
         revalidate();
+    }
+
+    public void updateOptionStatus(String property, boolean selected) {
+	NbPreferences.forModule(StatisticsPanel.class).putBoolean(property, selected);
+	for (int i = 0; i < tabPane.getTabCount(); i++) {
+	    StatisticsPanel sp = (StatisticsPanel)((JSplitPane)tabPane.getComponentAt(i)).getLeftComponent();
+	    sp.updateOptionStatus(property, selected);
+	}
     }
 
     /**

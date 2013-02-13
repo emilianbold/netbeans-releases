@@ -83,6 +83,8 @@ final class StatisticsPanel extends JPanel {
     private JToggleButton btnShowIgnored;
     private JToggleButton btnShowSkipped;
 
+    private JToggleButton btnAlwaysOpenTRW;
+
     /**
      * Rerun button for running (all) tests again.
      */
@@ -97,6 +99,9 @@ final class StatisticsPanel extends JPanel {
 
     private static final String KEY_FILTER_MASK = "filterMask"; // NOI18N
     private int filterMask = NbPreferences.forModule(StatisticsPanel.class).getInt(KEY_FILTER_MASK, Status.PASSED.getBitMask());
+
+    public static final String PROP_ALWAYS_OPEN_TRW = "alwaysOpenTRW"; //NOI18N
+    private static final Icon alwaysOpenTRWIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/testResults.png", true);
 
     private static final Icon rerunIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/rerun.png", true);
     private static final Icon rerunFailedIcon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(
@@ -138,6 +143,7 @@ final class StatisticsPanel extends JPanel {
         createShowButtons();
         createRerunButtons();
         createNextPrevFailureButtons();
+	createOptionButtons();
         String testingFramework = Manager.getInstance().getTestingFramework();
 
         JToolBar toolbar = new ToolbarWithOverflow(SwingConstants.VERTICAL);
@@ -159,11 +165,56 @@ final class StatisticsPanel extends JPanel {
         toolbar.add(new JToolBar.Separator());
         toolbar.add(previousFailure);
         toolbar.add(nextFailure);
+        toolbar.add(new JToolBar.Separator());
+        toolbar.add(btnAlwaysOpenTRW);
         
         toolbar.setFocusable(false);
         toolbar.setRollover(true);
         toolbar.setFloatable(false);
         return toolbar;
+    }
+
+
+    @NbBundle.Messages({"btnAlwaysOpenTRW.tooltip=Always open Test Results Window",
+	"btnAlwaysOpenTRW.ACSN=Control whether Test Results Window always opens"})
+    private void createOptionButtons() {
+	btnAlwaysOpenTRW = newOptionButton(
+		alwaysOpenTRWIcon,
+		Bundle.btnAlwaysOpenTRW_tooltip(),
+		Bundle.btnAlwaysOpenTRW_ACSN(),
+		PROP_ALWAYS_OPEN_TRW);
+    }
+
+    private JToggleButton newOptionButton(Icon icon, String tooltip, String accessibleName, final String property) {
+	JToggleButton newButton = new JToggleButton(icon);
+	newButton.setToolTipText(tooltip);
+	newButton.getAccessibleContext().setAccessibleName(accessibleName);
+	boolean isSelected = NbPreferences.forModule(StatisticsPanel.class).getBoolean(property, false);
+	newButton.setSelected(isSelected);
+	newButton.addItemListener(new ItemListener() {
+	    @Override
+	    public void itemStateChanged(ItemEvent e) {
+		boolean selected;
+		switch (e.getStateChange()) {
+		    case ItemEvent.SELECTED:
+			selected = true;
+			break;
+		    case ItemEvent.DESELECTED:
+			selected = false;
+			break;
+		    default:
+			return;
+		}
+		ResultWindow.getInstance().updateOptionStatus(property, selected);
+	    }
+	});
+	return newButton;
+    }
+
+    public void updateOptionStatus(String property, boolean selected) {
+	if(property.equals(PROP_ALWAYS_OPEN_TRW)) {
+	    btnAlwaysOpenTRW.setSelected(selected);
+	}
     }
     
     private void createRerunButtons() {
