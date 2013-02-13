@@ -65,7 +65,8 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 public class SQLBracesMatcher implements BracesMatcher {
 
     @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/x-sql", service = BracesMatcherFactory.class)
+        @MimeRegistration(mimeType = "text/x-sql",
+                service = BracesMatcherFactory.class, position = 50)
     })
     public static class Factory implements BracesMatcherFactory {
 
