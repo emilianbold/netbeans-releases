@@ -142,7 +142,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     @Override
     public Collection<? extends TypeScope> getReturnTypes() {
-        return getReturnTypesDescriptor(false).getModifiedResult(Collections.<TypeScope>emptyList());
+        return getReturnTypesDescriptor(getReturnType(), false).getModifiedResult(Collections.<TypeScope>emptyList());
     }
 
     @Override
@@ -161,17 +161,19 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     @Override
-    public Collection<? extends TypeScope> getReturnTypes(boolean resolve, Collection<? extends TypeScope> callerTypes) {
+    public Collection<? extends TypeScope> getReturnTypes(boolean resolveSemiTypes, Collection<? extends TypeScope> callerTypes) {
         assert callerTypes != null;
-        return getReturnTypesDescriptor(resolve).getModifiedResult(callerTypes);
+        String types = getReturnType();
+        Collection<? extends TypeScope> result = getReturnTypesDescriptor(types, resolveSemiTypes).getModifiedResult(callerTypes);
+        updateReturnTypes(types, result);
+        return result;
     }
 
     private static Set<String> recursionDetection = new HashSet<String>(); //#168868
 
-    private ReturnTypesDescriptor getReturnTypesDescriptor(boolean resolve) {
+    private ReturnTypesDescriptor getReturnTypesDescriptor(String types, boolean resolveSemiTypes) {
         ReturnTypesDescriptor result = null;
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
-        String types = getReturnType();
         if (types != null && types.length() > 0) {
             retval = new HashSet<TypeScope>();
             for (String typeName : types.split(TYPE_SEPARATOR_REGEXP)) {
@@ -191,9 +193,8 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                                 result = new CommonTypesDescriptor(retval);
                                 break;
                             }
-                            if (resolve && VariousUtils.isSemiType(typeName)) {
+                            if (resolveSemiTypes && VariousUtils.isSemiType(typeName)) {
                                 retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
-
                             } else {
                                 String modifiedTypeName = typeName;
                                 if (typeName.indexOf("[") != -1) { //NOI18N
@@ -209,22 +210,29 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                     }
                 }
             }
-            if (VariousUtils.isSemiType(types)) {
-                StringBuilder sb = new StringBuilder();
-                for (TypeScope typeScope : retval) {
-                    if (sb.length() != 0) {
-                        sb.append(TYPE_SEPARATOR);
-                    }
-                    sb.append(typeScope.getNamespaceName().append(typeScope.getName()).toString());
-                }
-                updateReturnTypeIfNotChanged(types, sb.toString());
-            }
         }
         return result == null ? new CommonTypesDescriptor(retval) : result;
     }
 
-    private synchronized void updateReturnTypeIfNotChanged(String types, String newTypes) {
-        if (types.equals(getReturnType())) {
+    private void updateReturnTypes(String oldTypes, Collection<? extends TypeScope> resolvedReturnTypes) {
+        if (VariousUtils.isSemiType(oldTypes)) {
+            updateSemiReturnTypes(oldTypes, resolvedReturnTypes);
+        }
+    }
+
+    private void updateSemiReturnTypes(String oldTypes, Collection<? extends TypeScope> resolvedReturnTypes) {
+        StringBuilder sb = new StringBuilder();
+        for (TypeScope typeScope : resolvedReturnTypes) {
+            if (sb.length() != 0) {
+                sb.append(TYPE_SEPARATOR);
+            }
+            sb.append(typeScope.getNamespaceName().append(typeScope.getName()).toString());
+        }
+        updateReturnTypesIfNotChanged(oldTypes, sb.toString());
+    }
+
+    private synchronized void updateReturnTypesIfNotChanged(String oldTypes, String newTypes) {
+        if (oldTypes.equals(getReturnType())) {
             returnType = newTypes;
         }
     }
