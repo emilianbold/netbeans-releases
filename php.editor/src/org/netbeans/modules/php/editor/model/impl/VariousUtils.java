@@ -1597,7 +1597,7 @@ public final class VariousUtils {
     }
 
     public static boolean isSemiType(String typeName) {
-        return typeName.contains(PRE_OPERATION_TYPE_DELIMITER);
+        return typeName != null && typeName.contains(PRE_OPERATION_TYPE_DELIMITER);
     }
 
 }

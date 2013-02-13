@@ -232,7 +232,7 @@ public final class GeneratingBracketCompleter {
                 for (VariableName variable : ElementFilter.forName(NameKind.exact(name)).filter(declaredVariables)) {
                     final Collection<? extends String> typeNames = variable.getTypeNames(variable.getNameRange().getEnd());
                     String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
-                    if (type != null && VariousUtils.isSemiType(type)) {
+                    if (VariousUtils.isSemiType(type)) {
                         type = null;
                     }
                     params.add(new Pair<String, String>(variable.getName(), type));
@@ -251,7 +251,7 @@ public final class GeneratingBracketCompleter {
                     for (VariableName variable : ElementFilter.forName(NameKind.exact(name)).filter(declaredVariables)) {
                         final Collection<? extends String> typeNames = variable.getTypeNames(variable.getNameRange().getEnd());
                         String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
-                        if (type != null && VariousUtils.isSemiType(type)) {
+                        if (VariousUtils.isSemiType(type)) {
                             type = null;
                         }
                         globals.add(new Pair<String, String>(variable.getName(), type));
@@ -270,7 +270,7 @@ public final class GeneratingBracketCompleter {
             String item;
             for (Iterator<String> i = (Iterator<String>) typeNames.iterator(); i.hasNext();) {
                 item = i.next();
-                if (item != null && VariousUtils.isSemiType(item)) {
+                if (VariousUtils.isSemiType(item)) {
                     break;
                 }
                 type = type.toString().isEmpty() ? type.append(item) : type.append("|").append(item); //NOI18N
@@ -286,7 +286,7 @@ public final class GeneratingBracketCompleter {
                     for (VariableName variable : ElementFilter.forName(NameKind.exact(name)).filter(declaredVariables)) {
                         final Collection<? extends String> typeNames = variable.getTypeNames(variable.getNameRange().getEnd());
                         String type = typeNames.isEmpty() ? null : typeNames.iterator().next();
-                        if (type != null && VariousUtils.isSemiType(type)) {
+                        if (VariousUtils.isSemiType(type)) {
                             type = null;
                         }
                         staticvars.add(new Pair<String, String>(variable.getName(), type));
