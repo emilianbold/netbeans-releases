@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.findbugs.installer;
 
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
@@ -95,11 +96,7 @@ final class FindBugsPanel extends javax.swing.JPanel {
 
     @Messages("FindBugs_Library=FindBugs Library")
     private void installActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installActionPerformed
-        try {
-            new ModuleInstallerSupport().download("org.netbeans.modules.findbugs", Bundle.FindBugs_Library());
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        PluginManager.installSingle("org.netbeans.modules.findbugs", Bundle.FindBugs_Library());
     }//GEN-LAST:event_installActionPerformed
 
     void load() {
