@@ -117,7 +117,7 @@ public class VarDocSuggestion extends SuggestionRule {
                             if (variable.getTypes(offset).isEmpty()) {
                                 Collection<? extends String> typeNames = variable.getTypeNames(offset);
                                 for (String type : typeNames) {
-                                    if (!type.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+                                    if (!VariousUtils.isSemiType(type)) {
                                         return;
                                     }
                                 }

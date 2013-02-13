@@ -90,7 +90,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -748,7 +747,7 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
 
     public void reset() {
         // TODO: currently only last used profiling points are reset, check if all profiling points need to be reset
-        List<ProfilingPoint> profilingPointsToReset = new LinkedList();
+        List<ProfilingPoint> profilingPointsToReset = new ArrayList();
 
         // reset CodeProfilingPoints
         Collection<RuntimeProfilingPointMapper> mappersToReset = activeCodeProfilingPoints.values();

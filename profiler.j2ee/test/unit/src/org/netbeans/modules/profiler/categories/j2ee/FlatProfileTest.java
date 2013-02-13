@@ -44,7 +44,6 @@ package org.netbeans.modules.profiler.categories.j2ee;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -96,7 +95,7 @@ public class FlatProfileTest extends TestBase {
         
         builder.startup( client );
         
-        List<Integer> markedIds = new LinkedList<Integer>() ;
+        List<Integer> markedIds = new ArrayList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
@@ -182,7 +181,7 @@ public class FlatProfileTest extends TestBase {
         
         builder.startup( client );
         
-        List<Integer> markedIds = new LinkedList<Integer>() ;
+        List<Integer> markedIds = new ArrayList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
@@ -288,7 +287,7 @@ public class FlatProfileTest extends TestBase {
         
         builder.startup( client );
         
-        List<Integer> markedIds = new LinkedList<Integer>() ;
+        List<Integer> markedIds = new ArrayList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");

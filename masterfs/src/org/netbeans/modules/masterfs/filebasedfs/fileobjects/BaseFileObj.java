@@ -59,13 +59,12 @@ import org.openide.util.Mutex;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Stack;
@@ -184,7 +183,7 @@ public abstract class BaseFileObj extends FileObject {
     @Override
     public final String getPath() {
         FileNaming fileNaming = getFileName();
-        LinkedList<String> stack = new LinkedList<String>();
+        Deque<String> stack = new ArrayDeque<String>();
         while (fileNaming != null) {
             stack.addFirst(fileNaming.getName());
             fileNaming = fileNaming.getParent();

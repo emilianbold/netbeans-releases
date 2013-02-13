@@ -1596,4 +1596,8 @@ public final class VariousUtils {
         return SPECIAL_CLASS_NAMES.contains(className.toLowerCase());
     }
 
+    public static boolean isSemiType(String typeName) {
+        return typeName != null && typeName.contains(PRE_OPERATION_TYPE_DELIMITER);
+    }
+
 }

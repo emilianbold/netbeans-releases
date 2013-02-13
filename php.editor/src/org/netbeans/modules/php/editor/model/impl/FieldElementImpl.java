@@ -235,7 +235,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         if (defaultType != null && defaultType.length() > 0) {
             retval = new ArrayList<String>();
             for (String typeName : defaultType.split("\\|")) { //NOI18N
-                if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+                if (!VariousUtils.isSemiType(typeName)) {
                     retval.add(typeName);
                 }
             }

@@ -44,7 +44,6 @@ package org.netbeans.modules.profiler.projectsupport;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.DataFilesProviderImplementation;
@@ -61,7 +60,7 @@ public abstract class AbstractProjectLookupProvider implements LookupProvider {
     private DataFilesProviderImplementation getDataFilesProviderImplementation(final Project project) {
         return new DataFilesProviderImplementation() {
                 public List<FileObject> getMetadataFiles() {
-                    List<FileObject> metadataFilesList = new LinkedList<FileObject>();
+                    List<FileObject> metadataFilesList = new ArrayList<FileObject>();
                     FileObject buildBackupFile = (project == null) ? null
                                                                    : project.getProjectDirectory()
                                                                             .getFileObject("build-before-profiler.xml"); // NOI18N
