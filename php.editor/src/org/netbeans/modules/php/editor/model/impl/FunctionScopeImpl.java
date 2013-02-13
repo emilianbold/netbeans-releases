@@ -185,7 +185,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                                 result = new CallerDependentTypesDescriptor();
                                 break;
                             }
-                            if (typeName.equals("object") || typeName.equals("\\self") && getInScope() instanceof ClassScope) { //NOI18N
+                            if ((typeName.equals("object") || typeName.equals("\\self")) && getInScope() instanceof ClassScope) { //NOI18N
                                 retval = new HashSet<TypeScope>();
                                 retval.add((TypeScope) getInScope());
                                 result = new CommontTypesDescriptor(retval);
