@@ -102,7 +102,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
     public ServerWizardIterator(ServerDetails[] possibleValues, ServerDetails[] downloadableValues) {
         this.acceptedValues = possibleValues;
         this.downloadableValues = downloadableValues;
-        this.gip = GlassfishInstanceProvider.getEe6();
+        this.gip = GlassfishInstanceProvider.getProvider();
         this.hostName = "localhost"; // NOI18N
     }
     

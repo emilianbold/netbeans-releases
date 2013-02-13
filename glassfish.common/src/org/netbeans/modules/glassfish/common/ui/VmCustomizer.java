@@ -365,7 +365,7 @@ public class VmCustomizer extends javax.swing.JPanel {
                     return true;
                 }
                 if (arg0.getName().equalsIgnoreCase(TESTNAME)) {
-                    if (gm.getInstanceProvider().equals(GlassfishInstanceProvider.getEe6())) {
+                    if (gm.getInstanceProvider().equals(GlassfishInstanceProvider.getProvider())) {
                         return Util.appearsToBeJdk6OrBetter(arg0);
                     }
                     return true;

@@ -54,6 +54,11 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.glassfish.tools.ide.server.config.JavaEEProfile;
+import org.glassfish.tools.ide.server.config.JavaSEPlatform;
+import org.glassfish.tools.ide.server.config.ModuleType;
+import static org.glassfish.tools.ide.server.config.ModuleType.EJB;
+import static org.glassfish.tools.ide.server.config.ModuleType.RAR;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
@@ -77,7 +82,6 @@ import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementa
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
@@ -98,20 +102,203 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     private Hk2DeploymentManager dm;
     private final LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
     private final LibraryImplementation[] libraries = { lib };
-    private Hk2JavaEEPlatformFactory pf;
+
+    /** NetBeans JavaSE platforms. */
+    private String[] platforms;
+
+    /** NetBeans JavaEE profiles. */
+    private Profile[] profiles;
+
+    /** NetBeans JavaEE module types. */
+    private J2eeModule.Type[] types;
+
+    /** NetBeans JavaEE platform display name. */
+    private final String displayName;
+
+    /** NetBeans JavaEE library name. */
+    private final String libraryName;
+
+    /** GlassFish JavaEE platform lookup key. */
+    private final String lookupKey;
+
     private FileChangeListener fcl;
     /** Keep local Lookup instance to be returned by getLookup method. */
     private volatile Lookup lkp;
     /** Jersey Library support. */
     private Hk2LibraryProvider libraryProvider;
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
     /**
-     * 
-     * @param dm 
+     * Map GlassFish tooling SDK JavaSE platforms to NetBeans JavaSE platforms.
+     * <p/>
+     * @param sdkPlatforms GlassFish tooling SDK JavaSE platforms.
+     * @return Array of NetBeans JavaSE platforms containing known GlassFish
+     *         tooling SDK JavaSE platforms.
      */
-    public Hk2JavaEEPlatformImpl(Hk2DeploymentManager dm, Hk2JavaEEPlatformFactory pf) {
+    public static String[] nbJavaSEProfiles(
+            final Set<JavaSEPlatform> sdkPlatforms) {
+        int size = sdkPlatforms != null ? sdkPlatforms.size() : 0;
+        String[] platforms = new String[size];
+        if (size > 0) {
+            int index = 0;
+            for (JavaSEPlatform platform : sdkPlatforms) {
+                platforms[index++] = platform.toString();
+            }
+        }
+        return platforms;
+    }
+            
+    
+    /**
+     * Map GlassFish tooling SDK JavaEE profiles to NetBeans JavaEE profiles.
+     * <p/>
+     * @param sdkProfiles GlassFish tooling SDK JavaEE profiles.
+     * @return Array of NetBeans JavaEE profiles containing known GlassFish
+     *         tooling SDK JavaEE profiles.
+     */
+    public static Profile[] nbJavaEEProfiles(
+            final Set<JavaEEProfile> sdkProfiles) {
+        int sdkSize = sdkProfiles != null ? sdkProfiles.size() : 0;
+        int size = sdkSize;
+        // Shrink output array size for unsupported JavaEE profiles.
+        for (JavaEEProfile sdkProfile : sdkProfiles) switch(sdkProfile) {
+            case v1_2: size--;
+        }
+        Profile[] profiles;
+        if (sdkSize > 0) {
+            profiles = new Profile[size];
+            int index = 0;
+            // JavaEE 1.2 should be ignored.
+            for (JavaEEProfile sdkProfile : sdkProfiles) switch(sdkProfile) {
+                case v1_3:     profiles[index++] = Profile.J2EE_13;
+                               break;
+                case v1_4:     profiles[index++] = Profile.J2EE_14;
+                               break;
+                case v1_5:     profiles[index++] = Profile.JAVA_EE_5;
+                               break;
+                case v1_6_web: profiles[index++] = Profile.JAVA_EE_6_WEB;
+                               break;
+                case v1_6:     profiles[index++] = Profile.JAVA_EE_6_FULL;
+                               break;
+                case v1_7_web: profiles[index++] = Profile.JAVA_EE_7_WEB;
+                               break;
+                case v1_7:     profiles[index++] = Profile.JAVA_EE_7_FULL;
+                               break;
+            }
+        } else {
+            profiles = new Profile[0];
+        }
+        return profiles;
+    }
+
+    /**
+     * Map GlassFish tooling SDK JavaEE module types to NetBeans JavaEE
+     * module types.
+     * <p/>
+     * @param sdkModule GlassFish tooling SDK JavaEE module types.
+     * @return Array of NetBeans JavaEE module types containing known GlassFish
+     *         tooling SDK JavaEE module types.
+     */
+    public static J2eeModule.Type[] nbModuleTypes(
+            final Set<ModuleType> sdkModuleTypes) {
+        int size = sdkModuleTypes != null ? sdkModuleTypes.size() : 0;
+        J2eeModule.Type[] types = new J2eeModule.Type[size];
+        if (size > 0) {
+            int index = 0;
+            for (ModuleType sdkType : sdkModuleTypes) switch(sdkType) {
+                case EAR: types[index++] = J2eeModule.Type.EAR;
+                          break;
+                case EJB: types[index++] = J2eeModule.Type.EJB;
+                          break;
+                case CAR: types[index++] = J2eeModule.Type.CAR;
+                          break;
+                case RAR: types[index++] = J2eeModule.Type.RAR;
+                          break;
+                case WAR: types[index++] = J2eeModule.Type.WAR;
+                          break;
+            }
+        }
+        return types;
+    }
+
+    /**
+     * Create {@see Set} of {@see String} objects from array of supported
+     * JavaSE platform objects.
+     * <p>
+     * @param platforms Array of supported JavaSE platforms.
+     * @return Newly created set of supported JavaSE platforms.
+     */
+    Set<String> platformsSetFromArray(String[] platforms) {
+        int size = platforms != null ? platforms.length : 0;
+        Set<String> platformSet = new HashSet<String>(size);
+        for (int i = 0; i < size; i++) {
+            platformSet.add(platforms[i]);
+        }
+        return platformSet;
+    }
+
+    /**
+     * Create {@see Set} of {@see Profile} objects from array of those objects.
+     * <p>
+     * @param profiles Array of NetBeans JavaEE profiles.
+     * @return Newly created set of NetBeans JavaEE profiles from array.
+     */
+    Set<Profile> profilesSetFromArray(Profile[] profiles) {
+        int size = profiles != null ? profiles.length : 0;
+        Set<Profile> profileSet = new HashSet<Profile>(size);
+        for (int i = 0; i < size; i++) {
+            profileSet.add(profiles[i]);
+        }
+        return profileSet;
+    }
+
+    /**
+     * Create {@see Set} of {@see J2eeModule.Type} objects from array
+     * of those objects.
+     * <p>
+     * @param moduleTypes Array of NetBeans JavaEE module types.
+     * @return Newly created set of NetBeans JavaEE module types from array.
+     */
+    Set<J2eeModule.Type> moduleTypesSetFromArray(
+            J2eeModule.Type[] moduleTypes) {
+        int size = moduleTypes != null ? moduleTypes.length : 0;
+        Set<J2eeModule.Type> moduleTypeSet = new HashSet<J2eeModule.Type>(size);
+        for (int i = 0; i < size; i++) {
+            moduleTypeSet.add(moduleTypes[i]);
+        }
+        return moduleTypeSet;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Creates an instance of GlassFish JavaEE platform.
+     * <p/>
+     * @param dm {@see Hk2DeploymentManager} instance containing valid reference
+     *           to GlassFish server instance.
+     * @param platforms   NetBeans JavaSE platforms supported.
+     * @param profiles    NetBeans JavaEE profiles supported.
+     * @param types       NetBeans JavaEE module types supported.
+     * @param displayName NetBeans JavaEE platform display name.
+     * @param libraryName NetBeans JavaEE library name.
+     * @param lookupKey   GlassFish JavaEE platform lookup key.
+     */
+    public Hk2JavaEEPlatformImpl(final Hk2DeploymentManager dm,
+            final String[] platforms,
+            final Profile[] profiles, final J2eeModule.Type[] types,
+            final String displayName, final String libraryName,
+            final String lookupKey) {
         this.dm = dm;
-        this.pf = pf;
+        this.platforms = platforms;
+        this.profiles = profiles;
+        this.types = types;
+        this.displayName = displayName;
+        this.libraryName = libraryName;
+        this.lookupKey = lookupKey;
         this.libraryProvider = Hk2LibraryProvider.getProvider(
                 dm.getCommonServerSupport().getInstance());
         addFcl();
@@ -330,44 +517,34 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         return new File[0];
     }
 
+    /**
+     * Get supported JavaEE profiles.
+     * <p/>
+     * @return Supported JavaEE profiles.
+     */
     @Override
     public Set<Profile> getSupportedProfiles() {
-        return getCorrectedProfileSet();
+        return profilesSetFromArray(profiles);
     }
     
+    /**
+     * Get supported JavaEE profiles.
+     * <p/>
+     * @return Supported JavaEE profiles.
+     */
     @Override
     public Set<Profile> getSupportedProfiles(J2eeModule.Type type) {
-        return getCorrectedProfileSet();
+        return profilesSetFromArray(profiles);
     }
 
-    private Set<Profile> getCorrectedProfileSet() {
-        Set<Profile> retVal = pf.getSupportedProfiles();
-        String gfRootStr = dm.getProperties().getGlassfishRoot();
-        File descriminator = new File(gfRootStr,"modules/appclient-server-core.jar");
-        if (!descriminator.exists()) {
-            retVal.remove(Profile.JAVA_EE_6_FULL);
-        }
-	// XXX: hack instead of issue EE.4 from http://wiki.netbeans.org/JavaEE7
-	descriminator = Utils.getFileFromPattern("lib/install/applications/__admingui/WEB-INF/lib/console-core-4.0"+ServerUtilities.GFV3_VERSION_MATCHER, new File(gfRootStr));
-        if (descriminator != null) {
-            retVal.add(Profile.JAVA_EE_7_FULL);
-            retVal.add(Profile.JAVA_EE_7_WEB);
-	}
-	
-        return retVal;
-    }
-
+    /**
+     * Get supported JavaEE module types.
+     * <p/>
+     * @return Supported JavaEE module types.
+     */
     @Override
     public Set<Type> getSupportedTypes() {
-        Set<Type> retVal = pf.getSupportedTypes();
-        Set<Profile> ps = getCorrectedProfileSet();
-        if (ps.contains(Profile.JAVA_EE_6_WEB) && !ps.contains(Profile.JAVA_EE_6_FULL)) {
-            retVal.remove(Type.CAR);
-            retVal.remove(Type.EAR);
-            retVal.remove(Type.EJB);
-            retVal.remove(Type.RAR);
-        }
-        return retVal;
+        return moduleTypesSetFromArray(types);
     }
 
     
@@ -419,30 +596,35 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     }
     
     /**
-     * 
-     * @return 
+     * Get GlassFish JavaEE platform display name.
+     * <p/>
+     * @return GlassFish JavaEE platform display name.
      */
     @Override
     public String getDisplayName() {
-        return pf.getDisplayName();
+        return displayName;
     }
     
     /**
-     * 
-     * @return 
+     * Get supported JavaSE platforms.
+     * <p/>
+     * @return Supported JavaSE platforms.
      */
     @Override
     public Set getSupportedJavaPlatformVersions() {
-        return pf.getSupportedJavaPlatforms();
+        return platformsSetFromArray(platforms);
     }
     
     /**
-     * 
-     * @return 
+     * Get default GlassFish JavaSE platform.
+     * <p/>
+     * Returns <code>null</code>.
+     * <p/>
+     * @return Default GlassFish JavaSE platform.
      */
     @Override
     public JavaPlatform getJavaPlatform() {
-        return pf.getJavaPlatform();
+        return null;
     }
     
     /**
@@ -461,7 +643,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             @Override
             public void run() {
                 libraryProvider.setJavaEELibraryImplementation(
-                        lib, pf.getLibraryName());
+                        lib, libraryName);
                 firePropertyChange(PROP_LIBRARIES, null, libraries.clone());
             }
         });
@@ -490,7 +672,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                             new JaxRsStackSupportImpl(), wsStack, rpcStack,
                             new Hk2JpaSupportImpl(
                             dm.getCommonServerSupport().getInstance()));
-                    lkp = LookupProviderSupport.createCompositeLookup(baseLookup, pf.getLookupKey());
+                    lkp = LookupProviderSupport
+                            .createCompositeLookup(baseLookup, lookupKey);
                 }
             }
         }
@@ -658,7 +841,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 return false;
             }
             /*List<URL> urls = getJerseyLibraryURLs();
-            if ( urls.size() >0 ){
+            if ( urls.sdkSize() >0 ){
                 return addJars( project , urls );
             }*/
         }
@@ -686,7 +869,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 }     
             }
             /*List<URL> urls = getJerseyLibraryURLs();
-            if ( urls.size() >0 ){
+            if ( urls.sdkSize() >0 ){
                 SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);
                 if (sourceGroups == null || sourceGroups.length < 1) {
@@ -697,7 +880,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 for (String type : classPathTypes) {
                     try {
                         ProjectClassPathModifier.removeRoots(urls.toArray( 
-                            new URL[ urls.size()]), sourceRoot, type);
+                            new URL[ urls.sdkSize()]), sourceRoot, type);
                     }    
                     catch(UnsupportedOperationException ex) {
                         Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).

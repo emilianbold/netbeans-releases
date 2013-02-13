@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.utils.ServerUtils;
+import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.ui.WarnPanel;
@@ -78,7 +78,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
 
     private volatile static GlassfishInstanceProvider ee6Provider;
-    private volatile static GlassfishInstanceProvider preludeProvider;
+//    private volatile static GlassfishInstanceProvider preludeProvider;
 
     public static final String EE6_DEPLOYER_FRAGMENT = "deployer:gfv3ee6"; // NOI18N
     public static final String EE6WC_DEPLOYER_FRAGMENT = "deployer:gfv3ee6wc"; // NOI18N
@@ -93,19 +93,19 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
         List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
         if(initialize) {
-            getPrelude();
-            getEe6();
+//            getPrelude();
+            getProvider();
         }
-        if(preludeProvider != null) {
-            providerList.add(preludeProvider);
-        }
+//        if(preludeProvider != null) {
+//            providerList.add(preludeProvider);
+//        }
         if(ee6Provider != null) {
             providerList.add(ee6Provider);
         }
         return providerList;
     }
     
-    public static GlassfishInstanceProvider getEe6() {
+    public static GlassfishInstanceProvider getProvider() {
         if (ee6Provider != null) {
             return ee6Provider;
         }
@@ -138,39 +138,39 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
     }
 
-    public static GlassfishInstanceProvider getPrelude() {
-        if (preludeProvider != null) {
-            return preludeProvider;
-        }
-        else {
-            boolean runInit = false;
-            synchronized(GlassfishInstanceProvider.class) {
-                if (preludeProvider == null) {
-                    runInit = true;
-                    preludeProvider = new GlassfishInstanceProvider(
-                            new String[]{PRELUDE_DEPLOYER_FRAGMENT},
-                            new String[]{PRELUDE_INSTANCES_PATH},
-                            org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
-                                "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
-                            false,
-                            null,
-                            new CommandFactory()  {
-
-                                @Override
-                                public SetPropertyCommand getSetPropertyCommand(String name, String value) {
-                                    return new ServerCommand.SetPropertyCommand(name, value,
-                                            "target={0}&value={1}"); // NOI18N
-                                }
-
-                            });
-                }
-            }
-            if (runInit) {
-                preludeProvider.init();                
-            }
-            return preludeProvider;
-        }
-    }
+//    public static GlassfishInstanceProvider getPrelude() {
+//        if (preludeProvider != null) {
+//            return preludeProvider;
+//        }
+//        else {
+//            boolean runInit = false;
+//            synchronized(GlassfishInstanceProvider.class) {
+//                if (preludeProvider == null) {
+//                    runInit = true;
+//                    preludeProvider = new GlassfishInstanceProvider(
+//                            new String[]{PRELUDE_DEPLOYER_FRAGMENT},
+//                            new String[]{PRELUDE_INSTANCES_PATH},
+//                            org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
+//                                "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
+//                            false,
+//                            null,
+//                            new CommandFactory()  {
+//
+//                                @Override
+//                                public SetPropertyCommand getSetPropertyCommand(String name, String value) {
+//                                    return new ServerCommand.SetPropertyCommand(name, value,
+//                                            "target={0}&value={1}"); // NOI18N
+//                                }
+//
+//                            });
+//                }
+//            }
+//            if (runInit) {
+//                preludeProvider.init();                
+//            }
+//            return preludeProvider;
+//        }
+//    }
 
     public static final Set<String> activeRegistrationSet = Collections.synchronizedSet(new HashSet<String>());
     
@@ -215,11 +215,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         Logger.getLogger("glassfish").log(Level.FINE, "***** resultChanged fired ********  {0}", hashCode()); // NOI18N
         RegisteredDDCatalog catalog = getDDCatalog();
         if (null != catalog) {
-            if (this.equals(preludeProvider)) {
-                catalog.registerPreludeRunTimeDDCatalog(this);
-            } else {
                 catalog.registerEE6RunTimeDDCatalog(this);
-            }
         }
         refreshCatalogFromFirstInstance(this, getDDCatalog());
     }
@@ -231,7 +227,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
      *         is initialized or <code>false</code> otherwise.
      */
     public static synchronized boolean initialized() {
-        return preludeProvider != null || ee6Provider != null;
+        return ee6Provider != null;
     }
 
     public static Logger getLogger() {
@@ -295,6 +291,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
 
         if(result) {
+            ConfigBuilderProvider.destroyBuilder(si);
             support.fireChange();
         }
 
@@ -416,11 +413,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             }
             RegisteredDDCatalog catalog = getDDCatalog();
             if (null != catalog) {
-                if (this.equals(preludeProvider)) {
-                    catalog.registerPreludeRunTimeDDCatalog(this);
-                } else {
                     catalog.registerEE6RunTimeDDCatalog(this);
-                }
                 refreshCatalogFromFirstInstance(this, catalog);
             }
         }
@@ -550,8 +543,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             instance = GlassfishInstance.create(ip,this,false);
             // Display warning popup message for GlassFish 3.1.2 which is known
             // to have bug in WS.
-            if (ServerUtils.getServerVersion(glassfishRoot)
-                    == GlassFishVersion.GF_3_1_2) {
+            if (instance.getVersion() == GlassFishVersion.GF_3_1_2) {
                 WarnPanel.gf312WSWarning(instance.getName());
             }
         } else {
