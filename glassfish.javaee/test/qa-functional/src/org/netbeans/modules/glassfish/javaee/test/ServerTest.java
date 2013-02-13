@@ -77,7 +77,7 @@ public class ServerTest extends NbTestCase {
             addTest(StartStopServer.class, "stopPreludeServer").
             addTest(AddRemovePreludeInstanceMethods.class, "removePreludeInstance");
 
-        if (null != GlassfishInstanceProvider.getEe6()) {
+        if (null != GlassfishInstanceProvider.getProvider()) {
             conf = conf.addTest(AddRemoveV3InstanceMethods.class, "addV3Instance");
             String javaExe = System.getProperty("v3.server.javaExe");
             if (null != javaExe && javaExe.trim().length() > 0) {

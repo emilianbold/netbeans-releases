@@ -167,7 +167,7 @@ public class StartStopServer extends NbTestCase {
 
     public void startV3Server() {
         try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(inst.isRunning())
@@ -196,7 +196,7 @@ public class StartStopServer extends NbTestCase {
 
     public void stopV3Server() {
         try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(!inst.isRunning())
@@ -219,7 +219,7 @@ public class StartStopServer extends NbTestCase {
 
     public void restartV3Server() {
         try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(!inst.isRunning())
@@ -241,7 +241,7 @@ public class StartStopServer extends NbTestCase {
 
     public void startDebugV3Server() {
         try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(inst.isRunning())
