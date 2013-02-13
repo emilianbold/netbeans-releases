@@ -344,10 +344,11 @@ public class ProjectActionSupport {
             List<Action> list = new ArrayList<Action>();
             list.add(stopAction);
             list.add(rerunAction);
-            if (paes.length == 1 && 
-                (paes[0].getType() == PredefinedType.COMPILE_SINGLE || 
-                 paes[0].getType() == PredefinedType.RUN)) {
-                list.add(rerunModAction);
+            for(int i = 0; i < paes.length; i++) {
+                if (paes[i].getType() == PredefinedType.RUN) {
+                    list.add(rerunModAction);
+                    break;
+                }
             }
             list.add(ta);
             if (additional == null) {
