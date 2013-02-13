@@ -98,7 +98,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     private String currentCommand;
     private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<MakeContext.Kind, String>(MakeContext.Kind.class);
     private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
-    private static final RequestProcessor RP = new RequestProcessor("MakeCustomizerProvider", 1); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("MakeCustomizerProvider", 2); //NOI18N
 
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
@@ -338,6 +338,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 fireActionEvent(new ActionEvent(project, 0, currentCommand));
             }
             if (currentCommand.equals(COMMAND_APPLY)) {
+                
                 makeCustomizer.refresh();
             }
 
