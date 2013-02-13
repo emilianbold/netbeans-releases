@@ -80,6 +80,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -195,6 +196,13 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(FunctionDeclaration node) {
+            parentNodes.push(node);
+            super.visit(node);
+            parentNodes.pop();
+        }
+
+        @Override
+        public void visit(LambdaFunctionDeclaration node) {
             parentNodes.push(node);
             super.visit(node);
             parentNodes.pop();

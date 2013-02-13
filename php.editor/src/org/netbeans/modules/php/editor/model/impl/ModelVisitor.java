@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -311,17 +310,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
 
             if (typeName != null) {
-                Set<String> types = new HashSet<String>();
-                if (functionScope.returnType != null) {
-                    String[] split = functionScope.returnType.split("\\|"); //NOI18N
-                    types.addAll(Arrays.asList(split));
-                }
-                String tp = QualifiedName.create(typeName).toString();
-                if (types.isEmpty()) {
-                    functionScope.returnType = tp;
-                } else if (types.add(tp)) {
-                    functionScope.returnType += "|" + tp; //NOI18N
-                }
+                functionScope.addReturnType(QualifiedName.create(typeName).toString());
             }
         }
     }

@@ -79,8 +79,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableNameFactory {
+    private static final String TYPE_SEPARATOR = "|"; //NOI18N
+    private static final String TYPE_SEPARATOR_REGEXP = "\\|"; //NOI18N
     private List<? extends ParameterElement> paremeters;
-    volatile String returnType;
+    //@GuardedBy("this")
+    private String returnType;
 
     //new contructors
     FunctionScopeImpl(Scope inScope, FunctionDeclarationInfo info, String returnType) {
@@ -125,6 +128,17 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     //old contructors
 
+    public synchronized void addReturnType(String type) {
+        if (returnType == null) {
+            returnType = type;
+        } else {
+            returnType += (TYPE_SEPARATOR + type);
+        }
+    }
+
+    protected synchronized String getReturnType() {
+        return returnType;
+    }
 
     @Override
     public Collection<? extends TypeScope> getReturnTypes() {
@@ -132,11 +146,12 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     @Override
-    public Collection<? extends String> getReturnTypeNames() {
+    public synchronized Collection<? extends String> getReturnTypeNames() {
         Collection<String> retval = Collections.<String>emptyList();
-        if (returnType != null && returnType.length() > 0) {
+        String type = getReturnType();
+        if (type != null && type.length() > 0) {
             retval = new ArrayList<String>();
-            for (String typeName : returnType.split("\\|")) { //NOI18N
+            for (String typeName : type.split(TYPE_SEPARATOR_REGEXP)) {
                 if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
                     retval.add(typeName);
                 }
@@ -156,14 +171,11 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     private ReturnTypesDescriptor getReturnTypesDescriptor(boolean resolve) {
         ReturnTypesDescriptor result = null;
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
-        String types;
-        synchronized (this) {
-            types = returnType;
-        }
+        String types = getReturnType();
         if (types != null && types.length() > 0) {
             boolean evaluate = types.indexOf(VariousUtils.PRE_OPERATION_TYPE_DELIMITER) != -1; //NOI18N
             retval = new HashSet<TypeScope>();
-            for (String typeName : types.split("\\|")) { //NOI18N
+            for (String typeName : types.split(TYPE_SEPARATOR_REGEXP)) {
                 if (typeName.trim().length() > 0) {
                     boolean added = false;
                     try {
@@ -202,18 +214,20 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                 StringBuilder sb = new StringBuilder();
                 for (TypeScope typeScope : retval) {
                     if (sb.length() != 0) {
-                        sb.append("|"); //NOI18N
+                        sb.append(TYPE_SEPARATOR);
                     }
                     sb.append(typeScope.getNamespaceName().append(typeScope.getName()).toString());
                 }
-                synchronized (this) {
-                    if (types.equals(returnType)) {
-                        returnType = sb.toString();
-                    }
-                }
+                updateReturnTypeIfNotChanged(types, sb.toString());
             }
         }
         return result == null ? new CommontTypesDescriptor(retval) : result;
+    }
+
+    private synchronized void updateReturnTypeIfNotChanged(String types, String newTypes) {
+        if (types.equals(getReturnType())) {
+            returnType = newTypes;
+        }
     }
 
     @NonNull
@@ -240,7 +254,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         sb.append('[');
         for (TypeScope typeScope : returnTypes) {
             if (sb.length() == 1) {
-                sb.append("|"); //NOI18N
+                sb.append(TYPE_SEPARATOR); //NOI18N
             }
             sb.append(typeScope.getName());
         }
@@ -292,8 +306,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
         }
         sb.append(Signature.ITEM_DELIMITER);
-        if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
-            sb.append(returnType);
+        String type = getReturnType();
+        if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)) {
+            sb.append(type);
         }
         sb.append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
