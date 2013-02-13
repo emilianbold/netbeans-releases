@@ -512,7 +512,7 @@ public class ElementOverlay {
         }
 
         @Override
-        public <A extends Annotation> A[] getAnnotations(Class<A> annotationType) {
+        public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationType) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -601,7 +601,7 @@ public class ElementOverlay {
         }
 
         @Override
-        public <A extends Annotation> A[] getAnnotations(Class<A> annotationType) {
+        public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationType) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -674,7 +674,7 @@ public class ElementOverlay {
         }
 
         @Override
-        public <A extends Annotation> A[] getAnnotations(Class<A> annotationType) {
+        public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationType) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -749,7 +749,7 @@ public class ElementOverlay {
         }
 
         @Override
-        public <A extends Annotation> A[] getAnnotations(Class<A> annotationType) {
+        public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationType) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
