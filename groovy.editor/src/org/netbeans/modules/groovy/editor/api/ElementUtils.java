@@ -43,6 +43,7 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
@@ -82,6 +83,7 @@ public final class ElementUtils {
         if ((node instanceof ClassNode) ||
             (node instanceof ClassExpression) ||
             (node instanceof CatchStatement) ||
+            (node instanceof AnnotationNode) ||
             (node instanceof ConstructorCallExpression) ||
             FindTypeUtils.isCaretOnClassNode(path, doc, caret)) {
             return ElementKind.CLASS;
@@ -149,6 +151,8 @@ public final class ElementUtils {
             } else {
                 return clazz;
             }
+        } else if (node instanceof AnnotationNode) {
+            return ((AnnotationNode) node).getClassNode();
         } else if (node instanceof FieldNode) {
             return ((FieldNode) node).getType();
         } else if (node instanceof PropertyNode) {
@@ -190,6 +194,8 @@ public final class ElementUtils {
         String name = null;
         if (node instanceof ClassNode) {
             name = ((ClassNode) node).getNameWithoutPackage();
+        } else if (node instanceof AnnotationNode) {
+            return ((AnnotationNode) node).getText();
         } else if (node instanceof MethodNode) {
             name = ((MethodNode) node).getName();
             if ("<init>".equals(name)) { // NOI18N
@@ -238,6 +244,8 @@ public final class ElementUtils {
     public static ClassNode getDeclaringClass(ASTNode node) {
         if (node instanceof ClassNode) {
             return (ClassNode) node;
+        } else if (node instanceof AnnotationNode) {
+            return ((AnnotationNode) node).getClassNode();
         } else if (node instanceof MethodNode) {
             return ((MethodNode) node).getDeclaringClass();
         } else if (node instanceof FieldNode) {
