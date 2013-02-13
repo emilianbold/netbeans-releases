@@ -282,7 +282,7 @@ public class ComputeImports {
         public Void visitVariable(VariableTree tree, Map<String, Object> p) {
             scan(tree.getModifiers(), p);
             
-            if (tree.getType().getKind() == Kind.IDENTIFIER) {
+            if (tree.getType() != null && tree.getType().getKind() == Kind.IDENTIFIER) {
                 p.put("request", null);
             }
             

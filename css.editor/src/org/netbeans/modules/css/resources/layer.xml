@@ -164,6 +164,10 @@
             </folder>
         </folder>
     </folder>
+
+    <folder name="OptionsExport">
+	<attr name="translate" stringvalue="config/Editors/text/x-css=>config/Editors/text/css"/>
+    </folder>
     
     <folder name="Templates">
         <folder name="Other">

@@ -481,9 +481,30 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
                 }
             } else { // adding remove to insert
             }
-        } else { // last was remove
+        } else if (evt.getType() == DocumentEvent.EventType.REMOVE){ // last was remove
             if (evt.getType() == DocumentEvent.EventType.INSERT) { // adding insert to remove
-            } else { // adding remove to remove
+            } else if (evt.getType() == DocumentEvent.EventType.REMOVE) { // adding remove to remove
+                String text = getText();
+                String evtText = evt.getText();
+                if ((getLength() == 1 || (getLength() > 1 && Analyzer.isSpace(text)))
+                        && (evt.getLength() == 1 || (evt.getLength() > 1
+                                                     && Analyzer.isSpace(evtText)))
+                        && (evt.getOffset() - evt.getLength() == getOffset() || evt.getOffset() == getOffset()) // this follows the previous
+                   ) {
+                    BaseDocument doc = (BaseDocument)getDocument();
+                    boolean thisWord = doc.isIdentifierPart(text.charAt(0));
+                    boolean lastWord = doc.isIdentifierPart(evtText.charAt(0));
+                    if (thisWord && lastWord) { // add word char to word char(s)
+                        return true;
+                    }
+                    boolean thisWhite = doc.isWhitespace(text.charAt(0));
+                    boolean lastWhite = doc.isWhitespace(evtText.charAt(0));
+                    if ((lastWhite && thisWhite)
+                            || (!lastWhite && !lastWord && !thisWhite && !thisWord)
+                       ) {
+                        return true;
+                    }
+                }
             }
         }
         return false;

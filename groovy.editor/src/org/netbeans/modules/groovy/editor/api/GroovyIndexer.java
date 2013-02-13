@@ -156,38 +156,10 @@ public class GroovyIndexer extends EmbeddingIndexer {
         LOG.log(Level.FINEST, "Time betw. 1st and Last idx : {0}", indexerThisStopTime - indexerFirstRun);
         LOG.log(Level.FINEST, "---------------------------------------------------------------------------------");
     }
-    
-// FIXME parsing API
-//    public String getPersistentUrl(File file) {
-//        String url;
-//        try {
-//            url = file.toURI().toURL().toExternalForm();
-//            // Make relative URLs for urls in the libraries
-//            return GroovyIndex.getPreindexUrl(url);
-//        } catch (MalformedURLException ex) {
-//            Exceptions.printStackTrace(ex);
-//            return file.getPath();
-//        }
-//    }
 
     public FileObject getPreindexedDb() {
-        // no preindexed libraries for now
-//        if (preindexedDb == null) {
-//            File preindexed = InstalledFileLocator.getDefault().locate(
-//                    "preindexed-groovy", "org.netbeans.modules.groovy.editor", false); // NOI18N
-//            if (preindexed == null || !preindexed.isDirectory()) {
-//                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
-//            }
-//            preindexedDb = FileUtil.toFileObject(preindexed);
-//        }
         return preindexedDb;
     }
-
-// FIXME parsing API
-//    public boolean acceptQueryPath(String url) {
-//        // LOG.log(Level.FINEST, "acceptQueryPath : {0}", url);
-//        return url.indexOf("/target/") == -1 && url.indexOf("/art/") == -1; // NOI18N
-//    }
 
     public static final class Factory extends EmbeddingIndexerFactory {
 

@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.*;
-import org.netbeans.modules.groovy.editor.actions.FixImportsHelper;
+import org.netbeans.modules.groovy.editor.actions.ImportHelper;
 import org.netbeans.modules.groovy.editor.actions.ImportCandidate;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
@@ -94,7 +94,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
         LOG.log(Level.FINEST, "Processing : {0}", desc); // NOI18N
 
-        String missingClassName = FixImportsHelper.getMissingClassName(desc);
+        String missingClassName = ImportHelper.getMissingClassName(desc);
 
         if (missingClassName == null) {
             return;
@@ -103,7 +103,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         // FIXME parsing API
         FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
 
-        List<ImportCandidate> importCandidates = FixImportsHelper.getImportCandidate(fo, missingClassName);
+        List<ImportCandidate> importCandidates = ImportHelper.getImportCandidate(fo, missingClassName);
 
 
         if (importCandidates.isEmpty()) {
@@ -182,7 +182,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
         @Override
         public void implement() throws Exception {
-            FixImportsHelper.doImport(fo, fqn);
+            ImportHelper.doImport(fo, fqn);
         }
 
         @Override

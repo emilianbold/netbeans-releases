@@ -680,7 +680,7 @@ public class TomcatProperties {
                     list.add(Util.fileToUrl(jspApiDoc));
                     list.add(Util.fileToUrl(servletApiDoc));
                 } else {
-                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", null, false); // NOI18N
+                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee-doc-api.jar", null, false); // NOI18N
                     if (j2eeDoc != null) {
                         list.add(Util.fileToUrl(j2eeDoc));
                     }

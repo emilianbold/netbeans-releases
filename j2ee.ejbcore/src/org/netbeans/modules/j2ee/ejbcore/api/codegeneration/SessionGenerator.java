@@ -132,14 +132,14 @@ public final class SessionGenerator {
 
     public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal,
             String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased,
-            TimerOptions timerOptions, boolean exposeTimer) {
+            TimerOptions timerOptions, boolean exposeTimer, boolean nonPersistentTimer) {
         return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, sessionType, isSimplified,
-                hasBusinessInterface, isXmlBased, timerOptions, exposeTimer, false);
+                hasBusinessInterface, isXmlBased, timerOptions, exposeTimer, nonPersistentTimer, false);
     }
 
     protected SessionGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal,
             String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased,
-            TimerOptions timerOptions, boolean exposeTimer, boolean isTest) {
+            TimerOptions timerOptions, boolean exposeTimer, boolean nonPersistentTimer, boolean isTest) {
         this.pkg = pkg;
         this.remotePkg = pkg;
         this.hasRemote = hasRemote;
@@ -166,7 +166,7 @@ public final class SessionGenerator {
         // set timer options if available
         if (timerOptions != null) {
             this.templateParameters.put("timerExist", true); //NOI18N
-            this.templateParameters.put("timerString", timerOptions.toString()); //NOI18N
+            this.templateParameters.put("timerString", getScheduleAnnotationValue(timerOptions, nonPersistentTimer)); //NOI18N
             this.templateParameters.put("exposeTimer", exposeTimer && (hasLocal || hasRemote)); //NOI18N
         } else {
             this.templateParameters.put("timerExist", false); //NOI18N
@@ -178,6 +178,11 @@ public final class SessionGenerator {
             this.templateParameters.put("time", "{time}");
             this.templateParameters.put("user", "{user}");
         }
+    }
+
+    public static String getScheduleAnnotationValue(TimerOptions timerOptions, boolean nonPersistentTimer) {
+        String timerValue = timerOptions.getAnnotationValue();
+        return nonPersistentTimer ? timerValue + ", persistent = false" : timerValue; //NOI18N
     }
 
     public void initRemoteInterfacePackage(Project projectForRemoteInterface, String remoteInterfacePackageName, FileObject ejbSourcePackage) throws IOException {

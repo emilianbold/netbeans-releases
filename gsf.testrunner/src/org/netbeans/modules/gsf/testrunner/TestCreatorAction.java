@@ -44,20 +44,14 @@
 
 package org.netbeans.modules.gsf.testrunner;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.gsf.testrunner.CommonTestsCfgOfCreate;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorPanelDisplayer;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
-import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider.Registration;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.cookies.SaveCookie;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -73,7 +67,6 @@ import org.openide.util.actions.NodeAction;
     @ActionReference(path = "UI/ToolActions/Java")})
 @NbBundle.Messages({"LBL_CreateCommonTestAction=Create Tests"})
 public class TestCreatorAction extends NodeAction {
-    private ArrayList<String> testingFrameworksToAdd = new ArrayList<String>();
     
     /** Creates a new instance of TestCreatorAction */
     public TestCreatorAction() {
@@ -113,46 +106,7 @@ public class TestCreatorAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        final DataObject[] modified = DataObject.getRegistry().getModified();
-        CommonTestsCfgOfCreate cfg = new CommonTestsCfgOfCreate(activatedNodes);
-        cfg.createCfgPanel(modified.length == 0 ? false : true);
-        
-        testingFrameworksToAdd.clear();
-        Collection<? extends Lookup.Item<TestCreatorProvider>> providers = Lookup.getDefault().lookupResult(TestCreatorProvider.class).allItems();
-        for (Lookup.Item<TestCreatorProvider> provider : providers) {
-            testingFrameworksToAdd.add(provider.getDisplayName());
-        }
-        cfg.addTestingFrameworks(testingFrameworksToAdd);
-        if (!cfg.configure()) {
-            return;
-        }
-        saveAll(modified); // #149048
-        String selected = cfg.getSelectedTestingFramework();
-        
-        for (Lookup.Item<TestCreatorProvider> provider : providers) {
-            if (provider.getDisplayName().equals(selected)) {
-                TestCreatorProvider.Context context = new TestCreatorProvider.Context(activatedNodes);
-                context.setSingleClass(cfg.isSingleClass());
-                context.setTargetFolder(cfg.getTargetFolder());
-                context.setTestClassName(cfg.getTestClassName());
-                provider.getInstance().createTests(context);
-                cfg = null;
-                break;
-            }
-        }
-    }
-
-    private void saveAll(DataObject[] dataObjects) {
-        for(DataObject dataObject: dataObjects) {
-            SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
-            if(saveCookie != null) {
-                try {
-                    saveCookie.save();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
+	TestCreatorPanelDisplayer.getDefault().displayPanel(activatedNodes, null, null);
     }
     
 }

@@ -130,6 +130,18 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             projects.remove(project);
             if (projects.isEmpty()) {
                 CsmListeners.getDefault().removeProgressListener(this);
+                lock.writeLock().lock();
+                try {
+                    readPerformance.clear();
+                    createPerformance.clear();
+                    parsePerformance.clear();
+                    parseTimeOut.clear();
+                    slowItemCreation = false;
+                    slowFileRead = false;
+                    slowParsed = false;
+                } finally {
+                    lock.writeLock().unlock();
+                }
             }
         }
     }
@@ -397,34 +409,37 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
     }
     
-    private void notifyProblem(final int problem, final String details) {
-        final List<Project> list = new ArrayList<Project>();
+    private boolean canNotify() {
+        List<Project> list = new ArrayList<Project>();
         synchronized(projects) {
             list.addAll(projects);
         }
-        boolean remoteBuildHost = false;
-        boolean remoteSources = false;
+        if (list.size() > 1) {
+            return false;
+        }
         for (Project project : list) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
             if (remoteProject != null) {
                 ExecutionEnvironment developmentHost = remoteProject.getDevelopmentHost();
                 if (developmentHost != null) {
                     if (developmentHost.isRemote()) {
-                        remoteBuildHost = true;
+                        return false;
                     }
                 }
                 ExecutionEnvironment sourceFileSystemHost = remoteProject.getSourceFileSystemHost();
                 if (sourceFileSystemHost.isRemote()) {
-                    remoteSources = true;
+                    return false;
                 }
             }
         }
-        final boolean isRemoteBuildHost = remoteBuildHost;
-        final boolean isRemoteSources = remoteSources;
+        return true;
+    }
+    
+    private void notifyProblem(final int problem, final String details) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                NotifyProjectProblem.showNotification(PerformanceIssueDetector.this, problem, details, isRemoteBuildHost, isRemoteSources);
+                NotifyProjectProblem.showNotification(PerformanceIssueDetector.this, problem, details);
             }
         });
     }
@@ -507,11 +522,15 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
          "# {0} - time"
         ,"# {1} - items"
         ,"# {2} - speed"
+        ,"# {3} - expected"
         ,"Details.slow.item.creation=The IDE spent {0} seconds to create {1} project items.<br>\n"
-                                    +"The average creation speed is {2} items per second.<br>\n"
-                                    +"The IDE hardly can be used with such slow file system.\n"
+                                   +"The average creation speed is {2} items per second.<br>\n"
+                                   +"IDE expects the average creation speed is more than {3} items per second.<br>\n"
+                                   +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeCreateItems() {
+        int CREATION_SPEED_LIMIT = 100;
+        int CREATION_SPEED_EXPECTED = 1000;
         long itemCount = 0;
         long time = 0;
         long cpu = 0;
@@ -527,11 +546,11 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
         long wallTime = time/NANO_TO_SEC;
         long creationSpeed = (itemCount*NANO_TO_SEC)/time;
-        if (wallTime > 15 && itemCount > 100 && creationSpeed < 100) {
+        if (wallTime > 15 && itemCount > 100 && creationSpeed < CREATION_SPEED_LIMIT) {
             if (!slowItemCreation) {
                 slowItemCreation = true;
-                final String details = Bundle.Details_slow_item_creation(format(wallTime), format(itemCount), format(creationSpeed));
-                if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
+                final String details = Bundle.Details_slow_item_creation(format(wallTime), format(itemCount), format(creationSpeed), format(CREATION_SPEED_EXPECTED));
+                if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                     notifyProblem(NotifyProjectProblem.CREATE_PROBLEM, details);
                 }
                 LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
@@ -545,11 +564,15 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
          "# {0} - time"
         ,"# {1} - read"
         ,"# {2} - speed"
+        ,"# {3} - expected"
         ,"Details.slow.file.read=The IDE spent {0} seconds to read {1} Kb of project files.<br>\n"
-                                +"The average read speed is {2} Kb per second.<br>\n"
-                                +"The IDE hardly can be used with such slow file system.\n"
+                               +"The average reading speed is {2} Kb per second.<br>\n"
+                               +"IDE expects the average reading speed is more than {3} Kb per second.<br>\n"
+                               +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeReadFile() {
+        int READING_SPEED_LIMIT = 100;
+        int READING_SPEED_EXPECTED = 1000;
         long fileCount = 0;
         long read = 0;
         long lines = 0;
@@ -569,11 +592,11 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
         long wallTime = time/NANO_TO_SEC;
         long readSpeed = (read*1000*1000)/time;
-        if (wallTime > 100 && fileCount > 100 && readSpeed < 100) {
+        if (wallTime > 100 && fileCount > 100 && readSpeed < READING_SPEED_LIMIT) {
             if (!slowFileRead) {
                 slowFileRead = true;
-                final String details = Bundle.Details_slow_file_read(format(wallTime), format(read/1000), format(readSpeed));
-                if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
+                final String details = Bundle.Details_slow_file_read(format(wallTime), format(read/1000), format(readSpeed), format(READING_SPEED_EXPECTED));
+                if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                     notifyProblem(NotifyProjectProblem.READ_PROBLEM, details);
                 }
                 LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
@@ -589,14 +612,17 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         ,"# {2} - speed"
         ,"# {3} - cpu"
         ,"# {4} - ratio"
+        ,"# {5} - expected"
         ,"Details.slow.file.parse=The IDE spent {0} seconds to parse {1} lines of project files.<br>\n"
                                 +"The average parsing speed is {2} lines per second.<br>\n"
                                 +"In other hand IDE consumed {3} seconds of CPU time to parse these files.<br>\n"
                                 +"The ratio of wall time to CPU time is 1/{4}.<br>\n"
                                 +"It shows that IDE spent too mach time waiting for resources.<br>\n"
-                                +"Most probably this caused by poor overall file system performance.\n"
+                                +"IDE expects the ratio is more than 1/{5}.<br>\n"
+                                +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeParseFile() {
+        int RATIO_LIMIT = 5;
         long fileCount = 0;
         long lines = 0;
         long time = 0;
@@ -623,8 +649,8 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             if (wallTime > 100 && fileCount > 100 && parseSpeed < 1000 && k > 5) {
                 if (!slowParsed) {
                     slowParsed = true;
-                    final String details = Bundle.Details_slow_file_parse(format(wallTime), format(lines), format(parseSpeed), format(cpuTime), format(k));
-                    if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
+                    final String details = Bundle.Details_slow_file_parse(format(wallTime), format(lines), format(parseSpeed), format(cpuTime), format(k), format(RATIO_LIMIT));
+                    if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                         notifyProblem(NotifyProjectProblem.PARSE_PROBLEM, details);
                     }
                    LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
@@ -643,6 +669,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
                                      +"{0}\n"
                                      +"</tbody></table>\n"
                                      +"are nether finished or consumes too much time.<br>\n"
+                                     +"Most probably this is caused by a bug in the IDE or too big files.\n"
         ,"# {0} - file"
         ,"# {1} - time"
         ,"Details.infinite.file.parse=<tr><td>{0}</td><td>{1}</td></tr>\n"
@@ -662,7 +689,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             }
         }
         if (buf.length() > 0) {
-            if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
+            if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                 String details = Bundle.Details_infinite_files_parse(buf.toString());
                 notifyProblem(NotifyProjectProblem.INFINITE_PARSE_PROBLEM, details);
             }
@@ -750,5 +777,4 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         private long cpu;
         private long user;
     }
-    
 }

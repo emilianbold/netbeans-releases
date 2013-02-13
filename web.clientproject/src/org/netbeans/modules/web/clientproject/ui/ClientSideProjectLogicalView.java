@@ -66,6 +66,9 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.spi.project.ui.support.NodeFactorySupport;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
@@ -86,6 +89,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -212,7 +216,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         final ClientSideProject project;
 
         public ClientSideProjectNode(ClientSideProject project) {
-            super(new ClientSideProjectChildren(project), createLookup(project));
+            super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-web-clientproject/Nodes"), createLookup(project));
             this.project = project;
         }
 
@@ -331,26 +335,62 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         RemoteFiles,
         Configuration;
     }
-    private static class ClientSideProjectChildren extends Children.Keys<BasicNodes> {
 
+    // TODO: all three nodes are registered at the same time - could be refactored and
+    //       broken into individual nodes if there is a need to insert nodes in between them
+    @NodeFactory.Registration(projectType="org-netbeans-modules-web-clientproject",position=500)
+    public static final class BaseHTML5ProjectNodeFactory implements NodeFactory {
+
+        public BaseHTML5ProjectNodeFactory() {
+        }
+
+        public NodeList createNodes(Project p) {
+            return new ClientProjectNodeList((ClientSideProject)p);
+        }
+
+    }
+
+    private static class ClientProjectNodeList implements NodeList<BasicNodes>, ChangeListener {
+
+        private ChangeSupport changeSupport = new ChangeSupport(this);
         private final ClientSideProject project;
         private final FileObject nbprojectFolder;
         private final Listener listener;
 
-        public ClientSideProjectChildren(ClientSideProject p) {
+        public ClientProjectNodeList(ClientSideProject p) {
             this.project = p;
             nbprojectFolder = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
             assert nbprojectFolder != null : "Folder nbproject must exist for project " + project.getName();
-            updateKeys();
-            project.getRemoteFiles().addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    updateKeys();
-                }
-            });
             listener = new Listener();
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {
+            changeSupport.addChangeListener(l);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener l) {
+            changeSupport.removeChangeListener(l);
+        }
+
+        @Override
+        public void addNotify() {
+            project.getRemoteFiles().addChangeListener(this);
             project.getEvaluator().addPropertyChangeListener(listener);
             project.getProjectDirectory().addRecursiveListener(listener);
+        }
+
+        @Override
+        public void removeNotify() {
+            project.getRemoteFiles().removeChangeListener(this);
+            project.getEvaluator().removePropertyChangeListener(listener);
+            project.getProjectDirectory().removeRecursiveListener(listener);
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            changeSupport.fireChange();
         }
 
         private class Listener extends FileChangeAdapter implements PropertyChangeListener {
@@ -385,13 +425,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())) {
                     sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
-                    refreshKeyInAWT(BasicNodes.Sources);
+                    refreshKey(BasicNodes.Sources);
                 } else if (ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())) {
                     testsNodeHidden = isNodeHidden(BasicNodes.Tests);
-                    refreshKeyInAWT(BasicNodes.Tests);
+                    refreshKey(BasicNodes.Tests);
                 } else if (ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
                     configNodeHidden = isNodeHidden(BasicNodes.Configuration);
-                    refreshKeyInAWT(BasicNodes.Configuration);
+                    refreshKey(BasicNodes.Configuration);
                 }
             }
 
@@ -399,44 +439,40 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 boolean nodeHidden = isNodeHidden(BasicNodes.Sources);
                 if (nodeHidden != sourcesNodeHidden) {
                     sourcesNodeHidden = nodeHidden;
-                    refreshKeyInAWT(BasicNodes.Sources);
+                    refreshKey(BasicNodes.Sources);
                 }
                 nodeHidden = isNodeHidden(BasicNodes.Tests);
                 if (nodeHidden != testsNodeHidden) {
                     testsNodeHidden = nodeHidden;
-                    refreshKeyInAWT(BasicNodes.Tests);
+                    refreshKey(BasicNodes.Tests);
                 }
                 nodeHidden = isNodeHidden(BasicNodes.Configuration);
                 if (nodeHidden != configNodeHidden) {
                     configNodeHidden = nodeHidden;
-                    refreshKeyInAWT(BasicNodes.Configuration);
+                    refreshKey(BasicNodes.Configuration);
                 }
             }
 
         }
 
-        private void refreshKeyInAWT(final BasicNodes type) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    refreshKey(type);
-                }
-            });
+        private void refreshKey(final BasicNodes type) {
+            // this method used to refresh individual given node before fix of issue #225877
+            changeSupport.fireChange();
         }
 
         @Override
-        protected Node[] createNodes(BasicNodes k) {
+        public Node node(BasicNodes k) {
             switch (k) {
                 case Sources:
                     return createNodeForFolder(k);
                 case Tests:
                     return createNodeForFolder(k);
                 case RemoteFiles:
-                    return new Node[]{new RemoteFilesNode(project)};
+                    return new RemoteFilesNode(project);
                 case Configuration:
                     return createNodeForFolder(k);
                 default:
-                    return new Node[0];
+                    return null;
             }
         }
 
@@ -489,27 +525,36 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
         }
 
-        private Node[] createNodeForFolder(BasicNodes type) {
+        private Node createNodeForFolder(BasicNodes type) {
             FileObject root = getRootForNode(type);
             if (root != null && root.isValid()) {
                 DataFolder df = DataFolder.findFolder(root);
                 if (!isNodeHidden(type)) {
-                    return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), getIgnoredFiles(type))};
+                    return new FolderFilterNode(type, df.getNodeDelegate(), getIgnoredFiles(type));
                 }
             }
             // missing root should be solved by project problems
-            return new Node[0];
+            return null;
         }
 
-        private void updateKeys() {
+        public List<BasicNodes> keys() {
+            // in order to resolve #225877 the only way to refresh a node in NodeList
+            // is to add it or remove it. There is nothing like Children.Keys.refreshKey(...).
+            // Hence I have to create key here as a workaround:
             ArrayList<BasicNodes> keys = new ArrayList<BasicNodes>();
-            keys.add(BasicNodes.Sources);
-            keys.add(BasicNodes.Tests);
+            if (node(BasicNodes.Sources) != null) {
+                keys.add(BasicNodes.Sources);
+            }
+            if (node(BasicNodes.Tests) != null) {
+                keys.add(BasicNodes.Tests);
+            }
             if (!project.getRemoteFiles().getRemoteFiles().isEmpty()) {
                 keys.add(BasicNodes.RemoteFiles);
             }
-            keys.add(BasicNodes.Configuration);
-            setKeys(keys);
+            if (node(BasicNodes.Configuration) != null) {
+                keys.add(BasicNodes.Configuration);
+            }
+            return keys;
         }
 
     }

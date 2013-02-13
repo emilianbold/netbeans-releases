@@ -78,7 +78,7 @@ public class JPAParseUtils {
         public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
             if ("persistence".equals(rawName)) { //NOI18N
                 String version = atts.getValue("version"); //NOI18N
-                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+(version==null?Persistence.VERSION_2_0:version));
+                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+(version==null?Persistence.VERSION_2_1:version));
             }
         }
 
@@ -92,7 +92,7 @@ public class JPAParseUtils {
         public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attributes) throws SAXException {
             if ("persistence".equals(qName)) { //NOI18N
                 String version = attributes.getValue("version"); //NOI18N
-                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+(version==null?Persistence.VERSION_2_0:version));
+                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+(version==null?Persistence.VERSION_2_1:version));
             }
         }
 

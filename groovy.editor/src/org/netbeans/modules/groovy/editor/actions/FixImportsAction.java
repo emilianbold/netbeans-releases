@@ -80,16 +80,12 @@ import org.openide.util.NbBundle;
 public class FixImportsAction extends BaseAction {
 
     protected static final String ACTION_NAME = "fix-groovy-imports"; //NOI18N
-    private static final Logger LOG = Logger.getLogger(FixImportsAction.class.getName());
-
-    private final List<String> missingNames;
     private final AtomicBoolean cancel;
-    
+
 
     public FixImportsAction() {
         super(MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-        
-        missingNames = new ArrayList<String>();
+
         cancel = new AtomicBoolean();
     }
 
@@ -105,8 +101,9 @@ public class FixImportsAction extends BaseAction {
         final FileObject fo = NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile();
         final Source source = Source.create(fo);
 
+        final List<String> missingNames = new ArrayList<String>();
         try {
-            ParserManager.parse(Collections.singleton(source), new CollectMissingImportsTask());
+            ParserManager.parse(Collections.singleton(source), new CollectMissingImportsTask(missingNames));
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -118,7 +115,7 @@ public class FixImportsAction extends BaseAction {
         final Map<String, List<ImportCandidate>> multipleCandidates = new HashMap<String, List<ImportCandidate>>();
 
         for (String name : missingNames) {
-            List<ImportCandidate> importCandidates = FixImportsHelper.getImportCandidate(fo, name);
+            List<ImportCandidate> importCandidates = ImportHelper.getImportCandidate(fo, name);
 
             switch (importCandidates.size()) {
                 case 0: continue;
@@ -140,13 +137,20 @@ public class FixImportsAction extends BaseAction {
 
                 @Override
                 public void run() {
-                    FixImportsHelper.doImports(fo, singleCandidates);
+                    ImportHelper.doImports(fo, singleCandidates);
                 }
             }, "Fix All Imports", cancel, false);
         }
     }
 
-    private class CollectMissingImportsTask extends UserTask {
+    private final class CollectMissingImportsTask extends UserTask {
+
+        private final List<String> missingNames;
+
+        public CollectMissingImportsTask(List<String> missingNames) {
+            this.missingNames = missingNames;
+        }
+
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
@@ -166,13 +170,12 @@ public class FixImportsAction extends BaseAction {
         }
 
         private void collectMissingImports(List errors) {
-            missingNames.clear();
             for (Object error : errors) {
                 if (error instanceof SyntaxErrorMessage) {
                     SyntaxException se = ((SyntaxErrorMessage) error).getCause();
 
                     if (se != null) {
-                        String missingClassName = FixImportsHelper.getMissingClassName(se.getMessage());
+                        String missingClassName = ImportHelper.getMissingClassName(se.getMessage());
 
                         if (missingClassName != null) {
                             if (!missingNames.contains(missingClassName)) {

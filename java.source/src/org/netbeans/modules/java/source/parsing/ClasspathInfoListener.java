@@ -44,6 +44,8 @@ package org.netbeans.modules.java.source.parsing;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -53,13 +55,21 @@ import org.openide.util.ChangeSupport;
 class ClasspathInfoListener implements ChangeListener {
     
     private final ChangeSupport changeSupport;
+    private final Runnable callBack;
     
-    public ClasspathInfoListener (final ChangeSupport changedSupport) {
+    ClasspathInfoListener (
+            @NonNull final ChangeSupport changedSupport,
+            @NullAllowed final Runnable callBack) {
         assert changedSupport != null;
         this.changeSupport = changedSupport;
+        this.callBack = callBack;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
+        if (callBack != null) {
+            callBack.run();
+        }
         this.changeSupport.fireChange();
     }        
 }
