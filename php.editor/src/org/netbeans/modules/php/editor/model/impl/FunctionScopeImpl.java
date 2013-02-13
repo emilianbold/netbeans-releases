@@ -185,10 +185,10 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                                 result = new CallerDependentTypesDescriptor();
                                 break;
                             }
-                            if (typeName.equals("object") || typeName.equals("\\self") && getInScope() instanceof ClassScope) { //NOI18N
+                            if ((typeName.equals("object") || typeName.equals("\\self")) && getInScope() instanceof ClassScope) { //NOI18N
                                 retval = new HashSet<TypeScope>();
                                 retval.add((TypeScope) getInScope());
-                                result = new CommontTypesDescriptor(retval);
+                                result = new CommonTypesDescriptor(retval);
                                 break;
                             }
                             if (resolve && VariousUtils.isSemiType(typeName)) {
@@ -220,7 +220,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                 updateReturnTypeIfNotChanged(types, sb.toString());
             }
         }
-        return result == null ? new CommontTypesDescriptor(retval) : result;
+        return result == null ? new CommonTypesDescriptor(retval) : result;
     }
 
     private synchronized void updateReturnTypeIfNotChanged(String types, String newTypes) {
@@ -339,10 +339,10 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     }
 
-    private static final class CommontTypesDescriptor implements ReturnTypesDescriptor {
+    private static final class CommonTypesDescriptor implements ReturnTypesDescriptor {
         private final Collection<? extends TypeScope> rawTypes;
 
-        public CommontTypesDescriptor(Collection<? extends TypeScope> rawTypes) {
+        public CommonTypesDescriptor(Collection<? extends TypeScope> rawTypes) {
             assert rawTypes != null;
             this.rawTypes = rawTypes;
         }
