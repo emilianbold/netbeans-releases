@@ -47,6 +47,7 @@ package org.netbeans.modules.groovy.editor.occurrences;
 import java.util.HashSet;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -208,11 +209,10 @@ public final class VariableScopeVisitor extends TypeVisitor {
 
     @Override
     public void visitField(FieldNode visitedField) {
-        final ClassNode visitedType = visitedField.getType();
         final String visitedName = visitedField.getName();
 
         if (FindTypeUtils.isCaretOnClassNode(path, doc, cursorOffset)) {
-            addOccurrences(visitedType, (ClassNode) FindTypeUtils.findCurrentNode(path, doc, cursorOffset));
+            addFieldOccurrences(visitedField, (ClassNode) FindTypeUtils.findCurrentNode(path, doc, cursorOffset));
         } else {
             if (leaf instanceof FieldNode) {
                 if (visitedName.equals(((FieldNode) leaf).getName())) {
@@ -234,6 +234,15 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         }
         super.visitField(visitedField);
+    }
+
+    private void addFieldOccurrences(FieldNode visitedField, ClassNode findingNode) {
+        addOccurrences(visitedField.getType(), findingNode);
+
+        // Check all field level annotations
+        for (AnnotationNode annotation : visitedField.getAnnotations(findingNode)) {
+            addAnnotationOccurrences(annotation, findingNode);
+        }
     }
 
     @Override
@@ -277,6 +286,11 @@ public final class VariableScopeVisitor extends TypeVisitor {
         for (Parameter parameter : visitedMethod.getParameters()) {
             addOccurrences(parameter.getType(), findingNode);
         }
+
+        // Check annotations
+        for (AnnotationNode annotation : visitedMethod.getAnnotations(findingNode)) {
+            addAnnotationOccurrences(annotation, findingNode);
+        }
     }
 
     @Override
@@ -315,6 +329,10 @@ public final class VariableScopeVisitor extends TypeVisitor {
     private void addConstructorOccurrences(ConstructorNode constructor, ClassNode findingNode) {
         for (Parameter parameter : constructor.getParameters()) {
             addOccurrences(parameter.getType(), findingNode);
+        }
+
+        for (AnnotationNode annotation : constructor.getAnnotations(findingNode)) {
+            addAnnotationOccurrences(annotation, findingNode);
         }
     }
 
@@ -411,6 +429,11 @@ public final class VariableScopeVisitor extends TypeVisitor {
                 }
             }
         }
+
+        // Check all class level annotations
+        for (AnnotationNode annotation : visitedNode.getAnnotations(findingNode)) {
+            addAnnotationOccurrences(annotation, findingNode);
+        }
     }
 
     @Override
@@ -465,6 +488,16 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         }
         super.visitImports(node);
+    }
+
+    private void addAnnotationOccurrences(AnnotationNode annotation, ClassNode findingNode) {
+        ClassNode classNode = annotation.getClassNode();
+        classNode.setLineNumber(annotation.getLineNumber());
+        classNode.setColumnNumber(annotation.getColumnNumber());
+        classNode.setLastLineNumber(annotation.getLastLineNumber());
+        classNode.setLastColumnNumber(annotation.getLastColumnNumber());
+
+        addOccurrences(classNode, findingNode);
     }
 
     private void addOccurrences(ClassNode visitedType, ClassNode findingType) {
