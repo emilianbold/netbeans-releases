@@ -50,10 +50,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -413,7 +414,7 @@ public final class FolderObj extends BaseFileObj {
 
     @Override
     public void delete(final FileLock lock, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {
-        final LinkedList<FileObject> all = new LinkedList<FileObject>();
+        final Deque<FileObject> all = new ArrayDeque<FileObject>();
 
         final File file = getFileName().getFile();
         if (!deleteFile(file, all, getFactory(), deleteHandler)) {
@@ -424,8 +425,8 @@ public final class FolderObj extends BaseFileObj {
 
         BaseFileObj.attribs.deleteAttributes(file.getAbsolutePath().replace('\\', '/'));//NOI18N
         setValid(false);
-        for (int i = 0; i < all.size(); i++) {
-            final BaseFileObj toDel = (BaseFileObj) all.get(i);            
+        for (FileObject fo : all) {
+            final BaseFileObj toDel = (BaseFileObj) fo;            
             final FolderObj existingParent = toDel.getExistingParent();            
             final ChildrenCache childrenCache = (existingParent != null) ? existingParent.getChildrenCache() : null;            
             if (childrenCache != null) {
@@ -565,7 +566,7 @@ public final class FolderObj extends BaseFileObj {
     }
     
     //TODO: rewrite partly and check FileLocks for existing FileObjects
-    private boolean deleteFile(final File file, final LinkedList<FileObject> all, final FileObjectFactory factory, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {
+    private boolean deleteFile(final File file, final Deque<FileObject> all, final FileObjectFactory factory, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {
         final boolean ret = (deleteHandler != null) ? deleteHandler.delete(file) : file.delete();
 
         if (ret) {

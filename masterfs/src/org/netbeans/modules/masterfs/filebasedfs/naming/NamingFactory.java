@@ -63,15 +63,16 @@ public final class NamingFactory {
         if (Utilities.isWindows() && file.getPath().length() == 2 && file.getPath().charAt(1) == ':') {
             file = new File(file.getPath() + File.separator);
         }
-        final LinkedList<FileInfo> list = new LinkedList<FileInfo>();
+        final Deque<FileInfo> queue = new ArrayDeque<FileInfo>();
         File current = file;
         while (current != null) {
-            list.addFirst(new FileInfo(current));
+            queue.addFirst(new FileInfo(current));
             current = current.getParentFile();
         }
 
         List<FileInfo> checkDirs = new ArrayList<FileInfo>();
         FileNaming fileName = null;
+        final List<FileInfo> list = new ArrayList(queue);
         for (int i = 0; i < list.size(); ) {
             FileInfo f = list.get(i);
             if("\\\\".equals(f.getFile().getPath())) {
@@ -162,7 +163,7 @@ public final class NamingFactory {
             NameRef value = names[i];
             while (value != null) {
                 FileNaming fN = value.get();
-                LinkedList<FileNaming> above = new LinkedList<FileNaming>();
+                Deque<FileNaming> above = new ArrayDeque<FileNaming>();
                 for (FileNaming up = fN;;) {
                     if (up == null || not.contains(up)) {
                         not.addAll(above);
