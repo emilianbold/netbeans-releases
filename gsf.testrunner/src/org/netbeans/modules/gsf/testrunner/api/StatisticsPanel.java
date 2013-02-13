@@ -181,7 +181,9 @@ final class StatisticsPanel extends JPanel {
 
 
     @NbBundle.Messages({"btnAlwaysOpenTRW.tooltip=Always open Test Results Window",
-	"btnAlwaysOpenTRW.ACSN=Control whether Test Results Window always opens"})
+	"btnAlwaysOpenTRW.ACSN=Control whether Test Results Window always opens",
+	"btnAlwaysOpenNewTab.tooltip=Always open new tab",
+	"btnAlwaysOpenNewTab.ACSN=Control whether a new tab always opens"})
     private void createOptionButtons() {
 	btnAlwaysOpenTRW = newOptionButton(
 		alwaysOpenTRWIcon,
