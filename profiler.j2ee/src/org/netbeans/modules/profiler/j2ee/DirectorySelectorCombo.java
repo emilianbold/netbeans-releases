@@ -47,10 +47,10 @@ package org.netbeans.modules.profiler.j2ee;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -218,7 +218,7 @@ public class DirectorySelectorCombo extends javax.swing.JPanel {
   
   private void fileMRUPopupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_fileMRUPopupMenuWillBecomeVisible
     DefaultComboBoxModel model = (DefaultComboBoxModel)fileMRU.getModel();
-    Collection mukls = new LinkedList();
+    Collection mukls = new ArrayList();
     for(int i=0;i<model.getSize();i++) {
       if (!(model.getElementAt(i) instanceof ComboListElement))
         continue;
