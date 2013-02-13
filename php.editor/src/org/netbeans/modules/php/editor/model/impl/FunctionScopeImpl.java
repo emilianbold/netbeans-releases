@@ -152,7 +152,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         if (type != null && type.length() > 0) {
             retval = new ArrayList<String>();
             for (String typeName : type.split(TYPE_SEPARATOR_REGEXP)) {
-                if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+                if (!VariousUtils.isSemiType(typeName)) {
                     retval.add(typeName);
                 }
             }
@@ -173,7 +173,6 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
         String types = getReturnType();
         if (types != null && types.length() > 0) {
-            boolean evaluate = types.indexOf(VariousUtils.PRE_OPERATION_TYPE_DELIMITER) != -1; //NOI18N
             retval = new HashSet<TypeScope>();
             for (String typeName : types.split(TYPE_SEPARATOR_REGEXP)) {
                 if (typeName.trim().length() > 0) {
@@ -192,7 +191,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                                 result = new CommontTypesDescriptor(retval);
                                 break;
                             }
-                            if (resolve && typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+                            if (resolve && VariousUtils.isSemiType(typeName)) {
                                 retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
 
                             } else {
@@ -210,7 +209,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                     }
                 }
             }
-            if (evaluate) {
+            if (VariousUtils.isSemiType(types)) {
                 StringBuilder sb = new StringBuilder();
                 for (TypeScope typeScope : retval) {
                     if (sb.length() != 0) {

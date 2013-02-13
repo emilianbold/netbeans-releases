@@ -87,7 +87,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         super(scope, container.getName(), container.getFile(), nameRange, container.getPhpElementKind(), isDeprecated);
         this.container = container;
         String modifiedTypeName = typeName;
-        if (typeName != null && !typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+        if (typeName != null && !VariousUtils.isSemiType(typeName)) {
             QualifiedName qualifiedName = QualifiedName.create(typeName);
             QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(qualifiedName, nameRange.getStart(), scope);
             if (qualifiedName.getSegments().size() != fullyQualifiedName.getSegments().size()) {
@@ -175,7 +175,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
             }
         }
         if (types != null) {
-            if (types.isEmpty() && tName != null && !tName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+            if (types.isEmpty() && tName != null && !VariousUtils.isSemiType(tName)) {
                 return empty;
             }
             typeName = Union2.<String, Collection<? extends TypeScope>>createSecond(types);
