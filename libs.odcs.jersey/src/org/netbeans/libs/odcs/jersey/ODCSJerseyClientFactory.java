@@ -42,6 +42,8 @@
 package org.netbeans.libs.odcs.jersey;
 
 import java.net.PasswordAuthentication;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.odcs.client.api.ODCSFactory;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.openide.util.lookup.ServiceProvider;
@@ -61,7 +63,11 @@ public class ODCSJerseyClientFactory extends ODCSFactory {
 
     @Override
     public ODCSClient createClient(String url, PasswordAuthentication auth) {
-        return new ODCSJerseyClient(url, auth);
+        try {
+            return new ODCSJerseyClient(url, auth);
+        } finally {
+            Logger.getLogger(this.getClass().getName()).log(Level.FINE, "created ODCSJerseyClient for {0}", url);
+        }
     }
     
 }

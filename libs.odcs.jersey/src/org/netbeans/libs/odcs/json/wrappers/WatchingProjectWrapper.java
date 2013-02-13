@@ -39,14 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.odcs.jersey.wrappers;
-
-import com.tasktop.c2c.server.profile.domain.project.Project;
+package org.netbeans.libs.odcs.json.wrappers;
 
 /**
  *
- * @author tomas
+ * @author Ondrej Vrabec
  */
-public class ProjectWrapper {
-    public Project project;
+public class WatchingProjectWrapper {
+    
+    public boolean isWatching;
 }

@@ -39,15 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.odcs.jersey.wrappers;
+package org.netbeans.libs.odcs.json.wrappers;
 
-import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class RepositoryConfigurationWrapper {
-    
-    public RepositoryConfiguration repositoryConfiguration;
+public class QueryWrapper {
+    public SavedTaskQuery savedTaskQuery;
 }

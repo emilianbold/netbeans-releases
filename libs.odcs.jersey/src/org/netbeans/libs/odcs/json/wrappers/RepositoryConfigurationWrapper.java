@@ -39,14 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.odcs.jersey.wrappers;
+package org.netbeans.libs.odcs.json.wrappers;
 
-import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class RepositoryWrapper {
-    public ScmRepository[] scmRepositoryList;
+public class RepositoryConfigurationWrapper {
+    
+    public RepositoryConfiguration repositoryConfiguration;
 }
