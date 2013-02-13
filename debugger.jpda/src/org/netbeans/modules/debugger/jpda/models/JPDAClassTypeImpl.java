@@ -145,7 +145,12 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     public Super getSuperClass() {
         if (classType instanceof ClassType) {
             try {
-                return new SuperVariable(debugger, null, ClassTypeWrapper.superclass((ClassType) classType), getName());
+                ClassType superClass = ClassTypeWrapper.superclass((ClassType) classType);
+                if (superClass == null) {
+                    return null;
+                } else {
+                    return new SuperVariable(debugger, null, superClass, getName());
+                }
             } catch (InternalExceptionWrapper ex) {
                 return null;
             } catch (VMDisconnectedExceptionWrapper ex) {
