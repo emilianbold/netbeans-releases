@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.builder;
 
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.tools.javac.code.Type.ErrorType;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.util.Names;
@@ -56,7 +57,6 @@ import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
-import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
@@ -77,6 +77,7 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.NonNull;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import static com.sun.tools.javac.code.Flags.*;
+import com.sun.tools.javac.code.TypeTag;
 
 /**
  * Factory for creating new com.sun.source.tree instances.
@@ -122,6 +123,20 @@ public class TreeFactory {
         return make.at(NOPOS).Annotation((JCTree)type, lb.toList());
     }
 
+    public AnnotationTree TypeAnnotation(Tree type, List<? extends ExpressionTree> arguments) {
+        ListBuffer<JCExpression> lb = new ListBuffer<JCExpression>();
+        for (ExpressionTree t : arguments)
+            lb.append((JCExpression)t);
+        return make.at(NOPOS).TypeAnnotation((JCTree)type, lb.toList());
+    }
+    
+    public AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations, ExpressionTree underlyingType) {
+        ListBuffer<JCAnnotation> lb = new ListBuffer<JCAnnotation>();
+        for (AnnotationTree t : annotations)
+            lb.append((JCAnnotation)t);
+        return make.at(NOPOS).AnnotatedType(lb.toList(), (JCExpression)underlyingType);
+    }
+
     public ArrayAccessTree ArrayAccess(ExpressionTree array, ExpressionTree index) {
         return make.at(NOPOS).Indexed((JCExpression)array, (JCExpression)index);
     }
@@ -139,27 +154,27 @@ public class TreeFactory {
     }
     
     public BinaryTree Binary(Kind operator, ExpressionTree left, ExpressionTree right) {
-        final int op;
+        final Tag op;
         switch (operator) {
-            case MULTIPLY: op = JCTree.MUL; break;
-            case DIVIDE: op = JCTree.DIV; break;
-            case REMAINDER: op = JCTree.MOD; break;
-            case PLUS: op = JCTree.PLUS; break;
-            case MINUS: op = JCTree.MINUS; break;
-            case LEFT_SHIFT: op = JCTree.SL; break;
-            case RIGHT_SHIFT: op = JCTree.SR; break;
-            case UNSIGNED_RIGHT_SHIFT: op = JCTree.USR; break;
-            case LESS_THAN: op = JCTree.LT; break;
-            case GREATER_THAN: op = JCTree.GT; break;
-            case LESS_THAN_EQUAL: op = JCTree.LE; break;
-            case GREATER_THAN_EQUAL: op = JCTree.GE; break;
-            case EQUAL_TO: op = JCTree.EQ; break;
-            case NOT_EQUAL_TO: op = JCTree.NE; break;
-            case AND: op = JCTree.BITAND; break;
-            case XOR: op = JCTree.BITXOR; break;
-            case OR: op = JCTree.BITOR; break;
-            case CONDITIONAL_AND: op = JCTree.AND; break;
-            case CONDITIONAL_OR: op = JCTree.OR; break;
+            case MULTIPLY: op = JCTree.Tag.MUL; break;
+            case DIVIDE: op = JCTree.Tag.DIV; break;
+            case REMAINDER: op = JCTree.Tag.MOD; break;
+            case PLUS: op = JCTree.Tag.PLUS; break;
+            case MINUS: op = JCTree.Tag.MINUS; break;
+            case LEFT_SHIFT: op = JCTree.Tag.SL; break;
+            case RIGHT_SHIFT: op = JCTree.Tag.SR; break;
+            case UNSIGNED_RIGHT_SHIFT: op = JCTree.Tag.USR; break;
+            case LESS_THAN: op = JCTree.Tag.LT; break;
+            case GREATER_THAN: op = JCTree.Tag.GT; break;
+            case LESS_THAN_EQUAL: op = JCTree.Tag.LE; break;
+            case GREATER_THAN_EQUAL: op = JCTree.Tag.GE; break;
+            case EQUAL_TO: op = JCTree.Tag.EQ; break;
+            case NOT_EQUAL_TO: op = JCTree.Tag.NE; break;
+            case AND: op = JCTree.Tag.BITAND; break;
+            case XOR: op = JCTree.Tag.BITXOR; break;
+            case OR: op = JCTree.Tag.BITOR; break;
+            case CONDITIONAL_AND: op = JCTree.Tag.AND; break;
+            case CONDITIONAL_OR: op = JCTree.Tag.OR; break;
             default:
                 throw new IllegalArgumentException("Illegal binary operator: " + operator);
         }
@@ -265,19 +280,19 @@ public class TreeFactory {
     public CompoundAssignmentTree CompoundAssignment(Kind operator, 
                                                      ExpressionTree variable, 
                                                      ExpressionTree expression) {
-        final int op;
+        final Tag op;
         switch (operator) {
-            case MULTIPLY_ASSIGNMENT: op = JCTree.MUL_ASG; break;
-            case DIVIDE_ASSIGNMENT: op = JCTree.DIV_ASG; break;
-            case REMAINDER_ASSIGNMENT: op = JCTree.MOD_ASG; break;
-            case PLUS_ASSIGNMENT: op = JCTree.PLUS_ASG; break;
-            case MINUS_ASSIGNMENT: op = JCTree.MINUS_ASG; break;
-            case LEFT_SHIFT_ASSIGNMENT: op = JCTree.SL_ASG; break;
-            case RIGHT_SHIFT_ASSIGNMENT: op = JCTree.SR_ASG; break;
-            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: op = JCTree.USR_ASG; break;
-            case AND_ASSIGNMENT: op = JCTree.BITAND_ASG; break;
-            case XOR_ASSIGNMENT: op = JCTree.BITXOR_ASG; break;
-            case OR_ASSIGNMENT: op = JCTree.BITOR_ASG; break;
+            case MULTIPLY_ASSIGNMENT: op = JCTree.Tag.MUL_ASG; break;
+            case DIVIDE_ASSIGNMENT: op = JCTree.Tag.DIV_ASG; break;
+            case REMAINDER_ASSIGNMENT: op = JCTree.Tag.MOD_ASG; break;
+            case PLUS_ASSIGNMENT: op = JCTree.Tag.PLUS_ASG; break;
+            case MINUS_ASSIGNMENT: op = JCTree.Tag.MINUS_ASG; break;
+            case LEFT_SHIFT_ASSIGNMENT: op = JCTree.Tag.SL_ASG; break;
+            case RIGHT_SHIFT_ASSIGNMENT: op = JCTree.Tag.SR_ASG; break;
+            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: op = JCTree.Tag.USR_ASG; break;
+            case AND_ASSIGNMENT: op = JCTree.Tag.BITAND_ASG; break;
+            case XOR_ASSIGNMENT: op = JCTree.Tag.BITXOR_ASG; break;
+            case OR_ASSIGNMENT: op = JCTree.Tag.BITOR_ASG; break;
             default:
                 throw new IllegalArgumentException("Illegal binary operator: " + operator);
         }
@@ -365,23 +380,37 @@ public class TreeFactory {
         return make.at(NOPOS).TypeTest((JCExpression)expression, (JCTree)type);
     }
     
+    public IntersectionTypeTree IntersectionType(List<? extends Tree> bounds) {
+        ListBuffer<JCExpression> jcbounds = new ListBuffer<JCExpression>();
+        for (Tree t : bounds)
+            jcbounds.append((JCExpression)t);
+        return make.at(NOPOS).TypeIntersection(jcbounds.toList());
+    }
+    
     public LabeledStatementTree LabeledStatement(CharSequence label, StatementTree statement) {
         return make.at(NOPOS).Labelled(names.fromString(label.toString()), (JCStatement)statement);
     }
     
+    public LambdaExpressionTree LambdaExpression(List<? extends VariableTree> parameters, Tree body) {
+        ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
+        for (Tree t : parameters)
+            params.append((JCVariableDecl)t);
+        return make.at(NOPOS).Lambda(params.toList(), (JCTree) body);
+    }
+
     public LiteralTree Literal(Object value) {
         try {
             if (value instanceof Boolean)  // workaround for javac issue 6504896
-                return make.at(NOPOS).Literal(TypeTags.BOOLEAN, value == Boolean.FALSE ? 0 : 1);
+                return make.at(NOPOS).Literal(TypeTag.BOOLEAN, value == Boolean.FALSE ? 0 : 1);
             if (value instanceof Character) // looks like world championship in workarounds here ;-)
-                return make.at(NOPOS).Literal(TypeTags.CHAR, Integer.valueOf((Character) value));
+                return make.at(NOPOS).Literal(TypeTag.CHAR, Integer.valueOf((Character) value));
             if (value instanceof Byte) // #119143: Crystal ball no. 4
-                return make.at(NOPOS).Literal(TypeTags.INT, ((Byte) value).intValue());
+                return make.at(NOPOS).Literal(TypeTag.INT, ((Byte) value).intValue());
             if (value instanceof Short)
-                return make.at(NOPOS).Literal(TypeTags.INT, ((Short) value).intValue());
+                return make.at(NOPOS).Literal(TypeTag.INT, ((Short) value).intValue());
             // workaround for making NULL_LITERAL kind.
             if (value == null) {
-                return make.at(NOPOS).Literal(TypeTags.BOT, value);
+                return make.at(NOPOS).Literal(TypeTag.BOT, value);
             }
             return make.at(NOPOS).Literal(value);
         } catch (AssertionError e) {
@@ -457,6 +486,20 @@ public class TreeFactory {
     
     public MethodTree Method(ExecutableElement element, BlockTree body) {
         return make.at(NOPOS).MethodDef((Symbol.MethodSymbol)element, (JCBlock)body);
+    }
+
+    public MemberReferenceTree MemberReference(ReferenceMode refMode, CharSequence name, ExpressionTree expression, List<? extends ExpressionTree> typeArguments) {
+        ListBuffer<JCExpression> targs;
+        
+        if (typeArguments != null) {
+            targs = new ListBuffer<JCExpression>();
+            for (ExpressionTree t : typeArguments)
+                targs.append((JCExpression)t);
+        } else {
+            targs = null;
+        }
+        
+        return make.at(NOPOS).Reference(refMode, names.fromString(name.toString()), (JCExpression) expression, targs != null ? targs.toList() : null);
     }
     
     public ModifiersTree Modifiers(Set<Modifier> flagset, List<? extends AnnotationTree> annotations) {
@@ -546,34 +589,34 @@ public class TreeFactory {
     }
     
     public PrimitiveTypeTree PrimitiveType(TypeKind typekind) {
-        final int typetag;
+        final TypeTag typetag;
         switch (typekind) {
             case BOOLEAN:
-                typetag = TypeTags.BOOLEAN;
+                typetag = TypeTag.BOOLEAN;
                 break;
             case BYTE:
-                typetag = TypeTags.BYTE;
+                typetag = TypeTag.BYTE;
                 break;
             case SHORT:
-                typetag = TypeTags.SHORT;
+                typetag = TypeTag.SHORT;
                 break;
             case INT:
-                typetag = TypeTags.INT;
+                typetag = TypeTag.INT;
                 break;
             case LONG:
-                typetag = TypeTags.LONG;
+                typetag = TypeTag.LONG;
                 break;
             case CHAR:
-                typetag = TypeTags.CHAR;
+                typetag = TypeTag.CHAR;
                 break;
             case FLOAT:
-                typetag = TypeTags.FLOAT;
+                typetag = TypeTag.FLOAT;
                 break;
             case DOUBLE:
-                typetag = TypeTags.DOUBLE;
+                typetag = TypeTag.DOUBLE;
                 break;
             case VOID:
-                typetag = TypeTags.VOID;
+                typetag = TypeTag.VOID;
                 break;
             default:
                 throw new AssertionError("unknown primitive type " + typekind);
@@ -674,7 +717,7 @@ public class TreeFactory {
                 tp = make.at(NOPOS).TypeArray((JCExpression) Type(((ArrayType) type).getComponentType()));
                 break;
             case NULL:
-                tp = make.at(NOPOS).Literal(TypeTags.BOT, null);
+                tp = make.at(NOPOS).Literal(TypeTag.BOT, null);
                 break;
             case ERROR:
                 tp = make.at(NOPOS).Ident(((ErrorType) type).tsym.name);
@@ -698,16 +741,16 @@ public class TreeFactory {
     }
     
     public UnaryTree Unary(Kind operator, ExpressionTree arg) {
-        final int op;
+        final Tag op;
         switch (operator) {
-            case POSTFIX_INCREMENT: op = JCTree.POSTINC; break;
-            case POSTFIX_DECREMENT: op = JCTree.POSTDEC; break;
-            case PREFIX_INCREMENT: op = JCTree.PREINC; break;
-            case PREFIX_DECREMENT: op = JCTree.PREDEC; break;
-            case UNARY_PLUS: op = JCTree.POS; break;
-            case UNARY_MINUS: op = JCTree.NEG; break;
-            case BITWISE_COMPLEMENT: op = JCTree.COMPL; break;
-            case LOGICAL_COMPLEMENT: op = JCTree.NOT; break;
+            case POSTFIX_INCREMENT: op = JCTree.Tag.POSTINC; break;
+            case POSTFIX_DECREMENT: op = JCTree.Tag.POSTDEC; break;
+            case PREFIX_INCREMENT: op = JCTree.Tag.PREINC; break;
+            case PREFIX_DECREMENT: op = JCTree.Tag.PREDEC; break;
+            case UNARY_PLUS: op = JCTree.Tag.POS; break;
+            case UNARY_MINUS: op = JCTree.Tag.NEG; break;
+            case BITWISE_COMPLEMENT: op = JCTree.Tag.COMPL; break;
+            case LOGICAL_COMPLEMENT: op = JCTree.Tag.NOT; break;
             default:
                 throw new IllegalArgumentException("Illegal unary operator: " + operator);
         }
@@ -746,7 +789,7 @@ public class TreeFactory {
                 throw new IllegalArgumentException("Unknown wildcard bound " + kind);
         }
         TypeBoundKind tbk = make.at(NOPOS).TypeBoundKind(boundKind);
-        return make.at(NOPOS).Wildcard(tbk, (JCTree)type);
+        return make.at(NOPOS).Wildcard(tbk, (JCExpression)type);
     }
     
     ////////////////////////////////////// makers modification suggested by Tom
@@ -769,10 +812,9 @@ public class TreeFactory {
     }
 
     private AnnotationTree modifyAnnotationAttrValue(AnnotationTree annotation, int index, ExpressionTree attrValue, Operation op) {
-        AnnotationTree copy = Annotation(
-                annotation.getAnnotationType(),
-                c(annotation.getArguments(), index, attrValue, op)
-        );
+        AnnotationTree copy = annotation.getKind() == Kind.ANNOTATION
+                ? Annotation(annotation.getAnnotationType(), c(annotation.getArguments(), index, attrValue, op))
+                : TypeAnnotation(annotation.getAnnotationType(), c(annotation.getArguments(), index, attrValue, op));
         return copy;
     }
     
@@ -1421,6 +1463,34 @@ public class TreeFactory {
             c((List<ExpressionTree>) typeParameter.getBounds(), index, bound, op)
         );
         return copy;
+    }
+    
+    public LambdaExpressionTree addLambdaParameter(LambdaExpressionTree method, VariableTree parameter) {
+        return modifyLambdaParameter(method, -1, parameter, Operation.ADD);
+    }
+
+    public LambdaExpressionTree insertLambdaParameter(LambdaExpressionTree method, int index, VariableTree parameter) {
+        return modifyLambdaParameter(method, index, parameter, Operation.ADD);
+    }
+    
+    public LambdaExpressionTree removeLambdaParameter(LambdaExpressionTree method, VariableTree parameter) {
+        return modifyLambdaParameter(method, -1, parameter, Operation.REMOVE);
+    }
+
+    public LambdaExpressionTree removeLambdaParameter(LambdaExpressionTree method, int index) {
+        return modifyLambdaParameter(method, index, null, Operation.REMOVE);
+    }
+    
+    private LambdaExpressionTree modifyLambdaParameter(LambdaExpressionTree method, int index, VariableTree parameter, Operation op) {
+        LambdaExpressionTree copy = LambdaExpression(
+                c(method.getParameters(), index, parameter, op),
+                method.getBody()
+        );
+        return copy;
+    }
+    
+    public LambdaExpressionTree setLambdaBody(LambdaExpressionTree method, Tree newBody) {
+        return LambdaExpression(method.getParameters(),newBody);
     }
     
     private <E extends Tree> List<E> c(List<? extends E> originalList, int index, E item, Operation operation) {

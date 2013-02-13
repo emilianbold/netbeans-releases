@@ -1591,7 +1591,7 @@ public class JFXProjectConfigurations {
         if (!Utilities.compareObjects(params, projectProperties.getProperty(APPLICATION_ARGS))) {
             if (params != null && params.length() > 0) {
                 projectProperties.setProperty(APPLICATION_ARGS, params);
-                projectProperties.setComment(APPLICATION_ARGS, new String[]{"# " + NbBundle.getMessage(JFXProjectProperties.class, "COMMENT_app_args")}, false); // NOI18N
+                projectProperties.setComment(APPLICATION_ARGS, new String[]{"# " + NbBundle.getMessage(JFXProjectConfigurations.class, "COMMENT_app_args")}, false); // NOI18N
             } else {
                 projectProperties.remove(APPLICATION_ARGS);
             }

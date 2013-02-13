@@ -700,6 +700,9 @@ public class ModelVisitor extends PathNodeVisitor {
             Node lastVisited = getPath().get(pathSize - 1);
             VarNode varNode = null;
 
+            if (lastVisited instanceof TernaryNode && pathSize > 1) {
+                lastVisited = getPath().get(pathSize - 2);
+            } 
             if ( lastVisited instanceof VarNode) {
                 fqName = getName((VarNode)lastVisited, parserResult);
                 isDeclaredInParent = true;
@@ -744,12 +747,13 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (varNode != null) {
                     objectScope = modelBuilder.getCurrentObject();
                 } else {
-                    JsObject alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), fqName.get(fqName.size() - 1).getName());
-                    objectScope = ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
-                    if(alreadyThere != null && objectScope != null) {
-                        for(Occurrence occurrence :alreadyThere.getOccurrences()) {
-                            objectScope.addOccurrence(occurrence.getOffsetRange());
-                        }
+                    Identifier name = fqName.get(fqName.size() - 1);
+                    JsObject alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(),  name.getName());
+                    objectScope = (alreadyThere == null) 
+                            ? ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent)
+                            : (JsObjectImpl)alreadyThere;
+                    if (alreadyThere != null) {
+                        ((JsObjectImpl)alreadyThere).addOccurrence(name.getOffsetRange());
                     }
                 }
                 if (objectScope != null) {

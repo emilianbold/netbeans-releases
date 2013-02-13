@@ -182,7 +182,7 @@ public class SftpClient implements RemoteClient {
 
     private void setProxy() {
         Proxy proxy = null;
-        // first, socks must be tested - see #226006
+        // prefer socks proxy
         RemoteUtils.ProxyInfo proxyInfo = RemoteUtils.getSocksProxy();
         if (proxyInfo != null) {
             LOGGER.log(Level.FINE, "SOCKS proxy will be used");

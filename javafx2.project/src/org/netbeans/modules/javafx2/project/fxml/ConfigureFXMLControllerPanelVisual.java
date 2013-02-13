@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.project;
+package org.netbeans.modules.javafx2.project.fxml;
 
 import java.awt.Component;
 import java.io.File;

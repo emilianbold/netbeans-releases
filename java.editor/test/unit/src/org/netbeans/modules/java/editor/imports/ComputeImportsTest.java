@@ -206,6 +206,10 @@ public class ComputeImportsTest extends NbTestCase {
     public void test202604() throws Exception {
         doTest("Test202604", JDK16_MASKS, JDK16_MASKS);
     }
+
+    public void testBrokenLambdaParameter() throws Exception {
+        doTest("TestBrokenLambdaParameter", JDK16_MASKS, JDK16_MASKS);
+    }
     
     private void prepareTest(String capitalizedName) throws Exception {
         FileObject workFO = FileUtil.toFileObject(getWorkDir());

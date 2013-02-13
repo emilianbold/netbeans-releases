@@ -105,7 +105,7 @@ public class FieldGroupTree extends JCTree implements Tree {
         return vars.hashCode();
     }
 
-    public int getTag() {
-        return 0;
+    public Tag getTag() {
+        return Tag.NO_TAG;
     }
 }

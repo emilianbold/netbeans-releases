@@ -129,7 +129,7 @@ public class RevertModifications implements PropertyChangeListener {
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision().getRevisionNumber();
+        return panel.getSelectedRevisionCSetId();
     }
     
     public boolean isBackupRequested() {

@@ -107,6 +107,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+	<change id="Java7Support">
+            <api name="general"/>
+            <summary>Support for Java 7 classfile enhancements.</summary>
+            <version major="1" minor="40"/>
+            <date day="13" month="2" year="2013"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes"/>
+            <description>
+                Java 7 added a several new constant pool entry types to support the
+                invokeDynamic instruction. These need to be modeled by the library.
+            </description>
+            <class package="org.netbeans.modules.classfile" name="ClassFile"/>
+            <issue number="225528"/>
+	</change>
 	<change id="Java6Support">
             <api name="general"/>
             <summary>Support for Java 6 classfile enhancements.</summary>

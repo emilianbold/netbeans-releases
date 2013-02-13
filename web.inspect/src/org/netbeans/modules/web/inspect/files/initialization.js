@@ -328,13 +328,69 @@ NetBeans.paintSelectedElements = function(ctx, elements, color) {
     }
 };
 
+// Fills the area/frame between the given outer and inner rectangles
+NetBeans.paintFrame = function(ctx, inner, outer) {
+    ctx.fillRect(outer.left, outer.top, outer.width, (inner.top-outer.top));
+    ctx.fillRect(outer.left, inner.top+inner.height, outer.width, (outer.top+outer.height-inner.top-inner.height));
+    ctx.fillRect(outer.left, inner.top, (inner.left-outer.left), inner.height);
+    ctx.fillRect(inner.left+inner.width, inner.top, (outer.left+outer.width-inner.left-inner.width), inner.height);
+};
+
 NetBeans.paintHighlightedElements = function(ctx, elements) {
     for (var i=0; i<elements.length; i++) {
         var highlightedElement = elements[i];
         var rects = highlightedElement.getClientRects();
+        var style = window.getComputedStyle(highlightedElement);
+
+        var inline = (style.display === 'inline');
+        var marginTop = inline ? 0 : parseInt(style.marginTop);
+        var marginBottom = inline ? 0 : parseInt(style.marginBottom);
+
         for (var j=0; j<rects.length; j++) {
-            var rect = rects[j];
-            ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+            var first = (j === 0) || !inline;
+            var last = (j === rects.length-1) || !inline;
+
+            var marginLeft = first ? parseInt(style.marginLeft) : 0;
+            var marginRight = last ? parseInt(style.marginRight) : 0;
+
+            var borderLeft = first ? parseInt(style.borderLeftWidth) : 0;
+            var borderRight = last ? parseInt(style.borderRightWidth) : 0;
+
+            var paddingLeft = first ? parseInt(style.paddingLeft) : 0;
+            var paddingRight = last ? parseInt(style.paddingRight) : 0;
+
+            var borderRect = rects[j];
+            var marginRect = {
+                left: borderRect.left - marginLeft,
+                top: borderRect.top - marginTop,
+                height: borderRect.height + marginTop + marginBottom,
+                width: borderRect.width + marginLeft + marginRight
+            };
+            var paddingRect = {
+                left: borderRect.left + borderLeft,
+                top: borderRect.top + parseInt(style.borderTopWidth),
+                height: borderRect.height - parseInt(style.borderTopWidth) - parseInt(style.borderBottomWidth),
+                width: borderRect.width - borderLeft - borderRight
+            };
+            var contentRect = {
+                left: paddingRect.left + paddingLeft,
+                top: paddingRect.top + parseInt(style.paddingTop),
+                height: paddingRect.height - parseInt(style.paddingTop) - parseInt(style.paddingBottom),
+                width: paddingRect.width - paddingLeft - paddingRight
+            };
+
+            ctx.fillStyle = '#FF8800';
+            this.paintFrame(ctx, borderRect, marginRect);
+
+            ctx.fillStyle = '#FFFF00';
+            this.paintFrame(ctx, marginRect, paddingRect);
+
+            ctx.fillStyle = '#00FF00';
+            this.paintFrame(ctx, paddingRect, contentRect);
+
+            ctx.fillStyle = '#0000FF';
+            ctx.fillRect(contentRect.left, contentRect.top, contentRect.width, contentRect.height);
+
             ctx.stroke();
         }
     }

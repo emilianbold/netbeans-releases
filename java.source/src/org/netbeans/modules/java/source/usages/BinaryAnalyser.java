@@ -121,7 +121,7 @@ import org.openide.util.Utilities;
 
 
 
-/**
+/**TODO: the full index does not handle invokeDynamicInfo, MethodHandleInfo and MethodTypeInfo.
  *
  * @author Petr Hrebejk, Tomas Zezula
  */

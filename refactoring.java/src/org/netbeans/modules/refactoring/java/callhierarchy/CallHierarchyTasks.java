@@ -652,6 +652,11 @@ final class CallHierarchyTasks {
         }
 
         @Override
+        public <A extends Annotation> A[] getAnnotations(Class<A> annotationType) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public Set<Modifier> getModifiers() {
             return isStatic ? STATICM : Collections.<Modifier>emptySet();
         }

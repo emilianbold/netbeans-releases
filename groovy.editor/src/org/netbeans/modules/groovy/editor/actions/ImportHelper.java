@@ -52,6 +52,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
@@ -71,84 +72,95 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Utility class used for changes in import statements. Typically used by "Fix imports"
+ * action or possibly could be used by Move/Rename refactoring when old used imports
+ * don't need to be in code anymore and on the other hand new imports need to be added.
  *
  * @author schmidtm
+ * @author Martin Janicek
  */
-public final class FixImportsHelper {
+public final class ImportHelper {
 
-    private static final Logger LOG = Logger.getLogger(FixImportsHelper.class.getName());
+    private static final Logger LOG = Logger.getLogger(ImportHelper.class.getName());
 
 
-    private FixImportsHelper() {
+    private ImportHelper() {
     }
 
     public static List<ImportCandidate> getImportCandidate(FileObject fo, String missingClass) {
         LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
-        List<ImportCandidate> result = new ArrayList<ImportCandidate>();
+        List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+        candidates.addAll(findGroovyImports(fo, missingClass));
+        candidates.addAll(findJavaImports(fo, missingClass));
 
-        ClasspathInfo pathInfo = getClasspathInfoForFileObject(fo);
+        return candidates;
+    }
 
-        if (pathInfo == null) {
-            LOG.log(Level.FINEST, "Problem getting ClasspathInfo");
-            return result;
-        }
+    private static List<ImportCandidate> findGroovyImports(FileObject fo, String missingClass) {
+        final List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+        final GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
+                Collections.singleton(ClassPath.SOURCE), null, null));
 
-        if (fo != null) {
-            GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
-                    Collections.singleton(ClassPath.SOURCE),
-                    Collections.<String>emptyList(),
-                    Collections.<String>emptyList()));
-            if (index != null) {
-                Set<IndexedClass> classes = index.getClasses(missingClass, QuerySupport.Kind.PREFIX, true, false, false);
-                for (IndexedClass indexedClass : classes) {
-                    if (!indexedClass.getName().equals(missingClass)) {
-                        continue;
-                    }
+        Set<IndexedClass> classes = index.getClasses(missingClass, QuerySupport.Kind.PREFIX, true, false, false);
+        for (IndexedClass indexedClass : classes) {
+            if (!indexedClass.getName().equals(missingClass)) {
+                continue;
+            }
 
-                    if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.CLASS) {
-                        addAsImportCandidate(missingClass, indexedClass.getFqn(), ElementKind.CLASS, result);
-                    }
-                    if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.INTERFACE) {
-                        addAsImportCandidate(missingClass, indexedClass.getFqn(), ElementKind.INTERFACE, result);
-                    }
-                }
+            if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.CLASS) {
+                candidates.add(createImportCandidate(missingClass, indexedClass.getFqn(), ElementKind.CLASS));
+            }
+            if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.INTERFACE) {
+                candidates.add(createImportCandidate(missingClass, indexedClass.getFqn(), ElementKind.INTERFACE));
             }
         }
+        return candidates;
+    }
+
+    private static List<ImportCandidate> findJavaImports(FileObject fo, String missingClass) {
+        final List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+        final ClasspathInfo pathInfo = createClasspathInfo(fo);
 
         Set<ElementHandle<TypeElement>> typeNames = pathInfo.getClassIndex().getDeclaredTypes(
                 missingClass, NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class));
 
         for (ElementHandle<TypeElement> typeName : typeNames) {
-            ElementKind ek = typeName.getKind();
+            ElementKind kind = typeName.getKind();
 
-            if (ek == ElementKind.CLASS || ek == ElementKind.INTERFACE) {
-                addAsImportCandidate(missingClass, typeName.getQualifiedName(), ek, result);
+            if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE || kind == ElementKind.ANNOTATION_TYPE) {
+                candidates.add(createImportCandidate(missingClass, typeName.getQualifiedName(), kind));
             }
         }
-
-        return result;
+        return candidates;
     }
 
-    private static ClasspathInfo getClasspathInfoForFileObject(FileObject fo) {
+    @NonNull
+    private static ClasspathInfo createClasspathInfo(FileObject fo) {
         ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
         ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
         ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
 
-        if (bootPath == null || compilePath == null || srcPath == null) {
-            return null;
+        if (bootPath == null) {
+            bootPath = ClassPath.EMPTY;
+        }
+        if (compilePath == null) {
+            compilePath = ClassPath.EMPTY;
+        }
+        if (srcPath == null) {
+            srcPath = ClassPath.EMPTY;
         }
         return ClasspathInfo.create(bootPath, compilePath, srcPath);
     }
 
-    private static void addAsImportCandidate(String missingClass, String fqnName, ElementKind kind, List<ImportCandidate> result) {
+    private static ImportCandidate createImportCandidate(String missingClass, String fqnName, ElementKind kind) {
         int level = getImportanceLevel(fqnName);
         Icon icon = ElementIcons.getElementIcon(kind, null);
 
-        result.add(new ImportCandidate(missingClass, fqnName, icon, level));
+        return new ImportCandidate(missingClass, fqnName, icon, level);
     }
 
-    public static int getImportanceLevel(String fqn) {
+    private static int getImportanceLevel(String fqn) {
         int weight = 50;
         if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) { // NOI18N
             weight -= 10;
@@ -177,6 +189,35 @@ public final class FixImportsHelper {
         }
 
         return missingClass;
+    }
+
+    public static void doImport(FileObject fo, String fqnName) {
+        doImports(fo, Collections.singletonList(fqnName));
+    }
+
+    public static void doImports(FileObject fo, List<String> fqnNames) {
+        BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
+        if (baseDoc == null) {
+            return;
+        }
+
+        EditList edits = new EditList(baseDoc);
+
+        // Shitty for-loop because after the last line I want to add additional \n
+        for (int i = 0; i < fqnNames.size(); i++) {
+            int importPosition = getImportPosition(baseDoc);
+            if (importPosition != -1) {
+                LOG.log(Level.FINEST, "Importing here: {0}", importPosition);
+
+                // Last import means one additiona \n
+                if (i == fqnNames.size() - 1) {
+                    edits.replace(importPosition, 0, "import " + fqnNames.get(i) + "\n\n", false, 0);
+                } else {
+                    edits.replace(importPosition, 0, "import " + fqnNames.get(i) + "\n", false, 0);
+                }
+            }
+        }
+        edits.apply();
     }
 
     private static int getImportPosition(BaseDocument doc) {
@@ -242,27 +283,5 @@ public final class FixImportsHelper {
         }
 
         return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
-    }
-
-    public static void doImport(FileObject fo, String fqnName) {
-        doImports(fo, Collections.singletonList(fqnName));
-    }
-
-    public static void doImports(FileObject fo, List<String> fqnNames) {
-        BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
-        if (baseDoc == null) {
-            return;
-        }
-
-        EditList edits = new EditList(baseDoc);
-
-        for (String fqnName : fqnNames) {
-            int importPosition = getImportPosition(baseDoc);
-            if (importPosition != -1) {
-                LOG.log(Level.FINEST, "Importing here: {0}", importPosition);
-                edits.replace(importPosition, 0, "import " + fqnName + "\n", false, 0);
-            }
-        }
-        edits.apply();
     }
 }

@@ -45,12 +45,17 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
+import org.netbeans.modules.web.jsfapi.api.JsfSupport;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -107,6 +112,17 @@ public class JsfCustomIndexer extends CustomIndexer {
 
             }
         }
+        
+        //notify the FaceletsLibrarySupport that the libraries might have changed.
+        if (context.getRoot() != null) {  //looks like can be null
+            for (Project p : LibraryUtils.getOpenedJSFProjects()) {
+                JsfSupport support = JsfSupportProvider.get(p.getProjectDirectory());
+                if (support != null) {
+                    ((JsfSupportImpl) support).indexedContentPossiblyChanged();
+                }
+            }
+        }
+        
     }
 
     public static class Factory extends CustomIndexerFactory {

@@ -666,6 +666,10 @@ abstract public class JavaComponentInfo implements ComponentInfo {
                 }
             } catch (InternalExceptionWrapper iex) {
                 return oldValue;
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                NotifyDescriptor msg = new NotifyDescriptor.Message(ocex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(msg);
+                return oldValue;
             } catch (UnsupportedOperationExceptionWrapper uex) {
                 NotifyDescriptor msg = new NotifyDescriptor.Message(uex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(msg);
