@@ -62,9 +62,11 @@ public class RerunArguments extends javax.swing.JPanel {
         this.paes = paes;
         initComponents();
         for(ProjectActionEvent event : paes) {
-            String args = event.getProfile().getArgsFlat();
-            argumentsField.setText(args);
-            break;
+            if (event.getType() == ProjectActionEvent.PredefinedType.RUN) {
+                String args = event.getProfile().getRunCommand().getValue();
+                argumentsField.setText(args);
+                break;
+            }
         }
     }
     
@@ -80,8 +82,12 @@ public class RerunArguments extends javax.swing.JPanel {
         Object result = DialogDisplayer.getDefault().notify(dd);
         if (result.equals(run)) {
             for(ProjectActionEvent event : paes) {
-                event.getProfile().setArgs(argumentsField.getText());
-                break;
+                if (event.getType() == ProjectActionEvent.PredefinedType.RUN ||
+                    event.getType() == ProjectActionEvent.PredefinedType.DEBUG ||
+                    event.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
+                    event.getProfile().getRunCommand().setValue(argumentsField.getText());
+                    break;
+                }
             }
             return true;
         }

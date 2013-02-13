@@ -555,6 +555,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         this.pageModel = pageModel;
         if (this.pageModel != null) {
             this.pageModel.addPropertyChangeListener(getListener());
+            updateSelectMode(pageModel);
         }
         updateContentImpl(pageModel, keepSelection);
     }
