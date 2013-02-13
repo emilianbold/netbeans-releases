@@ -39,61 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+@TemplateRegistration(folder = "Other", content = "LessTemplate.less")
 package org.netbeans.modules.css.less;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ColoringAttributes;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.FeatureContext;
-import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzer;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.util.lookup.ServiceProvider;
-
-/**
- *
- * @author marekfukala
- */
-@ServiceProvider(service = CssEditorModule.class)
-public class LessCssEditorModule extends CssEditorModule {
-
-    private final SemanticAnalyzer semanticAnalyzer = new LessSemanticAnalyzer();
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return semanticAnalyzer;
-    }
-
-    @Override
-    public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
-        final Snapshot snapshot = context.getSnapshot();
-        return new NodeVisitor<T>(result) {
-            @Override
-            public boolean visit(Node node) {
-                switch (node.type()) {
-                    case less_variable:
-//                    case less_mixin_declaration: - overlaps with class selector
-//                    case less_args_list:
-//                    case less_mixin_guarded:
-                        
-                    int dso = snapshot.getOriginalOffset(node.from());
-                    int deo = snapshot.getOriginalOffset(node.to());
-                        if (dso >= 0 && deo >= 0) { //filter virtual nodes
-                        //check vendor speficic property
-                        OffsetRange range = new OffsetRange(dso, deo);
-                        getResult().put(range, Collections.singleton(ColoringAttributes.LOCAL_VARIABLE));
-
-                    }
-                        break;
-                }
-                return false;
-            }
-        };
-    }
-    
-    
-}
+import org.netbeans.api.templates.TemplateRegistration;

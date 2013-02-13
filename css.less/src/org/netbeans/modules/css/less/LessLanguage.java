@@ -41,59 +41,64 @@
  */
 package org.netbeans.modules.css.less;
 
-import java.util.Collections;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ColoringAttributes;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.FeatureContext;
-import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzer;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
  * @author marekfukala
  */
-@ServiceProvider(service = CssEditorModule.class)
-public class LessCssEditorModule extends CssEditorModule {
+public class LessLanguage extends LanguageHierarchy<LessTokenId> {
 
-    private final SemanticAnalyzer semanticAnalyzer = new LessSemanticAnalyzer();
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return semanticAnalyzer;
-    }
-
-    @Override
-    public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
-        final Snapshot snapshot = context.getSnapshot();
-        return new NodeVisitor<T>(result) {
-            @Override
-            public boolean visit(Node node) {
-                switch (node.type()) {
-                    case less_variable:
-//                    case less_mixin_declaration: - overlaps with class selector
-//                    case less_args_list:
-//                    case less_mixin_guarded:
-                        
-                    int dso = snapshot.getOriginalOffset(node.from());
-                    int deo = snapshot.getOriginalOffset(node.to());
-                        if (dso >= 0 && deo >= 0) { //filter virtual nodes
-                        //check vendor speficic property
-                        OffsetRange range = new OffsetRange(dso, deo);
-                        getResult().put(range, Collections.singleton(ColoringAttributes.LOCAL_VARIABLE));
-
-                    }
-                        break;
-                }
-                return false;
-            }
-        };
+    @MimeRegistration(mimeType = "text/less", service = Language.class)
+    public static Language<LessTokenId> getLanguageInstance() {
+        return new LessLanguage().language();
     }
     
+    @Override
+    protected Collection<LessTokenId> createTokenIds() {
+        return EnumSet.allOf(LessTokenId.class);
+    }
+
+    @Override
+    protected Map<String, Collection<LessTokenId>> createTokenCategories() {
+        return null;
+    }
+
+    @Override
+    protected Lexer<LessTokenId> createLexer(LexerRestartInfo<LessTokenId> info) {
+        return new LessLexer(info);
+    }
+    
+    private Language CORE_CSS_LANGUAGE;
+
+    private Language getCoreCssLanguage() {
+        if (CORE_CSS_LANGUAGE == null) {
+            CORE_CSS_LANGUAGE = Language.find("text/css"); //NOI18N
+        }
+        return CORE_CSS_LANGUAGE;
+    }
+
+    @Override
+    protected LanguageEmbedding embedding(
+            Token<LessTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        //there can be just one token with CssTokenId.CSS type - always create core css language embedding
+        return LanguageEmbedding.create(getCoreCssLanguage(), 0, 0);
+    }
+
+    @Override
+    protected String mimeType() {
+        return "text/less"; //NOI18N
+    }
     
 }
