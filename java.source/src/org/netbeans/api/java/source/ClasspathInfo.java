@@ -191,12 +191,14 @@ public final class ClasspathInfo {
 
     @Override
     public String toString() {
-        return String.format("ClasspathInfo boot: %s, compile: %s, src: %s, internal boot: %s, internal compile: %s, internal out: %s", //NOI18N
+        return String.format(
+            "ClasspathInfo [boot: %s, compile: %s, src: %s, internal boot: %s, internal compile: %s, internal src: %s, internal out: %s]", //NOI18N
                 bootClassPath,
                 compileClassPath,
-                cachedSrcClassPath,
+                srcClassPath,
                 cachedBootClassPath,
                 cachedCompileClassPath,
+                cachedSrcClassPath,
                 outputClassPath);        
     }
 
