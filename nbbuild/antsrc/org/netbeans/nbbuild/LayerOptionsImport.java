@@ -146,7 +146,7 @@ public class LayerOptionsImport extends Task {
                         log(origin);
                     }
                     for (String name : name2value.keySet()) {
-                        if (name.matches("(in|ex)clude")) {
+                        if (name.matches("(in|ex)clude") || name.equals("translate")) {
                             String value = name2value.get(name);
                             if (value != null && value.length() > 0) {
                                 String line = String.format("%s %s", name, value);
@@ -198,9 +198,14 @@ public class LayerOptionsImport extends Task {
                     String n = attributes.getValue("name");
                     prefix += n;
                     register(prefix);
-                } else if (qName.equals("attr") && attributes.getValue("name").matches("(in|ex)clude")) {
+                } else if (qName.equals("attr") && (attributes.getValue("name").matches("(in|ex)clude")
+			|| attributes.getValue("name").equals("translate"))) {
                     String attrName = attributes.getValue("name");
                     String attrValue = attributes.getValue("stringvalue");
+		    if(attrName.equals("translate")) {
+			prefix = "OptionsExport/".concat(cnb);
+			register(prefix);
+		    }
                     Map<String, String> name2value = attributesMap.get(prefix);
                     if (name2value == null) {
                         name2value = new HashMap<String, String>();
