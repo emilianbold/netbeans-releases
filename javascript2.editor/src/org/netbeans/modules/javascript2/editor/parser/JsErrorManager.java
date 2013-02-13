@@ -40,9 +40,9 @@ package org.netbeans.modules.javascript2.editor.parser;
 import jdk.nashorn.internal.parser.Token;
 import jdk.nashorn.internal.parser.TokenType;
 import jdk.nashorn.internal.runtime.ErrorManager;
-import jdk.nashorn.internal.runtime.Source;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,17 +51,33 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
 public class JsErrorManager extends ErrorManager {
 
     private static final Logger LOGGER = Logger.getLogger(JsErrorManager.class.getName());
+
+    private static final Comparator<SimpleError> POSITION_COMPARATOR = new Comparator<SimpleError>() {
+
+        @Override
+        public int compare(SimpleError o1, SimpleError o2) {
+            if (o1.getPosition() < o2.getPosition()) {
+                return -1;
+            }
+            if (o1.getPosition() > o2.getPosition()) {
+                return 1;
+            }
+            return 0;
+        }
+    };
 
     private final Snapshot snapshot;
 
@@ -76,27 +92,31 @@ public class JsErrorManager extends ErrorManager {
         this.language = language;
     }
 
-    public Error getMissingCurlyError() {
+    Error getMissingCurlyError() {
         if (parserErrors == null) {
             return null;
         }
         for (ParserError error : parserErrors) {
             if (error.message != null
                     && (error.message.contains("Expected }") || error.message.contains("but found }"))) { // NOI18N
-                return convert(error);
+                return new JsParserError(convert(error),
+                        snapshot != null ? snapshot.getSource().getFileObject() : null,
+                        Severity.ERROR, null, true, false);
             }
         }
         return null;
     }
 
-    public Error getMissingSemicolonError() {
+    Error getMissingSemicolonError() {
         if (parserErrors == null) {
             return null;
         }
         for (ParserError error : parserErrors) {
             if (error.message != null
                     && error.message.contains("Expected ;")) { // NOI18N
-                return convert(error);
+                return new JsParserError(convert(error),
+                        snapshot != null ? snapshot.getSource().getFileObject() : null,
+                        Severity.ERROR, null, true, false);
             }
         }
         return null;
@@ -132,12 +152,12 @@ public class JsErrorManager extends ErrorManager {
             if (parserErrors == null) {
                 convertedErrors = Collections.emptyList();
             } else {
-                ArrayList<JsParserError> errors = new ArrayList<JsParserError>(parserErrors.size());
+                ArrayList<SimpleError> errors = new ArrayList<SimpleError>(parserErrors.size());
                 for (ParserError error : parserErrors) {
                     errors.add(convert(error));
                 }
-                Collections.sort(errors, JsParserError.POSITION_COMPARATOR);
-                convertedErrors = errors;
+                Collections.sort(errors, POSITION_COMPARATOR);
+                convertedErrors = convert(snapshot, errors);
             }
         }
         return Collections.unmodifiableList(convertedErrors);
@@ -164,7 +184,7 @@ public class JsErrorManager extends ErrorManager {
         parserErrors.add(error);
     }
 
-    private JsParserError convert(ParserError error) {
+    private SimpleError convert(ParserError error) {
         String message = error.message;
         int offset = -1;
         if (error.token > 0) {
@@ -205,8 +225,77 @@ public class JsErrorManager extends ErrorManager {
             }
         }
 
-        return new JsParserError(message,
-                snapshot != null ? snapshot.getSource().getFileObject() : null, offset, offset, Severity.ERROR, null,  true);
+        return new SimpleError(message, offset);
+    }
+
+    private static List<JsParserError> convert(Snapshot snapshot, List<SimpleError> errors) {
+        // basically we are solwing showExplorerBadge attribute here
+        List<JsParserError> ret = new ArrayList<JsParserError>(errors.size());
+        final FileObject file = snapshot != null ? snapshot.getSource().getFileObject() : null;
+
+        String mimepath = snapshot.getMimePath().getPath();
+        if (!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
+            && !JsTokenId.JSON_MIME_TYPE.equals(mimepath)) {
+                int nextCorrect = -1;
+                for (SimpleError error : errors) {
+                    boolean showExplorerBadge = true;
+                    // if the error is in embedded code we ignore it
+                    // as we don't know what the other language will add
+                    int pos = snapshot.getOriginalOffset(error.getPosition());
+                    if (pos >= 0 && nextCorrect <= error.getPosition()
+                            && !JsEmbeddingProvider.containsGeneratedIdentifier(error.getMessage())) {
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(
+                                snapshot, error.getPosition());
+                        if (ts != null && ts.movePrevious()) {
+                            // check also a previous token - is it generated ?
+                            org.netbeans.api.lexer.Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                            if (JsEmbeddingProvider.containsGeneratedIdentifier(token.text().toString())) {
+                                // usually we may expect a group of errors
+                                // so we disable them until next } .... \n
+                                nextCorrect = findNextCorrectOffset(ts, error.getPosition());
+                                showExplorerBadge = false;
+                            }
+                        }
+                    } else {
+                        showExplorerBadge = false;
+                    }
+                    ret.add(new JsParserError(error, file, Severity.ERROR, null, true, showExplorerBadge));
+                }
+        } else {
+            for (SimpleError error : errors) {
+                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, true));
+            }
+        }
+        return ret;
+    }
+
+    private static int findNextCorrectOffset(TokenSequence<? extends JsTokenId> ts, int offset) {
+        ts.move(offset);
+        if (ts.moveNext()) {
+            LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.BRACKET_LEFT_CURLY));
+            LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.EOL));
+        }
+        return ts.offset();
+    }
+
+    static class SimpleError {
+
+        private final String message;
+
+        private final int position;
+
+        public SimpleError(String message, int position) {
+            this.message = message;
+            this.position = position;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public int getPosition() {
+            return position;
+        }
     }
 
     private static class ParserError {

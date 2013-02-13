@@ -365,7 +365,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.websvc.manager.model</package>
                 <package>org.netbeans.modules.websvc.manager.spi</package>
                 <package>org.netbeans.modules.websvc.manager.util</package>
-                <package>org.netbeans.swing.outline</package>
             </friend-packages>
         </data>
     </configuration>

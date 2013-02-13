@@ -1190,4 +1190,37 @@ public class ConvertToARMTest extends NbTestCase {
                 .run(ConvertToARM.class)
                 .assertWarnings();
     }
+
+    public void test225686() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "public class Test {\n" +
+                       "     public String test() throws Exception {\n" +
+                       "        InputStream in = new FileInputStream(\"\");\n" +
+                       "        System.err.println(\"interfering\");\n" +
+                       "        String str;\n" +
+                       "        str = \"\";\n" +
+                       "        in.close();\n" +
+                       "        return str;\n" +
+                       "     }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToARM.class)
+                .findWarning("4:20-4:22:verifier:TXT_ConvertToARM")
+                .applyFix("TXT_ConvertToARM")
+                .assertOutput("package test;\n" +
+                              "import java.io.*;\n" +
+                              "public class Test {\n" +
+                              "     public String test() throws Exception {\n" +
+                              "        String str;\n" +
+                              "        try (InputStream in = new FileInputStream(\"\")) {\n" +
+                              "            System.err.println(\"interfering\");\n" +
+                              "            str = \"\";\n" +
+                              "        }\n" +
+                              "        return str;\n" +
+                              "     }\n" +
+                              "}\n");
+    }
 }

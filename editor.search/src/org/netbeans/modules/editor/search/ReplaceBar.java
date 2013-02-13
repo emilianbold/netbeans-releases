@@ -233,7 +233,12 @@ public final class ReplaceBar extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                replace();
+                if (!popupMenuWasCanceled && !searchBar.isPopupMenuWasCanceled()) {
+                    replace();
+                } else {
+                    popupMenuWasCanceled = false;
+                    searchBar.setPopupMenuWasCanceled(false);
+                }
             }
         });
     }

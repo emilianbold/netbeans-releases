@@ -154,8 +154,9 @@ public class ElementOrderingTest extends NbTestCase {
     public void testDefaultLocale() throws Exception {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-locale.xml");
         FacesConfig facesConfig = model.getRootComponent();
-        
+
         model.startTransaction();
+        model.sync();
         Application application = facesConfig.getApplications().get(0);
         LocaleConfig config = application.getLocaleConfig().get(0);
         DefaultLocale locale = config.getDefaultLocale();
@@ -164,7 +165,6 @@ public class ElementOrderingTest extends NbTestCase {
         
         locale = model.getFactory().createDefatultLocale();
         config.setDefaultLocale(locale);
-        
         endModelTransaction(model);
         model.sync();
         

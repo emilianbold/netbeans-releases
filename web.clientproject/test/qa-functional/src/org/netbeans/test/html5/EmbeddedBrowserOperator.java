@@ -46,7 +46,7 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.util.NameComponentChooser;
 
 /**
- * Operator for Embedded Web browser used in HTML/JavaScript projects
+ * Operator for Embedded Web browser used in HTML5 projects
  *
  * @author Vladimir Riha
  * @version 1.0

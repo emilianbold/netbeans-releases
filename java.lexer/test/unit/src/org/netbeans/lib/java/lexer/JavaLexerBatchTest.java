@@ -449,6 +449,28 @@ public class JavaLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.STRING_LITERAL, "\" \"");
     }
 
+    public void testInterferenceBraceIdent() {
+        String text = "() -> {A::a();}";
+        InputAttributes attr = new InputAttributes();
+        attr.setValue(JavaTokenId.language(), "version", Integer.valueOf(7), true);
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, JavaTokenId.language(), EnumSet.of(JavaTokenId.WHITESPACE), attr);
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.LPAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.RPAREN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.ARROW, "->");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.LBRACE, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "A");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.COLONCOLON, "::");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.LPAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.RPAREN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.SEMICOLON, ";");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.RBRACE, "}");
+
+        assertFalse(ts.moveNext());
+    }
+
     public void testBinaryLiterals() {
         String text = "0b101 0B101 0b101l 0b101L";
         InputAttributes attr = new InputAttributes();

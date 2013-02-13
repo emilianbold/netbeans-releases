@@ -203,13 +203,15 @@ public class PerformanceLogger {
             }
         } catch (SecurityException ex) {
         }
-        String enabled = System.getProperty("dlight.libs.common.profiling.enabled", "auto"); //NOI18N
+        String enabled = System.getProperty("dlight.libs.common.profiling.enabled", "false"); //NOI18N
         if ("true".equals(enabled)) { //NOI18N
             PROFILING_ENABLED = true;
         } else if ("false".equals(enabled)) { //NOI18N
             PROFILING_ENABLED = false;
-        } else {
+        }  else if ("auto".equals(enabled)) { //NOI18N
             PROFILING_ENABLED = !isDebugMode;
+        } else {
+            PROFILING_ENABLED = false;
         }
         boolean cpu = true;
         if (PROFILING_ENABLED) {

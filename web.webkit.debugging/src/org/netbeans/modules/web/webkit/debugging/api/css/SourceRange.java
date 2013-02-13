@@ -50,9 +50,9 @@ import org.json.simple.JSONObject;
  */
 public class SourceRange {
     /** Start of the range (inclusive). */
-    private int start;
+    private final int start;
     /** End of the range (exclusive). */
-    private int end;
+    private final int end;
 
     /**
      * Creates a new {@code SourceRange} that corresponds to the given JSONObject.

@@ -543,6 +543,7 @@ public class Utilities {
             if (enclosingType.getKind() == TypeKind.DECLARED) {
                 return info.getTypes().getDeclaredType((DeclaredType) enclosingType, (TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
             } else {
+                if (dt.asElement() == null) return dt;
                 return info.getTypes().getDeclaredType((TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
             }
         }
@@ -579,7 +580,8 @@ public class Utilities {
         Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
         if (tm instanceof DeclaredType) {
             Element el = ((DeclaredType) tm).asElement();
-            if (el.getSimpleName().length() == 0 || fm.contains(el.getEnclosingElement().getKind())) {
+            //XXX: the null check is needed for lambda type, not covered by test:
+            if (el != null && (el.getSimpleName().length() == 0 || fm.contains(el.getEnclosingElement().getKind()))) {
                 List<? extends TypeMirror> interfaces = ((TypeElement) el).getInterfaces();
                 if (interfaces.isEmpty()) {
                     tm = ((TypeElement) el).getSuperclass();
@@ -1037,6 +1039,8 @@ public class Utilities {
                     return true;
                 }
                 return false;
+            case OTHER:
+                return true;
             default:
                 return false;
         }
@@ -1329,5 +1333,43 @@ public class Utilities {
 
         //TODO: protected?
         return Visibility.PUBLIC;
+    }
+    
+    public static boolean isVariableShadowedInScope(CharSequence variableName, Scope localScope) {
+        if (localScope == null) {
+            return false;
+        }
+
+        if (areAnyLocalVariablesShadowed(variableName, localScope)) {
+            return true;
+        }
+
+        if (areEnclosingMethodParamsShadowed(variableName, localScope)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean areAnyLocalVariablesShadowed(CharSequence variableName, Scope localScope) {
+        for (Element e : localScope.getLocalElements()) {
+            if (e.getKind() == ElementKind.LOCAL_VARIABLE
+                    && e.getSimpleName().contentEquals(variableName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean areEnclosingMethodParamsShadowed(CharSequence variableName, Scope localScope) {
+        if (localScope.getEnclosingMethod() != null) {
+            ExecutableElement enclMethod = localScope.getEnclosingMethod();
+            for (VariableElement varElement : enclMethod.getParameters()) {
+                if (varElement.getSimpleName().contentEquals(variableName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

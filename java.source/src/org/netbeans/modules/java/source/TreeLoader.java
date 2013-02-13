@@ -49,6 +49,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.JavacTask;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Scope;
@@ -73,6 +74,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Log.DiscardDiagnosticHandler;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -165,11 +167,12 @@ public class TreeLoader extends LazyTreeLoader {
                 }
                 try {
                     FileObject fo = SourceUtils.getFile(clazz, cpInfo);
-                    final JavacTaskImpl jti = context.get(JavacTaskImpl.class);
+                    final JavacTaskImpl jti = (JavacTaskImpl) context.get(JavacTask.class);
                     JavaCompiler jc = JavaCompiler.instance(context);
                     if (fo != null && jti != null) {
                         final Log log = Log.instance(context);
                         log.nerrors = 0;
+                        final JavaFileManager jfm = context.get(JavaFileManager.class);
                         JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
                         Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
                         boolean oldSkipAPT = jc.skipAnnotationProcessing;
@@ -181,7 +184,7 @@ public class TreeLoader extends LazyTreeLoader {
                                 if (canWrite(cpInfo)) {
                                     Env<AttrContext> env = Enter.instance(context).getEnv(clazz);
                                     if (env != null && pruneTree(env.tree, Symtab.instance(context))) {
-                                        dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
+                                        dumpSymFile(jfm, jti, clazz);
                                     }
                                 } else {
                                     final JavaFileObject cfo = clazz.classfile;
@@ -307,7 +310,7 @@ public class TreeLoader extends LazyTreeLoader {
                     List<JCTree> prev = null;
                     for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
                         scan(l.head);
-                        if (l.head.getTag() == JCTree.BLOCK) {
+                        if (l.head.getTag() == JCTree.Tag.BLOCK) {
                             if (prev != null)
                                 prev.tail = l.tail;
                             else
@@ -326,8 +329,7 @@ public class TreeLoader extends LazyTreeLoader {
     public static void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol clazz) throws IOException {
         Log log = Log.instance(jti.getContext());
         JavaFileObject prevLogTo = log.useSource(null);
-        boolean oldSuppress = log.suppressErrorsAndWarnings;
-        log.suppressErrorsAndWarnings = true;
+        DiscardDiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             String binaryName = null;
             String surl = null;
@@ -364,7 +366,7 @@ public class TreeLoader extends LazyTreeLoader {
             LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {
             jfm.handleOption("output-root", Collections.singletonList("").iterator()); //NOI18N
-            log.suppressErrorsAndWarnings = oldSuppress;
+            log.popDiagnosticHandler(discardDiagnosticHandler);
             log.useSource(prevLogTo);
         }
     }

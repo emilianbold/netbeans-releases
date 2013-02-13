@@ -99,7 +99,7 @@ public class PullCurrentBranchAction extends ContextAction {
                         HgProgressSupport support = new HgProgressSupport() {
                             @Override
                             public void perform() {
-                                PullAction.getDefaultAndPerformPull(root, branch, this);
+                                PullAction.getDefaultAndPerformPull(root, null, branch, this);
                             }
                         };
                         support.start(rp, root, Bundle.MSG_PULL_BRANCH_PROGRESS(branch)).waitFinished();

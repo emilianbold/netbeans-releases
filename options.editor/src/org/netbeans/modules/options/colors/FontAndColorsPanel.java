@@ -52,11 +52,13 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
@@ -64,7 +66,11 @@ import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -230,6 +236,7 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         }
         
         currentProfile = colorModel.getCurrentProfile ();
+        previousProfileName = currentProfile;
         if (colorModel.isCustomProfile (currentProfile))
             loc (bDelete, "CTL_Delete"); // NOI18N
         else
@@ -253,6 +260,7 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         }
         if (colorModel == null) return;
         colorModel.setCurrentProfile (currentProfile);
+        showDarkLaFNotification(currentProfile);
     }
     
     void cancel () {
@@ -330,5 +338,43 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
                 (JLabel) c, 
                 loc (key)
             );
+    }
+
+    private static final String DARK_COLOR_PROFILE_NAME = "Norway Today"; //NOI18N
+    private String previousProfileName;
+    private Notification changeLaFNotification = null;
+
+    /**
+     * When Norway Today profile is selected then a notification balloon pops up
+     * offering the user to switch to a dark look and feel to match the dark editor color schema.
+     * @param profileName 
+     */
+    private void showDarkLaFNotification( String profileName ) {
+        if( null != previousProfileName && !previousProfileName.equals( profileName ) ) { //NOI18N
+            if( DARK_COLOR_PROFILE_NAME.equals( profileName ) ) {
+                if( !isDarkLaF() && null == changeLaFNotification ) {
+                    changeLaFNotification = NotificationDisplayer.getDefault().notify( NbBundle.getMessage(FontAndColorsPanel.class, "Title_DarkLaF"),
+                            ImageUtilities.loadImageIcon( "org/netbeans/modules/options/colors/darklaf.png", true), //NOI18N
+                            NbBundle.getMessage(FontAndColorsPanel.class, "Hint_DarkLaF"), new ActionListener() {
+
+                        @Override
+                        public void actionPerformed( ActionEvent e ) {
+                            OptionsDisplayer.getDefault().open( "Advanced/Windows/LaF"); //NOI18N
+                        }
+                    });
+                }
+            } else {
+                if( null != changeLaFNotification ) {
+                    changeLaFNotification.clear();
+                    changeLaFNotification = null;
+                }
+            }
+        }
+
+    }
+
+    private static boolean isDarkLaF() {
+        Preferences prefs = NbPreferences.root().node( "laf" ); //NOI18N
+        return prefs.getBoolean( "theme.dark", false ) && MetalLookAndFeel.class.getName().equals( prefs.get( "laf", "" ) ); //NOI18N
     }
 }

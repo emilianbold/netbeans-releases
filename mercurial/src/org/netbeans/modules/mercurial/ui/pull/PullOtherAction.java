@@ -149,7 +149,7 @@ public class PullOtherAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() { 
-                PullAction.performPull(PullAction.PullType.OTHER, root, pullSource, fromPrjName, toPrjName, null, this);
+                PullAction.performPull(PullAction.PullType.OTHER, root, pullSource, fromPrjName, toPrjName, null, null, this);
             }
         };
 

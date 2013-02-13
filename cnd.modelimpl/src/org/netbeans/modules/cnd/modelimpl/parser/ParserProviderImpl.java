@@ -643,7 +643,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 if (i == 0) {
                     if (TRACE) System.err.println("LA(0)=" + lastConsumed + " C="+canUseCallback());
                     assert lastConsumed != null;
-                    assert canUseCallback();
+                    //assert canUseCallback();
                     return lastConsumed.getType();
                 }
                 final int newIndex = skipIncludeTokensIfNeeded(i);
@@ -657,7 +657,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 if (i == 0) {
                     if (TRACE) System.err.println("LT(0)=" + lastConsumed + " C="+canUseCallback());
                     assert lastConsumed != null;
-                    assert canUseCallback();
+                    //assert canUseCallback();
                     assert !isIncludeToken(lastConsumed.getType()) : lastConsumed + " not expected ";
                     return lastConsumed;
                 }

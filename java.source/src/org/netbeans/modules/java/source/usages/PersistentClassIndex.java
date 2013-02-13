@@ -589,8 +589,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                                         final SourceAnalyzerFactory.SimpleAnalyzer sa = SourceAnalyzerFactory.createSimpleAnalyzer();
                                         dataHolder[0] = sa.analyseUnit(
                                             controller.getCompilationUnit(),
-                                            JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
-                                            ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
+                                            JavaSourceAccessor.getINSTANCE().getJavacTask(controller));
                                     } catch (IllegalArgumentException ia) {
                                         //Debug info for issue #187344
                                         //seems that invalid dirty class index is used

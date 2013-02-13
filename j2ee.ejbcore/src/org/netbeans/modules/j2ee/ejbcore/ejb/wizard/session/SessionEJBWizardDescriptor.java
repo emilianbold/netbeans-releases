@@ -208,6 +208,10 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     public boolean exposeTimerMethod() {
         return wizardPanel.exposeTimerMethod();
     }
+
+    public boolean nonPersistentTimer() {
+        return wizardPanel.nonPersistentTimer();
+    }
     
     public boolean isFinishPanel() {
         return isValid();

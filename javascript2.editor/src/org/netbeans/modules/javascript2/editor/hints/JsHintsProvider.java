@@ -45,17 +45,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -147,30 +143,12 @@ public class JsHintsProvider implements HintsProvider {
             List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
             // if in embedded
             String mimepath = parserResult.getSnapshot().getMimePath().getPath();
+            //XXX this condition is a duplicated from JsParserError
             if (!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
                 && !JsTokenId.JSON_MIME_TYPE.equals(mimepath)) {
-                    int nextCorrect = -1;
                     for (Error error : errors) {
-                        // if the error is in embedded code we ignore it
-                        // as we don't know what the other language will add
-                        int pos = parserResult.getSnapshot().getOriginalOffset(error.getStartPosition());
-                        if (pos >= 0 && nextCorrect <= error.getStartPosition()
-                                && !JsEmbeddingProvider.containsGeneratedIdentifier(error.getDisplayName())) {
-                            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(
-                                    parserResult.getSnapshot(), error.getStartPosition());
-                            if (ts != null && ts.movePrevious()) {
-                                // check also a previous token - is it generated ?
-                                Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
-                                if (!JsEmbeddingProvider.containsGeneratedIdentifier(token.text().toString())) {
-                                    unhandled.add(error);
-                                } else {
-                                    // usually we may expect a group of errors
-                                    // so we disable them until next } .... \n
-                                    nextCorrect = findNextCorrectOffset(ts, error.getStartPosition());
-                                }
-                            } else {
-                                unhandled.add(error);
-                            }
+                        if (!(error instanceof Error.Badging) || ((Error.Badging) error).showExplorerBadge()) {
+                            unhandled.add(error);
                         }
                     }
             } else {
@@ -192,15 +170,6 @@ public class JsHintsProvider implements HintsProvider {
     @Override
     public RuleContext createRuleContext() {
         return new JsRuleContext();
-    }
-
-    private int findNextCorrectOffset(TokenSequence<? extends JsTokenId> ts, int offset) {
-        ts.move(offset);
-        if (ts.moveNext()) {
-            LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.BRACKET_LEFT_CURLY));
-            LexUtilities.findNextIncluding(ts, Collections.singletonList(JsTokenId.EOL));
-        }
-        return ts.offset();
     }
 
     public static class JsRuleContext extends RuleContext {

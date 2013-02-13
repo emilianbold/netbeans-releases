@@ -73,11 +73,12 @@ public class GeneralHTMLProject extends JellyTestCase {
      */
     private static final int WAIT_INSPECTION_TIME = 20000;
     protected EventTool evt;
-    public static final String PROJECT_CATEGORY_NAME = "HTML/JavaScript";
+    public static final String PROJECT_CATEGORY_NAME = "HTML5";
     public static final String PROJECT_NAME = "HTML5 Application";
     public static final String SAMPLES = "Samples";
     public static final String SAMPLES_CATEGORY = "HTML5";
     public static String current_project = "";
+    public boolean inEmbeddedBrowser = false;
     public static final Logger LOGGER = Logger.getLogger(GeneralHTMLProject.class.getName());
 
     public GeneralHTMLProject(String arg0) {
@@ -242,6 +243,11 @@ public class GeneralHTMLProject extends JellyTestCase {
                 }
                 propertiesDialogOper.ok();
                 waitScanFinished();
+                if (browserName.equalsIgnoreCase("Embedded WebKit Browser")) {
+                    this.inEmbeddedBrowser = true;
+                } else {
+                    this.inEmbeddedBrowser = false;
+                }
                 return;
             }
         }

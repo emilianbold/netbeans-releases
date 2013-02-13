@@ -265,7 +265,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
         return LookupProviderSupport.createCompositeLookup(
                 Lookups.fixed(
                     WhiteListQuerySupport.createCloud9WhiteListQueryImpl(),
-                    JpaProviderFactory.createJpaProvider("", true, true, false),
+                    JpaProviderFactory.createJpaProvider("", true, true, false, false),
                     new JpaSupportImpl()
                     ), "J2EE/DeploymentPlugins/Oracle Cloud/Lookup"); //NOI18N
     }

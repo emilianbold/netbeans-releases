@@ -187,6 +187,7 @@ public abstract class BasicAbstractResultsPanel
             btnExpand.setVisible(false);
             return;
         }
+        btnExpand.setSelected(true);
         btnExpand.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

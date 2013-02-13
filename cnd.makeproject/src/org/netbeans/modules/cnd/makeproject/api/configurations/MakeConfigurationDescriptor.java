@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1813,7 +1814,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             srcRoot = folder.addFolder(srcRoot, true);
         }
         assert srcRoot.getKind() == folderKind;
-        addFilesImpl(new HashSet<String>(), srcRoot, dir, null, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
+        addFilesImpl(new LinkedList<String>(), srcRoot, dir, null, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
@@ -1839,7 +1840,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             subFolder = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
         }
         subFolder = folder.addFolder(subFolder, setModified);
-        addFilesImpl(new HashSet<String>(), subFolder, dir, null, filesAdded, true, setModified, fileFilter, useOldSchemeBehavior);
+        addFilesImpl(new LinkedList<String>(), subFolder, dir, null, filesAdded, true, setModified, fileFilter, useOldSchemeBehavior);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
@@ -1849,8 +1850,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return subFolder;
     }
 
-    private void addFilesImpl(Set<String> antiLoop, Folder folder, FileObject dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify, boolean setModified, @NullAllowed
-    final FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
+    private void addFilesImpl(LinkedList<String> antiLoop, Folder folder, FileObject dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify, boolean setModified, @NullAllowed
+        final FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
         List<String> absTestRootsList = getAbsoluteTestRoots();
         try {
             String canPath = RemoteFileUtil.getCanonicalPath(dir);
@@ -1859,7 +1860,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 LOGGER.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canPath, folder.getPath()});
                 return;
             }
-            antiLoop.add(canPath);
+            antiLoop.addLast(canPath);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, ex.getMessage(), ex);
             return;
@@ -1871,6 +1872,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             lsPerformanceEvent.setTimeOut(Folder.FS_TIME_OUT);
             files = dir.getChildren();
             if (files == null) {
+                antiLoop.removeLast();
                 return;
             }
         } finally {
@@ -1937,6 +1939,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
         }
+        antiLoop.removeLast();
     }
 
     public boolean okToChange() {

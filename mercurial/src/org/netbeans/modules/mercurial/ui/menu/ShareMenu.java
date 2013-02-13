@@ -50,7 +50,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.ui.pull.FetchAction;
-import org.netbeans.modules.mercurial.ui.pull.FetchCurrentBranchAction;
 import org.netbeans.modules.mercurial.ui.pull.PullAction;
 import org.netbeans.modules.mercurial.ui.pull.PullCurrentBranchAction;
 import org.netbeans.modules.mercurial.ui.pull.PullOtherAction;
@@ -84,10 +83,7 @@ public class ShareMenu extends DynamicMenu implements Presenter.Menu {
         if (lookup == null) {
             org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ShareMenu.class, "CTL_MenuItem_ShareMenu")); // NOI18N
 
-            JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(FetchCurrentBranchAction.class), SystemAction.get(FetchCurrentBranchAction.class).getName(), MercurialAnnotator.ACTIONS_PATH_PREFIX));
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-
-            item = menu.add(new SystemActionBridge(SystemAction.get(PushAction.class), SystemAction.get(PushAction.class).getName(), MercurialAnnotator.ACTIONS_PATH_PREFIX));
+            JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(PushAction.class), SystemAction.get(PushAction.class).getName(), MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
             item = menu.add(new SystemActionBridge(SystemAction.get(PushCurrentBranchAction.class), SystemAction.get(PushCurrentBranchAction.class).getName(), MercurialAnnotator.ACTIONS_PATH_PREFIX));
@@ -114,8 +110,6 @@ public class ShareMenu extends DynamicMenu implements Presenter.Menu {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(PullCurrentBranchAction.class), NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PullBranch"), lookup));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(FetchAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Fetch"), lookup));
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(FetchCurrentBranchAction.class), NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_FetchBranch"), lookup));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }
         return menu;

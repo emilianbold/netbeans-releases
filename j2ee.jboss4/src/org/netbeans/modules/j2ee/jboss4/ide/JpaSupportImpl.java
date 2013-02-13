@@ -62,7 +62,7 @@ class JpaSupportImpl implements JpaSupportImplementation {
     public JpaProvider getDefaultProvider() {
         String defaultProvider = platformImpl.getDefaultJpaProvider();
         boolean jpa2 = platformImpl.isJpa2Available();
-        return JpaProviderFactory.createJpaProvider(defaultProvider, true, true, jpa2);
+        return JpaProviderFactory.createJpaProvider(defaultProvider, true, true, jpa2, false);
     }
 
     @Override
@@ -71,13 +71,13 @@ class JpaSupportImpl implements JpaSupportImplementation {
         boolean jpa2 = platformImpl.isJpa2Available();
         Set<JpaProvider> providers = new HashSet<JpaProvider>();
         if (platformImpl.containsPersistenceProvider(JBJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER)) {
-            providers.add(JpaProviderFactory.createJpaProvider(JBJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER, JBJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER.equals(defaultProvider), true, jpa2));
+            providers.add(JpaProviderFactory.createJpaProvider(JBJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER, JBJ2eePlatformFactory.HIBERNATE_JPA_PROVIDER.equals(defaultProvider), true, jpa2, false));
         }
         if (platformImpl.containsPersistenceProvider(JBJ2eePlatformFactory.TOPLINK_JPA_PROVIDER)) {
-            providers.add(JpaProviderFactory.createJpaProvider(JBJ2eePlatformFactory.TOPLINK_JPA_PROVIDER, JBJ2eePlatformFactory.TOPLINK_JPA_PROVIDER.equals(defaultProvider), true, false));
+            providers.add(JpaProviderFactory.createJpaProvider(JBJ2eePlatformFactory.TOPLINK_JPA_PROVIDER, JBJ2eePlatformFactory.TOPLINK_JPA_PROVIDER.equals(defaultProvider), true, false, false));
         }
         if (platformImpl.containsPersistenceProvider(JBJ2eePlatformFactory.KODO_JPA_PROVIDER)) {
-            providers.add(JpaProviderFactory.createJpaProvider(JBJ2eePlatformFactory.KODO_JPA_PROVIDER, JBJ2eePlatformFactory.KODO_JPA_PROVIDER.equals(defaultProvider), true, false));
+            providers.add(JpaProviderFactory.createJpaProvider(JBJ2eePlatformFactory.KODO_JPA_PROVIDER, JBJ2eePlatformFactory.KODO_JPA_PROVIDER.equals(defaultProvider), true, false, false));
         }
         return providers;
     }

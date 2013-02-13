@@ -47,7 +47,7 @@ import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
@@ -122,7 +122,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                     previous.aptGenerated);
         }
         
-        final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.getClasspathInfo());
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(previous.file2FQNs);
 
         final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
@@ -147,7 +146,7 @@ final class MultiPassCompileWorker extends CompileWorker {
             try {
                 try {
                     if (mem.isLowMemory()) {
-                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        dumpSymFiles(jt, previous.createdFiles);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
@@ -184,7 +183,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     }
                     Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
                     if (mem.isLowMemory()) {
-                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        dumpSymFiles(jt, previous.createdFiles);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
@@ -214,7 +213,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                             public void visitClassDef(JCClassDecl node) {
                                 if (node.sym != null) {
                                     Type st = ts.supertype(node.sym.type);
-                                    if (st.tag == TypeTags.CLASS) {
+                                    if (st.hasTag(TypeTag.CLASS)) {
                                         ClassSymbol c = st.tsym.outermostClass();
                                         CompileTuple u = jfo2tuples.get(c.sourcefile);
                                         if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
@@ -239,7 +238,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         }
                     }
                     if (mem.isLowMemory()) {
-                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        dumpSymFiles(jt, previous.createdFiles);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
@@ -264,7 +263,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated);
                     }
                     if (mem.isLowMemory()) {
-                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        dumpSymFiles(jt, previous.createdFiles);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
@@ -287,10 +286,10 @@ final class MultiPassCompileWorker extends CompileWorker {
                     javaContext.getFQNs().set(types, active.indexable.getURL());
                     boolean[] main = new boolean[1];
                     if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                        javaContext.analyze(trees, jt, fileManager, active, previous.addedTypes, main);
+                        javaContext.analyze(trees, jt, active, previous.addedTypes, main);
                     } else {
                         final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                        javaContext.analyze(trees, jt, fileManager, active, aTypes, main);
+                        javaContext.analyze(trees, jt, active, aTypes, main);
                         previous.addedTypes.addAll(aTypes);
                         previous.modifiedTypes.addAll(aTypes);
                     }
@@ -312,7 +311,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     state  = 0;
                 } catch (CancelAbort ca) {
                     if (mem.isLowMemory()) {
-                        dumpSymFiles(fileManager, jt, previous.createdFiles);
+                        dumpSymFiles(jt, previous.createdFiles);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
@@ -419,8 +418,11 @@ final class MultiPassCompileWorker extends CompileWorker {
             ParsingOutput.lowMemory(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
     }
 
-    private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti, Set<File> alreadyCreated) throws IOException {
+    private void dumpSymFiles(
+            final JavacTaskImpl jti,
+            final Set<File> alreadyCreated) throws IOException {
         if (jti != null) {
+            final JavaFileManager jfm = jti.getContext().get(JavaFileManager.class);
             checkForMemLow = false;
             try {
                 final Types types = Types.instance(jti.getContext());
@@ -437,7 +439,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     public void visitClassDef(JCClassDecl node) {
                         if (node.sym != null) {
                             Type st = types.supertype(node.sym.type);
-                            if (st.tag == TypeTags.CLASS) {
+                            if (st.hasTag(TypeTag.CLASS)) {
                                 ClassSymbol c = st.tsym.outermostClass();
                                 Env<AttrContext> stEnv = enter.getEnv(c);
                                 if (stEnv != null && env != stEnv) {

@@ -1921,6 +1921,9 @@ public class OutlineView extends JScrollPane {
             boolean actionPerformed = false;
             boolean isTreeColumn = convertColumnIndexToModel(column) == 0;
             if (isTreeColumn && row != -1 && e instanceof MouseEvent && SwingUtilities.isLeftMouseButton ((MouseEvent) e)) {
+                if (checkAt(row, column, (MouseEvent) e)) {
+                    return false;
+                }
                 int clickCount = ((MouseEvent) e).getClickCount();
                 if (clickCount > 1) {
                     // Default action.

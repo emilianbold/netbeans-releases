@@ -106,7 +106,7 @@ public abstract class CreateClassFix implements Fix {
         if (superType != null) {
             superTypes = new LinkedList<TypeMirrorHandle>();
             
-            if (superType.getKind() == TypeKind.DECLARED && "".equals(info.getElementUtilities().getBinaryName((TypeElement) ((DeclaredType) superType).asElement()))) {
+            if (superType.getKind() == TypeKind.INTERSECTION) {
                 for (TypeMirror tm : info.getTypes().directSupertypes(superType)) {
                     superTypes.add(TypeMirrorHandle.create(tm));
                 }

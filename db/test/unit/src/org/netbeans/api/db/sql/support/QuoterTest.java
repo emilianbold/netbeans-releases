@@ -169,4 +169,23 @@ public class QuoterTest extends DDLTestBase {
         assertEquals("id", quoter.unquote("id" + quoteString));
         assertEquals("id", quoter.unquote(quoteString + "id" + quoteString));
     }
+
+    // Check SQL99-Quoting
+    public void testQuoteIdentifierContainingQuotingChar() {
+        String quoteString = quoter.getQuoteString();
+
+        String unquoted = "test" + quoteString + "xx";
+        String quoted = quoteString + "test" + quoteString + quoteString + "xx"
+                + quoteString;
+
+        assertEquals(quoted, quoter.quoteAlways(unquoted));
+        assertEquals(unquoted, quoter.unquote(quoted));
+
+        String unquoted2 = "test" + quoteString + "xx" + quoteString + quoteString;
+        String quoted2 = quoteString + "test" + quoteString + quoteString + "xx"
+                + quoteString + quoteString + quoteString + quoteString + quoteString;
+
+        assertEquals(quoted2, quoter.quoteAlways(unquoted2));
+        assertEquals(unquoted2, quoter.unquote(quoted2));
+    }
 }

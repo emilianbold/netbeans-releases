@@ -80,7 +80,8 @@ public class PHPTestBase extends CslTestBase {
                     boolean result = true;
                     if (record.getSourceClassName().startsWith("org.netbeans.modules.parsing.impl.indexing.LogContext")
                             || record.getSourceClassName().startsWith("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater")
-                            || record.getSourceClassName().startsWith("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage")) { //NOI18N
+                            || record.getSourceClassName().startsWith("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage")
+                            || record.getSourceClassName().startsWith("org.netbeans.modules.settings.RecognizeInstanceObjects$OverObjects")) { //NOI18N
                         result = false;
                     }
                     return result;

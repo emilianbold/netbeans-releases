@@ -397,7 +397,7 @@ public class UtilitiesTest extends TestBase {
 
         assertTrue(result.getKind().name(), result.getKind() == Kind.NEW_CLASS);
 
-        String golden = "new $type(){ () { super(); } $mods$ $resultType $methodName($args$) { $statements$; } }";
+        String golden = "new $type(){ $mods$ $resultType $methodName($args$) { $statements$; } }";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
 
         Collection<Diagnostic<? extends JavaFileObject>> errors = new LinkedList<Diagnostic<? extends JavaFileObject>>();

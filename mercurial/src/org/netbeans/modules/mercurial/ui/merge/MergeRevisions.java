@@ -110,6 +110,6 @@ public class MergeRevisions implements PropertyChangeListener {
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision().getRevisionNumber();
+        return panel.getSelectedRevisionCSetId();
     }
 }

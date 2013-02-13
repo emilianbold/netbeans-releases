@@ -43,9 +43,11 @@ package org.netbeans.test.html5.debug;
 
 import java.util.Map;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperator;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.modules.debugger.actions.DeleteAllBreakpointsAction;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.test.html5.GeneralHTMLProject;
@@ -56,8 +58,8 @@ import org.netbeans.test.html5.GeneralHTMLProject;
  */
 public class JavaScriptDebugger extends GeneralHTMLProject {
 
-    public static final int VARIABLES_TIMEOUTS = 2000;
-
+    public static final int VARIABLES_TIMEOUTS = 5000;
+    
     public JavaScriptDebugger(String arg0) {
         super(arg0);
     }
@@ -105,14 +107,14 @@ public class JavaScriptDebugger extends GeneralHTMLProject {
      * minimized by default, there could be "loading" message).
      *
      * @param expectedVariable
-     * @param vo
      */
-    public void waitForVariable(final String expectedVariable, final VariablesOperator vo) {
+    public void waitForVariable(final String expectedVariable) {
         try {
             Waiter waiter = new Waiter(new Waitable() {
                 @Override
                 public Object actionProduced(Object obj) {
                     try {
+                        VariablesOperator vo = new VariablesOperator("Variables");
                         return ((Map<String, Variable>) vo.getVariables()).get(expectedVariable) != null ? Boolean.TRUE : null;
                     } catch (Exception ex) {
                         return null;
@@ -128,5 +130,30 @@ public class JavaScriptDebugger extends GeneralHTMLProject {
             waiter.waitAction(null);
         } catch (InterruptedException e) {
         }
+    }
+
+    /**
+     * Waits for given action to be enabled in Debug main menu
+     * @param actionName action name to wait for
+     */
+    public void waitDebugger(String actionName) {
+        for (int i = 0; i < 10; i++) {
+            boolean enabled = MainWindowOperator.getDefault().menuBar().showMenuItem("Debug|"+actionName).isEnabled();
+            MainWindowOperator.getDefault().menuBar().closeSubmenus();
+            if (!enabled) {
+                break;
+            }
+            new EventTool().waitNoEvent(300);
+        }
+    }
+    
+    /**
+     * Saves given file and then waits (waitNoEvent) for given time (for instance for file to be reloaded in browser)
+     * @param eo file to be saved
+     * @param waitLimit time to wait in ms
+     */
+    public void saveAndWait(EditorOperator eo, long waitLimit){
+        eo.save();
+        evt.waitNoEvent(waitLimit);
     }
 }

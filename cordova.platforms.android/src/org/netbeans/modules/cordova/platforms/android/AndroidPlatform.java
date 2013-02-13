@@ -68,6 +68,7 @@ import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -118,15 +119,32 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<Device> getVirtualDevices() throws IOException {
         assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", true, "list", "avd"); //NOI18N
+        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, "list", "avd"); //NOI18N
         return AVD.parse(avdString);
+    }
+    
+    private String getAndroidCommand() {
+        if (Utilities.isWindows()) {
+            return getSdkLocation() + "\\tools\\android.bat";
+        } else {
+            return getSdkLocation() + "/tools/android";
+        }
+    }
+    
+    String getAdbCommand() {
+        if (Utilities.isWindows()) {
+            return getSdkLocation() + "\\platform-tools\\adb.exe";
+        } else {
+            return getSdkLocation() + "/platform-tools/adb";
+
+        }
     }
     
 
     @Override
     public Collection<SDK> getSDKs() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", true, "list", "targets");//NOI18N
+        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, "list", "targets");//NOI18N
         return Target.parse(avdString);
     }
     
@@ -152,9 +170,7 @@ public class AndroidPlatform implements MobilePlatform {
                     return t;
                 }
             }
-            //TODO: uncomment!
-            //return targets1.get(targets.size()-1).getName();
-            return null;
+            return targets1.iterator().next();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -165,14 +181,14 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<org.netbeans.modules.cordova.platforms.Device> getConnectedDevices() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "devices"); //NOI18N
+        String avdString = ProcessUtils.callProcess(getAdbCommand(), true, "devices"); //NOI18N
         Collection<org.netbeans.modules.cordova.platforms.Device> devices = AndroidDevice.parse(avdString);
         if (devices.isEmpty()) {
             //maybe adb is just down. try to restart adb
-            ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "kill-server"); //NOI18N
-            ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "start-server"); //NOI18N
+            ProcessUtils.callProcess(getAdbCommand(), true, "kill-server"); //NOI18N
+            ProcessUtils.callProcess(getAdbCommand(), true, "start-server"); //NOI18N
         }
-        avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "devices"); //NOI18N
+        avdString = ProcessUtils.callProcess(getAdbCommand(), true, "devices"); //NOI18N
         devices = AndroidDevice.parse(avdString);
         return devices;
     }
@@ -226,7 +242,7 @@ public class AndroidPlatform implements MobilePlatform {
         try {
             String value;
             for(;;) {
-                value = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "-e", "wait-for-device", "shell", "getprop", "init.svc.bootanim"); //NOI18N
+                value = ProcessUtils.callProcess(getAdbCommand(), true, "-e", "wait-for-device", "shell", "getprop", "init.svc.bootanim"); //NOI18N
                 if ("stopped".equals(value.trim())) { //NOI18N
                     return true;
                 }
@@ -248,7 +264,7 @@ public class AndroidPlatform implements MobilePlatform {
     public void manageDevices() {
         assert !SwingUtilities.isEventDispatchThread();
         try {
-            ProcessUtils.callProcess(getSdkLocation() + "/tools/android", true, "avd"); //NOI18N
+            ProcessUtils.callProcess(getAndroidCommand(), true, "avd"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

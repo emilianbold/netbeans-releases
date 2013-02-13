@@ -41,11 +41,17 @@
  */
 package org.netbeans.modules.cordova.platforms.ios;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -67,9 +73,25 @@ public class IOSActionProvider implements ActionProvider {
                 };
     }
 
+    @NbBundle.Messages({
+        "ERR_NotMac=iOS Development is available only on Mac OS X",
+        "ERR_Title=Error",
+        "LBL_Opening=Opening url"    
+    })
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
+        if (!Utilities.isMac()) {
+                NotifyDescriptor not = new NotifyDescriptor(
+                        Bundle.LBL_NoMac(), 
+                        Bundle.ERR_Title(), 
+                        NotifyDescriptor.DEFAULT_OPTION, 
+                        NotifyDescriptor.ERROR_MESSAGE,
+                        null, 
+                        null);
+                DialogDisplayer.getDefault().notify(not);
+                return;
+        }
+        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
         assert build != null;
         if (COMMAND_BUILD.equals(command)) {
             build.perform(BuildPerformer.BUILD_IOS, p);
@@ -79,7 +101,12 @@ public class IOSActionProvider implements ActionProvider {
             if (build.isPhoneGapBuild(p)) {
                 build.perform(build.RUN_IOS,p);
             } else {
-                IOSDevice.IPHONE.openUrl(build.getUrl(p));
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        IOSDevice.IPHONE.openUrl(build.getUrl(p));
+                    }
+                }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
             }
         }
     }
