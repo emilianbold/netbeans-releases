@@ -256,4 +256,12 @@ public class VariousUtilsTest extends ModelTestBase{
         assertEquals("", VariousUtils.qualifyTypeNames("   |     |  ||  ", 0, null));
     }
 
+    public void testIsSemiType() throws Exception {
+        assertTrue(VariousUtils.isSemiType("@cls:\\NS\\Foo@fld:context"));
+    }
+
+    public void testIsNotSemiType() throws Exception {
+        assertFalse(VariousUtils.isSemiType("\\NS\\Foo"));
+    }
+
 }
