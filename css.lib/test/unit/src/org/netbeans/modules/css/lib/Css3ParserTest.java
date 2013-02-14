@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -79,9 +80,11 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult.IN_UNIT_TESTS = true;
     }
 
-    public void testAllANTLRRulesHaveNodeTypes() {
+   public void testAllANTLRRulesHaveNodeTypes() {
         for (String rule : Css3Parser.ruleNames) {
-            assertNotNull(NodeType.valueOf(rule));
+            if (!rule.startsWith("synpred") && !rule.toLowerCase().endsWith("predicate")) {
+                assertNotNull(NodeType.valueOf(rule));
+            }
         }
     }
 
