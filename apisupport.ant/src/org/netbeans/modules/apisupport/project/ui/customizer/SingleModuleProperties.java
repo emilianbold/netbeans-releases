@@ -150,6 +150,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private boolean implementationVersionChange;
     private boolean providedTokensChanged;
     private boolean autoUpdateShowInClientChanged;
+    private boolean hasExcludedModules;
 
     static {
         // setup defaults
@@ -217,6 +218,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         // XXX consider SingleModuleProperties(NbModuleProject) constructor. Life would be easier.
         super(helper, evaluator);
         this.bundleInfoProvider = bundleInfoProvider;
+        this.hasExcludedModules = false;
         refresh(moduleType, sp);
     }
 
@@ -678,12 +680,25 @@ public final class SingleModuleProperties extends ModuleProperties {
                 ModuleDependency dep = it.next();
                 ModuleEntry me = dep.getModuleEntry();
                 if (me.getPublicPackages().length == 0 || !me.isDeclaredAsFriend(getCodeNameBase())) {
+                    this.hasExcludedModules = true;
                     it.remove();
                 }
             }
         }
         return Collections.unmodifiableSet(result);
     }
+    
+    /**
+     * Returns whether a set of available {@link ModuleDependency modules dependencies}
+     * in the module's universe according to the currently selected {@link
+     * #getActivePlatform() platform} has at least one excluded module.<p>
+     * 
+     */
+    public boolean isHasExcludedModules() {
+        return hasExcludedModules;
+    }
+
+    
 
     /**
      * Delegates to {@link #getUniverseDependencies(boolean, boolean)} with
