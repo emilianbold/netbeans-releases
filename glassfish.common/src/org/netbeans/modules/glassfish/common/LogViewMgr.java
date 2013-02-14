@@ -87,7 +87,8 @@ import org.openide.windows.*;
  */
 public class LogViewMgr {
 
-    private static final Logger LOGGER = Logger.getLogger("glassfish"); //  NOI18N
+    /** Local logger. */
+    private static final Logger LOGGER = GlassFishLogger.get(LogViewMgr.class);
 
     private static final boolean strictFilter = Boolean.getBoolean("glassfish.logger.strictfilter"); // NOI18N
 

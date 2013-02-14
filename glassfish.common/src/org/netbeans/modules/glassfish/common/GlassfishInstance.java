@@ -53,6 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.data.GlassFishAdminInterface;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;
@@ -61,7 +62,6 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.modules.glassfish.common.ui.InstanceCustomizer;
 import org.netbeans.modules.glassfish.common.ui.VmCustomizer;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.*;
 import org.netbeans.spi.server.ServerInstanceFactory;
@@ -978,10 +978,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     (state == ServerState.RUNNING
                     && GlassFishStatus.isReady(this, false))) {
                 try {
-                    Future<OperationState> stopServerTask = commonSupport.stopServer(null);
+                    Future<TaskState> stopServerTask = commonSupport.stopServer(null);
                     if(timeout > 0) {
-                        OperationState opState = stopServerTask.get(timeout, TimeUnit.MILLISECONDS);
-                        if(opState != OperationState.COMPLETED) {
+                        TaskState opState = stopServerTask.get(timeout, TimeUnit.MILLISECONDS);
+                        if(opState != TaskState.COMPLETED) {
                             Logger.getLogger("glassfish").info("Stop server failed..."); // NOI18N
                         }
                     }

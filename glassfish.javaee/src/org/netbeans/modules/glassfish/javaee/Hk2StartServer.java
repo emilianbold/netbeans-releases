@@ -59,23 +59,20 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
-import javax.enterprise.deploy.spi.status.ClientConfiguration;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
-import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.enterprise.deploy.spi.status.*;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.eecommon.api.Utils;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2DeploymentStatus;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.glassfish.javaee.ui.DebugPortQuery;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.GlassfishModule3;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.GlassfishModule3;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -147,22 +144,24 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
             GlassfishModule commonSupport = getCommonServerSupport();
             if(commonSupport != null && !commonSupport.isRemote()) {
                 commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, true);
-                commonSupport.startServer(new OperationStateListener() {
+                commonSupport.startServer(new TaskStateListener() {
                     @Override
-                    public void operationStateChanged(OperationState newState, String message) {
+                    public void operationStateChanged(TaskState newState,
+                            TaskEvent event, String... args) {
                         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                                 CommandType.START, translateState(newState), ActionType.EXECUTE,
-                                message));
+                                org.glassfish.tools.ide.utils.Utils.concatenate(args)));
                     }
                 }, GlassfishModule.ServerState.RUNNING);
             } else if (commonSupport != null) { // this is the remote case
                 commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, true);
-                commonSupport.restartServer(new OperationStateListener() {
+                commonSupport.restartServer(new TaskStateListener() {
                     @Override
-                    public void operationStateChanged(OperationState newState, String message) {
+                    public void operationStateChanged(TaskState newState,
+                            TaskEvent event, String... args) {
                         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                                 CommandType.START, translateState(newState), ActionType.EXECUTE,
-                                message));
+                                org.glassfish.tools.ide.utils.Utils.concatenate(args)));
                     }
                 });
             }
@@ -178,12 +177,13 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                 ));
         GlassfishModule commonSupport = getCommonServerSupport();
         if(commonSupport != null && !commonSupport.isRemote()) {
-            commonSupport.stopServer(new OperationStateListener() {
+            commonSupport.stopServer(new TaskStateListener() {
                 @Override
-                public void operationStateChanged(OperationState newState, String message) {
+                public void operationStateChanged(TaskState newState,
+                            TaskEvent event, String... args) {
                     fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                             CommandType.STOP, translateState(newState), ActionType.EXECUTE, 
-                            message));
+                            org.glassfish.tools.ide.utils.Utils.concatenate(args)));
                 }
             });
         } else if (null != commonSupport) { // this is the remote case
@@ -196,7 +196,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
         return this;
     }
     
-    private static StateType translateState(OperationState commonState) {
+    private static StateType translateState(TaskState commonState) {
         switch(commonState) {
             case RUNNING:
                 return StateType.RUNNING;
@@ -237,20 +237,23 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
             final GlassfishModule commonSupport = getCommonServerSupport();
             if(commonSupport != null && !commonSupport.isRemote()) {
                 commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.DEBUG_MODE, true);
-                commonSupport.startServer(new OperationStateListener() {
+                commonSupport.startServer(new TaskStateListener() {
                     @Override
-                    public void operationStateChanged(OperationState newState, String message) {
+                    public void operationStateChanged(TaskState newState,
+                            TaskEvent event, String... args) {
                         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                                 CommandType.START, translateState(newState), ActionType.EXECUTE,
-                                message));
+                                org.glassfish.tools.ide.utils.Utils.concatenate(args)));
                     }
                 }, GlassfishModule.ServerState.RUNNING);
             } else if  (null != commonSupport) { // this is the remote case
                 commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.DEBUG_MODE, true);
-                commonSupport.restartServer(new OperationStateListener() {
+                commonSupport.restartServer(new TaskStateListener() {
+                    @SuppressWarnings("SleepWhileInLoop")
                     @Override
-                    public void operationStateChanged(OperationState newState, String message) {
-                        if (OperationState.COMPLETED.equals(newState)) {
+                    public void operationStateChanged(TaskState newState,
+                            TaskEvent event, String... args) {
+                        if (TaskState.COMPLETED.equals(newState)) {
                             try {
                                 Thread.sleep(1000);
                                 while (GlassfishModule.ServerState.STARTING.equals(commonSupport.getServerState())) {
@@ -262,7 +265,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                         }
                         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                                 CommandType.START, translateState(newState), ActionType.EXECUTE,
-                                message));
+                                org.glassfish.tools.ide.utils.Utils.concatenate(args)));
                     }
                 });
             }
@@ -455,11 +458,13 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
 //            String domainLocation = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
 //            String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
             commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.PROFILE_MODE, true);
-            commonSupport.startServer(new OperationStateListener() {
+            commonSupport.startServer(new TaskStateListener() {
 
+                @SuppressWarnings("SleepWhileInLoop")
                 @Override
-                public void operationStateChanged(OperationState newState, String message) {
-                    if (newState == OperationState.RUNNING) {
+                public void operationStateChanged(TaskState newState,
+                            TaskEvent event, String... args) {
+                    if (newState == TaskState.RUNNING) {
                         // wait for the profiler agent to initialize
                         int t = 0;
                         Logger.getLogger("glassfish-javaee").log(Level.FINE,"t == {0}", t); // NOI18N
@@ -481,7 +486,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                     }
                     fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                         CommandType.START, translateState(newState), ActionType.EXECUTE,
-                        message));
+                        org.glassfish.tools.ide.utils.Utils.concatenate(args)));
 
                     // FIXME this is pretty ugly workaround and if this is still
                     // needed once GF plugin is rewritten we should introduce
