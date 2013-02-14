@@ -41,65 +41,60 @@
  */
 package org.netbeans.modules.css.less;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Map;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
+import junit.framework.TestCase;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author marekfukala
  */
-public class LessLanguage extends LanguageHierarchy<LessTokenId> {
-
-    private static Language<LessTokenId> INSTANCE;
+public class LessLexerTest extends CslTestBase {
     
-    @MimeRegistration(mimeType = "text/less", service = Language.class)
-    public static Language<LessTokenId> getLanguageInstance() {
-        if(INSTANCE == null) {
-            INSTANCE = new LessLanguage().language();
-        }
-        return INSTANCE;
+    public LessLexerTest(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new LessCslLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/less";
     }
     
-    @Override
-    protected Collection<LessTokenId> createTokenIds() {
-        return EnumSet.allOf(LessTokenId.class);
-    }
+    public void testLexing() {
+        FileObject testFile = getTestFile("testFiles/test.less");
+        BaseDocument document = getDocument(testFile);
+        final TokenHierarchy th = TokenHierarchy.get(document);
+        document.render(new Runnable() {
 
-    @Override
-    protected Map<String, Collection<LessTokenId>> createTokenCategories() {
-        return null;
+            @Override
+            public void run() {
+                TokenSequence tokenSequence = th.tokenSequence();
+                assertTrue(tokenSequence.moveNext());
+                //just one big fat token                
+                Token token = tokenSequence.token();
+                assertEquals(LessTokenId.CSS, token.id()); 
+                
+                //with embedded plain css tokens
+                TokenSequence<CssTokenId> embedded = tokenSequence.embedded(CssTokenId.language());
+                assertNotNull(embedded);
+                
+                assertFalse(tokenSequence.moveNext()); //no more tokens
+            }
+            
+        });
+        
     }
-
-    @Override
-    protected Lexer<LessTokenId> createLexer(LexerRestartInfo<LessTokenId> info) {
-        return new LessLexer(info);
-    }
-
-    private Language getCoreCssLanguage() {
-        return CssTokenId.language();
-    }
-
-    @Override
-    protected LanguageEmbedding embedding(
-            Token<LessTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-        //there can be just one token with CssTokenId.CSS type - always create core css language embedding
-        return LanguageEmbedding.create(getCoreCssLanguage(), 0, 0);
-    }
-
-    @Override
-    protected String mimeType() {
-        return "text/less"; //NOI18N
-    }
+    
     
 }

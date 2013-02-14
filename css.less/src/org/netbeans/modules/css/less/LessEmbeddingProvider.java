@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,69 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.less;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Map;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
+import java.util.*;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 
 /**
  *
  * @author marekfukala
  */
-public class LessLanguage extends LanguageHierarchy<LessTokenId> {
+@EmbeddingProvider.Registration(mimeType="text/less", targetMimeType="text/css")
+public class LessEmbeddingProvider extends EmbeddingProvider {
 
-    private static Language<LessTokenId> INSTANCE;
-    
-    @MimeRegistration(mimeType = "text/less", service = Language.class)
-    public static Language<LessTokenId> getLanguageInstance() {
-        if(INSTANCE == null) {
-            INSTANCE = new LessLanguage().language();
-        }
-        return INSTANCE;
-    }
-    
     @Override
-    protected Collection<LessTokenId> createTokenIds() {
-        return EnumSet.allOf(LessTokenId.class);
+    public List<Embedding> getEmbeddings(Snapshot snapshot) {
+        return Collections.singletonList(snapshot.create(0, snapshot.getText().length(), "text/css"));
     }
 
     @Override
-    protected Map<String, Collection<LessTokenId>> createTokenCategories() {
-        return null;
+    public int getPriority() {
+        return Integer.MAX_VALUE; //todo specify reasonable number
     }
 
     @Override
-    protected Lexer<LessTokenId> createLexer(LexerRestartInfo<LessTokenId> info) {
-        return new LessLexer(info);
+    public void cancel() {
+        //ignore //todo resolve cancel operation
     }
-
-    private Language getCoreCssLanguage() {
-        return CssTokenId.language();
-    }
-
-    @Override
-    protected LanguageEmbedding embedding(
-            Token<LessTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-        //there can be just one token with CssTokenId.CSS type - always create core css language embedding
-        return LanguageEmbedding.create(getCoreCssLanguage(), 0, 0);
-    }
-
-    @Override
-    protected String mimeType() {
-        return "text/less"; //NOI18N
-    }
-    
 }
