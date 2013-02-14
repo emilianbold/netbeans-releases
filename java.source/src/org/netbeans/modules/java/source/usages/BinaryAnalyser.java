@@ -71,7 +71,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -106,7 +105,6 @@ import org.netbeans.modules.classfile.Parameter;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.SuspendSupport;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
@@ -127,26 +125,36 @@ import org.openide.util.Utilities;
  */
 public class BinaryAnalyser {
 
-    public enum Result {
-        FINISHED,
-        CANCELED,
-        CLOSED,
-    };
-
+    
     public static final class Changes {
 
-        static final List<ElementHandle<TypeElement>> NO_CHANGES = Collections.emptyList();
+        private static final Changes UP_TO_DATE = new Changes(
+                true,
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                false);
+
+        private static final Changes FAILURE = new Changes(
+                false,
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                false);
 
         public final List<ElementHandle<TypeElement>> added;
         public final List<ElementHandle<TypeElement>> removed;
         public final List<ElementHandle<TypeElement>> changed;
         public final boolean preBuildArgs;
+        public final boolean done;
 
         private Changes (
+                final boolean done,
                 final List<ElementHandle<TypeElement>> added,
                 final List<ElementHandle<TypeElement>> removed,
                 final List<ElementHandle<TypeElement>> changed,
                 final boolean preBuildArgs) {
+            this.done = done;
             this.added = added;
             this.removed = removed;
             this.changed = changed;
@@ -155,6 +163,8 @@ public class BinaryAnalyser {
 
     }
 
+    private static final String INIT ="<init>"; //NOI18N
+    private static final String CLINIT ="<clinit>"; //NOI18N
     private static final String ROOT = "/"; //NOI18N
     private static final String TIME_STAMPS = "timestamps.properties";   //NOI18N
     private static final String CRC = "crc.properties"; //NOI18N
@@ -169,7 +179,6 @@ public class BinaryAnalyser {
     private final List<Pair<Pair<String,String>,Object[]>> refs = new ArrayList<Pair<Pair<String, String>, Object[]>>();
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private final LowMemoryWatcher lmListener;
-    private Continuation cont;
     //@NotThreadSafe
     private Pair<LongHashMap<String>,Set<String>> timeStamps;
 
@@ -184,69 +193,58 @@ public class BinaryAnalyser {
 
     /** Analyses a classpath root.
      * @param scanning context
-     *
      */
-    public final Result start (final @NonNull Context ctx) throws IOException, IllegalArgumentException  {
-        return start(ctx.getRootURI(), ctx);
+    @NonNull
+    public final Changes analyse (final @NonNull Context ctx) throws IOException, IllegalArgumentException  {
+        Parameters.notNull("ctx", ctx); //NOI18N
+        final RootProcessor p = createProcessor(ctx);
+        if (p.execute()) {            
+            if (!p.hasChanges() && timeStampsEmpty()) {
+                assert refs.isEmpty();
+                assert toDelete.isEmpty();
+                return Changes.UP_TO_DATE;
+            }
+            final List<Pair<ElementHandle<TypeElement>,Long>> newState = p.result();
+            final List<Pair<ElementHandle<TypeElement>,Long>> oldState = loadCRCs(cacheRoot);
+            final boolean preBuildArgs = p.preBuildArgs();
+            store();
+            storeCRCs(cacheRoot, newState);
+            storeTimeStamps();
+            return diff(oldState,newState, preBuildArgs);
+        } else {
+            return Changes.FAILURE;
+        }
     }
 
     /**
      *
      * @param url of root to be indexed
-     * @param canceled - not used
-     * @param shutdown - not used
      * @return result of indexing
      * @throws IOException
      * @throws IllegalArgumentException
      * @deprecated Only used by unit tests, the start method is used by impl dep by tests of several modules, safer to keep it.
      */
     @Deprecated
-    public final Result start (final @NonNull URL url, final AtomicBoolean canceled, final AtomicBoolean shutdown) throws IOException, IllegalArgumentException  {
-        return start (
+    public final Changes analyse(@NonNull final URL url) throws IOException, IllegalArgumentException  {
+        return analyse(
+            SPIAccessor.getInstance().createContext(
+                FileUtil.createMemoryFileSystem().getRoot(),
                 url,
-                SPIAccessor.getInstance().createContext(
-                    FileUtil.createMemoryFileSystem().getRoot(),
-                    url,
-                    JavaIndex.NAME,
-                    JavaIndex.VERSION,
-                    null,
-                    false,
-                    false,
-                    false,
-                    SuspendSupport.NOP,
-                    null,
-                    null));
+                JavaIndex.NAME,
+                JavaIndex.VERSION,
+                null,
+                false,
+                false,
+                false,
+                SuspendSupport.NOP,
+                null,
+                null));
     }
-
-    public Result resume () throws IOException {
-        assert cont != null;
-        return cont.execute();
-    }
-
-
-    public Changes finish () throws IOException {
-        if (cont == null) {
-            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES, false);
-        }
-        if (!cont.hasChanges() && timeStampsEmpty()) {
-            assert refs.isEmpty();
-            assert toDelete.isEmpty();
-            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES, false);
-        }
-        final List<Pair<ElementHandle<TypeElement>,Long>> newState = cont.finish();
-        final List<Pair<ElementHandle<TypeElement>,Long>> oldState = loadCRCs(cacheRoot);
-        final boolean preBuildArgs = cont.preBuildArgs();
-        cont = null;
-        store();
-        storeCRCs(cacheRoot, newState);
-        storeTimeStamps();
-        return diff(oldState,newState, preBuildArgs);
-    }
-
+ 
     //<editor-fold defaultstate="collapsed" desc="Private helper methods">
-    private Result start (final URL root, final @NonNull Context ctx) throws IOException, IllegalArgumentException  {
-        Parameters.notNull("ctx", ctx); //NOI18N
-        assert cont == null;
+    @NonNull
+    private RootProcessor createProcessor(@NonNull final Context ctx) throws IOException {
+        final URL root = ctx.getRootURI();
         final String mainP = root.getProtocol();
         if ("jar".equals(mainP)) {          //NOI18N
             final URL innerURL = FileUtil.getArchiveFile(root);
@@ -255,63 +253,42 @@ public class BinaryAnalyser {
                 final File archive = Utilities.toFile(URI.create(innerURL.toExternalForm()));
                 if (archive.canRead()) {
                     if (!isUpToDate(ROOT,archive.lastModified())) {
-                        writer.clear();
                         try {
-                            final ZipFile zipFile = new ZipFile(archive);
-                            final Enumeration<? extends ZipEntry> e = zipFile.entries();
-                            cont = new ZipContinuation (zipFile, e, ctx);
-                            return cont.execute();
+                            return new ArchiveProcessor (archive, ctx);
                         } catch (ZipException e) {
                             LOGGER.log(Level.WARNING, "Broken zip file: {0}", archive.getAbsolutePath());
                         }
                     }
                 } else {
-                    return deleted();
+                    return new DeletedRootProcessor(ctx);
                 }
             } else {
                 final FileObject rootFo =  URLMapper.findFileObject(root);
                 if (rootFo != null) {
-                    if (!isUpToDate(ROOT,rootFo.lastModified().getTime())) {
-                        writer.clear();
-                        Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                        cont = new FileObjectContinuation (todo, rootFo, ctx);
-                        return cont.execute();
+                    if (!isUpToDate(ROOT,rootFo.lastModified().getTime())) {                        
+                        return new NBFSProcessor(rootFo, ctx);
                     }
                 } else {
-                    return deleted();
+                    return new DeletedRootProcessor(ctx);
                 }
             }
         } else if ("file".equals(mainP)) {    //NOI18N
             //Fast way
             final File rootFile = Utilities.toFile(URI.create(root.toExternalForm()));
-            if (rootFile.isDirectory()) {
-                String path = rootFile.getAbsolutePath ();
-                if (path.charAt(path.length()-1) != File.separatorChar) {
-                    path = path + File.separatorChar;
-                }
-                LinkedList<File> todo = new LinkedList<File> ();
-                File[] children = rootFile.listFiles();
-                if (children != null) {
-                    todo.addAll(Arrays.asList(children));
-                }
-                cont = new FolderContinuation (todo, path, ctx);
-                return cont.execute();
+            if (rootFile.isDirectory()) {                
+                return new FolderProcessor(rootFile, ctx);
             } else if (!rootFile.exists()) {
-                return deleted();
+                return new DeletedRootProcessor(ctx);
             }
         } else {
             final FileObject rootFo =  URLMapper.findFileObject(root);
             if (rootFo != null) {
-                writer.clear();
-                Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                cont = new FileObjectContinuation (todo, rootFo, ctx);
-                return cont.execute();
-            }
-            else {
-                return deleted();
+                return new NBFSProcessor(rootFo, ctx);
+            } else {
+                return new DeletedRootProcessor(ctx);
             }
         }
-        return Result.FINISHED;
+        return RootProcessor.UP_TO_DATE;
     }
 
     private List<Pair<ElementHandle<TypeElement>,Long>> loadCRCs(final File indexFolder) throws IOException {
@@ -471,25 +448,13 @@ public class BinaryAnalyser {
         while (newIt.hasNext()) {
             added.add(newIt.next().first);
         }
-        return new Changes(added, removed, changed, preBuildArgs);
+        return new Changes(true, added, removed, changed, preBuildArgs);
     }
 
     private static String nameToString( ClassName name ) {
         return name.getInternalName().replace('/', '.');        // NOI18N
     }
-
-    private static void addUsage (final Map<ClassName, Set<ClassIndexImpl.UsageType>> usages, final ClassName name, final ClassIndexImpl.UsageType usage) {
-        if (OBJECT.equals(name.getExternalName())) {
-            return;
-        }
-        Set<ClassIndexImpl.UsageType> uset = usages.get(name);
-        if (uset == null) {
-            uset = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
-            usages.put(name, uset);
-        }
-        uset.add(usage);
-    }
-    
+        
     private void releaseData() {
         refs.clear();
         toDelete.clear();
@@ -512,11 +477,7 @@ public class BinaryAnalyser {
         } finally {
             releaseData();
         }
-    }
-    
-    private Result deleted () throws IOException {
-        return (cont = new DeletedContinuation()).execute();
-    }
+    }    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Class file introspection">
@@ -524,285 +485,413 @@ public class BinaryAnalyser {
         assert className != null;
         this.toDelete.add(Pair.<String,String>of(className,null));
     }
-
-    private boolean accepts(String name) {
-        int index = name.lastIndexOf('.');
-        if (index == -1 || (index+1) == name.length()) {
-            return false;
-        }
-        return "CLASS".equalsIgnoreCase(name.substring(index+1));  // NOI18N
-    }
-
+    
     private void analyse (final InputStream inputStream) throws IOException {
         final ClassFile classFile = new ClassFile(inputStream);
-        final ClassName className = classFile.getName ();
-        final String classNameStr = nameToString (className);
-        this.delete (classNameStr);
-        final Map <ClassName, Set<ClassIndexImpl.UsageType>> usages = performAnalyse(classFile, classNameStr);
-        ElementKind kind = ElementKind.CLASS;
-        if (classFile.isEnum()) {
-            kind = ElementKind.ENUM;
-        }
-        else if (classFile.isAnnotation()) {
-            kind = ElementKind.ANNOTATION_TYPE;
-        }
-        else if ((classFile.getAccess() & Access.INTERFACE) == Access.INTERFACE) {
-            kind = ElementKind.INTERFACE;
-        }
-        final String classNameType = classNameStr + DocumentUtil.encodeKind(kind);
+        final ClassFileProcessor cfp =
+            FULL_INDEX ?
+                new FullIndexProcessor(classFile) :
+                new ClassSignatureProcessor(classFile);
+        this.delete (cfp.getClassName());
+        final UsagesData<ClassName> usages = cfp.analyse();
+        final String classNameType = cfp.getClassName() + DocumentUtil.encodeKind(getElementKind(classFile));
         final Pair<String,String> pair = Pair.<String,String>of(classNameType, null);
-        final List <String> references = getClassReferences (pair);
-        for (Map.Entry<ClassName,Set<ClassIndexImpl.UsageType>> entry : usages.entrySet()) {
-            ClassName name = entry.getKey();
-            Set<ClassIndexImpl.UsageType> usage = entry.getValue();
-            references.add (DocumentUtil.encodeUsage( nameToString(name), usage));
-        }
+        addReferences (pair, usages);
     }
-
-    @SuppressWarnings ("unchecked")    //NOI18N, the classfile module is not generic
-    private Map <ClassName,Set<ClassIndexImpl.UsageType>> performAnalyse(final ClassFile classFile, final String className) throws IOException {
-        final Map <ClassName, Set<ClassIndexImpl.UsageType>> usages = new HashMap <ClassName, Set<ClassIndexImpl.UsageType>> ();
-        //Add type signature of this class
-        String signature = classFile.getTypeSignature();
-        if (signature != null) {
-            try {
-                ClassName[] typeSigNames = ClassFileUtil.getTypesFromClassTypeSignature (signature);
-                for (ClassName typeSigName : typeSigNames) {
-                    addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                }
-            } catch (final RuntimeException re) {
-                final StringBuilder message = new StringBuilder ("BinaryAnalyser: Cannot read type: " + signature+" cause: " + re.getLocalizedMessage() + '\n');    //NOI18N
-                final StackTraceElement[] elements = re.getStackTrace();
-                for (StackTraceElement e : elements) {
-                    message.append(e.toString());
-                    message.append('\n');   //NOI18N
-                }
-                LOGGER.warning(message.toString());    //NOI18N
-            }
-        }
-
-        // 0. Add the superclass
-        ClassName scName = classFile.getSuperClass();
-        if ( scName != null ) {
-            addUsage (usages, scName, ClassIndexImpl.UsageType.SUPER_CLASS);
-        }
-
-        // 1. Add interfaces
-        Collection<ClassName> interfaces = classFile.getInterfaces();
-        for( ClassName ifaceName : interfaces ) {
-            addUsage (usages, ifaceName, ClassIndexImpl.UsageType.SUPER_INTERFACE);
-        }
-
-        if (!FULL_INDEX) {
-            //1a. Add top-level class annotations:
-            handleAnnotations(usages, classFile.getAnnotations(), true);
-        }
-
-        if (FULL_INDEX) {
-            //1b. Add class annotations:
-            handleAnnotations(usages, classFile.getAnnotations(), false);
-
-            //2. Add filed usages
-            final ConstantPool constantPool = classFile.getConstantPool();
-            Collection<? extends CPFieldInfo> fields = constantPool.getAllConstants(CPFieldInfo.class);
-            for (CPFieldInfo field : fields) {
-                ClassName name = ClassFileUtil.getType(constantPool.getClass(field.getClassID()));
-                if (name != null) {
-                    addUsage (usages, name, ClassIndexImpl.UsageType.FIELD_REFERENCE);
-                }
-            }
-
-            //3. Add method usages
-            Collection<? extends CPMethodInfo> methodCalls = constantPool.getAllConstants(CPMethodInfo.class);
-            for (CPMethodInfo method : methodCalls) {
-                ClassName name = ClassFileUtil.getType(constantPool.getClass(method.getClassID()));
-                if (name != null) {
-                    addUsage (usages, name, ClassIndexImpl.UsageType.METHOD_REFERENCE);
-                }
-            }
-            methodCalls = constantPool.getAllConstants(CPInterfaceMethodInfo.class);
-            for (CPMethodInfo method : methodCalls) {
-                ClassName name = ClassFileUtil.getType(constantPool.getClass(method.getClassID()));
-                if (name != null) {
-                    addUsage (usages, name, ClassIndexImpl.UsageType.METHOD_REFERENCE);
-                }
-            }
-
-            //4, 5, 6, 8 Add method type refs (return types, param types, exception types) and local variables.
-            Collection<Method> methods = classFile.getMethods();
-            for (Method method : methods) {
-                handleAnnotations(usages, method.getAnnotations(), false);
-
-                String jvmTypeId = method.getReturnType();
-                ClassName type = ClassFileUtil.getType (jvmTypeId);
-                if (type != null) {
-                    addUsage(usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                }
-                List<Parameter> params =  method.getParameters();
-                for (Parameter param : params) {
-                    jvmTypeId = param.getDescriptor();
-                    type = ClassFileUtil.getType (jvmTypeId);
-                    if (type != null) {
-                        addUsage(usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                    }
-                }
-                CPClassInfo[] classInfos = method.getExceptionClasses();
-                for (CPClassInfo classInfo : classInfos) {
-                    type = classInfo.getClassName();
-                    if (type != null) {
-                        addUsage(usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                    }
-                }
-                jvmTypeId = method.getTypeSignature();
-                if (jvmTypeId != null) {
-                    try {
-                        ClassName[] typeSigNames = ClassFileUtil.getTypesFromMethodTypeSignature (jvmTypeId);
-                        for (ClassName typeSigName : typeSigNames) {
-                            addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                        }
-                    } catch (IllegalStateException is) {
-                        LOGGER.log(Level.WARNING, "Invalid method signature: {0}::{1} signature is:{2}",
-                                new Object[] {
-                                    className,
-                                    method.getName(),
-                                    jvmTypeId});  // NOI18N
-                    }
-                }
-                Code code = method.getCode();
-                if (code != null) {
-                    LocalVariableTableEntry[] vars = code.getLocalVariableTable();
-                    for (LocalVariableTableEntry var : vars) {
-                        type = ClassFileUtil.getType (var.getDescription());
-                        if (type != null) {
-                            addUsage(usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                        }
-                    }
-                    LocalVariableTypeTableEntry[] varTypes = method.getCode().getLocalVariableTypeTable();
-                    for (LocalVariableTypeTableEntry varType : varTypes) {
-                        try {
-                            ClassName[] typeSigNames = ClassFileUtil.getTypesFromFiledTypeSignature (varType.getSignature());
-                            for (ClassName typeSigName : typeSigNames) {
-                                addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                            }
-                        } catch (IllegalStateException is) {
-                            LOGGER.log(Level.WARNING, "Invalid local variable signature: {0}::{1}",
-                                    new Object[]{
-                                        className,
-                                        method.getName()});  // NOI18N
-                        }
-                    }
-                }
-            }
-            //7. Add Filed Type References
-            Collection<Variable> vars = classFile.getVariables();
-            for (Variable var : vars) {
-                handleAnnotations(usages, var.getAnnotations(), false);
-
-                String jvmTypeId = var.getDescriptor();
-                ClassName type = ClassFileUtil.getType (jvmTypeId);
-                if (type != null) {
-                    addUsage (usages, type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                }
-                jvmTypeId = var.getTypeSignature();
-                if (jvmTypeId != null) {
-                    try {
-                        ClassName[] typeSigNames = ClassFileUtil.getTypesFromFiledTypeSignature (jvmTypeId);
-                        for (ClassName typeSigName : typeSigNames) {
-                            addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                        }
-                    } catch (IllegalStateException is) {
-                        LOGGER.log(Level.WARNING, "Invalid field signature: {0}::{1} signature is: {2}",
-                                new Object[]{
-                                    className, var.getName(),
-                                    jvmTypeId});  // NOI18N
-                    }
-                }
-            }
-
-            //9. Remains
-            Collection<? extends CPClassInfo> cis = constantPool.getAllConstants(CPClassInfo.class);
-            for (CPClassInfo ci : cis) {
-                ClassName ciName = ClassFileUtil.getType(ci);
-                if (ciName != null && !usages.keySet().contains (ciName)) {
-                    addUsage(usages, ciName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                }
-            }
-        }
-        return usages;
-    }
-
-    private List<String> getClassReferences (final Pair<String,String> name) {
+    
+    private void addReferences (
+        @NonNull final Pair<String,String> name,
+        @NonNull final UsagesData<ClassName> usages) {
         assert name != null;
-        Object[] cr = new Object[] {
-            new ArrayList<String> (),
-            null,
-            null
+        assert usages != null;
+        final List<String> typeUsages = new ArrayList<String>();
+        for (Map.Entry<ClassName,Set<ClassIndexImpl.UsageType>> entry : usages.usages.entrySet()) {
+            final ClassName cn = entry.getKey();
+            final Set<ClassIndexImpl.UsageType> usage = entry.getValue();
+            typeUsages.add (DocumentUtil.encodeUsage(nameToString(cn), usage));
+        }
+        final Object[] cr = new Object[] {
+            typeUsages,
+            usages.featureIdentsToString(),
+            usages.identsToString()
         };
         this.refs.add(Pair.<Pair<String,String>,Object[]>of(name, cr));
-        return (ArrayList<String>) cr[0];
     }
 
-    private void handleAnnotations(final Map<ClassName, Set<UsageType>> usages, Iterable<? extends Annotation> annotations, boolean onlyTopLevel) {
-        for (Annotation a : annotations) {
-            addUsage(usages, a.getType(), ClassIndexImpl.UsageType.TYPE_REFERENCE);
-
-            if (onlyTopLevel) {
-                continue;
-            }
-
-            List<ElementValue> toProcess = new LinkedList<ElementValue>();
-
-            for (AnnotationComponent ac : a.getComponents()) {
-                toProcess.add(ac.getValue());
-            }
-
-            while (!toProcess.isEmpty()) {
-                ElementValue ev = toProcess.remove(0);
-
-                if (ev instanceof ArrayElementValue) {
-                    toProcess.addAll(Arrays.asList(((ArrayElementValue) ev).getValues()));
-                }
-
-                if (ev instanceof NestedElementValue) {
-                    Annotation nested = ((NestedElementValue) ev).getNestedValue();
-
-                    addUsage(usages, nested.getType(), ClassIndexImpl.UsageType.TYPE_REFERENCE);
-
-                    for (AnnotationComponent ac : nested.getComponents()) {
-                        toProcess.add(ac.getValue());
-                    }
-                }
-
-                if (ev instanceof ClassElementValue) {
-                    addUsage(usages, ((ClassElementValue) ev).getClassName(), ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                }
-
-                if (ev instanceof EnumElementValue) {
-                    String type = ((EnumElementValue) ev).getEnumType();
-                    ClassName className = ClassFileUtil.getType(type);
-
-                    if (className != null) {
-                        addUsage(usages, className, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                    }
-                }
-            }
+    private ElementKind getElementKind(@NonNull final ClassFile cf) {
+        if (cf.isEnum()) {
+            return ElementKind.ENUM;
+        } else if (cf.isAnnotation()) {
+            return ElementKind.ANNOTATION_TYPE;
+        } else if ((cf.getAccess() & Access.INTERFACE) == Access.INTERFACE) {
+            return ElementKind.INTERFACE;
+        } else {
+            return ElementKind.CLASS;
         }
     }
     //</editor-fold>
 
-    private static abstract class Continuation {
+    //<editor-fold defaultstate="collapsed" desc="ClassFileProcessor implementations">
+    private static class ClassFileProcessor {
 
-        private List<Pair<ElementHandle<TypeElement>,Long>> result;
+        private final ClassFile classFile;
+        private final String className;
+        private final UsagesData<ClassName> usages =
+                new UsagesData<ClassName>();
+
+        ClassFileProcessor(
+                @NonNull final ClassFile classFile) {
+            this.classFile = classFile;
+            this.className = nameToString (classFile.getName ());
+        }
+
+        final String getClassName() {
+            return this.className;
+        }
+
+        final UsagesData analyse() {
+            visit(classFile);
+            return usages;
+        }
+
+
+        void visit(@NonNull ClassFile cf) {
+            for (Method method : cf.getMethods()) {
+                visit(method);
+            }
+            for (Variable var : cf.getVariables()) {
+                visit(var);
+            }
+        }
+
+        void visit(@NonNull Method m) {
+        }
+
+        void visit(@NonNull Variable v) {
+        }
+
+        final void addIdent (@NonNull final CharSequence ident) {
+            assert ident != null;
+            usages.featuresIdents.add(ident);
+        }
+
+        final void addUsage (
+                @NonNull final ClassName name,
+                @NonNull final ClassIndexImpl.UsageType usage) {
+            if (OBJECT.equals(name.getExternalName())) {
+                return;
+            }
+            Set<ClassIndexImpl.UsageType> uset = usages.usages.get(name);
+            if (uset == null) {
+                uset = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
+                usages.usages.put(name, uset);
+            }
+            uset.add(usage);
+        }
+
+        final boolean hasUsage(@NonNull final ClassName name) {
+            return usages.usages.keySet().contains (name);
+        }
+
+        final void handleAnnotations(
+                @NonNull final Iterable<? extends Annotation> annotations,
+                final boolean onlyTopLevel) {
+            for (Annotation a : annotations) {
+                addUsage(a.getType(), ClassIndexImpl.UsageType.TYPE_REFERENCE);
+
+                if (onlyTopLevel) {
+                    continue;
+                }
+
+                List<ElementValue> toProcess = new LinkedList<ElementValue>();
+
+                for (AnnotationComponent ac : a.getComponents()) {
+                    toProcess.add(ac.getValue());
+                }
+
+                while (!toProcess.isEmpty()) {
+                    ElementValue ev = toProcess.remove(0);
+                    if (ev instanceof ArrayElementValue) {
+                        toProcess.addAll(Arrays.asList(((ArrayElementValue) ev).getValues()));
+                    }
+                    if (ev instanceof NestedElementValue) {
+                        Annotation nested = ((NestedElementValue) ev).getNestedValue();
+                        addUsage(nested.getType(), ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                        for (AnnotationComponent ac : nested.getComponents()) {
+                            toProcess.add(ac.getValue());
+                        }
+                    }
+                    if (ev instanceof ClassElementValue) {
+                        addUsage(((ClassElementValue) ev).getClassName(), ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    }
+                    if (ev instanceof EnumElementValue) {
+                        String type = ((EnumElementValue) ev).getEnumType();
+                        ClassName className = ClassFileUtil.getType(type);
+                        if (className != null) {
+                            addUsage(className, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                        }
+                    }
+                }
+            }
+        }        
+    }
+
+    private static class ClassSignatureProcessor extends ClassFileProcessor {
+
+        ClassSignatureProcessor(@NonNull final ClassFile classFile) {
+            super(classFile);
+        }
+
+        @Override
+        void visit(@NonNull final ClassFile cf) {
+            //Add type signature of this class
+            final String signature = cf.getTypeSignature();
+            if (signature != null) {
+                try {
+                    for (ClassName typeSigName : ClassFileUtil.getTypesFromClassTypeSignature(signature)) {
+                        addUsage(typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    }
+                } catch (final RuntimeException re) {
+                    final StringBuilder message = new StringBuilder ("BinaryAnalyser: Cannot read type: " + signature+" cause: " + re.getLocalizedMessage() + '\n');    //NOI18N
+                    final StackTraceElement[] elements = re.getStackTrace();
+                    for (StackTraceElement e : elements) {
+                        message.append(e.toString());
+                        message.append('\n');   //NOI18N
+                    }
+                    LOGGER.warning(message.toString());    //NOI18N
+                }
+            }
+
+            // 0. Add the superclass
+            final ClassName scName = cf.getSuperClass();
+            if ( scName != null ) {
+                addUsage (scName, ClassIndexImpl.UsageType.SUPER_CLASS);
+            }
+
+            // 1. Add interfaces
+            Collection<ClassName> interfaces = cf.getInterfaces();
+            for( ClassName ifaceName : interfaces ) {
+                addUsage (ifaceName, ClassIndexImpl.UsageType.SUPER_INTERFACE);
+            }
+
+            // 3. Add top-level class annotations:
+            handleAnnotations(cf.getAnnotations(), true);
+            super.visit(cf);            
+        }
+
+        @Override
+        void visit(@NonNull final Method m) {
+            final String name = m.getName();
+            if (!m.isSynthetic() && !isInit(name)) {
+                addIdent(name);
+            }
+            super.visit(m);
+        }
+
+        @Override
+        void visit(@NonNull final Variable v) {            
+            if (!v.isSynthetic()) {
+                addIdent(v.getName());
+            }
+            super.visit(v);
+        }
+
+        private boolean isInit(@NonNull final String name) {
+            return INIT.equals(name) || CLINIT.equals(name);
+        }
+    }
+
+    private static final class FullIndexProcessor extends ClassSignatureProcessor {
+
+        FullIndexProcessor(@NonNull final ClassFile classFile) {
+            super(classFile);
+        }
+
+        @Override
+        void visit(@NonNull final ClassFile cf) {
+            //1. Add class annotations: including attributes
+            handleAnnotations(cf.getAnnotations(), false);
+            final ConstantPool constantPool = cf.getConstantPool();
+            //2. Add field usages
+            for (CPFieldInfo field : constantPool.getAllConstants(CPFieldInfo.class)) {
+                ClassName name = ClassFileUtil.getType(constantPool.getClass(field.getClassID()));
+                if (name != null) {
+                    addUsage (name, ClassIndexImpl.UsageType.FIELD_REFERENCE);
+                }
+            }
+            //3. Add method usages
+            for (CPMethodInfo method : constantPool.getAllConstants(CPMethodInfo.class)) {
+                ClassName name = ClassFileUtil.getType(constantPool.getClass(method.getClassID()));
+                if (name != null) {
+                    addUsage (name, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                }
+            }
+            for (CPMethodInfo method : constantPool.getAllConstants(CPInterfaceMethodInfo.class)) {
+                ClassName name = ClassFileUtil.getType(constantPool.getClass(method.getClassID()));
+                if (name != null) {
+                    addUsage (name, ClassIndexImpl.UsageType.METHOD_REFERENCE);
+                }
+            }
+            super.visit(cf);
+            //9. Remains
+            for (CPClassInfo ci : constantPool.getAllConstants(CPClassInfo.class)) {
+                final ClassName ciName = ClassFileUtil.getType(ci);
+                if (ciName != null && !hasUsage(ciName)) {
+                    addUsage(ciName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                }
+            }
+        }
+
+        @Override
+        void visit(@NonNull final Method m) {
+            //4, 5, 6, 8 Add method type refs (return types, param types, exception types) and local variables.
+            handleAnnotations(m.getAnnotations(), false);
+            String jvmTypeId = m.getReturnType();
+            ClassName type = ClassFileUtil.getType (jvmTypeId);
+            if (type != null) {
+                addUsage(type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+            }
+            List<Parameter> params =  m.getParameters();
+            for (Parameter param : params) {
+                jvmTypeId = param.getDescriptor();
+                type = ClassFileUtil.getType (jvmTypeId);
+                if (type != null) {
+                    addUsage(type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                }
+            }
+            CPClassInfo[] classInfos = m.getExceptionClasses();
+            for (CPClassInfo classInfo : classInfos) {
+                type = classInfo.getClassName();
+                if (type != null) {
+                    addUsage(type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                }
+            }
+            jvmTypeId = m.getTypeSignature();
+            if (jvmTypeId != null) {
+                try {
+                    ClassName[] typeSigNames = ClassFileUtil.getTypesFromMethodTypeSignature (jvmTypeId);
+                    for (ClassName typeSigName : typeSigNames) {
+                        addUsage(typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    }
+                } catch (IllegalStateException is) {
+                    LOGGER.log(Level.WARNING, "Invalid method signature: {0}::{1} signature is:{2}",    // NOI18N
+                            new Object[] {
+                                getClassName(),
+                                m.getName(),
+                                jvmTypeId});
+                }
+            }
+            Code code = m.getCode();
+            if (code != null) {
+                LocalVariableTableEntry[] vars = code.getLocalVariableTable();
+                for (LocalVariableTableEntry var : vars) {
+                    type = ClassFileUtil.getType (var.getDescription());
+                    if (type != null) {
+                        addUsage(type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    }
+                }
+                LocalVariableTypeTableEntry[] varTypes = m.getCode().getLocalVariableTypeTable();
+                for (LocalVariableTypeTableEntry varType : varTypes) {
+                    try {
+                        ClassName[] typeSigNames = ClassFileUtil.getTypesFromFiledTypeSignature (varType.getSignature());
+                        for (ClassName typeSigName : typeSigNames) {
+                            addUsage(typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                        }
+                    } catch (IllegalStateException is) {
+                        LOGGER.log(Level.WARNING, "Invalid local variable signature: {0}::{1}", // NOI18N
+                                new Object[]{
+                                    getClassName(),
+                                    m.getName()});
+                    }
+                }
+            }
+            super.visit(m);
+        }
+
+        @Override
+        void visit(Variable v) {
+            //7. Add Filed Type References
+            handleAnnotations(v.getAnnotations(), false);
+            String jvmTypeId = v.getDescriptor();
+            ClassName type = ClassFileUtil.getType (jvmTypeId);
+            if (type != null) {
+                addUsage (type, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+            }
+            jvmTypeId = v.getTypeSignature();
+            if (jvmTypeId != null) {
+                try {
+                    ClassName[] typeSigNames = ClassFileUtil.getTypesFromFiledTypeSignature (jvmTypeId);
+                    for (ClassName typeSigName : typeSigNames) {
+                        addUsage(typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    }
+                } catch (IllegalStateException is) {
+                    LOGGER.log(Level.WARNING, "Invalid field signature: {0}::{1} signature is: {2}",
+                            new Object[]{
+                                getClassName(),
+                                v.getName(),
+                                jvmTypeId});  // NOI18N
+                }
+            }
+            super.visit(v);
+        }
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="RootProcessor implementations">
+    private static abstract class RootProcessor {
+        private static final Comparator<Pair<ElementHandle<TypeElement>,Long>> COMPARATOR = new Comparator<Pair<ElementHandle<TypeElement>,Long>>() {
+                @Override
+                public int compare(
+                        final Pair<ElementHandle<TypeElement>,Long> o1,
+                        final Pair<ElementHandle<TypeElement>,Long> o2) {
+                    return o1.first.getBinaryName().compareTo(o2.first.getBinaryName());
+                }
+            };
+
+        static final RootProcessor UP_TO_DATE = new RootProcessor() {
+            @Override
+            @NonNull
+            protected boolean executeImpl() throws IOException {
+                return true;
+            }
+        };
+
+        private final List<Pair<ElementHandle<TypeElement>,Long>> result =
+                new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
+        private final Context ctx;
         private boolean changed;
         private byte preBuildArgsState;
 
-        protected Continuation () {
-            this.result = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
+        RootProcessor(@NonNull final Context ctx) {
+            assert ctx != null;
+            this.ctx = ctx;
         }
 
-        protected abstract Result doExecute () throws IOException;
+        private RootProcessor() {
+            this.ctx = null;
+        }
 
-        protected abstract void doFinish () throws IOException;
+        @NonNull
+        protected final boolean execute() throws IOException {
+            final boolean res = executeImpl();
+            if (res) {
+                Collections.sort(result, COMPARATOR);
+            }
+            return res;
+        }
+
+        protected final boolean hasChanges() {
+            return changed;
+        }
+
+        protected final boolean preBuildArgs() {
+            return preBuildArgsState == 3;
+        }
+
+        @NonNull
+        protected final List<Pair<ElementHandle<TypeElement>,Long>> result() {
+            return result;
+        }
 
         protected final void report (final ElementHandle<TypeElement> te, final long crc) {
             this.result.add(Pair.of(te, crc));
@@ -815,129 +904,121 @@ public class BinaryAnalyser {
                 preBuildArgsState|=2;
             }
         }
-        
+
         protected final void markChanged() {
             this.changed = true;
         }
 
-        public final Result execute () throws IOException {
-            return doExecute();
+        protected final boolean isCancelled() {
+            return ctx.isCancelled();
         }
 
-        public final List<Pair<ElementHandle<TypeElement>,Long>> finish () throws IOException {
-            doFinish();
-            Collections.sort(result, new Comparator() {
-                @Override
-                public int compare(Object o1, Object o2) {
-                    final Pair<ElementHandle<TypeElement>,Long> p1 = (Pair<ElementHandle<TypeElement>,Long>) o1;
-                    final Pair<ElementHandle<TypeElement>,Long> p2 = (Pair<ElementHandle<TypeElement>,Long>) o2;
-                    return p1.first.getBinaryName().compareTo(p2.first.getBinaryName());
-                }
-            });
-            return result;
+        protected final boolean accepts(String name) {
+            int index = name.lastIndexOf('.');  //NOI18N
+            if (index == -1 || (index+1) == name.length()) {
+                return false;
+            }
+            return FileObjects.CLASS.equalsIgnoreCase(name.substring(index+1));
         }
-        
-        public final boolean hasChanges() {
-            return changed;
-        }
-        
-        public final boolean preBuildArgs() {
-            return preBuildArgsState == 3;
-        }
+
+        @NonNull
+        protected abstract boolean executeImpl() throws IOException;
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Continuation implementations (Zip, FileObject, java.io.File, Deleted)">
-    private class ZipContinuation extends Continuation {
+    private final class ArchiveProcessor extends RootProcessor {
 
         private final ZipFile zipFile;
         private final Enumeration<? extends ZipEntry> entries;
-        private final Context ctx;
 
-        public ZipContinuation (final @NonNull ZipFile zipFile, final @NonNull Enumeration<? extends ZipEntry> entries, final @NonNull Context ctx) {
-            assert zipFile != null;
-            assert entries != null;
-            assert ctx != null;
-            this.zipFile = zipFile;
-            this.entries = entries;
-            this.ctx = ctx;
+        ArchiveProcessor (
+                final @NonNull File file,
+                final @NonNull Context ctx) throws IOException {
+            super(ctx);
+            assert file != null;
+            writer.clear();
+            this.zipFile = new ZipFile(file);
+            this.entries = zipFile.entries();
             markChanged();  //Always dirty, created only for dirty root
         }
 
+
         @Override
-        protected Result doExecute () throws IOException {
-            while(entries.hasMoreElements()) {
-                ZipEntry ze;
-
-                try {
-                    ze = (ZipEntry)entries.nextElement();
-                } catch (InternalError err) {
-                    //#174611:
-                    LOGGER.log(Level.INFO, "Broken zip file: " + zipFile.getName(), err);
-                    return Result.FINISHED;
-                }
-
-                if ( !ze.isDirectory()  && accepts(ze.getName()))  {
-                    cont.report (ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(FileObjects.stripExtension(ze.getName()))),ze.getCrc());
-                    InputStream in = new BufferedInputStream (zipFile.getInputStream( ze ));
+        @NonNull
+        protected boolean executeImpl() throws IOException {
+            try {
+                while(entries.hasMoreElements()) {
+                    final ZipEntry ze;
                     try {
-                        analyse(in);
-                    } catch (InvalidClassFormatException icf) {
-                        LOGGER.log(Level.WARNING, "Invalid class file format: {0}!/{1}",
-                                new Object[]{
-                                    Utilities.toURI(new File(zipFile.getName())),
-                                    ze.getName()});     //NOI18N
-                    } catch (IOException x) {
-                        Exceptions.attachMessage(x, "While scanning: " + ze.getName());                                         //NOI18N
-                        throw x;
+                        ze = (ZipEntry)entries.nextElement();
+                    } catch (InternalError err) {
+                        LOGGER.log(Level.INFO, "Broken zip file: " + zipFile.getName(), err);
+                        return true;
                     }
-                    finally {
-                        in.close();
+                    if (!ze.isDirectory()  && accepts(ze.getName()))  {
+                        report (
+                            ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(FileObjects.stripExtension(ze.getName()))),
+                            ze.getCrc());
+                        final InputStream in = new BufferedInputStream (zipFile.getInputStream( ze ));
+                        try {
+                            analyse(in);
+                        } catch (InvalidClassFormatException icf) {
+                            LOGGER.log(
+                                    Level.WARNING, "Invalid class file format: {0}!/{1}",      //NOI18N
+                                    new Object[]{
+                                        Utilities.toURI(new File(zipFile.getName())),
+                                        ze.getName()});
+                        } catch (IOException x) {
+                            Exceptions.attachMessage(x, "While scanning: " + ze.getName());    //NOI18N
+                            throw x;
+                        }
+                        finally {
+                            in.close();
+                        }
+                        if (lmListener.isLowMemory()) {
+                            flush();
+                        }
                     }
-                    if (lmListener.isLowMemory()) {
-                        flush();
+                    if (isCancelled()) {
+                        return false;
                     }
                 }
-                //Partinal cancel not supported by parsing API
-                //if (cancel.getAndSet(false)) {
-                //    this.store();
-                //    return Result.CANCELED;
-                //}
-                if (ctx.isCancelled()) {
-                    return Result.CLOSED;
-                }
+                return true;
+            } finally {
+                zipFile.close();
             }
-            return Result.FINISHED;
-        }
-
-        @Override
-        protected void doFinish () throws IOException {
-            this.zipFile.close();
         }
     }
 
-    private class FolderContinuation extends Continuation {
-
+    private final class FolderProcessor extends RootProcessor {
         private final LinkedList<File> todo;
         private final String rootPath;
-        private final Context ctx;
 
-        public FolderContinuation (final @NonNull LinkedList<File> todo, final @NonNull String rootPath, final @NonNull Context ctx) {
-            assert todo != null;
-            assert rootPath != null;
-            assert ctx != null;
-            this.todo = todo;
-            this.rootPath = rootPath;
-            this.ctx = ctx;
+        public FolderProcessor(
+                final @NonNull File root,
+                final @NonNull Context ctx) throws IOException {
+            super(ctx);
+            assert root != null;
+            String path = root.getAbsolutePath ();
+            if (path.charAt(path.length()-1) != File.separatorChar) {
+                path = path + File.separatorChar;
+            }
+            this.todo = new LinkedList<File> ();
+            this.rootPath = path;
+            final File[] children = root.listFiles();
+            if (children != null) {
+                Collections.addAll (todo, children);
+            }
         }
 
         @Override
-        public Result doExecute () throws IOException {
+        @NonNull
+        protected boolean executeImpl() throws IOException {
             while (!todo.isEmpty()) {
                 File file = todo.removeFirst();
                 if (file.isDirectory()) {
                     File[] c = file.listFiles();
                     if (c!= null) {
-                        todo.addAll(Arrays.asList (c));
+                        Collections.addAll(todo, c);
                     }
                 } else if (accepts(file.getName())) {
                     String filePath = file.getAbsolutePath();
@@ -947,12 +1028,13 @@ public class BinaryAnalyser {
                     int endPos;
                     if (dotIndex>slashIndex) {
                         endPos = dotIndex;
-                    }
-                    else {
+                    } else {
                         endPos = filePath.length();
                     }
                     String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos), File.separatorChar);
-                    cont.report(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, relativePath), fileMTime);
+                    report(
+                        ElementHandleAccessor.getInstance().create(ElementKind.OTHER, relativePath),
+                        fileMTime);
                     if (!isUpToDate (relativePath, fileMTime)) {
                         markChanged();
                         toDelete.add(Pair.<String,String>of (relativePath,null));
@@ -976,51 +1058,45 @@ public class BinaryAnalyser {
                         }
                     }
                 }
-                // Partinal cancel not supported by parsing API
-                //if (cancel.getAndSet(false)) {
-                //    this.store();
-                //    return Result.CANCELED;
-                //}
-                if (ctx.isCancelled()) {
-                    return Result.CLOSED;
+                if (isCancelled()) {
+                    return false;
                 }
             }
-            
             for (String deleted : getTimeStamps().second) {
                 delete(deleted);
                 markChanged();
             }
-            return Result.FINISHED;
-        }
-
-        @Override
-        public void doFinish () throws IOException {
+            return true;
         }
     }
 
-    private class FileObjectContinuation extends  Continuation {
+    private final class NBFSProcessor extends RootProcessor {
 
         private final Enumeration<? extends FileObject> todo;
         private final FileObject root;
-        private final Context ctx;
 
-        public FileObjectContinuation (final @NonNull Enumeration<? extends FileObject> todo, final @NonNull FileObject root, final @NonNull Context ctx) {
-            assert todo != null;
-            assert ctx != null;
-            this.todo = todo;
+        NBFSProcessor(
+                final @NonNull FileObject root,
+                final @NonNull Context ctx) throws IOException {
+            super(ctx);
+            assert root != null;
+            writer.clear();
             this.root = root;
-            this.ctx = ctx;
+            this.todo = root.getData(true);
             markChanged();  //Always dirty, created only for dirty root
         }
 
         @Override
-        public Result doExecute () throws IOException {
+        @NonNull
+        protected boolean executeImpl() throws IOException {
             while (todo.hasMoreElements()) {
                 FileObject fo = todo.nextElement();
                 if (accepts(fo.getName())) {
                     final String rp = FileObjects.stripExtension(FileUtil.getRelativePath(root, fo));
-                    cont.report(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(rp)), 0L);
-                    InputStream in = new BufferedInputStream (fo.getInputStream());
+                    report(
+                        ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(rp)),
+                        0L);
+                    final InputStream in = new BufferedInputStream (fo.getInputStream());
                     try {
                         analyse (in);
                     } catch (InvalidClassFormatException icf) {
@@ -1033,27 +1109,18 @@ public class BinaryAnalyser {
                         flush();
                     }
                 }
-                // Partinal cancel not supported by parsing API
-                //if (cancel.getAndSet(false)) {
-                //    this.store();
-                //    return Result.CANCELED;
-                //}
-                if (ctx.isCancelled()) {
-                    return Result.CLOSED;
+                if (isCancelled()) {
+                    return false;
                 }
             }
-            return Result.FINISHED;
-        }
-
-        @Override
-        public void doFinish () throws IOException {
-
+            return true;
         }
     }
 
-    private class DeletedContinuation extends Continuation {
-        
-        public DeletedContinuation() throws IOException {
+    private final class DeletedRootProcessor extends RootProcessor {
+
+        DeletedRootProcessor(@NonNull final Context ctx) throws IOException {
+            super(ctx);
             final Pair<LongHashMap<String>, Set<String>> ts = getTimeStamps();
             if (!ts.first.isEmpty()) {
                 markChanged();
@@ -1061,15 +1128,12 @@ public class BinaryAnalyser {
         }
 
         @Override
-        protected Result doExecute() throws IOException {
+        @NonNull
+        protected boolean executeImpl() throws IOException {
             if (hasChanges()) {
                 writer.clear();
             }
-            return Result.FINISHED;
-        }
-
-        @Override
-        protected void doFinish() throws IOException {
+            return true;
         }
     }
     //</editor-fold>
