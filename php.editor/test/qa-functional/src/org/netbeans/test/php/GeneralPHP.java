@@ -670,6 +670,7 @@ public class GeneralPHP extends JellyTestCase {
         }
         Sleep(1000);
         JDialogOperator window = new JDialogOperator("Options");
+        window.pressKey(KeyEvent.VK_ESCAPE);
         if (mode == 0) {
             window.pressKey(KeyEvent.VK_RIGHT);
             Sleep(1000);

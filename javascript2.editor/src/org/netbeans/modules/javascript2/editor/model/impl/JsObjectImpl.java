@@ -196,16 +196,20 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     public void addOccurrence(OffsetRange offsetRange) {
-        boolean isThere = false;
-        for (Occurrence occurrence : occurrences) {
-            if (occurrence.getOffsetRange().equals(offsetRange)) {
-                isThere = true;
-                break;
-            }
-        }
-        if (!isThere) {
-            occurrences.add(new OccurrenceImpl(offsetRange, this));
-        }
+//        boolean isThere = false;
+//        for (Occurrence occurrence : occurrences) {
+//            if (occurrence.getOffsetRange().equals(offsetRange)) {
+//                isThere = true;
+//                break;
+//            }
+//        }
+//        if (!isThere) {
+//            occurrences.add(new OccurrenceImpl(offsetRange, this));
+//        }
+         OccurrenceImpl occurrence = new OccurrenceImpl(offsetRange, this);
+         if (!occurrences.contains(occurrence)) {
+            occurrences.add(occurrence);
+         }
     }
     
     public void addAssignment(Collection<TypeUsage> typeNames, int offset){
@@ -358,7 +362,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     for (TypeUsage typeHere : resolvedHere) {
                         if (typeHere.getOffset() > 0) {
                             JsObject jsObject = ModelUtils.findJsObjectByName(global, typeHere.getType());
-                            if (jsObject == null && typeHere.getType().indexOf('.') == -1) {
+                            if (jsObject == null && typeHere.getType().indexOf('.') == -1 && global instanceof DeclarationScope) {
                                 DeclarationScope declarationScope = ModelUtils.getDeclarationScope((DeclarationScope)global, typeHere.getOffset());
                                 jsObject = ModelUtils.getJsObjectByName(declarationScope, typeHere.getType());
                                 if (jsObject == null) {

@@ -106,7 +106,6 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
      */
     @Override
     public void addDocument(IndexDocument document) {
-        assert document instanceof IndexDocumentImpl;
         final boolean forceFlush;
         synchronized (this) {
             forceFlush = cache.addDocument(document);

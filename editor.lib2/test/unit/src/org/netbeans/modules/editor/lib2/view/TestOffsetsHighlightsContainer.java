@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.editor.lib2.view;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import javax.swing.text.AttributeSet;
+import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 
 /**
  *
- * @author Petr Pisl
+ * @author Miloslav Metelka
  */
-public class OccurrenceImpl implements Occurrence {
-
-    private final OffsetRange offsetRange;
-    private final List<JsObject> declarations;
+public class TestOffsetsHighlightsContainer extends AbstractHighlightsContainer {
     
-    public OccurrenceImpl(final OffsetRange offsetRange, final JsObject declaration) {
-        this.offsetRange = offsetRange;
-        this.declarations = new ArrayList<JsObject>(1);
-        this.declarations.add(declaration);
-    }
+    int[] offsetPairs = new int[0];
     
-    @Override
-    public OffsetRange getOffsetRange() {
-        return offsetRange;
+    public void setOffsetPairs(int[] offsetPairs) {
+        this.offsetPairs = offsetPairs;
+        fireHighlightsChange(0, Integer.MAX_VALUE);
     }
 
     @Override
-    public Collection<? extends JsObject> getDeclarations() {
-        return declarations;
-    }
-    
-    @Override
-    public int hashCode() {
-        return offsetRange.hashCode();
+    public HighlightsSequence getHighlights(int startOffset, int endOffset) {
+        return new HiSeq();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
+    private final class HiSeq implements HighlightsSequence {
+        
+        int index;
+
+        @Override
+        public boolean moveNext() {
+            if (index < offsetPairs.length) {
+                index += 2;
+                return true;
+            }
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
+
+        @Override
+        public int getStartOffset() {
+            return offsetPairs[index - 2];
         }
-        final OccurrenceImpl other = (OccurrenceImpl) obj;
-        if (this.offsetRange != other.offsetRange && (this.offsetRange == null || !this.offsetRange.equals(other.offsetRange))) {
-            return false;
+
+        @Override
+        public int getEndOffset() {
+            return offsetPairs[index - 1];
         }
-        return true;
+
+        @Override
+        public AttributeSet getAttributes() {
+            return ViewUpdatesTesting.FONT_ATTRS[0];
+        }
+        
     }
     
 }
