@@ -50,16 +50,17 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.utils.Utils;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
-import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -70,14 +71,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
-
 /**
  *
- * @author Peter Williams
+ * @author Peter Williams, Tomas Kraus
  */
 public class CommonServerSupport
         implements GlassfishModule3, RefreshModulesCookie {
-
 
     ////////////////////////////////////////////////////////////////////////////
     // Inner classes                                                         //
@@ -178,11 +177,24 @@ public class CommonServerSupport
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(CommonServerSupport.class);
+
+    /** Local host name (DNS). */
+    private static final String LOCALHOST = "localhost";
+
+    /** String to return for failed {@see getHttpHostFromServer()} search. */
+    private static final String FAILED_HTTP_HOST = LOCALHOST + "FAIL";
+    
     /** Keep trying for up to 10 minutes while server is initializing [ms]. */
     private static final int STARTUP_TIMEOUT = 600000;
 
     /** Delay before next try while server is initializing [ms]. */
     private static final int STARTUP_RETRY_DELAY = 2000;
+
+    /** Properties fetching timeout [ms]. */
+    public static final int PROPERTIES_FETCH_TIMEOUT = 10000;
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -202,7 +214,7 @@ public class CommonServerSupport
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notifyLater(nd);
             css.setLatestWarningDisplayTime(System.currentTimeMillis());
-            Logger.getLogger("glassfish").log(Level.INFO, message);
+            LOGGER.log(Level.INFO, message);
         }
     }
 
@@ -231,6 +243,10 @@ public class CommonServerSupport
     
     private Process localStartProcess;
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
     CommonServerSupport(GlassfishInstance instance) {
         this.instance = instance;
         this.isRemote = instance.isRemote();
@@ -244,6 +260,7 @@ public class CommonServerSupport
      * <p/>
      * @return <code>GlassfishInstance</code> object associated with this object.
      */
+    @Override
     public GlassfishInstance getInstance() {
         return this.instance;
     }
@@ -385,7 +402,7 @@ public class CommonServerSupport
     @Override
     public Future<TaskState> startServer(
             final TaskStateListener stateListener, ServerState endState) {
-        Logger.getLogger("glassfish").log(Level.FINEST,
+        LOGGER.log(Level.FINEST,
                 "CSS.startServer called on thread \"{0}\"",
                 Thread.currentThread().getName());
         TaskStateListener startServerListener = new StartOperationStateListener(endState);
@@ -419,7 +436,7 @@ public class CommonServerSupport
 
     @Override
     public Future<TaskState> stopServer(final TaskStateListener stateListener) {
-        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.stopServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
+        LOGGER.log(Level.FINEST, "CSS.stopServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         TaskStateListener stopServerListener = new TaskStateListener() {
             @Override
             public void operationStateChanged(
@@ -463,7 +480,7 @@ public class CommonServerSupport
 
     @Override
     public Future<TaskState> restartServer(TaskStateListener stateListener) {
-        Logger.getLogger("glassfish").log(Level.FINEST,
+        LOGGER.log(Level.FINEST,
                 "CSS.restartServer called on thread \"{0}\"",
                 Thread.currentThread().getName());
         FutureTask<TaskState> task = new FutureTask<TaskState>(
@@ -683,16 +700,16 @@ public class CommonServerSupport
                 }
                 retVal = true;
             } catch(IOException ex) {
-                Logger.getLogger("glassfish").log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Unable to save attribute " + name + " in " + instanceFO.getPath() + " for " + getDeployerUri(), ex); // NOI18N
             }
         } else {
             if (null == instanceFO)
-                Logger.getLogger("glassfish").log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Unable to save attribute {0} for {1} in {3}. Instance file is writable? {2}",
                         new Object[]{name, getDeployerUri(), false, "null"}); // NOI18N
             else
-                Logger.getLogger("glassfish").log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Unable to save attribute {0} for {1} in {3}. Instance file is writable? {2}",
                         new Object[]{name, getDeployerUri(), instanceFO.canWrite(), instanceFO.getPath()}); // NOI18N
         }
@@ -719,7 +736,7 @@ public class CommonServerSupport
             try {
                 socket.close();
             } catch (IOException ioe) {
-                Logger.getLogger("glassfish").log(
+                LOGGER.log(
                         Level.INFO, "Socket closing failed: {0}",
                         ioe.getMessage());
             }
@@ -735,7 +752,7 @@ public class CommonServerSupport
                     host, Integer.toString(port), ioe.getLocalizedMessage());
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notifyLater(nd);
-            Logger.getLogger("glassfish").log(Level.INFO,
+            LOGGER.log(Level.INFO,
                     "Evidence of network flakiness: {0}", ioe.getMessage());
             return false;
         }
@@ -783,7 +800,7 @@ public class CommonServerSupport
                             setServerState(ServerState.RUNNING);
                         }
                     } catch (Exception ex) {
-                         Logger.getLogger("glassfish").log(Level.WARNING,
+                         LOGGER.log(Level.WARNING,
                                  ex.getMessage());
                     } finally {
                         refreshRunning.set(false);
@@ -872,11 +889,14 @@ public class CommonServerSupport
         }
     }
 
+    /**
+     * Update HTTP port value from server properties.
+     */
     void updateHttpPort() {
         String target = Util.computeTarget(instance.getProperties());
-        GetPropertyCommand gpc;
+        String gpc;
         if (Util.isDefaultOrServerTarget(instance.getProperties())) {
-            gpc = new GetPropertyCommand("*.server-config.*.http-listener-1.port"); // NOI18N
+            gpc = "*.server-config.*.http-listener-1.port";
             setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR, 
                     instance.getProperty(GlassfishModule.HOSTNAME_ATTR), true); // NOI18N
         } else {
@@ -884,14 +904,15 @@ public class CommonServerSupport
             String adminHost = instance.getProperty(GlassfishModule.HOSTNAME_ATTR);
             setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR,
                     getHttpHostFromServer(server,adminHost), true);
-            gpc = new GetPropertyCommand("servers.server."+server+".system-property.HTTP_LISTENER_PORT.value", true); // NOI18N
+            gpc = "servers.server."+server+".system-property.HTTP_LISTENER_PORT.value";
         }
-        Future<TaskState> result2 = execute(true, gpc);
         try {
+            ResultMap<String, String> result = CommandGetProperty.getProperties(
+                    instance, gpc, PROPERTIES_FETCH_TIMEOUT);
             boolean didSet = false;
-            if (result2.get(10, TimeUnit.SECONDS) == TaskState.COMPLETED) {
-                Map<String, String> retVal = gpc.getData();
-                for (Entry<String, String> entry : retVal.entrySet()) {
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String, String> values = result.getValue();
+                for (Entry<String, String> entry : values.entrySet()) {
                     String val = entry.getValue();
                     try {
                         if (null != val && val.trim().length() > 0) {
@@ -900,31 +921,35 @@ public class CommonServerSupport
                             didSet = true;
                         }
                     } catch (NumberFormatException nfe) {
-                        // skip it quietly..
+                        LOGGER.log(Level.FINEST,
+                                "Property value {0} was not a number", val);
                     }
                 }
             }
             if (!didSet && !Util.isDefaultOrServerTarget(instance.getProperties())) {
                 setEnvironmentProperty(GlassfishModule.HTTPPORT_ATTR, "28080", true); // NOI18N
             }
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (TimeoutException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO, "Could not get http port value.", gfie);
         }
     }
 
+     
+    /**
+     * Retrieve server name using target name from server properties.
+     * <p/>
+     * @param target Server target name.
+     * @return Name of server having this target.
+     */
     private String getServerFromTarget(String target) {
         String retVal = target; // NOI18N
-        GetPropertyCommand  gpc = new GetPropertyCommand("clusters.cluster."+target+".server-ref.*.ref", true); // NOI18N
-
-        Future<TaskState> result2 = execute(true, gpc);
+        String gpc = "clusters.cluster."+target+".server-ref.*.ref";
         try {
-            if (result2.get(10, TimeUnit.SECONDS) == TaskState.COMPLETED) {
-                Map<String, String> data = gpc.getData();
-                for (Entry<String, String> entry : data.entrySet()) {
+            ResultMap<String, String> result = CommandGetProperty.getProperties(
+                    instance, gpc, PROPERTIES_FETCH_TIMEOUT);
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String, String> values = result.getValue();
+                for (Entry<String, String> entry : values.entrySet()) {
                     String val = entry.getValue();
                         if (null != val && val.trim().length() > 0) {
                             retVal = val;
@@ -932,53 +957,56 @@ public class CommonServerSupport
                         }
                 }
             }
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (TimeoutException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO, "Could not get server value from target.", gfie);
         }
-
         return retVal;
     }
-    private String getHttpHostFromServer(String server, String nameOfLocalhost) {
-        String retVal = "localhostFAIL"; // NOI18N
-        GetPropertyCommand  gpc = new GetPropertyCommand("servers.server."+server+".node-ref"); // NOI18N
-        String refVal = null;
-        Future<TaskState> result2 = execute(true, gpc);
-        try {
-            if (result2.get(10, TimeUnit.SECONDS) == TaskState.COMPLETED) {
-                Map<String, String> data = gpc.getData();
-                for (Entry<String, String> entry : data.entrySet()) {
-                    String val = entry.getValue();
-                        if (null != val && val.trim().length() > 0) {
-                            refVal = val;
-                            break;
-                        }
-                }
-            }
-            gpc = new GetPropertyCommand("nodes.node."+refVal+".node-host"); // NOI18N
-            result2 = execute(true,gpc);
-            if (result2.get(10, TimeUnit.SECONDS) == TaskState.COMPLETED) {
-                Map<String, String> data = gpc.getData();
-                for (Entry<String, String> entry : data.entrySet()) {
-                    String val = entry.getValue();
-                        if (null != val && val.trim().length() > 0) {
-                            retVal = val;
-                            break;
-                        }
-                }
-            }
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (TimeoutException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
-        }
 
-        return "localhost".equals(retVal) ? nameOfLocalhost : retVal; // NOI18N
+    /**
+     * Retrieve HTTP host name for server from server properties.
+     * <p/>
+     * @param server          Server name.
+     * @param nameOfLocalhost Local host DNS name.
+     * @return HTTP host name for server.
+     */
+    private String getHttpHostFromServer(
+            String server, String nameOfLocalhost) {
+        String retVal = FAILED_HTTP_HOST;
+        String refVal = null;
+        String gpc = "servers.server."+server+".node-ref";
+        try {
+            ResultMap<String, String> result = CommandGetProperty.getProperties(
+                    instance, gpc, PROPERTIES_FETCH_TIMEOUT);
+            if (result.getState() == TaskState.COMPLETED) {
+                for (Entry<String, String> entry 
+                        : result.getValue().entrySet()) {
+                    String val = entry.getValue();
+                    if (null != val && val.trim().length() > 0) {
+                        refVal = val;
+                        break;
+                    }
+                }
+                if (refVal != null) {
+                    gpc = "nodes.node." + refVal + ".node-host";
+                    result = CommandGetProperty.getProperties(
+                            instance, gpc, PROPERTIES_FETCH_TIMEOUT);
+                    if (result.getState() == TaskState.COMPLETED) {
+                        for (Entry<String, String> entry
+                                : result.getValue().entrySet()) {
+                            String val = entry.getValue();
+                            if (null != val && val.trim().length() > 0) {
+                                retVal = val;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO, "Could not get http host value.", gfie);
+        }
+        return LOCALHOST.equals(retVal) ? nameOfLocalhost : retVal; // NOI18N
     }
 
     @SuppressWarnings("SleepWhileInLoop")
@@ -995,14 +1023,14 @@ public class CommonServerSupport
                 httpConn = (HttpURLConnection) url.openConnection();
                 retVal = httpConn.getResponseCode() > 0;
             } catch (java.net.MalformedURLException mue) {
-                Logger.getLogger("glassfish").log(Level.INFO, null, mue); // NOI18N
+                LOGGER.log(Level.INFO, null, mue);
             } catch (java.net.ConnectException ce) {
                 // we expect this...
-                Logger.getLogger("glassfish").log(Level.FINE,
-                        url != null ? url.toString() : "null", ce); // NOI18N
+                LOGGER.log(Level.FINE,
+                        url != null ? url.toString() : "null", ce);
             } catch (java.io.IOException ioe) {
-                Logger.getLogger("glassfish").log(Level.INFO,
-                        url != null ? url.toString() : "null", ioe); // NOI18N
+                LOGGER.log(Level.INFO,
+                        url != null ? url.toString() : "null", ioe);
             } finally {
                 if (null != httpConn) {
                     httpConn.disconnect();
@@ -1013,7 +1041,7 @@ public class CommonServerSupport
             } catch (InterruptedException ex) {
             }
         }
-        Logger.getLogger("glassfish").log(Level.FINE, "pingHttp returns {0}", retVal); // NOI18N
+        LOGGER.log(Level.FINE, "pingHttp returns {0}", retVal); // NOI18N
         return retVal;
     }
 }

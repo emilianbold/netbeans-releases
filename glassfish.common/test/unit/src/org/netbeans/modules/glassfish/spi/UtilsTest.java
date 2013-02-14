@@ -48,12 +48,11 @@ import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import org.glassfish.tools.ide.admin.ResultMap;
 import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
+import org.glassfish.tools.ide.server.ServerTasks;
 import org.junit.*;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 
 /**
@@ -212,16 +211,14 @@ public class UtilsTest extends NbTestCase {
                 ip.put(GlassfishModule.HOSTNAME_ATTR, hostname);
                 ip.put(GlassfishModule.ADMINPORT_ATTR, port+"");
                 GlassfishInstance instance = GlassfishInstance.create(ip, null);
-                CommandRunner cr = new CommandRunner(Utils.isLocalPortOccupied(port), null,
-                        instance, (TaskStateListener)null);
-                ServerCommand.GetPropertyCommand gpc
-                        = new ServerCommand.GetPropertyCommand(
-                        "*.server-config.*.http-listener-1.port");
-                Future<TaskState> x = cr.execute(gpc);
-                System.out.println(x.get() == TaskState.COMPLETED);
-                System.out.println(gpc.getData());
-                System.out.println(gpc.getServerMessage());
-                System.out.println(gpc.getSrc());
+                ResultMap<String, String> result = ServerTasks.getProperties(
+                    instance, "*.server-config.*.http-listener-1.port");
+                if (result.getState() == TaskState.COMPLETED) {
+                    System.out.println(result.getValue());
+                } else {
+                    System.out.println(
+                            "Could not retrieve properties from server.");
+                }
             }
         }
         System.exit(0);

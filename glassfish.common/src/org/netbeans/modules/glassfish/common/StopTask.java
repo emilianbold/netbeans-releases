@@ -46,11 +46,7 @@ package org.netbeans.modules.glassfish.common;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.admin.ResultString;
-import org.glassfish.tools.ide.admin.TaskEvent;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
-import org.glassfish.tools.ide.server.ServerTasks;
+import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 
@@ -121,7 +117,7 @@ public class StopTask extends BasicTask<TaskState> {
         // !PW Can we have a single manager instance per instance, available on
         // demand through lookup?
         // !PW FIXME this uses doubly nested runnables.  Can we fix?
-        ResultString result = ServerTasks.stopServer(instance);
+        ResultString result = CommandStopDAS.stopDAS(instance);
         if (TaskState.FAILED.equals(result.getState())) {
              fireOperationStateChanged(TaskState.FAILED, TaskEvent.CMD_FAILED,
                      "MSG_STOP_SERVER_FAILED", instanceName);
@@ -161,11 +157,11 @@ public class StopTask extends BasicTask<TaskState> {
     }
     
     private TaskState stopClusterOrInstance(String target) {
-        ResultString result = ServerTasks.stopCluster(instance, target);
+        ResultString result = CommandStopCluster.stopCluster(instance, target);
 
         if (TaskState.FAILED.equals(result.getState())) {
             // if start-cluster not successful, try start-instance
-            result = ServerTasks.stopServerInstance(instance, target);
+            result = CommandStopInstance.stopInstance(instance, target);
             if (TaskState.FAILED.equals(result.getState())) {
                 // if start instance not suscessful fail
                 return fireOperationStateChanged(TaskState.FAILED,

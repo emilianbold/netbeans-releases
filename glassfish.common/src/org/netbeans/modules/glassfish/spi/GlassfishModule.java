@@ -46,10 +46,10 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.admin.ResultString;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
+import org.glassfish.tools.ide.data.GlassFishServer;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 
 

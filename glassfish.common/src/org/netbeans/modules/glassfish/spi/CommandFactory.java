@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.glassfish.spi;
 
-import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
+import org.glassfish.tools.ide.admin.CommandSetProperty;
 
 /**
  *
@@ -50,6 +50,7 @@ import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
  */
 public interface CommandFactory {
 
-    public SetPropertyCommand getSetPropertyCommand(String name, String value);
+    public CommandSetProperty getSetPropertyCommand(
+            String property, String value);
 
 }

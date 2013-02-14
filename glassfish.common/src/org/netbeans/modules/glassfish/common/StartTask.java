@@ -52,15 +52,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.glassfish.tools.ide.admin.ResultProcess;
-import org.glassfish.tools.ide.admin.TaskEvent;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.data.StartupArgs;
 import org.glassfish.tools.ide.data.StartupArgsEntity;
 import org.glassfish.tools.ide.server.FetchLogSimple;
@@ -86,6 +82,10 @@ import org.openide.util.lookup.Lookups;
  * @author Peter Williams
  */
 public class StartTask extends BasicTask<TaskState> {
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(StartTask.class);
 
     private static final String MAIN_CLASS = "com.sun.enterprise.glassfish.bootstrap.ASMain"; // NOI18N
     private final CommonServerSupport support;
@@ -126,19 +126,6 @@ public class StartTask extends BasicTask<TaskState> {
      * @param support common support object for the server instance being
      * started
      * @param recognizers output recognizers to pass to log processors, if any
-     * @param stateListener state monitor to track start progress
-     */
-    public StartTask(CommonServerSupport support, List<Recognizer> recognizers,
-            VMIntrospector vmi,
-            TaskStateListener... stateListener) {
-        this(support, recognizers, vmi, null, null, stateListener);
-    }
-
-    /**
-     *
-     * @param support common support object for the server instance being
-     * started
-     * @param recognizers output recognizers to pass to log processors, if any
      * @param jdkRoot used for starting in profile mode
      * @param jvmArgs used for starting in profile mode
      * @param stateListener state monitor to track start progress
@@ -166,7 +153,7 @@ public class StartTask extends BasicTask<TaskState> {
         this.jdkHome = jdkRoot;
         this.jvmArgs = (jvmArgs != null) ? Arrays.asList(removeEscapes(jvmArgs)) : null;
         this.vmi = vmi;
-        Logger.getLogger("glassfish").log(Level.FINE, "VMI == {0}", vmi);
+        LOGGER.log(Level.FINE, "VMI == {0}", vmi);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -180,7 +167,7 @@ public class StartTask extends BasicTask<TaskState> {
     public TaskState call() {
         // Save the current time so that we can deduct that the startup
         // Failed due to timeout
-        Logger.getLogger("glassfish").log(Level.FINEST, "StartTask.call() called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
+        LOGGER.log(Level.FINEST, "StartTask.call() called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         final long start = System.currentTimeMillis();
 
         final String adminHost;
@@ -297,13 +284,13 @@ public class StartTask extends BasicTask<TaskState> {
                 if (debugPort < LOWEST_USER_PORT || debugPort > 65535) {
                     support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "9009", true);
                     debugPort = 9009;
-                    Logger.getLogger("glassfish").log(Level.INFO, "converted debug port to 9009 for {0}", instanceName);
+                    LOGGER.log(Level.INFO, "converted debug port to 9009 for {0}", instanceName);
                 }
             } catch (NumberFormatException nfe) {
                 support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "9009", true);
                 support.setEnvironmentProperty(GlassfishModule.USE_SHARED_MEM_ATTR, "false", true);
                 debugPort = 9009;
-                Logger.getLogger("glassfish").log(Level.INFO, "converted debug type to socket and port to 9009 for {0}", instanceName);
+                LOGGER.log(Level.INFO, "converted debug type to socket and port to 9009 for {0}", instanceName);
             }
         }
         String restartQ = "";
@@ -335,13 +322,13 @@ public class StartTask extends BasicTask<TaskState> {
             try {
                 testPort = Integer.parseInt(portCandidate);
             } catch (NumberFormatException nfe) {
-                Logger.getLogger("glassfish").log(Level.INFO,
+                LOGGER.log(Level.INFO,
                         "could not parse {0} as an Inetger", portCandidate); // NOI18N
             }
             // this may be an autheticated server... so we will say it is started.
             // other operations will fail if the process on the port is not a
             // GF v3 server.
-            Logger.getLogger("glassfish").log(Level.FINEST,
+            LOGGER.log(Level.FINEST,
                     "Checking if GlassFish {0} is running. Timeout set to 20000 ms",
                     instance.getName());
             if (GlassFishStatus.isReady(instance, false)) {
@@ -365,17 +352,17 @@ public class StartTask extends BasicTask<TaskState> {
             }
             serverProcess = createProcess();
         } catch (NumberFormatException nfe) {
-            Logger.getLogger("glassfish").log(Level.INFO, instance.getProperty(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
+            LOGGER.log(Level.INFO, instance.getProperty(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
             return fireOperationStateChanged(TaskState.FAILED,
                     TaskEvent.CMD_FAILED,
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName);
         } catch (IOException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+            LOGGER.log(Level.INFO, null, ex); // NOI18N
             return fireOperationStateChanged(TaskState.FAILED,
                     TaskEvent.CMD_FAILED, "MSG_PASS_THROUGH",
                     ex.getLocalizedMessage());
         } catch (ProcessCreationException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+            LOGGER.log(Level.INFO, null, ex); // NOI18N
             return fireOperationStateChanged(TaskState.FAILED,
                     TaskEvent.CMD_FAILED, "MSG_PASS_THROUGH",
                     ex.getLocalizedMessage());
@@ -394,12 +381,12 @@ public class StartTask extends BasicTask<TaskState> {
                 new FetchLogSimple(serverProcess.getErrorStream()));
 
         // Waiting for server to start
-        Logger.getLogger("glassfish").log(Level.FINER, "Waiting for server to start for {0} ms",
+        LOGGER.log(Level.FINER, "Waiting for server to start for {0} ms",
                 new Object[] {Integer.toString(START_TIMEOUT)});
         while (System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
             boolean httpLive = CommonServerSupport.isRunning("localhost", adminPort, "localhost"); // Utils.isLocalPortOccupied(adminPort);
-            Logger.getLogger("glassfish").log(Level.FINEST, "{0} DAS port {1} {2} alive",
+            LOGGER.log(Level.FINEST, "{0} DAS port {1} {2} alive",
                     new Object[] {instance.getName(), Integer.toString(adminPort), httpLive ? "is" : "is not"}); 
             // Sleep for a little so that we do not make our checks too often
             //
@@ -417,7 +404,7 @@ public class StartTask extends BasicTask<TaskState> {
                         instance, true, GlassFishStatus.Mode.STARTUP)) {
 //                    TaskState  state = TaskState.FAILED;
                     String messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
-                    Logger.getLogger("glassfish").log(Level.INFO,
+                    LOGGER.log(Level.INFO,
                             "{0} is not responding, killing the process.",
                             new Object[] {instance.getName()});
                     LogViewMgr.removeServerLogStream(instance);
@@ -431,7 +418,7 @@ public class StartTask extends BasicTask<TaskState> {
 
             // if we are profiling, we need to lie about the status?
             if (null != jvmArgs) {
-                Logger.getLogger("glassfish").log(Level.FINE,
+                LOGGER.log(Level.FINE,
                         "Profiling mode status hack for {0}",
                         new Object[] {instance.getName()});
                 // save process to be able to stop process waiting for profiler to attach
@@ -470,7 +457,7 @@ public class StartTask extends BasicTask<TaskState> {
 
         // If the server did not start in the designated time limits
         // We consider the startup as failed and warn the user
-        Logger.getLogger("glassfish").log(Level.INFO,
+        LOGGER.log(Level.INFO,
                 "{0} Failed to start, killing process {1} after {2} ms",
                 new Object[]{instance.getName(), serverProcess,
                 System.currentTimeMillis() - start});
@@ -490,44 +477,23 @@ public class StartTask extends BasicTask<TaskState> {
                     TaskEvent.CMD_COMPLETED,
                     "MSG_SERVER_STARTED", instanceName);
         } else {
-            TaskState retVal = null;
-            // try start-cluster
-            CommandRunner inner = new CommandRunner(true,
-                    support.getCommandFactory(), instance,
-                    new TaskStateListener() {
-
-                        @Override
-                        public void operationStateChanged(TaskState newState,
-                                TaskEvent event, String... args) {
-                        }
-                    });
-            Future<TaskState> result = inner.execute(new Commands.StartCluster(target));
-            TaskState state = null;
+            TaskState state;
             try {
-                state = result.get();
-            } catch (InterruptedException ie) {
-                Logger.getLogger("glassfish").log(Level.INFO, "start-cluster", ie); // NOI18N
-            } catch (ExecutionException ie) {
-                Logger.getLogger("glassfish").log(Level.INFO, "start-cluster", ie); // NOI18N
+                ResultString result
+                        = CommandStartCluster.startCluster(instance, target);
+                state = result.getState();
+            } catch (GlassFishIdeException gfie) {
+                state = TaskState.FAILED;
+                LOGGER.log(Level.INFO, gfie.getMessage(), gfie);
             }
             if (state == TaskState.FAILED) {
-                // if start-cluster not successful, try start-instance
-                inner = new CommandRunner(true,
-                        support.getCommandFactory(), instance,
-                        new TaskStateListener() {
-
-                            @Override
-                            public void operationStateChanged(TaskState newState,
-                                    TaskEvent event, String... args) {
-                            }
-                        });
-                result = inner.execute(new Commands.StartInstance(target));
                 try {
-                    state = result.get();
-                } catch (InterruptedException ie) {
-                    Logger.getLogger("glassfish").log(Level.INFO, "start-instance", ie);  // NOI18N
-                } catch (ExecutionException ie) {
-                    Logger.getLogger("glassfish").log(Level.INFO, "start-instance", ie);  // NOI18N
+                    ResultString result
+                            = CommandStartInstance.startInstance(instance, target);
+                    state = result.getState();
+                } catch (GlassFishIdeException gfie) {
+                    state = TaskState.FAILED;
+                    LOGGER.log(Level.INFO, gfie.getMessage(), gfie);
                 }
                 if (state == TaskState.FAILED) {
                     // if start instance not suscessful fail
@@ -536,17 +502,11 @@ public class StartTask extends BasicTask<TaskState> {
                             "MSG_START_TARGET_FAILED", instanceName, target);
                 }
             }
-
-            // update http port
             support.updateHttpPort();
-
-            // ping the http port
-
             return fireOperationStateChanged(TaskState.COMPLETED,
                     TaskEvent.CMD_COMPLETED,
                     "MSG_SERVER_STARTED", instanceName);
         }
-
     }
 
     private FileObject getJavaPlatformRoot(CommonServerSupport support) throws IOException {
@@ -764,9 +724,9 @@ public class StartTask extends BasicTask<TaskState> {
             p.waitFor();
             retVal = p.exitValue();
         } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, upgrader.toString(), ex); // NOI18N
+            LOGGER.log(Level.INFO, upgrader.toString(), ex); // NOI18N
         } catch (IOException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, upgrader.toString(), ex); // NOI18N
+            LOGGER.log(Level.INFO, upgrader.toString(), ex); // NOI18N
         }
         return retVal;
     }

@@ -55,11 +55,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.CommandSetProperty;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
@@ -321,13 +322,11 @@ public class ResourceRegistrationHelper {
             String value = data.get(k);
             try {
                 GlassfishModule support = dm.getCommonServerSupport();
-                SetPropertyCommand spc = support.getCommandFactory().getSetPropertyCommand(name, value);
-                Future<TaskState> task = support.execute(spc);
-                TaskState state = task.get();
-            } catch (InterruptedException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-            } catch (ExecutionException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+                CommandSetProperty command = support.getCommandFactory()
+                        .getSetPropertyCommand(name, value);
+                CommandSetProperty.setProperty(support.getInstance(), command);
+            } catch (GlassFishIdeException gfie) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, gfie.getMessage(), gfie);  // NOI18N
             }
         }
     }

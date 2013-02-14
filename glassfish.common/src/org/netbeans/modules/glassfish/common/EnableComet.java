@@ -42,26 +42,36 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 
 /**
  *
  * @author vkraemer
  */
 public class EnableComet implements Runnable {
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(CommonServerSupport.class);
+
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
 
     private final GlassfishModule support;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
 
     public EnableComet(GlassfishModule support) {
         this.support = support;
@@ -69,33 +79,34 @@ public class EnableComet implements Runnable {
 
     @Override
     public void run() {
-        GetPropertyCommand gpc = new GetPropertyCommand("*.comet-support-enabled"); // NOI18N
-        Future<TaskState> result = support.execute(gpc);
-        //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
+        String propertiesPattern = "*.comet-support-enabled";
         try {
-            if (result.get(10, TimeUnit.SECONDS) == TaskState.COMPLETED) {
-                Map<String, String> retVal = gpc.getData();
-                String newValue = support.getInstanceProperties().get(GlassfishModule.COMET_FLAG);
+            ResultMap<String, String> result = CommandGetProperty.getProperties(
+                    support.getInstance(), propertiesPattern,
+                    CommonServerSupport.PROPERTIES_FETCH_TIMEOUT);
+            if (result.getState() == TaskState.COMPLETED) {
+                String newValue = support.getInstanceProperties()
+                        .get(GlassfishModule.COMET_FLAG);
                 if (null == newValue || newValue.trim().length() < 1) {
                     newValue = "false"; // NOI18N
                 }
-                for (Entry<String, String> entry : retVal.entrySet()) {
+                for (Entry<String, String> entry
+                        : result.getValue().entrySet()) {
                     String key = entry.getKey();
                     // do not update the admin listener....
-                    if (null != key && !key.contains("admin-listener")) { // NOI18N
-                        SetPropertyCommand spc = support.getCommandFactory().getSetPropertyCommand(key, newValue);
-                        Future<TaskState> results = support.execute(spc);
-                        //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
-                        results.get(10, TimeUnit.SECONDS);
+                    if (null != key && !key.contains("admin-listener")) {
+                        CommandSetProperty command = support.getCommandFactory()
+                                .getSetPropertyCommand(key, newValue);
+                        ResultString setResult = CommandSetProperty.setProperty(
+                                support.getInstance(), command,
+                                CommonServerSupport.PROPERTIES_FETCH_TIMEOUT);
                     }
                 }
+                
             }
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (TimeoutException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO,
+                    "Could not get comment-support-enabeld value.", gfie);
         }
     }
 }
