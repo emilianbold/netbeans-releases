@@ -165,7 +165,11 @@ public class FindTypeUsagesVisitor extends AbstractFindUsagesVisitor {
     private void addIfEquals(ASTNode node) {
         final ClassNode type = ElementUtils.getType(node);
         if (isEquals(node)) {
-            usages.add(new ASTUtils.FakeASTNode(type, ElementUtils.getTypeName(node)));
+            if (type.getLineNumber() > 0 && type.getColumnNumber() > 0) {
+                usages.add(new ASTUtils.FakeASTNode(type, ElementUtils.getTypeName(node)));
+            } else if (node.getLineNumber() > 0 && node.getColumnNumber() > 0) {
+                usages.add(new ASTUtils.FakeASTNode(node, ElementUtils.getTypeName(node)));
+            }
         }
 
         final GenericsType[] genericTypes = type.getGenericsTypes();
