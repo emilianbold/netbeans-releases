@@ -156,7 +156,9 @@ public final class ImportHelper {
      * For the given missing import finds out possible candidates. This means if
      * there are more class types with the same name only with different packaging
      * (e.g. java.lang.Object and org.netbeans.modules.whatever.Object) we will get
-     * list of two candidates as a result.
+     * list of two candidates as a result. Typically used by "Add import hint" where
+     * we know that some line is incorrect due to missing import, but we don't know
+     * what could be possibly imported to fix the problem.
      *
      * @param fo current file
      * @param missingClass class name for which we are looking for import candidates
@@ -249,6 +251,13 @@ public final class ImportHelper {
         return weight;
     }
 
+    /**
+     * For the given error message finds out missing class name. The error message
+     * parameter should be directly from groovy parser.
+     *
+     * @param errorMessage groovy parser error message
+     * @return missing class name
+     */
     public static String getMissingClassName(String errorMessage) {
         String errorPrefix = "unable to resolve class "; // NOI18N
         String missingClass = null;
@@ -287,7 +296,8 @@ public final class ImportHelper {
 
     /**
      * Add import directly to the source code (does not run any checks if the import
-     * has more candidates from different packages etc.).
+     * has more candidates from different packages etc.). Typically used by "Add import
+     * hint" where we already know what to add.
      *
      * @param fo file where we want to put import statement
      * @param fqName fully qualified name of the import
