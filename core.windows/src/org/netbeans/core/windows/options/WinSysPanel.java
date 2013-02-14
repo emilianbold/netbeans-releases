@@ -586,11 +586,12 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 currentLaf = li;
                 if( darkTheme ) {
                     if( MetalLookAndFeel.class.getName().equals( currentLAFClassName ) ) {
-                        li = DARK_METAL;
-                    } else if( "Nimbus".equals( currentLAFClassName ) ) { //NOI18N
-                        li = DARK_NIMBUS;
+                        currentLaf = DARK_METAL;
+                    } else if( "Nimbus".equals( UIManager.getLookAndFeel().getID() ) ) { //NOI18N
+                        currentLaf = DARK_NIMBUS;
                     }
                 }
+                break;
             }
         }
         return currentLaf;
