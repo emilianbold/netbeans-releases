@@ -49,7 +49,6 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.spi.WSDesc;
 import org.openide.nodes.Children;

@@ -43,14 +43,15 @@
 package org.netbeans.modules.glassfish.javaee.db;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.CommandCreateJDBCConnectionPool;
+import org.glassfish.tools.ide.admin.CommandCreateJDBCResource;
+import org.glassfish.tools.ide.admin.ResultString;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -59,7 +60,6 @@ import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
-import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.util.RequestProcessor;
@@ -127,114 +127,28 @@ public class ResourcesHelper {
         String sample_jdbc = "jdbc/sample"; //NOI18N
         String sample_classname = "org.apache.derby.jdbc.ClientDataSource"; //NOI18N
         String sample_restype = "javax.sql.DataSource"; //NOI18N
-        String sample_props = "DatabaseName=sample" +
-                ":User=app" +
-                ":Password=app" +
-                ":PortNumber=1527" +
-                ":serverName=localhost" +
-                ":URL=jdbc\\:derby\\://localhost\\:1527/sample"; //NOI18N
+        Map<String, String> sample_props = new HashMap<String, String>();
+        sample_props.put("DatabaseName", "sample");
+        sample_props.put("User", "app");
+        sample_props.put("Password", "app");
+        sample_props.put("PortNumber", "1527");
+        sample_props.put("serverName", "localhost");
+        sample_props.put("URL", "jdbc\\:derby\\://localhost\\:1527/sample");
         Map<String, ResourceDesc> jdbcsMap = commonSupport.getResourcesMap(GlassfishModule.JDBC_RESOURCE);
         if (!jdbcsMap.containsKey(sample_jdbc)) {
-            CreateJDBCConnectionPoolCommand poolCmd = new CreateJDBCConnectionPoolCommand(sample_poolname, sample_classname, sample_restype, sample_props);
-            Future<TaskState> poolResult = commonSupport.execute(poolCmd);
             try {
-                if (poolResult.get(60, TimeUnit.SECONDS) == TaskState.COMPLETED) {
-                    CreateJDBCResourceCommand jdbcCmd = new CreateJDBCResourceCommand(sample_jdbc, sample_poolname);
-                    commonSupport.execute(jdbcCmd);
+                ResultString result = CommandCreateJDBCConnectionPool
+                        .createJDBCConnectionPool(commonSupport.getInstance(),
+                        sample_poolname, sample_classname, sample_restype,
+                        sample_props, 60000);
+                if (result.getState() == TaskState.COMPLETED) {
+                    CommandCreateJDBCResource.createJDBCResource(
+                            commonSupport.getInstance(), sample_poolname,
+                            sample_jdbc, null, null, 60000);
                 }
-            } catch (InterruptedException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.SEVERE, ex.getLocalizedMessage(), ex);
-            } catch (ExecutionException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.SEVERE, ex.getLocalizedMessage(), ex);
-            } catch (TimeoutException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.SEVERE, ex.getLocalizedMessage(), ex);
-            }
-        }
-    }
-
-    public static final class CreateJDBCConnectionPoolCommand extends ServerCommand {
-
-        // FIXME any embedded colons in "properties" must be escaped with backslash
-        public CreateJDBCConnectionPoolCommand(final String name, final String classname, final String restype, final String properties) {
-            super("create-jdbc-connection-pool"); // NOI18N
-            StringBuilder cmd = new StringBuilder(128); // NOI18N
-            if ((classname != null && classname.length() > 0) &&
-                    (restype != null && restype.length() > 0) &&
-                    (name != null && name.length() > 0)) {
-                cmd.append("datasourceclassname=").append(classname);
-                cmd.append(PARAM_SEPARATOR).append("restype=").append(restype); // NOI18N
-                cmd.append(PARAM_SEPARATOR).append("property=").append(properties); // NOI18N
-                cmd.append(PARAM_SEPARATOR).append("jdbc_connection_pool_id=");
-                cmd.append(name);
-                query = cmd.toString();
-            }
-        }
-    }
-
-    public static final class CreateJDBCResourceCommand extends ServerCommand {
-
-        public CreateJDBCResourceCommand(final String name, final String poolname) {
-            super("create-jdbc-resource"); // NOI18N
-            StringBuilder cmd = new StringBuilder(128);
-            cmd.append("connectionpoolid=").append(poolname); // NOI18N
-            cmd.append(PARAM_SEPARATOR).append("jndi_name="); // NOI18N
-            cmd.append(name);
-            query = cmd.toString();
-        }
-    }
-
-    public static final class CreateAdminObjectCommand extends ServerCommand {
-
-        // FIXME any embedded colons in "properties" must be escaped with backslash
-        public CreateAdminObjectCommand(final String name, final String raname, final String restype, final String properties) {
-            super("create-admin-object"); // NOI18N
-            StringBuilder cmd = new StringBuilder(128); // NOI18N
-            if ((name != null && name.length() > 0) &&
-                    (restype != null && restype.length() > 0) &&
-                    (raname != null && raname.length() > 0)) {
-                cmd.append("enabled=true");
-                cmd.append(PARAM_SEPARATOR).append("restype=").append(restype); // NOI18N
-                cmd.append(PARAM_SEPARATOR).append("raname=").append(restype); // NOI18N
-                cmd.append(PARAM_SEPARATOR).append("property=").append(raname); // NOI18N
-                cmd.append(PARAM_SEPARATOR).append("jndi_name=");   // NOI18N
-                cmd.append(name);
-                query = cmd.toString();
-}
-        }
-    }
-
-    public static final class CreateConnectorConnectionPoolCommand extends ServerCommand {
-
-        // FIXME any embedded colons in "properties" must be escaped with backslash
-        public CreateConnectorConnectionPoolCommand(final String name, final String raname, final String conndefnname, final String poolname, final String properties) {
-            super("create-connector-connection-pool"); // NOI18N
-            StringBuilder cmd = new StringBuilder(128);
-            if ((name != null && name.length() > 0) &&
-                    (raname != null && raname.length() > 0) &&
-                    (conndefnname != null && conndefnname.length() > 0)) {
-                cmd.append("raname=").append(raname); // NOI18N
-                cmd.append(PARAM_SEPARATOR).append("connectiondefinition=").append(conndefnname); // NOI18N
-                cmd.append(PARAM_SEPARATOR).append("property=").append(properties); // NOI18N
-                cmd.append(PARAM_SEPARATOR).append("poolname="); // NOI18N
-                cmd.append(name);
-                query = cmd.toString();
-            }
-        }
-    }   
-
-    public static final class CreateConnectorCommand extends ServerCommand {
-
-        public CreateConnectorCommand(final String name, final String poolname, final String properties) {
-            super("create-connector-resource"); // NOI18N
-            StringBuilder cmd = new StringBuilder(128);
-            if ((name != null && name.length() > 0) &&
-                    (poolname != null && poolname.length() > 0)) {
-                cmd.append("enabled=true");
-                cmd.append(PARAM_SEPARATOR).append("poolname=").append(poolname); // NOI18N
-                cmd.append(PARAM_SEPARATOR).append("property=").append(properties); // NOI18N
-                cmd.append(PARAM_SEPARATOR).append("jndi_name="); // NOI18N
-                cmd.append(name);
-                query = cmd.toString();
+            } catch (GlassFishIdeException gfie) {
+                Logger.getLogger("glassfish-javaee").log(
+                        Level.SEVERE, gfie.getLocalizedMessage(), gfie);
             }
         }
     }

@@ -336,14 +336,14 @@ public interface GlassfishModule {
      */
     public Future<ResultString> disable(TaskStateListener stateListener,
             String name);
-    /**
-     * Execute the specified server command.
-     * 
-     * @param command Object representing the server command to execute.
-     * 
-     * @return Future instance that finishes when the command has been completed.
-     */
-    public Future<TaskState> execute(ServerCommand command);
+//    /**
+//     * Execute the specified server command.
+//     * 
+//     * @param command Object representing the server command to execute.
+//     * 
+//     * @return Future instance that finishes when the command has been completed.
+//     */
+//    public Future<TaskState> execute(ServerCommand command);
     
     /**
      * List the applications currently deployed on the server.

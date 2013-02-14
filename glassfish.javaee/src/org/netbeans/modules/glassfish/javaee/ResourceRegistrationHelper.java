@@ -45,23 +45,12 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.GlassFishIdeException;
-import org.glassfish.tools.ide.admin.CommandGetProperty;
-import org.glassfish.tools.ide.admin.CommandSetProperty;
-import org.glassfish.tools.ide.admin.ResultMap;
-import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
@@ -75,7 +64,6 @@ import org.xml.sax.SAXException;
  * @author vkraemer
  */
 public class ResourceRegistrationHelper {
-    private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     private static final int TIMEOUT = 2000;
 
     private ResourceRegistrationHelper() {
@@ -127,22 +115,14 @@ public class ResourceRegistrationHelper {
             String uri = 
                     commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
             String target = Hk2DeploymentManager.getTargetFromUri(uri);
-            AddResourcesCommand cmd = new AddResourcesCommand(sunResourcesXml,dm.isLocal(),
-                    target);
             try {
-                Future<TaskState> result = commonSupport.execute(cmd);
-                if(result.get(TIMEOUT, TIMEOUT_UNIT) == TaskState.COMPLETED) {
-                    succeeded = true;
-                }
-            } catch (TimeoutException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
-            } catch (InterruptedException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
-            } catch (ExecutionException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+                ResultString result = CommandAddResources.addResource(
+                        commonSupport.getInstance(), sunResourcesXml, target);
+                return result.getState() == TaskState.COMPLETED;
+            } catch (GlassFishIdeException gfie) {
+                Logger.getLogger("glassfish-javaee")
+                        .log(Level.INFO, gfie.getLocalizedMessage(), gfie);
+                throw new ConfigurationException(gfie.getLocalizedMessage(), gfie);
             }
         }
         return succeeded;
@@ -239,61 +219,6 @@ public class ResourceRegistrationHelper {
             }
         }
         return changedData;
-    }
-
-    public static final class AddResourcesCommand extends ServerCommand {
-
-        boolean isLocal;
-        File path;
-        
-        public AddResourcesCommand(File sunResourcesXmlPath,boolean isLocal, String target) {
-            super("add-resources"); // NOI18N
-            query = "DEFAULT=" + sunResourcesXmlPath.getAbsolutePath(); // NOI18N
-            if (null != target) {
-                query += "&target="+target; // NOI18N
-            }
-            this.isLocal = isLocal;
-            this.path=sunResourcesXmlPath;
-        }
-
-        @Override
-        public String getContentType() {
-            return isLocal ? null : "application/zip"; // NOI18N
-        }
-
-        @Override
-        public boolean getDoOutput() {
-            return !isLocal;
-        }
-
-        @Override
-        public InputStream getInputStream() {
-                if (isLocal) {
-                    return null;
-                } else {
-                    try {
-                        return new FileInputStream(path);
-                    } catch (FileNotFoundException fnfe) {
-                        Logger.getLogger("glassfish").log(Level.INFO, path.getAbsolutePath(), fnfe); // NOI18N
-                        return null;
-                    }
-            }
-        }
-
-        @Override
-        public String getRequestMethod() {
-            return isLocal ? super.getRequestMethod() : "POST"; // NOI18N
-        }
-
-        @Override
-        public String getInputName() {
-            return path.getName();
-        }
-
-        @Override
-        public String getLastModified() {
-            return Long.toString(path.lastModified());
-        }
     }
 
     public static Map<String, String> getResourceData(String query, Hk2DeploymentManager dm) {

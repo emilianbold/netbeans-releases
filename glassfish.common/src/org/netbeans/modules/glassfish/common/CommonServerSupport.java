@@ -489,6 +489,50 @@ public class CommonServerSupport
         return task;
     }
 
+    /**
+     * Sends restart-domain command to server (asynchronous)
+     *
+     */
+    public Future<ResultString> restartServer(final int debugPort,
+            boolean debug, TaskStateListener[] listeners) {
+        if (-1 == debugPort) {
+            Command command = new CommandRestartDAS(false, false, false);
+            return ServerAdmin.<ResultString>exec(
+                    instance, command, null, listeners);
+        }
+        TaskState state = null;
+        try {
+            ResultMap<String, String> result
+                    = CommandGetProperty.getProperties(instance,
+                    "configs.config.server-config.java-config.debug-options");
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String, String> values = result.getValue();
+                if (values != null && !values.isEmpty()) {
+                    String oldValue = values.get(
+                            "configs.config.server-config.java-config.debug-options");
+                    CommandSetProperty setCmd =
+                            getCommandFactory().getSetPropertyCommand(
+                            "configs.config.server-config.java-config.debug-options",
+                            oldValue.replace("transport=dt_shmem", "transport=dt_socket").
+                            replace("address=[^,]+", "address=" + debugPort));
+                    try {
+                        CommandSetProperty.setProperty(instance, setCmd);
+                        debug = true;
+                    } catch (GlassFishIdeException gfie) {
+                        debug = false;
+                        LOGGER.log(Level.INFO, debugPort + "", gfie);
+                    }
+                }
+            }
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO,
+                    "Could not retrieve property from server.", gfie);
+        }
+        Command command = new CommandRestartDAS(debug, false, false);
+        return ServerAdmin.<ResultString>exec(
+                instance, command, null, listeners);
+    }
+
     @Override
     public Future<ResultString> deploy(final TaskStateListener stateListener,
             final File application, final String name) {
@@ -586,33 +630,30 @@ public class CommonServerSupport
                 new TaskStateListener[] {stateListener});
     }
 
-    @Override
-    public Future<TaskState> execute(ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance);
-        return mgr.execute(command);
-    }
-
-    private Future<TaskState> execute(boolean irr, ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
-                instance);
-        return mgr.execute(command);
-    }
-    private Future<TaskState> execute(boolean irr, ServerCommand command,
-            TaskStateListener... osl) {
-        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
-                instance, osl);
-        return mgr.execute(command);
-    }
+//    @Override
+//    public Future<TaskState> execute(ServerCommand command) {
+//        CommandRunner mgr = new CommandRunner(
+//                GlassFishStatus.isReady(instance, false),
+//                getCommandFactory(), instance);
+//        return mgr.execute(command);
+//    }
+//
+//    private Future<TaskState> execute(boolean irr, ServerCommand command) {
+//        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
+//                instance);
+//        return mgr.execute(command);
+//    }
+//    private Future<TaskState> execute(boolean irr, ServerCommand command,
+//            TaskStateListener... osl) {
+//        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
+//                instance, osl);
+//        return mgr.execute(command);
+//    }
 
     @Override
     public AppDesc [] getModuleList(String container) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance);
         int total = 0;
-        Map<String, List<AppDesc>> appMap = mgr.getApplications(container);
+        Map<String, List<AppDesc>> appMap = getApplications(container);
         Collection<List<AppDesc>> appLists = appMap.values();
         for(List<AppDesc> appList: appLists) {
             total += appList.size();
@@ -934,7 +975,105 @@ public class CommonServerSupport
         }
     }
 
-     
+    /**
+     * Sends list-applications command to server (synchronous)
+     *
+     * @return String array of names of deployed applications.
+     */
+    public Map<String, List<AppDesc>> getApplications(String container) {
+        Map<String, List<AppDesc>> result = Collections.emptyMap();
+            Map<String, List<String>> apps = Collections.emptyMap();
+        try {
+            ResultMap<String, List<String>> resultMap
+                    = CommandListComponents.listComponents(instance,
+                    Util.computeTarget(instance.getProperties()));
+            if (resultMap.getState() == TaskState.COMPLETED) {
+                apps = resultMap.getValue();
+            }
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO,
+                    "Could not retrieve components server.", gfie);
+        }
+        if (null == apps || apps.isEmpty()) {
+            return result;
+        }
+        try {
+            ResultMap<String, String> appPropsResult = CommandGetProperty
+                    .getProperties(instance, "applications.application.*");
+            if (appPropsResult.getState() == TaskState.COMPLETED) {
+                ResultMap<String, String> appRefResult
+                        = CommandGetProperty.getProperties(
+                        instance, "servers.server.*.application-ref.*");
+                if (appRefResult.getState() == TaskState.COMPLETED) {
+                    result = processApplications(apps,
+                            appPropsResult.getValue(),
+                            appRefResult.getValue());
+                }
+            }
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO,
+                    "Could not retrieve property from server.", gfie);
+        }
+        return result;
+    }
+
+    private Map<String, List<AppDesc>> processApplications(Map<String,
+            List<String>> appsList, Map<String, String> properties,
+            Map<String, String> refProperties){
+        Map<String, List<AppDesc>> result = new HashMap<String, List<AppDesc>>();
+        Iterator<String> appsItr = appsList.keySet().iterator();
+        while (appsItr.hasNext()) {
+            String engine = appsItr.next();
+            List<String> apps = appsList.get(engine);
+            for (int i = 0; i < apps.size(); i++) {
+                String name = apps.get(i).trim();
+                String appname = "applications.application." + name; // NOI18N
+                String contextKey = appname + ".context-root"; // NOI18N
+                String pathKey = appname + ".location"; // NOI18N
+
+                String contextRoot = properties.get(contextKey);
+                if (contextRoot == null) {
+                    contextRoot = name;
+                }
+                if (contextRoot.startsWith("/")) {  // NOI18N
+                    contextRoot = contextRoot.substring(1);
+                }
+
+                String path = properties.get(pathKey);
+                if (path == null) {
+                    path = "unknown"; //NOI18N
+                }
+                if (path.startsWith("file:")) {  // NOI18N
+                    path = path.substring(5);
+                    path = (new File(path)).getAbsolutePath();
+                }
+
+                String enabledKey = "servers.server.server.application-ref."
+                        +name+ ".enabled";  //NOI18N
+                // This needs to be more focused. Does it need to list
+                // of servers that are associated with the target?
+                for (String possibleKey : refProperties.keySet()) {
+                    if (possibleKey.endsWith(".application-ref."
+                            + name + ".enabled")) { // NOI18N
+                        enabledKey = possibleKey;
+                    }
+                }
+                String enabledValue = refProperties.get(enabledKey);
+                if (null != enabledValue) {
+                    boolean enabled = Boolean.parseBoolean(enabledValue);
+
+                    List<AppDesc> appList = result.get(engine);
+                    if(appList == null) {
+                        appList = new ArrayList<AppDesc>();
+                        result.put(engine, appList);
+                    }
+                    appList.add(new AppDesc(name, path, contextRoot, enabled));
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * Retrieve server name using target name from server properties.
      * <p/>

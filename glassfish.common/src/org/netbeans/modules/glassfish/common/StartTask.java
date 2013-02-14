@@ -213,9 +213,7 @@ public class StartTask extends BasicTask<TaskState> {
 
     private TaskState restartDAS(String adminHost, int adminPort, final long start) {
         // deal with the remote case here...
-        CommandRunner mgr = new CommandRunner(true,
-                support.getCommandFactory(),
-                instance,
+        TaskStateListener[] listeners = {
                 new TaskStateListener() {
                     // if the http command is successful, we are not done yet...
                     // The server still has to stop. If we signal success to the 'stateListener'
@@ -276,7 +274,7 @@ public class StartTask extends BasicTask<TaskState> {
                             }
                         }
                     }
-                });
+                }};
         int debugPort = -1;
         if (GlassfishModule.DEBUG_MODE.equals(instance.getProperty(GlassfishModule.JVM_MODE))) {
             try {
@@ -293,11 +291,8 @@ public class StartTask extends BasicTask<TaskState> {
                 LOGGER.log(Level.INFO, "converted debug type to socket and port to 9009 for {0}", instanceName);
             }
         }
-        String restartQ = "";
-        if (support.supportsRestartInDebug()) {
-            restartQ = -1 == debugPort ? "debug=false" : "debug=true";
-        }
-        mgr.restartServer(debugPort, restartQ);
+        support.restartServer(debugPort,
+                support.supportsRestartInDebug() && debugPort >= 0, listeners);
         return fireOperationStateChanged(TaskState.RUNNING,
                 TaskEvent.CMD_FAILED,
                 "MSG_START_SERVER_IN_PROGRESS", instanceName); // NOI18N
