@@ -323,45 +323,6 @@ public class CommandRunner extends BasicTask<TaskState> {
         return result;
     }
 
-    public List<ResourceDesc> getResources(String type) {
-        List<ResourceDesc> result = Collections.emptyList();
-        try {
-            Commands.ListResourcesCommand cmd
-                    = new Commands.ListResourcesCommand(
-                    type, Util.computeTarget(instance.getProperties()));
-            serverCmd = cmd;
-            Future<TaskState> task = executor().submit(this);
-            TaskState state = task.get();
-            if (state == TaskState.COMPLETED) {
-                result = cmd.getResourceList();
-            }
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-        }
-        return result;
-    }
-
-//    public Future<TaskState> deploy(File dir) {
-//        return deploy(dir, dir.getParentFile().getName(), null);
-//    }
-//
-//    public Future<TaskState> deploy(File dir, String moduleName) {
-//        return deploy(dir, moduleName, null);
-//    }
-//
-//    public Future<TaskState> deploy(File dir, String moduleName, String contextRoot)  {
-//        return deploy(dir, moduleName, contextRoot, null, new File[0]);
-//    }
-//
-//    public Future<TaskState> deploy(File dir, String moduleName, String contextRoot, Map<String,String> properties, File[] libraries) {
-//        LogViewMgr.displayOutput(instance, null);
-//        return execute(new Commands.DeployCommand(dir, moduleName,
-//                contextRoot, computePreserveSessions(instance), properties, libraries,
-//                Util.computeTarget(instance.getProperties())));
-//    }
-
     /**
      * Execute an arbitrary server command.
      */

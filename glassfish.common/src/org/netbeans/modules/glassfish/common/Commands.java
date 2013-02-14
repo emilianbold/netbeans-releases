@@ -41,33 +41,15 @@
  */
 package org.netbeans.modules.glassfish.common;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
+import java.io.*;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.jar.Attributes;
+import java.util.*;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
-import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.Utils;
-import org.openide.util.NbBundle;
 
 /**
  * Abstraction of commands for V3 server administration
@@ -231,94 +213,7 @@ public class Commands {
                     "security_ContractProvider".equals(currentContainer); // NOI18N
         }
     };
-
-    /**
-     * Command to list resources of various types currently available on the server.
-     */
-    public static final class ListResourcesCommand extends ServerCommand {
-
-        private final String cmdSuffix;
-        private Manifest list;
-        private List<ResourceDesc> resList;
-
-        public ListResourcesCommand(String resourceCmdSuffix, String target) {
-            super("list-" + resourceCmdSuffix + "s"); // NOI18N
-
-            cmdSuffix = resourceCmdSuffix;
-            if (null != target) {
-                query="DEFAULT="+target; // NOI18N
-            }
-        }
-
-        public List<ResourceDesc> getResourceList() {
-            if(resList != null) {
-                return Collections.unmodifiableList(resList);
-            } else {
-                return Collections.emptyList();
-            }
-        }
-
-        @Override
-        public void readManifest(Manifest manifest) throws IOException {
-            list = manifest;
-        }
-
-        @Override
-        public boolean processResponse() {
-            if(list == null) {
-                return false;
-            }
-
-            String resourceList = list.getMainAttributes().getValue("children"); // NOI18N
-            if(resourceList == null || resourceList.length() == 0) {
-                // no resources running...
-                return true;
-            }
-
-            String[] resources = resourceList.split("[,;]"); // NOI18N
-            for(String r : resources) {
-                if(r == null || skipResource(r)) {
-                    continue;
-                }
-
-                // get container attributes
-                Attributes resourceAttr = list.getAttributes(r);
-                if(resourceAttr != null) {
-                    String name = null;
-                    String tmp = null;
-                    try {
-                        tmp = resourceAttr.getValue("message"); // NOI18N
-                        if (null != tmp) {
-                            name = URLDecoder.decode(tmp , "UTF-8"); // NOI18N
-                        }
-
-                        if (null == name || name.length() < 1)  {
-                            name = URLDecoder.decode(r.trim(), "UTF-8"); // NOI18N
-                        }
-
-                    } catch (UnsupportedEncodingException uee) {
-                        Logger.getLogger("glassfish").log(Level.INFO, "", uee); // NOI18N
-                    }
-                    if(name != null && name.length() > 0) {
-                        if(resList == null) {
-                            resList = new ArrayList<ResourceDesc>();
-                        }
-
-                        resList.add(new ResourceDesc(name, cmdSuffix));
-                    }
-                } else {
-                    Logger.getLogger("glassfish").log(Level.FINE, "No resource attributes returned for {0}", r); // NOI18N
-                }
-            }
-
-            return true;
-        }
-
-        private boolean skipResource(String r) {
-            return r.equals(NbBundle.getMessage(Commands.class, "nothingToList")); //NOI18N
-        }
-    };
-
+    
     private static void appendLibraries(StringBuilder cmd, File[] libraries) {
         cmd.append(ServerCommand.PARAM_SEPARATOR).append("libraries="); // NOI18N
         boolean firstOne = true;

@@ -63,7 +63,7 @@ public class Hk2ResourceNode extends Hk2ItemNode {
 
         if(decorator.canUnregister()) {
             getCookieSet().add(new Hk2Cookie.Unregister(lookup,
-                    resource.getName(), resource.getCommandSuffix(),
+                    resource.getName(), resource.getCommandType(),
                     decorator.getCmdPropertyName(),
                     decorator.isCascadeDelete()));
         }
@@ -78,7 +78,7 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                     // add the editor cookie
                     getCookieSet().add(new Hk2Cookie.EditDetails(
                             lookup, getDisplayName(),
-                            resource.getCommandSuffix(), customizer));
+                            resource.getCommandType(), customizer));
                 }
 
             }
