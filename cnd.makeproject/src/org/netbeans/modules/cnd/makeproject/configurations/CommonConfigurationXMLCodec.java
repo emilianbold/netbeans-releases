@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.picklist.PicklistElement;
 import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
@@ -64,6 +65,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CodeAssistanceConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -90,6 +92,8 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * V89 - NB 8.0
+ *    support compile command
  * V88 - NB 7.3 (!!!!!!!!!!INVERTED SERIALIZATION!!!!!!!!!!!!)
  *    1) This is the version where serialization of unmanaged projects were inverted
  *    instead of excluded items and personally attributed items we store all 
@@ -265,7 +269,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 88;
+    public final static int CURRENT_VERSION = 89;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -312,6 +316,14 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String BUILD_COMMAND_WORKING_DIR_ELEMENT = "buildCommandWorkingDir"; // NOI18N
     protected final static String CLEAN_COMMAND_ELEMENT = "cleanCommand"; // NOI18N
     protected final static String EXECUTABLE_PATH_ELEMENT = "executablePath"; // NOI18N
+    // Compile
+    protected static final String COMPILE_ID = "compile"; // NOI18N
+    protected final static String COMPILE_DIR_ELEMENT = "compiledir"; // NOI18N
+    protected final static String COMPILE_DIR_PICKLIST_ELEMENT = "compiledirpicklist"; // NOI18N
+    protected final static String COMPILE_DIR_PICKLIST_ITEM_ELEMENT = "compiledirpicklistitem"; // NOI18N
+    protected final static String COMPILE_COMMAND_ELEMENT = "compilecommand"; // NOI18N
+    protected final static String COMPILE_COMMAND_PICKLIST_ELEMENT = "compilecommandpicklist"; // NOI18N
+    protected final static String COMPILE_COMMAND_PICKLIST_ITEM_ELEMENT = "compilecommandpicklistitem"; // NOI18N
     // Common
     protected final static String COMMANDLINE_TOOL_ELEMENT = "commandlineTool"; // NOI18N
     protected final static String ADDITIONAL_DEP_ELEMENT = "additionalDep"; // NOI18N
@@ -497,6 +509,7 @@ public abstract class CommonConfigurationXMLCodec
             }
 
             writeToolsSetBlock(xes, makeConfiguration);
+            writeCompileConfBlock(xes, makeConfiguration);
             if (publicLocation) {
                 if (makeConfiguration.isQmakeConfiguration()) {
                     writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
@@ -533,6 +546,8 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     protected abstract void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration);
+
+    protected abstract void writeCompileConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration);
 
     private void writeCompiledProjectConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
         xes.elementOpen(COMPILE_TYPE_ELEMENT);
