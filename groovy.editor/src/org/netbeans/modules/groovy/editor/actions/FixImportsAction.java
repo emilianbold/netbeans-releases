@@ -41,17 +41,13 @@
  */
 package org.netbeans.modules.groovy.editor.actions;
 
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
@@ -61,11 +57,8 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -80,13 +73,10 @@ import org.openide.util.NbBundle;
 public class FixImportsAction extends BaseAction {
 
     protected static final String ACTION_NAME = "fix-groovy-imports"; //NOI18N
-    private final AtomicBoolean cancel;
 
 
     public FixImportsAction() {
         super(MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-
-        cancel = new AtomicBoolean();
     }
 
     @Override
@@ -108,42 +98,10 @@ public class FixImportsAction extends BaseAction {
             Exceptions.printStackTrace(ex);
         }
 
-        // go over list of missing imports, fix it - if there is only one candidate
-        // or populate choosers input list if there is more than one candidate.
-
-        final List<String> singleCandidates = new ArrayList<String>();
-        final Map<String, List<ImportCandidate>> multipleCandidates = new HashMap<String, List<ImportCandidate>>();
-
-        for (String name : missingNames) {
-            List<ImportCandidate> importCandidates = ImportHelper.getImportCandidate(fo, name);
-
-            switch (importCandidates.size()) {
-                case 0: continue;
-                case 1: singleCandidates.add(importCandidates.get(0).getFqnName()); break;
-                default: multipleCandidates.put(name, importCandidates);
-            }
-        }
-
-        // do we have multiple candidate? In this case we need to present a chooser
-
-        if (!multipleCandidates.isEmpty()) {
-            List<String> choosenCandidates = showFixImportChooser(multipleCandidates);
-            singleCandidates.addAll(choosenCandidates);
-        }
-
-        if (!singleCandidates.isEmpty()) {
-            Collections.sort(singleCandidates);
-            ProgressUtils.runOffEventDispatchThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    ImportHelper.doImports(fo, singleCandidates);
-                }
-            }, "Fix All Imports", cancel, false);
-        }
+        ImportHelper.resolveImports(fo, missingNames);
     }
 
-    private final class CollectMissingImportsTask extends UserTask {
+    private static final class CollectMissingImportsTask extends UserTask {
 
         private final List<String> missingNames;
 
@@ -186,24 +144,5 @@ public class FixImportsAction extends BaseAction {
                 }
             }
         }
-    }
-
-    private List<String> showFixImportChooser(Map<String, List<ImportCandidate>> multipleCandidates) {
-        List<String> result = new ArrayList<String>();
-        ImportChooserInnerPanel panel = new ImportChooserInnerPanel();
-
-        panel.initPanel(multipleCandidates);
-
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(FixImportsAction.class, "FixImportsDialogTitle")); //NOI18N
-        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-
-        d.setVisible(true);
-        d.setVisible(false);
-        d.dispose();
-
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            result = panel.getSelections();
-        }
-        return result;
     }
 }
