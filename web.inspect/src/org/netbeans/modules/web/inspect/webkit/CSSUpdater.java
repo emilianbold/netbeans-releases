@@ -51,6 +51,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.live.LiveUpdater;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.openide.filesystems.FileObject;
@@ -114,7 +115,7 @@ public class CSSUpdater {
                 sheetsMap.put(url.toString(), header);
                 
                 //TODO: hack to workaround #221791
-                if (InetAddress.getLocalHost().equals(InetAddress.getByName(url.getHost()))) {
+                if (WebUtils.getLocalhostInetAddress().equals(InetAddress.getByName(url.getHost()))) {
                     sheetsMap.put(new URL(url.toExternalForm().replace(url.getHost(), "localhost")).toString(), header);
                 }
                 
