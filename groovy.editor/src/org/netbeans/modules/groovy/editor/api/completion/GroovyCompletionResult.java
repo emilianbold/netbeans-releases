@@ -118,7 +118,7 @@ public class GroovyCompletionResult extends DefaultCompletionResult {
             for (ImportNode importNode : node.getImports()) {
                 imports.add(importNode.getType().getNameWithoutPackage());
             }
-            super.visitImports(node); //To change body of generated methods, choose Tools | Templates.
+            super.visitImports(node);
         }
     }
 }
