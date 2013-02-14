@@ -52,13 +52,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -234,7 +234,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * If null, nothing is scheduled and the processor is not running. 
      * @GuardedBy("processorLock")
      */
-    private final List<Item> queue = new LinkedList<Item>();
+    private final SortedSet<Item> queue = new TreeSet<Item>();
 
     /** Number of currently running processors. If there is a new request
      * and this number is lower that the throughput, new Processor is asked
@@ -632,31 +632,8 @@ public final class RequestProcessor implements ScheduledExecutorService {
 
     // call it under queue lock i.e. processorLock
     private void prioritizedEnqueue(Item item) {
-        int iprio = item.getPriority();
-
-        if (getQueue().isEmpty()) {
-            getQueue().add(item);
-            item.enqueued = true;
-
-            return;
-        } else if (iprio <= getQueue().get(getQueue().size() - 1).getPriority()) {
-            getQueue().add(item);
-            item.enqueued = true;
-        } else {
-            for (ListIterator<Item> it = getQueue().listIterator(); it.hasNext();) {
-                Item next = it.next();
-
-                if (iprio > next.getPriority()) {
-                    it.set(item);
-                    it.add(next);
-                    item.enqueued = true;
-
-                    return;
-                }
-            }
-
-            throw new IllegalStateException("Prioritized enqueue failed!");
-        }
+        getQueue().add(item);
+        item.enqueued = true;
     }
 
     Task askForWork(Processor worker, String debug) {
@@ -668,7 +645,8 @@ public final class RequestProcessor implements ScheduledExecutorService {
             return null;
         } else { // we have some work for the worker, pass it
 
-            Item i = getQueue().remove(0);
+            Item i = getQueue().first();
+            getQueue().remove(i);
             Task t = i.getTask();
             i.clear(worker);
 
@@ -1074,7 +1052,7 @@ outer:  do {
         return wrap;
     }
 
-    private List<Item> getQueue() {
+    private SortedSet<Item> getQueue() {
         assert Thread.holdsLock(processorLock);
         return queue;
     }
@@ -1757,8 +1735,10 @@ outer:  do {
     }
 
     /* One item representing the task pending in the pending queue */
-    private static class Item extends Exception {
+    private static class Item extends Exception implements Comparable<Item> {
+        private static int counter;
         private final RequestProcessor owner;
+        private final int cnt;
         Object action;
         boolean enqueued;
         String message;
@@ -1768,6 +1748,7 @@ outer:  do {
         Item(Task task, RequestProcessor rp) {
             action = task;
             owner = rp;
+            cnt = counter++;
         }
 
         final Task getTask() {
@@ -1786,8 +1767,8 @@ outer:  do {
         boolean clear(Processor processor) {
             boolean ret;
             synchronized (owner.processorLock) {
-                action = processor;
                 ret = enqueued ? owner.getQueue().remove(this) : true;
+                action = processor;
             }
             TickTac.cancel(this);
             return ret;
@@ -1804,11 +1785,26 @@ outer:  do {
         }
 
         final int getPriority() {
-            return getTask().getPriority();
+            final Task t = getTask();
+            return t == null ? 0 : t.getPriority();
         }
 
         public final @Override String getMessage() {
             return message;
+        }
+
+        @Override
+        public int compareTo(Item o) {
+            if (this == o) {
+                return 0;
+            }
+            int myp = getPriority();
+            int yrp = o.getPriority();
+            if (myp == yrp) {
+                return cnt - o.cnt;
+            } else {
+                return yrp - myp;
+            }
         }
     }
     
