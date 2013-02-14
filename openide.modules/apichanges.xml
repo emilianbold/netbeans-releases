@@ -50,6 +50,24 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="find.by.cnb">
+        <api name="modules"/>
+        <summary>Find ModuleInfo by code name base easily</summary>
+        <version major="7" minor="37"/>
+        <date day="12" month="2" year="2013"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible">
+        </compatibility>
+        <description>
+            <p>
+                New <code>findCodeNameBase(String)</code> method returning
+                <a href="@TOP@/org/openide/modules/ModuleInfo.html">ModuleInfo</a>
+                or <code>null</code>.
+            </p>
+        </description>
+        <class package="org.openide.modules" name="Modules"/>
+        <issue number="225582"/>
+    </change>
     <change id="allow.numbers">
         <api name="modules"/>
         <summary>Less restrictive check of code names of modules and OSGi bundles</summary>
