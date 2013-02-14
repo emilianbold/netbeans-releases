@@ -47,10 +47,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLDecoder;
-import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -275,33 +272,6 @@ public abstract class ServerCommand {
 
     public boolean acceptsGzip() {
         return false;
-    }
-
-    /**
-     * Command to set the value of a dotted name property.
-     */
-    public static final class SetPropertyCommand extends ServerCommand {
-
-        private Manifest info;
-
-        public SetPropertyCommand(final String property, final String value, String format) {
-            super("set"); // NOI18N
-            query = MessageFormat.format(format, property,value); 
-        }
-
-        @Override
-        public void readManifest(Manifest manifest) throws IOException {
-            info = manifest;
-        }
-
-        @Override
-        public boolean processResponse() {
-            if(info == null) {
-                return false;
-            }
-
-            return true;
-        }
     }
 
     /** Allow commands to fail without a big message
