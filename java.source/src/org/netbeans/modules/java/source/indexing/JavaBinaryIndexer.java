@@ -104,31 +104,23 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             if (context.isAllFilesIndexing()) {
                 final BinaryAnalyser ba = uq.getBinaryAnalyser();
                 if (ba != null) { //ba == null => IDE is exiting, indexing will be done on IDE restart
-                    BinaryAnalyser.Result finished = null;
-                    try {
-                        finished = ba.start(context);
-                        while (finished == BinaryAnalyser.Result.CANCELED) {
-                            finished = ba.resume();
+                    final BinaryAnalyser.Changes changes = ba.analyse(context);
+                    if (changes.done) {
+                        final Map<URL, List<URL>> binDeps = IndexingController.getDefault().getBinaryRootDependencies();
+                        final Map<URL, List<URL>> srcDeps = IndexingController.getDefault().getRootDependencies();
+                        final Map<URL, List<URL>> peers = IndexingController.getDefault().getRootPeers();
+                        final List<ElementHandle<TypeElement>> changed = new ArrayList<ElementHandle<TypeElement>>(changes.changed.size()+changes.removed.size());
+                        changed.addAll(changes.changed);
+                        changed.addAll(changes.removed);
+                        if (!changes.changed.isEmpty() || !changes.added.isEmpty() || !changes.removed.isEmpty()) {
+                            deleteSigFiles(context.getRootURI(), changed);
+                            if (changes.preBuildArgs) {
+                                preBuildArgs(context.getRootURI(),javax.swing.JComponent.class.getName());
+                            }
                         }
-                    } finally {
-                        if (finished == BinaryAnalyser.Result.FINISHED) {
-                            final BinaryAnalyser.Changes changes = ba.finish();
-                            final Map<URL, List<URL>> binDeps = IndexingController.getDefault().getBinaryRootDependencies();
-                            final Map<URL, List<URL>> srcDeps = IndexingController.getDefault().getRootDependencies();
-                            final Map<URL, List<URL>> peers = IndexingController.getDefault().getRootPeers();
-                            final List<ElementHandle<TypeElement>> changed = new ArrayList<ElementHandle<TypeElement>>(changes.changed.size()+changes.removed.size());
-                            changed.addAll(changes.changed);
-                            changed.addAll(changes.removed);
-                            if (!changes.changed.isEmpty() || !changes.added.isEmpty() || !changes.removed.isEmpty()) {
-                                deleteSigFiles(context.getRootURI(), changed);
-                                if (changes.preBuildArgs) {
-                                    preBuildArgs(context.getRootURI(),javax.swing.JComponent.class.getName());
-                                }
-                            }
-                            final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, peers, changed, !changes.added.isEmpty(), false);
-                            for (Map.Entry<URL, Set<URL>> entry : toRebuild.entrySet()) {
-                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                            }
+                        final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, peers, changed, !changes.added.isEmpty(), false);
+                        for (Map.Entry<URL, Set<URL>> entry : toRebuild.entrySet()) {
+                            context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                         }
                     }
                 }

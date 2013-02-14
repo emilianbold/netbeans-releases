@@ -126,26 +126,36 @@ import org.openide.util.Utilities;
  */
 public class BinaryAnalyser {
 
-    public enum Result {
-        FINISHED,
-        CANCELED,
-        CLOSED,
-    };
-
+    
     public static final class Changes {
 
-        static final List<ElementHandle<TypeElement>> NO_CHANGES = Collections.emptyList();
+        private static final Changes UP_TO_DATE = new Changes(
+                true,
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                false);
+
+        private static final Changes FAILURE = new Changes(
+                false,
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                Collections.<ElementHandle<TypeElement>>emptyList(),
+                false);
 
         public final List<ElementHandle<TypeElement>> added;
         public final List<ElementHandle<TypeElement>> removed;
         public final List<ElementHandle<TypeElement>> changed;
         public final boolean preBuildArgs;
+        public final boolean done;
 
         private Changes (
+                final boolean done,
                 final List<ElementHandle<TypeElement>> added,
                 final List<ElementHandle<TypeElement>> removed,
                 final List<ElementHandle<TypeElement>> changed,
                 final boolean preBuildArgs) {
+            this.done = done;
             this.added = added;
             this.removed = removed;
             this.changed = changed;
@@ -168,7 +178,6 @@ public class BinaryAnalyser {
     private final List<Pair<Pair<String,String>,Object[]>> refs = new ArrayList<Pair<Pair<String, String>, Object[]>>();
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private final LowMemoryWatcher lmListener;
-    private Continuation cont;
     //@NotThreadSafe
     private Pair<LongHashMap<String>,Set<String>> timeStamps;
 
@@ -183,69 +192,58 @@ public class BinaryAnalyser {
 
     /** Analyses a classpath root.
      * @param scanning context
-     *
      */
-    public final Result start (final @NonNull Context ctx) throws IOException, IllegalArgumentException  {
-        return start(ctx.getRootURI(), ctx);
+    @NonNull
+    public final Changes analyse (final @NonNull Context ctx) throws IOException, IllegalArgumentException  {
+        Parameters.notNull("ctx", ctx); //NOI18N
+        final RootProcessor p = createProcessor(ctx);
+        if (p.execute()) {            
+            if (!p.hasChanges() && timeStampsEmpty()) {
+                assert refs.isEmpty();
+                assert toDelete.isEmpty();
+                return Changes.UP_TO_DATE;
+            }
+            final List<Pair<ElementHandle<TypeElement>,Long>> newState = p.result();
+            final List<Pair<ElementHandle<TypeElement>,Long>> oldState = loadCRCs(cacheRoot);
+            final boolean preBuildArgs = p.preBuildArgs();
+            store();
+            storeCRCs(cacheRoot, newState);
+            storeTimeStamps();
+            return diff(oldState,newState, preBuildArgs);
+        } else {
+            return Changes.FAILURE;
+        }
     }
 
     /**
      *
      * @param url of root to be indexed
-     * @param canceled - not used
-     * @param shutdown - not used
      * @return result of indexing
      * @throws IOException
      * @throws IllegalArgumentException
      * @deprecated Only used by unit tests, the start method is used by impl dep by tests of several modules, safer to keep it.
      */
     @Deprecated
-    public final Result start (final @NonNull URL url, final AtomicBoolean canceled, final AtomicBoolean shutdown) throws IOException, IllegalArgumentException  {
-        return start (
+    public final Changes analyse(@NonNull final URL url) throws IOException, IllegalArgumentException  {
+        return analyse(
+            SPIAccessor.getInstance().createContext(
+                FileUtil.createMemoryFileSystem().getRoot(),
                 url,
-                SPIAccessor.getInstance().createContext(
-                    FileUtil.createMemoryFileSystem().getRoot(),
-                    url,
-                    JavaIndex.NAME,
-                    JavaIndex.VERSION,
-                    null,
-                    false,
-                    false,
-                    false,
-                    SuspendSupport.NOP,
-                    null,
-                    null));
+                JavaIndex.NAME,
+                JavaIndex.VERSION,
+                null,
+                false,
+                false,
+                false,
+                SuspendSupport.NOP,
+                null,
+                null));
     }
-
-    public Result resume () throws IOException {
-        assert cont != null;
-        return cont.execute();
-    }
-
-
-    public Changes finish () throws IOException {
-        if (cont == null) {
-            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES, false);
-        }
-        if (!cont.hasChanges() && timeStampsEmpty()) {
-            assert refs.isEmpty();
-            assert toDelete.isEmpty();
-            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES, false);
-        }
-        final List<Pair<ElementHandle<TypeElement>,Long>> newState = cont.finish();
-        final List<Pair<ElementHandle<TypeElement>,Long>> oldState = loadCRCs(cacheRoot);
-        final boolean preBuildArgs = cont.preBuildArgs();
-        cont = null;
-        store();
-        storeCRCs(cacheRoot, newState);
-        storeTimeStamps();
-        return diff(oldState,newState, preBuildArgs);
-    }
-
+ 
     //<editor-fold defaultstate="collapsed" desc="Private helper methods">
-    private Result start (final URL root, final @NonNull Context ctx) throws IOException, IllegalArgumentException  {
-        Parameters.notNull("ctx", ctx); //NOI18N
-        assert cont == null;
+    @NonNull
+    private RootProcessor createProcessor(@NonNull final Context ctx) throws IOException {
+        final URL root = ctx.getRootURI();
         final String mainP = root.getProtocol();
         if ("jar".equals(mainP)) {          //NOI18N
             final URL innerURL = FileUtil.getArchiveFile(root);
@@ -258,14 +256,13 @@ public class BinaryAnalyser {
                         try {
                             final ZipFile zipFile = new ZipFile(archive);
                             final Enumeration<? extends ZipEntry> e = zipFile.entries();
-                            cont = new ZipContinuation (zipFile, e, ctx);
-                            return cont.execute();
+                            return new ArchiveProcessor (zipFile, e, ctx);
                         } catch (ZipException e) {
                             LOGGER.log(Level.WARNING, "Broken zip file: {0}", archive.getAbsolutePath());
                         }
                     }
                 } else {
-                    return deleted();
+                    return new DeletedRootProcessor(ctx);
                 }
             } else {
                 final FileObject rootFo =  URLMapper.findFileObject(root);
@@ -273,11 +270,10 @@ public class BinaryAnalyser {
                     if (!isUpToDate(ROOT,rootFo.lastModified().getTime())) {
                         writer.clear();
                         Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                        cont = new FileObjectContinuation (todo, rootFo, ctx);
-                        return cont.execute();
+                        return new NBFSProcessor(todo, rootFo, ctx);
                     }
                 } else {
-                    return deleted();
+                    return new DeletedRootProcessor(ctx);
                 }
             }
         } else if ("file".equals(mainP)) {    //NOI18N
@@ -293,24 +289,21 @@ public class BinaryAnalyser {
                 if (children != null) {
                     todo.addAll(Arrays.asList(children));
                 }
-                cont = new FolderContinuation (todo, path, ctx);
-                return cont.execute();
+                return new FolderProcessor(todo, path, ctx);
             } else if (!rootFile.exists()) {
-                return deleted();
+                return new DeletedRootProcessor(ctx);
             }
         } else {
             final FileObject rootFo =  URLMapper.findFileObject(root);
             if (rootFo != null) {
                 writer.clear();
                 Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                cont = new FileObjectContinuation (todo, rootFo, ctx);
-                return cont.execute();
-            }
-            else {
-                return deleted();
+                return new NBFSProcessor(todo, rootFo, ctx);
+            } else {
+                return new DeletedRootProcessor(ctx);
             }
         }
-        return Result.FINISHED;
+        return RootProcessor.UP_TO_DATE;
     }
 
     private List<Pair<ElementHandle<TypeElement>,Long>> loadCRCs(final File indexFolder) throws IOException {
@@ -470,7 +463,7 @@ public class BinaryAnalyser {
         while (newIt.hasNext()) {
             added.add(newIt.next().first);
         }
-        return new Changes(added, removed, changed, preBuildArgs);
+        return new Changes(true, added, removed, changed, preBuildArgs);
     }
 
     private static String nameToString( ClassName name ) {
@@ -499,11 +492,7 @@ public class BinaryAnalyser {
         } finally {
             releaseData();
         }
-    }
-    
-    private Result deleted () throws IOException {
-        return (cont = new DeletedContinuation()).execute();
-    }
+    }    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Class file introspection">
@@ -511,15 +500,7 @@ public class BinaryAnalyser {
         assert className != null;
         this.toDelete.add(Pair.<String,String>of(className,null));
     }
-
-    private boolean accepts(String name) {
-        int index = name.lastIndexOf('.');
-        if (index == -1 || (index+1) == name.length()) {
-            return false;
-        }
-        return "CLASS".equalsIgnoreCase(name.substring(index+1));  // NOI18N
-    }
-
+    
     private void analyse (final InputStream inputStream) throws IOException {
         final ClassFile classFile = new ClassFile(inputStream);
         final ClassFileProcessor cfp =
@@ -842,19 +823,61 @@ public class BinaryAnalyser {
     }
     //</editor-fold>
 
-    private static abstract class Continuation {
 
-        private List<Pair<ElementHandle<TypeElement>,Long>> result;
+    private static abstract class RootProcessor {
+        private static final Comparator<Pair<ElementHandle<TypeElement>,Long>> COMPARATOR = new Comparator<Pair<ElementHandle<TypeElement>,Long>>() {
+                @Override
+                public int compare(
+                        final Pair<ElementHandle<TypeElement>,Long> o1,
+                        final Pair<ElementHandle<TypeElement>,Long> o2) {
+                    return o1.first.getBinaryName().compareTo(o2.first.getBinaryName());
+                }
+            };
+
+        static final RootProcessor UP_TO_DATE = new RootProcessor() {
+            @Override
+            @NonNull
+            protected boolean executeImpl() throws IOException {
+                return true;
+            }
+        };
+
+        private final List<Pair<ElementHandle<TypeElement>,Long>> result =
+                new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
+        private final Context ctx;
         private boolean changed;
         private byte preBuildArgsState;
 
-        protected Continuation () {
-            this.result = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
+        RootProcessor(@NonNull final Context ctx) {
+            assert ctx != null;
+            this.ctx = ctx;
         }
 
-        protected abstract Result doExecute () throws IOException;
+        private RootProcessor() {
+            this.ctx = null;
+        }
 
-        protected abstract void doFinish () throws IOException;
+        @NonNull
+        protected final boolean execute() throws IOException {
+            final boolean res = executeImpl();
+            if (res) {
+                Collections.sort(result, COMPARATOR);
+            }
+            return res;
+        }
+
+        protected final boolean hasChanges() {
+            return changed;
+        }
+
+        protected final boolean preBuildArgs() {
+            return preBuildArgsState == 3;
+        }
+
+        @NonNull
+        protected final List<Pair<ElementHandle<TypeElement>,Long>> result() {
+            return result;
+        }
 
         protected final void report (final ElementHandle<TypeElement> te, final long crc) {
             this.result.add(Pair.of(te, crc));
@@ -867,129 +890,116 @@ public class BinaryAnalyser {
                 preBuildArgsState|=2;
             }
         }
-        
+
         protected final void markChanged() {
             this.changed = true;
         }
 
-        public final Result execute () throws IOException {
-            return doExecute();
+        protected final boolean isCancelled() {
+            return ctx.isCancelled();
         }
 
-        public final List<Pair<ElementHandle<TypeElement>,Long>> finish () throws IOException {
-            doFinish();
-            Collections.sort(result, new Comparator() {
-                @Override
-                public int compare(Object o1, Object o2) {
-                    final Pair<ElementHandle<TypeElement>,Long> p1 = (Pair<ElementHandle<TypeElement>,Long>) o1;
-                    final Pair<ElementHandle<TypeElement>,Long> p2 = (Pair<ElementHandle<TypeElement>,Long>) o2;
-                    return p1.first.getBinaryName().compareTo(p2.first.getBinaryName());
-                }
-            });
-            return result;
+        protected final boolean accepts(String name) {
+            int index = name.lastIndexOf('.');  //NOI18N
+            if (index == -1 || (index+1) == name.length()) {
+                return false;
+            }
+            return FileObjects.CLASS.equalsIgnoreCase(name.substring(index+1));
         }
-        
-        public final boolean hasChanges() {
-            return changed;
-        }
-        
-        public final boolean preBuildArgs() {
-            return preBuildArgsState == 3;
-        }
+
+        @NonNull
+        protected abstract boolean executeImpl() throws IOException;
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Continuation implementations (Zip, FileObject, java.io.File, Deleted)">
-    private class ZipContinuation extends Continuation {
+    private final class ArchiveProcessor extends RootProcessor {
 
         private final ZipFile zipFile;
         private final Enumeration<? extends ZipEntry> entries;
-        private final Context ctx;
 
-        public ZipContinuation (final @NonNull ZipFile zipFile, final @NonNull Enumeration<? extends ZipEntry> entries, final @NonNull Context ctx) {
+        ArchiveProcessor (
+                final @NonNull ZipFile zipFile,
+                final @NonNull Enumeration<? extends ZipEntry> entries,
+                final @NonNull Context ctx) {
+            super(ctx);
             assert zipFile != null;
             assert entries != null;
-            assert ctx != null;
             this.zipFile = zipFile;
             this.entries = entries;
-            this.ctx = ctx;
             markChanged();  //Always dirty, created only for dirty root
         }
 
+
         @Override
-        protected Result doExecute () throws IOException {
-            while(entries.hasMoreElements()) {
-                ZipEntry ze;
-
-                try {
-                    ze = (ZipEntry)entries.nextElement();
-                } catch (InternalError err) {
-                    //#174611:
-                    LOGGER.log(Level.INFO, "Broken zip file: " + zipFile.getName(), err);
-                    return Result.FINISHED;
-                }
-
-                if ( !ze.isDirectory()  && accepts(ze.getName()))  {
-                    cont.report (ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(FileObjects.stripExtension(ze.getName()))),ze.getCrc());
-                    InputStream in = new BufferedInputStream (zipFile.getInputStream( ze ));
+        @NonNull
+        protected boolean executeImpl() throws IOException {
+            try {
+                while(entries.hasMoreElements()) {
+                    final ZipEntry ze;
                     try {
-                        analyse(in);
-                    } catch (InvalidClassFormatException icf) {
-                        LOGGER.log(Level.WARNING, "Invalid class file format: {0}!/{1}",
-                                new Object[]{
-                                    Utilities.toURI(new File(zipFile.getName())),
-                                    ze.getName()});     //NOI18N
-                    } catch (IOException x) {
-                        Exceptions.attachMessage(x, "While scanning: " + ze.getName());                                         //NOI18N
-                        throw x;
+                        ze = (ZipEntry)entries.nextElement();
+                    } catch (InternalError err) {
+                        LOGGER.log(Level.INFO, "Broken zip file: " + zipFile.getName(), err);
+                        return true;
                     }
-                    finally {
-                        in.close();
+                    if (!ze.isDirectory()  && accepts(ze.getName()))  {
+                        report (
+                            ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(FileObjects.stripExtension(ze.getName()))),
+                            ze.getCrc());
+                        final InputStream in = new BufferedInputStream (zipFile.getInputStream( ze ));
+                        try {
+                            analyse(in);
+                        } catch (InvalidClassFormatException icf) {
+                            LOGGER.log(
+                                    Level.WARNING, "Invalid class file format: {0}!/{1}",      //NOI18N
+                                    new Object[]{
+                                        Utilities.toURI(new File(zipFile.getName())),
+                                        ze.getName()});
+                        } catch (IOException x) {
+                            Exceptions.attachMessage(x, "While scanning: " + ze.getName());    //NOI18N
+                            throw x;
+                        }
+                        finally {
+                            in.close();
+                        }
+                        if (lmListener.isLowMemory()) {
+                            flush();
+                        }
                     }
-                    if (lmListener.isLowMemory()) {
-                        flush();
+                    if (isCancelled()) {
+                        return false;
                     }
                 }
-                //Partinal cancel not supported by parsing API
-                //if (cancel.getAndSet(false)) {
-                //    this.store();
-                //    return Result.CANCELED;
-                //}
-                if (ctx.isCancelled()) {
-                    return Result.CLOSED;
-                }
+                return true;
+            } finally {
+                zipFile.close();
             }
-            return Result.FINISHED;
-        }
-
-        @Override
-        protected void doFinish () throws IOException {
-            this.zipFile.close();
         }
     }
 
-    private class FolderContinuation extends Continuation {
-
+    private final class FolderProcessor extends RootProcessor {
         private final LinkedList<File> todo;
         private final String rootPath;
-        private final Context ctx;
 
-        public FolderContinuation (final @NonNull LinkedList<File> todo, final @NonNull String rootPath, final @NonNull Context ctx) {
+        public FolderProcessor(
+                final @NonNull LinkedList<File> todo,
+                final @NonNull String rootPath,
+                final @NonNull Context ctx) {
+            super(ctx);
             assert todo != null;
             assert rootPath != null;
-            assert ctx != null;
             this.todo = todo;
             this.rootPath = rootPath;
-            this.ctx = ctx;
         }
 
         @Override
-        public Result doExecute () throws IOException {
+        @NonNull
+        protected boolean executeImpl() throws IOException {
             while (!todo.isEmpty()) {
                 File file = todo.removeFirst();
                 if (file.isDirectory()) {
                     File[] c = file.listFiles();
                     if (c!= null) {
-                        todo.addAll(Arrays.asList (c));
+                        Collections.addAll(todo, c);
                     }
                 } else if (accepts(file.getName())) {
                     String filePath = file.getAbsolutePath();
@@ -999,12 +1009,13 @@ public class BinaryAnalyser {
                     int endPos;
                     if (dotIndex>slashIndex) {
                         endPos = dotIndex;
-                    }
-                    else {
+                    } else {
                         endPos = filePath.length();
                     }
                     String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos), File.separatorChar);
-                    cont.report(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, relativePath), fileMTime);
+                    report(
+                        ElementHandleAccessor.getInstance().create(ElementKind.OTHER, relativePath),
+                        fileMTime);
                     if (!isUpToDate (relativePath, fileMTime)) {
                         markChanged();
                         toDelete.add(Pair.<String,String>of (relativePath,null));
@@ -1028,51 +1039,45 @@ public class BinaryAnalyser {
                         }
                     }
                 }
-                // Partinal cancel not supported by parsing API
-                //if (cancel.getAndSet(false)) {
-                //    this.store();
-                //    return Result.CANCELED;
-                //}
-                if (ctx.isCancelled()) {
-                    return Result.CLOSED;
+                if (isCancelled()) {
+                    return false;
                 }
             }
-            
             for (String deleted : getTimeStamps().second) {
                 delete(deleted);
                 markChanged();
             }
-            return Result.FINISHED;
-        }
-
-        @Override
-        public void doFinish () throws IOException {
+            return true;
         }
     }
 
-    private class FileObjectContinuation extends  Continuation {
+    private final class NBFSProcessor extends RootProcessor {
 
         private final Enumeration<? extends FileObject> todo;
         private final FileObject root;
-        private final Context ctx;
 
-        public FileObjectContinuation (final @NonNull Enumeration<? extends FileObject> todo, final @NonNull FileObject root, final @NonNull Context ctx) {
+        NBFSProcessor(
+                final @NonNull Enumeration<? extends FileObject> todo,
+                final @NonNull FileObject root,
+                final @NonNull Context ctx) {
+            super(ctx);
             assert todo != null;
-            assert ctx != null;
             this.todo = todo;
             this.root = root;
-            this.ctx = ctx;
             markChanged();  //Always dirty, created only for dirty root
         }
 
         @Override
-        public Result doExecute () throws IOException {
+        @NonNull
+        protected boolean executeImpl() throws IOException {
             while (todo.hasMoreElements()) {
                 FileObject fo = todo.nextElement();
                 if (accepts(fo.getName())) {
                     final String rp = FileObjects.stripExtension(FileUtil.getRelativePath(root, fo));
-                    cont.report(ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(rp)), 0L);
-                    InputStream in = new BufferedInputStream (fo.getInputStream());
+                    report(
+                        ElementHandleAccessor.getInstance().create(ElementKind.OTHER, FileObjects.convertFolder2Package(rp)),
+                        0L);
+                    final InputStream in = new BufferedInputStream (fo.getInputStream());
                     try {
                         analyse (in);
                     } catch (InvalidClassFormatException icf) {
@@ -1085,27 +1090,18 @@ public class BinaryAnalyser {
                         flush();
                     }
                 }
-                // Partinal cancel not supported by parsing API
-                //if (cancel.getAndSet(false)) {
-                //    this.store();
-                //    return Result.CANCELED;
-                //}
-                if (ctx.isCancelled()) {
-                    return Result.CLOSED;
+                if (isCancelled()) {
+                    return false;
                 }
             }
-            return Result.FINISHED;
-        }
-
-        @Override
-        public void doFinish () throws IOException {
-
+            return true;
         }
     }
 
-    private class DeletedContinuation extends Continuation {
-        
-        public DeletedContinuation() throws IOException {
+    private final class DeletedRootProcessor extends RootProcessor {
+
+        DeletedRootProcessor(@NonNull final Context ctx) throws IOException {
+            super(ctx);
             final Pair<LongHashMap<String>, Set<String>> ts = getTimeStamps();
             if (!ts.first.isEmpty()) {
                 markChanged();
@@ -1113,16 +1109,12 @@ public class BinaryAnalyser {
         }
 
         @Override
-        protected Result doExecute() throws IOException {
+        @NonNull
+        protected boolean executeImpl() throws IOException {
             if (hasChanges()) {
                 writer.clear();
             }
-            return Result.FINISHED;
-        }
-
-        @Override
-        protected void doFinish() throws IOException {
+            return true;
         }
     }
-    //</editor-fold>
 }
