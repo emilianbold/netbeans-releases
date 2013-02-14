@@ -163,6 +163,8 @@ public class BinaryAnalyser {
 
     }
 
+    private static final String INIT ="<init>"; //NOI18N
+    private static final String CLINIT ="<clinit>"; //NOI18N
     private static final String ROOT = "/"; //NOI18N
     private static final String TIME_STAMPS = "timestamps.properties";   //NOI18N
     private static final String CRC = "crc.properties"; //NOI18N
@@ -491,26 +493,29 @@ public class BinaryAnalyser {
                 new FullIndexProcessor(classFile) :
                 new ClassSignatureProcessor(classFile);
         this.delete (cfp.getClassName());
-        final Map <ClassName, Set<ClassIndexImpl.UsageType>> usages = cfp.analyse();        
+        final UsagesData<ClassName> usages = cfp.analyse();
         final String classNameType = cfp.getClassName() + DocumentUtil.encodeKind(getElementKind(classFile));
         final Pair<String,String> pair = Pair.<String,String>of(classNameType, null);
-        final List <String> references = getClassReferences (pair);
-        for (Map.Entry<ClassName,Set<ClassIndexImpl.UsageType>> entry : usages.entrySet()) {
-            ClassName name = entry.getKey();
-            Set<ClassIndexImpl.UsageType> usage = entry.getValue();
-            references.add (DocumentUtil.encodeUsage( nameToString(name), usage));
-        }
+        addReferences (pair, usages);
     }
     
-    private List<String> getClassReferences (final Pair<String,String> name) {
+    private void addReferences (
+        @NonNull final Pair<String,String> name,
+        @NonNull final UsagesData<ClassName> usages) {
         assert name != null;
-        Object[] cr = new Object[] {
-            new ArrayList<String> (),
-            null,
-            null
+        assert usages != null;
+        final List<String> typeUsages = new ArrayList<String>();
+        for (Map.Entry<ClassName,Set<ClassIndexImpl.UsageType>> entry : usages.usages.entrySet()) {
+            final ClassName cn = entry.getKey();
+            final Set<ClassIndexImpl.UsageType> usage = entry.getValue();
+            typeUsages.add (DocumentUtil.encodeUsage(nameToString(cn), usage));
+        }
+        final Object[] cr = new Object[] {
+            typeUsages,
+            usages.featureIdentsToString(),
+            usages.identsToString()
         };
         this.refs.add(Pair.<Pair<String,String>,Object[]>of(name, cr));
-        return (ArrayList<String>) cr[0];
     }
 
     private ElementKind getElementKind(@NonNull final ClassFile cf) {
@@ -531,8 +536,8 @@ public class BinaryAnalyser {
 
         private final ClassFile classFile;
         private final String className;
-        private final Map <ClassName, Set<ClassIndexImpl.UsageType>> usages =
-                new HashMap <ClassName, Set<ClassIndexImpl.UsageType>> ();
+        private final UsagesData<ClassName> usages =
+                new UsagesData<ClassName>();
 
         ClassFileProcessor(
                 @NonNull final ClassFile classFile) {
@@ -544,7 +549,7 @@ public class BinaryAnalyser {
             return this.className;
         }
 
-        final Map <ClassName, Set<ClassIndexImpl.UsageType>> analyse() {
+        final UsagesData analyse() {
             visit(classFile);
             return usages;
         }
@@ -565,22 +570,27 @@ public class BinaryAnalyser {
         void visit(@NonNull Variable v) {
         }
 
+        final void addIdent (@NonNull final CharSequence ident) {
+            assert ident != null;
+            usages.featuresIdents.add(ident);
+        }
+
         final void addUsage (
                 @NonNull final ClassName name,
                 @NonNull final ClassIndexImpl.UsageType usage) {
             if (OBJECT.equals(name.getExternalName())) {
                 return;
             }
-            Set<ClassIndexImpl.UsageType> uset = usages.get(name);
+            Set<ClassIndexImpl.UsageType> uset = usages.usages.get(name);
             if (uset == null) {
                 uset = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
-                usages.put(name, uset);
+                usages.usages.put(name, uset);
             }
             uset.add(usage);
         }
 
         final boolean hasUsage(@NonNull final ClassName name) {
-            return usages.keySet().contains (name);
+            return usages.usages.keySet().contains (name);
         }
 
         final void handleAnnotations(
@@ -667,6 +677,27 @@ public class BinaryAnalyser {
             // 3. Add top-level class annotations:
             handleAnnotations(cf.getAnnotations(), true);
             super.visit(cf);            
+        }
+
+        @Override
+        void visit(@NonNull final Method m) {
+            final String name = m.getName();
+            if (!m.isSynthetic() && !isInit(name)) {
+                addIdent(name);
+            }
+            super.visit(m);
+        }
+
+        @Override
+        void visit(@NonNull final Variable v) {            
+            if (!v.isSynthetic()) {
+                addIdent(v.getName());
+            }
+            super.visit(v);
+        }
+
+        private boolean isInit(@NonNull final String name) {
+            return INIT.equals(name) || CLINIT.equals(name);
         }
     }
 
