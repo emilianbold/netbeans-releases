@@ -56,7 +56,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.groovy.editor.actions.ImportHelper;
+import org.netbeans.modules.groovy.editor.imports.ImportHelper;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.openide.filesystems.FileObject;
 

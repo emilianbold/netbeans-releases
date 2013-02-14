@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.groovy.editor.actions;
 
+import org.netbeans.modules.groovy.editor.imports.ImportHelper;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import javax.swing.text.JTextComponent;

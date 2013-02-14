@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.actions;
+package org.netbeans.modules.groovy.editor.imports;
 
 import java.awt.Dialog;
 import java.util.ArrayList;
@@ -281,7 +281,7 @@ public final class ImportHelper {
 
         panel.initPanel(multipleCandidates);
 
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(FixImportsAction.class, "FixImportsDialogTitle")); //NOI18N
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ImportHelper.class, "FixImportsDialogTitle")); //NOI18N
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
 
         d.setVisible(true);

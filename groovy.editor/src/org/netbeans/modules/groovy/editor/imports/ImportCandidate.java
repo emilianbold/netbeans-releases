@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.actions;
+package org.netbeans.modules.groovy.editor.imports;
 
 import javax.swing.Icon;
 
