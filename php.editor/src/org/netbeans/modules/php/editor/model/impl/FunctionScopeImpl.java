@@ -131,7 +131,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     //old contructors
 
     public synchronized void addReturnType(String type) {
-        if (returnType == null) {
+        if (!StringUtils.hasText(returnType)) {
             returnType = type;
         } else {
             returnType += (TYPE_SEPARATOR + type);
@@ -238,7 +238,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     private synchronized void updateReturnTypesIfNotChanged(String oldTypes, String newTypes) {
-        if (oldTypes.equals(getReturnType())) {
+        if (oldTypes.equals(getReturnType()) && StringUtils.hasText(newTypes)) {
             returnType = newTypes;
         }
     }
