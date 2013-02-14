@@ -43,6 +43,7 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.GenericsType;
@@ -77,13 +78,14 @@ public final class FindTypeUtils {
 
 
     /**
-     * Finds out whether we are on the type of the field, property, method, etc. or
-     * not. Typically if we can have declaration like <code>private String something</code>.
-     * For that example this method returns true in following case:<br/>
+     * Check if the caret location is placed on the class type of the field, property, method, etc.
+     * or not. Typically if we can have declaration like <code>private String something</code>. For
+     * example this method returns true in following case (assuming ^ symbol is the current caret
+     * location):<br/><br/>
      *      <code>private St^ring something</code>
      *
      * <br/><br/>
-     * ..but it returns false for the following case:<br/>
+     * ..but it returns false for the following case:<br/><br/>
      *      <code>private String somet^hing</code>
      *
      * <br/><br/>
@@ -128,8 +130,20 @@ public final class FindTypeUtils {
                     return interfaceNode;
                 }
             }
+            for (AnnotationNode annotation : classNode.getAnnotations()) {
+                if (isCaretOnAnnotation(annotation, doc, caret)) {
+                    return annotation.getClassNode();
+                }
+            }
         } else if (leaf instanceof FieldNode) {
             FieldNode field = (FieldNode) leaf;
+
+            for (AnnotationNode annotation : field.getAnnotations()) {
+                if (isCaretOnAnnotation(annotation, doc, caret)) {
+                    return annotation.getClassNode();
+                }
+            }
+
             if (isCaretOnFieldType(field, doc, caret)) {
                 return ElementUtils.getType(leaf);
             } else if (isCaretOnGenericType(field.getType(), doc, caret)) {
@@ -137,13 +151,28 @@ public final class FindTypeUtils {
             }
         } else if (leaf instanceof PropertyNode) {
             PropertyNode property = (PropertyNode) leaf;
-            if (isCaretOnFieldType(property.getField(), doc, caret)) {
+            FieldNode field = property.getField();
+
+            for (AnnotationNode annotation : field.getAnnotations()) {
+                if (isCaretOnAnnotation(annotation, doc, caret)) {
+                    return annotation.getClassNode();
+                }
+            }
+
+            if (isCaretOnFieldType(field, doc, caret)) {
                 return ElementUtils.getType(leaf);
-            } else if (isCaretOnGenericType(property.getField().getType(), doc, caret)) {
-                return getGenericType(property.getField().getType(), doc, caret);
+            } else if (isCaretOnGenericType(field.getType(), doc, caret)) {
+                return getGenericType(field.getType(), doc, caret);
             }
         } else if (leaf instanceof MethodNode) {
             MethodNode method = ((MethodNode) leaf);
+
+            for (AnnotationNode annotation : method.getAnnotations()) {
+                if (isCaretOnAnnotation(annotation, doc, caret)) {
+                    return annotation.getClassNode();
+                }
+            }
+
             if (isCaretOnReturnType(method, doc, caret)) {
                 return ElementUtils.getType(leaf);
             } else if (isCaretOnGenericType(method.getReturnType(), doc, caret)) {
@@ -355,6 +384,13 @@ public final class FindTypeUtils {
         return false;
     }
 
+    private static boolean isCaretOnAnnotation(AnnotationNode annotation, BaseDocument doc, int cursorOffset) {
+        if (getAnnotationRange(annotation, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
     private static boolean isCaretOnGenericType(GenericsType genericsType, BaseDocument doc, int cursorOffset) {
         if (getGenericTypeRange(genericsType, doc, cursorOffset) != OffsetRange.NONE) {
             return true;
@@ -377,6 +413,15 @@ public final class FindTypeUtils {
     private static OffsetRange getGenericTypeRange(GenericsType genericType, BaseDocument doc, int cursorOffset) {
         final int offset = ASTUtils.getOffset(doc, genericType.getLineNumber(), genericType.getColumnNumber());
         final OffsetRange range = ASTUtils.getNextIdentifierByName(doc, genericType.getType().getNameWithoutPackage(), offset);
+        if (range.containsInclusive(cursorOffset)) {
+            return range;
+        }
+        return OffsetRange.NONE;
+    }
+
+    private static OffsetRange getAnnotationRange(AnnotationNode annotation, BaseDocument doc, int cursorOffset) {
+        final int offset = ASTUtils.getOffset(doc, annotation.getLineNumber(), annotation.getColumnNumber());
+        final OffsetRange range = ASTUtils.getNextIdentifierByName(doc, annotation.getClassNode().getNameWithoutPackage(), offset);
         if (range.containsInclusive(cursorOffset)) {
             return range;
         }
@@ -455,6 +500,10 @@ public final class FindTypeUtils {
     }
 
     private static OffsetRange getRange(ASTNode node, BaseDocument doc, int cursorOffset) {
+        if (node.getLineNumber() < 0 || node.getColumnNumber() < 0) {
+            return OffsetRange.NONE;
+        }
+
         OffsetRange range = ASTUtils.getNextIdentifierByName(doc, ElementUtils.getTypeNameWithoutPackage(node), getOffset(node, doc));
         if (range.containsInclusive(cursorOffset)) {
             return range;

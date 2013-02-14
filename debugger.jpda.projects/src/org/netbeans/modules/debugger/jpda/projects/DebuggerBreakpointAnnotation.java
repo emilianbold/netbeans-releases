@@ -45,7 +45,6 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
 
@@ -73,6 +72,7 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
         attach (line);
     }
     
+    @Override
     public String getAnnotationType () {
         return type;
     }
@@ -81,6 +81,7 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
         return line;
     }
     
+    @Override
     public String getShortDescription () {
         if (type.endsWith("_broken")) {
             if (breakpoint.getValidity() == Breakpoint.VALIDITY.INVALID) {
@@ -88,43 +89,49 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
                 return NbBundle.getMessage(DebuggerBreakpointAnnotation.class,
                                            "TOOLTIP_BREAKPOINT_BROKEN_INVALID", msg);
             }
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_BREAKPOINT_BROKEN"); // NOI18N
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_BREAKPOINT_BROKEN"); // NOI18N
         }
-        if (type == EditorContext.BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_BREAKPOINT"); // NOI18N
-        else 
-        if (type == EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
-        else 
-        if (type == EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
-        else
-        if (type == EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
-        else
-        if (type == EditorContext.FIELD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_FIELD_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_FIELD_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_METHOD_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_METHOD_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.CLASS_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString
-                ("TOOLTIP_CLASS_BREAKPOINT"); // NOI18N
-        if (type == EditorContext.DISABLED_CLASS_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString
-                ("TOOLTIP_DISABLED_CLASS_BREAKPOINT"); // NOI18N
+        if (type == EditorContext.BREAKPOINT_ANNOTATION_TYPE) {
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_BREAKPOINT"); // NOI18N
+        } else 
+        if (type == EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE) {
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
+        } else 
+        if (type == EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
+        } else
+        if (type == EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
+        } else
+        if (type == EditorContext.FIELD_BREAKPOINT_ANNOTATION_TYPE) {
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_FIELD_BREAKPOINT"); // NOI18N
+        } else
+        if (type == EditorContext.DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE) {
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_DISABLED_FIELD_BREAKPOINT"); // NOI18N
+        } else
+        if (type == EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE) {
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_METHOD_BREAKPOINT"); // NOI18N
+        } else
+        if (type == EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE) {
+            return NbBundle.getMessage 
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_DISABLED_METHOD_BREAKPOINT"); // NOI18N
+        } else
+        if (type == EditorContext.CLASS_BREAKPOINT_ANNOTATION_TYPE) {
+            return NbBundle.getMessage
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_CLASS_BREAKPOINT"); // NOI18N
+        } else
+        if (type == EditorContext.DISABLED_CLASS_BREAKPOINT_ANNOTATION_TYPE) {
+            return NbBundle.getMessage
+                (DebuggerBreakpointAnnotation.class, "TOOLTIP_DISABLED_CLASS_BREAKPOINT"); // NOI18N
+        }
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown breakpoint type '"+type+"'."));
         return null;
     }

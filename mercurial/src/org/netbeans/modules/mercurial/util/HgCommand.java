@@ -281,6 +281,7 @@ public class HgCommand {
     public static final String HG_PROXY_ENV = "http_proxy="; // NOI18N
 
     private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)"; // NOI18N
+    private static final String HG_UPDATE_NEEDED_ERR = "(run 'hg update' to get a working copy)"; //NOI18N
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
     public static final String HG_MERGE_FAILED1_ERR = "merging"; // NOI18N
     public static final String HG_MERGE_FAILED2_ERR = "failed!"; // NOI18N
@@ -682,7 +683,6 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_PULL_CMD);
         command.add(HG_VERBOSE_CMD);
-        command.add(HG_UPDATE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
@@ -727,14 +727,16 @@ public class HgCommand {
      * @return hg unbundle output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doUnbundle(File repository, File bundle, OutputLogger logger) throws HgException {
+    public static List<String> doUnbundle(File repository, File bundle, boolean update, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_VERBOSE_CMD);
         command.add(HG_UNBUNDLE_CMD);
-        command.add(HG_UPDATE_CMD);
+        if (update) {
+            command.add(HG_UPDATE_CMD);
+        }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
@@ -4210,6 +4212,10 @@ public class HgCommand {
 
     public static boolean isMergeNeededMsg(String msg) {
         return msg.indexOf(HG_MERGE_NEEDED_ERR) > -1;                       // NOI18N
+    }
+
+    public static boolean isUpdateNeededMsg (String msg) {
+        return msg.contains(HG_UPDATE_NEEDED_ERR);
     }
 
     public static boolean isBackoutMergeNeededMsg(String msg) {

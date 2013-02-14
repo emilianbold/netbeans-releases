@@ -586,7 +586,8 @@ public final class MakeActionProvider implements ActionProvider {
                 path = conf.getMakefileConfiguration().getAbsOutput();
                 path = CndPathUtilitities.normalizeSlashes(path);
             }
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
+            RunProfile runProfile = conf.getProfile().clone(conf);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
         } else if (conf.isLibraryConfiguration()) {
             String path;

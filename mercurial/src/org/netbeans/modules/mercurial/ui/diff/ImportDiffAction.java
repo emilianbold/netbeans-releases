@@ -189,7 +189,7 @@ public class ImportDiffAction extends ContextAction {
                 HgUtils.runWithoutIndexing(new Callable<Void>() {
                     @Override
                     public Void call () throws Exception {
-                        List<String> list = HgCommand.doUnbundle(repository, patchFile, logger);
+                        List<String> list = HgCommand.doUnbundle(repository, patchFile, true, logger);
                         if (list != null && !list.isEmpty()) {
                             List<String> updatedFilesList = list;
                             logger.output(HgUtils.replaceHttpPassword(list));

@@ -46,7 +46,8 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 import java.io.File;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 final class NameRef extends WeakReference<FileNaming> {
     /** either reference to NameRef or to Integer as an index to names array */
@@ -118,7 +119,7 @@ final class NameRef extends WeakReference<FileNaming> {
 
     final Iterable<NameRef> disconnectAll() {
         assert Thread.holdsLock(NamingFactory.class);
-        LinkedList<NameRef> all = new LinkedList<NameRef>();
+        List<NameRef> all = new ArrayList<NameRef>();
         NameRef nr = this;
         while (nr != null) {
             NameRef nn = nr.next();

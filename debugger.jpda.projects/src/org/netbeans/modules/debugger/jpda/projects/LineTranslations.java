@@ -218,7 +218,9 @@ class LineTranslations {
             return currentLineNumber;
         } else {
             Line.Set lineSet = getLineSet (url, timeStamp);
-            if (lineSet == null) return currentLineNumber;
+            if (lineSet == null) {
+                return currentLineNumber;
+            }
             //System.err.println("  lineSet = "+lineSet+"date = "+lineSet.getDate());
             try {
                 lineSet.getOriginal(0); // To assure, that the set is updated.
@@ -264,7 +266,9 @@ class LineTranslations {
 
     Line.Set getLineSet (String url, Object timeStamp) {
         DataObject dataObject = getDataObject (url);
-        if (dataObject == null) return null;
+        if (dataObject == null) {
+            return null;
+        }
         
         if (timeStamp != null) {
             // get original
@@ -272,29 +276,36 @@ class LineTranslations {
                 Registry registry = timeStampToRegistry.get (timeStamp);
                 if (registry != null) {
                     Line.Set ls = registry.getLineSet (dataObject);
-                    if (ls != null) return ls;
+                    if (ls != null) {
+                        return ls;
+                    }
                 }
             }
         }
         
         // get current
         LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
-        if (lineCookie == null) return null;
+        if (lineCookie == null) {
+            return null;
+        }
         return lineCookie.getLineSet ();
     }
 
     Line getLine (String url, int lineNumber, Object timeStamp) {
         //System.err.println("LineTranslations.getLine("+lineNumber+", "+timeStamp+")");
         Line.Set ls = getLineSet (url, timeStamp);
-        if (ls == null) return null;
+        if (ls == null) {
+            return null;
+        }
         try {
             //System.err.println("  Line.Set = "+ls+", date = "+ls.getDate());
             //System.err.println("  current("+(lineNumber-1)+") = "+ls.getCurrent (lineNumber - 1));
             //System.err.println("  originl("+(lineNumber-1)+") = "+ls.getOriginal (lineNumber - 1));
-            if (timeStamp == null)
+            if (timeStamp == null) {
                 return ls.getCurrent (lineNumber - 1);
-            else
+            } else {
                 return ls.getOriginal (lineNumber - 1);
+            }
         } catch (IndexOutOfBoundsException e) {
         } catch (IllegalArgumentException e) {
         }
@@ -340,7 +351,9 @@ class LineTranslations {
             return null;
         }
 
-        if (file == null) return null;
+        if (file == null) {
+            return null;
+        }
         try {
             return DataObject.find (file);
         } catch (DataObjectNotFoundException ex) {
@@ -357,7 +370,9 @@ class LineTranslations {
         
         synchronized void register (DataObject dataObject) {
             LineCookie lc = dataObject.getLookup().lookup (LineCookie.class);
-            if (lc == null) return;
+            if (lc == null) {
+                return;
+            }
             dataObjectToLineSet.put (dataObject, lc.getLineSet ());
         }
         
@@ -410,7 +425,9 @@ class LineTranslations {
         
         public synchronized void attach() throws IOException {
             LineCookie lc = dataObject.getLookup().lookup (LineCookie.class);
-            if (lc == null) return ;
+            if (lc == null) {
+                return ;
+            }
             lb.addPropertyChangeListener(this);
             try {
                 this.line = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
@@ -509,7 +526,9 @@ class LineTranslations {
                     DataObject dobj;
                     synchronized (this) {
                         line.removePropertyChangeListener(this);
-                        if (dataObject == null) return ;
+                        if (dataObject == null) {
+                            return ;
+                        }
                         dobj = dataObject;
                     }
                     LineCookie lc = dobj.getLookup().lookup (LineCookie.class);
@@ -539,7 +558,9 @@ class LineTranslations {
                 DataObject dobj;
                 synchronized (this) {
                     line.removePropertyChangeListener(this);
-                    if (dataObject == null) return ;
+                    if (dataObject == null) {
+                        return ;
+                    }
                     dobj = dataObject;
                 }
                 Line newLine;

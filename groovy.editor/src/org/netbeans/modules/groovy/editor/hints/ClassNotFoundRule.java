@@ -182,7 +182,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
         @Override
         public void implement() throws Exception {
-            ImportHelper.doImport(fo, fqn);
+            ImportHelper.addImportStatement(fo, fqn);
         }
 
         @Override

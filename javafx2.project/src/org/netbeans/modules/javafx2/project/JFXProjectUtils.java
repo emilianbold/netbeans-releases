@@ -55,9 +55,9 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
@@ -132,7 +132,7 @@ public final class JFXProjectUtils {
      * @param project
      * @return map of classpaths of all project files
      */
-    public static Map<FileObject,List<ClassPath>> getClassPathMap(Project project) {
+    public static Map<FileObject,List<ClassPath>> getClassPathMap(@NonNull Project project) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] srcGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         final Map<FileObject,List<ClassPath>> classpathMap = new HashMap<FileObject,List<ClassPath>>();
@@ -158,6 +158,37 @@ public final class JFXProjectUtils {
         }
         return classpathMap;
     }
+
+    /**
+     * Returns source roots of a project
+     * @param project
+     * 
+     * @return set of fileobjects representing the source roots
+     */
+    public static Set<FileObject> getSourceRoots(@NonNull Project project) {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] srcGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        final Set<FileObject> sourceRoots = new HashSet<FileObject>();
+        for (SourceGroup srcGroup : srcGroups) {
+            sourceRoots.add(srcGroup.getRootFolder());
+        }
+        return sourceRoots;
+    }
+    
+    /**
+     * Returns set of names of main classes in the given project
+     * 
+     * @param project
+     * @return set of class names
+     */
+    public static Set<String> getMainClassNames(@NonNull Project project) {
+        final Set<String> mainClassNames = new HashSet<String>();
+        FileObject sourceRoots[] = getSourceRoots(project).toArray(new FileObject[0]);
+        for (ElementHandle<TypeElement> elemHandle : SourceUtils.getMainClasses(sourceRoots)) {
+            mainClassNames.add(elemHandle.getQualifiedName());
+        }
+        return mainClassNames;
+    }
     
     /**
      * Returns set of names of classes of the classType type.
@@ -166,7 +197,7 @@ public final class JFXProjectUtils {
      * @param classType return only classes of this type
      * @return set of class names
      */
-    public static Set<String> getAppClassNames(Map<FileObject,List<ClassPath>> classpathMap, final String classType) {
+    public static Set<String> getAppClassNames(@NonNull Map<FileObject,List<ClassPath>> classpathMap, final @NonNull String classType) {
         final Set<String> appClassNames = new HashSet<String>();
         for (FileObject fo : classpathMap.keySet()) {
             List<ClassPath> paths = classpathMap.get(fo);

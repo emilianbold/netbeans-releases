@@ -108,13 +108,13 @@ class ClassScanner extends TreePathScanner<TypeElement, Void> {
     }
     
     private static boolean match (String name, String pattern) {
-        if (pattern.startsWith ("*"))
+        if (pattern.startsWith ("*")) {
             return name.endsWith (pattern.substring (1));
-        else
-        if (pattern.endsWith ("*"))
+        } else if (pattern.endsWith ("*")) {
             return name.startsWith (
                 pattern.substring (0, pattern.length () - 1)
             );
+        }
         return name.equals (pattern);
     }
     

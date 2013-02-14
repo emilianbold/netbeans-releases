@@ -52,7 +52,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,18 +69,13 @@ import org.openide.util.EditableProperties;
  * @author Jiri Skrivanek
  */
 final class CopyFiles extends Object {
-    
-    //>>> hack for http://netbeans.org/bugzilla/show_bug.cgi?id=218976
-    private static final String CSSSP = "config/Editors/text/";
-    private static final String ORIG_CSSSP = CSSSP + "x-css";
-    private static final String TARG_CSSSP = CSSSP + "css";
-    //<<<eof
 
     private File sourceRoot;
     private File targetRoot;
     private EditableProperties currentProperties;
     private Set<String> includePatterns = new HashSet<String>();
     private Set<String> excludePatterns = new HashSet<String>();
+    private HashMap<String, String> translatePatterns = new HashMap<String, String>(); // <originalPath, newPath>
     private static final Logger LOGGER = Logger.getLogger(CopyFiles.class.getName());
 
     private CopyFiles(File source, File target, File patternsFile) {
@@ -193,9 +190,14 @@ final class CopyFiles extends Object {
             return;
         }
         
-        //>>> hack for http://netbeans.org/bugzilla/show_bug.cgi?id=218976
-        if(relativePath.startsWith(ORIG_CSSSP)) { relativePath = TARG_CSSSP + relativePath.substring(ORIG_CSSSP.length()); } 
-        //<<<
+	for (Entry<String, String> entry : translatePatterns.entrySet()) {
+	    if (relativePath.startsWith(entry.getKey())) {
+		String value = entry.getValue();
+		LOGGER.log(Level.INFO, "Translating old relative path: {0}", relativePath);  //NOI18N
+		relativePath = value + relativePath.substring(entry.getKey().length());
+		LOGGER.log(Level.INFO, "                   to new one: {0}", relativePath);  //NOI18N
+	    }
+	}
 
         File targetFile = new File(targetRoot, relativePath);
         LOGGER.log(Level.FINE, "Path: {0}", relativePath);  //NOI18N
@@ -298,6 +300,22 @@ final class CopyFiles extends Object {
                 line = line.substring(8);
                 if (line.length() > 0) {
                     excludePatterns.addAll(parsePattern(line));
+                }
+            } else if (line.startsWith("translate ")) {  //NOI18N
+                line = line.substring(10);
+                if (line.length() > 0) {
+		    String[] translations = line.split("\\|");
+		    for (String translation : translations) {
+			String originalPath = translation.substring(0, translation.indexOf("=>"));
+			String newPath = translation.substring(translation.lastIndexOf("=>") + 2);
+			if (translatePatterns.containsKey(originalPath)) {
+			    LOGGER.log(Level.INFO, "Translation already exists: {0}. Ignoring new translation: {1}",  //NOI18N
+				    new Object[]{originalPath.concat("=>").concat(translatePatterns.get(originalPath)),
+					originalPath.concat("=>").concat(newPath)});
+			} else {
+			    translatePatterns.put(originalPath, newPath);
+			}
+		    }
                 }
             } else {
                 throw new java.io.IOException("Wrong line: " + line);  //NOI18N

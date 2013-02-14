@@ -73,19 +73,15 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -104,7 +100,7 @@ import org.openide.util.WeakListeners;
 public class SourcesCurrentModel implements TreeModel, CheckNodeModelFilter,
 NodeActionsProvider {
 
-    private static Logger logger = Logger.getLogger(SourcesCurrentModel.class.getName());
+    private static final Logger logger = Logger.getLogger(SourcesCurrentModel.class.getName());
 
     private Vector<ModelListener>   listeners = new Vector<ModelListener>();
     // set of filters
@@ -153,7 +149,7 @@ NodeActionsProvider {
                             }
                         }
                     }
-                    synchronized (this) {
+                    synchronized (SourcesCurrentModel.this) {
                         currentSourcePathProvider = spImpl;
                     }
                     fireTreeChanged();
@@ -191,6 +187,7 @@ NodeActionsProvider {
      *
      * @return threads contained in this group of threads
      */
+    @Override
     public Object getRoot () {
         return ROOT;
     }
@@ -199,6 +196,7 @@ NodeActionsProvider {
      *
      * @return threads contained in this group of threads
      */
+    @Override
     public Object[] getChildren (Object parent, int from, int to)
     throws UnknownTypeException {
         if (parent == ROOT) {
@@ -214,6 +212,7 @@ NodeActionsProvider {
             // 1) get source roots
             if (mainProjectListener == null) {
                 mainProjectListener = new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         fireTreeChanged();
                     }
@@ -231,10 +230,7 @@ NodeActionsProvider {
                 for (int i = 0; i < sourceRoots.length; i++) {
                     sourceRoots[i] = SourcePathProviderImpl.getRoot(projectSources.get(i));
                 }
-                try {
-                    root = p.getProjectDirectory().getURL().toExternalForm();
-                } catch (FileStateInvalidException ex) {
-                }
+                root = p.getProjectDirectory().toURL().toExternalForm();
             } else {
                 sourceRoots = new String[] {};
             }
@@ -290,19 +286,24 @@ NodeActionsProvider {
                 this.sourcePathPermutation = sourcePathPermutation;
             }
             return fos;
-        } else
-        throw new UnknownTypeException (parent);
+        } else {
+            throw new UnknownTypeException (parent);
+        }
     }
 
     private List<String> loadAdditionalSourceRoots(String projectRoot) {
-        if (projectRoot == null) return null;
+        if (projectRoot == null) {
+            return null;
+        }
         return (List<String>) sourcesProperties.getProperties("additional_source_roots").
                 getMap("project", Collections.emptyMap()).
                 get(projectRoot);
     }
 
     private Set<String> loadDisabledSourceRoots(String projectRoot) {
-        if (projectRoot == null) return null;
+        if (projectRoot == null) {
+            return null;
+        }
         return (Set<String>) sourcesProperties.getProperties("source_roots").
                 getMap("project_disabled", Collections.emptyMap()).
                 get(projectRoot);
@@ -346,16 +347,12 @@ NodeActionsProvider {
                 continue;
             }
             addedBinaryRoots.add(fo);
-            try {
-                FileObject[] roots = SourceForBinaryQuery.findSourceRoots(fo.getURL()).getRoots();
-                for (FileObject fr : roots) {
-                    if (!preferredRoots.contains(fr)) {
-                        allSourceRoots.add(fr);
-                        preferredRoots.add(fr);
-                    }
+            FileObject[] roots = SourceForBinaryQuery.findSourceRoots(fo.toURL()).getRoots();
+            for (FileObject fr : roots) {
+                if (!preferredRoots.contains(fr)) {
+                    allSourceRoots.add(fr);
+                    preferredRoots.add(fr);
                 }
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -381,26 +378,35 @@ NodeActionsProvider {
      *
      * @return  true if node is leaf
      */
+    @Override
     public int getChildrenCount (Object node) throws UnknownTypeException {
         if (node == ROOT) {
             // Performance, see issue #59058.
             return Integer.MAX_VALUE;
             //return sourcePath.getOriginalSourceRoots ().length +
             //    filters.size ();
-        } else
-        throw new UnknownTypeException (node);
+        } else {
+            throw new UnknownTypeException (node);
+        }
     }
 
+    @Override
     public boolean isLeaf (Object node) throws UnknownTypeException {
-        if (node == ROOT) return false;
-        if (node instanceof String) return true;
+        if (node == ROOT) {
+            return false;
+        }
+        if (node instanceof String) {
+            return true;
+        }
         throw new UnknownTypeException (node);
     }
 
+    @Override
     public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
 
+    @Override
     public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
@@ -408,21 +414,24 @@ NodeActionsProvider {
     public void fireTreeChanged () {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
-        for (i = 0; i < k; i++)
+        for (i = 0; i < k; i++) {
             ((ModelListener) v.get (i)).modelChanged (null);
+        }
     }
 
     private void fireSelectedNodes(Object[] nodes) {
         ModelEvent event = new ModelEvent.SelectionChanged(this, nodes);
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
-        for (i = 0; i < k; i++)
+        for (i = 0; i < k; i++) {
             ((ModelListener) v.get (i)).modelChanged (event);
+        }
     }
 
 
     // NodeActionsProvider .....................................................
 
+    @Override
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node instanceof String) {
             if (additionalSourceRoots.contains((String) node)) {
@@ -445,16 +454,17 @@ NodeActionsProvider {
                     RESET_ORDER_ACTION,
                 };
             }
-        } else
-        throw new UnknownTypeException (node);
+        } else {
+            throw new UnknownTypeException (node);
+        }
     }
 
+    @Override
     public void performDefaultAction (Object node)
     throws UnknownTypeException {
-        if (node instanceof String) {
-            return;
-        } else
-        throw new UnknownTypeException (node);
+        if (!(node instanceof String)) {
+            throw new UnknownTypeException (node);
+        }
     }
 
     // other methods ...........................................................
@@ -516,14 +526,17 @@ NodeActionsProvider {
 
     // CheckNodeModelFilter
     
+    @Override
     public boolean isCheckable(NodeModel original, Object node) throws UnknownTypeException {
         return true;
     }
 
+    @Override
     public boolean isCheckEnabled(NodeModel original, Object node) throws UnknownTypeException {
         return true;
     }
 
+    @Override
     public Boolean isSelected(NodeModel original, Object node) throws UnknownTypeException {
         if (node instanceof String) {
             return isEnabled ((String) node);
@@ -532,6 +545,7 @@ NodeActionsProvider {
         }
     }
 
+    @Override
     public void setSelected(NodeModel original, Object node, Boolean selected) throws UnknownTypeException {
         if (node instanceof String) {
             setEnabled ((String) node, selected.booleanValue ());
@@ -540,14 +554,17 @@ NodeActionsProvider {
         throw new UnknownTypeException (node);
     }
 
+    @Override
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
         return original.getDisplayName(node);
     }
 
+    @Override
     public String getIconBase(NodeModel original, Object node) throws UnknownTypeException {
         return original.getIconBase(node);
     }
 
+    @Override
     public String getShortDescription(NodeModel original, Object node) throws UnknownTypeException {
         return original.getShortDescription(node);
     }
@@ -630,16 +647,19 @@ NodeActionsProvider {
 
     private final Action NEW_SOURCE_ROOT_ACTION = new AbstractAction(
             NbBundle.getMessage(SourcesCurrentModel.class, "CTL_SourcesModel_Action_AddSrc")) {
+        @Override
         public void actionPerformed (ActionEvent e) {
             if (newSourceFileChooser == null) {
                 newSourceFileChooser = new JFileChooser();
                 newSourceFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 newSourceFileChooser.setFileFilter(new FileFilter() {
 
+                    @Override
                     public String getDescription() {
                         return NbBundle.getMessage(SourcesCurrentModel.class, "CTL_SourcesModel_AddSrc_Chooser_Filter_Description");
                     }
 
+                    @Override
                     public boolean accept(File file) {
                         if (file.isDirectory()) {
                             return true;
@@ -700,12 +720,14 @@ NodeActionsProvider {
     };
 
     private final Action DELETE_ACTION = Models.createAction (
-        NbBundle.getBundle (SourcesCurrentModel.class).getString
-            ("CTL_SourcesModel_Action_Delete"),
+        NbBundle.getMessage
+            (SourcesCurrentModel.class, "CTL_SourcesModel_Action_Delete"),
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
                 return true;
             }
+            @Override
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
                 synchronized (SourcesCurrentModel.this) {
@@ -769,15 +791,19 @@ NodeActionsProvider {
     );
 
     private final Action MOVE_UP_ACTION = Models.createAction (
-        NbBundle.getBundle (SourcesCurrentModel.class).getString
-            ("CTL_SourcesModel_MoveUpSrc"),
+        NbBundle.getMessage
+            (SourcesCurrentModel.class, "CTL_SourcesModel_MoveUpSrc"),
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
-                if (ROOT.equals(node)) return false;
+                if (ROOT.equals(node)) {
+                    return false;
+                }
                 synchronized (SourcesCurrentModel.this) {
                     return sortedOriginalSourceRoots.length > 0 && !sortedOriginalSourceRoots[0].equals(node);
                 }
             }
+            @Override
             public void perform (Object[] nodes) {
                 int k = nodes.length;
                 synchronized (SourcesCurrentModel.this) {
@@ -816,16 +842,20 @@ NodeActionsProvider {
     );
 
     private final Action MOVE_DOWN_ACTION = Models.createAction (
-        NbBundle.getBundle (SourcesCurrentModel.class).getString
-            ("CTL_SourcesModel_MoveDownSrc"),
+        NbBundle.getMessage
+            (SourcesCurrentModel.class, "CTL_SourcesModel_MoveDownSrc"),
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
-                if (ROOT.equals(node)) return false;
+                if (ROOT.equals(node)) {
+                    return false;
+                }
                 synchronized (SourcesCurrentModel.this) {
                     return sortedOriginalSourceRoots.length > 0 &&
                            !sortedOriginalSourceRoots[sortedOriginalSourceRoots.length - 1].equals(node);
                 }
             }
+            @Override
             public void perform (Object[] nodes) {
                 int k = nodes.length;
                 synchronized (SourcesCurrentModel.this) {
@@ -864,12 +894,14 @@ NodeActionsProvider {
     );
 
     private final Action RESET_ORDER_ACTION = Models.createAction (
-        NbBundle.getBundle (SourcesCurrentModel.class).getString
-            ("CTL_SourcesModel_ResetOrderSrc"),
+        NbBundle.getMessage
+            (SourcesCurrentModel.class, "CTL_SourcesModel_ResetOrderSrc"),
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
                 return true;
             }
+            @Override
             public void perform (Object[] nodes) {
                 if (currentSourcePathProvider != null) {
                     currentSourcePathProvider.reorderOriginalSourceRoots(null);

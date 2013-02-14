@@ -68,6 +68,7 @@ public class SourcesTabs extends JTabbedPane {
     public SourcesTabs() {
         initComponent();
         mainProjectListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 Project p = MainProjectManager.getDefault().getMainProject();
                 setProjectTitle(p);

@@ -64,7 +64,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 
 /**
@@ -188,10 +187,8 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
         for (SourceGroup sg : sgs) {
             URL root;
             try {
-                root = sg.getRootFolder().getURL();
+                root = sg.getRootFolder().toURL();
                 projectRoots.add(root);
-            } catch (FileStateInvalidException fsiex) {
-                continue;
             } catch (NullPointerException npe) {
                 // http://www.netbeans.org/issues/show_bug.cgi?id=148076
                 if (sg == null) {
@@ -217,7 +214,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
         //System.err.println("MainProjectManager.propertyChange("+evt+") name = "+evt.getPropertyName());
         if (OpenProjects.PROPERTY_MAIN_PROJECT.equals(evt.getPropertyName())) {
             Project theMainProject = OpenProjects.getDefault().getMainProject();
-            Project old = theMainProject;
+            Project old;
             synchronized (this) {
                 isMainProject = theMainProject != null;
                 old = currentProject.get();

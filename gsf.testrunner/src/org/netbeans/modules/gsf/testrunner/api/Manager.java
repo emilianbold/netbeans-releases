@@ -376,7 +376,8 @@ public final class Manager {
                 : sessionEnd;
 
         SessionResult sessionResult = session.getSessionResult();
-        if (sessionResult.getErrors() + sessionResult.getFailed() > 0) {
+	boolean automaticallyOpen = NbPreferences.forModule(StatisticsPanel.class).getBoolean(StatisticsPanel.PROP_ALWAYS_OPEN_TRW, false);
+        if (automaticallyOpen || sessionResult.getErrors() + sessionResult.getFailed() > 0) {
             int displayIndex = getDisplayIndex(session);
             if (displayIndex == -1) {
                 addDisplay(session);

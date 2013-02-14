@@ -156,10 +156,12 @@ public class LineBreakpoint extends JPDABreakpoint {
     public void setURL (String url) {
         String old;
         synchronized (this) {
-            if (url == null) url = "";
-            if ( (url == this.url) ||
-                 ((url != null) && (this.url != null) && url.equals (this.url))
-            ) return;
+            if (url == null) {
+                url = "";
+            }
+            if (url.equals(this.url)) {
+                return;
+            }
             old = this.url;
             this.url = url;
         }
@@ -183,7 +185,9 @@ public class LineBreakpoint extends JPDABreakpoint {
     public void setLineNumber (int ln) {
         int old;
         synchronized (this) {
-            if (ln == lineNumber) return;
+            if (ln == lineNumber) {
+                return;
+            }
             old = lineNumber;
             lineNumber = ln;
         }
@@ -275,11 +279,13 @@ public class LineBreakpoint extends JPDABreakpoint {
     public void setCondition (String c) {
         String old;
         synchronized (this) {
-            if (c == null) c = "";
+            if (c == null) {
+                c = "";
+            }
             c = c.trim ();
-            if ( (c == condition) ||
-                 ((c != null) && (condition != null) && condition.equals (c))
-            ) return;
+            if (c.equals (condition)) {
+                return;
+            }
             old = condition;
             condition = c;
         }
@@ -303,11 +309,13 @@ public class LineBreakpoint extends JPDABreakpoint {
     public void setStratum (String s) {
         String old;
         synchronized (this) {
-            if (s == null) s = "";
+            if (s == null) {
+                s = "";
+            }
             s = s.trim ();
-            if ( (s == stratum) ||
-                 ((s != null) && (stratum != null) && stratum.equals (s))
-            ) return;
+            if (s.equals (stratum)) {
+                return;
+            }
             old = stratum;
             stratum = s;
         }
@@ -331,10 +339,16 @@ public class LineBreakpoint extends JPDABreakpoint {
     public void setSourceName (String sn) {
         String old;
         synchronized (this) {
-            if (sn != null) sn = sn.trim ();
-            if ( (sn == sourceName) ||
-                 ((sn != null) && (sourceName != null) && sourceName.equals (sn))
-            ) return;
+            if (sn != null) {
+                sn = sn.trim ();
+                if (sn.equals(sourceName)) {
+                    return ;
+                }
+            } else {
+                if (sourceName == null) {
+                    return ;
+                }
+            }
             old = sourceName;
             sourceName = sn;
         }
@@ -362,9 +376,15 @@ public class LineBreakpoint extends JPDABreakpoint {
     public void setSourcePath (String sp) {
         String old;
         synchronized (this) {
-            if (sp != null) sp = sp.trim();
-            if (sp == sourcePath || (sp != null && sp.equals(sourcePath))) {
-                return ;
+            if (sp != null) {
+                sp = sp.trim();
+                if (sp.equals(sourcePath)) {
+                   return ;
+                }
+            } else {
+                if (sourcePath == null) {
+                    return ;
+                }
             }
             old = sourcePath;
             sourcePath = sp;
@@ -381,7 +401,7 @@ public class LineBreakpoint extends JPDABreakpoint {
     public void setPreferredClassName(String className) {
         String old;
         synchronized (this) {
-            if (this.className == className || (className != null && className.equals(this.className))) {
+            if (className == null ? this.className == null : className.equals(this.className)) {
                 return ;
             }
             old = className;
@@ -406,6 +426,7 @@ public class LineBreakpoint extends JPDABreakpoint {
      *
      * @return  a string representation of the object
      */
+    @Override
     public String toString () {
         String fileName = null;
         try {
@@ -414,7 +435,9 @@ public class LineBreakpoint extends JPDABreakpoint {
                 fileName = fo.getNameExt();
             }
         } catch (MalformedURLException ex) {}
-        if (fileName == null) fileName = url;
+        if (fileName == null) {
+            fileName = url;
+        }
         return "LineBreakpoint " + fileName + " : " + lineNumber;
     }
     
@@ -472,6 +495,7 @@ public class LineBreakpoint extends JPDABreakpoint {
             return new LineGroupProperties();
         }
 
+        @Override
         public int compareTo(Object o) {
             if (o instanceof LineBreakpointImpl) {
                 LineBreakpoint lbthis = this;
@@ -498,33 +522,41 @@ public class LineBreakpoint extends JPDABreakpoint {
             return System.identityHashCode(this);
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             DebuggerManager.getDebuggerManager().removeBreakpoint(this);
             fo = null;
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
                 this.setURL(((FileObject) fe.getSource()).toURL().toString());
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
     
+        @Override
         public void stateChanged(ChangeEvent chev) {
             Object source = chev.getSource();
             if (source instanceof Breakpoint.VALIDITY) {
                 setValidity((Breakpoint.VALIDITY) source, chev.toString());
             } else if (source instanceof Collection) {
-                for (DataObject dobj : ((Collection<DataObject>) source)) {
+                for (Object obj : ((Collection) source)) {
+                    DataObject dobj = (DataObject) obj;
                     if (registryListener != null) {
                         FileObject fileObject = this.fo;
                         if (fileObject == null) {
@@ -545,6 +577,7 @@ public class LineBreakpoint extends JPDABreakpoint {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
                 if (fo != null) {

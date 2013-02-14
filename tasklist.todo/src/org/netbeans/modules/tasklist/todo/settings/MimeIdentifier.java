@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,24 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.sql.editor;
-
-import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
-import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
-import org.netbeans.spi.editor.bracesmatching.MatcherContext;
-import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
+package org.netbeans.modules.tasklist.todo.settings;
 
 /**
- *
- * @author jhavlin
+ * To store MIME type and its loader display name. It is used in list.
  */
-public class SQLBracesMatcherFactory implements BracesMatcherFactory {
+public class MimeIdentifier extends FileIdentifier {
+
+    private String mimeType;
+    private String mimeName;
+
+    public MimeIdentifier(String mimeType, String mimeName) {
+        this(mimeType, mimeName, null);
+    }
+
+    public MimeIdentifier(String mimeType, String mimeName, CommentTags commentTags) {
+        super(commentTags);
+        this.mimeType = mimeType;
+        this.mimeName = mimeName;
+    }
 
     @Override
-    public BracesMatcher createMatcher(MatcherContext context) {
-        return BracesMatcherSupport.characterMatcher(context, -1, -1,
-                '{', '}', '(', ')', '[', ']');
+    Type getType() {
+        return FileIdentifier.Type.MIME;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return mimeName == null || mimeName.isEmpty() ? mimeType : mimeName + " (" + mimeType + ")";
+    }
+
+    @Override
+    public String getId() {
+        return mimeType;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public String getMimeName() {
+        return mimeName;
     }
 }

@@ -60,13 +60,11 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
-import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
-import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 
@@ -93,15 +91,18 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
         );
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_STEP_INTO);
     }
     
+    @Override
     public void doAction (final Object action) {
         // start debugging of project
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         invokeAction();
                     }
@@ -116,6 +117,7 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
         }
     }
     
+    @Override
     public void postAction(Object action, Runnable actionPerformedNotifier) {
         // start debugging of project
         invokeAction();
@@ -147,15 +149,23 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
         
         // check if current project supports this action
         Project p = MainProjectManager.getDefault ().getMainProject ();
-        if (p == null) return false;
+        if (p == null) {
+            return false;
+        }
         ActionProvider actionProvider = p.getLookup().lookup(ActionProvider.class);
-        if (actionProvider == null) return false;
+        if (actionProvider == null) {
+            return false;
+        }
         String[] sa = actionProvider.getSupportedActions ();
         int i, k = sa.length;
-        for (i = 0; i < k; i++)
-            if (ActionProvider.COMMAND_DEBUG_STEP_INTO.equals (sa [i]))
+        for (i = 0; i < k; i++) {
+            if (ActionProvider.COMMAND_DEBUG_STEP_INTO.equals (sa [i])) {
                 break;
-        if (i == k) return false;
+            }
+        }
+        if (i == k) {
+            return false;
+        }
         
         if (DebuggerManager.getDebuggerManager().getDebuggerEngines().length > 0) {
             // Do not enable this non-contextual action when some debugging session is already running.
@@ -171,26 +181,37 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
     
     private class Listener implements PropertyChangeListener, DebuggerManagerListener {
         
+        @Override
         public void propertyChange (PropertyChangeEvent e) {
             if (e.getSource() instanceof MainProjectManager) {
                 doSetEnabled();
             }
         }
         
+        @Override
         public void sessionRemoved (Session session) {}
+        @Override
         public void breakpointAdded (Breakpoint breakpoint) {}
+        @Override
         public void breakpointRemoved (Breakpoint breakpoint) {}
+        @Override
         public Breakpoint[] initBreakpoints () {
             return new Breakpoint [0];
         }
+        @Override
         public void initWatches () {}
+        @Override
         public void sessionAdded (Session session) {}
+        @Override
         public void watchAdded (Watch watch) {}
+        @Override
         public void watchRemoved (Watch watch) {}
         
+        @Override
         public void engineAdded(DebuggerEngine engine) {
             doSetEnabled();
         }
+        @Override
         public void engineRemoved(DebuggerEngine engine) {
             doSetEnabled();
         }

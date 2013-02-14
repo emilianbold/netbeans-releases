@@ -1724,8 +1724,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             List<StatementTree> nueStatements = new LinkedList<StatementTree>(getStatements(statement));
                             mods = make.Modifiers(declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class));
+                            VariableTree newVariable = make.Variable(mods, name, make.Type(tm), expression);
 
-                            nueStatements.add(index, make.Variable(mods, name, make.Type(tm), expression));
+                            nueStatements.add(index, newVariable);
+                            
+                            GeneratorUtilities.get(parameter).copyComments(resolved.getParentPath().getLeaf(), newVariable, true);
+                            GeneratorUtilities.get(parameter).copyComments(resolved.getParentPath().getLeaf(), newVariable, false);
 
                             if (expressionStatement)
                                 nueStatements.remove(resolved.getParentPath().getLeaf());

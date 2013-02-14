@@ -45,7 +45,6 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
