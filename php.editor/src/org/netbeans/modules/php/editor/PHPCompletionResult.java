@@ -52,13 +52,16 @@ import org.netbeans.modules.csl.spi.DefaultCompletionResult;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCompletionResult extends DefaultCompletionResult {
+
     public PHPCompletionResult(CodeCompletionContext completionContext) {
         super(new ArrayList<CompletionProposal>(), false);
     }
-    public void addAll(final Collection<CompletionProposal>  proposals) {
+
+    public void addAll(final Collection<CompletionProposal> proposals) {
         list.addAll(proposals);
     }
-    public void add(CompletionProposal  proposal) {
+
+    public void add(CompletionProposal proposal) {
         list.add(proposal);
     }
 }
