@@ -77,11 +77,8 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import org.openide.LifecycleManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
@@ -351,6 +348,11 @@ public final class ModuleManager extends Modules {
      */
     public final Module get(String codeNameBase) {
         return modulesByName.get(codeNameBase);
+    }
+
+    @Override
+    public ModuleInfo findCodeNameBase(String cnb) {
+        return get(cnb);
     }
 
     public @Override ModuleInfo ownerOf(Class<?> clazz) {
