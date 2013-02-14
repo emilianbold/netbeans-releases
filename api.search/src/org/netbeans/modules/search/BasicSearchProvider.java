@@ -338,7 +338,7 @@ public class BasicSearchProvider extends SearchProvider {
         bsc.setTextPattern(searchPattern.getSearchExpression());
         bsc.setCaseSensitive(searchPattern.isMatchCase());
         bsc.setWholeWords(searchPattern.isWholeWords());
-        bsc.setRegexp(searchPattern.isRegExp());
+        bsc.setMatchType(searchPattern.getMatchType());
         if (preserveCase != null) {
             bsc.setPreserveCase(preserveCase);
         }
