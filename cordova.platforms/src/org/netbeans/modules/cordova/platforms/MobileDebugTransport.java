@@ -44,10 +44,12 @@ package org.netbeans.modules.cordova.platforms;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
+import java.util.Enumeration;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -139,16 +141,43 @@ public abstract class MobileDebugTransport implements TransportImplementation, W
     public abstract WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException;
 
     public String translate(String toString) {
-        try {
-            //TODO: hack to workaround #221791
-            return toString.replaceAll("localhost", InetAddress.getLocalHost().getHostAddress());
-        } catch (UnknownHostException ex) {
-            throw new RuntimeException(ex);
-        }
+        //TODO: hack to workaround #221791
+        return toString.replaceAll("localhost", getLocalhostInetAddress().getHostAddress());
     }
 
     public void setBaseUrl(String documentURL) {
         this.indexHtmlLocation = documentURL;
     }
+    
+    /**
+     * Returns IP address of localhost in local network
+     * @return 
+     */
+    public static InetAddress getLocalhostInetAddress() {
+        try {
+            InetAddress localHost = InetAddress.getLocalHost();
+            if (!localHost.isLoopbackAddress()) {
+                return localHost;
+            }
+            //workaround for strange behavior on debian, see #226087
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                final NetworkInterface netInterface = networkInterfaces.nextElement();
+                if (netInterface.isUp()) {
+                    Enumeration<InetAddress> inetAddresses = netInterface.getInetAddresses();
+                    while (inetAddresses.hasMoreElements()) {
+                        InetAddress nextElement = inetAddresses.nextElement();
+                        if (!nextElement.isLoopbackAddress() && nextElement.isSiteLocalAddress()) {
+                            return nextElement;
+                        }
+
+                    }
+                }
+            }
+            return localHost;
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+    }    
     
 }
