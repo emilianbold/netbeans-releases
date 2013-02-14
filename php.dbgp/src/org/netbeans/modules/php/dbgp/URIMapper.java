@@ -167,8 +167,8 @@ abstract class URIMapper {
                 File retval = Utilities.toFile(remoteURI);
                 File absFile = can2AbsFile.get(retval);
                 retval = (absFile != null) ? absFile : retval;
-                if (LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.log(Level.INFO, String.format("%s: %s -> %s", getClass().toString(), remoteURI, retval));
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, String.format("%s: %s -> %s", getClass().toString(), remoteURI, retval));
                 }
                 return retval;
             }
@@ -186,8 +186,8 @@ abstract class URIMapper {
                     localFile = canonicalFile;
                 }
                 final URI retval = toURI(localFile, includeHostPart);
-                if (LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.log(Level.INFO, String.format("%s: %s -> %s", getClass().toString(), localFile, retval));
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, String.format("%s: %s -> %s", getClass().toString(), localFile, retval));
                 }
                 return retval;
             }
@@ -279,8 +279,8 @@ abstract class URIMapper {
                 assert FILE_SCHEME.equals(webServerURI.getScheme());
                 retval = Utilities.toFile(baseSourceURI.resolve(relativizedURI));
             }
-            if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, String.format("%s: %s -> %s", getClass().toString(), webServerURI, retval));
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, String.format("%s: %s -> %s", getClass().toString(), webServerURI, retval));
             }
             return retval;
         }
@@ -299,8 +299,8 @@ abstract class URIMapper {
                             true, false);
                 }
             }
-            if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, String.format("%s: %s -> %s", getClass().toString(), sourceFile, retval));
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, String.format("%s: %s -> %s", getClass().toString(), sourceFile, retval));
             }
             return retval;
         }
