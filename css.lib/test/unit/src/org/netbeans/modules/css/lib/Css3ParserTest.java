@@ -107,7 +107,9 @@ public class Css3ParserTest extends CssTestBase {
 
         CssParserResult res = TestUtil.parse(code);
 
-        assertResult(res, 2);
+        //one error: 
+        //DefaultError[Unexpected token IDENT found, Unexpected token IDENT found, ERROR] (file:null, from:8, to:11)
+        assertResult(res, 1); 
 //        TestUtil.dumpResult(res);
 
         //the background: red; declaration is properly parsed even if the previous declaration is broken

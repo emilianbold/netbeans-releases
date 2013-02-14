@@ -559,21 +559,21 @@ rulePredicate
     options { k = 1; }
     :
 //    ( ~ (LBRACE ))+ LBRACE
-    ( ~ (LBRACE | SEMI | RBRACE ))+ LBRACE
+    ( ~(LBRACE | SEMI | RBRACE ))+ LBRACE
     ;
     
 declarationPredicate
     options { k = 1; }
     :
 //    ( ~SEMI )+ SEMI
-    ( ~ (LBRACE | SEMI | RBRACE ))+ SEMI
+    ( ~(LBRACE | SEMI | RBRACE ) )+ SEMI
     ;
     
 lastDeclarationPredicate
     options { k = 1; }
     :
 //    ( ~RBRACE )+ RBRACE
-    ( ~ (LBRACE | SEMI | RBRACE ))+ RBRACE
+    ( ~(LBRACE | SEMI | RBRACE ) )+ RBRACE
     ;
     
 selectorsGroup
