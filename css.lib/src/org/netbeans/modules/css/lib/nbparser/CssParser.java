@@ -90,7 +90,7 @@ public class CssParser extends Parser {
             ExtCss3Lexer lexer = new ExtCss3Lexer(source);
             TokenStream tokenstream = new CommonTokenStream(lexer);
             NbParseTreeBuilder builder = new NbParseTreeBuilder(source);
-            ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder);
+            ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder, fo);
             parser.styleSheet();
 
             AbstractParseTreeNode tree = builder.getTree();

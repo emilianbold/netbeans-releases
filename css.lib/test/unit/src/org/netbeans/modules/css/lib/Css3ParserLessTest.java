@@ -57,13 +57,40 @@ public class Css3ParserLessTest extends CssTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         CssParserResult.IN_UNIT_TESTS = true;
+        ExtCss3Parser.isLessSource_unit_tests = true;
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        ExtCss3Parser.isLessSource_unit_tests = false;
+    }
+    
     public void testAllANTLRRulesHaveNodeTypes() {
         for (String rule : Css3Parser.ruleNames) {
             if (!rule.startsWith("synpred") && !rule.toLowerCase().endsWith("predicate")) {
                 assertNotNull(NodeType.valueOf(rule));
             }
+        }
+    }
+
+    public void testDisabledLessSupport() {
+        try {
+            ExtCss3Parser.isLessSource_unit_tests = false;
+            String source = "@color: #4D926F;\n"
+                    + "\n"
+                    + "#header {\n"
+                    + "  color: @color;\n"
+                    + "}\n"
+                    + "h2 {\n"
+                    + "  color: @color;\n"
+                    + "}";
+
+            CssParserResult result = TestUtil.parse(source);
+
+            //there must be some css parsing errors as the less support is disabled
+            assertTrue(result.getDiagnostics().size() > 0);
+        } finally {
+            ExtCss3Parser.isLessSource_unit_tests = true;
         }
     }
 
@@ -384,7 +411,7 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testPropertyValueWithParenthesis() {
         String source = "div {\n"
                 + "width: (@u * @unit) - ((@margin * 2) + @gpadding + @gborder);\n "
@@ -396,6 +423,7 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
 
     }
+
     public void testPropertyValue() {
         String source = "div {\n"
                 + "border-top: 1px solid @color1 - #222; "

@@ -50,6 +50,7 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -57,8 +58,16 @@ import org.antlr.runtime.TokenStream;
  */
 public class ExtCss3Parser extends Css3Parser {
 
-    public ExtCss3Parser(TokenStream input, NbParseTreeBuilder dbg) {
-        super(input, dbg);
+    //less css unit tests sets this
+    static boolean isLessSource_unit_tests = false;
+    
+    private boolean isLessSource = isLessSource_unit_tests;
+    
+    public ExtCss3Parser(TokenStream input, NbParseTreeBuilder dbg, FileObject fileObject) {
+        super(input, dbg);        
+        if(fileObject != null) {
+            this.isLessSource = fileObject.getMIMEType().equals("text/less");
+        }
     }
 
     public ExtCss3Parser(TokenStream input, int port, RecognizerSharedState state) {
@@ -69,6 +78,11 @@ public class ExtCss3Parser extends Css3Parser {
         super(input);
     }
 
+    @Override
+    protected boolean isLessSource() {
+        return isLessSource;
+    }
+    
     @Override
     protected Object recoverFromMismatchedToken(IntStream input, int ttype, BitSet follow) throws RecognitionException {
         //disable the default token auto-insertion/deletion recovery

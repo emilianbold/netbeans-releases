@@ -120,6 +120,11 @@ package org.netbeans.modules.css.lib;
 }
 
 @members {
+
+    protected boolean isLessSource() {
+        return false;
+    }
+    
 /**
      * Use the current stacked followset to work out the valid tokens that
      * can follow on from the current point in the parse, then recover by
@@ -388,7 +393,7 @@ bodyItem
         | counterStyle
         | fontFace
         | vendorAtRule
-        | less_variable_declaration
+        | {isLessSource()}?=>less_variable_declaration
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -517,11 +522,11 @@ unaryOperator
     ;  
     
 property
-    : (IDENT | GEN | less_variable) ws?
+    : (IDENT | GEN | {isLessSource()}?=>less_variable) ws?
     ;
     
 rule 
-    :   ( selectorsGroup | less_mixin_declaration )
+    :   ( selectorsGroup | {isLessSource()}?=>less_mixin_declaration )
 //        LBRACE ws? syncToDeclarationsRule
         LBRACE ws? syncToFollow
             declarations
@@ -542,7 +547,7 @@ declarations
                 | 
                 ( (declarationPredicate)=>declaration SEMI )
                 |
-                less_mixin_call
+                {isLessSource()}?=>less_mixin_call
             )            
             ws?
         )*
@@ -715,7 +720,7 @@ propertyValue
 	:
         (expressionPredicate)=>expression 
         | 
-        less_expression 
+        {isLessSource()}?=>less_expression 
 //        | 
 //        less_function 
 	;
@@ -782,7 +787,7 @@ term
     | URI
     | hexColor
     | function
-    | less_variable
+    | {isLessSource()}?=>less_variable
     )
     ws?
     ;
@@ -834,15 +839,17 @@ ws
     
 //*** LESS SYNTAX ***
 //Some additional modifications to the standard syntax rules has also been done.
-
+//ENTRY POINT FROM CSS GRAMMAR
 less_variable_declaration
     : less_variable ws? COLON ws? less_expression SEMI
     ;
-    
+
+//ENTRY POINT FROM CSS GRAMMAR    
 less_variable
     : AT_IDENT | MEDIA_SYM //TODO add all meaningful at-rules here
     ;
 
+//ENTRY POINT FROM CSS GRAMMAR
 less_expression
     :    less_additionExp
     ;
@@ -913,12 +920,14 @@ less_term
 //    .box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000)
 //
 //normal mixin has common css syntax: .mixin so cannot be distinguished from a css class
+//ENTRY POINT FROM CSS GRAMMAR
 less_mixin_declaration
     :
     cssClass ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
     ;
 
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
+//ENTRY POINT FROM CSS GRAMMAR
 less_mixin_call
     :
     cssClass (ws? LPAREN less_mixin_call_args? RPAREN)? (ws? SEMI)?
