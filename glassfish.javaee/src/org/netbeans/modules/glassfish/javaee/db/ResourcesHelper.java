@@ -137,15 +137,12 @@ public class ResourcesHelper {
         Map<String, ResourceDesc> jdbcsMap = commonSupport.getResourcesMap(GlassfishModule.JDBC_RESOURCE);
         if (!jdbcsMap.containsKey(sample_jdbc)) {
             try {
-                ResultString result = CommandCreateJDBCConnectionPool
-                        .createJDBCConnectionPool(commonSupport.getInstance(),
+                CommandCreateJDBCConnectionPool.createJDBCConnectionPool(commonSupport.getInstance(),
                         sample_poolname, sample_classname, sample_restype,
                         sample_props, 60000);
-                if (result.getState() == TaskState.COMPLETED) {
-                    CommandCreateJDBCResource.createJDBCResource(
-                            commonSupport.getInstance(), sample_poolname,
-                            sample_jdbc, null, null, 60000);
-                }
+                CommandCreateJDBCResource.createJDBCResource(
+                        commonSupport.getInstance(), sample_poolname,
+                        sample_jdbc, null, null, 60000);
             } catch (GlassFishIdeException gfie) {
                 Logger.getLogger("glassfish-javaee").log(
                         Level.SEVERE, gfie.getLocalizedMessage(), gfie);
