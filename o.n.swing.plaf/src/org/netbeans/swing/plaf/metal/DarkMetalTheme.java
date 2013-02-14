@@ -41,6 +41,7 @@
  */
 package org.netbeans.swing.plaf.metal;
 
+import java.awt.Color;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
@@ -71,6 +72,8 @@ public class DarkMetalTheme extends DefaultMetalTheme {
     public void addCustomEntriesToTable( UIDefaults table ) {
         super.addCustomEntriesToTable( table );
         table.put( "nb.imageicon.filter", new DarkIconFilter() ); //NOI18N
+        table.put( "nb.errorForeground", new Color(255,0,0) ); //NOI18N
+        table.put( "nb.warningForeground", new Color(255,255,255) ); //NOI18N
     }
 
     @Override

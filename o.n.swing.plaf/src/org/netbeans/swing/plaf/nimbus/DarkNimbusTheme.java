@@ -67,6 +67,8 @@ public class DarkNimbusTheme {
         UIManager.put( "nimbusSelectedText", new Color( 255, 255, 255) );
         UIManager.put( "nimbusSelectionBackground", new Color( 104, 93, 156) );
         UIManager.put( "text", new Color( 230, 230, 230) );
-        UIManager.put( "nb.imageicon.filter", new DarkIconFilter() );
+//        UIManager.put( "nb.imageicon.filter", new DarkIconFilter() );
+        UIManager.put( "nb.errorForeground", new Color(220,0,0) ); //NOI18N
+        UIManager.put( "nb.warningForeground", new Color(255,255,255) ); //NOI18N
     }
 }
