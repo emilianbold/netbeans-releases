@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.groovy.editor.actions;
 
+import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
@@ -61,6 +65,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
@@ -69,7 +74,10 @@ import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Utility class used for changes in import statements. Typically used by "Fix imports"
@@ -87,6 +95,73 @@ public final class ImportHelper {
     private ImportHelper() {
     }
 
+    /**
+     * Resolve import and add it as an import statements into the source code if
+     * it's missing.
+     *
+     * @param fo fileObject of the current file where the import is missing
+     * @param importName name of the import to resolve (not fully qualified name)
+     */
+    public static void resolveImport(FileObject fo, String importName) {
+        resolveImports(fo, Collections.singletonList(importName));
+    }
+
+    /**
+     * Resolve imports and add them as import statements into the source code.
+     *
+     * @param fo fileObject of the current file where the imports are missing
+     * @param missingNames list of missing names (not fully qualified names)
+     */
+    public static void resolveImports(
+        final FileObject fo,
+        final List<String> missingNames) {
+
+        final AtomicBoolean cancel = new AtomicBoolean();
+        final List<String> singleCandidates = new ArrayList<String>();
+        final Map<String, List<ImportCandidate>> multipleCandidates = new HashMap<String, List<ImportCandidate>>();
+
+        // go over list of missing imports, fix it - if there is only one candidate
+        // or populate choosers input list if there is more than one candidate.
+
+        for (String name : missingNames) {
+            List<ImportCandidate> importCandidates = getImportCandidate(fo, name);
+
+            switch (importCandidates.size()) {
+                case 0: continue;
+                case 1: singleCandidates.add(importCandidates.get(0).getFqnName()); break;
+                default: multipleCandidates.put(name, importCandidates);
+            }
+        }
+
+        // do we have multiple candidate? In this case we need to present a chooser
+
+        if (!multipleCandidates.isEmpty()) {
+            List<String> choosenCandidates = showFixImportChooser(multipleCandidates);
+            singleCandidates.addAll(choosenCandidates);
+        }
+
+        if (!singleCandidates.isEmpty()) {
+            Collections.sort(singleCandidates);
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    addImportStatements(fo, singleCandidates);
+                }
+            }, "Adding imports", cancel, false);
+        }
+    }
+
+    /**
+     * For the given missing import finds out possible candidates. This means if
+     * there are more class types with the same name only with different packaging
+     * (e.g. java.lang.Object and org.netbeans.modules.whatever.Object) we will get
+     * list of two candidates as a result.
+     *
+     * @param fo current file
+     * @param missingClass class name for which we are looking for import candidates
+     * @return list of possible import candidates
+     */
     public static List<ImportCandidate> getImportCandidate(FileObject fo, String missingClass) {
         LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
@@ -191,11 +266,37 @@ public final class ImportHelper {
         return missingClass;
     }
 
-    public static void doImport(FileObject fo, String fqnName) {
-        doImports(fo, Collections.singletonList(fqnName));
+    private static List<String> showFixImportChooser(Map<String, List<ImportCandidate>> multipleCandidates) {
+        List<String> result = new ArrayList<String>();
+        ImportChooserInnerPanel panel = new ImportChooserInnerPanel();
+
+        panel.initPanel(multipleCandidates);
+
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(FixImportsAction.class, "FixImportsDialogTitle")); //NOI18N
+        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+
+        d.setVisible(true);
+        d.setVisible(false);
+        d.dispose();
+
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            result = panel.getSelections();
+        }
+        return result;
     }
 
-    public static void doImports(FileObject fo, List<String> fqnNames) {
+    /**
+     * Add import directly to the source code (does not run any checks if the import
+     * has more candidates from different packages etc.).
+     *
+     * @param fo file where we want to put import statement
+     * @param fqName fully qualified name of the import
+     */
+    public static void addImportStatement(FileObject fo, String fqName) {
+        addImportStatements(fo, Collections.singletonList(fqName));
+    }
+
+    private static void addImportStatements(FileObject fo, List<String> fqNames) {
         BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
         if (baseDoc == null) {
             return;
@@ -204,16 +305,18 @@ public final class ImportHelper {
         EditList edits = new EditList(baseDoc);
 
         // Shitty for-loop because after the last line I want to add additional \n
-        for (int i = 0; i < fqnNames.size(); i++) {
+        for (int i = 0; i < fqNames.size(); i++) {
+            String fqName = fqNames.get(i);
+
             int importPosition = getImportPosition(baseDoc);
             if (importPosition != -1) {
                 LOG.log(Level.FINEST, "Importing here: {0}", importPosition);
 
                 // Last import means one additiona \n
-                if (i == fqnNames.size() - 1) {
-                    edits.replace(importPosition, 0, "import " + fqnNames.get(i) + "\n\n", false, 0);
+                if (i == fqNames.size() - 1) {
+                    edits.replace(importPosition, 0, "import " + fqName + "\n\n", false, 0);
                 } else {
-                    edits.replace(importPosition, 0, "import " + fqnNames.get(i) + "\n", false, 0);
+                    edits.replace(importPosition, 0, "import " + fqName + "\n", false, 0);
                 }
             }
         }
