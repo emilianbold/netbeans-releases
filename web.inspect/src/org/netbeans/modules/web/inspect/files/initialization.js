@@ -337,6 +337,10 @@ NetBeans.paintFrame = function(ctx, inner, outer) {
 };
 
 NetBeans.paintHighlightedElements = function(ctx, elements) {
+    ctx.save();
+    var fontSize = 10;
+    ctx.font = fontSize + 'pt sans-serif';
+    ctx.lineWidth = 1;
     for (var i=0; i<elements.length; i++) {
         var highlightedElement = elements[i];
         var rects = highlightedElement.getClientRects();
@@ -347,6 +351,7 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
         var marginBottom = inline ? 0 : parseInt(style.marginBottom);
 
         for (var j=0; j<rects.length; j++) {
+            // Box model
             var first = (j === 0) || !inline;
             var last = (j === rects.length-1) || !inline;
 
@@ -391,9 +396,38 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             ctx.fillStyle = '#0000FF';
             ctx.fillRect(contentRect.left, contentRect.top, contentRect.width, contentRect.height);
 
+            // Label
+            var oldAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = 1;
+            var text = highlightedElement.tagName.toLowerCase();
+            var id = highlightedElement.id;
+            if (id !== '') {
+                text += '#' + id;
+            }
+            var classList = highlightedElement.classList;
+            if (classList.length !== 0) {
+                for (var k=0; k<classList.length; k++) {
+                    text += '.' + classList[k];
+                }
+            }
+            var text = ' ' + text + ' ' + borderRect.width + 'px \xD7 ' + borderRect.height + 'px ';
+
+            var width = ctx.measureText(text).width;
+            var x = marginRect.left;
+            var y = marginRect.top + marginRect.height + 2*fontSize;
+
+            ctx.strokeStyle = '#000000';
+            ctx.strokeRect(x, y-1.5*fontSize, width, 2*fontSize);
+            ctx.fillStyle = '#FFFF88';
+            ctx.fillRect(x, y-1.5*fontSize, width, 2*fontSize);
+            ctx.fillStyle = '#000000';
+            ctx.fillText(text, x, y);
+            ctx.globalAlpha = oldAlpha;
+
             ctx.stroke();
         }
     }
+    ctx.restore();
 };
 
 NetBeans.setWindowActive = function(active) {
