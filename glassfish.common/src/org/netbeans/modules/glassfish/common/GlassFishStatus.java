@@ -83,6 +83,13 @@ public class GlassFishStatus {
         REFRESH;
 
         ////////////////////////////////////////////////////////////////////////
+        // Class attributes                                                   //
+        ////////////////////////////////////////////////////////////////////////
+
+        ///** Local logger. */
+        //private static final Logger LOGGER = GlassFishLogger.get(Mode.class);
+
+        ////////////////////////////////////////////////////////////////////////
         // Methods                                                            //
         ////////////////////////////////////////////////////////////////////////
 
@@ -107,6 +114,10 @@ public class GlassFishStatus {
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(GlassFishStatus.class);
 
     /** Keep trying for up to 10 minutes while server is initializing [ms]. */
     private static final int STARTUP_TIMEOUT = 600000;
@@ -173,13 +184,13 @@ public class GlassFishStatus {
     private static void logLocationsResponse(final GlassfishInstance instance,
             final ResultMap<String, String> result) {
         Map<String, String> values = result != null ? result.getValue() : null;
-        Logger.getLogger("glassfish").log(Level.FINEST, LOG_LOCATIONS_RESPONSE,
+        LOGGER.log(Level.FINEST, LOG_LOCATIONS_RESPONSE,
                 new Object[] {instance.getName(),
                     values != null ? values.size() : 0});
         if (values != null) {
             for (String key : values.keySet()) {
                 String value = values.get(key);
-                Logger.getLogger("glassfish").log(Level.FINEST,
+                LOGGER.log(Level.FINEST,
                         LOG_LOCATIONS_RESPONSE_ITEM, new Object[] {
                         instance.getName(), key, value});
             }
@@ -212,14 +223,14 @@ public class GlassFishStatus {
             File targetInstallDir = FileUtil.normalizeFile(
                     new File(targetDomainRoot));
             isReady = installDir.equals(targetInstallDir);
-             Logger.getLogger("glassfish").log(Level.FINEST,
+             LOGGER.log(Level.FINEST,
                      LOG_LOCAL_LOCATIONS_CHECK, new Object[] {
                      instance.getName(), domainRoot,
                      isReady ? "matches" : "not matches" ,targetDomainRoot});
         // Remote instance. We don't know domains folder. We'll just trust it.
         } else {
             isReady = null != targetDomainRoot;
-            Logger.getLogger("glassfish").log(Level.FINEST,
+            LOGGER.log(Level.FINEST,
                     LOG_REMOTE_LOCATIONS_CHECK, new Object[] {
                     instance.getName(), targetDomainRoot,
                     isReady ? "correct" : "not correct"});
@@ -263,7 +274,7 @@ public class GlassFishStatus {
                             instance.getCommonSupport(), message);
                 }
             default:
-                 Logger.getLogger("glassfish").log(Level.INFO,
+                 LOGGER.log(Level.INFO,
                          LOG_VERSION_TASK_FAIL, versionTaskResult.getStatus());
                 versionCommandResult = null;
         }
@@ -305,13 +316,13 @@ public class GlassFishStatus {
      */
     private static void retrySleep(final GlassfishInstance instance,
             final long begTm, final long actTm, final int tries) {
-        Logger.getLogger("glassfish").log(Level.FINEST, LOG_RETRY, new Object[]{
+        LOGGER.log(Level.FINEST, LOG_RETRY, new Object[]{
                     instance.getName(), Integer.toString(tries),
                     Long.toString(STARTUP_TIMEOUT - actTm + begTm)});
         try {
             Thread.sleep(RETRY_DELAY);
         } catch (InterruptedException ie) {
-            Logger.getLogger("glassfish").log(Level.INFO,
+            LOGGER.log(Level.INFO,
                     LOG_THREAD_INTERRUPTED, new Object[]{
                     instance.getName(), ie.getLocalizedMessage()});
         }
@@ -375,14 +386,14 @@ public class GlassFishStatus {
                 // Version command result.
                 if (versionCommandResult != null) {
                     String value = versionCommandResult.getValue();
-                    Logger.getLogger("glassfish").log(Level.FINEST,
+                    LOGGER.log(Level.FINEST,
                             LOG_VERSION_RESPONSE, new Object[]{
                                 instance.getName(), value});
                     switch (versionCommandResult.getState()) {
                         case FAILED:
                             if (notYetReady
                                     = ServerUtils.notYetReadyMsg(value)) {
-                                Logger.getLogger("glassfish").log(Level.FINEST,
+                                LOGGER.log(Level.FINEST,
                                         LOG_SERVER_STARTUP, instance.getName());
                                 continue;
                             } else {

@@ -53,15 +53,24 @@ import java.util.logging.Logger;
 import org.glassfish.tools.ide.admin.CommandListResources;
 import org.glassfish.tools.ide.admin.ResultList;
 import org.glassfish.tools.ide.admin.ServerAdmin;
+import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 
 /**
  * Resource description.
  * <p/>
- * @author Peter Williams. Tomas Kraus
+ * @author Peter Williams, Tomas Kraus
  */
 public class ResourceDesc implements Comparable<ResourceDesc> {
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(ResourceDesc.class);
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
@@ -88,14 +97,11 @@ public class ResourceDesc implements Comparable<ResourceDesc> {
             ResultList<String> result = future.get();
             values = result.getValue();
         } catch (ExecutionException ee) {
-            Logger.getLogger("glassfish").log(
-                    Level.INFO, ee.getMessage(), ee);
+            LOGGER.log(Level.INFO, ee.getMessage(), ee);
         } catch (InterruptedException ie) {
-            Logger.getLogger("glassfish").log(
-                    Level.INFO, ie.getMessage(), ie);
+            LOGGER.log(Level.INFO, ie.getMessage(), ie);
         } catch (CancellationException ce) {
-            Logger.getLogger("glassfish").log(
-                    Level.INFO, ce.getMessage(), ce);
+            LOGGER.log(Level.INFO, ce.getMessage(), ce);
         }
         if (values != null && values.size() > 0) {
             resourcesList = new ArrayList<ResourceDesc>(values.size());

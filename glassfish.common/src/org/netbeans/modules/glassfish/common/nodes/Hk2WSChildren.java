@@ -86,10 +86,8 @@ public class Hk2WSChildren extends Children.Keys<Object> implements Refreshable 
                         CommonServerSupport.class);
                 if(commonSupport != null) {
                     try {
-                        CommandRunner mgr = new CommandRunner(true,
-                                commonSupport.getCommandFactory(),
-                                commonSupport.getInstance());
-                        List<WSDesc> wsList = mgr.getWebServices();
+                        List<WSDesc> wsList
+                                = WSDesc.getWebServices(commonSupport.getInstance());
                         for(WSDesc ws: wsList) {
                             keys.add(new Hk2WSNode(lookup, ws, Hk2ItemNode.WS_ENDPOINT));
                         }

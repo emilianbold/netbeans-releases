@@ -291,53 +291,10 @@ public class CommandRunner extends BasicTask<TaskState> {
     }
 
     /**
-     * Sends list-web-services command to server (synchronous)
-     *
-     * @return String array of names of deployed applications.
-     */
-    public List<WSDesc> getWebServices() {
-        List<WSDesc> result = Collections.emptyList();
-        try {
-            Commands.ListWebservicesCommand cmd = new Commands.ListWebservicesCommand();
-            serverCmd = cmd;
-            Future<TaskState> task = executor().submit(this);
-            TaskState state = task.get();
-            if (state == TaskState.COMPLETED) {
-                List<String> wss = cmd.getWebserviceList();
-
-                result = processWebServices(wss);
-            }
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-        }
-        return result;
-    }
-
-    private List<WSDesc> processWebServices(List<String> wssList){
-        List<WSDesc> result = new  ArrayList<WSDesc>();
-        for (String a : wssList) {
-            result.add(new WSDesc(a, a+"?wsdl", a+"?Tester")); // NOI18N
-        }
-        return result;
-    }
-
-    /**
      * Execute an arbitrary server command.
      */
     public Future<TaskState> execute(ServerCommand command) {
         return execute(command, null);
-    }
-
-    private String addName(final String compName, final String itemsNotUpdated) {
-        String retVal = itemsNotUpdated;
-        if (null != itemsNotUpdated) {
-            retVal += ", "+compName; // NOI18N
-        } else {
-            retVal = compName;
-        }
-        return retVal;
     }
 
     private Future<TaskState> execute(ServerCommand command, String msgResId) {
