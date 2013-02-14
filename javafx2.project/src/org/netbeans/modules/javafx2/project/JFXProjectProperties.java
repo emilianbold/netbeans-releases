@@ -584,6 +584,13 @@ public final class JFXProjectProperties {
         return prels;
     }
     
+    public String getFXRunTimePath() {
+        assert evaluator != null;
+        String active = evaluator.getProperty("platform.active"); // NOI18N
+        String path = JavaFXPlatformUtils.getJavaFXRuntimePath(active);
+        return path;
+    }
+    
     /** Creates a new instance of JFXProjectProperties */
     private JFXProjectProperties(Lookup context) {
         
@@ -1364,7 +1371,7 @@ public final class JFXProjectProperties {
 
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
         
-        private boolean filling = false;
+        private volatile boolean filling = false;
         private ChangeListener changeListener = null;
               
         public PreloaderClassComboBoxModel() {
@@ -1404,15 +1411,10 @@ public final class JFXProjectProperties {
                             if(select != null) {
                                 setSelectedItem(select);
                             }
-                            //if(activeConfig != null) {
-                                String verify = (String)getSelectedItem();
-                                if(!isEqual(configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS), verify)) {
-                                    configs.setPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS, verify);
-                                    //configs.solidifyBoundedGroups(activeConfig, verify);
-//                                    configs.setProperty(activeConfig, JFXProjectProperties.PRELOADER_ENABLED, 
-//                                            configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_ENABLED));
-                                }
-                            //}
+                            String verify = (String)getSelectedItem();
+                            if(!isEqual(configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS), verify)) {
+                                configs.setPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS, verify);
+                            }
                         }
                         if (changeListener != null) {
                             changeListener.stateChanged (appClassNames.isEmpty() ? null : new ChangeEvent (this));
@@ -1423,7 +1425,7 @@ public final class JFXProjectProperties {
             });            
         }
 
-        public void fillFromJAR(final FileObject jarFile, final String select, final JFXConfigs configs, final String activeConfig) {
+        public void fillFromJAR(final FileObject jarFile, final String fxrtPath, final String select, final JFXConfigs configs, final String activeConfig) {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
@@ -1434,7 +1436,7 @@ public final class JFXProjectProperties {
                             addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
                             return;
                         }
-                        final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader"); //NOI18N    
+                        final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader", fxrtPath); //NOI18N    
                         appClassNames.remove("com.javafx.main.Main"); // NOI18N
                         appClassNames.remove("com.javafx.main.NoJavaFXFallback"); // NOI18N
                         if(appClassNames.isEmpty()) {
@@ -1444,14 +1446,10 @@ public final class JFXProjectProperties {
                             if(select != null) {
                                 setSelectedItem(select);
                             }
-                            //if(activeConfig != null) {
-                                String verify = (String)getSelectedItem();
-                                if(!isEqual(configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS), verify)) {
-                                    configs.setPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS, verify);
-//                                    configs.setProperty(activeConfig, JFXProjectProperties.PRELOADER_ENABLED, 
-//                                            configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_ENABLED));
-                                }
-                            //}
+                            String verify = (String)getSelectedItem();
+                            if(!isEqual(configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS), verify)) {
+                                configs.setPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS, verify);
+                            }
                         }
                         if (changeListener != null) {
                             changeListener.stateChanged (appClassNames.isEmpty() ? null : new ChangeEvent (this));
