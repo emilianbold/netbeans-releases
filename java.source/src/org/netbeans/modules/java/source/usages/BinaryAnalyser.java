@@ -71,7 +71,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -252,11 +251,8 @@ public class BinaryAnalyser {
                 final File archive = Utilities.toFile(URI.create(innerURL.toExternalForm()));
                 if (archive.canRead()) {
                     if (!isUpToDate(ROOT,archive.lastModified())) {
-                        writer.clear();
                         try {
-                            final ZipFile zipFile = new ZipFile(archive);
-                            final Enumeration<? extends ZipEntry> e = zipFile.entries();
-                            return new ArchiveProcessor (zipFile, e, ctx);
+                            return new ArchiveProcessor (archive, ctx);
                         } catch (ZipException e) {
                             LOGGER.log(Level.WARNING, "Broken zip file: {0}", archive.getAbsolutePath());
                         }
@@ -267,10 +263,8 @@ public class BinaryAnalyser {
             } else {
                 final FileObject rootFo =  URLMapper.findFileObject(root);
                 if (rootFo != null) {
-                    if (!isUpToDate(ROOT,rootFo.lastModified().getTime())) {
-                        writer.clear();
-                        Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                        return new NBFSProcessor(todo, rootFo, ctx);
+                    if (!isUpToDate(ROOT,rootFo.lastModified().getTime())) {                        
+                        return new NBFSProcessor(rootFo, ctx);
                     }
                 } else {
                     return new DeletedRootProcessor(ctx);
@@ -279,26 +273,15 @@ public class BinaryAnalyser {
         } else if ("file".equals(mainP)) {    //NOI18N
             //Fast way
             final File rootFile = Utilities.toFile(URI.create(root.toExternalForm()));
-            if (rootFile.isDirectory()) {
-                String path = rootFile.getAbsolutePath ();
-                if (path.charAt(path.length()-1) != File.separatorChar) {
-                    path = path + File.separatorChar;
-                }
-                LinkedList<File> todo = new LinkedList<File> ();
-                File[] children = rootFile.listFiles();
-                if (children != null) {
-                    todo.addAll(Arrays.asList(children));
-                }
-                return new FolderProcessor(todo, path, ctx);
+            if (rootFile.isDirectory()) {                
+                return new FolderProcessor(rootFile, ctx);
             } else if (!rootFile.exists()) {
                 return new DeletedRootProcessor(ctx);
             }
         } else {
             final FileObject rootFo =  URLMapper.findFileObject(root);
             if (rootFo != null) {
-                writer.clear();
-                Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                return new NBFSProcessor(todo, rootFo, ctx);
+                return new NBFSProcessor(rootFo, ctx);
             } else {
                 return new DeletedRootProcessor(ctx);
             }
@@ -823,7 +806,7 @@ public class BinaryAnalyser {
     }
     //</editor-fold>
 
-
+    //<editor-fold defaultstate="collapsed" desc="RootProcessor implementations">
     private static abstract class RootProcessor {
         private static final Comparator<Pair<ElementHandle<TypeElement>,Long>> COMPARATOR = new Comparator<Pair<ElementHandle<TypeElement>,Long>>() {
                 @Override
@@ -917,14 +900,13 @@ public class BinaryAnalyser {
         private final Enumeration<? extends ZipEntry> entries;
 
         ArchiveProcessor (
-                final @NonNull ZipFile zipFile,
-                final @NonNull Enumeration<? extends ZipEntry> entries,
-                final @NonNull Context ctx) {
+                final @NonNull File file,
+                final @NonNull Context ctx) throws IOException {
             super(ctx);
-            assert zipFile != null;
-            assert entries != null;
-            this.zipFile = zipFile;
-            this.entries = entries;
+            assert file != null;
+            writer.clear();
+            this.zipFile = new ZipFile(file);
+            this.entries = zipFile.entries();
             markChanged();  //Always dirty, created only for dirty root
         }
 
@@ -981,14 +963,20 @@ public class BinaryAnalyser {
         private final String rootPath;
 
         public FolderProcessor(
-                final @NonNull LinkedList<File> todo,
-                final @NonNull String rootPath,
-                final @NonNull Context ctx) {
+                final @NonNull File root,
+                final @NonNull Context ctx) throws IOException {
             super(ctx);
-            assert todo != null;
-            assert rootPath != null;
-            this.todo = todo;
-            this.rootPath = rootPath;
+            assert root != null;
+            String path = root.getAbsolutePath ();
+            if (path.charAt(path.length()-1) != File.separatorChar) {
+                path = path + File.separatorChar;
+            }
+            this.todo = new LinkedList<File> ();
+            this.rootPath = path;
+            final File[] children = root.listFiles();
+            if (children != null) {
+                Collections.addAll (todo, children);
+            }
         }
 
         @Override
@@ -1057,13 +1045,13 @@ public class BinaryAnalyser {
         private final FileObject root;
 
         NBFSProcessor(
-                final @NonNull Enumeration<? extends FileObject> todo,
                 final @NonNull FileObject root,
-                final @NonNull Context ctx) {
+                final @NonNull Context ctx) throws IOException {
             super(ctx);
-            assert todo != null;
-            this.todo = todo;
+            assert root != null;
+            writer.clear();
             this.root = root;
+            this.todo = root.getData(true);
             markChanged();  //Always dirty, created only for dirty root
         }
 
@@ -1117,4 +1105,5 @@ public class BinaryAnalyser {
             return true;
         }
     }
+    //</editor-fold>
 }
