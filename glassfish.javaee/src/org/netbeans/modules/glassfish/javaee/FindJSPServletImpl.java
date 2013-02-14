@@ -46,18 +46,15 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.CommandGetProperty;
+import org.glassfish.tools.ide.admin.ResultMap;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.modules.glassfish.eecommon.api.FindJSPServletHelper;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 
 class FindJSPServletImpl implements FindJSPServlet {
@@ -120,24 +117,23 @@ class FindJSPServletImpl implements FindJSPServlet {
 
         // the web app with customized context root case
         String remappedMCP = moduleContextPath;
-        GetPropertyCommand gpc = new GetPropertyCommand("applications.application.*.context-root");
-        Future<TaskState> result = commonSupport.execute(gpc);
         try {
-            if (result.get(60, TimeUnit.SECONDS) == TaskState.COMPLETED) {
-                Map<String, String> map = gpc.getData();
-                for (Entry<String, String> e : map.entrySet()) {
+            ResultMap<String, String> resultMap = CommandGetProperty
+                    .getProperties(commonSupport.getInstance(),
+                    "applications.application.*.context-root", 60000);
+            if (resultMap.getState() == TaskState.COMPLETED) {
+                for (Entry<String, String> e : resultMap.getValue().entrySet()) {
                     if (moduleContextPath.equals(e.getValue())) {
-                        remappedMCP = e.getKey().replace("applications.application.", "").replace(".context-root", "");
+                        remappedMCP = e.getKey().replace(
+                                "applications.application.", "")
+                                .replace(".context-root", "");
                         break;
                     }
                 }
             }
-        } catch (InterruptedException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
-        } catch (ExecutionException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
-        } catch (TimeoutException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+        } catch (GlassFishIdeException gfie) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                    "Could not retrieve property from server.", gfie);
         }
         return new File(domainDir, "/" + domain + "/generated/jsp/" + remappedMCP); // NOI18N
     }

@@ -48,9 +48,9 @@ import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import org.glassfish.tools.ide.admin.CommandGetProperty;
 import org.glassfish.tools.ide.admin.ResultMap;
 import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.server.ServerTasks;
 import org.junit.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
@@ -211,7 +211,8 @@ public class UtilsTest extends NbTestCase {
                 ip.put(GlassfishModule.HOSTNAME_ATTR, hostname);
                 ip.put(GlassfishModule.ADMINPORT_ATTR, port+"");
                 GlassfishInstance instance = GlassfishInstance.create(ip, null);
-                ResultMap<String, String> result = ServerTasks.getProperties(
+                ResultMap<String, String> result
+                        = CommandGetProperty.getProperties(
                     instance, "*.server-config.*.http-listener-1.port");
                 if (result.getState() == TaskState.COMPLETED) {
                     System.out.println(result.getValue());

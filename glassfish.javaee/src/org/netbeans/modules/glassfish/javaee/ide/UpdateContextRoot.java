@@ -42,19 +42,18 @@
 package org.netbeans.modules.glassfish.javaee.ide;
 
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.CommandGetProperty;
+import org.glassfish.tools.ide.admin.ResultMap;
 import org.glassfish.tools.ide.admin.TaskEvent;
 import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.data.GlassFishServer;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -83,7 +82,8 @@ public class UpdateContextRoot implements ProgressListener {
         if (event.getDeploymentStatus().isCompleted()) {
             if (needToDo) {
                 returnProgress.operationStateChanged(TaskState.RUNNING,
-                        TaskEvent.CMD_RUNNING, event.getDeploymentStatus().getMessage());
+                        TaskEvent.CMD_RUNNING,
+                        event.getDeploymentStatus().getMessage());
                 // let's update the context-root
                 //
                 RP.post(new Runnable() {
@@ -91,41 +91,47 @@ public class UpdateContextRoot implements ProgressListener {
                     @Override
                     public void run() {
                         // Maven projects like to embed a '.' into the ModuleID
-                        //   that played havoc with the get command, so we started
-                        //   to use a different get pattern,
-                        GetPropertyCommand gpc = new GetPropertyCommand("applications.application.*.context-root");
-                        Future<TaskState> result =
-                                si.getBasicNode().getLookup().lookup(GlassfishModule.class).execute(gpc);
+                        // that played havoc with the get command, so we started
+                        // to use a different get pattern,
                         try {
-                            if (result.get(60, TimeUnit.SECONDS) == TaskState.COMPLETED) {
-                                Map<String, String> retVal = gpc.getData();
-                                String newCR = retVal.get("applications.application." + moduleId.getModuleID() + ".context-root");
+                            GlassFishServer server
+                                    = si.getBasicNode().getLookup()
+                                    .lookup(GlassfishModule.class).getInstance();
+                            ResultMap<String, String> result
+                                    = CommandGetProperty.getProperties( server,
+                                    "applications.application.*.context-root");
+                            if (result.getState() == TaskState.COMPLETED) {
+                                Map<String, String> retVal = result.getValue();
+                                String newCR = retVal.get(
+                                        "applications.application."
+                                        + moduleId.getModuleID()
+                                        + ".context-root");
                                 if (null != newCR) {
                                     moduleId.setPath(newCR); //e.getValue());
-                                    returnProgress.operationStateChanged(TaskState.COMPLETED,
-                                            TaskEvent.CMD_COMPLETED, "updated the moduleid");
+                                    returnProgress.operationStateChanged(
+                                            TaskState.COMPLETED,
+                                            TaskEvent.CMD_COMPLETED,
+                                            "updated the moduleid");
                                 } else {
-                                    returnProgress.operationStateChanged(TaskState.COMPLETED,
-                                            TaskEvent.CMD_COMPLETED, "no moduleid update necessary");
+                                    returnProgress.operationStateChanged(
+                                            TaskState.COMPLETED,
+                                            TaskEvent.CMD_COMPLETED,
+                                            "no moduleid update necessary");
                                 }
                             } else {
-                                // there are no context-root values to be had... the query failed... but the update has been successful
-                                returnProgress.operationStateChanged(TaskState.COMPLETED,
-                                        TaskEvent.CMD_COMPLETED, "no moduleid update necessary");
+                                // there are no context-root values to be had...
+                                // the query failed... but the update has been successful
+                                returnProgress.operationStateChanged(
+                                        TaskState.COMPLETED,
+                                        TaskEvent.CMD_COMPLETED,
+                                        "no moduleid update necessary");
                             }
-                        } catch (InterruptedException ex) {
-                            returnProgress.operationStateChanged(TaskState.FAILED,
-                                    TaskEvent.CMD_FAILED, "failed updating the moduleid..");
-                            Logger.getLogger("glassfish-javaee").log(Level.INFO, "", ex);
-                        } catch (ExecutionException ex) {
-                            returnProgress.operationStateChanged(TaskState.FAILED,
-                                    TaskEvent.CMD_FAILED, "failed updating the moduleid...");
-                            Logger.getLogger("glassfish-javaee").log(Level.INFO, "", ex);
-                        } catch (TimeoutException ex) {
-                            returnProgress.operationStateChanged(TaskState.FAILED,
-                                    TaskEvent.CMD_FAILED, "failed updating the moduleid....");
-                            Logger.getLogger("glassfish-javaee").log(Level.INFO, "", ex);
+                        } catch (GlassFishIdeException gfie) {
+                            Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                                    "Could not retrieve property from server"
+                                    + " when updating module id.", gfie);
                         }
+
                     }
                 });
             } else {

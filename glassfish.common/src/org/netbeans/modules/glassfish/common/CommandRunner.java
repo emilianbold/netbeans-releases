@@ -50,7 +50,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map.Entry;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -139,38 +138,34 @@ public class CommandRunner extends BasicTask<TaskState> {
             }
 
         });
-
-        // I wish that the server folks had let me add a port number to the
-        // restart-domain --debug command... but this will have to do until then
-
-        ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("configs.config.server-config.java-config.debug-options");
-
+        String qs = null;
         TaskState state = null;
         try {
-            state = inner.execute(getCmd).get();
-        } catch (InterruptedException ie) {
-            LOGGER.log(Level.INFO,debugPort+"",ie);
-        } catch (ExecutionException ee) {
-            LOGGER.log(Level.INFO,debugPort+"",ee);
-        }
-        String qs = null;
-        if (state == TaskState.COMPLETED) {
-            Map<String, String> data = getCmd.getData();
-            if (!data.isEmpty()) {
-                // now I can reset the debug data
-                String oldValue = data.get("configs.config.server-config.java-config.debug-options");
-                CommandSetProperty setCmd =
-                        cf.getSetPropertyCommand("configs.config.server-config.java-config.debug-options",
-                        oldValue.replace("transport=dt_shmem", "transport=dt_socket").
-                        replace("address=[^,]+", "address=" + debugPort));
-                try {
-                    CommandSetProperty.setProperty(instance, setCmd);
-                    qs = "debug=true";
-                } catch (GlassFishIdeException gfie) {
-                    qs = "debug=false";
-                    LOGGER.log(Level.INFO, debugPort + "", gfie);
+            ResultMap<String, String> result
+                    = CommandGetProperty.getProperties(instance,
+                    "configs.config.server-config.java-config.debug-options");
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String, String> values = result.getValue();
+                if (values != null && !values.isEmpty()) {
+                    String oldValue = values.get(
+                            "configs.config.server-config.java-config.debug-options");
+                    CommandSetProperty setCmd =
+                            cf.getSetPropertyCommand(
+                            "configs.config.server-config.java-config.debug-options",
+                            oldValue.replace("transport=dt_shmem", "transport=dt_socket").
+                            replace("address=[^,]+", "address=" + debugPort));
+                    try {
+                        CommandSetProperty.setProperty(instance, setCmd);
+                        qs = "debug=true";
+                    } catch (GlassFishIdeException gfie) {
+                        qs = "debug=false";
+                        LOGGER.log(Level.INFO, debugPort + "", gfie);
+                    }
                 }
             }
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO,
+                    "Could not retrieve property from server.", gfie);
         }
         final String fqs = qs;
         return execute(new ServerCommand("restart-domain") {
@@ -199,35 +194,39 @@ public class CommandRunner extends BasicTask<TaskState> {
 
         });
         Map<String, List<AppDesc>> result = Collections.emptyMap();
-        try {
             Map<String, List<String>> apps = Collections.emptyMap();
-            Command command = new CommandListComponents(
+        try {
+            ResultMap<String, List<String>> resultMap
+                    = CommandListComponents.listComponents(instance,
                     Util.computeTarget(instance.getProperties()));
-            Future<ResultMap<String, List<String>>> future = 
-                    ServerAdmin.<ResultMap<String,
-                    List<String>>>exec(instance, command, null);
-            ResultMap<String, List<String>> resultMap = future.get();
-            TaskState state = resultMap.getState();
-            if (state == TaskState.COMPLETED) {
+            if (resultMap.getState() == TaskState.COMPLETED) {
                 apps = resultMap.getValue();
             }
-            if (null == apps || apps.isEmpty()) {
-                return result;
-            }
-            ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("applications.application.*"); // NOI18N
-            TaskState taskState = inner.execute(getCmd).get();
-            if (taskState == TaskState.COMPLETED) {
-                ServerCommand.GetPropertyCommand getRefs = new ServerCommand.GetPropertyCommand("servers.server.*.application-ref.*"); // NOI18N
-                taskState = inner.execute(getRefs).get();
-                if (TaskState.COMPLETED == taskState) {
-                    result = processApplications(apps, getCmd.getData(),getRefs.getData());
-                }
-            }
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO,
+                    "Could not retrieve components server.", gfie);
         }
+
+        if (null == apps || apps.isEmpty()) {
+            return result;
+        }
+        try {
+                ResultMap<String, String> appPropsResult = CommandGetProperty
+                        .getProperties(instance, "applications.application.*");
+                if (appPropsResult.getState() == TaskState.COMPLETED) {
+                    ResultMap<String, String> appRefResult
+                            = CommandGetProperty.getProperties(
+                            instance, "servers.server.*.application-ref.*");
+                    if (appRefResult.getState() == TaskState.COMPLETED) {
+                        result = processApplications(apps,
+                                appPropsResult.getValue(),
+                                appRefResult.getValue());
+                    }
+                }
+            } catch (GlassFishIdeException gfie) {
+                LOGGER.log(Level.INFO,
+                        "Could not retrieve property from server.", gfie);
+            }
         return result;
     }
 

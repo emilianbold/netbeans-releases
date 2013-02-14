@@ -56,11 +56,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.CommandGetProperty;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
+import org.glassfish.tools.ide.admin.ResultMap;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
-import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
@@ -297,20 +298,19 @@ public class ResourceRegistrationHelper {
 
     public static Map<String, String> getResourceData(String query, Hk2DeploymentManager dm) {
         try {
-            GetPropertyCommand cmd = new ServerCommand.GetPropertyCommand(query); 
-            Future<TaskState> task = dm.getCommonServerSupport().execute(cmd);
-            TaskState state = task.get();
-            if (state == TaskState.COMPLETED) {
-                Map<String,String> retVal = cmd.getData();
-                if (retVal.isEmpty())
-                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null, new IllegalStateException(query+" has no data"));  // NOI18N
-                return retVal;
+            ResultMap<String, String> result = CommandGetProperty.getProperties(
+                    dm.getCommonServerSupport().getInstance(), query);
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String,String> values = result.getValue();
+                if (values.isEmpty())
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null,
+                            new IllegalStateException(query+" has no data"));
+                return values;
+                
             }
-
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        } catch (GlassFishIdeException gfie) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                    "Could not retrieve property from server.", gfie);
         }
         return new HashMap<String,String>();
     }

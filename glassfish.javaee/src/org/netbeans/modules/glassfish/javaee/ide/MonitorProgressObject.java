@@ -47,7 +47,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
-import java.util.concurrent.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
@@ -56,12 +58,10 @@ import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.*;
-import org.glassfish.tools.ide.admin.TaskEvent;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.utils.Utils;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
-import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
@@ -76,6 +76,10 @@ import org.openide.filesystems.FileUtil;
  */
 public class MonitorProgressObject
         implements ProgressObject, TaskStateListener {
+
+    /** Server property pattern prefix to search in applications. */
+    private static final String PROPERTY_PATTERN_PREFIX
+            = "applications.application.";
 
     private final Hk2DeploymentManager dm;
     private final Hk2TargetModuleID moduleId;
@@ -216,39 +220,62 @@ public class MonitorProgressObject
 
     static final private String[] TYPES = {"web", "ejb"};
 
-    private TargetModuleID[] createModuleIdTree(Hk2TargetModuleID moduleId) throws InterruptedException, ExecutionException, TimeoutException {
+    private TargetModuleID[] createModuleIdTree(Hk2TargetModuleID moduleId)
+            throws InterruptedException, ExecutionException, TimeoutException {
         synchronized (moduleId) {
             // this should only get called in the ear deploy case...
-            Hk2TargetModuleID root = Hk2TargetModuleID.get((Hk2Target) moduleId.getTarget(),
+            Hk2TargetModuleID root
+                    = Hk2TargetModuleID.get((Hk2Target) moduleId.getTarget(),
                     moduleId.getModuleID(), null, moduleId.getLocation(), true);
             // build the tree of submodule
             String query = getNameToQuery(moduleId.getModuleID());
-            GetPropertyCommand gpc = new GetPropertyCommand("applications.application." + query);
-            Future<TaskState> result =
-                    dm.getCommonServerSupport().execute(gpc);
-            if (result.get(60, TimeUnit.SECONDS) == TaskState.COMPLETED) {
-                Map<String, String> data = gpc.getData();
-                for (Entry<String, String> e : data.entrySet()) {
-                    String k = e.getKey();
-                    int dex1 = k.lastIndexOf(".module."); // NOI18N
-                    int dex2 = k.lastIndexOf(".name"); // NOI18N
-                    String moduleName = e.getValue();
-                    if (dex2 > dex1 && dex1 > 0 && !moduleId.getModuleID().equals(moduleName)) {
-                        for (String guess : TYPES) {
-                            String type = data.get("applications.application." + moduleId.getModuleID() + ".module." + moduleName + ".engine." + guess + ".sniffer"); // NOI18N
-                            if (null != type) {
-                                Hk2TargetModuleID kid = Hk2TargetModuleID.get(
-                                        (Hk2Target) moduleId.getTarget(), moduleName,
-                                        "web".equals(guess) ? determineContextRoot(root,moduleName) : null,
-                                        moduleId.getLocation() + File.separator +
-                                        FastDeploy.transform(moduleName));
-                                root.addChild(kid);
+            int queryLen = query != null ? query.length() : 0;
+            StringBuilder propertyPattern = new StringBuilder(
+                    PROPERTY_PATTERN_PREFIX.length() + queryLen);
+            propertyPattern.append(PROPERTY_PATTERN_PREFIX);
+            if (queryLen > 0) {
+                propertyPattern.append(query);
+            }
+            try {
+                ResultMap<String, String> result = CommandGetProperty
+                        .getProperties(dm.getCommonServerSupport()
+                        .getInstance(), query, 60000);
+                if (result.getState() == TaskState.COMPLETED) {
+                    Map<String, String> values = result.getValue();
+                    for (Entry<String, String> e : values.entrySet()) {
+                        String k = e.getKey();
+                        int dex1 = k.lastIndexOf(".module."); // NOI18N
+                        int dex2 = k.lastIndexOf(".name"); // NOI18N
+                        String moduleName = e.getValue();
+                        if (dex2 > dex1 && dex1 > 0
+                                && !moduleId.getModuleID().equals(moduleName)) {
+                            for (String guess : TYPES) {
+                                String type
+                                        = values.get("applications.application."
+                                        + moduleId.getModuleID() + ".module."
+                                        + moduleName + ".engine." + guess
+                                        + ".sniffer");
+                                if (null != type) {
+                                    Hk2TargetModuleID kid = Hk2TargetModuleID
+                                            .get(
+                                            (Hk2Target) moduleId.getTarget(),
+                                            moduleName, "web".equals(guess)
+                                            ? determineContextRoot(root, moduleName)
+                                            : null,
+                                            moduleId.getLocation()
+                                            + File.separator
+                                            + FastDeploy.transform(moduleName));
+                                    root.addChild(kid);
+                                }
                             }
                         }
                     }
-                }
-            }
 
+                }
+            } catch (GlassFishIdeException gfie) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                        "Could not retrieve property from server.", gfie);
+            }
             return new TargetModuleID[]{root};
         }
     }
