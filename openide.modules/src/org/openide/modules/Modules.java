@@ -48,7 +48,11 @@ import org.openide.util.Lookup;
  * Information about the set of available {@linkplain ModuleInfo modules}.
  * @since org.openide.modules 7.19
  */
-public abstract class Modules {
+public class Modules {
+    /**
+     * Constructor for subclasses.
+     */
+    protected Modules() {}
     
     /**
      * Gets the singleton set of modules.
@@ -59,15 +63,25 @@ public abstract class Modules {
     public static Modules getDefault() {
         Modules impl = Lookup.getDefault().lookup(Modules.class);
         if (impl == null) {
-            impl = new Trivial();
+            impl = new Modules();
         }
         return impl;
     }
 
-    /**
-     * Constructor for subclasses.
+    /* Finds a module with given code name base.
+     * @param cnb the {@link ModuleInfo#getCodeNameBase() code name base} of a module
+     * @return the found module or <code>null</code>, if such module is not known
+     *   to the system
+     * @since 7.37
      */
-    protected Modules() {}
+    public ModuleInfo findCodeNameBase(String cnb) {
+        for (ModuleInfo module : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (cnb.equals(module.getCodeNameBase())) {
+                return module;
+            }
+        }
+        return null;
+    }
     
     /**
      * Finds the module which loaded a class.
@@ -75,19 +89,12 @@ public abstract class Modules {
      * @return the owner of the class, or null if it is not owned by any module
      * @see ModuleInfo#owns
      */
-    public abstract ModuleInfo ownerOf(Class<?> clazz);
-    
-    private static class Trivial extends Modules {
-        
-        public @Override ModuleInfo ownerOf(Class<?> clazz) {
-            for (ModuleInfo module : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-                if (module.owns(clazz)) {
-                    return module;
-                }
+    public ModuleInfo ownerOf(Class<?> clazz) {
+        for (ModuleInfo module : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (module.owns(clazz)) {
+                return module;
             }
-            return null;
         }
-        
+        return null;
     }
-    
 }
