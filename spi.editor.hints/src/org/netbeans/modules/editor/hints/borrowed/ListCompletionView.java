@@ -394,13 +394,12 @@ public class ListCompletionView extends JList {
         return AFTER_TEXT_GAP + subMenuIcon.getIconWidth() + AFTER_RIGHT_ICON_GAP;
     }
 
-    private static void renderHtml(Fix f, Graphics g, Font defaultFont, Color defaultColor,
+    private void renderHtml(Fix f, Graphics g, Font defaultFont, Color defaultColor,
     int width, int height, boolean selected) {
         if (icon != null) {
             // The image of the ImageIcon should already be loaded
             // so no ImageObserver should be necessary
-            boolean done = g.drawImage(ImageUtilities.icon2Image(icon), BEFORE_ICON_GAP, (height - icon.getIconHeight()) /2, null);
-            assert (done);
+            g.drawImage(ImageUtilities.icon2Image(icon), BEFORE_ICON_GAP, (height - icon.getIconHeight()) /2, this);
         }
         int iconWidth = BEFORE_ICON_GAP + icon.getIconWidth() + AFTER_ICON_GAP;
         int textEnd = width - AFTER_ICON_GAP - subMenuIcon.getIconWidth() - AFTER_TEXT_GAP;
