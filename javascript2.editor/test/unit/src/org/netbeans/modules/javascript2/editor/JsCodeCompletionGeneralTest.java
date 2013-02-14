@@ -246,6 +246,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     public void testIssue223037_02() throws Exception {
         checkCompletion("testfiles/completion/general/issue223037.js", "this.content.slides.titles.^reverse();", false);
     }
+    
+    public void testIssue225986_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue225986.js", "su^m(10, 20);", false);
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
