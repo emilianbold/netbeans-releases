@@ -44,14 +44,14 @@ import org.netbeans.modules.javafx2.project.JFXProjectProperties;
  *
  * @author Petr Somol
  */
-public class CustomizerJarComponent extends javax.swing.JPanel {
+public class JFXPackagingPanel extends javax.swing.JPanel {
 
     private static JFXProjectProperties jfxProps = null;
     
     /**
-     * Creates new form CustomizerJarComponent
+     * Creates new form JFXPackagingPanel
      */
-    public CustomizerJarComponent(JFXProjectProperties properties) {
+    public JFXPackagingPanel(JFXProjectProperties properties) {
         initComponents();
         jfxProps = properties;
         binaryCSSCheckBox.setModel(jfxProps.getBinaryEncodeCSSModel());
@@ -70,10 +70,10 @@ public class CustomizerJarComponent extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(binaryCSSCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJarComponent.class, "LBL_CustomizerJarComponent.binaryCSSCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(binaryCSSCheckBox, org.openide.util.NbBundle.getMessage(JFXPackagingPanel.class, "LBL_JFXPackagingPanel.binaryCSSCheckBox.text")); // NOI18N
         add(binaryCSSCheckBox, new java.awt.GridBagConstraints());
-        binaryCSSCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJarComponent.class, "AN_CustomizerJarComponent.binaryCSSCheckBox.text")); // NOI18N
-        binaryCSSCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarComponent.class, "AD_CustomizerJarComponent.binaryCSSCheckBox.text")); // NOI18N
+        binaryCSSCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXPackagingPanel.class, "AN_JFXPackagingPanel.binaryCSSCheckBox.text")); // NOI18N
+        binaryCSSCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXPackagingPanel.class, "AD_JFXPackagingPanel.binaryCSSCheckBox.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
