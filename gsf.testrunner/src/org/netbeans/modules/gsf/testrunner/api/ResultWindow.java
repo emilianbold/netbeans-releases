@@ -66,6 +66,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Exceptions;
@@ -97,7 +99,7 @@ final class ResultWindow extends TopComponent {
     private Map<String,JSplitPane> viewMap = new HashMap<String,JSplitPane>();
     private Map<String,InputOutput> ioMap = new HashMap<String,InputOutput>();
 
-    private final JTabbedPane tabPane;
+    private static JTabbedPane tabPane;
     private JPopupMenu pop;
     private PopupListener popL;
     private CloseListener closeL;
@@ -383,7 +385,7 @@ final class ResultWindow extends TopComponent {
         activated = false;
     }
 
-    private JSplitPane getCurrentResultView(){
+    private static JSplitPane getCurrentResultView(){
         return (JSplitPane)tabPane.getSelectedComponent();
     }
 
@@ -506,6 +508,40 @@ final class ResultWindow extends TopComponent {
                 statisticsPanel.selectPreviousFailure();
             }
         }
+    }
+
+    @ActionID(category = "CommonTestRunner", id = "org.netbeans.modules.gsf.testrunner.api.ResultWindow.Rerun")
+    @ActionRegistration(displayName = "#CTL_Rerun")
+    @NbBundle.Messages("CTL_Rerun=Rerun All Tests")
+    public static final class Rerun extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+	    StatisticsPanel statisticsPanel = getStatisticsPanel();
+	    if(statisticsPanel != null) {
+		statisticsPanel.rerun(false);
+	    }
+        }
+    }
+
+    @ActionID(category = "CommonTestRunner", id = "org.netbeans.modules.gsf.testrunner.api.ResultWindow.RerunFailed")
+    @ActionRegistration(displayName = "#CTL_RerunFailed")
+    @NbBundle.Messages("CTL_RerunFailed=Rerun Failed Tests")
+    public static final class RerunFailed extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+	    StatisticsPanel statisticsPanel = getStatisticsPanel();
+	    if(statisticsPanel != null) {
+		statisticsPanel.rerun(true);
+	    }
+        }
+    }
+
+    private static StatisticsPanel getStatisticsPanel() {
+	JSplitPane view = getCurrentResultView();
+	if (view == null || !(view.getLeftComponent() instanceof StatisticsPanel)) {
+	    return null;
+	}
+	return (StatisticsPanel) view.getLeftComponent();
     }
 
     private class Close extends AbstractAction {
