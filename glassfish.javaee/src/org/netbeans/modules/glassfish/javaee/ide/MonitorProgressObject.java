@@ -61,7 +61,6 @@ import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.glassfish.tools.ide.utils.Utils;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -225,9 +224,9 @@ public class MonitorProgressObject
             // build the tree of submodule
             String query = getNameToQuery(moduleId.getModuleID());
             GetPropertyCommand gpc = new GetPropertyCommand("applications.application." + query);
-            Future<OperationState> result =
+            Future<TaskState> result =
                     dm.getCommonServerSupport().execute(gpc);
-            if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+            if (result.get(60, TimeUnit.SECONDS) == TaskState.COMPLETED) {
                 Map<String, String> data = gpc.getData();
                 for (Entry<String, String> e : data.entrySet()) {
                     String k = e.getKey();

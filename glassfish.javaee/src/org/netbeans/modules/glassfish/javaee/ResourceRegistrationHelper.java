@@ -48,22 +48,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
@@ -135,8 +128,8 @@ public class ResourceRegistrationHelper {
             AddResourcesCommand cmd = new AddResourcesCommand(sunResourcesXml,dm.isLocal(),
                     target);
             try {
-                Future<OperationState> result = commonSupport.execute(cmd);
-                if(result.get(TIMEOUT, TIMEOUT_UNIT) == OperationState.COMPLETED) {
+                Future<TaskState> result = commonSupport.execute(cmd);
+                if(result.get(TIMEOUT, TIMEOUT_UNIT) == TaskState.COMPLETED) {
                     succeeded = true;
                 }
             } catch (TimeoutException ex) {
@@ -304,9 +297,9 @@ public class ResourceRegistrationHelper {
     public static Map<String, String> getResourceData(String query, Hk2DeploymentManager dm) {
         try {
             GetPropertyCommand cmd = new ServerCommand.GetPropertyCommand(query); 
-            Future<OperationState> task = dm.getCommonServerSupport().execute(cmd);
-            OperationState state = task.get();
-            if (state == OperationState.COMPLETED) {
+            Future<TaskState> task = dm.getCommonServerSupport().execute(cmd);
+            TaskState state = task.get();
+            if (state == TaskState.COMPLETED) {
                 Map<String,String> retVal = cmd.getData();
                 if (retVal.isEmpty())
                     Logger.getLogger("glassfish-javaee").log(Level.INFO, null, new IllegalStateException(query+" has no data"));  // NOI18N
@@ -329,8 +322,8 @@ public class ResourceRegistrationHelper {
             try {
                 GlassfishModule support = dm.getCommonServerSupport();
                 SetPropertyCommand spc = support.getCommandFactory().getSetPropertyCommand(name, value);
-                Future<OperationState> task = support.execute(spc);
-                OperationState state = task.get();
+                Future<TaskState> task = support.execute(spc);
+                TaskState state = task.get();
             } catch (InterruptedException ex) {
                 Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
             } catch (ExecutionException ex) {

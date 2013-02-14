@@ -51,18 +51,19 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.DomainEditor;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -82,7 +83,7 @@ public class ResourcesHelper {
                     f = f.getParentFile();
                 }
                 if (null != f) {
-                    Project p = FileOwnerQuery.getOwner(f.toURI());
+                    Project p = FileOwnerQuery.getOwner(Utilities.toURI(f));
                     if (null != p) {
                         J2eeModuleProvider jmp = getProvider(p);
                         if (null != jmp) {
@@ -135,9 +136,9 @@ public class ResourcesHelper {
         Map<String, ResourceDesc> jdbcsMap = commonSupport.getResourcesMap(GlassfishModule.JDBC_RESOURCE);
         if (!jdbcsMap.containsKey(sample_jdbc)) {
             CreateJDBCConnectionPoolCommand poolCmd = new CreateJDBCConnectionPoolCommand(sample_poolname, sample_classname, sample_restype, sample_props);
-            Future<OperationState> poolResult = commonSupport.execute(poolCmd);
+            Future<TaskState> poolResult = commonSupport.execute(poolCmd);
             try {
-                if (poolResult.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                if (poolResult.get(60, TimeUnit.SECONDS) == TaskState.COMPLETED) {
                     CreateJDBCResourceCommand jdbcCmd = new CreateJDBCResourceCommand(sample_jdbc, sample_poolname);
                     commonSupport.execute(jdbcCmd);
                 }

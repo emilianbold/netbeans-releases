@@ -54,9 +54,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.modules.glassfish.eecommon.api.FindJSPServletHelper;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 
@@ -112,17 +112,18 @@ class FindJSPServletImpl implements FindJSPServlet {
             if (candidates.size() == 1) {
                 return candidates.get(0);
             } else if (candidates.size() > 1) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, "multiple candidates ("
-                        + candidates.size() + ") for "  + moduleContextPath);
+                Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                        "multiple candidates ({0}) for {1}",
+                        new Object[]{candidates.size(), moduleContextPath});
             }
         }
 
         // the web app with customized context root case
         String remappedMCP = moduleContextPath;
         GetPropertyCommand gpc = new GetPropertyCommand("applications.application.*.context-root");
-        Future<OperationState> result = commonSupport.execute(gpc);
+        Future<TaskState> result = commonSupport.execute(gpc);
         try {
-            if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+            if (result.get(60, TimeUnit.SECONDS) == TaskState.COMPLETED) {
                 Map<String, String> map = gpc.getData();
                 for (Entry<String, String> e : map.entrySet()) {
                     if (moduleContextPath.equals(e.getValue())) {

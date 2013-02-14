@@ -50,8 +50,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 
@@ -67,12 +67,13 @@ public class EnableComet implements Runnable {
         this.support = support;
     }
 
+    @Override
     public void run() {
         GetPropertyCommand gpc = new GetPropertyCommand("*.comet-support-enabled"); // NOI18N
-        Future<OperationState> result = support.execute(gpc);
+        Future<TaskState> result = support.execute(gpc);
         //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
         try {
-            if (result.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+            if (result.get(10, TimeUnit.SECONDS) == TaskState.COMPLETED) {
                 Map<String, String> retVal = gpc.getData();
                 String newValue = support.getInstanceProperties().get(GlassfishModule.COMET_FLAG);
                 if (null == newValue || newValue.trim().length() < 1) {
@@ -83,7 +84,7 @@ public class EnableComet implements Runnable {
                     // do not update the admin listener....
                     if (null != key && !key.contains("admin-listener")) { // NOI18N
                         SetPropertyCommand spc = support.getCommandFactory().getSetPropertyCommand(key, newValue);
-                        Future<OperationState> results = support.execute(spc);
+                        Future<TaskState> results = support.execute(spc);
                         //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
                         results.get(10, TimeUnit.SECONDS);
                     }
