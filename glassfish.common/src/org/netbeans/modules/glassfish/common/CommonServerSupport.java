@@ -56,8 +56,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.admin.*;
+import org.glassfish.tools.ide.utils.Utils;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.*;
@@ -383,15 +383,19 @@ public class CommonServerSupport
     private static final RequestProcessor RP = new RequestProcessor("CommonServerSupport - start/stop/refresh",5); // NOI18N
 
     @Override
-    public Future<OperationState> startServer(final OperationStateListener stateListener, ServerState endState) {
-        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
-        OperationStateListener startServerListener = new StartOperationStateListener(endState);
+    public Future<TaskState> startServer(
+            final TaskStateListener stateListener, ServerState endState) {
+        Logger.getLogger("glassfish").log(Level.FINEST,
+                "CSS.startServer called on thread \"{0}\"",
+                Thread.currentThread().getName());
+        TaskStateListener startServerListener = new StartOperationStateListener(endState);
         VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
-        FutureTask<OperationState> task = new FutureTask<OperationState>(
+        FutureTask<TaskState> task = new FutureTask<TaskState>(
                 new StartTask(this, getRecognizers(), vmi,
-                              (FileObject)null,
-                              (String[])(endState == ServerState.STOPPED_JVM_PROFILER ? new String[]{""} : null),
-                              startServerListener, stateListener));
+                (FileObject) null,
+                (String[]) (endState == ServerState.STOPPED_JVM_PROFILER
+                ? new String[]{""} : null),
+                startServerListener, stateListener));
         RP.post(task);
         return task;
     }
@@ -414,38 +418,42 @@ public class CommonServerSupport
 
 
     @Override
-    public Future<OperationState> stopServer(final OperationStateListener stateListener) {
+    public Future<TaskState> stopServer(final TaskStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.stopServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
-        OperationStateListener stopServerListener = new OperationStateListener() {
+        TaskStateListener stopServerListener = new TaskStateListener() {
             @Override
-            public void operationStateChanged(OperationState newState, String message) {
-                if(newState == OperationState.RUNNING) {
+            public void operationStateChanged(
+                    TaskState newState, TaskEvent event, String... args) {
+                if(newState == TaskState.RUNNING) {
                     setServerState(ServerState.STOPPING);
-                } else if(newState == OperationState.COMPLETED) {
+                } else if(newState == TaskState.COMPLETED) {
                     setServerState(ServerState.STOPPED);
-                } else if(newState == OperationState.FAILED) {
+                } else if(newState == TaskState.FAILED) {
                     // possible bug - what if server was started in other mode than RUNNING
                     setServerState(ServerState.RUNNING);
                 }
             }
         };
-        FutureTask<OperationState> task;
+        FutureTask<TaskState> task;
         if (!isRemote() || !Util.isDefaultOrServerTarget(instance.getProperties())) {
             if (getServerState() == ServerState.STOPPED_JVM_PROFILER) {
-                task = new FutureTask<OperationState>(
+                task = new FutureTask<TaskState>(
                         new StopProfilingTask(this, stateListener));
             } else {
-                task = new FutureTask<OperationState>(
+                task = new FutureTask<TaskState>(
                         new StopTask(this, stopServerListener, stateListener));
             }
         // prevent j2eeserver from stopping a server it did not start.
         } else {
-            task = new FutureTask<OperationState>(new NoopTask(this,stopServerListener,stateListener));
+            task = new FutureTask<TaskState>(
+                    new NoopTask(this,stopServerListener,stateListener));
         }
         if (stopDisabled) {
-            stopServerListener.operationStateChanged(OperationState.COMPLETED, "");
+            stopServerListener.operationStateChanged(
+                    TaskState.COMPLETED, TaskEvent.CMD_COMPLETED, "");
             if (null != stateListener) {
-                stateListener.operationStateChanged(OperationState.COMPLETED, "");
+                stateListener.operationStateChanged(
+                        TaskState.COMPLETED, TaskEvent.CMD_COMPLETED, "");
             }
             return task;
         }
@@ -453,11 +461,12 @@ public class CommonServerSupport
         return task;
     }
 
-    
     @Override
-    public Future<OperationState> restartServer(OperationStateListener stateListener) {
-        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.restartServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
-        FutureTask<OperationState> task = new FutureTask<OperationState>(
+    public Future<TaskState> restartServer(TaskStateListener stateListener) {
+        Logger.getLogger("glassfish").log(Level.FINEST,
+                "CSS.restartServer called on thread \"{0}\"",
+                Thread.currentThread().getName());
+        FutureTask<TaskState> task = new FutureTask<TaskState>(
                 new RestartTask(this, stateListener));
         RP.post(task);
         return task;
@@ -494,15 +503,15 @@ public class CommonServerSupport
     }
 
     @Override
-    public Future<OperationState> redeploy(
-            final OperationStateListener stateListener,
+    public Future<ResultString> redeploy(
+            final TaskStateListener stateListener,
             final String name, boolean resourcesChanged) {
         return redeploy(stateListener, name, null, resourcesChanged);
     }
 
     @Override
-    public Future<OperationState> redeploy(
-            final OperationStateListener stateListener,
+    public Future<ResultString> redeploy(
+            final TaskStateListener stateListener,
             final String name, final String contextRoot,
             boolean resourcesChanged) {
         return redeploy(stateListener, name, contextRoot, new File[0],
@@ -510,13 +519,29 @@ public class CommonServerSupport
     }
 
     @Override
-    public Future<OperationState> redeploy(OperationStateListener stateListener,
+    public Future<ResultString> redeploy(TaskStateListener stateListener,
     String name, String contextRoot, File[] libraries,
     boolean resourcesChanged) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.redeploy(name, contextRoot, libraries, resourcesChanged);
+        Map<String, String> properties = new HashMap<String, String>();
+        String url = instance.getProperty(GlassfishModule.URL_ATTR);
+        String sessionPreservationFlag = instance.getProperty(
+                GlassfishModule.SESSION_PRESERVATION_FLAG);
+        if (sessionPreservationFlag == null) {
+            // If there isn't a value stored for the instance, use the value of
+            // the command-line flag.
+            sessionPreservationFlag = System.getProperty(
+                    "glassfish.session.preservation.enabled", "false");
+        }
+        if (Boolean.parseBoolean(sessionPreservationFlag)) {
+            properties.put("keepSessions", "true");
+        }
+        if (resourcesChanged) {
+            properties.put("preserveAppScopedResources", "true");
+        }
+        return ServerAdmin.<ResultString>exec(instance, new CommandRedeploy(
+                name, Util.computeTarget(instance.getProperties()),
+                contextRoot, properties, libraries,
+                url != null && url.contains("ee6wc")), null);
     }
 
     @Override
@@ -545,20 +570,20 @@ public class CommonServerSupport
     }
 
     @Override
-    public Future<OperationState> execute(ServerCommand command) {
+    public Future<TaskState> execute(ServerCommand command) {
         CommandRunner mgr = new CommandRunner(
                 GlassFishStatus.isReady(instance, false),
                 getCommandFactory(), instance);
         return mgr.execute(command);
     }
 
-    private Future<OperationState> execute(boolean irr, ServerCommand command) {
+    private Future<TaskState> execute(boolean irr, ServerCommand command) {
         CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
                 instance);
         return mgr.execute(command);
     }
-    private Future<OperationState> execute(boolean irr, ServerCommand command,
-            OperationStateListener... osl) {
+    private Future<TaskState> execute(boolean irr, ServerCommand command,
+            TaskStateListener... osl) {
         CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
                 instance, osl);
         return mgr.execute(command);
@@ -1228,7 +1253,8 @@ public class CommonServerSupport
 
     @Override
     public String getResourcesXmlName() {
-        return Utils.useGlassfishPrefix(getDeployerUri()) ?
+        return org.netbeans.modules.glassfish.spi.Utils
+                .useGlassfishPrefix(getDeployerUri()) ?
                 "glassfish-resources" : "sun-resources"; // NOI18N
     }
 
@@ -1257,7 +1283,7 @@ public class CommonServerSupport
         latestWarningDisplayTime = currentTime;
     }
 
-    class StartOperationStateListener implements OperationStateListener {
+    class StartOperationStateListener implements TaskStateListener {
         private ServerState endState;
 
         StartOperationStateListener(ServerState endState) {
@@ -1265,17 +1291,18 @@ public class CommonServerSupport
         }
 
         @Override
-        public void operationStateChanged(OperationState newState, String message) {
-            if(newState == OperationState.RUNNING) {
+        public void operationStateChanged(TaskState newState, TaskEvent event,
+                String... args) {
+            if(newState == TaskState.RUNNING) {
                 setServerState(ServerState.STARTING);
-            } else if(newState == OperationState.COMPLETED) {
+            } else if(newState == TaskState.COMPLETED) {
                 startedByIde = isRemote
                         ? false : GlassFishStatus.isReady(instance, false);
                 setServerState(endState);
-            } else if(newState == OperationState.FAILED) {
+            } else if(newState == TaskState.FAILED) {
                 setServerState(ServerState.STOPPED);
                 // Open a warning dialog here...
-                NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+                NotifyDescriptor nd = new NotifyDescriptor.Message(Utils.concatenate(args));
                 DialogDisplayer.getDefault().notifyLater(nd);
             }
         }
@@ -1295,10 +1322,10 @@ public class CommonServerSupport
                     getHttpHostFromServer(server,adminHost), true);
             gpc = new GetPropertyCommand("servers.server."+server+".system-property.HTTP_LISTENER_PORT.value", true); // NOI18N
         }
-        Future<OperationState> result2 = execute(true, gpc);
+        Future<TaskState> result2 = execute(true, gpc);
         try {
             boolean didSet = false;
-            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+            if (result2.get(10, TimeUnit.SECONDS) == TaskState.COMPLETED) {
                 Map<String, String> retVal = gpc.getData();
                 for (Entry<String, String> entry : retVal.entrySet()) {
                     String val = entry.getValue();
@@ -1329,9 +1356,9 @@ public class CommonServerSupport
         String retVal = target; // NOI18N
         GetPropertyCommand  gpc = new GetPropertyCommand("clusters.cluster."+target+".server-ref.*.ref", true); // NOI18N
 
-        Future<OperationState> result2 = execute(true, gpc);
+        Future<TaskState> result2 = execute(true, gpc);
         try {
-            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+            if (result2.get(10, TimeUnit.SECONDS) == TaskState.COMPLETED) {
                 Map<String, String> data = gpc.getData();
                 for (Entry<String, String> entry : data.entrySet()) {
                     String val = entry.getValue();
@@ -1355,9 +1382,9 @@ public class CommonServerSupport
         String retVal = "localhostFAIL"; // NOI18N
         GetPropertyCommand  gpc = new GetPropertyCommand("servers.server."+server+".node-ref"); // NOI18N
         String refVal = null;
-        Future<OperationState> result2 = execute(true, gpc);
+        Future<TaskState> result2 = execute(true, gpc);
         try {
-            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+            if (result2.get(10, TimeUnit.SECONDS) == TaskState.COMPLETED) {
                 Map<String, String> data = gpc.getData();
                 for (Entry<String, String> entry : data.entrySet()) {
                     String val = entry.getValue();
@@ -1369,7 +1396,7 @@ public class CommonServerSupport
             }
             gpc = new GetPropertyCommand("nodes.node."+refVal+".node-host"); // NOI18N
             result2 = execute(true,gpc);
-            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+            if (result2.get(10, TimeUnit.SECONDS) == TaskState.COMPLETED) {
                 Map<String, String> data = gpc.getData();
                 for (Entry<String, String> entry : data.entrySet()) {
                     String val = entry.getValue();

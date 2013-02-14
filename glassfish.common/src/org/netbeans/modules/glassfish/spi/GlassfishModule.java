@@ -48,6 +48,7 @@ import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.admin.ResultString;
+import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 
@@ -188,7 +189,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the server startup has
      *   completed (or failed).
      */
-    public Future<OperationState> startServer(OperationStateListener stateListener, ServerState endState);
+    public Future<TaskState> startServer(TaskStateListener stateListener, ServerState endState);
 
     /**
      * Stop the server.
@@ -203,7 +204,7 @@ public interface GlassfishModule {
      *   has been acknowledged.
      * 
      */
-    public Future<OperationState> stopServer(OperationStateListener stateListener);
+    public Future<TaskState> stopServer(TaskStateListener stateListener);
 
     /**
      * Restart the server.  Starts the server if it's not running.  Stops and
@@ -215,7 +216,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the server startup has
      *   completed (or failed).
      */
-    public Future<OperationState> restartServer(OperationStateListener stateListener);
+    public Future<TaskState> restartServer(TaskStateListener stateListener);
 
     /**
      * Deploy the specified directory or application archive onto the server.
@@ -278,7 +279,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the redeploy command has been
      *   completed.
      */
-    public Future<OperationState> redeploy(final OperationStateListener stateListener, 
+    public Future<ResultString> redeploy(final TaskStateListener stateListener, 
             final String name, final boolean resourcesChanged);
        
     /**
@@ -295,7 +296,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the redeploy command has been
      *   completed.
      */
-    public Future<OperationState> redeploy(final OperationStateListener stateListener, 
+    public Future<ResultString> redeploy(final TaskStateListener stateListener, 
             final String name, final String contextRoot, final boolean resourcesChanged);
     
     /**
@@ -342,7 +343,7 @@ public interface GlassfishModule {
      * 
      * @return Future instance that finishes when the command has been completed.
      */
-    public Future<OperationState> execute(ServerCommand command);
+    public Future<TaskState> execute(ServerCommand command);
     
     /**
      * List the applications currently deployed on the server.

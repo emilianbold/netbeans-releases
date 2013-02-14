@@ -59,6 +59,7 @@ import javax.enterprise.deploy.spi.status.*;
 import org.glassfish.tools.ide.admin.TaskEvent;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
+import org.glassfish.tools.ide.utils.Utils;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
@@ -74,7 +75,8 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Peter Williams
  */
-public class MonitorProgressObject implements ProgressObject, TaskStateListener {
+public class MonitorProgressObject
+        implements ProgressObject, TaskStateListener {
 
     private final Hk2DeploymentManager dm;
     private final Hk2TargetModuleID moduleId;
@@ -141,20 +143,9 @@ public class MonitorProgressObject implements ProgressObject, TaskStateListener 
      * @param message Informational message about latest state change
      */
     @Override
-    public void operationStateChanged(TaskState newState, TaskEvent te, String[] strings) {
-        StringBuilder msgSb = new StringBuilder();
-        if (strings != null) {
-            boolean first = true;
-            for (String str : strings) {
-                if (first) {
-                    first = false;
-                } else {
-                    msgSb.append(", ");
-                }
-                msgSb.append(str);
-            }
-        }
-        String message = msgSb.toString();
+    public void operationStateChanged(
+            TaskState newState, TaskEvent event, String... args) {
+        String message = args != null ? Utils.concatenate(args) : "";
         Logger.getLogger("glassfish-javaee").log(Level.FINE, message);
         // Suppress message except in cases of failure.  Returning an empty
         // string prevents status from being displayed in build output window.

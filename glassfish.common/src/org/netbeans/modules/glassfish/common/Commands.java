@@ -422,51 +422,6 @@ public class Commands {
         }
     }
 
-    /**
-     * Command to redeploy a directory deployed app that is already deployed.
-     */
-    public static final class RedeployCommand extends ServerCommand {
-
-        public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions, 
-                final File[] libraries, final boolean resourcesChanged, String additionalparam, String target) {
-            super("redeploy"); // NOI18N
-
-            StringBuilder cmd = new StringBuilder(128);
-            cmd.append("name="); // NOI18N
-            cmd.append(Utils.sanitizeName(name));
-            if(contextRoot != null && contextRoot.length() > 0) {
-                cmd.append(PARAM_SEPARATOR).append("contextroot="); // NOI18N
-                cmd.append(contextRoot);
-            }
-            if (libraries.length > 0) {
-                appendLibraries(cmd, libraries);
-            }
-            if (null != additionalparam && !("".equals(additionalparam.trim()))) {
-                cmd.append(PARAM_SEPARATOR).append(additionalparam);
-            }
-            addProperties(cmd, preserveSessions, resourcesChanged);
-            if (null != target) {
-                cmd.append(PARAM_SEPARATOR).append("target="+target); // NOI18N
-            }
-            query = cmd.toString();
-        }
-    }
-
-    private static void addProperties(StringBuilder cmd, Boolean preserveSessions, boolean resourcesChanged) {
-        if(Boolean.TRUE.equals(preserveSessions) || !resourcesChanged) {
-            cmd.append(ServerCommand.PARAM_SEPARATOR).append("properties="); // NOI18N
-        }
-        if(Boolean.TRUE.equals(preserveSessions)) {
-            cmd.append("keepSessions=true");  // NOI18N
-            if (!resourcesChanged) {
-                cmd.append(":"); // NOI18N
-            }
-        }
-        if (!resourcesChanged) {
-            cmd.append("preserveAppScopedResources=true"); // NOI18N
-        }
-    }
-
     static class ListWebservicesCommand extends ServerCommand {
 
         private Manifest manifest;

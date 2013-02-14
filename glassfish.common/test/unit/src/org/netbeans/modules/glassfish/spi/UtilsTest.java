@@ -49,11 +49,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.junit.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 
 /**
  *
@@ -212,12 +213,12 @@ public class UtilsTest extends NbTestCase {
                 ip.put(GlassfishModule.ADMINPORT_ATTR, port+"");
                 GlassfishInstance instance = GlassfishInstance.create(ip, null);
                 CommandRunner cr = new CommandRunner(Utils.isLocalPortOccupied(port), null,
-                        instance, (OperationStateListener)null);
+                        instance, (TaskStateListener)null);
                 ServerCommand.GetPropertyCommand gpc
                         = new ServerCommand.GetPropertyCommand(
                         "*.server-config.*.http-listener-1.port");
-                Future<OperationState> x = cr.execute(gpc);
-                System.out.println(x.get() == OperationState.COMPLETED);
+                Future<TaskState> x = cr.execute(gpc);
+                System.out.println(x.get() == TaskState.COMPLETED);
                 System.out.println(gpc.getData());
                 System.out.println(gpc.getServerMessage());
                 System.out.println(gpc.getSrc());

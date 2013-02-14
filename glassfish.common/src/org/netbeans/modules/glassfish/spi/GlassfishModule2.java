@@ -48,7 +48,6 @@ import java.util.concurrent.Future;
 import org.glassfish.tools.ide.admin.ResultString;
 import org.glassfish.tools.ide.admin.TaskStateListener;
 
-
 /**
  * Extended version of GlassfishModule supporting deployment of standalone
  * EE module with libraries they require.
@@ -69,7 +68,8 @@ public interface GlassfishModule2 extends GlassfishModule {
      * @param libraries array of jar files on which standalone EE module depends
      *  and which need to be part of deployment
      */
-    Future<OperationState> redeploy(final OperationStateListener stateListener, 
-            final String name, final String contextRoot, File[] libraries, boolean resourcesChanged);
+    Future<ResultString> redeploy(final TaskStateListener stateListener, 
+            final String name, final String contextRoot, File[] libraries,
+            boolean resourcesChanged);
     
 }
