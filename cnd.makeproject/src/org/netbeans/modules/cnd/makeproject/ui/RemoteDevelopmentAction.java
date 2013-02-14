@@ -83,9 +83,9 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
     private static final String PROJECT = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeProject"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("RemoteDevelopmentAction", 1); // NOI18N
     private JMenu subMenu;
-    private MakeProject project;
+    private Project project;
 
-    public RemoteDevelopmentAction(MakeProject project) {
+    public RemoteDevelopmentAction(Project project) {
         super(NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_RemoteDevelopmentAction_Name"), // NOI18N
                 null);
         this.project = project;
@@ -104,7 +104,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         createSubMenu();
         return subMenu;
     }
-
+    
     private void createSubMenu() {
         if (subMenu == null) {
             String label = NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_RemoteDevelopmentAction_Name"); // NOI18N
@@ -112,9 +112,12 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         }
 
         subMenu.removeAll();
-        
-        final MakeConfiguration mconf = project.getActiveConfiguration();
-        ExecutionEnvironment currExecEnv = project.getDevelopmentHostExecutionEnvironment();
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (pdp == null || pdp.getConfigurationDescriptor() == null || pdp.getConfigurationDescriptor().getActiveConfiguration() == null) {
+            return;
+        }
+        final MakeConfiguration mconf = pdp.getConfigurationDescriptor().getActiveConfiguration();
+        ExecutionEnvironment currExecEnv = mconf.getDevelopmentHost().getExecutionEnvironment();
         if (mconf == null || currExecEnv == null) {
             return;
         }        
@@ -140,32 +143,32 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         final JMenuItem managePlatformsItem = new JMenuItem(NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_ManagePlatforms_Name")); // NOI18N
         subMenu.add(managePlatformsItem);
         managePlatformsItem.addActionListener(new ActionListener() {
-            private MakeProject currProject = project;
+            private Project currProject = project;
             public void actionPerformed(ActionEvent event) {
                 AtomicReference<ExecutionEnvironment> selectedEnv = new AtomicReference<ExecutionEnvironment>();
                 if (ServerListUI.showServerListDialog(selectedEnv)) {
                     ExecutionEnvironment env = selectedEnv.get();
                     if (env != null) {
-                        setRemodeDevelopmentHost(managePlatformsItem, mconf, env, project);
+                        setRemoteDevelopmentHost(managePlatformsItem, mconf, env, project);
                     }
                 }
             }
         });
     }
 
-    private static void setRemodeDevelopmentHost(final Object source, final MakeConfiguration mconf, final ExecutionEnvironment execEnv, final Project project) {
+    private static void setRemoteDevelopmentHost(final Object source, final MakeConfiguration mconf, final ExecutionEnvironment execEnv, final Project project) {
         if (SwingUtilities.isEventDispatchThread()) {
             RP.post(new Runnable(){
                 public void run() {
-                    _setRemodeDevelopmentHost(source, mconf, execEnv, project);
+                    _setRemoteDevelopmentHost(source, mconf, execEnv, project);
                 }
             });
         } else {
-            _setRemodeDevelopmentHost(source, mconf, execEnv, project);
+            _setRemoteDevelopmentHost(source, mconf, execEnv, project);
         }
     }
 
-    private static void _setRemodeDevelopmentHost(Object source, MakeConfiguration mconf, ExecutionEnvironment execEnv, Project project) {
+    private static void _setRemoteDevelopmentHost(Object source, MakeConfiguration mconf, ExecutionEnvironment execEnv, Project project) {
         if (mconf != null && execEnv != null) {
             ServerRecord record = ServerList.get(execEnv);
             if (!record.isSetUp()) {
@@ -216,7 +219,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                 ExecutionEnvironment execEnv = (ExecutionEnvironment) jmi.getClientProperty(HOST_ENV);
                 MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
                 Project project = (Project) jmi.getClientProperty(PROJECT);
-                setRemodeDevelopmentHost(jmi, mconf, execEnv, project);
+                setRemoteDevelopmentHost(jmi, mconf, execEnv, project);
             }
         }
     }
