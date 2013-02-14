@@ -393,7 +393,7 @@ bodyItem
         | counterStyle
         | fontFace
         | vendorAtRule
-        | {isLessSource()}?=>less_variable_declaration
+        | {isLessSource()}? less_variable_declaration
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -522,11 +522,11 @@ unaryOperator
     ;  
     
 property
-    : (IDENT | GEN | {isLessSource()}?=>less_variable) ws?
+    : (IDENT | GEN | {isLessSource()}? less_variable) ws?
     ;
     
 rule 
-    :   ( selectorsGroup | {isLessSource()}?=>less_mixin_declaration )
+    :   ( selectorsGroup | {isLessSource()}? less_mixin_declaration )
 //        LBRACE ws? syncToDeclarationsRule
         LBRACE ws? syncToFollow
             declarations
@@ -547,7 +547,7 @@ declarations
                 | 
                 ( (declarationPredicate)=>declaration SEMI )
                 |
-                {isLessSource()}?=>less_mixin_call
+                {isLessSource()}? less_mixin_call
             )            
             ws?
         )*
@@ -718,18 +718,24 @@ declaration
 
 propertyValue
 	:
-        (expressionPredicate)=>expression 
+        ( (expressionPredicate)=>expression )
         | 
-        {isLessSource()}?=>less_expression 
-//        | 
-//        less_function 
+        
+//this is a bit mysterious - if the use the semantic predicate for the less_expression
+//then the parser won't use the expression rule either?!?!?!?! and won't parse 
+//trivial sample like this:
+//a {
+//    color : black;
+//}
+//
+        ( {isLessSource()}? less_expression )
 	;
 
 //an expression wich doesn't contain less expression operators
 expressionPredicate
     options { k = 1; }
     :
-    ( ~ (PLUS | MINUS | STAR | SOLIDUS | LBRACE | SEMI | RBRACE ))+ ( SEMI | RBRACE )
+    ( ~ (PLUS | MINUS | STAR | SOLIDUS | LBRACE | SEMI | RBRACE) )+ ( SEMI | RBRACE )
     ;
     
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
@@ -787,7 +793,7 @@ term
     | URI
     | hexColor
     | function
-    | {isLessSource()}?=>less_variable
+    | {isLessSource()}? less_variable
     )
     ws?
     ;
