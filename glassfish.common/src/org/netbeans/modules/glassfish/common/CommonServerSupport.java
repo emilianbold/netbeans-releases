@@ -55,9 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.admin.TaskEvent;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
+import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -466,32 +464,33 @@ public class CommonServerSupport
     }
 
     @Override
-    public Future<OperationState> deploy(final OperationStateListener stateListener,
+    public Future<ResultString> deploy(final TaskStateListener stateListener,
             final File application, final String name) {
         return deploy(stateListener, application, name, null);
     }
 
     @Override
-    public Future<OperationState> deploy(final OperationStateListener stateListener,
-            final File application, final String name, final String contextRoot) {
+    public Future<ResultString> deploy(final TaskStateListener stateListener,
+            final File application, final String name,
+            final String contextRoot) {
         return deploy(stateListener, application, name, contextRoot, null);
     }
 
     @Override
-    public Future<OperationState> deploy(final OperationStateListener stateListener,
-            final File application, final String name, final String contextRoot, Map<String,String> properties) {
+    public Future<ResultString> deploy(final TaskStateListener stateListener,
+            final File application, final String name, final String contextRoot,
+            final Map<String,String> properties) {
         return deploy(stateListener, application, name, contextRoot, null, new File[0]);
     }
 
     @Override
-    public Future<OperationState> deploy(OperationStateListener stateListener,
-            File application, String name, String contextRoot,
-            Map<String, String> properties, File[] libraries) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.deploy(application, name, contextRoot, properties,
-                libraries);
+    public Future<ResultString> deploy(final TaskStateListener stateListener,
+            final File application, final String name, final String contextRoot,
+            final Map<String, String> properties, final File[] libraries) {
+        return ServerAdmin.<ResultString>exec(instance, new CommandDeploy(
+                name, Util.computeTarget(instance.getProperties()),
+                application, contextRoot, properties, libraries
+                ), null, new TaskStateListener[] {stateListener});
     }
 
     @Override
@@ -521,29 +520,28 @@ public class CommonServerSupport
     }
 
     @Override
-    public Future<OperationState> undeploy(
-            final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.undeploy(name);
+    public Future<ResultString> undeploy(
+            final TaskStateListener stateListener, final String name) {
+        return ServerAdmin.<ResultString>exec(
+                instance, new CommandUndeploy(name, Util.computeTarget(
+                instance.getProperties())), null,
+                new TaskStateListener[]{stateListener});
     }
 
     @Override
-    public Future<OperationState> enable(
-            final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.enable(name);
+    public Future<ResultString> enable(
+            final TaskStateListener stateListener, final String name) {
+        return ServerAdmin.<ResultString>exec(instance, new CommandEnable(
+                name,  Util.computeTarget(instance.getProperties())), null,
+                new TaskStateListener[] {stateListener});
     }
+
     @Override
-    public Future<OperationState> disable(
-            final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.disable(name);
+    public Future<ResultString> disable(
+            final TaskStateListener stateListener, final String name) {
+        return ServerAdmin.<ResultString>exec(instance, new CommandDisable(
+                name,  Util.computeTarget(instance.getProperties())), null,
+                new TaskStateListener[] {stateListener});
     }
 
     @Override

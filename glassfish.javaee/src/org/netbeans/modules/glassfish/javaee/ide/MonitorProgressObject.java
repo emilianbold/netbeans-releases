@@ -47,11 +47,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
@@ -59,14 +55,12 @@ import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
-import javax.enterprise.deploy.spi.status.ClientConfiguration;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
-import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.enterprise.deploy.spi.status.*;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -80,7 +74,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Peter Williams
  */
-public class MonitorProgressObject implements ProgressObject, OperationStateListener {
+public class MonitorProgressObject implements ProgressObject, TaskStateListener {
 
     private final Hk2DeploymentManager dm;
     private final Hk2TargetModuleID moduleId;
@@ -98,10 +92,12 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
                 StateType.RUNNING, ActionType.EXECUTE, "Initializing...");
     }
 
+    @Override
     public DeploymentStatus getDeploymentStatus() {
         return operationStatus;
     }
 
+    @Override
     public TargetModuleID[] getResultTargetModuleIDs() {
         if (null == moduleId) {
             return computeResultTMID();
@@ -112,22 +108,27 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
         }
     }
 
+    @Override
     public ClientConfiguration getClientConfiguration(TargetModuleID moduleId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public boolean isCancelSupported() {
         return false;
     }
 
+    @Override
     public void cancel() throws OperationUnsupportedException {
         throw new OperationUnsupportedException("Cancel not supported yet.");
     }
 
+    @Override
     public boolean isStopSupported() {
         return false;
     }
 
+    @Override
     public void stop() throws OperationUnsupportedException {
         throw new OperationUnsupportedException("Stop not supported yet.");
     }
@@ -139,11 +140,25 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
      * @param newState Current state of operation
      * @param message Informational message about latest state change
      */
-    public void operationStateChanged(OperationState newState, String message) {
+    @Override
+    public void operationStateChanged(TaskState newState, TaskEvent te, String[] strings) {
+        StringBuilder msgSb = new StringBuilder();
+        if (strings != null) {
+            boolean first = true;
+            for (String str : strings) {
+                if (first) {
+                    first = false;
+                } else {
+                    msgSb.append(", ");
+                }
+                msgSb.append(str);
+            }
+        }
+        String message = msgSb.toString();
         Logger.getLogger("glassfish-javaee").log(Level.FINE, message);
         // Suppress message except in cases of failure.  Returning an empty
         // string prevents status from being displayed in build output window.
-        String relayedMessage = newState == OperationState.FAILED ? message : "";
+        String relayedMessage = newState == TaskState.FAILED ? message : "";
         fireHandleProgressEvent(new Hk2DeploymentStatus(commandType,
                 translateState(newState), ActionType.EXECUTE, relayedMessage));
     }
@@ -170,13 +185,16 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
         }
     }
 
-    private StateType translateState(OperationState commonState) {
-        if(commonState == OperationState.RUNNING) {
-            return StateType.RUNNING;
-        } else if(commonState == OperationState.COMPLETED) {
-            return StateType.COMPLETED;
-        } else {
-            return StateType.FAILED;
+    private StateType translateState(TaskState commonState) {
+        switch(commonState) {
+            case READY: case RUNNING:
+                return StateType.RUNNING;
+            case COMPLETED:
+                return StateType.COMPLETED;
+            case FAILED:
+                return StateType.FAILED;
+            default:
+                return StateType.FAILED;
         }
     }
 
@@ -186,10 +204,12 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
     private CopyOnWriteArrayList<ProgressListener> listeners = 
             new CopyOnWriteArrayList<ProgressListener>();
 
+    @Override
     public void addProgressListener(ProgressListener listener) {
         listeners.add(listener);
     }
 
+    @Override
     public void removeProgressListener(ProgressListener listener) {
         listeners.remove(listener);
     }  

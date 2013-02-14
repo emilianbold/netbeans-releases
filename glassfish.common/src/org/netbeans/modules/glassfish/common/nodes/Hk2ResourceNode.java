@@ -42,31 +42,12 @@
 
 package org.netbeans.modules.glassfish.common.nodes;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.Future;
-import org.netbeans.modules.glassfish.common.CommandRunner;
-import org.netbeans.modules.glassfish.common.CommonServerSupport;
-import org.netbeans.modules.glassfish.common.PartialCompletionException;
-import org.netbeans.modules.glassfish.common.nodes.actions.EditDetailsCookie;
-import org.netbeans.modules.glassfish.common.nodes.actions.UnregisterResourceCookie;
-import org.netbeans.modules.glassfish.common.ui.BasePanel;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Children;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -81,38 +62,10 @@ public class Hk2ResourceNode extends Hk2ItemNode {
         setShortDescription("<html>name: " + resource.getName() + "</html>");
 
         if(decorator.canUnregister()) {
-            getCookieSet().add(new UnregisterResourceCookie() {
-
-                private volatile WeakReference<Future<OperationState>> status;
-
-                public Future<OperationState> unregister() {
-                    Future<OperationState> result = null;
-                    CommonServerSupport commonModule = lookup.lookup(
-                            CommonServerSupport.class);
-                    if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true,
-                                commonModule.getCommandFactory(),
-                                commonModule.getInstance());
-                        result = mgr.unregister(resource.getName(), resource.getCommandSuffix(),
-                                decorator.getCmdPropertyName(), decorator.isCascadeDelete());
-                        status = new WeakReference<Future<OperationState>>(result);
-                    }
-                    return result;
-                }
-
-                public boolean isRunning() {
-                    WeakReference<Future<OperationState>> localref = status;
-                    if(localref == null) {
-                        return false;
-                    }
-                    Future<OperationState> cmd = localref.get();
-                    if(cmd == null || cmd.isDone()) {
-                        return false;
-                    }
-                    return true;
-                }
-
-            });
+            getCookieSet().add(new Hk2Cookie.Unregister(lookup,
+                    resource.getName(), resource.getCommandSuffix(),
+                    decorator.getCmdPropertyName(),
+                    decorator.isCascadeDelete()));
         }
 
         if (decorator.canEditDetails()) {
@@ -123,84 +76,9 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                     // don't add the edit details cookie
                 } else {
                     // add the editor cookie
-                    getCookieSet().add(new EditDetailsCookie() {
-
-                        public void openCustomizer() {
-                            final BasePanel retVal = getBasePanel();
-                            RequestProcessor.getDefault().post(new Runnable() {
-
-                                // fetch the data for the BasePanel
-                                public void run() {
-                                    CommonServerSupport commonSupport = lookup.lookup(
-                                            CommonServerSupport.class);
-                                    if (commonSupport != null) {
-                                        //try {
-                                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), commonSupport.getInstance());
-                                        if (!GlassfishModule.JDBC_RESOURCE.equals(resource.getCommandSuffix())) {
-                                            retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
-                                        } else {
-                                            // jdbc resources need to get connection pool data also, so we cannot
-                                            // filter by the name of the resource here.
-                                            retVal.initializeData(getDisplayName(), mgr.getResourceData(null));
-                                        }
-                                    //}
-                                    }
-                                }
-                            });
-                            DialogDescriptor dd = new DialogDescriptor(retVal,
-                                    NbBundle.getMessage(this.getClass(), "TITLE_RESOURCE_EDIT", getDisplayName()),
-                                    false,
-                                    new ActionListener() {
-
-                                        public void actionPerformed(ActionEvent event) {
-                                            if (event.getSource().equals(NotifyDescriptor.OK_OPTION)) {
-                                                // write the data back to the server
-                                                CommonServerSupport commonSupport = lookup.lookup(
-                                                        CommonServerSupport.class);
-                                                if (commonSupport != null) {
-                                                    //try {
-                                                    CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), commonSupport.getInstance());
-                                                    //retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
-                                                    try {
-                                                        mgr.putResourceData(retVal.getData());
-                                                    } catch (PartialCompletionException pce) {
-                                                        Exceptions.printStackTrace(pce);
-                                                    }
-                                                //}
-                                                }
-                                            }
-                                        }
-                                    });
-                            Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-                            d.setVisible(true);
-                        }
-
-                        private BasePanel getBasePanel() {
-                            BasePanel temp;
-                            try {
-                                temp = (BasePanel) customizer.getConstructor().newInstance();
-                            } catch (InstantiationException ex) {
-                                temp = new BasePanel.Error();
-                                Exceptions.printStackTrace(ex);
-                            } catch (IllegalAccessException ex) {
-                                temp = new BasePanel.Error();
-                                Exceptions.printStackTrace(ex);
-                            } catch (IllegalArgumentException ex) {
-                                temp = new BasePanel.Error();
-                                Exceptions.printStackTrace(ex);
-                            } catch (InvocationTargetException ex) {
-                                temp = new BasePanel.Error();
-                                Exceptions.printStackTrace(ex);
-                            } catch (NoSuchMethodException ex) {
-                                temp = new BasePanel.Error();
-                                Exceptions.printStackTrace(ex);
-                            } catch (SecurityException ex) {
-                                temp = new BasePanel.Error();
-                                Exceptions.printStackTrace(ex);
-                            }
-                            return temp;
-                        }
-                    });
+                    getCookieSet().add(new Hk2Cookie.EditDetails(
+                            lookup, getDisplayName(),
+                            resource.getCommandSuffix(), customizer));
                 }
 
             }

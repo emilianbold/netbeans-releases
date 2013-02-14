@@ -47,6 +47,8 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.admin.ResultString;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 
 
@@ -227,7 +229,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the deploy command has been
      *   completed.
      */
-    public Future<OperationState> deploy(OperationStateListener stateListener, 
+    public Future<ResultString> deploy(TaskStateListener stateListener, 
             File application, String name);
 
     /**
@@ -244,7 +246,7 @@ public interface GlassfishModule {
      *   completed.
      */
     
-    public Future<OperationState> deploy(OperationStateListener stateListener, 
+    public Future<ResultString> deploy(TaskStateListener stateListener, 
             File application, String name, String contextRoot);
     
     /**
@@ -262,7 +264,7 @@ public interface GlassfishModule {
      *   completed.
      */
 
-    public Future<OperationState> deploy(OperationStateListener stateListener,
+    public Future<ResultString> deploy(TaskStateListener stateListener,
             File application, String name, String contextRoot, Map<String,String> properties);
 
     /**
@@ -306,7 +308,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the deploy command has been
      *   completed.
      */
-    public Future<OperationState> undeploy(OperationStateListener stateListener, 
+    public Future<ResultString> undeploy(TaskStateListener stateListener, 
             String name);
     
     /**
@@ -319,7 +321,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the deploy command has been
      *   completed.
      */
-    public Future<OperationState> enable(OperationStateListener stateListener,
+    public Future<ResultString> enable(TaskStateListener stateListener,
             String name);
     /**
      * Disable the named application.
@@ -331,7 +333,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the deploy command has been
      *   completed.
      */
-    public Future<OperationState> disable(OperationStateListener stateListener,
+    public Future<ResultString> disable(TaskStateListener stateListener,
             String name);
     /**
      * Execute the specified server command.
