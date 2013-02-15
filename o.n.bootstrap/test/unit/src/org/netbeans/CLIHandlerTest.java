@@ -58,8 +58,8 @@ import org.openide.util.RequestProcessor;
  */
 public class CLIHandlerTest extends NbTestCase {
 
-    private static ByteArrayInputStream nullInput = new ByteArrayInputStream(new byte[0]);
-    private static ByteArrayOutputStream nullOutput = new ByteArrayOutputStream();
+    final static ByteArrayInputStream nullInput = new ByteArrayInputStream(new byte[0]);
+    final static ByteArrayOutputStream nullOutput = new ByteArrayOutputStream();
     
     private Logger LOG;
 
@@ -826,19 +826,19 @@ public class CLIHandlerTest extends NbTestCase {
     // Utility methods
     //
     
-    private static CLIHandler.Status cliInitialize(String[] args, CLIHandler handler, InputStream is, OutputStream os, OutputStream err, Integer lock) {
+    static CLIHandler.Status cliInitialize(String[] args, CLIHandler handler, InputStream is, OutputStream os, OutputStream err, Integer lock) {
         return cliInitialize(args, handler, is, os, err, lock, System.getProperty ("user.dir"));
     }
-    private static CLIHandler.Status cliInitialize(String[] args, CLIHandler handler, InputStream is, OutputStream os, OutputStream err, Integer lock, String currentDir) {
+    static CLIHandler.Status cliInitialize(String[] args, CLIHandler handler, InputStream is, OutputStream os, OutputStream err, Integer lock, String currentDir) {
         return cliInitialize(args, Collections.nCopies(1, handler), is, os, err, lock, currentDir);
     }
-    private static CLIHandler.Status cliInitialize(String[] args, CLIHandler[] arr, InputStream is, OutputStream os, OutputStream err) {
+    static CLIHandler.Status cliInitialize(String[] args, CLIHandler[] arr, InputStream is, OutputStream os, OutputStream err) {
         return cliInitialize(args, Arrays.asList(arr), is, os, err, null);
     }
-    private static CLIHandler.Status cliInitialize(String[] args, List<? extends CLIHandler> coll, InputStream is, OutputStream os, java.io.OutputStream err, Integer lock) {
+    static CLIHandler.Status cliInitialize(String[] args, List<? extends CLIHandler> coll, InputStream is, OutputStream os, java.io.OutputStream err, Integer lock) {
         return cliInitialize (args, coll, is, os, err, lock, System.getProperty ("user.dir"));
     }
-    private static CLIHandler.Status cliInitialize(String[] args, List<? extends CLIHandler> coll, InputStream is, OutputStream os, java.io.OutputStream err, Integer lock, String currentDir) {
+    static CLIHandler.Status cliInitialize(String[] args, List<? extends CLIHandler> coll, InputStream is, OutputStream os, java.io.OutputStream err, Integer lock, String currentDir) {
         return CLIHandler.initialize(new CLIHandler.Args(args, is, os, err, currentDir), lock, coll, false, true, null);
     }
     
