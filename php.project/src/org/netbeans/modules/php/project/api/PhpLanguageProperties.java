@@ -117,7 +117,7 @@ public final class PhpLanguageProperties {
          * @since 2.67
          */
         public boolean hasNamespaces() {
-            return this.namespaces;
+            return namespaces;
         }
 
         @Override
