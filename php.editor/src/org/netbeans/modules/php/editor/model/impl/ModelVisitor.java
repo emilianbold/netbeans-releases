@@ -974,7 +974,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         scan(lexicalVariables);
         modelBuilder.setCurrentScope(fncScope);
-        fncScope.setBlockRange(node.getBody());
         scan(node.getFormalParameters());
         previousScope = scope;
         scan(node.getBody());
@@ -1014,7 +1013,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 checkComments(node);
             }
         }
-        scope.setBlockRange(node.getBody());
         scan(node.getFormalParameters());
         scan(node.getBody());
         modelBuilder.reset();
