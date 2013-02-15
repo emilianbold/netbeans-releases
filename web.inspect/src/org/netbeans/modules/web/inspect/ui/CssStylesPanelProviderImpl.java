@@ -67,7 +67,6 @@ import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.netbeans.modules.web.browser.api.Page;
-import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -75,6 +74,8 @@ import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -171,7 +172,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                 if (lastRelatedFileObject != null) {
                     ActionProvider provider = actionProviderForFileObject(lastRelatedFileObject);
                     if (provider != null) {
-                        Lookup context = Lookups.singleton(lastRelatedFileObject);
+                        Lookup context = contextForFileObject(lastRelatedFileObject);
                         if (provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context)) {
                             provider.invokeAction(ActionProvider.COMMAND_RUN_SINGLE, context);
                         }
@@ -228,7 +229,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                     boolean enabled = false;
                     ActionProvider provider = actionProviderForFileObject(lastRelatedFileObject);
                     if (provider != null) {
-                        Lookup context = Lookups.singleton(lastRelatedFileObject);
+                        Lookup context = contextForFileObject(lastRelatedFileObject);
                         enabled = provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context);
                     }
                     runButton.setEnabled(enabled);
@@ -336,6 +337,27 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         return provider;
     }
 
+    /**
+     * Returns context (to pass to action provider) for the specified file object.
+     * 
+     * @param fileObject file object for which the context should be returned.
+     * @return context for the specified file object.
+     */
+    private static Lookup contextForFileObject(FileObject fileObject) {
+        Lookup context;
+        if (fileObject == null) {
+            context = Lookup.EMPTY;
+        } else {
+            try {
+                DataObject dob = DataObject.find(fileObject);
+                context = Lookups.fixed(fileObject, dob);
+            } catch (DataObjectNotFoundException donfex) {
+                context = Lookups.singleton(fileObject);
+            }
+        }
+        return context;
+    }
+
     static FileObject inspectedFileObject(WebKitPageModel pageModel, boolean inInspectedProjectOnly) {
         try {
             Project project = pageModel.getProject();
@@ -417,21 +439,12 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                 return false;
             }
 
-            // Heuristics that tries to recognize client-side projects
-            Project project = FileOwnerQuery.getOwner(file);
-            if (project != null) {
-                Lookup lookup = project.getLookup();
-                ClientSideModule module = lookup.lookup(ClientSideModule.class);
-                if (module == null) {
-                    return false;
-                }
-            }
-
             ActionProvider provider = actionProviderForFileObject(file);
             if (provider == null) {
                 return false;
             }
-            Lookup context = Lookups.singleton(file);
+
+            Lookup context = contextForFileObject(file);
             return provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context);
         }
     }
