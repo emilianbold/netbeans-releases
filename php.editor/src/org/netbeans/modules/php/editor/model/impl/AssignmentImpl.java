@@ -64,7 +64,7 @@ import org.openide.util.Union2;
 class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     private Container container;
     //TODO: typeName should be list or array to keep mixed types
-    private Union2<String, Collection<? extends TypeScope>> typeName;
+    private Union2<String, Collection<? extends TypeScope>> typeNameScopes;
     private OffsetRange scopeRange;
     private boolean arrayAccess;
     private boolean conditionalBlock;
@@ -87,20 +87,15 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         super(scope, container.getName(), container.getFile(), nameRange, container.getPhpElementKind(), isDeprecated);
         this.container = container;
         String modifiedTypeName = typeName;
-        if (typeName != null && !typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+        if (typeName != null && !VariousUtils.isSemiType(typeName)) {
             QualifiedName qualifiedName = QualifiedName.create(typeName);
             QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(qualifiedName, nameRange.getStart(), scope);
             if (qualifiedName.getSegments().size() != fullyQualifiedName.getSegments().size()) {
                 modifiedTypeName = fullyQualifiedName.toString();
             }
         }
-        this.typeName = Union2.<String, Collection<? extends TypeScope>>createFirst(modifiedTypeName);
+        this.typeNameScopes = Union2.<String, Collection<? extends TypeScope>>createFirst(modifiedTypeName);
         this.scopeRange = scopeRange;
-    }
-
-    @CheckForNull
-    Union2<String, Collection<? extends TypeScope>> getTypeUnion() {
-        return typeName;
     }
 
     boolean canBeProcessed(String tName) {
@@ -123,22 +118,20 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
 
     @CheckForNull
     private Collection<? extends TypeScope> typesFromUnion() {
-        Union2<String, Collection<? extends TypeScope>> typeUnion = getTypeUnion();
-        if (typeUnion != null) {
-            if (typeUnion.hasSecond() && typeUnion.second() != null) {
-                return typeUnion.second();
+        if (typeNameScopes != null) {
+            if (typeNameScopes.hasSecond() && typeNameScopes.second() != null) {
+                return typeNameScopes.second();
             }
         }
         return null;
     }
 
     String typeNameFromUnion() {
-        Union2<String, Collection<? extends TypeScope>> typeUnion = getTypeUnion();
-        if (typeUnion != null) {
-            if (typeUnion.hasFirst() && typeUnion.first() != null) {
-                return typeUnion.first();
-            } else if (typeUnion.hasSecond() && typeUnion.second() != null) {
-                TypeScope type = ModelUtils.getFirst(typeUnion.second());
+        if (typeNameScopes != null) {
+            if (typeNameScopes.hasFirst() && typeNameScopes.first() != null) {
+                return typeNameScopes.first();
+            } else if (typeNameScopes.hasSecond() && typeNameScopes.second() != null) {
+                TypeScope type = ModelUtils.getFirst(typeNameScopes.second());
                 return type != null ? type.getName() : null;
             }
         }
@@ -149,7 +142,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getName());
-        sb.append(" == ").append(getTypeUnion());
+        sb.append(" == ").append(typeNameScopes);
         return sb.toString();
     }
 
@@ -175,13 +168,13 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
             }
         }
         if (types != null) {
-            if (types.isEmpty() && tName != null && !tName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+            if (types.isEmpty() && tName != null && !VariousUtils.isSemiType(tName)) {
                 return empty;
             }
-            typeName = Union2.<String, Collection<? extends TypeScope>>createSecond(types);
+            typeNameScopes = Union2.<String, Collection<? extends TypeScope>>createSecond(types);
             return types;
         } else {
-            typeName = null;
+            typeNameScopes = null;
         }
         return empty;
     }

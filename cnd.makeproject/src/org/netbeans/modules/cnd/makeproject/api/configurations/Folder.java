@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -167,17 +168,17 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public void refreshDiskFolderAfterRestoringOldScheme() {
         if (!UNCHANGED_PROJECT_MODE) {
-            refreshDiskFolder(new HashSet<String>(), true);
+            refreshDiskFolder(new LinkedList<String>(), true);
         }
     }
 
     public void refreshDiskFolder() {
         if (!UNCHANGED_PROJECT_MODE) {
-            refreshDiskFolder(new HashSet<String>(), false);
+            refreshDiskFolder(new LinkedList<String>(), false);
         }
     }
 
-    private void refreshDiskFolder(Set<String> antiLoop, boolean useOldSchemeBehavior) {
+    private void refreshDiskFolder(LinkedList<String> antiLoop, boolean useOldSchemeBehavior) {
         if (log.isLoggable(Level.FINEST)) {
             log.log(Level.FINEST, "----------refreshDiskFolder {0}", getPath()); // NOI18N
         }
@@ -220,87 +221,87 @@ public class Folder implements FileChangeListener, ChangeListener {
                 log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canonicalPath, folderFile.getPath()});
                 return;
             }
-            antiLoop.add(canonicalPath);
+            antiLoop.addLast(canonicalPath);
         } catch (IOException ex) {
             log.log(Level.INFO, ex.getMessage(), ex);
             return;
         }
         // files/folders to be added
         FileObject files[] = folderFile.getChildren();
-        if (files == null) {
-            return;
-        }
-        List<FileObject> fileList = new ArrayList<FileObject>();
-        ArrayList<CharSequence> otherFileList = new ArrayList<CharSequence>();
-        for (int i = 0; i < files.length; i++) {
-            if (!VisibilityQuery.getDefault().isVisible(files[i])) {
-                continue;
-            }
-            if (files[i].isFolder()) {
-                if (getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(files[i])) {
+        if (files != null) {
+            List<FileObject> fileList = new ArrayList<FileObject>();
+            ArrayList<CharSequence> otherFileList = new ArrayList<CharSequence>();
+            for (int i = 0; i < files.length; i++) {
+                if (!VisibilityQuery.getDefault().isVisible(files[i])) {
                     continue;
                 }
-            } else {
-                if (!CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
-                    otherFileList.add(CharSequences.create(files[i].getNameExt()));
-                    continue;
-                }
-            }
-            fileList.add(files[i]);
-        }
-        if (otherFileList.size() > 0) {
-            otherFileList.trimToSize();
-        }
-        MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
-        for (FileObject file : fileList) {
-            if (file.isFolder()) {
-                try {
-                    String canonicalPath = RemoteFileUtil.getCanonicalPath(file);
-                    if (antiLoop.contains(canonicalPath)) {
-                        // It seems we have recursive link
-                        log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canonicalPath, folderFile.getPath()});
+                if (files[i].isFolder()) {
+                    if (getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(files[i])) {
                         continue;
                     }
-                } catch (IOException ex) {
-                    log.log(Level.INFO, ex.getMessage(), ex);
-                    continue;
-                }
-                Folder existingFolder = findFolderByName(file.getNameExt());
-                if (existingFolder == null) {
-                    if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
-                    }
-                    getConfigurationDescriptor().addFilesFromRefreshedDir(this, file, true, true, null, useOldSchemeBehavior);
                 } else {
-                    existingFolder.markRemoved(false);
-                }
-            } else {
-                String path = rootPath + '/' + file.getNameExt();
-                if (path.startsWith("./")) { // NOI18N
-                    path = path.substring(2);
-                }
-                if (findItemByPath(path) == null) {
-                    if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, "------------adding {2} item {0} in {1}", new Object[]{file.getPath(), getPath(), useOldSchemeBehavior ? "included" : "excluded"}); // NOI18N
+                    if (!CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
+                        otherFileList.add(CharSequences.create(files[i].getNameExt()));
+                        continue;
                     }
-                    PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(CREATE_ITEM_PERFORMANCE_EVENT, file);
-                    Item item = null;
+                }
+                fileList.add(files[i]);
+            }
+            if (otherFileList.size() > 0) {
+                otherFileList.trimToSize();
+            }
+            MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
+            for (FileObject file : fileList) {
+                if (file.isFolder()) {
                     try {
-                        performanceEvent.setTimeOut(FS_TIME_OUT);
-                        item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path);
-                        addItemFromRefreshDir(item, true, true, useOldSchemeBehavior);
-                    } finally {
-                        performanceEvent.log(item);
+                        String canonicalPath = RemoteFileUtil.getCanonicalPath(file);
+                        if (antiLoop.contains(canonicalPath)) {
+                            // It seems we have recursive link
+                            log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canonicalPath, folderFile.getPath()});
+                            continue;
+                        }
+                    } catch (IOException ex) {
+                        log.log(Level.INFO, ex.getMessage(), ex);
+                        continue;
+                    }
+                    Folder existingFolder = findFolderByName(file.getNameExt());
+                    if (existingFolder == null) {
+                        if (log.isLoggable(Level.FINE)) {
+                            log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+                        }
+                        getConfigurationDescriptor().addFilesFromRefreshedDir(this, file, true, true, null, useOldSchemeBehavior);
+                    } else {
+                        existingFolder.markRemoved(false);
+                    }
+                } else {
+                    String path = rootPath + '/' + file.getNameExt();
+                    if (path.startsWith("./")) { // NOI18N
+                        path = path.substring(2);
+                    }
+                    if (findItemByPath(path) == null) {
+                        if (log.isLoggable(Level.FINE)) {
+                            log.log(Level.FINE, "------------adding {2} item {0} in {1}", new Object[]{file.getPath(), getPath(), useOldSchemeBehavior ? "included" : "excluded"}); // NOI18N
+                        }
+                        PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(CREATE_ITEM_PERFORMANCE_EVENT, file);
+                        Item item = null;
+                        try {
+                            performanceEvent.setTimeOut(FS_TIME_OUT);
+                            item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path);
+                            addItemFromRefreshDir(item, true, true, useOldSchemeBehavior);
+                        } finally {
+                            performanceEvent.log(item);
+                        }
                     }
                 }
             }
-        }
 
-        // Repeast for all sub folders
-        List<Folder> subFolders = getFolders();
-        for (Folder f : subFolders) {
-            f.refreshDiskFolder(antiLoop, useOldSchemeBehavior);
+            // Repeast for all sub folders
+            List<Folder> subFolders = getFolders();
+            for (Folder f : subFolders) {
+                f.refreshDiskFolder(antiLoop, useOldSchemeBehavior);
+            }
         }
+        antiLoop.removeLast();
     }
 
     public String getDiskName() {

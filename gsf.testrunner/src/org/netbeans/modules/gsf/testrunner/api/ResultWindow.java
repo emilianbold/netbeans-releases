@@ -55,6 +55,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -65,12 +66,15 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.IOContainer;
@@ -95,7 +99,7 @@ final class ResultWindow extends TopComponent {
     private Map<String,JSplitPane> viewMap = new HashMap<String,JSplitPane>();
     private Map<String,InputOutput> ioMap = new HashMap<String,InputOutput>();
 
-    private final JTabbedPane tabPane;
+    private static JTabbedPane tabPane;
     private JPopupMenu pop;
     private PopupListener popL;
     private CloseListener closeL;
@@ -204,9 +208,24 @@ final class ResultWindow extends TopComponent {
         assert EventQueue.isDispatchThread();
         String key = displayComp.getToolTipText();
 
+	boolean alwaysOpenNewTab = NbPreferences.forModule(StatisticsPanel.class).getBoolean(StatisticsPanel.PROP_ALWAYS_OPEN_NEW_TAB, false);
+	if (alwaysOpenNewTab) {
+	    int frequency = getFrequency(viewMap.keySet(), key);
+	    if (frequency > 0) {
+		key = key.concat(" #").concat(Integer.toString(frequency));   //NOI18N
+		displayComp.setToolTipText(key);
+	    }
+	} else {
+	    Component selectedComponent = tabPane.getSelectedComponent();
+	    if (selectedComponent != null) {
+		key = ((JSplitPane) selectedComponent).getToolTipText();
+		displayComp.setToolTipText(key);
+	    }
+	}
+
         JSplitPane prevComp = viewMap.put(key, displayComp);
         InputOutput prevIo = ioMap.put(key, io);
-        if (prevComp == null){
+        if (alwaysOpenNewTab || prevComp == null){
             addView(displayComp);
         }else{
             replaceView(prevComp, displayComp);
@@ -215,6 +234,29 @@ final class ResultWindow extends TopComponent {
             }
         }
         revalidate();
+    }
+
+    private int getFrequency(Set<String> c, String tooltip) {
+	int result = 0;
+	int max = 0;
+	for (String key : c) {
+	    int index = key.indexOf(" #");   //NOI18N
+	    if (index != -1) {
+		max = Math.max(max, Integer.parseInt(key.substring(index + 2)));
+	    }
+	    if (key.startsWith(tooltip)) {
+		result++;
+	    }
+	}
+	return result == 0 ? 0 : Math.max(max + 1, result);
+    }
+
+    public void updateOptionStatus(String property, boolean selected) {
+	NbPreferences.forModule(StatisticsPanel.class).putBoolean(property, selected);
+	for (int i = 0; i < tabPane.getTabCount(); i++) {
+	    StatisticsPanel sp = (StatisticsPanel)((JSplitPane)tabPane.getComponentAt(i)).getLeftComponent();
+	    sp.updateOptionStatus(property, selected);
+	}
     }
 
     /**
@@ -343,7 +385,7 @@ final class ResultWindow extends TopComponent {
         activated = false;
     }
 
-    private JSplitPane getCurrentResultView(){
+    private static JSplitPane getCurrentResultView(){
         return (JSplitPane)tabPane.getSelectedComponent();
     }
 
@@ -466,6 +508,40 @@ final class ResultWindow extends TopComponent {
                 statisticsPanel.selectPreviousFailure();
             }
         }
+    }
+
+    @ActionID(category = "CommonTestRunner", id = "org.netbeans.modules.gsf.testrunner.api.ResultWindow.Rerun")
+    @ActionRegistration(displayName = "#CTL_Rerun")
+    @NbBundle.Messages("CTL_Rerun=Rerun All Tests")
+    public static final class Rerun extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+	    StatisticsPanel statisticsPanel = getStatisticsPanel();
+	    if(statisticsPanel != null) {
+		statisticsPanel.rerun(false);
+	    }
+        }
+    }
+
+    @ActionID(category = "CommonTestRunner", id = "org.netbeans.modules.gsf.testrunner.api.ResultWindow.RerunFailed")
+    @ActionRegistration(displayName = "#CTL_RerunFailed")
+    @NbBundle.Messages("CTL_RerunFailed=Rerun Failed Tests")
+    public static final class RerunFailed extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+	    StatisticsPanel statisticsPanel = getStatisticsPanel();
+	    if(statisticsPanel != null) {
+		statisticsPanel.rerun(true);
+	    }
+        }
+    }
+
+    private static StatisticsPanel getStatisticsPanel() {
+	JSplitPane view = getCurrentResultView();
+	if (view == null || !(view.getLeftComponent() instanceof StatisticsPanel)) {
+	    return null;
+	}
+	return (StatisticsPanel) view.getLeftComponent();
     }
 
     private class Close extends AbstractAction {

@@ -65,8 +65,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GrayFilter;
@@ -804,7 +805,7 @@ public class Utils {
 
     public static String getUniqueName(String name, String nameSuffix, Lookup.Provider project) {
         List<ProfilingPoint> projectProfilingPoints = ProfilingPointsManager.getDefault().getProfilingPoints(project, false, true);
-        List<String> projectProfilingPointsNames = new LinkedList();
+        Set<String> projectProfilingPointsNames = new HashSet();
 
         for (ProfilingPoint projectProfilingPoint : projectProfilingPoints) {
             projectProfilingPointsNames.add(projectProfilingPoint.getName());
@@ -817,7 +818,7 @@ public class Utils {
             indexStr = " " + Integer.toString(++index); // NOI18N
         }
 
-        return name + indexStr + nameSuffix; // NOI18N
+        return name + indexStr + nameSuffix;
     }
 
     public static String formatLocalProfilingPointTime(long timestamp) {

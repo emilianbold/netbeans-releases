@@ -85,8 +85,11 @@ public final class ModelBuilder {
     
     JsFunctionImpl getCurrentDeclarationFunction() {
         JsObject declarationScope = getCurrentDeclarationScope();
-        while(!(declarationScope instanceof JsFunctionImpl)) {
+        while(declarationScope != null && declarationScope.getParent() != null && !(declarationScope instanceof JsFunctionImpl)) {
             declarationScope = declarationScope.getParent();
+        }
+        if (declarationScope == null) {
+            declarationScope = globalObject;
         }
         return (JsFunctionImpl)declarationScope;
     }

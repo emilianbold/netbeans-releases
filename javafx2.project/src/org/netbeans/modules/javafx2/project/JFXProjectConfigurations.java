@@ -50,7 +50,6 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -58,13 +57,12 @@ import org.openide.util.Utilities;
  * Project configurations maintenance class
  * 
  * Getter/Setter naming conventions:
- * "Property" in method name -> method deals with single properties in configuration given by parameter config
+ * "Property" in method name -> method deals with single properties in configuration given by method parameter config
  * "Default" in method name -> method deals with properties in default configuration
  * "Active" in method name -> method deals with properties in currently chosen configuration
- * "Transparent" in method name -> method deals with property in configuration fiven by parameter config if
+ * "Transparent" in method name -> method deals with property in configuration fiven by method parameter config if
  *     exists, or with property in default configuration otherwise. This is to provide simple access to
  *     union of default and non-default properties that are to be presented to users in non-default configurations
- * "Param" in method name -> metod deals with properties representing sets of application parameters
  *
  * @author Petr Somol
  */
@@ -73,8 +71,12 @@ public class JFXProjectConfigurations {
     private static final Logger LOG = Logger.getLogger(JFXProjectConfigurations.class.getName());
 
     public static final String APPLICATION_ARGS = ProjectProperties.APPLICATION_ARGS;
+    public static final String DEFAULT_CONFIG_NAME = "default";
+    
     public static final String APP_PARAM_PREFIX = "javafx.param."; // NOI18N
     public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value" }; // NOI18N
+    public static final String APP_PARAM_CONNECT_SIGN = "="; // NOI18N
+
     // folders and files
     public static final String PROJECT_CONFIGS_DIR = "nbproject/configs"; // NOI18N
     public static final String PROJECT_PRIVATE_CONFIGS_DIR = "nbproject/private/configs"; // NOI18N
@@ -93,8 +95,9 @@ public class JFXProjectConfigurations {
     }
 
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
+    private MultiProperty appParams;
+            
     private Set<String> ERASED_CONFIGS;
-    private Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> APP_PARAMS;
     private BoundedPropertyGroups groups = new BoundedPropertyGroups();
     private String active;
     
@@ -181,11 +184,11 @@ public class JFXProjectConfigurations {
     private void reset() {
         RUN_CONFIGS = new TreeMap<String,Map<String,String>>(getComparator());
         ERASED_CONFIGS = null;
-        APP_PARAMS = new TreeMap<String,List<Map<String,String>>>(getComparator());
+        appParams = new MultiProperty(APP_PARAM_PREFIX, APP_PARAM_SUFFIXES, APP_PARAM_CONNECT_SIGN);
     }
 
     private boolean configNameWrong(String config) {
-        return config !=null && config.contains("default"); //NOI18N
+        return config !=null && config.contains(DEFAULT_CONFIG_NAME); //NOI18N
     }
 
     public final void defineGroup(String groupName, Collection<String> props) {
@@ -560,527 +563,229 @@ public class JFXProjectConfigurations {
         }
         return canErase;
     }
-
+    
     //==========================================================
-
+    // public proxies to access application parameters. May not cover
+    // the whole of Multiproperty; add missing if needed
+    
     /**
-     * Returns true if param named name is present in configuration
-     * config in any form - with value or without value
+     * Proxy
      * @param config
      * @param name
      * @return 
      */
     public boolean hasParam(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        return getParam(config, name) != null;
+        return appParams.hasEntry(config, name);
     }
-
-    public boolean hasDefaultParam(@NonNull String name) {
-        return hasParam(null, name);
-    }
-
-    public boolean hasActiveParam(@NonNull String name) {
-        return hasParam(getActive(), name);
-    }
-
-    public boolean hasParamTransparent(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        //return hasParam(config, name) || hasDefaultParam(name);
-        return getParamTransparent(config, name) != null;
-    }
-
-    public boolean hasActiveParamTransparent(@NonNull String name) {
-        return hasParamTransparent(getActive(), name);
-    }
-
-    //----------------------------------------------------------
-
+    
     /**
-     * Returns true if exactly the parameter with name name and value value
-     * is present in configuration config
-     * 
-     * @param config
+     * Proxy
      * @param name
      * @param value
      * @return 
      */
-    public boolean hasParam(String config, @NonNull String name, @NonNull String value) {
-        assert !configNameWrong(config);
-        String v = getParamValue(config, name);
-        return JFXProjectProperties.isEqual(v, value);
-    }
-
     public boolean hasDefaultParam(@NonNull String name, @NonNull String value) {
-        return hasParam(null, name, value);
+        return appParams.hasDefaultEntry(name, value);
     }
-
-    public boolean hasActiveParam(@NonNull String name, @NonNull String value) {
-        return hasParam(getActive(), name, value);
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasDefaultParam(@NonNull String name) {
+        return appParams.hasDefaultEntry(name);
     }
-
-    public boolean hasParamTransparent(String config, @NonNull String name, @NonNull String value) {
-        assert !configNameWrong(config);
-        String v = getParamValueTransparent(config, name);
-        return JFXProjectProperties.isEqual(v, value);
-    }
-
-    //----------------------------------------------------------
-
-    public boolean hasParamValue(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        Map<String, String> param = getParam(config, name);
-        if(param != null) {
-            if(param.containsKey(APP_PARAM_SUFFIXES[1])) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
     public boolean hasDefaultParamValue(@NonNull String name) {
-        return hasParamValue(null, name);
+        return appParams.hasDefaultEntryValue(name);
     }
-
-    public boolean hasActiveParamValue(@NonNull String name) {
-        return hasParamValue(getActive(), name);
-    }
-
-    public boolean hasParamValueTransparent(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        return (config != null && hasParamValue(config, name)) || hasDefaultParamValue(name);
-    }
-
-    public boolean hasActiveParamValueTransparent(@NonNull String name) {
-        return hasParamValueTransparent(getActive(), name);
-    }
-
-    //----------------------------------------------------------
-
+    
     /**
-     * Returns param as map if exists in configuration config, null otherwise
-     * 
-     * @param config
+     * Proxy
      * @param name
      * @return 
      */
-    public Map<String, String> getParam(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        return getParam(getParams(config), name);
+    public boolean hasActiveParam(@NonNull String name) {
+        return appParams.hasActiveEntry(name);
     }
-
-    public Map<String, String> getDefaultParam(@NonNull String name) {
-        return getParam((String)null, name);
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasActiveParamTransparent(@NonNull String name) {
+        return appParams.hasActiveEntryTransparent(name);
     }
-
-    public Map<String, String> getActiveParam(@NonNull String name) {
-        return getParam(getActive(), name);
-    }
-
-    public Map<String, String> getParamTransparent(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        Map<String, String> param = getParam(config, name);
-        if(param == null) {
-            param = getDefaultParam(name);
-        }
-        return param;
-    }
-
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
     public Map<String, String> getActiveParamTransparent(@NonNull String name) {
-        return getParamTransparent(getActive(), name);
+        return appParams.getActiveEntryTransparent(name);
     }
-
-    //----------------------------------------------------------
-
+    
     /**
-     * Note that returned null is ambiguous - may mean that there
-     * was no value defined or that it was defined and its value was null.
-     * To check this ask has*ParamValue*()
-     * 
-     * @param config
-     * @param name
-     * @return 
-     */
-    public String getParamValue(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        Map<String,String/*|null*/> param = getParam(config, name);
-        if(param != null) {
-            return param.get(APP_PARAM_SUFFIXES[1]);
-        }
-        return null;
-    }
-
-    /**
-     * Note that returned null is ambiguous - may mean that there
-     * was no value defined or that it was defined and its value was null.
-     * To check this ask has*ParamValue*()
-     * 
-     * @param name
-     * @return 
-     */
-    public String getDefaultParamValue(@NonNull String name) {
-        return getParamValue(null, name);
-    }
-
-    /**
-     * Note that returned null is ambiguous - may mean that there
-     * was no value defined or that it was defined and its value was null.
-     * To check this ask has*ParamValue*()
-     * 
+     * Proxy
      * @param name
      * @return 
      */
     public String getActiveParamValue(@NonNull String name) {
-        return getParamValue(getActive(), name);
+        return appParams.getActiveEntryValue(name);
     }
-
+    
     /**
-     * Note that returned null is ambiguous - may mean that there
-     * was no value defined or that it was defined and its value was null.
-     * To check this ask has*ParamValue*()
-     * 
+     * Proxy
      * @param config
      * @param name
-     * @return 
-     */
-    public String getParamValueTransparent(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        Map<String, String> param = getParam(config, name);
-        if(param != null) {
-            return param.get(APP_PARAM_SUFFIXES[1]);
-        }
-        return getDefaultParamValue(name);
-    }
-
-    /**
-     * Note that returned null is ambiguous - may mean that there
-     * was no value defined or that it was defined and its value was null.
-     * To check this ask has*ParamValue*()
-     * 
-     * @param name
-     * @return 
-     */
-    public String getActiveParamValueTransparent(@NonNull String name) {
-        return getParamValueTransparent(getActive(), name);
-    }
-
-    //----------------------------------------------------------
-
-    private List<Map<String,String/*|null*/>> getParams(String config) {
-        assert !configNameWrong(config);
-        return APP_PARAMS.get(config);
-    }
-
-    private List<Map<String,String/*|null*/>> getDefaultParams() {
-        return APP_PARAMS.get(null);
-    }
-
-    private List<Map<String,String/*|null*/>> getActiveParams() {
-        return APP_PARAMS.get(getActive());
-    }
-
-    /**
-    * Returns (copy of) list of default parameters if config==default or
-    * union of default config and current config parameters otherwise
-    * 
-    * @param config current config
-    * @return union of default and current parameters
-    */
-    private List<Map<String,String/*|null*/>> getParamsTransparent(String config) {
-        assert !configNameWrong(config);
-        List<Map<String,String/*|null*/>> union = JFXProjectUtils.copyList(getDefaultParams());
-        if(config != null && getParams(config) != null) {
-            for(Map<String,String> map : getParams(config)) {
-                String name = map.get(APP_PARAM_SUFFIXES[0]);
-                String value = map.get(APP_PARAM_SUFFIXES[1]);
-                if(name != null && !name.isEmpty()) {
-                    Map<String, String> old = getParam(union, name);
-                    if(old != null) {
-                        old.put(APP_PARAM_SUFFIXES[0], name);
-                        old.put(APP_PARAM_SUFFIXES[1], value);
-                    } else {
-                        union.add(map);
-                    }
-                }
-            }
-        }
-        return union;
-    }   
-
-    public List<Map<String,String/*|null*/>> getActiveParamsTransparent() {
-        return getParamsTransparent(getActive());
-    }
-
-    //----------------------------------------------------------
-
-    /**
-    * Gathers all parameters applicable to config configuration to one String
-    * 
-    * @param commandLine if true, formats output as if to be passed on command line, otherwise prouces comma separated list
-    * @return a String containing all parameters as if passed as command line parameters
-    */
-    public String getParamsTransparentAsString(String config, boolean commandLine) {
-        assert !configNameWrong(config);
-        return getParamsAsString(getParamsTransparent(config), commandLine);
-    }
-
-    public String getActiveParamsTransparentAsString(boolean commandLine) {
-        return getParamsAsString(getActiveParamsTransparent(), commandLine);
-    }
-
-    public String getParamsAsString(String config, boolean commandLine) {
-        return getParamsAsString(getParams(config), commandLine);
-    }
-
-    public String getActiveParamsAsString(boolean commandLine) {
-        return getParamsAsString(getActiveParams(), commandLine);
-    }
-
-    public String getDefaultParamsAsString(boolean commandLine) {
-        return getParamsAsString(getDefaultParams(), commandLine);
-    }
-
-    private String getParamsAsString(List<Map<String,String/*|null*/>> params, boolean commandLine)
-    {
-        StringBuilder sb = new StringBuilder();
-        if(params != null) {
-            int index = 0;
-            for(Map<String,String> m : params) {
-                String name = m.get(APP_PARAM_SUFFIXES[0]);
-                String value = m.get(APP_PARAM_SUFFIXES[1]);
-                if(name != null && name.length() > 0) {
-                    if(sb.length() > 0) {
-                        if(!commandLine) {
-                            sb.append(","); // NOI18N
-                        }
-                        sb.append(" "); // NOI18N
-                    }
-                    if(value != null && value.length() > 0) {
-                        if(commandLine) {
-                            sb.append("--"); // NOI18N
-                        }
-                        sb.append(name);
-                        sb.append("="); // NOI18N
-                        sb.append(value);
-                    } else {
-                        sb.append(name);                        
-                    }
-                    index++;
-                }
-            }
-        }
-        return sb.toString();
-    }
-
-    //----------------------------------------------------------
-
-    private Map<String, String> createParam(@NonNull String name) {
-        Map<String, String> param = new TreeMap<String,String>(getComparator());
-        param.put(APP_PARAM_SUFFIXES[0], name);
-        return param;
-    }
-
-    private Map<String, String> createParam(@NonNull String name, String value) {
-        Map<String, String> param = new TreeMap<String,String>(getComparator());
-        param.put(APP_PARAM_SUFFIXES[0], name);
-        param.put(APP_PARAM_SUFFIXES[1], value);
-        return param;
-    }
-
-    //----------------------------------------------------------
-
-    /**
-     * Add (or replace if present) valueless param (i.e., argument)
-     * to configuration config
-     */
-    public void addParam(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        List<Map<String,String/*|null*/>> params = getParams(config);
-        if(params == null) {
-            params = new ArrayList<Map<String,String/*|null*/>>();
-            APP_PARAMS.put(config, params);
-        } else {
-            eraseParam(params, name);
-        }
-        params.add(createParam(name));
-    }
-
-    public void addDefaultParam(@NonNull String name) {
-        addParam(null, name);
-    }
-
-    public void addActiveParam(@NonNull String name) {
-        addParam(getActive(), name);
-    }
-
-    public void addParamTransparent(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        if(config == null) {
-            addDefaultParam(name);
-        } else {
-            if(hasDefaultParam(name) && !hasDefaultParamValue(name)) {
-                eraseParam(config, name);
-            } else {
-                addParam(config, name);
-            }
-        }
-    }
-
-    public void addActiveParamTransparent(@NonNull String name) {
-        addParamTransparent(getActive(), name);
-    }
-
-    //----------------------------------------------------------
-
-    /**
-     * Add (or replace if present) named param (i.e., having a value)
-     * to configuration config
+     * @param value 
      */
     public void addParam(String config, @NonNull String name, String value) {
-        assert !configNameWrong(config);
-        List<Map<String,String/*|null*/>> params = getParams(config);
-        if(params == null) {
-            params = new ArrayList<Map<String,String/*|null*/>>();
-            APP_PARAMS.put(config, params);
-        } else {
-            eraseParam(params, name);
-        }
-        params.add(createParam(name, value));
+        appParams.addEntry(config, name, value);
     }
-
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name 
+     */
+    public void addParam(String config, @NonNull String name) {
+        appParams.addEntry(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @param value 
+     */
     public void addDefaultParam(@NonNull String name, String value) {
-        addParam(null, name, value);
+        appParams.addDefaultEntry(name, value);
     }
-
+    
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void addDefaultParam(@NonNull String name) {
+        appParams.addDefaultEntry(name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @param value 
+     */
     public void addActiveParam(@NonNull String name, String value) {
-        addParam(getActive(), name, value);
+        appParams.addActiveEntry(name, value);
     }
-
-    public void addParamTransparent(String config, @NonNull String name, String value) {
-        assert !configNameWrong(config);
-        if(config == null) {
-            addDefaultParam(name, value);
-        } else {
-            if(hasDefaultParam(name, value)) {
-                eraseParam(config, name);
-            } else {
-                addParam(config, name, value);
-            }
-        }
-    }
-
-    public void addActiveParamTransparent(@NonNull String name, String value) {
-        addParamTransparent(getActive(), name, value);
-    }
-
-    //----------------------------------------------------------
-
+    
     /**
-    * Updates parameters; if config==default, then simply updates default parameters,
-    * otherwise updates parameters in current config so that only those different
-    * from those in default config are stored.
-    * 
-    * @param config
-    * @param params 
-    */
-    public void setParamsTransparent(String config, List<Map<String,String/*|null*/>>/*|null*/ params) {
-        assert !configNameWrong(config);
-        if(config == null) {
-            APP_PARAMS.put(null, params);
-        } else {
-            List<Map<String,String/*|null*/>> reduct = new ArrayList<Map<String,String/*|null*/>>();
-            List<Map<String,String/*|null*/>> def = JFXProjectUtils.copyList(getDefaultParams());
-            if(params != null) {
-                for(Map<String,String> map : params) {
-                    String name = map.get(APP_PARAM_SUFFIXES[0]);
-                    String value = map.get(APP_PARAM_SUFFIXES[1]);
-                    Map<String, String> old = getDefaultParam(name);
-                    if(old != null) {
-                        String oldValue = old.get(APP_PARAM_SUFFIXES[1]);
-                        if( !JFXProjectProperties.isEqual(value, oldValue) ) {
-                            reduct.add(JFXProjectUtils.copyMap(old));
-                        }
-                        def.remove(old);
-                    } else {
-                        reduct.add(JFXProjectUtils.copyMap(map));
-                    }
-                }
-                for(Map<String,String> map : def) {
-                    map.put(APP_PARAM_SUFFIXES[1], ""); // NOI18N
-                    reduct.add(JFXProjectUtils.copyMap(map));
-                }
-            }
-            APP_PARAMS.put(config, reduct);
-        }
+     * Proxy
+     * @param name 
+     */
+    public void addActiveParam(@NonNull String name) {
+        appParams.addActiveEntry(name);
     }
-
-    public void setActiveParamsTransparent(List<Map<String,String/*|null*/>>/*|null*/ params) {
-        setParamsTransparent(getActive(), params);
+    
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void addActiveParamTransparent(@NonNull String name) {
+        appParams.addActiveEntryTransparent(name);
     }
-
-    //----------------------------------------------------------
-
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name 
+     */
     public void eraseParam(String config, @NonNull String name) {
-        assert !configNameWrong(config);
-        eraseParam(getParams(config), name);
+        appParams.eraseEntry(config, name);
     }
-
+    
+    /**
+     * Proxy
+     * @param name 
+     */
     public void eraseDefaultParam(@NonNull String name) {
-        eraseParam((String)null, name);
+        appParams.eraseDefaultEntry(name);
     }
-
-    public void eraseActiveParam(@NonNull String name) {
-        eraseParam(getActive(), name);
-    }
-
+    
+    /**
+     * Proxy
+     * @param config 
+     */
     public void eraseParams(String config) {
-        assert !configNameWrong(config);
-        APP_PARAMS.remove(config);
+        appParams.eraseEntry(config);
     }
-
+    
+    /**
+     * Proxy
+     */
     public void eraseDefaultParams() {
-        eraseParams(null);
+        appParams.eraseDefaultEntries();
     }
-
-    public void eraseActiveParams() {
-        eraseParams(getActive());
-    }
-
-    //==========================================================
 
     /**
-    * If paramName exists in params, returns the map representing it
-    * Returns null if param does not exist.
-    * 
-    * @param params list of application parameters (each stored in a map in keys 'name' and 'value'
-    * @param paramName parameter to be searched for
-    * @return parameter if found, null otherwise
-    */
-    private Map<String, String> getParam(List<Map<String, String>> params, String paramName) {
-        if(params != null) {
-            for(Map<String, String> map : params) {
-                String name = map.get(APP_PARAM_SUFFIXES[0]);
-                if(name != null && name.equals(paramName)) {
-                    return map;
-                }
-            }
-        }
-        return null;
+     * Proxy
+     * @return 
+     */
+    public List<Map<String,String/*|null*/>> getActiveParamsTransparent() {
+        return appParams.getActiveEntriesTransparent();
     }
 
-    private void eraseParam(List<Map<String, String>> params, String paramName) {
-        if(params != null) {
-            Map<String, String> toErase = null;
-            for(Map<String, String> map : params) {
-                String name = map.get(APP_PARAM_SUFFIXES[0]);
-                if(name != null && name.equals(paramName)) {
-                    toErase = map;
-                    break;
-                }
-            }
-            if(toErase != null) {
-                params.remove(toErase);
-            }
-        }
+    /**
+     * Proxy
+     * @param params 
+     */
+    public void setActiveParamsTransparent(List<Map<String,String/*|null*/>>/*|null*/ params) {
+        appParams.setActiveEntriesTransparent(params);
+    }
+
+    /**
+     * Proxy
+     * @param config
+     * @param commandLine
+     * @return 
+     */
+    public String getParamsTransparentAsString(String config, boolean commandLine) {
+        return appParams.getEntriesTransparentAsString(config, commandLine);
+    }
+    
+    /**
+     * Proxy
+     * @param commandLine
+     * @return 
+     */
+    public String getActiveParamsAsString(boolean commandLine) {
+        return appParams.getActiveEntriesAsString(commandLine);
+    }
+    
+    /**
+     * Proxy
+     * @param commandLine
+     * @return 
+     */
+    public String getActiveParamsTransparentAsString(boolean commandLine) {
+        return appParams.getActiveEntriesTransparentAsString(commandLine);
+    }
+
+    /**
+     * Proxy
+     * @param commandLine
+     * @return 
+     */
+    public String getDefaultParamsAsString(boolean commandLine) {
+        return appParams.getDefaultEntriesAsString(commandLine);
     }
 
     //==========================================================
@@ -1119,7 +824,7 @@ public class JFXProjectConfigurations {
                 }
             }
         }
-        extractDefaultParams(ep);
+        appParams.extractDefaultEntries(ep);
     }
 
     private void addDefaultsIfMissing() {
@@ -1148,43 +853,9 @@ public class JFXProjectConfigurations {
                     // can be ignored
                 }
                 addToConfig(kid.getName(), cep);
-                extractParams(cep, kid.getName());
+                appParams.extractEntries(cep, kid.getName());
             }
         }
-    }
-
-    /**
-    * Extract from editable properties all properties depicting application parameters
-    * and store them as such in params. If such exist in params, then override their values.
-    * 
-    * @param ep editable properties to extract from
-    * @param params application parameters to add to / update in
-    */
-    private void extractParams(@NonNull EditableProperties ep, String config) {
-        if(ep != null) {
-            for(String prop : ep.keySet()) {
-                if(prop.startsWith(APP_PARAM_PREFIX) && prop.endsWith(APP_PARAM_SUFFIXES[0])) {
-                    String name = ep.getProperty(prop);
-                    if(name != null) {
-                        String propV = prop.replace(APP_PARAM_SUFFIXES[0], APP_PARAM_SUFFIXES[1]);
-                        String value = ep.getProperty(propV);
-                        if(value != null) {
-                            addParam(config, name, value);
-                        } else {
-                            addParam(config, name);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void extractDefaultParams(@NonNull EditableProperties ep) {
-        extractParams(ep, null);
-    }
-
-    private void extractActiveParams(@NonNull EditableProperties ep) {
-        extractParams(ep, getActive());
     }
 
     //----------------------------------------------------------
@@ -1214,6 +885,38 @@ public class JFXProjectConfigurations {
     //----------------------------------------------------------
 
     /**
+    * Gathers application parameters to one property APPLICATION_ARGS
+    * to be passed to run/debug target in build-impl.xml when Run as Standalone
+    * 
+    * @param config
+    * @param ep editable properties to which to store the generated property
+    * @return true if properties have been edited
+    */
+    private boolean storeParamsAsCommandLine(String config, EditableProperties projectProperties) {
+        assert !configNameWrong(config);
+        String params = appParams.getEntriesTransparentAsString(config, true);
+        if(config != null) {
+            if(JFXProjectProperties.isEqual(params, appParams.getDefaultEntriesAsString(true))) {
+                params = null;
+            }
+        }
+        if (!Utilities.compareObjects(params, projectProperties.getProperty(APPLICATION_ARGS))) {
+            if (params != null && params.length() > 0) {
+                projectProperties.setProperty(APPLICATION_ARGS, params);
+                projectProperties.setComment(APPLICATION_ARGS, new String[]{"# " + NbBundle.getMessage(JFXProjectConfigurations.class, "COMMENT_app_args")}, false); // NOI18N
+            } else {
+                projectProperties.remove(APPLICATION_ARGS);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean storeDefaultParamsAsCommandLine(EditableProperties projectProperties) {
+        return storeParamsAsCommandLine(null, projectProperties);
+    }
+
+    /**
      * Stores/updates configuration properties and parameters to EditableProperties in case of default
      * config, or directly to project properties files in case of non-default configs.
      * (modified from "A royal mess." from J2SEProjectProperties)"
@@ -1225,7 +928,7 @@ public class JFXProjectConfigurations {
             updateProperty(name, value, projectProperties, privateProperties, isBoundedToNonemptyProperty(null, name));
         }
         List<String> paramNamesUsed = new ArrayList<String>();
-        updateDefaultParamProperties(projectProperties, privateProperties, paramNamesUsed);
+        appParams.updateDefaultEntryProperties(projectProperties, privateProperties, paramNamesUsed);
         storeDefaultParamsAsCommandLine(privateProperties);
 
         for (Map.Entry<String,Map<String,String>> entry : RUN_CONFIGS.entrySet()) {
@@ -1265,7 +968,7 @@ public class JFXProjectConfigurations {
                     config, sharedCfgProps);
             privatePropsChanged |= cleanPropertiesIfEmpty(CLEAN_EMPTY_PRIVATE_PROPERTIES.toArray(new String[0]), 
                     config, privateCfgProps);
-            privatePropsChanged |= updateParamProperties(config, sharedCfgProps, privateCfgProps, paramNamesUsed);  
+            privatePropsChanged |= appParams.updateEntryProperties(config, sharedCfgProps, privateCfgProps, paramNamesUsed);  
             privatePropsChanged |= storeParamsAsCommandLine(config, privateCfgProps);
 
             JFXProjectUtils.saveToFile(projectDir, sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
@@ -1365,247 +1068,6 @@ public class JFXProjectConfigurations {
 
     //----------------------------------------------------------
 
-    private boolean isParamNameProperty(@NonNull String prop) {
-        return prop != null && prop.startsWith(APP_PARAM_PREFIX) && prop.endsWith(APP_PARAM_SUFFIXES[0]);
-    }
-
-    private boolean isParamValueProperty(@NonNull String prop) {
-        return prop != null && prop.startsWith(APP_PARAM_PREFIX) && prop.endsWith(APP_PARAM_SUFFIXES[1]);
-    }
-
-    private String getParamValueProperty(String paramNameProperty) {
-        if(paramNameProperty != null && isParamNameProperty(paramNameProperty)) {
-            return paramNameProperty.replace(APP_PARAM_SUFFIXES[0], APP_PARAM_SUFFIXES[1]);
-        }
-        return null;
-    }
-
-    private String getParamNameProperty(int index) {
-        return APP_PARAM_PREFIX + index + "." + APP_PARAM_SUFFIXES[0]; // NOI18N
-    }
-
-    private String getParamValueProperty(int index) {
-        return APP_PARAM_PREFIX + index + "." + APP_PARAM_SUFFIXES[1]; // NOI18N
-    }
-
-    private boolean isFreeParamPropertyIndex(int index, @NonNull EditableProperties ep) {
-        return !ep.containsKey(getParamNameProperty(index));
-    }
-
-    private int getFreeParamPropertyIndex(int start, @NonNull EditableProperties ep, @NonNull EditableProperties pep, List<String> paramNamesUsed) {
-        int index = (start >= 0) ? start : 0;
-        while(index >= 0) {
-            if(isFreeParamPropertyIndex(index, ep) && isFreeParamPropertyIndex(index, pep) && (paramNamesUsed == null || !paramNamesUsed.contains(getParamNameProperty(index)))) {
-                break;
-            }
-            index++;
-        }
-        return (index >= 0) ? index : 0;
-    }
-
-    /**
-     * Adds/updates properties representing parameters in editable properties
-     * 
-     * @param config
-     * @param projectProperties
-     * @param privateProperties
-     * @return 
-     */
-    private boolean updateParamProperties(String config, @NonNull EditableProperties projectProperties, @NonNull EditableProperties privateProperties, @NonNull List<String> paramNamesUsed) {
-        assert !configNameWrong(config);
-        boolean privateUpdated = false;
-        List<Map<String, String>> reduce = JFXProjectUtils.copyList(getParams(config));
-        // remove properties with indexes used before (to be replaced later by new unique property names)
-        for(String prop : paramNamesUsed) {
-            if(prop != null && prop.length() > 0) {
-                projectProperties.remove(prop);
-                projectProperties.remove(getParamValueProperty(prop));
-                privateProperties.remove(prop);
-                privateProperties.remove(getParamValueProperty(prop));
-            }
-        }
-        // delete those private param properties not present in config and log usage of the remaining
-        cleanParamPropertiesIfEmpty(config, privateProperties);
-        for(String prop : privateProperties.keySet()) {
-            if(isParamNameProperty(prop)) {
-                paramNamesUsed.add(prop);
-            }
-        }
-        // update private properties
-        List<Map<String, String>> toEraseList = new LinkedList<Map<String, String>>();
-        for(Map<String, String> map : reduce) {
-            String name = map.get(APP_PARAM_SUFFIXES[0]);
-            String value = map.get(APP_PARAM_SUFFIXES[1]);
-            if(updateParamPropertyIfExists(name, value, privateProperties, true)) {
-                toEraseList.add(map);
-                privateUpdated = true;
-            }
-        }
-        for(Map<String, String> toErase : toEraseList) {
-            reduce.remove(toErase);
-        }
-        // delete those nonprivate param properties not present in reduce and log usage of the remaining
-        cleanParamPropertiesNotListed(reduce, projectProperties);
-        for(String prop : projectProperties.keySet()) {
-            if(isParamNameProperty(prop)) {
-                paramNamesUsed.add(prop);
-            }
-        }
-        // now create new nonprivate param properties
-        int index = 0;
-        for(Map<String, String> map : reduce) {
-            String name = map.get(APP_PARAM_SUFFIXES[0]);
-            String value = map.get(APP_PARAM_SUFFIXES[1]);
-            if(name != null && name.length() > 0 && !updateParamPropertyIfExists(name, value, projectProperties, false)) {
-                index = getFreeParamPropertyIndex(index, projectProperties, privateProperties, paramNamesUsed);
-                exportParamProperty(map, getParamNameProperty(index), getParamValueProperty(index), projectProperties);
-                paramNamesUsed.add(getParamNameProperty(index));
-            }
-        }
-        return privateUpdated;
-    }
-
-    private boolean updateDefaultParamProperties(@NonNull EditableProperties projectProperties, @NonNull EditableProperties privateProperties, List<String> paramNamesUsed) {
-        return updateParamProperties(null, projectProperties, privateProperties, paramNamesUsed);
-    }
-
-    /**
-    * Searches in properties for parameter named 'name'. If found, updates
-    * both existing param properties (for 'name' and 'value') and returns
-    * true, otherwise returns false.
-    * 
-    * @param name parameter name
-    * @param value parameter value
-    * @param properties editable properties in which to search for updateable properties
-    * @param storeEmpty true==keep empty properties in editable properties, false==remove empty properties
-    * @return true if updated existing property, false otherwise
-    */
-    private boolean updateParamPropertyIfExists(@NonNull String name, String value, EditableProperties ep, boolean storeEmpty) {
-        if(name != null && !name.isEmpty()) {
-            for(String prop : ep.keySet()) {
-                if(isParamNameProperty(prop)) {
-                    if(JFXProjectProperties.isEqual(name, ep.get(prop))) {
-                        String propVal = getParamValueProperty(prop);
-                        if (value != null && (value.length() > 0 || storeEmpty)) {
-                            ep.setProperty(propVal, value);
-                        } else {
-                            ep.remove(propVal);
-                        }
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-    * Remove from ep all parameter related properties that represent
-    * params not present in config
-    * 
-    * @param ep editable properties
-    */
-    private void cleanParamPropertiesIfEmpty(String config, EditableProperties ep) {
-        assert !configNameWrong(config);
-        List<String> toRemove = new LinkedList<String>();
-        for(String prop : ep.keySet()) {
-            if(isParamNameProperty(prop)) {
-                String name = ep.get(prop);
-                if(!hasParam(config, name)) {
-                    toRemove.add(prop);
-                }
-            }
-        }
-        for(String prop : toRemove) {
-            ep.remove(prop);
-            ep.remove(getParamValueProperty(prop));
-        }
-    }
-
-    /**
-    * Remove from ep all parameter related properties that represent
-    * params not present in props
-    * 
-    * @param ep editable properties
-    */
-    private void cleanParamPropertiesNotListed(List<Map<String, String>> props, EditableProperties ep) {
-        List<String> toRemove = new LinkedList<String>();
-        for(String name : ep.keySet()) {
-            if(isParamNameProperty(name)) {
-                boolean inProps = false;
-                for(Map<String,String> map : props) {
-                    String prop = map.get(APP_PARAM_SUFFIXES[0]);
-                    if(JFXProjectProperties.isEqual(name, prop)) {
-                        inProps = true;
-                        break;
-                    }
-                }
-                if(!inProps) {
-                    toRemove.add(name);
-                }
-            }
-        }
-        for(String prop : toRemove) {
-            ep.remove(prop);
-            ep.remove(getParamValueProperty(prop));
-        }
-    }
-
-    /**
-    * Store one parameter to editable properties (effectively as two properties,
-    * one for name, second for value), index is used to distinguish among
-    * parameter-property instances
-    * 
-    * @param param parameter to be stored in editable properties
-    * @param newPropName name of property to store parameter name
-    * @param newPropValue name of property to store parameter value
-    * @param ep editable properties to which param is to be stored
-    */
-    private void exportParamProperty(@NonNull Map<String, String> param, String newPropName, String newPropValue, @NonNull EditableProperties ep) {
-        String name = param.get(APP_PARAM_SUFFIXES[0]);
-        String value = param.get(APP_PARAM_SUFFIXES[1]);
-        if(name != null) {
-            ep.put(newPropName, name);
-            if(value != null && value.length() > 0) {
-                ep.put(newPropValue, value);
-            }
-        }
-    }
-
-    /**
-    * Gathers application parameters to one property APPLICATION_ARGS
-    * to be passed to run/debug target in build-impl.xml when Run as Standalone
-    * 
-    * @param config
-    * @param ep editable properties to which to store the generated property
-    * @return true if properties have been edited
-    */
-    private boolean storeParamsAsCommandLine(String config, EditableProperties projectProperties) {
-        assert !configNameWrong(config);
-        String params = getParamsTransparentAsString(config, true);
-        if(config != null) {
-            if(JFXProjectProperties.isEqual(params, getDefaultParamsAsString(true))) {
-                params = null;
-            }
-        }
-        if (!Utilities.compareObjects(params, projectProperties.getProperty(APPLICATION_ARGS))) {
-            if (params != null && params.length() > 0) {
-                projectProperties.setProperty(APPLICATION_ARGS, params);
-                projectProperties.setComment(APPLICATION_ARGS, new String[]{"# " + NbBundle.getMessage(JFXProjectProperties.class, "COMMENT_app_args")}, false); // NOI18N
-            } else {
-                projectProperties.remove(APPLICATION_ARGS);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private boolean storeDefaultParamsAsCommandLine(EditableProperties projectProperties) {
-        return storeParamsAsCommandLine(null, projectProperties);
-    }
-
-    //----------------------------------------------------------
-
     /**
      * For properties registered in bounded groups special
      * handling is to be followed. Either all bounded properties
@@ -1663,4 +1125,805 @@ public class JFXProjectConfigurations {
             return bounded;
         }
     }
+
+    //----------------------------------------------------------
+
+    /**
+     * Project properties maintenance class. Handles properties that may have multiple
+     * instances, like FX Application parameters, or custom manifest entries
+     */
+    private class MultiProperty {
+    
+        private Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> APP_MULTIPROPS;
+        private String prefix;
+        private String suffixes[];
+        private String connectSign;
+
+        public MultiProperty(@NonNull String prefix, @NonNull String suffixes[], @NonNull String connectSign) {
+            assert suffixes.length == 2; // need "name" and "value"
+            this.prefix = prefix;
+            this.suffixes = suffixes;
+            this.connectSign = connectSign;
+            reset();
+        }
+        
+        public void reset() {
+            APP_MULTIPROPS = new TreeMap<String,List<Map<String,String>>>(getComparator());
+        }
+
+        //==========================================================
+
+        /**
+         * Returns true if entry named name is present in configuration
+         * config in any form - with value or without value
+         * @param config
+         * @param name
+         * @return 
+         */
+        public boolean hasEntry(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            return getEntry(config, name) != null;
+        }
+
+        public boolean hasDefaultEntry(@NonNull String name) {
+            return hasEntry(null, name);
+        }
+
+        public boolean hasActiveEntry(@NonNull String name) {
+            return hasEntry(getActive(), name);
+        }
+
+        public boolean hasEntryTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            return getEntryTransparent(config, name) != null;
+        }
+
+        public boolean hasActiveEntryTransparent(@NonNull String name) {
+            return hasEntryTransparent(getActive(), name);
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Returns true if exactly the entry with name name and value value
+         * is present in configuration config
+         * 
+         * @param config
+         * @param name
+         * @param value
+         * @return 
+         */
+        public boolean hasEntry(String config, @NonNull String name, @NonNull String value) {
+            assert !configNameWrong(config);
+            String v = getEntryValue(config, name);
+            return JFXProjectProperties.isEqual(v, value);
+        }
+
+        public boolean hasDefaultEntry(@NonNull String name, @NonNull String value) {
+            return hasEntry(null, name, value);
+        }
+
+        public boolean hasActiveEntry(@NonNull String name, @NonNull String value) {
+            return hasEntry(getActive(), name, value);
+        }
+
+        public boolean hasEntryTransparent(String config, @NonNull String name, @NonNull String value) {
+            assert !configNameWrong(config);
+            String v = getEntryValueTransparent(config, name);
+            return JFXProjectProperties.isEqual(v, value);
+        }
+
+        //----------------------------------------------------------
+        // note that these do not search for concrete value, they
+        // search for entry named name and ask whether such
+        // entry has any value
+        
+        public boolean hasEntryValue(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            Map<String, String> param = getEntry(config, name);
+            if(param != null) {
+                if(param.containsKey(suffixes[1])) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public boolean hasDefaultEntryValue(@NonNull String name) {
+            return hasEntryValue(null, name);
+        }
+
+        public boolean hasActiveEntryValue(@NonNull String name) {
+            return hasEntryValue(getActive(), name);
+        }
+
+        public boolean hasEntryValueTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            return (config != null && hasEntryValue(config, name)) || hasDefaultEntryValue(name);
+        }
+
+        public boolean hasActiveEntryValueTransparent(@NonNull String name) {
+            return hasEntryValueTransparent(getActive(), name);
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Returns entry as map if exists in configuration config, null otherwise
+         * 
+         * @param config
+         * @param name
+         * @return 
+         */
+        public Map<String, String> getEntry(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            return getEntry(getEntries(config), name);
+        }
+
+        public Map<String, String> getDefaultEntry(@NonNull String name) {
+            return getEntry((String)null, name);
+        }
+
+        public Map<String, String> getActiveEntry(@NonNull String name) {
+            return getEntry(getActive(), name);
+        }
+
+        public Map<String, String> getEntryTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            Map<String, String> param = getEntry(config, name);
+            if(param == null) {
+                param = getDefaultEntry(name);
+            }
+            return param;
+        }
+
+        public Map<String, String> getActiveEntryTransparent(@NonNull String name) {
+            return getEntryTransparent(getActive(), name);
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*EntryValue*()
+         * 
+         * @param config
+         * @param name
+         * @return 
+         */
+        public String getEntryValue(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            Map<String,String/*|null*/> param = getEntry(config, name);
+            if(param != null) {
+                return param.get(suffixes[1]);
+            }
+            return null;
+        }
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*EntryValue*()
+         * 
+         * @param name
+         * @return 
+         */
+        public String getDefaultEntryValue(@NonNull String name) {
+            return getEntryValue(null, name);
+        }
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*EntryValue*()
+         * 
+         * @param name
+         * @return 
+         */
+        public String getActiveEntryValue(@NonNull String name) {
+            return getEntryValue(getActive(), name);
+        }
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*EntryValue*()
+         * 
+         * @param config
+         * @param name
+         * @return 
+         */
+        public String getEntryValueTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            Map<String, String> param = getEntry(config, name);
+            if(param != null) {
+                return param.get(suffixes[1]);
+            }
+            return getDefaultEntryValue(name);
+        }
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*EntryValue*()
+         * 
+         * @param name
+         * @return 
+         */
+        public String getActiveEntryValueTransparent(@NonNull String name) {
+            return getEntryValueTransparent(getActive(), name);
+        }
+
+        //----------------------------------------------------------
+
+        private List<Map<String,String/*|null*/>> getEntries(String config) {
+            assert !configNameWrong(config);
+            return APP_MULTIPROPS.get(config);
+        }
+
+        private List<Map<String,String/*|null*/>> getDefaultEntries() {
+            return APP_MULTIPROPS.get(null);
+        }
+
+        private List<Map<String,String/*|null*/>> getActiveEntries() {
+            return APP_MULTIPROPS.get(getActive());
+        }
+
+        /**
+        * Returns (copy of) list of default entries if config==default or
+        * union of default config and current config entries otherwise
+        * 
+        * @param config current config
+        * @return union of default and current entries
+        */
+        private List<Map<String,String/*|null*/>> getEntriesTransparent(String config) {
+            assert !configNameWrong(config);
+            List<Map<String,String/*|null*/>> union = JFXProjectUtils.copyList(getDefaultEntries());
+            if(config != null && getEntries(config) != null) {
+                for(Map<String,String> map : getEntries(config)) {
+                    String name = map.get(suffixes[0]);
+                    String value = map.get(suffixes[1]);
+                    if(name != null && !name.isEmpty()) {
+                        Map<String, String> old = getEntry(union, name);
+                        if(old != null) {
+                            old.put(suffixes[0], name);
+                            old.put(suffixes[1], value);
+                        } else {
+                            union.add(map);
+                        }
+                    }
+                }
+            }
+            return union;
+        }   
+
+        public List<Map<String,String/*|null*/>> getActiveEntriesTransparent() {
+            return getEntriesTransparent(getActive());
+        }
+
+        //----------------------------------------------------------
+
+        /**
+        * Gathers all entries applicable to config configuration to one String
+        * 
+        * @param commandLine if true, formats output as if to be passed on command line, otherwise prouces comma separated list
+        * @return a String containing all entries as if passed as command line parameters
+        */
+        public String getEntriesTransparentAsString(String config, boolean commandLine) {
+            assert !configNameWrong(config);
+            return getEntriesAsString(getEntriesTransparent(config), commandLine);
+        }
+
+        public String getActiveEntriesTransparentAsString(boolean commandLine) {
+            return getEntriesAsString(getActiveEntriesTransparent(), commandLine);
+        }
+
+        public String getEntriesAsString(String config, boolean commandLine) {
+            return getEntriesAsString(getEntries(config), commandLine);
+        }
+
+        public String getActiveEntriesAsString(boolean commandLine) {
+            return getEntriesAsString(getActiveEntries(), commandLine);
+        }
+
+        public String getDefaultEntriesAsString(boolean commandLine) {
+            return getEntriesAsString(getDefaultEntries(), commandLine);
+        }
+
+        private String getEntriesAsString(List<Map<String,String/*|null*/>> props, boolean commandLine)
+        {
+            StringBuilder sb = new StringBuilder();
+            if(props != null) {
+                int index = 0;
+                for(Map<String,String> m : props) {
+                    String name = m.get(suffixes[0]);
+                    String value = m.get(suffixes[1]);
+                    if(name != null && name.length() > 0) {
+                        if(sb.length() > 0) {
+                            if(!commandLine) {
+                                sb.append(","); // NOI18N
+                            }
+                            sb.append(" "); // NOI18N
+                        }
+                        if(value != null && value.length() > 0) {
+                            if(commandLine) {
+                                sb.append("--"); // NOI18N
+                            }
+                            sb.append(name);
+                            if(commandLine) {
+                                sb.append("="); // NOI18N
+                            } else {
+                                sb.append(connectSign); // NOI18N
+                            }
+                            sb.append(value);
+                        } else {
+                            sb.append(name);                        
+                        }
+                        index++;
+                    }
+                }
+            }
+            return sb.toString();
+        }
+
+        //----------------------------------------------------------
+
+        private Map<String, String> createEntry(@NonNull String name) {
+            Map<String, String> prop = new TreeMap<String,String>(getComparator());
+            prop.put(suffixes[0], name);
+            return prop;
+        }
+
+        private Map<String, String> createEntry(@NonNull String name, String value) {
+            Map<String, String> prop = new TreeMap<String,String>(getComparator());
+            prop.put(suffixes[0], name);
+            prop.put(suffixes[1], value);
+            return prop;
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Add (or replace if present) valueless entry (e.g., run argument)
+         * to configuration config
+         */
+        public void addEntry(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            List<Map<String,String/*|null*/>> props = getEntries(config);
+            if(props == null) {
+                props = new ArrayList<Map<String,String/*|null*/>>();
+                APP_MULTIPROPS.put(config, props);
+            } else {
+                eraseEntry(props, name);
+            }
+            props.add(createEntry(name));
+        }
+
+        public void addDefaultEntry(@NonNull String name) {
+            addEntry(null, name);
+        }
+
+        public void addActiveEntry(@NonNull String name) {
+            addEntry(getActive(), name);
+        }
+
+        public void addEntryTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            if(config == null) {
+                addDefaultEntry(name);
+            } else {
+                if(hasDefaultEntry(name) && !hasDefaultEntryValue(name)) {
+                    eraseEntry(config, name);
+                } else {
+                    addEntry(config, name);
+                }
+            }
+        }
+
+        public void addActiveEntryTransparent(@NonNull String name) {
+            addEntryTransparent(getActive(), name);
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Add (or replace if present) named entry (i.e., having a value)
+         * to configuration config
+         */
+        public void addEntry(String config, @NonNull String name, String value) {
+            assert !configNameWrong(config);
+            List<Map<String,String/*|null*/>> props = getEntries(config);
+            if(props == null) {
+                props = new ArrayList<Map<String,String/*|null*/>>();
+                APP_MULTIPROPS.put(config, props);
+            } else {
+                eraseEntry(props, name);
+            }
+            props.add(createEntry(name, value));
+        }
+
+        public void addDefaultEntry(@NonNull String name, String value) {
+            addEntry(null, name, value);
+        }
+
+        public void addActiveEntry(@NonNull String name, String value) {
+            addEntry(getActive(), name, value);
+        }
+
+        public void addEntryTransparent(String config, @NonNull String name, String value) {
+            assert !configNameWrong(config);
+            if(config == null) {
+                addDefaultEntry(name, value);
+            } else {
+                if(hasDefaultEntry(name, value)) {
+                    eraseEntry(config, name);
+                } else {
+                    addEntry(config, name, value);
+                }
+            }
+        }
+
+        public void addActiveEntryTransparent(@NonNull String name, String value) {
+            addEntryTransparent(getActive(), name, value);
+        }
+
+        //----------------------------------------------------------
+
+        /**
+        * Updates entries; if config==default, then simply updates default entries,
+        * otherwise updates entries in current config so that only those different
+        * from those in default config are stored.
+        * 
+        * @param config
+        * @param entries 
+        */
+        public void setEntriesTransparent(String config, List<Map<String,String/*|null*/>>/*|null*/ entries) {
+            assert !configNameWrong(config);
+            if(config == null) {
+                APP_MULTIPROPS.put(null, entries);
+            } else {
+                List<Map<String,String/*|null*/>> reduct = new ArrayList<Map<String,String/*|null*/>>();
+                List<Map<String,String/*|null*/>> def = JFXProjectUtils.copyList(getDefaultEntries());
+                if(entries != null) {
+                    for(Map<String,String> map : entries) {
+                        String name = map.get(suffixes[0]);
+                        String value = map.get(suffixes[1]);
+                        Map<String, String> old = getDefaultEntry(name);
+                        if(old != null) {
+                            String oldValue = old.get(suffixes[1]);
+                            if( !JFXProjectProperties.isEqual(value, oldValue) ) {
+                                reduct.add(JFXProjectUtils.copyMap(old));
+                            }
+                            def.remove(old);
+                        } else {
+                            reduct.add(JFXProjectUtils.copyMap(map));
+                        }
+                    }
+                    for(Map<String,String> map : def) {
+                        map.put(suffixes[1], ""); // NOI18N
+                        reduct.add(JFXProjectUtils.copyMap(map));
+                    }
+                }
+                APP_MULTIPROPS.put(config, reduct);
+            }
+        }
+
+        public void setActiveEntriesTransparent(List<Map<String,String/*|null*/>>/*|null*/ entries) {
+            setEntriesTransparent(getActive(), entries);
+        }
+
+        //----------------------------------------------------------
+
+        public void eraseEntry(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            eraseEntry(getEntries(config), name);
+        }
+
+        public void eraseDefaultEntry(@NonNull String name) {
+            eraseEntry((String)null, name);
+        }
+
+        public void eraseActiveEntry(@NonNull String name) {
+            eraseEntry(getActive(), name);
+        }
+
+        public void eraseEntry(String config) {
+            assert !configNameWrong(config);
+            APP_MULTIPROPS.remove(config);
+        }
+
+        public void eraseDefaultEntries() {
+            eraseEntry(null);
+        }
+
+        public void eraseActiveEntries() {
+            eraseEntry(getActive());
+        }
+
+        //==========================================================
+
+        /**
+        * If entryName exists in entries, returns the map representing it
+        * Returns null if entry does not exist.
+        * 
+        * @param entries list of application entries (each stored in a map in keys 'name' and 'value'
+        * @param entryName entry to be searched for
+        * @return entry if found, null otherwise
+        */
+        private Map<String, String> getEntry(List<Map<String, String>> entries, String entryName) {
+            if(entries != null) {
+                for(Map<String, String> map : entries) {
+                    String name = map.get(suffixes[0]);
+                    if(name != null && name.equals(entryName)) {
+                        return map;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private void eraseEntry(List<Map<String, String>> entries, String entryName) {
+            if(entries != null) {
+                Map<String, String> toErase = null;
+                for(Map<String, String> map : entries) {
+                    String name = map.get(suffixes[0]);
+                    if(name != null && name.equals(entryName)) {
+                        toErase = map;
+                        break;
+                    }
+                }
+                if(toErase != null) {
+                    entries.remove(toErase);
+                }
+            }
+        }
+
+        //----------------------------------------------------------
+
+        private boolean isEntryNameProperty(@NonNull String prop) {
+            return prop != null && prop.startsWith(prefix) && prop.endsWith(suffixes[0]);
+        }
+
+        private boolean isEntryValueProperty(@NonNull String prop) {
+            return prop != null && prop.startsWith(prefix) && prop.endsWith(suffixes[1]);
+        }
+
+        private String getEntryValueProperty(String entryNameProperty) {
+            if(entryNameProperty != null && isEntryNameProperty(entryNameProperty)) {
+                return entryNameProperty.replace(suffixes[0], suffixes[1]);
+            }
+            return null;
+        }
+
+        private String getEntryNameProperty(int index) {
+            return prefix + index + "." + suffixes[0]; // NOI18N
+        }
+
+        private String getEntryValueProperty(int index) {
+            return prefix + index + "." + suffixes[1]; // NOI18N
+        }
+
+        private boolean isFreeEntryPropertyIndex(int index, @NonNull EditableProperties ep) {
+            return !ep.containsKey(getEntryNameProperty(index));
+        }
+
+        private int getFreeEntryPropertyIndex(int start, @NonNull EditableProperties ep, @NonNull EditableProperties pep, List<String> propNamesUsed) {
+            int index = (start >= 0) ? start : 0;
+            while(index >= 0) {
+                if(isFreeEntryPropertyIndex(index, ep) && isFreeEntryPropertyIndex(index, pep) && (propNamesUsed == null || !propNamesUsed.contains(getEntryNameProperty(index)))) {
+                    break;
+                }
+                index++;
+            }
+            return (index >= 0) ? index : 0;
+        }
+
+        /**
+         * Adds/updates properties representing entries in editable properties
+         * 
+         * @param config
+         * @param projectProperties
+         * @param privateProperties
+         * @return 
+         */
+        private boolean updateEntryProperties(String config, @NonNull EditableProperties projectProperties, @NonNull EditableProperties privateProperties, @NonNull List<String> propNamesUsed) {
+            assert !configNameWrong(config);
+            boolean privateUpdated = false;
+            List<Map<String, String>> reduce = JFXProjectUtils.copyList(getEntries(config));
+            // remove properties with indexes used before (to be replaced later by new unique property names)
+            for(String prop : propNamesUsed) {
+                if(prop != null && prop.length() > 0) {
+                    projectProperties.remove(prop);
+                    projectProperties.remove(getEntryValueProperty(prop));
+                    privateProperties.remove(prop);
+                    privateProperties.remove(getEntryValueProperty(prop));
+                }
+            }
+            // delete those private prop properties not present in config and log usage of the remaining
+            cleanEntryPropertiesIfEmpty(config, privateProperties);
+            for(String prop : privateProperties.keySet()) {
+                if(isEntryNameProperty(prop)) {
+                    propNamesUsed.add(prop);
+                }
+            }
+            // update private properties
+            List<Map<String, String>> toEraseList = new LinkedList<Map<String, String>>();
+            for(Map<String, String> map : reduce) {
+                String name = map.get(suffixes[0]);
+                String value = map.get(suffixes[1]);
+                if(updateEntryPropertyIfExists(name, value, privateProperties, true)) {
+                    toEraseList.add(map);
+                    privateUpdated = true;
+                }
+            }
+            for(Map<String, String> toErase : toEraseList) {
+                reduce.remove(toErase);
+            }
+            // delete those nonprivate prop properties not present in reduce and log usage of the remaining
+            cleanEntryPropertiesNotListed(reduce, projectProperties);
+            for(String prop : projectProperties.keySet()) {
+                if(isEntryNameProperty(prop)) {
+                    propNamesUsed.add(prop);
+                }
+            }
+            // now create new nonprivate prop properties
+            int index = 0;
+            for(Map<String, String> map : reduce) {
+                String name = map.get(suffixes[0]);
+                String value = map.get(suffixes[1]);
+                if(name != null && name.length() > 0 && !updateEntryPropertyIfExists(name, value, projectProperties, false)) {
+                    index = getFreeEntryPropertyIndex(index, projectProperties, privateProperties, propNamesUsed);
+                    exportEntryProperty(map, getEntryNameProperty(index), getEntryValueProperty(index), projectProperties);
+                    propNamesUsed.add(getEntryNameProperty(index));
+                }
+            }
+            return privateUpdated;
+        }
+
+        private boolean updateDefaultEntryProperties(@NonNull EditableProperties projectProperties, @NonNull EditableProperties privateProperties, List<String> propNamesUsed) {
+            return updateEntryProperties(null, projectProperties, privateProperties, propNamesUsed);
+        }
+
+        /**
+        * Searches in properties for entry named 'name'. If found, updates
+        * both existing entry properties (for 'name' and 'value') and returns
+        * true, otherwise returns false.
+        * 
+        * @param name entry name
+        * @param value entry value
+        * @param properties editable properties in which to search for updateable entries
+        * @param storeEmpty true==keep empty properties in editable properties, false==remove empty properties
+        * @return true if updated existing property, false otherwise
+        */
+        private boolean updateEntryPropertyIfExists(@NonNull String name, String value, EditableProperties ep, boolean storeEmpty) {
+            if(name != null && !name.isEmpty()) {
+                for(String prop : ep.keySet()) {
+                    if(isEntryNameProperty(prop)) {
+                        if(JFXProjectProperties.isEqual(name, ep.get(prop))) {
+                            String propVal = getEntryValueProperty(prop);
+                            if (value != null && (value.length() > 0 || storeEmpty)) {
+                                ep.setProperty(propVal, value);
+                            } else {
+                                ep.remove(propVal);
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        /**
+        * Remove from ep all prop related properties that represent
+        * entries not present in config
+        * 
+        * @param ep editable properties
+        */
+        private void cleanEntryPropertiesIfEmpty(String config, EditableProperties ep) {
+            assert !configNameWrong(config);
+            List<String> toRemove = new LinkedList<String>();
+            for(String prop : ep.keySet()) {
+                if(isEntryNameProperty(prop)) {
+                    String name = ep.get(prop);
+                    if(!hasEntry(config, name)) {
+                        toRemove.add(prop);
+                    }
+                }
+            }
+            for(String prop : toRemove) {
+                ep.remove(prop);
+                ep.remove(getEntryValueProperty(prop));
+            }
+        }
+
+        /**
+        * Remove from ep all entry related properties that represent
+        * entries not present in 'entries'
+        * 
+        * @param ep editable properties
+        */
+        private void cleanEntryPropertiesNotListed(List<Map<String, String>> entries, EditableProperties ep) {
+            List<String> toRemove = new LinkedList<String>();
+            for(String name : ep.keySet()) {
+                if(isEntryNameProperty(name)) {
+                    boolean inProps = false;
+                    for(Map<String,String> map : entries) {
+                        String prop = map.get(suffixes[0]);
+                        if(JFXProjectProperties.isEqual(name, prop)) {
+                            inProps = true;
+                            break;
+                        }
+                    }
+                    if(!inProps) {
+                        toRemove.add(name);
+                    }
+                }
+            }
+            for(String prop : toRemove) {
+                ep.remove(prop);
+                ep.remove(getEntryValueProperty(prop));
+            }
+        }
+
+        /**
+        * Store one entry to editable properties (effectively as two properties,
+        * one for name, second for value), index is used to distinguish among
+        * entry-property instances
+        * 
+        * @param entry property to be stored in editable properties
+        * @param newPropName name of property to store entry name
+        * @param newPropValue name of property to store entry value
+        * @param ep editable properties to which prop is to be stored
+        */
+        private void exportEntryProperty(@NonNull Map<String, String> entry, String newPropName, String newPropValue, @NonNull EditableProperties ep) {
+            String name = entry.get(suffixes[0]);
+            String value = entry.get(suffixes[1]);
+            if(name != null) {
+                ep.put(newPropName, name);
+                if(value != null && value.length() > 0) {
+                    ep.put(newPropValue, value);
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------
+        
+        /**
+        * Extract from editable properties all properties depicting application entries
+        * and store them as such in 'entries'. If such exist in 'entries', then override their values.
+        * 
+        * @param ep editable properties to extract from
+        * @param props application entries to add to / update in
+        */
+        private void extractEntries(@NonNull EditableProperties ep, String config) {
+            if(ep != null) {
+                for(String prop : ep.keySet()) {
+                    if(prop.startsWith(prefix) && prop.endsWith(suffixes[0])) {
+                        String name = ep.getProperty(prop);
+                        if(name != null) {
+                            String propV = prop.replace(suffixes[0], suffixes[1]);
+                            String value = ep.getProperty(propV);
+                            if(value != null) {
+                                addEntry(config, name, value);
+                            } else {
+                                addEntry(config, name);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void extractDefaultEntries(@NonNull EditableProperties ep) {
+            extractEntries(ep, null);
+        }
+
+        private void extractActiveEntries(@NonNull EditableProperties ep) {
+            extractEntries(ep, getActive());
+        }
+
+    }
+    
 }

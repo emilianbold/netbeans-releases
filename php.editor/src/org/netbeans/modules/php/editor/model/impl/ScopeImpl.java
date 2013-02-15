@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -66,7 +65,8 @@ import org.openide.util.Union2;
 abstract class ScopeImpl extends ModelElementImpl implements Scope {
 
     private OffsetRange blockRange = null;
-    private final List<ModelElementImpl> elements = Collections.synchronizedList(new LinkedList<ModelElementImpl>());
+    //@GuardedBy("this")
+    private List<ModelElementImpl> elements = null;
 
     //new contructors
     ScopeImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers, Block block, boolean isDeprecated) {
@@ -114,11 +114,14 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     }
 
     @Override
-    public List<? extends ModelElementImpl> getElements() {
-        return new ArrayList<ModelElementImpl>(elements);
+    public synchronized List<? extends ModelElementImpl> getElements() {
+        return elements == null ? Collections.EMPTY_LIST : new ArrayList<ModelElementImpl>(elements);
     }
 
-    void addElement(ModelElementImpl element) {
+    synchronized void addElement(ModelElementImpl element) {
+        if (elements == null) {
+            elements = new ArrayList<ModelElementImpl>();
+        }
         elements.add(element);
     }
 

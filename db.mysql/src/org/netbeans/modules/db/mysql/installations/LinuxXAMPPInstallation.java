@@ -93,4 +93,9 @@ public class LinuxXAMPPInstallation implements Installation {
     public String getDefaultPort() {
         return DEFAULT_PORT;
     }
+
+    @Override
+    public String toString() {
+        return "Linux XAMPP Installation - " + LAMPP;                   //NOI18N
+    }
 }

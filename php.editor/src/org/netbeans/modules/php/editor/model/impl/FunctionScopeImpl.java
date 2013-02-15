@@ -43,12 +43,14 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
@@ -79,8 +81,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableNameFactory {
+    private static final String TYPE_SEPARATOR = "|"; //NOI18N
+    private static final String TYPE_SEPARATOR_REGEXP = "\\|"; //NOI18N
     private List<? extends ParameterElement> paremeters;
-    volatile String returnType;
+    //@GuardedBy("this")
+    private String returnType;
 
     //new contructors
     FunctionScopeImpl(Scope inScope, FunctionDeclarationInfo info, String returnType) {
@@ -125,19 +130,31 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     //old contructors
 
+    public synchronized void addReturnType(String type) {
+        if (returnType == null) {
+            returnType = type;
+        } else {
+            returnType += (TYPE_SEPARATOR + type);
+        }
+    }
 
-    @Override
-    public Collection<? extends TypeScope> getReturnTypes() {
-        return getReturnTypesDescriptor(false).getModifiedResult(Collections.<TypeScope>emptyList());
+    protected synchronized String getReturnType() {
+        return returnType;
     }
 
     @Override
-    public Collection<? extends String> getReturnTypeNames() {
+    public Collection<? extends TypeScope> getReturnTypes() {
+        return getReturnTypesDescriptor(getReturnType(), false).getModifiedResult(Collections.<TypeScope>emptyList());
+    }
+
+    @Override
+    public synchronized Collection<? extends String> getReturnTypeNames() {
         Collection<String> retval = Collections.<String>emptyList();
-        if (returnType != null && returnType.length() > 0) {
+        String type = getReturnType();
+        if (type != null && type.length() > 0) {
             retval = new ArrayList<String>();
-            for (String typeName : returnType.split("\\|")) { //NOI18N
-                if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+            for (String typeName : type.split(TYPE_SEPARATOR_REGEXP)) {
+                if (!VariousUtils.isSemiType(typeName)) {
                     retval.add(typeName);
                 }
             }
@@ -146,74 +163,84 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     @Override
-    public Collection<? extends TypeScope> getReturnTypes(boolean resolve, Collection<? extends TypeScope> callerTypes) {
+    public Collection<? extends TypeScope> getReturnTypes(boolean resolveSemiTypes, Collection<? extends TypeScope> callerTypes) {
         assert callerTypes != null;
-        return getReturnTypesDescriptor(resolve).getModifiedResult(callerTypes);
+        String types = getReturnType();
+        Collection<? extends TypeScope> result = getReturnTypesDescriptor(types, resolveSemiTypes).getModifiedResult(callerTypes);
+        updateReturnTypes(types, result);
+        return result;
     }
 
     private static Set<String> recursionDetection = new HashSet<String>(); //#168868
 
-    private ReturnTypesDescriptor getReturnTypesDescriptor(boolean resolve) {
-        ReturnTypesDescriptor result = null;
-        Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
-        String types;
-        synchronized (this) {
-            types = returnType;
-        }
-        if (types != null && types.length() > 0) {
-            boolean evaluate = types.indexOf(VariousUtils.PRE_OPERATION_TYPE_DELIMITER) != -1; //NOI18N
-            retval = new HashSet<TypeScope>();
-            for (String typeName : types.split("\\|")) { //NOI18N
-                if (typeName.trim().length() > 0) {
-                    boolean added = false;
-                    try {
-                        added = recursionDetection.add(typeName);
-                        if (added && recursionDetection.size() < 15) {
-                            if (typeName.equals("\\this") || typeName.equals("\\static")) { //NOI18N
-                                retval = Collections.<TypeScope>emptyList();
-                                result = new CallerDependentTypesDescriptor();
-                                break;
-                            }
-                            if (typeName.equals("object") || typeName.equals("\\self") && getInScope() instanceof ClassScope) { //NOI18N
-                                retval = new HashSet<TypeScope>();
-                                retval.add((TypeScope) getInScope());
-                                result = new CommontTypesDescriptor(retval);
-                                break;
-                            }
-                            if (resolve && typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
-                                retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
-
-                            } else {
-                                String modifiedTypeName = typeName;
-                                if (typeName.indexOf("[") != -1) { //NOI18N
-                                    modifiedTypeName = typeName.replaceAll("\\[.*\\]", ""); //NOI18N
+    private ReturnTypesDescriptor getReturnTypesDescriptor(String types, boolean resolveSemiTypes) {
+        ReturnTypesDescriptor result = ReturnTypesDescriptor.NONE;
+        if (StringUtils.hasText(types)) {
+            String[] typeNames = types.split(TYPE_SEPARATOR_REGEXP);
+            if (containsCallerDependentType(typeNames)) {
+                result = new CallerDependentTypesDescriptor();
+            } else if (getInScope() instanceof ClassScope && containsSelfDependentType(typeNames)) {
+                result = new CommonTypesDescriptor(Collections.singleton((TypeScope) getInScope()));
+            } else {
+                Collection<TypeScope> retval = new HashSet<TypeScope>();
+                for (String typeName : typeNames) {
+                    if (typeName.trim().length() > 0) {
+                        boolean added = false;
+                        try {
+                            added = recursionDetection.add(typeName);
+                            if (added && recursionDetection.size() < 15) {
+                                if (resolveSemiTypes && VariousUtils.isSemiType(typeName)) {
+                                    retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
+                                } else {
+                                    String modifiedTypeName = typeName;
+                                    if (typeName.indexOf("[") != -1) { //NOI18N
+                                        modifiedTypeName = typeName.replaceAll("\\[.*\\]", ""); //NOI18N
+                                    }
+                                    retval.addAll(IndexScopeImpl.getTypes(QualifiedName.create(modifiedTypeName), this));
                                 }
-                                retval.addAll(IndexScopeImpl.getTypes(QualifiedName.create(modifiedTypeName), this));
+                            }
+                        } finally {
+                            if (added) {
+                                recursionDetection.remove(typeName);
                             }
                         }
-                    } finally {
-                        if (added) {
-                            recursionDetection.remove(typeName);
-                        }
                     }
                 }
-            }
-            if (evaluate) {
-                StringBuilder sb = new StringBuilder();
-                for (TypeScope typeScope : retval) {
-                    if (sb.length() != 0) {
-                        sb.append("|"); //NOI18N
-                    }
-                    sb.append(typeScope.getNamespaceName().append(typeScope.getName()).toString());
-                }
-                synchronized (this) {
-                    if (types.equals(returnType)) {
-                        returnType = sb.toString();
-                    }
-                }
+                result = new CommonTypesDescriptor(retval);
             }
         }
-        return result == null ? new CommontTypesDescriptor(retval) : result;
+        return result;
+    }
+
+    private static boolean containsCallerDependentType(String[] typeNames) {
+        return (Arrays.binarySearch(typeNames, "\\this") >= 0) || (Arrays.binarySearch(typeNames, "\\static") >= 0); //NOI18N
+    }
+
+    private static boolean containsSelfDependentType(String[] typeNames) {
+        return (Arrays.binarySearch(typeNames, "\\self") >= 0) || (Arrays.binarySearch(typeNames, "object") >= 0); //NOI18N
+    }
+
+    private void updateReturnTypes(String oldTypes, Collection<? extends TypeScope> resolvedReturnTypes) {
+        if (VariousUtils.isSemiType(oldTypes)) {
+            updateSemiReturnTypes(oldTypes, resolvedReturnTypes);
+        }
+    }
+
+    private void updateSemiReturnTypes(String oldTypes, Collection<? extends TypeScope> resolvedReturnTypes) {
+        StringBuilder sb = new StringBuilder();
+        for (TypeScope typeScope : resolvedReturnTypes) {
+            if (sb.length() != 0) {
+                sb.append(TYPE_SEPARATOR);
+            }
+            sb.append(typeScope.getNamespaceName().append(typeScope.getName()).toString());
+        }
+        updateReturnTypesIfNotChanged(oldTypes, sb.toString());
+    }
+
+    private synchronized void updateReturnTypesIfNotChanged(String oldTypes, String newTypes) {
+        if (oldTypes.equals(getReturnType())) {
+            returnType = newTypes;
+        }
     }
 
     @NonNull
@@ -240,7 +267,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         sb.append('[');
         for (TypeScope typeScope : returnTypes) {
             if (sb.length() == 1) {
-                sb.append("|"); //NOI18N
+                sb.append(TYPE_SEPARATOR); //NOI18N
             }
             sb.append(typeScope.getName());
         }
@@ -292,8 +319,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
         }
         sb.append(Signature.ITEM_DELIMITER);
-        if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
-            sb.append(returnType);
+        String type = getReturnType();
+        if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)) {
+            sb.append(type);
         }
         sb.append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
@@ -320,15 +348,22 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
 
     private interface ReturnTypesDescriptor {
+        ReturnTypesDescriptor NONE = new ReturnTypesDescriptor() {
+
+            @Override
+            public Collection<? extends TypeScope> getModifiedResult(Collection<? extends TypeScope> callerTypes) {
+                return Collections.emptyList();
+            }
+        };
 
         Collection<? extends TypeScope> getModifiedResult(Collection<? extends TypeScope> callerTypes);
 
     }
 
-    private static final class CommontTypesDescriptor implements ReturnTypesDescriptor {
+    private static final class CommonTypesDescriptor implements ReturnTypesDescriptor {
         private final Collection<? extends TypeScope> rawTypes;
 
-        public CommontTypesDescriptor(Collection<? extends TypeScope> rawTypes) {
+        public CommonTypesDescriptor(Collection<? extends TypeScope> rawTypes) {
             assert rawTypes != null;
             this.rawTypes = rawTypes;
         }

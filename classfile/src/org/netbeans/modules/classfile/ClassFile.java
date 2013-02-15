@@ -69,6 +69,7 @@ public class ClassFile {
     Method[] methods;
     String sourceFileName;
     InnerClass[] innerClasses;
+    BootstrapMethod[] bootstrapMethods;
     private AttributeMap attributes;
     private Map<ClassName,Annotation> annotations;
     short majorVersion;
@@ -413,6 +414,28 @@ public class ClassFile {
 		innerClasses = new InnerClass[0];
 	}
         return Arrays.asList(innerClasses);
+    }
+    
+    /**Return the content of the <code>BootstrapMethods</code> attribute.
+     * 
+     * @return 
+     * @since 1.40
+     */
+    public final List<BootstrapMethod> getBootstrapMethods(){
+	if (bootstrapMethods == null) {
+	    DataInputStream in = attributes.getStream("BootstrapMethods"); // NOI18N
+	    if (in != null) {
+		try {
+		    bootstrapMethods = 
+			BootstrapMethod.loadBootstrapMethod(in, constantPool);
+		    in.close();
+		} catch (IOException e) {
+		    throw new InvalidClassFileAttributeException("invalid InnerClasses attribute", e);
+		}
+	    } else
+		bootstrapMethods = new BootstrapMethod[0];
+	}
+        return Arrays.asList(bootstrapMethods);
     }
 
     /**

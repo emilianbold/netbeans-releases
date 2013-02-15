@@ -102,4 +102,8 @@ public class BundledInstallation implements Installation {
         return port;
     }
 
+    @Override
+    public String toString() {
+        return "Bundled Installation";                                  //NOI18N
+    }
 }

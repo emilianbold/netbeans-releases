@@ -93,6 +93,8 @@ public class FaceletsLibrarySupport {
     private Map<String, AbstractFaceletsLibrary> faceletsLibraries;
 
     private long libraries_hash;
+    
+    private boolean checkLibrariesUpToDate;
 
     private static final Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
 
@@ -152,11 +154,23 @@ public class FaceletsLibrarySupport {
     private synchronized void invalidateLibrariesCache() {
         faceletsLibraries = null;
     }
+    
+    /*
+     * Called via the JsfSupport from the JSF indexers when their source roots have been rescanned.
+     * that can mean the files related to the JSF libraries might have changed so we need to re-check
+     * the libraries up-to-date status next time when one calls getLibraries().
+     */
+    public void indexedContentPossiblyChanged() {
+        checkLibrariesUpToDate = true;
+    }
 
     /** @return URI -> library map */
     public synchronized Map<String, AbstractFaceletsLibrary> getLibraries() {
-        checkLibraryDescriptorsUpToDate();
-
+        if(checkLibrariesUpToDate) {
+            checkLibraryDescriptorsUpToDate();
+            checkLibrariesUpToDate = false;
+        }
+        
         if (faceletsLibraries == null) {
             faceletsLibraries = findLibraries();
 
@@ -170,7 +184,7 @@ public class FaceletsLibrarySupport {
 
         return faceletsLibraries;
     }
-
+    
     private void checkLibraryDescriptorsUpToDate() {
         //check whether the library descriptors have changes since the last time
         long hash = 7;
@@ -366,8 +380,8 @@ public class FaceletsLibrarySupport {
 
         //process the found documents
         FaceletsTaglibConfigProcessor processor = new FaceletsTaglibConfigProcessor(this);
-        processor.process(null, documents);
-
+        processor.process(new EmptyServletContext(), documents);
+        
         Map<String, AbstractFaceletsLibrary> libsMap = new HashMap<String, AbstractFaceletsLibrary>();
         for (AbstractFaceletsLibrary lib : processor.compiler.libraries) {
             libsMap.put(lib.getNamespace(), lib);

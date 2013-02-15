@@ -89,7 +89,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     @Override
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
-        query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
+        query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS, panel.isSearchInComments());
         ModelElement element1 = panel.getElement();
         this.element.setModelElement(element1);
         if (kind == ElementKind.METHOD) {
@@ -109,15 +109,15 @@ public class WhereUsedQueryUI implements RefactoringUI {
         } else {
             query.setRefactoringSource(Lookups.singleton(element));
         }
-        query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
-        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isMethodFindUsages());
+        query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, panel.isMethodOverriders());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES, panel.isMethodFindUsages());
     }
 
     private void setForClass() {
-        query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
-        query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES,panel.isClassSubTypesDirectOnly());
-        query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
-        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isClassFindUsages());
+        query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, panel.isClassSubTypes());
+        query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES, panel.isClassSubTypesDirectOnly());
+        query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, panel.isClassSubTypes());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES, panel.isClassFindUsages());
     }
 
     @Override
@@ -135,18 +135,18 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     @Override
     public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
-        return query!=null?query:delegate;
+        return query != null ? query : delegate;
     }
 
     @Override
     public String getDescription() {
-        String nameText = name;//NOI18N
-        String bundleKey = (panel!=null && panel.isClassSubTypesDirectOnly()) ?
-            "DSC_WhereUsedFindDirectSubTypes" : "DSC_WhereUsed";//NOI18N
+        String nameText = name; //NOI18N
+        String bundleKey = (panel != null && panel.isClassSubTypesDirectOnly())
+                ? "DSC_WhereUsedFindDirectSubTypes" : "DSC_WhereUsed"; //NOI18N
         return getString(bundleKey, nameText);
     }
-
     private ResourceBundle bundle;
+
     private String getString(String key) {
         if (bundle == null) {
             bundle = NbBundle.getBundle(WhereUsedQueryUI.class);
@@ -155,15 +155,13 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
 
     private String getString(String key, String value) {
-        return new MessageFormat(getString(key)).format (new Object[] {value});
+        return new MessageFormat(getString(key)).format(new Object[]{value});
     }
-
 
     @Override
     public String getName() {
-        return new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_WhereUsed")).format (
-                    new Object[] {name}
-                );
+        return new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_WhereUsed")).format(
+                new Object[]{name});
     }
 
     @Override

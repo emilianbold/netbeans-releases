@@ -45,7 +45,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 
 /**
  *
@@ -57,11 +57,7 @@ public class Utils {
         Set<MissingPlugin> plugins = new HashSet<MissingPlugin>(inPlugins);
 
         for (MissingPlugin missing : plugins) {
-            try {
-                new ModuleInstallerSupport().download(SPIAccessor.ACCESSOR.getCNB(missing), SPIAccessor.ACCESSOR.getDisplayName(missing));
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            PluginManager.installSingle(SPIAccessor.ACCESSOR.getCNB(missing), SPIAccessor.ACCESSOR.getDisplayName(missing));
         }
     }
 }

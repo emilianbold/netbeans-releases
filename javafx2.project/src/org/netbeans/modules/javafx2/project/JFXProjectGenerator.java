@@ -72,6 +72,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
+import org.netbeans.modules.javafx2.project.fxml.ConfigureFXMLControllerPanelVisual;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -818,7 +819,7 @@ public class JFXProjectGenerator {
                 return; // Don't know the template
             }
             Map<String, String> params = new HashMap<String, String>(1);
-            params.put("postfix", NbBundle.getMessage(JFXProjectGenerator.class, "TXT_FileNameControllerPostfix")); // NOI18N
+            params.put("postfix", NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "TXT_FileNameControllerPostfix")); // NOI18N
             DataObject dXMLTemplate = DataObject.find(xmlTemplate);
             dXMLTemplate.createFromTemplate(pDf, fxmlName, params);
 
@@ -827,7 +828,7 @@ public class JFXProjectGenerator {
                 return; // Don't know the template
             }
             DataObject dJavaTemplate = DataObject.find(javaTemplate);
-            dJavaTemplate.createFromTemplate(pDf, fxmlName + NbBundle.getMessage(JFXProjectGenerator.class, "TXT_FileNameControllerPostfix")); //NOI18N
+            dJavaTemplate.createFromTemplate(pDf, fxmlName + NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "TXT_FileNameControllerPostfix")); //NOI18N
         }
     }
     

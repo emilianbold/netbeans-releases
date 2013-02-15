@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -311,17 +310,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
 
             if (typeName != null) {
-                Set<String> types = new HashSet<String>();
-                if (functionScope.returnType != null) {
-                    String[] split = functionScope.returnType.split("\\|"); //NOI18N
-                    types.addAll(Arrays.asList(split));
-                }
-                String tp = QualifiedName.create(typeName).toString();
-                if (types.isEmpty()) {
-                    functionScope.returnType = tp;
-                } else if (types.add(tp)) {
-                    functionScope.returnType += "|" + tp; //NOI18N
-                }
+                functionScope.addReturnType(QualifiedName.create(typeName).toString());
             }
         }
     }
@@ -340,7 +329,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (assignment != null) {
                         String typeName = assignment.typeNameFromUnion();
                         if (typeName != null) {
-                            if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
+                            if (!VariousUtils.isSemiType(typeName)) {
                                 return typeName;
                             } else {
                                 String variableName = getName(typeName, VariousUtils.Kind.VAR, true);
@@ -380,7 +369,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 String[] split = semiType.split(prefix, 2);
                 if (split.length > 1) {
 
-                    if (split[1].contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {
+                    if (VariousUtils.isSemiType(split[1])) {
                         if (strict) {
                             return null;
                         } else {
@@ -630,7 +619,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             Expression name = functionName.getName();
             if (name instanceof Variable) {
                 Variable variable = (Variable) name;
-                if (variable.isDollared()) {
+                if (variable.isDollared() || (name instanceof ReflectionVariable)) {
                     result = false;
                 } else {
                     result = true;
@@ -764,15 +753,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         }
         scan(node.getDispatcher());
-    }
-
-    @Override
-    public void visit(FunctionName node) {
-        //intentionally ommited - if deleted, golden tests will fail and will show the reason
-        //super.visit(node);
-        if (node.getName() instanceof Variable) {
-            occurencesBuilder.prepare((Variable) node.getName(), modelBuilder.getCurrentScope());
-        }
     }
 
     private Map<String, AssignmentImpl> getAssignmentMap(Scope scope, final VariableBase leftHandSide) {
@@ -1342,10 +1322,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     public VariableScope getVariableScope(int offset) {
+        return getVariableScope(getFileScope().getElements(), offset);
+    }
+
+    private VariableScope getVariableScope(List<? extends ModelElement> elements, int offset) {
         VariableScope retval = null;
-        List<ModelElement> elements = new ArrayList<ModelElement>();
-        elements.add(getFileScope());
-        elements.addAll(ModelUtils.getElements(getFileScope(), true));
+        List<ModelElement> subElements = new LinkedList<ModelElement>();
         for (ModelElement modelElement : elements) {
             if (modelElement instanceof VariableScope) {
                 VariableScope varScope = (VariableScope) modelElement;
@@ -1360,11 +1342,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (possibleScope && blockRange.containsInclusive(offset)
                             && (retval == null || retval.getBlockRange().overlaps(varScope.getBlockRange()))) {
                         retval = varScope;
+                        subElements.addAll(varScope.getElements());
                     }
                 }
             }
         }
-        return retval;
+        VariableScope subResult = subElements.isEmpty() ? null : getVariableScope(subElements, offset);
+        return subResult == null ? retval : subResult;
     }
 
     private void buildCodeMarks(final int offset) {

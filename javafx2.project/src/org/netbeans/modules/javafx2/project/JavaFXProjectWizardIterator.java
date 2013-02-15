@@ -62,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
+import org.netbeans.modules.javafx2.project.fxml.ConfigureFXMLControllerPanelVisual;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -261,7 +262,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                         }
                     }
                     
-                    FileObject controller = sourcesRoot.getFileObject(pName + fxmlName + NbBundle.getMessage(JFXProjectGenerator.class, "TXT_FileNameControllerPostfix") + ".java"); // NOI18N
+                    FileObject controller = sourcesRoot.getFileObject(pName + fxmlName + NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "TXT_FileNameControllerPostfix") + ".java"); // NOI18N
                     if (controller != null) {
                         resultSet.add(controller);
                     }

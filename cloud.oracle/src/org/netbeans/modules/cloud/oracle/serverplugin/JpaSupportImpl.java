@@ -63,7 +63,7 @@ class JpaSupportImpl implements JpaSupportImplementation {
     }
 
     private static JpaProvider createDefaultProvider() {
-        return JpaProviderFactory.createJpaProvider(ECLIPSELINK_JPA_PROVIDER, true, true, true);
+        return JpaProviderFactory.createJpaProvider(ECLIPSELINK_JPA_PROVIDER, true, true, true, false);
     }
     
     @Override

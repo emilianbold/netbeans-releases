@@ -60,6 +60,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
+import org.netbeans.api.search.SearchPattern.MatchType;
 import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.ui.PatternChangeListener;
 import org.netbeans.modules.search.ui.ShorteningCellRenderer;
@@ -84,10 +85,13 @@ public final class SearchPatternController
     public enum Option {
         MATCH_CASE, WHOLE_WORDS, REGULAR_EXPRESSION
     }
+
     private final Map<Option, AbstractButton> bindings =
             new EnumMap<Option, AbstractButton>(Option.class);
     private final Map<Option, Boolean> options =
             new EnumMap<Option, Boolean>(Option.class);
+    private JComboBox matchTypeComboBox = null;
+    private MatchType matchType = MatchType.LITERAL;
     private final ItemListener listener;
     private boolean valid;
     private Color defaultTextColor = null;
@@ -141,6 +145,14 @@ public final class SearchPatternController
                                 be.getValue().setSelected(sp.isRegExp());
                                 break;
                         }
+                    }
+                    if (matchTypeComboBox != null) {
+                        matchTypeComboBox.setSelectedItem(sp.getMatchType());
+                        // set only to match type that is supported by the combo
+                        matchType =
+                                (MatchType) matchTypeComboBox.getSelectedItem();
+                    } else {
+                        matchType = sp.getMatchType();
                     }
                     options.put(Option.MATCH_CASE, sp.isMatchCase());
                     options.put(Option.WHOLE_WORDS, sp.isWholeWords());
@@ -225,8 +237,37 @@ public final class SearchPatternController
             button.setSelected(value);
         }
         if (option == Option.REGULAR_EXPRESSION) {
+            if ((matchType == MatchType.REGEXP) != value) {
+                setMatchType(value ? MatchType.REGEXP : MatchType.LITERAL);
+            }
             updateValidity();
         }
+        fireChange();
+    }
+
+    /**
+     * Set value of a search pattern option. The correct item in corresponding
+     * combo box will be selected accordingly.
+     */
+    private void setMatchType(MatchType newMatchType) {
+        Parameters.notNull("matchType", matchType);                     //NOI18N
+        if (matchTypeComboBox != null) {
+            // use only match types contained in the combo box
+            if (matchTypeComboBox.getSelectedItem() != newMatchType)
+            matchTypeComboBox.setSelectedItem(newMatchType);
+            matchType = (MatchType) matchTypeComboBox.getSelectedItem();
+        } else {
+            matchType = newMatchType;
+        }
+        if (matchTypeComboBox != null
+                && matchTypeComboBox.getSelectedItem() != matchType) {
+            matchTypeComboBox.setSelectedItem(matchType);
+        }
+        if (getOption(Option.REGULAR_EXPRESSION)
+                != (MatchType.REGEXP == matchType)) {
+            setOption(Option.REGULAR_EXPRESSION, matchType == MatchType.REGEXP);
+        }
+        updateValidity();
         fireChange();
     }
 
@@ -237,7 +278,7 @@ public final class SearchPatternController
         return SearchPattern.create(getText(),
                 getOption(Option.WHOLE_WORDS),
                 getOption(Option.MATCH_CASE),
-                getOption(Option.REGULAR_EXPRESSION));
+                matchType);
     }
 
     /**
@@ -248,7 +289,7 @@ public final class SearchPatternController
         setText(searchPattern.getSearchExpression());
         setOption(Option.WHOLE_WORDS, searchPattern.isWholeWords());
         setOption(Option.MATCH_CASE, searchPattern.isMatchCase());
-        setOption(Option.REGULAR_EXPRESSION, searchPattern.isRegExp());
+        setMatchType(searchPattern.getMatchType());
     }
 
     /**
@@ -273,6 +314,51 @@ public final class SearchPatternController
             @Override
             public void itemStateChanged(ItemEvent e) {
                 setOption(option, button.isSelected());
+            }
+        });
+    }
+
+    /**
+     * Bind Match Type option to a combo box.
+     *
+     * @param comboBox Combo box to control and display the match type. The
+     * model of the combo box can contain only items of type {@link MatchType}.
+     * {@link MatchType.LITERAL} and {@link MatchType.REGEXP} are mandatory in
+     * the model.
+     *
+     * @since api.search/1.11
+     */
+    public void bindMatchTypeComboBox(@NonNull final JComboBox comboBox) {
+        Parameters.notNull("comboBox", comboBox);                       //NOI18N
+
+        boolean regexpFound = false, literalFound = false;
+        for (int i = 0; i < comboBox.getItemCount(); i++) {
+            if (comboBox.getItemAt(i) == MatchType.LITERAL) {
+                literalFound = true;
+            } else if (comboBox.getItemAt(i) == MatchType.REGEXP) {
+                regexpFound = true;
+            } else if (!(comboBox.getItemAt(i) instanceof MatchType)) {
+                throw new IllegalArgumentException("Model of the combo "//NOI18N
+                        + "box can contain only MatchType items");      //NOI18N
+            }
+        }
+        if (!(regexpFound && literalFound)) {
+            throw new IllegalArgumentException(
+                    "At least MatchType.LITERAL and MatchType.REGEXP " //NOI18N
+                    + "must be contained in the combo box model.");     //NOI18N
+        }
+        if (matchTypeComboBox != null) {
+            throw new IllegalStateException(
+                    "Already bound with option MATCH_TYPE");            //NOI18N
+        }
+        this.matchTypeComboBox = comboBox;
+        comboBox.setEditable(false);
+        setMatchType(this.matchType); //update match type, check it is supported
+        comboBox.setSelectedItem(matchType);
+        comboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                setMatchType((MatchType) comboBox.getSelectedItem());
             }
         });
     }

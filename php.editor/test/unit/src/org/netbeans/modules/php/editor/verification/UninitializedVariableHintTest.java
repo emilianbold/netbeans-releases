@@ -69,6 +69,10 @@ public class UninitializedVariableHintTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new UninitializedVariableHintStub(false), "testGlobalContext.php");
     }
 
+    public void testIssue226041() throws Exception {
+        checkHintsInStartEndFile(new UninitializedVariableHintStub(false), "testIssue226041.php");
+    }
+
     private class UninitializedVariableHintStub extends UninitializedVariableHint {
         private final boolean uninitializedVariable;
 

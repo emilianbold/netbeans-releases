@@ -79,6 +79,20 @@ public final class TextRegexpUtil {
     private TextRegexpUtil() {
     }
 
+    private static String makeLiteralRegexp(String literalPattern,
+            boolean wholeWords) {
+
+        StringBuilder sb = new StringBuilder();
+        if (wholeWords) {
+            sb.append(checkNotAfterWordChar);
+        }
+        sb.append(Pattern.quote(literalPattern));
+        if (wholeWords) {
+            sb.append(checkNotBeforeWordChar);
+        }
+        return sb.toString();
+    }
+
     /**
      * Translates the given simple pattern to a regular expression.
      *
@@ -194,8 +208,19 @@ public final class TextRegexpUtil {
             LOG.log(Level.FINEST, " - textPatternExpr = \"{0}{1}",
                     new Object[]{sp.getSearchExpression(), '"'});       //NOI18N
         }
-        String searchRegexp = makeRegexp(sp.getSearchExpression(),
-                sp.isWholeWords());
+        String searchRegexp;
+        switch (sp.getMatchType()) {
+            case BASIC:
+                searchRegexp = makeRegexp(
+                        sp.getSearchExpression(), sp.isWholeWords());
+                break;
+            case LITERAL:
+                searchRegexp = makeLiteralRegexp(
+                        sp.getSearchExpression(), sp.isWholeWords());
+                break;
+            default:
+                throw new IllegalStateException();
+        }
 
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.log(Level.FINEST, " - regexp = \"{0}{1}",

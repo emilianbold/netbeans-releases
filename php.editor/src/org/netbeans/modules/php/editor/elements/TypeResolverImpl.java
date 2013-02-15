@@ -114,7 +114,7 @@ public final class TypeResolverImpl implements TypeResolver {
     }
 
     private static boolean isResolvedImpl(final String typeName) {
-        return typeName != null && typeName.indexOf(VariousUtils.PRE_OPERATION_TYPE_DELIMITER) == -1;
+        return typeName != null && !VariousUtils.isSemiType(typeName);
     }
 
     @Override

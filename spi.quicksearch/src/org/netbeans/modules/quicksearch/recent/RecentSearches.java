@@ -305,7 +305,15 @@ public class RecentSearches {
     }
 
     private String stripHTMLnames(String s) {
-        return s.replaceAll("<.*?>", "").trim();
+        return translateHTMLEntities(s.replaceAll("<.*?>", "")).trim(); //NOI18N
     }
 
+    /**
+     * Convert HTML entities to plain characters. For efficiency and dependency
+     * reasons support only entities that are known to appear in the search
+     * results.
+     */
+    private String translateHTMLEntities(String s) {
+        return s.replaceAll("\\&amp;", "&");                            //NOI18N
+    }
 }

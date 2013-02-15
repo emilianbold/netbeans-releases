@@ -401,7 +401,8 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
 
     public void propertyChange( PropertyChangeEvent e ) {
         if( Settings.PROP_PATTERN_LIST.equals( e.getPropertyName() )
-         || Settings.PROP_SCAN_COMMENTS_ONLY.equals( e.getPropertyName() ) ) {
+         || Settings.PROP_SCAN_COMMENTS_ONLY.equals( e.getPropertyName() )
+         || Settings.PROP_IDENTIFIERS_LIST.equals( e.getPropertyName() )){
             regexp = null;
             if( null != callback )
                 callback.refreshAll();
