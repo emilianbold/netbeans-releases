@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -190,7 +191,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                             added = recursionDetection.add(typeName);
                             if (added && recursionDetection.size() < 15) {
                                 if (resolveSemiTypes && VariousUtils.isSemiType(typeName)) {
-                                    retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
+                                    retval.addAll(VariousUtils.getType(this, typeName, getLastValidMethodOffset(), false));
                                 } else {
                                     String modifiedTypeName = typeName;
                                     if (typeName.indexOf("[") != -1) { //NOI18N
@@ -210,6 +211,33 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
             }
         }
         return result;
+    }
+
+    private int getLastValidMethodOffset() {
+        int result = getOffset();
+        List<? extends ModelElement> elements = ModelUtils.getElements(this, true);
+        if (elements != null && !elements.isEmpty()) {
+            Collections.sort(elements, new ModelElementsPositionComparator());
+            result = elements.get(0).getNameRange().getEnd();
+        }
+        return result;
+    }
+
+    private static final class ModelElementsPositionComparator implements Comparator<ModelElement> {
+
+        @Override
+        public int compare(ModelElement o1, ModelElement o2) {
+            int o1End = o1.getNameRange().getEnd();
+            int o2End = o2.getNameRange().getEnd();
+            // furthest first
+            if (o1End < o2End) {
+                return 1;
+            } else if (o1End > o2End) {
+                return -1;
+            }
+            return 0;
+        }
+
     }
 
     private static boolean containsCallerDependentType(String[] typeNames) {
