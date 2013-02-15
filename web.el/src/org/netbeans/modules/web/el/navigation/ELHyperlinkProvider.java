@@ -195,11 +195,11 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
         if (!resourceBundles.canHaveBundles()) {
             return null;
         }
-        for (Pair<AstIdentifier,AstString> each : resourceBundles.collectKeys(pair.second.getNode())) {
+        for (Pair<AstIdentifier, Node> each : resourceBundles.collectKeys(pair.second.getNode())) {
             if (each.second.equals(pair.first)) {
                 StringBuilder result = new StringBuilder();
-                String key = each.second.getString();
-                String value = resourceBundles.getValue(each.first.getImage(), each.second.getString());
+                String key = each.second.getImage();
+                String value = resourceBundles.getValue(each.first.getImage(), each.second.getImage());
                 String bundle = each.first.getImage();
                 result.append("<html><body>")
                         /* displaying the bundle in the tooltip looks a bit strange,
