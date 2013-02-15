@@ -47,7 +47,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.glassfish.tools.ide.admin.ResultString;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -61,6 +61,7 @@ import org.openide.util.actions.NodeAction;
  */
 public class UnregisterResourceAction extends NodeAction {
 
+    @Override
     protected void performAction(Node[] nodes) {
         if((nodes == null) || (nodes.length < 1)) {
             return;
@@ -70,10 +71,11 @@ public class UnregisterResourceAction extends NodeAction {
             UnregisterResourceCookie uCookie = node.getCookie(UnregisterResourceCookie.class);
 
             if(uCookie != null) {
-                final Future<OperationState> result = uCookie.unregister();
+                final Future<ResultString> result = uCookie.unregister();
                 final Node pNode = node.getParentNode().getParentNode();
 
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             result.get(ServerUtilities.ACTION_TIMEOUT, ServerUtilities.ACTION_TIMEOUT_UNIT);
@@ -97,6 +99,7 @@ public class UnregisterResourceAction extends NodeAction {
         }
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         for(Node node : nodes) {
             UnregisterResourceCookie cookie = node.getCookie(UnregisterResourceCookie.class);
@@ -108,6 +111,7 @@ public class UnregisterResourceAction extends NodeAction {
         return true;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(UnregisterResourceAction.class, "LBL_UnregisterAction");
     }
@@ -117,6 +121,7 @@ public class UnregisterResourceAction extends NodeAction {
         return false;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

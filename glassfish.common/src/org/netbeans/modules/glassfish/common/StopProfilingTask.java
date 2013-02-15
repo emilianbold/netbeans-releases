@@ -43,9 +43,10 @@ package org.netbeans.modules.glassfish.common;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,7 +54,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Peter Benedikovic
  */
-public class StopProfilingTask extends BasicTask<GlassfishModule.OperationState> {
+public class StopProfilingTask extends BasicTask<TaskState> {
 
     private final CommonServerSupport support;
 
@@ -62,14 +63,15 @@ public class StopProfilingTask extends BasicTask<GlassfishModule.OperationState>
      * @param support common support object for the server instance being stopped
      * @param stateListener state monitor to track start progress
      */
-    public StopProfilingTask(final CommonServerSupport support, OperationStateListener stateListener) {
-        super(support.getInstance(), stateListener, new OperationStateListener() {
+    public StopProfilingTask(final CommonServerSupport support, TaskStateListener stateListener) {
+        super(support.getInstance(), stateListener, new TaskStateListener() {
 
             @Override
-           public void operationStateChanged(OperationState newState, String message) {
-                if(newState == OperationState.COMPLETED) {
+           public void operationStateChanged(TaskState newState,
+           TaskEvent event, String... args) {
+                if(newState == TaskState.COMPLETED) {
                     support.setServerState(GlassfishModule.ServerState.STOPPED);
-                } else if(newState == OperationState.FAILED) {
+                } else if(newState == TaskState.FAILED) {
                     support.setServerState(GlassfishModule.ServerState.STOPPED_JVM_PROFILER);
                 }
             }
@@ -78,7 +80,7 @@ public class StopProfilingTask extends BasicTask<GlassfishModule.OperationState>
     }
     
     @Override
-    public OperationState call() {
+    public TaskState call() {
         Logger.getLogger("glassfish").log(Level.FINEST, "StopLocalTask.call() called on thread {0}", Thread.currentThread().getName()); // NOI18N
         
         if (support.getLocalStartProcess() != null) {
@@ -87,9 +89,13 @@ public class StopProfilingTask extends BasicTask<GlassfishModule.OperationState>
             logger.write(msg, false);
             logger.stopReaders();
             support.stopLocalStartProcess();
-            return fireOperationStateChanged(OperationState.COMPLETED, "MSG_SERVER_PROFILING_STOPPED", instanceName);
+            return fireOperationStateChanged(TaskState.COMPLETED,
+                    TaskEvent.CMD_COMPLETED,
+                    "MSG_SERVER_PROFILING_STOPPED", instanceName);
         } else {
-            return fireOperationStateChanged(OperationState.FAILED, "MSG_STOP_SERVER_FAILED", instanceName);
+            return fireOperationStateChanged(TaskState.FAILED,
+                    TaskEvent.CMD_FAILED,
+                    "MSG_STOP_SERVER_FAILED", instanceName);
         }
     }
     

@@ -51,10 +51,11 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.modules.glassfish.eecommon.api.JDBCDriverDeployHelper;
 import org.netbeans.modules.glassfish.javaee.ide.MonitorProgressObject;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
@@ -80,6 +81,7 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
         driverLoc = new File(domainDir + File.separator + domain + File.separator + "lib");
     }
 
+    @Override
     public boolean supportsDeployJDBCDrivers(Target target) {
         boolean supported = isLocal;
         // todo -- allow the user to turn this deployment operation OFF.
@@ -89,6 +91,7 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
         return supported;
     }
 
+    @Override
     public ProgressObject deployJDBCDrivers(Target target, Set<Datasource> datasources) {
         List urls = JDBCDriverDeployHelper.getMissingDrivers(getDriverLocations(), datasources);
         final MonitorProgressObject startProgress = new MonitorProgressObject(dm,null);
@@ -96,6 +99,7 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
         if (urls.size() > 0) {
             retVal.addProgressListener(new ProgressListener() {
 
+                @Override
                 public void handleProgressEvent(ProgressEvent event) {
                     // todo -- enable when this is ready
                     if (event.getDeploymentStatus().isCompleted()) {
@@ -106,7 +110,8 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
                 }
             });
         } else {
-            startProgress.operationStateChanged(OperationState.COMPLETED, "no deployment necessary");
+            startProgress.operationStateChanged(TaskState.COMPLETED,
+                    TaskEvent.CMD_COMPLETED, "no deployment necessary");
         }
         RequestProcessor.getDefault().post((Runnable) retVal);
         return startProgress; // new JDBCDriverDeployHelper.getProgressObject(dmp.getDriverLocation(), datasources);

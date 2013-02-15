@@ -71,7 +71,9 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     //new contructors
     ScopeImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers, Block block, boolean isDeprecated) {
         super(inScope, info, modifiers, isDeprecated);
-        setBlockRange(block);
+        if (block != null) {
+            this.blockRange = new OffsetRange(block.getStartOffset(), block.getEndOffset());
+        }
     }
 
     ScopeImpl(Scope inScope, PhpElement element, PhpElementKind kind) {
@@ -142,12 +144,6 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
         boolean isAccepted(ModelElement element);
     }
 
-
-    void setBlockRange(Block block) {
-        if (block != null) {
-            this.blockRange = new OffsetRange(block.getStartOffset(), block.getEndOffset());
-        }
-    }
     void setBlockRange(ASTNode program) {
         this.blockRange = new OffsetRange(program.getStartOffset(), program.getEndOffset());
     }

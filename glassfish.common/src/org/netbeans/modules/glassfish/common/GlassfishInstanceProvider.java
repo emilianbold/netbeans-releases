@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.admin.CommandSetProperty;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.keyring.Keyring;
@@ -57,8 +58,6 @@ import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
-import org.netbeans.modules.glassfish.spi.ServerCommand;
-import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
@@ -111,23 +110,22 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
         else {
             boolean runInit = false;
-            synchronized(GlassfishInstanceProvider.class) {
+            synchronized (GlassfishInstanceProvider.class) {
                 if (ee6Provider == null) {
                     runInit = true;
                     ee6Provider = new GlassfishInstanceProvider(
                             new String[]{EE6_DEPLOYER_FRAGMENT, EE6WC_DEPLOYER_FRAGMENT},
                             new String[]{EE6_INSTANCES_PATH, EE6WC_INSTANCES_PATH},
                             null,
-                            true, 
+                            true,
                             new String[]{"--nopassword"}, // NOI18N
-                            new CommandFactory()  {
-
-                        @Override
-                        public SetPropertyCommand getSetPropertyCommand(String name, String value) {
-                            return new ServerCommand.SetPropertyCommand(name, value,
-                                    "DEFAULT={0}={1}"); // NOI18N
-                        }
-
+                            new CommandFactory() {
+                                @Override
+                                public CommandSetProperty getSetPropertyCommand(
+                                        String property, String value) {
+                                    return new CommandSetProperty(property,
+                                            value, "DEFAULT={0}={1}");
+                                }
                     });
                 }
             }
@@ -144,7 +142,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
         else {
             boolean runInit = false;
-            synchronized(GlassfishInstanceProvider.class) {
+            synchronized (GlassfishInstanceProvider.class) {
                 if (preludeProvider == null) {
                     runInit = true;
                     preludeProvider = new GlassfishInstanceProvider(
@@ -155,13 +153,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                             false,
                             null,
                             new CommandFactory()  {
-
                                 @Override
-                                public SetPropertyCommand getSetPropertyCommand(String name, String value) {
-                                    return new ServerCommand.SetPropertyCommand(name, value,
-                                            "target={0}&value={1}"); // NOI18N
+                                public CommandSetProperty getSetPropertyCommand(
+                                        String property, String value) {
+                                    return new CommandSetProperty(property,
+                                            value, "target={0}&value={1}");
                                 }
-
                             });
                 }
             }

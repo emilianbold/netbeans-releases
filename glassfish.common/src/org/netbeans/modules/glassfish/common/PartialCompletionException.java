@@ -52,7 +52,7 @@ public class PartialCompletionException extends Exception {
 
     private String failedUpdates;
 
-    PartialCompletionException(String itemsNotUpdated) {
+    public PartialCompletionException(String itemsNotUpdated) {
         //throw new UnsupportedOperationException("Not yet implemented");
         failedUpdates = itemsNotUpdated;
     }

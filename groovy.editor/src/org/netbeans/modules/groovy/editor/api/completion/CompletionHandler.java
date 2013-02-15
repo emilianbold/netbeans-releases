@@ -176,7 +176,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
             proposalsCollector.completeCamelCase(request);
 
-            return new DefaultCompletionResult(proposalsCollector.getCollectedProposals(), false);
+            return new GroovyCompletionResult(proposalsCollector.getCollectedProposals(), info, document);
         } finally {
             doc.readUnlock();
         }

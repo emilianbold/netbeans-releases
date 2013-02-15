@@ -228,6 +228,14 @@ final class MainImpl extends Object {
                 return result.getExitCode();
             }
         }
+        if (result.getExitCode () == CLIHandler.Status.ALREADY_RUNNING) {
+            JOptionPane.showMessageDialog(null,
+                MessageFormat.format(ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunning"), user),
+                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunningTitle"),
+                JOptionPane.OK_OPTION
+            );
+            return result.getExitCode();
+        }
 
         if (methodToCall != null) {
             String className = System.getProperty("netbeans.mainclass", "org.netbeans.core.startup.Main"); // NOI18N

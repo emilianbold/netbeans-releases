@@ -298,8 +298,10 @@ public final class FormatContext {
                                 nonEmpty = startToken == FormatTokenStream.getNextNonVirtual(previous);
                                 break;
                             }
-                            nonEmpty = previous.getKind() != FormatToken.Kind.WHITESPACE
-                                    && previous.getKind() != FormatToken.Kind.EOL;
+// issue #226147
+//                            nonEmpty = previous.getKind() != FormatToken.Kind.WHITESPACE
+//                                    && previous.getKind() != FormatToken.Kind.EOL;
+                            nonEmpty = JsEmbeddingProvider.isGeneratedIdentifier(previous.getText().toString());
                         }
                         if (nonEmpty) {
                             break;

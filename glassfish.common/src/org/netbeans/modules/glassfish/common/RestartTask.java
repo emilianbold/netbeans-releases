@@ -47,18 +47,18 @@ package org.netbeans.modules.glassfish.common;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
-
 
 /**
  *
  * @author Peter Williams
  * @author Vince Kraemer
  */
-public class RestartTask extends BasicTask<OperationState> {
+public class RestartTask extends BasicTask<TaskState> {
 
     private static final int RESTART_DELAY = 5000;
 
@@ -69,7 +69,7 @@ public class RestartTask extends BasicTask<OperationState> {
      * @param support common support object for the server instance being restarted
      * @param stateListener state monitor to track start progress
      */
-    public RestartTask(CommonServerSupport support, OperationStateListener... stateListener) {
+    public RestartTask(CommonServerSupport support, TaskStateListener... stateListener) {
         super(support.getInstance(), stateListener);
         this.support = support;
     }
@@ -92,9 +92,12 @@ public class RestartTask extends BasicTask<OperationState> {
      */
     @SuppressWarnings("SleepWhileInLoop")
     @Override
-    public OperationState call() {
-        Logger.getLogger("glassfish").log(Level.FINEST, "RestartTask.call() called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
-        fireOperationStateChanged(OperationState.RUNNING, "MSG_RESTART_SERVER_IN_PROGRESS", instanceName); // NOI18N
+    public TaskState call() {
+        Logger.getLogger("glassfish").log(Level.FINEST,
+                "RestartTask.call() called on thread \"{0}\"",
+                Thread.currentThread().getName());
+        fireOperationStateChanged(TaskState.RUNNING, TaskEvent.CMD_RUNNING,
+                "MSG_RESTART_SERVER_IN_PROGRESS", instanceName);
 
         ServerState state = support.getServerState();
 
@@ -107,29 +110,34 @@ public class RestartTask extends BasicTask<OperationState> {
                 try {
                     Thread.sleep(DELAY);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.FINER,
+                            ex.getLocalizedMessage(), ex);
                 }
                 currentState = support.getServerState();
             }
 
             if (currentState != ServerState.RUNNING) {
-                return fireOperationStateChanged(OperationState.FAILED,
-                        "MSG_RESTART_SERVER_FAILED_WONT_START", instanceName); // NOI18N
+                return fireOperationStateChanged(TaskState.FAILED,
+                        TaskEvent.CMD_FAILED,
+                        "MSG_RESTART_SERVER_FAILED_WONT_START", instanceName);
             }
         } else {
             boolean postStopDelay = true;
             if (state == ServerState.RUNNING) {
-                    Future<OperationState> stopTask = support.stopServer(null);
-                    OperationState stopResult = OperationState.FAILED;
+                    Future<TaskState> stopTask = support.stopServer(null);
+                    TaskState stopResult = TaskState.FAILED;
                     try {
                         stopResult = stopTask.get(STOP_TIMEOUT, TIMEUNIT);
                     } catch (Exception ex) {
-                        Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex); // NOI18N
+                        Logger.getLogger("glassfish").log(Level.FINER,
+                                ex.getLocalizedMessage(), ex);
                     }
 
-                    if (stopResult == OperationState.FAILED) {
-                        return fireOperationStateChanged(OperationState.FAILED,
-                                "MSG_RESTART_SERVER_FAILED_WONT_STOP", instanceName); // NOI18N
+                    if (stopResult == TaskState.FAILED) {
+                        return fireOperationStateChanged(TaskState.FAILED,
+                                TaskEvent.CMD_FAILED,
+                                "MSG_RESTART_SERVER_FAILED_WONT_STOP",
+                                instanceName);
                     }
             } else if (state == ServerState.STOPPING) {
                 // wait for server to stop.
@@ -140,14 +148,17 @@ public class RestartTask extends BasicTask<OperationState> {
                     try {
                         Thread.sleep(DELAY);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex); // NOI18N
+                        Logger.getLogger("glassfish").log(Level.FINER,
+                                ex.getLocalizedMessage(), ex);
                     }
                     currentState = support.getServerState();
                 }
 
                 if (currentState != ServerState.STOPPED) {
-                    return fireOperationStateChanged(OperationState.FAILED,
-                            "MSG_RESTART_SERVER_FAILED_WONT_STOP", instanceName); // NOI18N
+                    return fireOperationStateChanged(TaskState.FAILED,
+                            TaskEvent.CMD_FAILED,
+                            "MSG_RESTART_SERVER_FAILED_WONT_STOP",
+                            instanceName);
                 }
             } else {
                 postStopDelay = false;
@@ -165,29 +176,41 @@ public class RestartTask extends BasicTask<OperationState> {
                 }
 
                 // Server should be stopped. Start it.
-                Object o = support.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, false);
+                Object o = support.setEnvironmentProperty(
+                        GlassfishModule.JVM_MODE,
+                        GlassfishModule.NORMAL_MODE, false);
                 if (GlassfishModule.PROFILE_MODE.equals(o)) {
-                    support.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, false);
+                    support.setEnvironmentProperty(GlassfishModule.JVM_MODE,
+                            GlassfishModule.NORMAL_MODE, false);
                 }
-                Future<OperationState> startTask = support.startServer(null, ServerState.RUNNING);
-                OperationState startResult = OperationState.FAILED;
+                Future<TaskState> startTask
+                        = support.startServer(null, ServerState.RUNNING);
+                TaskState startResult = TaskState.FAILED;
                 try {
                     startResult = startTask.get(START_TIMEOUT, TIMEUNIT);
                 } catch (Exception ex) {
-                    Logger.getLogger("glassfish").log(Level.FINER, ex.getLocalizedMessage(), ex); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.FINER,
+                            ex.getLocalizedMessage(), ex); // NOI18N
                 }
 
-                if (startResult == OperationState.FAILED) {
-                    return fireOperationStateChanged(OperationState.FAILED,
-                            "MSG_RESTART_SERVER_FAILED_WONT_START", instanceName); // NOI18N
+                if (startResult == TaskState.FAILED) {
+                    return fireOperationStateChanged(TaskState.FAILED,
+                            TaskEvent.CMD_FAILED,
+                            "MSG_RESTART_SERVER_FAILED_WONT_START",
+                            instanceName);
                 }
 
-                if (!support.isRemote() && support.getServerState() != ServerState.RUNNING) {
-                    return fireOperationStateChanged(OperationState.FAILED,
-                            "MSG_RESTART_SERVER_FAILED_REASON_UNKNOWN", instanceName); // NOI18N
+                if (!support.isRemote()
+                        && support.getServerState() != ServerState.RUNNING) {
+                    return fireOperationStateChanged(TaskState.FAILED,
+                            TaskEvent.CMD_FAILED,
+                            "MSG_RESTART_SERVER_FAILED_REASON_UNKNOWN",
+                            instanceName);
                 }
         }
 
-        return fireOperationStateChanged(OperationState.COMPLETED, "MSG_SERVER_RESTARTED", instanceName); // NOI18N
+        return fireOperationStateChanged(TaskState.COMPLETED,
+                TaskEvent.CMD_COMPLETED,
+                "MSG_SERVER_RESTARTED", instanceName);
     }
 }

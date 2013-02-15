@@ -103,13 +103,9 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
                 </file>
                 -->
-                <file name="WindowsStandalone50Installation.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.WindowsStandalone50Installation.getDefault"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
-                </file>
-                <file name="WindowsStandalone51Installation.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.WindowsStandalone51Installation.getDefault"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.Installation"/>
+                <file name="WindowsStandaloneMultiInstallation.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.mysql.installations.WindowsStandaloneMultiInstallation.getDefault"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.db.mysql.impl.MultiInstallation"/>
                 </file>
             </folder>
         </folder>

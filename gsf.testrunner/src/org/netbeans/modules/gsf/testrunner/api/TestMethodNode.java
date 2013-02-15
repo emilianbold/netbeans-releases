@@ -45,11 +45,17 @@
 package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -195,8 +201,30 @@ public class TestMethodNode extends AbstractNode {
     }
     
     @Override
+    @NbBundle.Messages("LBL_CopyStackTrace=&Copy Stack Trace")
     public Action[] getActions(boolean context) {
-        return new Action[] {new DiffViewAction(testcase)};
+	List<Action> actions = new ArrayList<Action>();
+	if ((testcase.getTrouble() != null) && (testcase.getTrouble().getComparisonFailure() != null)){
+            actions.add(new DiffViewAction(testcase));
+        }
+	if (testcase.getTrouble() != null) {
+	    StringBuilder callStack = new StringBuilder();
+	    for(String stack : testcase.getTrouble().getStackTrace()) {
+		if(stack != null) {
+		    callStack.append(stack.concat("\n"));
+		}
+	    }
+	    if (callStack.length() > 0) {
+		final String trace = callStack.toString();
+		actions.add(new AbstractAction(Bundle.LBL_CopyStackTrace()) {
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(trace), null);
+		    }
+		});
+	    }
+	}
+        return actions.toArray(new Action[actions.size()]);
     }
     
     @Override

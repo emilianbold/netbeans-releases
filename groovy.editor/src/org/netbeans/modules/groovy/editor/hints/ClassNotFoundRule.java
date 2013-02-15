@@ -50,8 +50,8 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.*;
-import org.netbeans.modules.groovy.editor.actions.ImportHelper;
-import org.netbeans.modules.groovy.editor.actions.ImportCandidate;
+import org.netbeans.modules.groovy.editor.imports.ImportHelper;
+import org.netbeans.modules.groovy.editor.imports.ImportCandidate;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyError;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyErrorRule;
@@ -182,7 +182,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
         @Override
         public void implement() throws Exception {
-            ImportHelper.doImport(fo, fqn);
+            ImportHelper.addImportStatement(fo, fqn);
         }
 
         @Override

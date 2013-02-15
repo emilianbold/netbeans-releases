@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,67 +34,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql.installations;
+package org.netbeans.modules.groovy.editor.imports;
 
-import org.netbeans.modules.db.mysql.impl.Installation;
-import org.netbeans.modules.db.mysql.util.Utils;
-import org.openide.util.Utilities;
+import javax.swing.Icon;
 
 /**
- * Standalone version 5.0 on Windows, not installed as a server
- * 
- * @author David Van Couvering
+ *
+ * @author Martin Janicek
  */
-public class WindowsStandalone50Installation implements Installation {
-    private static final String DEFAULT_BASE_PATH = 
-            "C:/Program Files/MySQL/MySQL Server 5.0";
-    
-    private static final WindowsStandalone50Installation DEFAULT = new
-            WindowsStandalone50Installation(DEFAULT_BASE_PATH);
-    
-    private final String basePath;
-        
-    public static WindowsStandalone50Installation getDefault() {
-        return DEFAULT;
+public class ImportCandidate {
+
+    private String name;
+    private String fqnName;
+    private Icon icon;
+    private int importantsLevel;
+
+    public ImportCandidate(String name, String fqnName, Icon icon, int importantsLevel) {
+        this.name = name;
+        this.fqnName = fqnName;
+        this.icon = icon;
+        this.importantsLevel = importantsLevel;
     }
 
-    protected WindowsStandalone50Installation(String basePath) {
-        this.basePath = basePath;
-    }
-    
-    public String[] getStartCommand() {
-        return new String[] { basePath + "/bin/mysqld-nt.exe", "--console"}; // NOI18N
+    public String getName() {
+        return name;
     }
 
-    public String[] getStopCommand() {
-        return new String[] { basePath + "/bin/mysqladmin.exe", "-u root shutdown"}; // NOI18N
-    }
-    
-    public boolean isInstalled() {
-        return Utilities.isWindows() && 
-                Utils.isValidExecutable(getStartCommand()[0]);
+    public void setName(String Name) {
+        this.name = Name;
     }
 
-    public boolean isStackInstall() {
-        return false;
+    public String getFqnName() {
+        return fqnName;
     }
 
-    public String[] getAdminCommand() {
-        return new String[] { "", ""};
+    public void setFqnName(String fqnName) {
+        this.fqnName = fqnName;
     }
 
-    public String getDefaultPort() {
-        return "3306"; // NOI18N
+    public Icon getIcon() {
+        return icon;
     }
 
-    public Installation getInstallation(String command, Command cmdType) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void setIcon(Icon icon) {
+        this.icon = icon;
     }
 
+    public int getImportantsLevel() {
+        return importantsLevel;
+    }
+
+    public void setImportantsLevel(int importantsLevel) {
+        this.importantsLevel = importantsLevel;
+    }
 }

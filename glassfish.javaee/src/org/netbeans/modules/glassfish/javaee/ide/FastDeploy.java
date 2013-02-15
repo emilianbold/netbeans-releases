@@ -56,6 +56,8 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
@@ -64,16 +66,16 @@ import org.netbeans.modules.glassfish.eecommon.api.XmlFileCreator;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.glassfish.javaee.ModuleConfigurationImpl;
 import org.netbeans.modules.glassfish.javaee.ResourceRegistrationHelper;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule2;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -240,7 +242,6 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
 
     private ProgressObject checkAgainstGF15690(final File dir, Hk2TargetModuleID moduleId) {
         File parent = dir.getParentFile();
-        MonitorProgressObject po = null;
         if (null != parent) {
             if (GFDEPLOY.equals(parent.getName())) {
                 File modules[] = dir.listFiles();
@@ -248,8 +249,8 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
                     if (f.isDirectory()) {
                         String fname = f.getName();
                         if (badName.matcher(fname).matches()) {
-                            po = new MonitorProgressObject(dm, moduleId);
-                            po.operationStateChanged(GlassfishModule.OperationState.FAILED,
+                            MonitorProgressObject po = new MonitorProgressObject(dm, moduleId);
+                            po.operationStateChanged(TaskState.FAILED, TaskEvent.CMD_FAILED,
                                     NbBundle.getMessage(FastDeploy.class, "ERR_SPACE_IN_JAR_NAMES", fname)); // NOI18N
                             return po;
                         }
@@ -284,7 +285,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         for (File f : appChangeDescriptor.getChangedFiles()) {
             String fname = f.getAbsolutePath();
             if (badPath.matcher(fname).matches()) { // NOI18N
-                progressObject.operationStateChanged(GlassfishModule.OperationState.FAILED,
+                progressObject.operationStateChanged(TaskState.FAILED, TaskEvent.CMD_FAILED,
                         NbBundle.getMessage(FastDeploy.class, "ERR_SPACE_IN_JAR_NAMES", fname)); // NOI18N
                 return progressObject;
             }
@@ -359,7 +360,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
                     commonSupport.redeploy(progressObject, targetModuleID.getModuleID(), resourcesChanged);
                 }
             } else {
-                progressObject.operationStateChanged(GlassfishModule.OperationState.COMPLETED,
+                progressObject.operationStateChanged(TaskState.COMPLETED, TaskEvent.CMD_COMPLETED,
                         NbBundle.getMessage(FastDeploy.class, "MSG_RedeployUnneeded"));
             }
             return updateCRObject;

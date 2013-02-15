@@ -46,7 +46,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
@@ -139,9 +138,7 @@ class ModelBuilder {
 
     void build(Include node, OccurenceBuilder occurencesBuilder) {
         IncludeElementImpl inclImpl = ModelElementFactory.create(IncludeInfo.create(node), this);
-        if (inclImpl != null) {
-            occurencesBuilder.prepare(node, inclImpl);
-        }
+        occurencesBuilder.prepare(node, inclImpl);
     }
 
     InterfaceScope build(InterfaceDeclaration node, OccurenceBuilder occurencesBuilder) {
@@ -157,10 +154,9 @@ class ModelBuilder {
             MethodScopeImpl methodScope = new MethodScopeImpl(getCurrentScope(), info);
             occurencesBuilder.prepare(info, methodScope);
         }
-
     }
 
-     MethodScope build(MethodDeclaration node, OccurenceBuilder occurencesBuilder, ModelVisitor visitor) {
+    MethodScope build(MethodDeclaration node, OccurenceBuilder occurencesBuilder, ModelVisitor visitor) {
         final ScopeImpl scope = getCurrentScope();
         MethodScopeImpl methodScope = ModelElementFactory.create(MethodDeclarationInfo.create(getProgram(), node, (TypeScope) scope), this, visitor);
         setCurrentScope(methodScope);
@@ -257,7 +253,6 @@ class ModelBuilder {
             return namespaceScope;
         }
 
-        @CheckForNull
         static IncludeElementImpl create(IncludeInfo info, ModelBuilder context) {
             return new IncludeElementImpl(context.getCurrentScope(), info);
         }
