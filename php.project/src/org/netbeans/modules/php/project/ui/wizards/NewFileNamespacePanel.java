@@ -53,7 +53,6 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -83,8 +82,7 @@ class NewFileNamespacePanel implements NewFileWizardIterator.BottomPanel {
 
     @Override
     public boolean isPresentForProject(PhpProject project) {
-        PhpLanguageProperties.PhpVersion phpVersion = ProjectPropertiesSupport.getPhpVersion(project);
-        return phpVersion.ordinal() >= PhpLanguageProperties.PhpVersion.PHP_53.ordinal();
+        return ProjectPropertiesSupport.getPhpVersion(project).hasNamespaces();
     }
 
     @Override
