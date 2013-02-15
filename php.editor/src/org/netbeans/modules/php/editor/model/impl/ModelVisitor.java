@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -292,62 +291,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 typeName = VariousUtils.qualifyTypeNames(pureTypeName, node.getStartOffset(), currentScope);
             } else if (expression instanceof VariableBase) {
                 typeName = VariousUtils.extractTypeFroVariableBase((VariableBase) expression);
-                if (typeName != null) {
-                    Collection<? extends VariableName> allVariables = VariousUtils.getAllVariables(functionScope, typeName);
-                    Map<String, String> var2Type = new HashMap<String, String>();
-                    for (VariableName variable : allVariables) {
-                        String name = variable.getName();
-                        String type = resolveVariableType(name, functionScope, node);
-                        String qualifiedType = VariousUtils.qualifyTypeNames(type, node.getStartOffset(), currentScope);
-                        var2Type.put(name, qualifiedType);
-                    }
-                    if (!var2Type.isEmpty()) {
-                        typeName = VariousUtils.replaceVarNames(typeName, var2Type);
-                    }
-                }
             } else if (expression instanceof Scalar) {
                 typeName = VariousUtils.extractVariableTypeFromExpression(expression, null);
             }
-
             if (typeName != null) {
                 functionScope.addReturnType(QualifiedName.create(typeName).toString());
             }
         }
-    }
-
-    private static Set<String> recursionDetection = new HashSet<String>(); //#168868
-
-    private String resolveVariableType(String varName, FunctionScopeImpl varScope, ReturnStatement node) {
-        try {
-            if (varName != null && recursionDetection.add(varName)) {
-                if (varName.equalsIgnoreCase("$this") && varScope instanceof MethodScope) { //NOI18N
-                    return varScope.getInScope().getName();
-                }
-                VariableNameImpl var = (VariableNameImpl) ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
-                if (var != null) {
-                    AssignmentImpl assignment = var.findVarAssignment(node.getStartOffset());
-                    if (assignment != null) {
-                        String typeName = assignment.typeNameFromUnion();
-                        if (typeName != null) {
-                            if (!VariousUtils.isSemiType(typeName)) {
-                                return typeName;
-                            } else {
-                                String variableName = getName(typeName, VariousUtils.Kind.VAR, true);
-                                if (variableName != null && !variableName.equalsIgnoreCase(varName)) {
-                                    return resolveVariableType(variableName, varScope, node);
-                                }
-                                return typeName;
-                            }
-                        }
-                    }
-                }
-            }
-        } finally {
-            if (varName != null) {
-                recursionDetection.remove(varName);
-            }
-        }
-        return null;
     }
 
     @Override
@@ -359,33 +309,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(GotoStatement statement) {
         super.visit(statement);
         occurencesBuilder.prepare(statement, modelBuilder.getCurrentScope());
-    }
-
-
-    public static String getName(String semiType, VariousUtils.Kind kind, boolean strict) {
-        if (semiType != null) {
-            String prefix = VariousUtils.PRE_OPERATION_TYPE_DELIMITER + kind.toString(); // NOI18N
-            if (semiType.startsWith(prefix)) {
-                String[] split = semiType.split(prefix, 2);
-                if (split.length > 1) {
-
-                    if (VariousUtils.isSemiType(split[1])) {
-                        if (strict) {
-                            return null;
-                        } else {
-                            split = split[1].split(VariousUtils.PRE_OPERATION_TYPE_DELIMITER);
-                            if (split.length < 1) {
-                                return null;
-                            }
-                            return split[0];
-                        }
-                    } else {
-                        return split[1];
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     @Override
