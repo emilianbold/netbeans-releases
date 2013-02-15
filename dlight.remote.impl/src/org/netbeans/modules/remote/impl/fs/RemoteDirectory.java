@@ -480,8 +480,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
         
-    private static final Collection<String> AUTO_MOUNTS = Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade"); //NOI18N
-    
+    private static final Collection<String> AUTO_MOUNTS;
+    static {
+        List<String> list = new ArrayList<String>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/workspace")); //NOI18N
+        String t = System.getProperty("remote.autofs.list");
+        if (t != null) {
+            String[] paths = t.split(",");
+            for (String p : paths) {
+                if (p.startsWith("/")) { //NOI18N
+                    list.add(p);
+                }
+            }
+        }
+        AUTO_MOUNTS = Collections.unmodifiableList(list);
+    }
+
     private boolean isProhibited() {
         return getPath().equals("/proc");//NOI18N
     }
