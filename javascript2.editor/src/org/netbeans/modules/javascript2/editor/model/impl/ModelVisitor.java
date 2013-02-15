@@ -101,7 +101,6 @@ public class ModelVisitor extends PathNodeVisitor {
     private final JsParserResult parserResult;
 
     private JsObjectImpl fromAN = null;
-    private boolean inVarNode = false;
 
     public ModelVisitor(JsParserResult parserResult) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
@@ -308,13 +307,6 @@ public class ModelVisitor extends PathNodeVisitor {
                         lhs = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
                         if (lhs != null) {
                             ((JsObjectImpl)lhs).addOccurrence(name.getOffsetRange());
-                            if (binaryNode.rhs() instanceof UnaryNode && Token.descType(binaryNode.rhs().getToken()) == TokenType.NEW) {
-                                // new XXXX() statement
-                                modelBuilder.setCurrentObject((JsObjectImpl)lhs);
-                                binaryNode.rhs().accept(this);
-                                modelBuilder.reset();
-                                return null;
-                            }
                         } else {
                             addOccurence(ident, true);
                         }
@@ -336,14 +328,12 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     }
 
-                    if (jsObject != null) {
-                        Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, binaryNode.rhs());
-                        for (TypeUsage type : types) {
-                            jsObject.addAssignment(type, LexUtilities.getLexerOffset(parserResult, binaryNode.lhs().getFinish()));
-                        }
-                        if (!(lhs != null && jsObject.getName().equals(lhs.getName()))) {
-                            addOccurence(ident, true);
-                        }
+                    Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, binaryNode.rhs());
+                    for (TypeUsage type : types) {
+                        jsObject.addAssignment(type, LexUtilities.getLexerOffset(parserResult, binaryNode.lhs().getFinish()));
+                    }
+                    if (!(lhs != null && jsObject.getName().equals(lhs.getName()))) {
+                        addOccurence(ident, true);
                     }
                 }
             }
@@ -897,26 +887,8 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(UnaryNode unaryNode) {
-        if (Token.descType(unaryNode.getToken()) == TokenType.NEW) {
-            Node lastNode = getPath().get(getPath().size() -1);
-            if (unaryNode.rhs() instanceof CallNode
-                    && ((CallNode)unaryNode.rhs()).getFunction() instanceof IdentNode
-                    && !(lastNode instanceof PropertyNode) && !inVarNode) {
-                if (modelBuilder.getCurrentObject() != null) {
-                    int start = LexUtilities.getLexerOffset(parserResult, unaryNode.getStart());
-                    if (getPath().get(getPath().size() - 1) instanceof VarNode) {
-                        start = LexUtilities.getLexerOffset(parserResult, ((VarNode)getPath().get(getPath().size() - 1)).getName().getFinish());
-                    }
-                    Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, unaryNode);
-                    for (TypeUsage type : types) {
-                        modelBuilder.getCurrentObject().addAssignment(type, start);
-                    }
-                }
-            }
-        } else {
-            if (unaryNode.rhs() instanceof IdentNode) {
-                addOccurence((IdentNode)unaryNode.rhs(), false);
-            }
+        if (unaryNode.rhs() instanceof IdentNode) {
+            addOccurence((IdentNode) unaryNode.rhs(), false);
         }
         return super.enter(unaryNode);
     }
@@ -974,13 +946,9 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (varNode.getInit() instanceof IdentNode) {
                     addOccurence((IdentNode)varNode.getInit(), false);
                 }
-                if (!(varNode.getInit() instanceof UnaryNode &&
-                        Token.descType(((UnaryNode)varNode.getInit()).getToken()) == TokenType.NEW)) {
-                    inVarNode = true;
-                    Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, varNode.getInit());
-                    for (TypeUsage type : types) {
-                        variable.addAssignment(type, LexUtilities.getLexerOffset(parserResult, varNode.getName().getFinish()));
-                    }
+                Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, varNode.getInit());
+                for (TypeUsage type : types) {
+                    variable.addAssignment(type, LexUtilities.getLexerOffset(parserResult, varNode.getName().getFinish()));
                 }
                 List<Type> returnTypes = docHolder.getReturnType(varNode);
                 if (returnTypes != null && !returnTypes.isEmpty()) {
@@ -1011,7 +979,6 @@ public class ModelVisitor extends PathNodeVisitor {
                 && ModelElementFactory.create(parserResult, varNode.getName()) != null) {
             modelBuilder.reset();
         }
-        inVarNode = false;
         return super.leave(varNode);
     }
 
