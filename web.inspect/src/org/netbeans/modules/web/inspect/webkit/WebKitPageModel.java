@@ -472,7 +472,7 @@ public class WebKitPageModel extends PageModel {
                     if (remote == null) {
                         LOG.log(Level.INFO, "Node with ID {0} resolved to null RemoteObject!", contentDocument.getNodeId()); // NOI18N
                     } else {
-                        webKit.getRuntime().callFunctionOn(remote, "function() {\n"+initScript+"\n}");
+                        webKit.getRuntime().callFunctionOn(remote, "function() {\n"+initScript+"\n}"); // NOI18N
                         synchronized (WebKitPageModel.this) {
                             contentDocumentMap.put(contentDocument.getNodeId(), remote);
                         }

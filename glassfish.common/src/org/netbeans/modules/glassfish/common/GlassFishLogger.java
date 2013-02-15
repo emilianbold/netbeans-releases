@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.glassfish.common;
 
-package org.netbeans.modules.groovy.editor.actions;
-
-import javax.swing.Icon;
+import java.util.logging.Logger;
 
 /**
- *
- * @author Martin Janicek
+ * GlassFish module logger.
+ * <p/>
+ * @author Tomas Kraus
  */
-public class ImportCandidate {
+public class GlassFishLogger {
 
-    private String name;
-    private String fqnName;
-    private Icon icon;
-    private int importantsLevel;
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
 
-    public ImportCandidate(String name, String fqnName, Icon icon, int importantsLevel) {
-        this.name = name;
-        this.fqnName = fqnName;
-        this.icon = icon;
-        this.importantsLevel = importantsLevel;
+    /**
+     * Get logger for given class.
+     * <p/>
+     * @param  c Target class for logger.
+     * @return Logger for given class.
+     */
+    public static Logger get(Class c) {
+        return Logger.getLogger("glassfish");
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String Name) {
-        this.name = Name;
-    }
-
-    public String getFqnName() {
-        return fqnName;
-    }
-
-    public void setFqnName(String fqnName) {
-        this.fqnName = fqnName;
-    }
-
-    public Icon getIcon() {
-        return icon;
-    }
-
-    public void setIcon(Icon icon) {
-        this.icon = icon;
-    }
-
-    public int getImportantsLevel() {
-        return importantsLevel;
-    }
-
-    public void setImportantsLevel(int importantsLevel) {
-        this.importantsLevel = importantsLevel;
-    }
+    
 }

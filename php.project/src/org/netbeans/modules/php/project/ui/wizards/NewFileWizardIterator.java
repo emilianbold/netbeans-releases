@@ -45,12 +45,17 @@ import java.awt.Component;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.project.PhpProject;
@@ -67,17 +72,31 @@ import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
-/**
- * Just as simple wrapper for the standard new file iterator as possible.
- * @author Tomas Mysik
- */
 public final class NewFileWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
+
+    private static final long serialVersionUID = 5846231213213L;
+
     private static final Logger LOGGER = Logger.getLogger(NewFileWizardIterator.class.getName());
 
-    private static final long serialVersionUID = 2262026971167469147L;
+    private final BottomPanel bottomPanel;
+
     private WizardDescriptor wizard;
+    private PhpProject phpProject;
     private WizardDescriptor.Panel<WizardDescriptor>[] wizardPanels;
     private int index;
+
+
+    private NewFileWizardIterator(BottomPanel bottomPanel) {
+        this.bottomPanel = bottomPanel;
+    }
+
+    public static NewFileWizardIterator simple() {
+        return new NewFileWizardIterator(null);
+    }
+
+    public static NewFileWizardIterator withNamespace() {
+        return new NewFileWizardIterator(new NewFileNamespacePanel());
+    }
 
     @Override
     public Set<FileObject> instantiate() throws IOException {
@@ -86,8 +105,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
 
         DataFolder dataFolder = DataFolder.findFolder(dir);
         DataObject dataTemplate = DataObject.find(template);
-        DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard),
-                Collections.singletonMap(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true));
+        DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard), getTemplateParams());
 
         // #187374
         try {
@@ -99,9 +117,17 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         return Collections.singleton(createdFile.getPrimaryFile());
     }
 
+    private Map<String, Object> getTemplateParams() {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
+        params.put("namespace", wizard.getProperty(NewFileNamespacePanel.NAMESPACE)); // NOI18N
+        return params;
+    }
+
     @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
+        phpProject = getPhpProject();
         checkPhpProject();
         setTargetFolder();
         wizardPanels = getPanels();
@@ -121,7 +147,6 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     }
 
     private void checkPhpProject() {
-        PhpProject phpProject = getPhpProject();
         if (phpProject == null) {
             // not php project
             return;
@@ -136,7 +161,6 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             // already set
             return;
         }
-        PhpProject phpProject = getPhpProject();
         if (phpProject == null) {
             // not php project
             return;
@@ -233,17 +257,24 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
 
     @Override
     public void addChangeListener(ChangeListener l) {
+        BottomPanel bottomPanelForPhpProject = getBottomPanelForPhpProject();
+        if (bottomPanelForPhpProject != null) {
+            bottomPanelForPhpProject.addChangeListener(l);
+        }
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+        BottomPanel bottomPanelForPhpProject = getBottomPanelForPhpProject();
+        if (bottomPanelForPhpProject != null) {
+            bottomPanelForPhpProject.removeChangeListener(l);
+        }
     }
 
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         Project project = Templates.getProject(wizard);
         SourceGroup[] groups = PhpProjectUtils.getSourceGroups(project);
         // #218437
-        PhpProject phpProject = getPhpProject();
         if (phpProject != null) {
             // php project found
             if (groups.length == 0 && !PhpProjectValidator.isFatallyBroken(phpProject)) {
@@ -273,13 +304,46 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
                 groups = PhpProjectUtils.getSourceGroups(project);
             }
         }
-        WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.buildSimpleTargetChooser(project, groups).freeFileExtension().create();
-
+        final BottomPanel bottomPanelForPhpProject = getBottomPanelForPhpProject();
+        Templates.SimpleTargetChooserBuilder targetChooserBuilder = Templates.buildSimpleTargetChooser(project, groups);
+        if (bottomPanelForPhpProject != null) {
+            targetChooserBuilder
+                    .bottomPanel(bottomPanelForPhpProject);
+        }
+        final WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = targetChooserBuilder
+                .freeFileExtension()
+                .create();
+        if (bottomPanelForPhpProject != null) {
+            // hack - it is not possible to listen on panel (name and location)
+            simpleTargetChooserPanel.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    WizardDescriptor descriptor = new DummyWizardDescriptor();
+                    simpleTargetChooserPanel.storeSettings(descriptor);
+                    bottomPanelForPhpProject.targetFolderChanged(Templates.getTargetFolder(descriptor));
+                }
+            });
+        }
         @SuppressWarnings("unchecked") // Generic Array Creation
         WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                     simpleTargetChooserPanel
                 };
         return panels;
+    }
+
+    @CheckForNull
+    private BottomPanel getBottomPanelForPhpProject() {
+        if (bottomPanel == null) {
+            return null;
+        }
+        if (phpProject == null) {
+            // unknown project type, return what we have
+            return bottomPanel;
+        }
+        if (bottomPanel.isPresentForProject(phpProject)) {
+            return bottomPanel;
+        }
+        return null;
     }
 
     private void addDiagnosticForDirs(StringBuilder sb, PhpProject project, FileObject sources, FileObject tests, FileObject selenium) {
@@ -313,6 +377,24 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         sb.append(" ("); // NOI18N
         sb.append(seleniumRoots.getFiredChanges());
         sb.append(")"); // NOI18N
+    }
+
+    //~ Inner classes
+
+    // PropertyChangeListener should be used for listening on the main panel - not possible now so it is not used
+    interface BottomPanel extends WizardDescriptor.Panel<WizardDescriptor> {
+
+        void targetFolderChanged(@NullAllowed FileObject targetFolder);
+
+        boolean isPresentForProject(PhpProject project);
+
+    }
+
+    private static final class DummyWizardDescriptor extends WizardDescriptor {
+
+        public DummyWizardDescriptor() {
+        }
+
     }
 
 }

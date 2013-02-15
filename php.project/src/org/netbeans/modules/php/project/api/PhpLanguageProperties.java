@@ -86,16 +86,18 @@ public final class PhpLanguageProperties {
     public static enum PhpVersion {
 
         // order is important! from oldest to newest, see #getDefault()
-        PHP_5(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_5")), // NOI18N
-        PHP_53(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_53")), // NOI18N
-        PHP_54(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_54")); // NOI18N
+        PHP_5(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_5"), false), // NOI18N
+        PHP_53(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_53"), true), // NOI18N
+        PHP_54(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_54"), true); // NOI18N
 
         private final String displayName;
+        private final boolean namespaces;
 
 
-        PhpVersion(String displayName) {
+        PhpVersion(String displayName, boolean namespaces) {
             assert displayName != null;
             this.displayName = displayName;
+            this.namespaces = namespaces;
         }
 
         /**
@@ -109,6 +111,13 @@ public final class PhpLanguageProperties {
 
         public String getDisplayName() {
             return displayName;
+        }
+
+        /**
+         * @since 2.67
+         */
+        public boolean hasNamespaces() {
+            return namespaces;
         }
 
         @Override

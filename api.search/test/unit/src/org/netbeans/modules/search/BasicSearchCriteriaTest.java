@@ -43,6 +43,7 @@ package org.netbeans.modules.search;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.netbeans.api.search.SearchPattern;
 
 /**
  *
@@ -56,7 +57,7 @@ public class BasicSearchCriteriaTest {
     @Test
     public void testDetectInvalidReplacePattern() {
         BasicSearchCriteria bsc = new BasicSearchCriteria();
-        bsc.setRegexp(true);
+        bsc.setMatchType(SearchPattern.MatchType.REGEXP);
         bsc.setTextPattern("a");
         bsc.setReplaceExpr("$1");
         assertFalse(bsc.isUsable());

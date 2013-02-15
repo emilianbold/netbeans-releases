@@ -46,19 +46,15 @@ package org.netbeans.modules.glassfish.common;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.admin.ResultString;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.server.ServerTasks;
+import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
 
 
 /**
  * @author Ludovic Chamenois
  * @author Peter Williams
  */
-public class StopTask extends BasicTask<OperationState> {
+public class StopTask extends BasicTask<TaskState> {
 
     private final CommonServerSupport support;
 
@@ -68,7 +64,7 @@ public class StopTask extends BasicTask<OperationState> {
      * @param stateListener state monitor to track start progress
      */
     public StopTask(CommonServerSupport support,
-            OperationStateListener... stateListener) {
+            TaskStateListener... stateListener) {
         super(support.getInstance(), stateListener);
         this.support = support;
     }
@@ -78,7 +74,7 @@ public class StopTask extends BasicTask<OperationState> {
      */
     @SuppressWarnings("SleepWhileInLoop")
     @Override
-    public OperationState call() {
+    public TaskState call() {
         // save the current time so that we can deduct that the startup
         // failed due to timeout
         Logger.getLogger("glassfish").log(Level.FINEST,
@@ -91,19 +87,22 @@ public class StopTask extends BasicTask<OperationState> {
         
         host = instance.getProperty(GlassfishModule.HOSTNAME_ATTR);
         if(host == null || host.length() == 0) {
-            return fireOperationStateChanged(OperationState.FAILED, 
-                    "MSG_START_SERVER_FAILED_NOHOST", instanceName); // NOI18N
+            return fireOperationStateChanged(TaskState.FAILED,
+                    TaskEvent.CMD_FAILED,
+                    "MSG_START_SERVER_FAILED_NOHOST", instanceName);
         }
                
         try {
             port = Integer.valueOf(instance.getProperty(GlassfishModule.ADMINPORT_ATTR));
             if(port < 0 || port > 65535) {
-                return fireOperationStateChanged(OperationState.FAILED, 
-                        "MSG_START_SERVER_FAILED_BADPORT", instanceName); // NOI18N
+                return fireOperationStateChanged(TaskState.FAILED,
+                        TaskEvent.CMD_FAILED,
+                        "MSG_START_SERVER_FAILED_BADPORT", instanceName);
             }
         } catch(NumberFormatException ex) {
-            return fireOperationStateChanged(OperationState.FAILED, 
-                    "MSG_START_SERVER_FAILED_BADPORT", instanceName); // NOI18N
+            return fireOperationStateChanged(TaskState.FAILED,
+                    TaskEvent.CMD_FAILED,
+                    "MSG_START_SERVER_FAILED_BADPORT", instanceName);
         }
 
         String target = Util.computeTarget(instance.getProperties());
@@ -118,12 +117,13 @@ public class StopTask extends BasicTask<OperationState> {
         // !PW Can we have a single manager instance per instance, available on
         // demand through lookup?
         // !PW FIXME this uses doubly nested runnables.  Can we fix?
-        ResultString result = ServerTasks.stopServer(instance);
+        ResultString result = CommandStopDAS.stopDAS(instance);
         if (TaskState.FAILED.equals(result.getState())) {
-             fireOperationStateChanged(OperationState.FAILED, "MSG_STOP_SERVER_FAILED", instanceName);
+             fireOperationStateChanged(TaskState.FAILED, TaskEvent.CMD_FAILED,
+                     "MSG_STOP_SERVER_FAILED", instanceName);
         }
         
-        fireOperationStateChanged(OperationState.RUNNING, 
+        fireOperationStateChanged(TaskState.RUNNING, TaskEvent.CMD_RUNNING,
                 "MSG_STOP_SERVER_IN_PROGRESS", instanceName); // NOI18N
         
         // Waiting for server to stop
@@ -138,8 +138,9 @@ public class StopTask extends BasicTask<OperationState> {
                 LogViewMgr logger = LogViewMgr.getInstance(instance.getProperty(GlassfishModule.URL_ATTR));
                 logger.stopReaders();                
 
-                return fireOperationStateChanged(OperationState.COMPLETED, 
-                        "MSG_SERVER_STOPPED", instanceName); // NOI18N
+                return fireOperationStateChanged(TaskState.COMPLETED,
+                        TaskEvent.CMD_COMPLETED,
+                        "MSG_SERVER_STOPPED", instanceName);
             }
             
             // Sleep for a little so that we do not make our checks too often
@@ -147,27 +148,30 @@ public class StopTask extends BasicTask<OperationState> {
                 Thread.sleep(DELAY);
             } catch (InterruptedException e) {}
             
-            fireOperationStateChanged(OperationState.RUNNING, "MSG_STOP_SERVER_IN_PROGRESS", instanceName); // NOI18N
+            fireOperationStateChanged(TaskState.RUNNING, TaskEvent.CMD_RUNNING,
+                    "MSG_STOP_SERVER_IN_PROGRESS", instanceName);
         }
         
-        return fireOperationStateChanged(OperationState.FAILED, "MSG_STOP_SERVER_FAILED", instanceName); // NOI18N
+        return fireOperationStateChanged(TaskState.FAILED, TaskEvent.CMD_FAILED,
+                "MSG_STOP_SERVER_FAILED", instanceName);
     }
     
-    private OperationState stopClusterOrInstance(String target) {
-        ResultString result = ServerTasks.stopCluster(instance, target);
+    private TaskState stopClusterOrInstance(String target) {
+        ResultString result = CommandStopCluster.stopCluster(instance, target);
 
         if (TaskState.FAILED.equals(result.getState())) {
             // if start-cluster not successful, try start-instance
-            result = ServerTasks.stopServerInstance(instance, target);
+            result = CommandStopInstance.stopInstance(instance, target);
             if (TaskState.FAILED.equals(result.getState())) {
                 // if start instance not suscessful fail
-                return fireOperationStateChanged(OperationState.FAILED,
-                        "MSG_STOP_TARGET_FAILED", instanceName, target); // NOI18N
+                return fireOperationStateChanged(TaskState.FAILED,
+                        TaskEvent.CMD_FAILED,
+                        "MSG_STOP_TARGET_FAILED", instanceName, target);
             }
         }
 
-        return fireOperationStateChanged(OperationState.COMPLETED,
-                "MSG_SERVER_STOPPED", instanceName); // NOI18N
-
+        return fireOperationStateChanged(TaskState.COMPLETED,
+                TaskEvent.CMD_COMPLETED,
+                "MSG_SERVER_STOPPED", instanceName);
     }
 }

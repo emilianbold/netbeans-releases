@@ -209,7 +209,7 @@ public class MatchingObjectTest extends NbTestCase {
 
         BasicSearchCriteria bsc = new BasicSearchCriteria();
         bsc.setTextPattern(find);
-        bsc.setRegexp(false);
+        bsc.setMatchType(SearchPattern.MatchType.BASIC);
         bsc.setReplaceExpr(replace);
         bsc.setPreserveCase(true);
         bsc.onOk();

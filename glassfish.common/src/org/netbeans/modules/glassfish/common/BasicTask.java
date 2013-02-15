@@ -44,9 +44,10 @@ package org.netbeans.modules.glassfish.common;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,7 +81,7 @@ public abstract class BasicTask<V> implements Callable<V> {
     GlassfishInstance instance;
 
     /** Callback to retrieve state changes. */
-    protected OperationStateListener [] stateListener;
+    protected TaskStateListener [] stateListener;
 
     /** Name of GlassFish instance accessed in this task. */
     protected String instanceName;
@@ -108,7 +109,7 @@ public abstract class BasicTask<V> implements Callable<V> {
      * @param instance GlassFish instance accessed in this task.
      * @param stateListener Callback listeners used to retrieve state changes.
      */
-    public BasicTask(GlassfishInstance instance, OperationStateListener... stateListener) {
+    public BasicTask(GlassfishInstance instance, TaskStateListener... stateListener) {
         this.instance = instance;
         this.stateListener = stateListener;
         this.instanceName = instance.getProperty(
@@ -128,13 +129,13 @@ public abstract class BasicTask<V> implements Callable<V> {
      * @param args Additional arguments passed to message.
      * @return Passed new state of current command.
      */
-    protected final OperationState fireOperationStateChanged(
-            OperationState stateType, String resName, String... args) {
+    protected final TaskState fireOperationStateChanged(
+            TaskState stateType, TaskEvent te, String resName, String... args) {
         if(stateListener != null && stateListener.length > 0) {
             String msg = NbBundle.getMessage(BasicTask.class, resName, args);
             for(int i = 0; i < stateListener.length; i++) {
                 if(stateListener[i] != null) {
-                    stateListener[i].operationStateChanged(stateType, msg);
+                    stateListener[i].operationStateChanged(stateType, te, msg);
                 }
             }
         }
