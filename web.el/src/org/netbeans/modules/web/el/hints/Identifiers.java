@@ -131,11 +131,11 @@ public final class Identifiers extends ELRule {
         if (node instanceof AstIdentifier) {
             return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Identifier", node.getImage());
         }
-        if (node instanceof AstDotSuffix) {
-            return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Property", node.getImage());
-        }
         if (NodeUtil.isMethodCall(node)) {
             return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Method", node.getImage());
+        }
+        if (node instanceof AstDotSuffix) {
+            return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Property", node.getImage());
         }
         assert false;
         return null;
