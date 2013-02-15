@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.mercurial.ui.push;
 
-import org.netbeans.modules.mercurial.ui.pull.*;
 import java.io.File;
 import java.util.Set;
 import org.netbeans.modules.mercurial.HgException;
@@ -75,8 +74,9 @@ public class PushCurrentBranchAction extends ContextAction {
     public String getName(String role, Node[] activatedNodes) {
         VCSContext ctx = HgUtils.getCurrentContext(activatedNodes);
         Set<File> roots = HgUtils.getRepositoryRoots(ctx);
-        String name = roots.size() == 1 ? "CTL_MenuItem_PushBranchRoot" : "CTL_MenuItem_PushBranchLocal"; //NOI18N
-        return roots.size() == 1 ? NbBundle.getMessage(PushCurrentBranchAction.class, name, roots.iterator().next().getName()) : NbBundle.getMessage(FetchAction.class, name);
+        return roots.size() == 1 
+                ? NbBundle.getMessage(PushCurrentBranchAction.class, "CTL_MenuItem_PushBranchRoot", roots.iterator().next().getName()) //NOI18N
+                : NbBundle.getMessage(PushCurrentBranchAction.class, "CTL_MenuItem_PushBranchLocal"); //NOI18N
     }
 
     @Override
