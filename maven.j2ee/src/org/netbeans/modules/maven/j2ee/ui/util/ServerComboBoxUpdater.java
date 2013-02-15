@@ -124,9 +124,11 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
 
         // Try to read serverID directly from pom.xml properties configration
         final Properties props = handle.getPOMModel().getProject().getProperties();
-        final String pomServerID = props.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
-        if (pomServerID != null) {
-            return findServerByType(pomServerID, serverCBox);
+        if (props != null) {
+            final String pomServerID = props.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
+            if (pomServerID != null) {
+                return findServerByType(pomServerID, serverCBox);
+            }
         }
 
         // Try to find at least latest used server
