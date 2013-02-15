@@ -51,6 +51,8 @@ import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -76,6 +78,11 @@ class NewFileNamespacePanel implements NewFileWizardIterator.BottomPanel {
 
     public NewFileNamespacePanel() {
         namespaceFetcherTask = RP.create(new NamespaceFetcher());
+    }
+
+    @Override
+    public boolean isPresentForProject(PhpProject project) {
+        return ProjectPropertiesSupport.getPhpVersion(project).hasNamespaces();
     }
 
     @Override

@@ -4,7 +4,7 @@
 <#assign licenseLast = " */">
 <#include "../Licenses/license-${project.license}.txt">
 
-<#if namespace?length &gt; 0>
+<#if namespace?? && namespace?length &gt; 0>
 namespace ${namespace};
 </#if>
 
