@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -52,6 +54,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.mysql.installations.BundledInstallation;
+import org.netbeans.modules.db.mysql.installations.ui.SelectInstallationPanel;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -67,7 +73,8 @@ public class InstallationManager {
     
     private static final String INSTALLATION_PROVIDER_PATH = 
             "Databases/MySQL/Installations"; // NOI18N
-
+    private static final String ICON_BASE =
+            "org/netbeans/modules/db/mysql/resources/database.gif";     //NOI18N
 
     public static synchronized List<Installation> getInstallations(Collection loadedInstallations) {
         if ( INSTALLATIONS == null ) {
@@ -105,17 +112,22 @@ public class InstallationManager {
     }
     
     /**
-     * See if we can detect the paths to the various admin tools
-     * 
-     * @return a valid installation if detected, null otherwise.  Returns the
-     *      first installation found, so if there are multiple installations
-     *      the other ones available will not be detected.
+     * Get all valid installations of MySQL in this system.
      */
-    public static Installation detectInstallation() {
+    public static List<Installation> detectAllInstallations() {
         List<Installation> installationCopy = new CopyOnWriteArrayList<Installation>();
-        Collection loadedInstallations = Lookups.forPath(INSTALLATION_PROVIDER_PATH).lookupAll(Installation.class);
+        Collection<Installation> loadedInstallations = new ArrayList<Installation>(3);
+        loadedInstallations.addAll(Lookups.forPath(INSTALLATION_PROVIDER_PATH)
+                .lookupAll(Installation.class));
+        Collection<? extends MultiInstallation> multiInstallations =
+                Lookups.forPath(INSTALLATION_PROVIDER_PATH).lookupAll(
+                MultiInstallation.class);
+        for (MultiInstallation mi : multiInstallations) {
+            loadedInstallations.addAll(mi.getInstallations());
+        }
         installationCopy.addAll(InstallationManager.getInstallations(loadedInstallations));
-        
+        List<Installation> validInstallations =
+                new ArrayList<Installation>(3);
         for ( Iterator it = installationCopy.iterator() ; it.hasNext() ; ) {
             Installation installation = (Installation)it.next();
             
@@ -125,10 +137,45 @@ public class InstallationManager {
             
             if ( installation.isInstalled() ) {
                 LOGGER.log(Level.FINE, "Installation is installed");
-                return installation;
+                validInstallations.add(installation);
             }
         }
-        
-        return null;
-    }        
+        return validInstallations;
+    }
+
+    /**
+     * See if we can detect the paths to the various admin tools
+     *
+     * @return a valid installation if detected, null otherwise.  Returns the
+     *      first installation found, so if there are multiple installations
+     *      the other ones available will not be detected.
+     */
+    public static Installation detectInstallation() {
+        List<Installation> allInstallations = detectAllInstallations();
+        if (allInstallations.isEmpty()) {
+            return null;
+        } else {
+            if (allInstallations.size() > 1) {
+                notifyAboutMultipleInstallations();
+            }
+            return allInstallations.get(0);
+        }
+    }
+
+    @NbBundle.Messages({
+        "NotifyMultipleInstallations.title=Multiple MySQL installations found",
+        "NotifyMultipleInstallations.text=Select the installation to use"
+    })
+    private static void notifyAboutMultipleInstallations() {
+        NotificationDisplayer.getDefault().notify(
+                Bundle.NotifyMultipleInstallations_title(),
+                ImageUtilities.loadImageIcon(ICON_BASE, false),
+                Bundle.NotifyMultipleInstallations_text(),
+                new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SelectInstallationPanel.showSelectInstallationDialog();
+            }
+        });
+    }
 }

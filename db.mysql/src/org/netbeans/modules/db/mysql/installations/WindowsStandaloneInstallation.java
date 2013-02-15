@@ -47,29 +47,22 @@ import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.util.Utilities;
 
 /**
- * Standalone version 5.0 on Windows, not installed as a server
- * 
+ * Standalone version on Windows, not installed as a server
+ *
  * @author David Van Couvering
  */
-public class WindowsStandalone50Installation implements Installation {
-    private static final String DEFAULT_BASE_PATH = 
-            "C:/Program Files/MySQL/MySQL Server 5.0";
-    
-    private static final WindowsStandalone50Installation DEFAULT = new
-            WindowsStandalone50Installation(DEFAULT_BASE_PATH);
+public class WindowsStandaloneInstallation implements Installation {
+    static final String DEFAULT_BASE_PATH = "C:/Program Files/MySQL/";  //NOI18N
+    static final String FOLDER_NAME_PREFIX = "MySQL Server ";           //NOI18N
     
     private final String basePath;
-        
-    public static WindowsStandalone50Installation getDefault() {
-        return DEFAULT;
-    }
 
-    protected WindowsStandalone50Installation(String basePath) {
-        this.basePath = basePath;
+    protected WindowsStandaloneInstallation(String folderName) {
+        this.basePath = DEFAULT_BASE_PATH + folderName;
     }
     
     public String[] getStartCommand() {
-        return new String[] { basePath + "/bin/mysqld-nt.exe", "--console"}; // NOI18N
+        return new String[] { basePath + "/bin/mysqld.exe", "--console"}; // NOI18N
     }
 
     public String[] getStopCommand() {
@@ -97,4 +90,8 @@ public class WindowsStandalone50Installation implements Installation {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public String toString() {
+        return "Windows Installation - " + basePath;                    //NOI18N
+    }
 }

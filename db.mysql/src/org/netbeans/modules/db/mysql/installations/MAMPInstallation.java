@@ -101,4 +101,9 @@ public class MAMPInstallation implements Installation {
     public String getDefaultPort() {
         return DEFAULT_PORT;
     }
+
+    @Override
+    public String toString() {
+        return "MAMP Installation - " + START_PATH;                     //NOI18N
+    }
 }

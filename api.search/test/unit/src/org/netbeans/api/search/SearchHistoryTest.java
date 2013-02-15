@@ -76,7 +76,7 @@ public final class SearchHistoryTest extends NbTestCase {
     /**
      */
     public void testSearchPatternSize() throws Exception {
-        assertSize("SearchPattern size", 80, SearchPattern.create("searchText",true,true,false));
+        assertSize("SearchPattern size", 256, SearchPattern.create("searchText",true,true,false));
     }
 
     public void testSearchHistoryListSize() throws Exception{

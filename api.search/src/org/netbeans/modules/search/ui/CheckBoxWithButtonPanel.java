@@ -41,19 +41,12 @@
  */
 package org.netbeans.modules.search.ui;
 
-import java.awt.Cursor;
 import java.awt.FlowLayout;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 
 /**
  * Panel for a checkbox and a button that is enbled if and only if the checkbox
@@ -63,11 +56,7 @@ public class CheckBoxWithButtonPanel extends JPanel
         implements ItemListener {
 
     private JCheckBox checkbox;
-    private JButton button;
-    private JLabel leftParenthesis;
-    private JLabel rightParenthesis;
-    private String enabledText;
-    private String disabledText;
+    private LinkButtonPanel buttonPanel;
 
     /**
      * Constructor.
@@ -79,8 +68,7 @@ public class CheckBoxWithButtonPanel extends JPanel
      */
     public CheckBoxWithButtonPanel(JCheckBox checkbox, JButton button) {
         this.checkbox = checkbox;
-        this.button = button;
-        initTexts();
+        this.buttonPanel = new LinkButtonPanel(button);
         init();
     }
 
@@ -91,103 +79,25 @@ public class CheckBoxWithButtonPanel extends JPanel
         this.setLayout(new FlowLayout(
                 FlowLayout.LEADING, 0, 0));
         this.add(checkbox);
-        setLinkLikeButton(button);
-        leftParenthesis = new JLabel("(");                              //NOI18N
-        rightParenthesis = new JLabel(")");                             //NOI18N
-        add(leftParenthesis);
-        add(button);
-        add(rightParenthesis);
-        MouseListener ml = createLabelMouseListener();
-        leftParenthesis.addMouseListener(ml);
-        rightParenthesis.addMouseListener(ml);
-        button.setEnabled(false);
+        this.add(buttonPanel);
 
         this.setMaximumSize(
                 this.getMinimumSize());
         checkbox.addItemListener(this);
         if (checkbox.isSelected()) {
-            enableButton();
+            buttonPanel.enableButton();
         } else {
-            disableButton();
+            buttonPanel.disableButton();
         }
-    }
-
-    /**
-     * Init values of enabled and disabled button texts.
-     */
-    private void initTexts() {
-        enabledText = button.getText();
-        if (enabledText.startsWith(UiUtils.HTML_LINK_PREFIX)
-                && enabledText.endsWith(UiUtils.HTML_LINK_SUFFIX)) {
-            disabledText = enabledText.substring(
-                    UiUtils.HTML_LINK_PREFIX.length(),
-                    enabledText.length() - UiUtils.HTML_LINK_SUFFIX.length());
-        } else {
-            disabledText = enabledText;
-        }
-    }
-
-    /**
-     * Create listener that delegates mouse clicks on parenthesis to the button.
-     */
-    private MouseListener createLabelMouseListener() {
-        return new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (button.isEnabled()) {
-                    for (ActionListener al : button.getActionListeners()) {
-                        al.actionPerformed(null);
-                    }
-                }
-            }
-        };
-    }
-
-    /**
-     * Set button border and background to look like a label with link.
-     */
-    private void setLinkLikeButton(JButton button) {
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-        button.setBorder(new EmptyBorder(0, 0, 0, 0));
-        button.setCursor(Cursor.getPredefinedCursor(
-                Cursor.HAND_CURSOR));
     }
 
     @Override
     public void itemStateChanged(ItemEvent e) {
         if (checkbox.isSelected()) {
-            enableButton();
+            buttonPanel.enableButton();
         } else {
-            disableButton();
+            buttonPanel.disableButton();
         }
         this.setMinimumSize(this.getPreferredSize()); // #214745
-    }
-
-    /**
-     * Enable button and parentheses around it.
-     */
-    private void enableButton() {
-        button.setText(enabledText);
-        button.setEnabled(true);
-        leftParenthesis.setCursor(
-                Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        rightParenthesis.setCursor(
-                Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        leftParenthesis.setEnabled(true);
-        rightParenthesis.setEnabled(true);
-    }
-
-    /**
-     * Disable button and parentheses around it.
-     */
-    private void disableButton() {
-        button.setText(disabledText);
-        button.setEnabled(false);
-        leftParenthesis.setCursor(Cursor.getDefaultCursor());
-        rightParenthesis.setCursor(Cursor.getDefaultCursor());
-        leftParenthesis.setEnabled(false);
-        rightParenthesis.setEnabled(false);
     }
 }

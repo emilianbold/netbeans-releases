@@ -844,7 +844,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
             }
 
             String replacedString = resultModel.basicCriteria.getReplaceExpr();
-            if (resultModel.basicCriteria.isRegexp()){
+            if (resultModel.basicCriteria.getSearchPattern().isRegExp()){
                 Matcher m = resultModel.basicCriteria.getTextPattern().matcher(matchedSubstring);
                 replacedString = m.replaceFirst(resultModel.basicCriteria.getReplaceString());
             } else if (resultModel.basicCriteria.isPreserveCase()) {

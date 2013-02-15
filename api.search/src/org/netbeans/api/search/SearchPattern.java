@@ -43,12 +43,82 @@
  */
 package org.netbeans.api.search;
 
+import org.openide.util.NbBundle;
+
 /**
  * Pattern describes the search conditions
  *
  * @author Martin Roskanin
  */
 public final class SearchPattern {
+
+    /**
+     * Specifies how the pattern is matched to the searched text.
+     *
+     * Please note that more items can be added to the enum in the future.
+     *
+     * @since api.search/1.11
+     */
+    @NbBundle.Messages({
+        "LBL_MatchType_Literal=Literal",
+        "LBL_MatchType_Basic_Wildcards=Basic Wildcards",
+        "LBL_MatchType_Regular_Expression=Regular Expression"
+    })
+    public static enum MatchType {
+
+        /**
+         * Match the pattern literally.
+         */
+        LITERAL(Bundle.LBL_MatchType_Literal(), 'L'),
+        /**
+         * The pattern can contain basic wildcards, star (*) for any string and
+         * questionaire (?) for any character. The escape character for these
+         * wildcards is backslash (\).
+         */
+        BASIC(Bundle.LBL_MatchType_Basic_Wildcards(), 'r'),
+        /**
+         * The pattern follows java.util.regex.Pattern syntax.
+         */
+        REGEXP(Bundle.LBL_MatchType_Regular_Expression(), 'R');
+        private final String displayName;
+        private final char canonicalPatternFlag;
+
+        private MatchType(String displayName, char canonicalPatternFlag) {
+            this.displayName = displayName;
+            this.canonicalPatternFlag = canonicalPatternFlag;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+
+        private char getCanonicalPatternFlag() {
+            return canonicalPatternFlag;
+        }
+
+        private static MatchType fromCanonicalPatternFlag(char ch) {
+            switch (ch) {
+                case 'R':
+                    return REGEXP;
+                case 'r':
+                    return BASIC;
+                case 'L':
+                    return LITERAL;
+                default:
+                    return BASIC;
+            }
+        }
+
+        private static boolean isCanonicalPatternFlag(char ch) {
+            for (MatchType mt : MatchType.values()) {
+                if (mt.getCanonicalPatternFlag() == ch) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 
     /**
      * SearchExpression - a text to search
@@ -63,9 +133,9 @@ public final class SearchPattern {
      */
     private boolean matchCase;
     /**
-     * if true, regular expression search was performed
+     * match type of this pattern
      */
-    private boolean regExp;
+    private MatchType matchType;
 
     /**
      * Creates a new instance of SearchPattern
@@ -76,11 +146,11 @@ public final class SearchPattern {
      * @param regExp if true, regular expression search was performed
      */
     private SearchPattern(String searchExpression, boolean wholeWords,
-            boolean matchCase, boolean regExp) {
+            boolean matchCase, MatchType matchType) {
         this.searchExpression = searchExpression;
         this.wholeWords = wholeWords;
         this.matchCase = matchCase;
-        this.regExp = regExp;
+        this.matchType = matchType;
     }
 
     /**
@@ -89,12 +159,31 @@ public final class SearchPattern {
      * @param searchExpression non-null String of a searched text
      * @param wholeWords if true, only whole words were searched
      * @param matchCase if true, case sensitive search was preformed
-     * @param regExp if true, regular expression search was performed
+     * @param regExp if true, regular expression search was performed; if false,
+     * search with basic wildcards was performed
      * @return a new SearchPattern in accordance with given parameters
      */
     public static SearchPattern create(String searchExpression, boolean wholeWords,
             boolean matchCase, boolean regExp) {
-        return new SearchPattern(searchExpression, wholeWords, matchCase, regExp);
+        return new SearchPattern(searchExpression, wholeWords, matchCase,
+                regExp ? MatchType.REGEXP : MatchType.LITERAL);
+    }
+
+    /**
+     * Creates a new SearchPattern in accordance with given parameters
+     *
+     * @param searchExpression non-null String of a searched text
+     * @param wholeWords if true, only whole words were searched
+     * @param matchCase if true, case sensitive search was preformed
+     * @param matchType match type
+     * @return a new SearchPattern in accordance with given parameters
+     *
+     * @since api.search/1.11
+     */
+    public static SearchPattern create(String searchExpression,
+            boolean wholeWords, boolean matchCase, MatchType matchType) {
+        return new SearchPattern(searchExpression, wholeWords, matchCase,
+                matchType);
     }
 
     /**
@@ -123,7 +212,16 @@ public final class SearchPattern {
      * @return true if the regExp parameter was used during search performing
      */
     public boolean isRegExp() {
-        return regExp;
+        return matchType == MatchType.REGEXP;
+    }
+
+    /**
+     * Get type of this pattern.
+     *
+     * @since api.search/1.11
+     */
+    public MatchType getMatchType() {
+        return matchType;
     }
 
     @Override
@@ -135,7 +233,7 @@ public final class SearchPattern {
         return (this.searchExpression.equals(sp.getSearchExpression())
                 && this.wholeWords == sp.isWholeWords()
                 && this.matchCase == sp.isMatchCase()
-                && this.regExp == sp.isRegExp());
+                && this.matchType == sp.matchType);
     }
 
     @Override
@@ -143,7 +241,7 @@ public final class SearchPattern {
         int result = 17;
         result = 37 * result + (this.wholeWords ? 1 : 0);
         result = 37 * result + (this.matchCase ? 1 : 0);
-        result = 37 * result + (this.regExp ? 1 : 0);
+        result = 37 * result + (this.matchType.hashCode());
         result = 37 * result + this.searchExpression.hashCode();
         return result;
     }
@@ -160,7 +258,7 @@ public final class SearchPattern {
             return this;
         } else {
             return SearchPattern.create(expression, wholeWords,
-                    matchCase, regExp);
+                    matchCase, matchType);
         }
     }
 
@@ -174,7 +272,7 @@ public final class SearchPattern {
             return this;
         } else {
             return SearchPattern.create(searchExpression, wholeWords,
-                    matchCase, regExp);
+                    matchCase, matchType);
         }
     }
 
@@ -188,7 +286,7 @@ public final class SearchPattern {
             return this;
         } else {
             return SearchPattern.create(searchExpression, wholeWords,
-                    matchCase, regExp);
+                    matchCase, matchType);
         }
     }
 
@@ -198,17 +296,32 @@ public final class SearchPattern {
      *
      */
     public SearchPattern changeRegExp(boolean regExp) {
-        if (this.regExp == regExp) {
+        if (this.isRegExp() == regExp) {
             return this;
         } else {
             return SearchPattern.create(searchExpression, wholeWords,
                     matchCase, regExp);
         }
     }
-    
+
+    /**
+     * Create new instance with "match type" set to passed value, and other
+     * values copied from this instance.
+     *
+     * @since api.search/1.11
+     */
+    public SearchPattern changeMatchType(MatchType matchType) {
+        if (this.matchType == matchType) {
+            return this;
+        } else {
+            return SearchPattern.create(searchExpression, wholeWords, matchCase,
+                    matchType);
+        }
+    }
+
     String toCanonicalString() {
         char m = isMatchCase() ? 'M' : 'm';
-        char r = isRegExp() ? 'R' : 'r';
+        char r = matchType.getCanonicalPatternFlag();
         char w = isWholeWords() ? 'W' : 'w';
         return "" + m + r + w + "-" + getSearchExpression(); //NOI18N
     }
@@ -217,16 +330,17 @@ public final class SearchPattern {
         //format mrw-findwhat
         if (canonicalString == null
                 || Character.toUpperCase(canonicalString.charAt(0)) != 'M'
-                || Character.toUpperCase(canonicalString.charAt(1)) != 'R'
+                || !MatchType.isCanonicalPatternFlag(canonicalString.charAt(1))
                 || Character.toUpperCase(canonicalString.charAt(2)) != 'W'
                 || canonicalString.charAt(3) != '-') {
             return null;
         }
         boolean matchCase = Character.isUpperCase(canonicalString.charAt(0));
-        boolean regExp = Character.isUpperCase(canonicalString.charAt(1));
+        MatchType matchType = MatchType.fromCanonicalPatternFlag(
+                canonicalString.charAt(1));
         boolean wholeWords = Character.isUpperCase(canonicalString.charAt(2));
         String findWhat = canonicalString.substring(4);
-        return new SearchPattern(findWhat, wholeWords, matchCase, regExp);
+        return new SearchPattern(findWhat, wholeWords, matchCase, matchType);
     }
 
 }

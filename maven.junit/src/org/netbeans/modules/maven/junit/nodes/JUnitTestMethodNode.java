@@ -43,12 +43,12 @@
 package org.netbeans.modules.maven.junit.nodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import static org.netbeans.modules.maven.junit.nodes.Bundle.*;
@@ -129,9 +129,7 @@ public class JUnitTestMethodNode extends TestMethodNode{
                 }
             }
         }
-        if ((testcase.getTrouble() != null) && (testcase.getTrouble().getComparisonFailure() != null)){
-            actions.add(new DiffViewAction(testcase));
-        }
+        actions.addAll(Arrays.asList(super.getActions(context)));
 
         return actions.toArray(new Action[actions.size()]);
     }

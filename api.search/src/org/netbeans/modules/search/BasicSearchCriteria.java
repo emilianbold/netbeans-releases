@@ -51,6 +51,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.search.RegexpUtil;
 import org.netbeans.api.search.SearchPattern;
+import org.netbeans.api.search.SearchPattern.MatchType;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -113,7 +114,7 @@ public final class BasicSearchCriteria {
          */
         setCaseSensitive(template.searchPattern.isMatchCase());
         setWholeWords(template.searchPattern.isWholeWords());
-        setRegexp(template.searchPattern.isRegExp());
+        setMatchType(template.searchPattern.getMatchType());
         setPreserveCase(template.preserveCase);
         setSearchInArchives(template.searcherOptions.isSearchInArchives());
         setSearchInGenerated(template.searcherOptions.isSearchInGenerated());
@@ -243,8 +244,11 @@ public final class BasicSearchCriteria {
         return true;
     }
 
-    boolean isRegexp() {
-        return searchPattern.isRegExp();
+    /**
+     * Get text pattern match type.
+     */
+    MatchType getMatchType() {
+        return searchPattern.getMatchType();
     }
 
     boolean isPreserveCase() {
@@ -305,9 +309,9 @@ public final class BasicSearchCriteria {
         this.useIgnoreList = useIgnoreList;
     }
 
-    void setRegexp(boolean regexp) {
+    void setMatchType(MatchType matchType) {
 
-        searchPattern = searchPattern.changeRegExp(regexp);
+        searchPattern = searchPattern.changeMatchType(matchType);
         updateTextPattern();
         replacePatternValid = validateReplacePattern();
         updateUsability(true);
