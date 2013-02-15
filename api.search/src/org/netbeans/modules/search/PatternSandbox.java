@@ -477,7 +477,7 @@ public abstract class PatternSandbox extends JPanel
             this.regexp = regexp;
             this.matchCase = matchCase;
             initComponents();
-            searchCriteria.setRegexp(true);
+            searchCriteria.setMatchType(SearchPattern.MatchType.REGEXP);
         }
 
         @Override

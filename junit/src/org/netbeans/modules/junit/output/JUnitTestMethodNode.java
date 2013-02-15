@@ -122,9 +122,7 @@ public class JUnitTestMethodNode extends TestMethodNode{
 		}
 	    }
         }
-        if ((testcase.getTrouble() != null) && (testcase.getTrouble().getComparisonFailure() != null)){
-            actions.add(new DiffViewAction(testcase));
-        }
+	actions.addAll(Arrays.asList(super.getActions(context)));
 
         return actions.toArray(new Action[actions.size()]);
     }

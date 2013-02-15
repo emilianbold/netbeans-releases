@@ -60,6 +60,7 @@ import org.netbeans.modules.cordova.project.ClientProjectUtilities;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebServer;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
@@ -74,7 +75,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jan Becicka
  */
-@ServiceProvider(service=BuildPerformer.class)
+@ServiceProvider(service = BuildPerformer.class)
 public class CordovaPerformer implements BuildPerformer {
 
     public static EditableProperties getBuildProperties(Project project) {
@@ -99,7 +100,6 @@ public class CordovaPerformer implements BuildPerformer {
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
 
-    
     @Override
     public void perform(String target, Project project) {
         FileObject buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml"); //NOI18N
@@ -107,7 +107,7 @@ public class CordovaPerformer implements BuildPerformer {
             generateBuildScripts(project);
             buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml");//NOI18N
         }
-        try { 
+        try {
             ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -115,7 +115,7 @@ public class CordovaPerformer implements BuildPerformer {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     private Properties properties(Project p) {
         ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
         ClientProjectConfigurationImpl activeConfiguration = (ClientProjectConfigurationImpl) provider.getActiveConfiguration();
@@ -148,7 +148,7 @@ public class CordovaPerformer implements BuildPerformer {
     }
 
     private void createScript(Project project, String source, String target) throws IOException {
-        FileObject build= FileUtil.createData(project.getProjectDirectory(), target);
+        FileObject build = FileUtil.createData(project.getProjectDirectory(), target);
         InputStream resourceAsStream = CordovaPerformer.class.getResourceAsStream(source);
         OutputStream outputStream = build.getOutputStream();
         try {
@@ -163,7 +163,7 @@ public class CordovaPerformer implements BuildPerformer {
         EditableProperties props = new EditableProperties(true);
         try {
             FileObject fileObject = project.getProjectDirectory().getFileObject(nbprojectbuildproperties);
-            if (fileObject !=null) {
+            if (fileObject != null) {
                 final InputStream inputStream = fileObject.getInputStream();
                 try {
                     props.load(inputStream);
@@ -172,7 +172,7 @@ public class CordovaPerformer implements BuildPerformer {
                     inputStream.close();
                 }
             }
-            
+
             InputStream is = CordovaPerformer.class.getResourceAsStream("build.properties");//NOI18N
             try {
                 props.load(is);
@@ -201,15 +201,10 @@ public class CordovaPerformer implements BuildPerformer {
         } else {
             WebServer.getWebserver().stop(p);
         }
-        
+
         FileObject fileObject = org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p);
-        try {
-            //TODO: hack to workaround #221791
-            return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", InetAddress.getLocalHost().getHostAddress());
-        } catch (UnknownHostException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+        //TODO: hack to workaround #221791
+        return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
     }
 
     @Override
@@ -217,7 +212,7 @@ public class CordovaPerformer implements BuildPerformer {
         Preferences preferences = ProjectUtils.getPreferences(p, CordovaPlatform.class, true);
         return Boolean.parseBoolean(preferences.get("phonegap", "false"));
     }
-    
+
     @Override
     public void startDebugging(Device device, Project p) {
         transport = device.getPlatform().getDebugTransport();
@@ -237,22 +232,21 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public void stopDebugging() {
-            if (webKitDebugging == null || webKitDebugging == null) {
-                return;
-            }
-            if (debuggerSession != null) {
-                javascriptDebuggerFactory.stopDebuggingSession(debuggerSession);
-            }
-            debuggerSession = null;
-            if (webKitDebugging.getDebugger().isEnabled()) {
-                webKitDebugging.getDebugger().disable();
-            }
-            webKitDebugging.reset();
-            transport.detach();
-            transport = null;
-            webKitDebugging = null;
-            javascriptDebuggerFactory = null;
-            PageInspector.getDefault().inspectPage(Lookup.EMPTY);
+        if (webKitDebugging == null || webKitDebugging == null) {
+            return;
+        }
+        if (debuggerSession != null) {
+            javascriptDebuggerFactory.stopDebuggingSession(debuggerSession);
+        }
+        debuggerSession = null;
+        if (webKitDebugging.getDebugger().isEnabled()) {
+            webKitDebugging.getDebugger().disable();
+        }
+        webKitDebugging.reset();
+        transport.detach();
+        transport = null;
+        webKitDebugging = null;
+        javascriptDebuggerFactory = null;
+        PageInspector.getDefault().inspectPage(Lookup.EMPTY);
     }
-    
 }

@@ -67,6 +67,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
@@ -96,7 +97,7 @@ public class CreateTableDialog {
     Dialog dialog = null;
     JTextField dbnamefield, dbownerfield;
     JTable table;
-    JButton addbtn, delbtn, editBtn;
+    JButton addbtn, delbtn, editBtn, upBtn, downBtn;
     Specification spec;
     private DialogDescriptor descriptor = null;
     private NotificationLineSupport statusLine;
@@ -237,7 +238,7 @@ public class CreateTableDialog {
             constr.gridy = 1;
             constr.insets = new java.awt.Insets (2, 8, 2, 2);
             JPanel btnpane = new JPanel();
-            GridLayout btnlay = new GridLayout(3,1,0,5);
+            GridLayout btnlay = new GridLayout(5,1,0,5);
             btnpane.setLayout(btnlay);
             layout.setConstraints(btnpane, constr);
             pane.add(btnpane);
@@ -295,6 +296,46 @@ public class CreateTableDialog {
                     int idx = table.getSelectedRow();
                     if (idx != -1) {
                         ((DataModel) table.getModel()).removeRow(idx);
+                    }
+                }
+            });
+
+            // Button to move row up
+            upBtn = new JButton();
+            Mnemonics.setLocalizedText(upBtn, NbBundle.getMessage(CreateTableDialog.class, "CreateTableUpButtonTitle")); // NOI18N
+            upBtn.setToolTipText(NbBundle.getMessage(CreateTableDialog.class, "ACS_CreateTableUpButtonTitleA11yDesc")); // NOI18N
+            btnpane.add(upBtn);
+            upBtn.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent event) {
+                    int idx = table.getSelectedRow();
+                    if (idx > 0) {
+                        DataModel dm = (DataModel) table.getModel();
+                        ColumnItem ci = dm.getRow(idx);
+                        dm.removeRow(idx);
+                        dm.insertRow(idx - 1, ci);
+                        table.getSelectionModel().setSelectionInterval(
+                                idx - 1, idx - 1);
+                    }
+                }
+            });
+
+            // Button to move row down
+            downBtn = new JButton();
+            Mnemonics.setLocalizedText(downBtn, NbBundle.getMessage(CreateTableDialog.class, "CreateTableDownButtonTitle")); // NOI18N
+            downBtn.setToolTipText(NbBundle.getMessage(CreateTableDialog.class, "ACS_CreateTableDownButtonTitleA11yDesc")); // NOI18N
+            btnpane.add(downBtn);
+            downBtn.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent event) {
+                    int idx = table.getSelectedRow();
+                    if (idx < table.getRowCount() - 1) {
+                        DataModel dm = (DataModel) table.getModel();
+                        ColumnItem ci = dm.getRow(idx);
+                        dm.removeRow(idx);
+                        dm.insertRow(idx + 1, ci);
+                        table.getSelectionModel().setSelectionInterval(
+                                idx + 1, idx + 1);
                     }
                 }
             });
@@ -380,9 +421,13 @@ public class CreateTableDialog {
     private void validate() {
         assert statusLine != null : "Notification status line not available";  //NOI18N
 
+        int selectedIndex = table.getSelectedRow();
         boolean oneRowSelected = table.getSelectedRowCount() == 1;
         editBtn.setEnabled(oneRowSelected);
         delbtn.setEnabled(oneRowSelected);
+        upBtn.setEnabled(oneRowSelected && selectedIndex > 0);
+        downBtn.setEnabled(oneRowSelected
+                && selectedIndex < table.getRowCount() - 1);
 
         String tname = getTableName();
         if (tname == null || tname.length() < 1) {

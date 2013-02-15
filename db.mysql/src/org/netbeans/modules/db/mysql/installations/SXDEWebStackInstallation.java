@@ -94,4 +94,9 @@ public class SXDEWebStackInstallation implements Installation {
     public String getDefaultPort() {
         return "3306"; // NOI18N
     }
+
+    @Override
+    public String toString() {
+        return "SXDE WebStack Installation - " + SVC_EXE;               //NOI18N
+    }
 }

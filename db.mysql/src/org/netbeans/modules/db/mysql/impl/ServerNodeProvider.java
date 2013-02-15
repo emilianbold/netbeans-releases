@@ -154,6 +154,10 @@ public final class ServerNodeProvider extends NodeProvider {
 
     private void findAndRegisterInstallation() {
         Installation installation = InstallationManager.detectInstallation();
+        registerInstallation(installation);
+    }
+
+    public void registerInstallation(Installation installation) {
         if ( installation == null ) {
             return;
         }

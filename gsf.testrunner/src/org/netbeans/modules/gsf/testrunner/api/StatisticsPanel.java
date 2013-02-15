@@ -368,6 +368,19 @@ final class StatisticsPanel extends JPanel {
         treePanel.selectPreviousFailure();
     }
 
+    void rerun(boolean rerunFailed) {
+	final RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
+	if (rerunHandler != null) {
+	    if (rerunFailed) {
+		if (!treePanel.getFailedTests().isEmpty()) {
+		    rerunHandler.rerun(treePanel.getFailedTests());
+		}
+		return;
+	    }
+	    rerunHandler.rerun();
+	}
+    }
+
     void selectNextFailure() {
         treePanel.selectNextFailure();
     }

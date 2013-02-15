@@ -50,18 +50,17 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.admin.TaskEvent;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.*;
+import org.glassfish.tools.ide.utils.Utils;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
-import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -72,14 +71,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
-
 /**
  *
- * @author Peter Williams
+ * @author Peter Williams, Tomas Kraus
  */
 public class CommonServerSupport
         implements GlassfishModule3, RefreshModulesCookie {
-
 
     ////////////////////////////////////////////////////////////////////////////
     // Inner classes                                                         //
@@ -180,11 +177,24 @@ public class CommonServerSupport
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(CommonServerSupport.class);
+
+    /** Local host name (DNS). */
+    private static final String LOCALHOST = "localhost";
+
+    /** String to return for failed {@see getHttpHostFromServer()} search. */
+    private static final String FAILED_HTTP_HOST = LOCALHOST + "FAIL";
+    
     /** Keep trying for up to 10 minutes while server is initializing [ms]. */
     private static final int STARTUP_TIMEOUT = 600000;
 
     /** Delay before next try while server is initializing [ms]. */
     private static final int STARTUP_RETRY_DELAY = 2000;
+
+    /** Properties fetching timeout [ms]. */
+    public static final int PROPERTIES_FETCH_TIMEOUT = 10000;
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -204,7 +214,7 @@ public class CommonServerSupport
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notifyLater(nd);
             css.setLatestWarningDisplayTime(System.currentTimeMillis());
-            Logger.getLogger("glassfish").log(Level.INFO, message);
+            LOGGER.log(Level.INFO, message);
         }
     }
 
@@ -233,6 +243,10 @@ public class CommonServerSupport
     
     private Process localStartProcess;
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
     CommonServerSupport(GlassfishInstance instance) {
         this.instance = instance;
         this.isRemote = instance.isRemote();
@@ -246,6 +260,7 @@ public class CommonServerSupport
      * <p/>
      * @return <code>GlassfishInstance</code> object associated with this object.
      */
+    @Override
     public GlassfishInstance getInstance() {
         return this.instance;
     }
@@ -385,15 +400,19 @@ public class CommonServerSupport
     private static final RequestProcessor RP = new RequestProcessor("CommonServerSupport - start/stop/refresh",5); // NOI18N
 
     @Override
-    public Future<OperationState> startServer(final OperationStateListener stateListener, ServerState endState) {
-        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
-        OperationStateListener startServerListener = new StartOperationStateListener(endState);
+    public Future<TaskState> startServer(
+            final TaskStateListener stateListener, ServerState endState) {
+        LOGGER.log(Level.FINEST,
+                "CSS.startServer called on thread \"{0}\"",
+                Thread.currentThread().getName());
+        TaskStateListener startServerListener = new StartOperationStateListener(endState);
         VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
-        FutureTask<OperationState> task = new FutureTask<OperationState>(
+        FutureTask<TaskState> task = new FutureTask<TaskState>(
                 new StartTask(this, getRecognizers(), vmi,
-                              (FileObject)null,
-                              (String[])(endState == ServerState.STOPPED_JVM_PROFILER ? new String[]{""} : null),
-                              startServerListener, stateListener));
+                (FileObject) null,
+                (String[]) (endState == ServerState.STOPPED_JVM_PROFILER
+                ? new String[]{""} : null),
+                startServerListener, stateListener));
         RP.post(task);
         return task;
     }
@@ -416,38 +435,42 @@ public class CommonServerSupport
 
 
     @Override
-    public Future<OperationState> stopServer(final OperationStateListener stateListener) {
-        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.stopServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
-        OperationStateListener stopServerListener = new OperationStateListener() {
+    public Future<TaskState> stopServer(final TaskStateListener stateListener) {
+        LOGGER.log(Level.FINEST, "CSS.stopServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
+        TaskStateListener stopServerListener = new TaskStateListener() {
             @Override
-            public void operationStateChanged(OperationState newState, String message) {
-                if(newState == OperationState.RUNNING) {
+            public void operationStateChanged(
+                    TaskState newState, TaskEvent event, String... args) {
+                if(newState == TaskState.RUNNING) {
                     setServerState(ServerState.STOPPING);
-                } else if(newState == OperationState.COMPLETED) {
+                } else if(newState == TaskState.COMPLETED) {
                     setServerState(ServerState.STOPPED);
-                } else if(newState == OperationState.FAILED) {
+                } else if(newState == TaskState.FAILED) {
                     // possible bug - what if server was started in other mode than RUNNING
                     setServerState(ServerState.RUNNING);
                 }
             }
         };
-        FutureTask<OperationState> task;
+        FutureTask<TaskState> task;
         if (!isRemote() || !Util.isDefaultOrServerTarget(instance.getProperties())) {
             if (getServerState() == ServerState.STOPPED_JVM_PROFILER) {
-                task = new FutureTask<OperationState>(
+                task = new FutureTask<TaskState>(
                         new StopProfilingTask(this, stateListener));
             } else {
-                task = new FutureTask<OperationState>(
+                task = new FutureTask<TaskState>(
                         new StopTask(this, stopServerListener, stateListener));
             }
         // prevent j2eeserver from stopping a server it did not start.
         } else {
-            task = new FutureTask<OperationState>(new NoopTask(this,stopServerListener,stateListener));
+            task = new FutureTask<TaskState>(
+                    new NoopTask(this,stopServerListener,stateListener));
         }
         if (stopDisabled) {
-            stopServerListener.operationStateChanged(OperationState.COMPLETED, "");
+            stopServerListener.operationStateChanged(
+                    TaskState.COMPLETED, TaskEvent.CMD_COMPLETED, "");
             if (null != stateListener) {
-                stateListener.operationStateChanged(OperationState.COMPLETED, "");
+                stateListener.operationStateChanged(
+                        TaskState.COMPLETED, TaskEvent.CMD_COMPLETED, "");
             }
             return task;
         }
@@ -455,55 +478,101 @@ public class CommonServerSupport
         return task;
     }
 
-    
     @Override
-    public Future<OperationState> restartServer(OperationStateListener stateListener) {
-        Logger.getLogger("glassfish").log(Level.FINEST, "CSS.restartServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
-        FutureTask<OperationState> task = new FutureTask<OperationState>(
+    public Future<TaskState> restartServer(TaskStateListener stateListener) {
+        LOGGER.log(Level.FINEST,
+                "CSS.restartServer called on thread \"{0}\"",
+                Thread.currentThread().getName());
+        FutureTask<TaskState> task = new FutureTask<TaskState>(
                 new RestartTask(this, stateListener));
         RP.post(task);
         return task;
     }
 
+    /**
+     * Sends restart-domain command to server (asynchronous)
+     *
+     */
+    public Future<ResultString> restartServer(final int debugPort,
+            boolean debug, TaskStateListener[] listeners) {
+        if (-1 == debugPort) {
+            Command command = new CommandRestartDAS(false, false, false);
+            return ServerAdmin.<ResultString>exec(
+                    instance, command, null, listeners);
+        }
+        TaskState state = null;
+        try {
+            ResultMap<String, String> result
+                    = CommandGetProperty.getProperties(instance,
+                    "configs.config.server-config.java-config.debug-options");
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String, String> values = result.getValue();
+                if (values != null && !values.isEmpty()) {
+                    String oldValue = values.get(
+                            "configs.config.server-config.java-config.debug-options");
+                    CommandSetProperty setCmd =
+                            getCommandFactory().getSetPropertyCommand(
+                            "configs.config.server-config.java-config.debug-options",
+                            oldValue.replace("transport=dt_shmem", "transport=dt_socket").
+                            replace("address=[^,]+", "address=" + debugPort));
+                    try {
+                        CommandSetProperty.setProperty(instance, setCmd);
+                        debug = true;
+                    } catch (GlassFishIdeException gfie) {
+                        debug = false;
+                        LOGGER.log(Level.INFO, debugPort + "", gfie);
+                    }
+                }
+            }
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO,
+                    "Could not retrieve property from server.", gfie);
+        }
+        Command command = new CommandRestartDAS(debug, false, false);
+        return ServerAdmin.<ResultString>exec(
+                instance, command, null, listeners);
+    }
+
     @Override
-    public Future<OperationState> deploy(final OperationStateListener stateListener,
+    public Future<ResultString> deploy(final TaskStateListener stateListener,
             final File application, final String name) {
         return deploy(stateListener, application, name, null);
     }
 
     @Override
-    public Future<OperationState> deploy(final OperationStateListener stateListener,
-            final File application, final String name, final String contextRoot) {
+    public Future<ResultString> deploy(final TaskStateListener stateListener,
+            final File application, final String name,
+            final String contextRoot) {
         return deploy(stateListener, application, name, contextRoot, null);
     }
 
     @Override
-    public Future<OperationState> deploy(final OperationStateListener stateListener,
-            final File application, final String name, final String contextRoot, Map<String,String> properties) {
+    public Future<ResultString> deploy(final TaskStateListener stateListener,
+            final File application, final String name, final String contextRoot,
+            final Map<String,String> properties) {
         return deploy(stateListener, application, name, contextRoot, null, new File[0]);
     }
 
     @Override
-    public Future<OperationState> deploy(OperationStateListener stateListener,
-            File application, String name, String contextRoot,
-            Map<String, String> properties, File[] libraries) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.deploy(application, name, contextRoot, properties,
-                libraries);
+    public Future<ResultString> deploy(final TaskStateListener stateListener,
+            final File application, final String name, final String contextRoot,
+            final Map<String, String> properties, final File[] libraries) {
+        return ServerAdmin.<ResultString>exec(instance, new CommandDeploy(
+                name, Util.computeTarget(instance.getProperties()),
+                application, contextRoot, properties, libraries
+                ), null, new TaskStateListener[] {stateListener});
     }
 
     @Override
-    public Future<OperationState> redeploy(
-            final OperationStateListener stateListener,
+    public Future<ResultString> redeploy(
+            final TaskStateListener stateListener,
             final String name, boolean resourcesChanged) {
         return redeploy(stateListener, name, null, resourcesChanged);
     }
 
     @Override
-    public Future<OperationState> redeploy(
-            final OperationStateListener stateListener,
+    public Future<ResultString> redeploy(
+            final TaskStateListener stateListener,
             final String name, final String contextRoot,
             boolean resourcesChanged) {
         return redeploy(stateListener, name, contextRoot, new File[0],
@@ -511,68 +580,80 @@ public class CommonServerSupport
     }
 
     @Override
-    public Future<OperationState> redeploy(OperationStateListener stateListener,
+    public Future<ResultString> redeploy(TaskStateListener stateListener,
     String name, String contextRoot, File[] libraries,
     boolean resourcesChanged) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.redeploy(name, contextRoot, libraries, resourcesChanged);
+        Map<String, String> properties = new HashMap<String, String>();
+        String url = instance.getProperty(GlassfishModule.URL_ATTR);
+        String sessionPreservationFlag = instance.getProperty(
+                GlassfishModule.SESSION_PRESERVATION_FLAG);
+        if (sessionPreservationFlag == null) {
+            // If there isn't a value stored for the instance, use the value of
+            // the command-line flag.
+            sessionPreservationFlag = System.getProperty(
+                    "glassfish.session.preservation.enabled", "false");
+        }
+        if (Boolean.parseBoolean(sessionPreservationFlag)) {
+            properties.put("keepSessions", "true");
+        }
+        if (resourcesChanged) {
+            properties.put("preserveAppScopedResources", "true");
+        }
+        return ServerAdmin.<ResultString>exec(instance, new CommandRedeploy(
+                name, Util.computeTarget(instance.getProperties()),
+                contextRoot, properties, libraries,
+                url != null && url.contains("ee6wc")), null);
     }
 
     @Override
-    public Future<OperationState> undeploy(
-            final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.undeploy(name);
+    public Future<ResultString> undeploy(
+            final TaskStateListener stateListener, final String name) {
+        return ServerAdmin.<ResultString>exec(
+                instance, new CommandUndeploy(name, Util.computeTarget(
+                instance.getProperties())), null,
+                new TaskStateListener[]{stateListener});
     }
 
     @Override
-    public Future<OperationState> enable(
-            final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.enable(name);
-    }
-    @Override
-    public Future<OperationState> disable(
-            final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.disable(name);
+    public Future<ResultString> enable(
+            final TaskStateListener stateListener, final String name) {
+        return ServerAdmin.<ResultString>exec(instance, new CommandEnable(
+                name,  Util.computeTarget(instance.getProperties())), null,
+                new TaskStateListener[] {stateListener});
     }
 
     @Override
-    public Future<OperationState> execute(ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance);
-        return mgr.execute(command);
+    public Future<ResultString> disable(
+            final TaskStateListener stateListener, final String name) {
+        return ServerAdmin.<ResultString>exec(instance, new CommandDisable(
+                name,  Util.computeTarget(instance.getProperties())), null,
+                new TaskStateListener[] {stateListener});
     }
 
-    private Future<OperationState> execute(boolean irr, ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
-                instance);
-        return mgr.execute(command);
-    }
-    private Future<OperationState> execute(boolean irr, ServerCommand command,
-            OperationStateListener... osl) {
-        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
-                instance, osl);
-        return mgr.execute(command);
-    }
+//    @Override
+//    public Future<TaskState> execute(ServerCommand command) {
+//        CommandRunner mgr = new CommandRunner(
+//                GlassFishStatus.isReady(instance, false),
+//                getCommandFactory(), instance);
+//        return mgr.execute(command);
+//    }
+//
+//    private Future<TaskState> execute(boolean irr, ServerCommand command) {
+//        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
+//                instance);
+//        return mgr.execute(command);
+//    }
+//    private Future<TaskState> execute(boolean irr, ServerCommand command,
+//            TaskStateListener... osl) {
+//        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
+//                instance, osl);
+//        return mgr.execute(command);
+//    }
 
     @Override
     public AppDesc [] getModuleList(String container) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance);
         int total = 0;
-        Map<String, List<AppDesc>> appMap = mgr.getApplications(container);
+        Map<String, List<AppDesc>> appMap = getApplications(container);
         Collection<List<AppDesc>> appLists = appMap.values();
         for(List<AppDesc> appList: appLists) {
             total += appList.size();
@@ -589,12 +670,10 @@ public class CommonServerSupport
 
     @Override
     public Map<String, ResourceDesc> getResourcesMap(String type) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance);
         Map<String, ResourceDesc> resourcesMap
                 = new HashMap<String, ResourceDesc>();
-        List<ResourceDesc> resourcesList = mgr.getResources(type);
+        List<ResourceDesc> resourcesList
+                = ResourceDesc.getResources(instance, type);
         for (ResourceDesc resource : resourcesList) {
             resourcesMap.put(resource.getName(), resource);
         }
@@ -662,16 +741,16 @@ public class CommonServerSupport
                 }
                 retVal = true;
             } catch(IOException ex) {
-                Logger.getLogger("glassfish").log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Unable to save attribute " + name + " in " + instanceFO.getPath() + " for " + getDeployerUri(), ex); // NOI18N
             }
         } else {
             if (null == instanceFO)
-                Logger.getLogger("glassfish").log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Unable to save attribute {0} for {1} in {3}. Instance file is writable? {2}",
                         new Object[]{name, getDeployerUri(), false, "null"}); // NOI18N
             else
-                Logger.getLogger("glassfish").log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Unable to save attribute {0} for {1} in {3}. Instance file is writable? {2}",
                         new Object[]{name, getDeployerUri(), instanceFO.canWrite(), instanceFO.getPath()}); // NOI18N
         }
@@ -698,7 +777,7 @@ public class CommonServerSupport
             try {
                 socket.close();
             } catch (IOException ioe) {
-                Logger.getLogger("glassfish").log(
+                LOGGER.log(
                         Level.INFO, "Socket closing failed: {0}",
                         ioe.getMessage());
             }
@@ -714,7 +793,7 @@ public class CommonServerSupport
                     host, Integer.toString(port), ioe.getLocalizedMessage());
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notifyLater(nd);
-            Logger.getLogger("glassfish").log(Level.INFO,
+            LOGGER.log(Level.INFO,
                     "Evidence of network flakiness: {0}", ioe.getMessage());
             return false;
         }
@@ -724,440 +803,6 @@ public class CommonServerSupport
             final String name) {
         return isRunning(host, port, name, 2000);
     }
-
-////////////////////////////////////////////////////////////////////////////////
-// MOVED TO GlassFishStatus                                             START //
-////////////////////////////////////////////////////////////////////////////////
-
-//    public boolean isReallyRunning() {
-//        return isReady(false,30,TimeUnit.SECONDS);
-//    }
-//
-//    /**
-//     * Suspend thread execution for {@link #STARTUP_RETRY_DELAY} ms.
-//     * <p/>
-//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
-//     * <p/>
-//     * @param begTm {@link #isReady(boolean, int, TimeUnit)} execution
-//     *              start time.
-//     * @param actTm Actual time.
-//     * @param tries Number of retries.
-//     */
-//    private void retrySleep(long begTm, long actTm, int tries) {
-//        Logger.getLogger("glassfish").log(Level.FINEST,
-//                "Keep trying while server is not yet ready. Time until giving it up: {0}, retry {1}",
-//                new Object[]{
-//                    Long.toString(STARTUP_TIMEOUT - actTm + begTm),
-//                    Integer.toString(tries)});
-//        try {
-//            Thread.sleep(STARTUP_RETRY_DELAY);
-//        } catch (InterruptedException ie) {
-//            Logger.getLogger("glassfish").log(Level.INFO,
-//                    "Thread sleep interrupted: {0}", ie.getLocalizedMessage());
-//        }
-//    }
-//
-//    /**
-//     * Execute Location command on GlassFish instance.
-//     * <p/>
-//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
-//     * <p/>
-//     * @param command Location command entity.
-//     * @param timeout Execution timeout value.
-//     * @param units   Execution timeout units.
-//     * @return Location command asynchronous execution future result object.
-//     */
-//    private Future<ResultMap<String, String>> execLocation(
-//            CommandLocation command, int timeout, TimeUnit units) {
-//        Logger.getLogger("glassfish").log(Level.FINEST,
-//                "Running admin interface Location command on {0} with timeout {1} [{2}]",
-//                new Object[]{instance.getName(), Integer.toString(timeout),
-//                    units.toString()});
-//        if (isRemote) {
-//            TaskStateListener[] listenersLocation = new TaskStateListener[]{
-//                new LocationsTaskStateListener(this)};
-//            return ServerAdmin.<ResultMap<String, String>>exec(
-//                    instance, new CommandLocation(), new IdeContext(),
-//                    listenersLocation);
-//        } else {
-//            return ServerAdmin.<ResultMap<String, String>>exec(
-//                    instance, new CommandLocation(), new IdeContext());
-//        }
-//    }
-//
-//    /**
-//     * Execute Version command on GlassFish instance.
-//     * <p/>
-//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
-//     * <p/>
-//     * @param command Version command entity.
-//     * @param timeout Execution timeout value.
-//     * @param units   Execution timeout units.
-//     * @return Version command asynchronous execution future result object.
-//     */
-//    private Future<ResultString> execVersion( CommandVersion command,
-//            int timeout, TimeUnit units) {
-//        Logger.getLogger("glassfish").log(Level.FINEST,
-//                "Running admin interface Version command on {0} with timeout {1} [{2}]",
-//                new Object[]{instance.getName(), Integer.toString(timeout),
-//                    units.toString()});
-//        return ServerAdmin.<ResultString>exec(
-//                instance, command, new IdeContext());
-//    }
-//
-//    /**
-//     * Wait for Location command execution result and return it.
-//     * <p/>
-//     * Command execution timeout should be specified.
-//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
-//     * <p/>
-//     * @param futureLocation Location command asynchronous execution
-//     *                       future result object
-//     * @param command        Location command entity.
-//     * @param timeout        Execution timeout value (only for logging).
-//     * @param units          Execution timeout units (only for logging).
-//     * @param maxtries       Maximum retries allowed (only for logging).
-//     * @param tries          Current retries count (only for logging).
-//     * @return Location command asynchronous execution final result.
-//     * @throws InterruptedException If the current thread was interrupted
-//     *                              while waiting
-//     * @throws ExecutionException   If the Location command asynchronous
-//     *                              execution threw an exception.
-//     * @throws TimeoutException     If the wait timed out.
-//     */
-//    private ResultMap<String, String> resultLocation(
-//            Future<ResultMap<String, String>> futureLocation,
-//            CommandLocation command, int timeout, TimeUnit units,
-//            int maxtries, int tries)
-//            throws InterruptedException, ExecutionException, TimeoutException {
-//        try {
-//            return futureLocation.get(timeout, units);
-//        } catch (TimeoutException ex) {
-//            Logger.getLogger("glassfish").log(Level.INFO,
-//                    "Server {0} {1}:{2} user {3}: {4} timed out. Try {5} of {6}.",
-//                    new Object[]{instance.getName(), instance.getHost(),
-//                        instance.getHttpAdminPort(), instance.getAdminUser(),
-//                        command.getCommand(), Integer.toString(tries),
-//                        Integer.toString(maxtries)});
-//            throw ex;
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger("glassfish").log(Level.INFO,
-//                    "Server {0} {1}:{2} user {3}: {4} interrupted. Try {5} of {6}.",
-//                    new Object[]{instance.getName(), instance.getHost(),
-//                        instance.getHttpAdminPort(), instance.getAdminUser(),
-//                        command.getCommand(), Integer.toString(tries),
-//                        Integer.toString(maxtries)});
-//            throw ex;
-//        } catch (ExecutionException ex) {
-//            Logger.getLogger("glassfish").log(Level.INFO,
-//                    "Server {0} {1}:{2} user {3}: {4} threw an exception. Try {5} of {6}.",
-//                    new Object[]{instance.getName(), instance.getHost(),
-//                        instance.getHttpAdminPort(), instance.getAdminUser(),
-//                        command.getCommand(), Integer.toString(tries),
-//                        Integer.toString(maxtries)});
-//            throw ex;
-//        }
-//    }
-//
-//    /**
-//     * Wait for Version command execution result and return it.
-//     * <p/>
-//     * Command execution timeout should be specified.
-//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
-//     * <p/>
-//     * @param futureVersion Version command asynchronous execution
-//     *                      future result object
-//     * @param command       Version command entity.
-//     * @param timeout       Execution timeout value (only for logging).
-//     * @param units         Execution timeout units (only for logging).
-//     * @param maxtries      Maximum retries allowed (only for logging).
-//     * @param tries         Current retries count (only for logging).
-//     * @return Version command asynchronous execution final result.
-//     * @throws InterruptedException If the current thread was interrupted
-//     *                              while waiting
-//     * @throws ExecutionException   If the Version command asynchronous
-//     *                              execution threw an exception.
-//     * @throws TimeoutException     If the wait timed out.
-//     */
-//    private ResultString resultVersion(
-//            Future<ResultString> futureVersion,
-//            CommandVersion command, int timeout, TimeUnit units,
-//            int maxtries, int tries)
-//            throws InterruptedException, ExecutionException, TimeoutException {
-//        try {
-//            return futureVersion.get(timeout, units);
-//        } catch (TimeoutException ex) {
-//            Logger.getLogger("glassfish").log(Level.INFO,
-//                    "Server {0} {1}:{2} user {3}: {4} timed out. Try {5} of {6}.",
-//                    new Object[]{instance.getName(), instance.getHost(),
-//                        instance.getHttpAdminPort(), instance.getAdminUser(),
-//                        command.getCommand(), Integer.toString(tries),
-//                        Integer.toString(maxtries)});
-//            throw ex;
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger("glassfish").log(Level.INFO,
-//                    "Server {0} {1}:{2} user {3}: {4} interrupted. Try {5} of {6}.",
-//                    new Object[]{instance.getName(), instance.getHost(),
-//                        instance.getHttpAdminPort(), instance.getAdminUser(),
-//                        command.getCommand(), Integer.toString(tries),
-//                        Integer.toString(maxtries)});
-//            throw ex;
-//        } catch (ExecutionException ex) {
-//            Logger.getLogger("glassfish").log(Level.INFO,
-//                    "Server {0} {1}:{2} user {3}: {4} threw an exception. Try {5} of {6}.",
-//                    new Object[]{instance.getName(), instance.getHost(),
-//                        instance.getHttpAdminPort(), instance.getAdminUser(),
-//                        command.getCommand(), Integer.toString(tries),
-//                        Integer.toString(maxtries)});
-//            throw ex;
-//        }
-//    }
-//
-//    /**
-//     * Log Location command execution result.
-//     * <p/>
-//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
-//     * <p/>
-//     * @param result Location command asynchronous execution final result.
-//     * @param start  Location command asynchronous execution start time.
-//     */
-//    private void logLocationResult(
-//            ResultMap<String, String> result, long start) {
-//        if (Logger.getLogger("glassfish").isLoggable(Level.FINEST)) {
-//            String message;
-//            if (result != null && result.getValue() != null) {
-//                if (result.getValue().get("message") != null) {
-//                    message = result.getValue().get("message");
-//                } else {
-//                    String baseRootValue = result
-//                            .getValue().get("Base-Root_value");
-//                    String domainRootValue = result
-//                            .getValue().get("Domain-Root_value");
-//                    if (baseRootValue == null) {
-//                        baseRootValue = "null";
-//                    }
-//                    if (domainRootValue == null) {
-//                        domainRootValue = "null";
-//                    }
-//                    StringBuilder sb = new StringBuilder(baseRootValue.length()
-//                            + 1 + domainRootValue.length());
-//                    sb.append(baseRootValue);
-//                    sb.append(' ');
-//                    sb.append(domainRootValue);
-//                    message = sb.toString();
-//                }
-//            } else {
-//                message = null;
-//            }
-//            Logger.getLogger("glassfish").log(Level.FINEST,
-//                    "Location command responded in {0} ms with result {1} and response {2}",
-//                    new Object[]{
-//                        Long.toString((System.nanoTime() - start) / 1000000),
-//                        result.getState().toString(), message});
-//        }
-//    }
-//
-//    /**
-//    * Log Version command execution result.
-//     * <p/>
-//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
-//     * <p/>
-//     * @param result Version command asynchronous execution final result.
-//     * @param start  Version command asynchronous execution start time.
-//     */
-//    private void logVersionResult(ResultString result, long start) {
-//        if (Logger.getLogger("glassfish").isLoggable(Level.FINEST)) {
-//            String resultState = result != null && result.getState() != null
-//                        ? result.getState().toString() : "null";
-//            String resultValue = result != null ? result.getValue() : "null";
-//            Logger.getLogger("glassfish").log(Level.FINEST,
-//                    "Version command responded in {0} ms with result {1} and response {2}",
-//                    new Object[]{
-//                        Long.toString((System.nanoTime() - start) / 1000000),
-//                        resultState, resultValue});
-//        }
-//    }
-//
-//    /**
-//     * Verify GlassFish server installation and domain directories and update
-//     * HTTP port.
-//     * <p/>
-//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
-//     * <p/>
-//     * @param result Location command asynchronous execution final result. 
-//     * @return Returns <code>true</code> when server is ready or
-//     *         <code>false</code> otherwise.
-//     */
-//    private boolean processReadyLocationresult(
-//            ResultMap<String, String> result) {
-//        boolean isReady;
-//        String domainRoot = instance.getDomainsRoot()
-//                + File.separator + instance.getDomainName();
-//        String targetDomainRoot = result.getValue().get("Domain-Root_value");
-//        if (instance.getDomainsRoot() != null
-//                && targetDomainRoot != null) {
-//            File installDir = FileUtil.normalizeFile(new File(domainRoot));
-//            File targetInstallDir = FileUtil.normalizeFile(
-//                    new File(targetDomainRoot));
-//            isReady = installDir.equals(targetInstallDir);
-//        } else {
-//            // if we got a response from the server... we are going
-//            // to trust that it is the 'right one'
-//            // TODO -- better edge case detection/protection
-//            isReady = null != targetDomainRoot;
-//        }
-//        if (isReady) {
-//            // Make sure the http port info is corrected
-//            updateHttpPort();
-//        }
-//        return isReady;
-//    }
-//
-//    /**
-//     * When command asynchronous execution failed with TimeoutException, check
-//     * if server administration port is alive and if so, display pop up
-//     * window with error message.
-//     * <p/>
-//     * Port connect timeout is set to 15 seconds.
-//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
-//     * <p/>
-//     * @param command Command entity.
-//     */
-//    private void checkPortAndDisplayWarning(Command command) {
-//        if (isRunning(instance.getHost(), instance.getAdminPort(),
-//                instance.getName(), 15000)) {
-//            String message = NbBundle.getMessage(
-//                    CommonServerSupport.class, "MSG_COMMAND_SSL_ERROR",
-//                    command.getCommand(), instance.getName(),
-//                    Integer.toString(instance.getAdminPort()));
-//            displayPopUpMessage(this, message);
-//        }
-//    }
-//
-//
-//    /**
-//     * Check if GlassFish server is ready using Location command and
-//     * Version command as fallback option.
-//     * <p/>
-//     * @param retry   Maximum number of administration command retries.
-//     * @param timeout Administration command execution timeout value.
-//     * @param units   Administration command execution timeout units .
-//     * @return Returns <code>true</code> when GlassFish server is ready
-//     *         or <code>false</code> otherwise.
-//     */
-//    @SuppressWarnings("SleepWhileInLoop")
-//    private boolean isReady(boolean retry, int timeout, TimeUnit units) {
-//        boolean isReady = false;
-//        int maxtries = retry ? 3 : 1;
-//        int tries = 0;
-//        boolean notYetReadyResponse = false;
-//        long begTm = System.currentTimeMillis();
-//        long actTm = begTm;
-//        Logger.getLogger("glassfish").log(Level.FINEST,
-//                "GlassFish status check: retries = {0} timeout = {1} [{2}]",
-//                new Object[]{Integer.toString(maxtries),
-//                    Integer.toString(timeout), units.toString()});
-//        while (!isReady && (
-//                tries++ < maxtries || (
-//                notYetReadyResponse && (actTm - begTm) < STARTUP_TIMEOUT))) {
-//            if (tries > 1 || notYetReadyResponse) {
-//                retrySleep(begTm, actTm, tries);
-//            }
-//            // Location command check
-//            long start = System.nanoTime();
-//            CommandLocation commandLocation = new CommandLocation();
-//            Future<ResultMap<String, String>> futureLocation
-//                    = execLocation(commandLocation, timeout, units);
-//            ResultMap<String, String> resultLocation;
-//            try {
-//                resultLocation = resultLocation(futureLocation,
-//                        commandLocation, timeout, units, maxtries, tries);
-//            // Retry next cycle on TimeoutException.
-//            } catch (TimeoutException ex) {
-//                isReady = false;
-//                checkPortAndDisplayWarning(commandLocation);
-//                continue;
-//            // Give it up on other exceptions.
-//            } catch (InterruptedException ex) {
-//                isReady = false;
-//                break;
-//            } catch (ExecutionException ex) {
-//                isReady = false;
-//                break;
-//            }
-//            String message = resultLocation != null
-//                    && resultLocation.getValue() != null
-//                    ? resultLocation.getValue().get("message") : null;
-//            // Not ready response and timer update belongs to each other.
-//            notYetReadyResponse = ServerUtils.notYetReadyMsg(message);
-//            actTm = System.currentTimeMillis();
-//            logLocationResult(resultLocation, start);
-//
-//            if (resultLocation.getState() == TaskState.COMPLETED) {
-//                isReady = processReadyLocationresult(resultLocation);
-//                break;
-//            // Version command check
-//            } else if (!commandLocation.retry()) {
-//                // !PW temporary while some server versions support
-//                // __locationsband some do not but are still V3 and might
-//                // the ones the user is using.
-//                start = System.nanoTime();
-//                CommandVersion commandVersion = new CommandVersion();
-//                Future<ResultString> futureVersion
-//                        = execVersion(commandVersion, timeout, units);
-//                ResultString resultVersion;
-//                try {
-//                    resultVersion = resultVersion(futureVersion,
-//                            commandVersion, timeout, units, maxtries, tries);
-//                // Retry next cycle on TimeoutException.
-//                } catch (TimeoutException ex) {
-//                    isReady = false;
-//                    checkPortAndDisplayWarning(commandVersion);
-//                    continue;
-//                    // Give it up on other exceptions.
-//                } catch (InterruptedException ex) {
-//                    isReady = false;
-//                    break;
-//                } catch (ExecutionException ex) {
-//                    isReady = false;
-//                    break;
-//                }
-//                message = resultVersion.getValue();
-//                // Not ready response and timer update belongs to each other.
-//                notYetReadyResponse = ServerUtils.notYetReadyMsg(message);
-//                actTm = System.currentTimeMillis();
-//                logVersionResult(resultVersion, start);
-//
-//                isReady = resultVersion.getState() == TaskState.COMPLETED;
-//                if (notYetReadyResponse) {
-//                    continue;
-//                }
-//                break;
-//            } else {
-//                // keep trying for 10 minutes if the server is stuck between
-//                // httpLive and server ready state. We have to give up
-//                // sometime, though.
-//                VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH)
-//                        .lookup(VMIntrospector.class);
-//                boolean suspended = null == vmi
-//                        ? false
-//                        : vmi.isSuspended(getHostName(),
-//                        (String) instance.getProperty(
-//                        GlassfishModule.DEBUG_PORT));
-//                if (suspended) {
-//                    tries--;
-//                } else if (maxtries < 20) {
-//                    maxtries++;
-//                }
-//            }
-//        } // while
-//
-//        return isReady;
-//    }
-
-////////////////////////////////////////////////////////////////////////////////
-// MOVED TO GlassFishStatus                                               END //
-////////////////////////////////////////////////////////////////////////////////
 
     // ------------------------------------------------------------------------
     //  RefreshModulesCookie implementation (for refreshing server state)
@@ -1196,7 +841,7 @@ public class CommonServerSupport
                             setServerState(ServerState.RUNNING);
                         }
                     } catch (Exception ex) {
-                         Logger.getLogger("glassfish").log(Level.WARNING,
+                         LOGGER.log(Level.WARNING,
                                  ex.getMessage());
                     } finally {
                         refreshRunning.set(false);
@@ -1230,7 +875,8 @@ public class CommonServerSupport
 
     @Override
     public String getResourcesXmlName() {
-        return Utils.useGlassfishPrefix(getDeployerUri()) ?
+        return org.netbeans.modules.glassfish.spi.Utils
+                .useGlassfishPrefix(getDeployerUri()) ?
                 "glassfish-resources" : "sun-resources"; // NOI18N
     }
 
@@ -1259,7 +905,7 @@ public class CommonServerSupport
         latestWarningDisplayTime = currentTime;
     }
 
-    class StartOperationStateListener implements OperationStateListener {
+    class StartOperationStateListener implements TaskStateListener {
         private ServerState endState;
 
         StartOperationStateListener(ServerState endState) {
@@ -1267,27 +913,31 @@ public class CommonServerSupport
         }
 
         @Override
-        public void operationStateChanged(OperationState newState, String message) {
-            if(newState == OperationState.RUNNING) {
+        public void operationStateChanged(TaskState newState, TaskEvent event,
+                String... args) {
+            if(newState == TaskState.RUNNING) {
                 setServerState(ServerState.STARTING);
-            } else if(newState == OperationState.COMPLETED) {
+            } else if(newState == TaskState.COMPLETED) {
                 startedByIde = isRemote
                         ? false : GlassFishStatus.isReady(instance, false);
                 setServerState(endState);
-            } else if(newState == OperationState.FAILED) {
+            } else if(newState == TaskState.FAILED) {
                 setServerState(ServerState.STOPPED);
                 // Open a warning dialog here...
-                NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+                NotifyDescriptor nd = new NotifyDescriptor.Message(Utils.concatenate(args));
                 DialogDisplayer.getDefault().notifyLater(nd);
             }
         }
     }
 
+    /**
+     * Update HTTP port value from server properties.
+     */
     void updateHttpPort() {
         String target = Util.computeTarget(instance.getProperties());
-        GetPropertyCommand gpc;
+        String gpc;
         if (Util.isDefaultOrServerTarget(instance.getProperties())) {
-            gpc = new GetPropertyCommand("*.server-config.*.http-listener-1.port"); // NOI18N
+            gpc = "*.server-config.*.http-listener-1.port";
             setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR, 
                     instance.getProperty(GlassfishModule.HOSTNAME_ATTR), true); // NOI18N
         } else {
@@ -1295,14 +945,15 @@ public class CommonServerSupport
             String adminHost = instance.getProperty(GlassfishModule.HOSTNAME_ATTR);
             setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR,
                     getHttpHostFromServer(server,adminHost), true);
-            gpc = new GetPropertyCommand("servers.server."+server+".system-property.HTTP_LISTENER_PORT.value", true); // NOI18N
+            gpc = "servers.server."+server+".system-property.HTTP_LISTENER_PORT.value";
         }
-        Future<OperationState> result2 = execute(true, gpc);
         try {
+            ResultMap<String, String> result = CommandGetProperty.getProperties(
+                    instance, gpc, PROPERTIES_FETCH_TIMEOUT);
             boolean didSet = false;
-            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
-                Map<String, String> retVal = gpc.getData();
-                for (Entry<String, String> entry : retVal.entrySet()) {
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String, String> values = result.getValue();
+                for (Entry<String, String> entry : values.entrySet()) {
                     String val = entry.getValue();
                     try {
                         if (null != val && val.trim().length() > 0) {
@@ -1311,31 +962,133 @@ public class CommonServerSupport
                             didSet = true;
                         }
                     } catch (NumberFormatException nfe) {
-                        // skip it quietly..
+                        LOGGER.log(Level.FINEST,
+                                "Property value {0} was not a number", val);
                     }
                 }
             }
             if (!didSet && !Util.isDefaultOrServerTarget(instance.getProperties())) {
                 setEnvironmentProperty(GlassfishModule.HTTPPORT_ATTR, "28080", true); // NOI18N
             }
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (TimeoutException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO, "Could not get http port value.", gfie);
         }
     }
 
+    /**
+     * Sends list-applications command to server (synchronous)
+     *
+     * @return String array of names of deployed applications.
+     */
+    public Map<String, List<AppDesc>> getApplications(String container) {
+        Map<String, List<AppDesc>> result = Collections.emptyMap();
+            Map<String, List<String>> apps = Collections.emptyMap();
+        try {
+            ResultMap<String, List<String>> resultMap
+                    = CommandListComponents.listComponents(instance,
+                    Util.computeTarget(instance.getProperties()));
+            if (resultMap.getState() == TaskState.COMPLETED) {
+                apps = resultMap.getValue();
+            }
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO,
+                    "Could not retrieve components server.", gfie);
+        }
+        if (null == apps || apps.isEmpty()) {
+            return result;
+        }
+        try {
+            ResultMap<String, String> appPropsResult = CommandGetProperty
+                    .getProperties(instance, "applications.application.*");
+            if (appPropsResult.getState() == TaskState.COMPLETED) {
+                ResultMap<String, String> appRefResult
+                        = CommandGetProperty.getProperties(
+                        instance, "servers.server.*.application-ref.*");
+                if (appRefResult.getState() == TaskState.COMPLETED) {
+                    result = processApplications(apps,
+                            appPropsResult.getValue(),
+                            appRefResult.getValue());
+                }
+            }
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO,
+                    "Could not retrieve property from server.", gfie);
+        }
+        return result;
+    }
+
+    private Map<String, List<AppDesc>> processApplications(Map<String,
+            List<String>> appsList, Map<String, String> properties,
+            Map<String, String> refProperties){
+        Map<String, List<AppDesc>> result = new HashMap<String, List<AppDesc>>();
+        Iterator<String> appsItr = appsList.keySet().iterator();
+        while (appsItr.hasNext()) {
+            String engine = appsItr.next();
+            List<String> apps = appsList.get(engine);
+            for (int i = 0; i < apps.size(); i++) {
+                String name = apps.get(i).trim();
+                String appname = "applications.application." + name; // NOI18N
+                String contextKey = appname + ".context-root"; // NOI18N
+                String pathKey = appname + ".location"; // NOI18N
+
+                String contextRoot = properties.get(contextKey);
+                if (contextRoot == null) {
+                    contextRoot = name;
+                }
+                if (contextRoot.startsWith("/")) {  // NOI18N
+                    contextRoot = contextRoot.substring(1);
+                }
+
+                String path = properties.get(pathKey);
+                if (path == null) {
+                    path = "unknown"; //NOI18N
+                }
+                if (path.startsWith("file:")) {  // NOI18N
+                    path = path.substring(5);
+                    path = (new File(path)).getAbsolutePath();
+                }
+
+                String enabledKey = "servers.server.server.application-ref."
+                        +name+ ".enabled";  //NOI18N
+                // This needs to be more focused. Does it need to list
+                // of servers that are associated with the target?
+                for (String possibleKey : refProperties.keySet()) {
+                    if (possibleKey.endsWith(".application-ref."
+                            + name + ".enabled")) { // NOI18N
+                        enabledKey = possibleKey;
+                    }
+                }
+                String enabledValue = refProperties.get(enabledKey);
+                if (null != enabledValue) {
+                    boolean enabled = Boolean.parseBoolean(enabledValue);
+
+                    List<AppDesc> appList = result.get(engine);
+                    if(appList == null) {
+                        appList = new ArrayList<AppDesc>();
+                        result.put(engine, appList);
+                    }
+                    appList.add(new AppDesc(name, path, contextRoot, enabled));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Retrieve server name using target name from server properties.
+     * <p/>
+     * @param target Server target name.
+     * @return Name of server having this target.
+     */
     private String getServerFromTarget(String target) {
         String retVal = target; // NOI18N
-        GetPropertyCommand  gpc = new GetPropertyCommand("clusters.cluster."+target+".server-ref.*.ref", true); // NOI18N
-
-        Future<OperationState> result2 = execute(true, gpc);
+        String gpc = "clusters.cluster."+target+".server-ref.*.ref";
         try {
-            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
-                Map<String, String> data = gpc.getData();
-                for (Entry<String, String> entry : data.entrySet()) {
+            ResultMap<String, String> result = CommandGetProperty.getProperties(
+                    instance, gpc, PROPERTIES_FETCH_TIMEOUT);
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String, String> values = result.getValue();
+                for (Entry<String, String> entry : values.entrySet()) {
                     String val = entry.getValue();
                         if (null != val && val.trim().length() > 0) {
                             retVal = val;
@@ -1343,53 +1096,56 @@ public class CommonServerSupport
                         }
                 }
             }
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (TimeoutException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO, "Could not get server value from target.", gfie);
         }
-
         return retVal;
     }
-    private String getHttpHostFromServer(String server, String nameOfLocalhost) {
-        String retVal = "localhostFAIL"; // NOI18N
-        GetPropertyCommand  gpc = new GetPropertyCommand("servers.server."+server+".node-ref"); // NOI18N
-        String refVal = null;
-        Future<OperationState> result2 = execute(true, gpc);
-        try {
-            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
-                Map<String, String> data = gpc.getData();
-                for (Entry<String, String> entry : data.entrySet()) {
-                    String val = entry.getValue();
-                        if (null != val && val.trim().length() > 0) {
-                            refVal = val;
-                            break;
-                        }
-                }
-            }
-            gpc = new GetPropertyCommand("nodes.node."+refVal+".node-host"); // NOI18N
-            result2 = execute(true,gpc);
-            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
-                Map<String, String> data = gpc.getData();
-                for (Entry<String, String> entry : data.entrySet()) {
-                    String val = entry.getValue();
-                        if (null != val && val.trim().length() > 0) {
-                            retVal = val;
-                            break;
-                        }
-                }
-            }
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-        } catch (TimeoutException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
-        }
 
-        return "localhost".equals(retVal) ? nameOfLocalhost : retVal; // NOI18N
+    /**
+     * Retrieve HTTP host name for server from server properties.
+     * <p/>
+     * @param server          Server name.
+     * @param nameOfLocalhost Local host DNS name.
+     * @return HTTP host name for server.
+     */
+    private String getHttpHostFromServer(
+            String server, String nameOfLocalhost) {
+        String retVal = FAILED_HTTP_HOST;
+        String refVal = null;
+        String gpc = "servers.server."+server+".node-ref";
+        try {
+            ResultMap<String, String> result = CommandGetProperty.getProperties(
+                    instance, gpc, PROPERTIES_FETCH_TIMEOUT);
+            if (result.getState() == TaskState.COMPLETED) {
+                for (Entry<String, String> entry 
+                        : result.getValue().entrySet()) {
+                    String val = entry.getValue();
+                    if (null != val && val.trim().length() > 0) {
+                        refVal = val;
+                        break;
+                    }
+                }
+                if (refVal != null) {
+                    gpc = "nodes.node." + refVal + ".node-host";
+                    result = CommandGetProperty.getProperties(
+                            instance, gpc, PROPERTIES_FETCH_TIMEOUT);
+                    if (result.getState() == TaskState.COMPLETED) {
+                        for (Entry<String, String> entry
+                                : result.getValue().entrySet()) {
+                            String val = entry.getValue();
+                            if (null != val && val.trim().length() > 0) {
+                                retVal = val;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO, "Could not get http host value.", gfie);
+        }
+        return LOCALHOST.equals(retVal) ? nameOfLocalhost : retVal; // NOI18N
     }
 
     @SuppressWarnings("SleepWhileInLoop")
@@ -1406,14 +1162,14 @@ public class CommonServerSupport
                 httpConn = (HttpURLConnection) url.openConnection();
                 retVal = httpConn.getResponseCode() > 0;
             } catch (java.net.MalformedURLException mue) {
-                Logger.getLogger("glassfish").log(Level.INFO, null, mue); // NOI18N
+                LOGGER.log(Level.INFO, null, mue);
             } catch (java.net.ConnectException ce) {
                 // we expect this...
-                Logger.getLogger("glassfish").log(Level.FINE,
-                        url != null ? url.toString() : "null", ce); // NOI18N
+                LOGGER.log(Level.FINE,
+                        url != null ? url.toString() : "null", ce);
             } catch (java.io.IOException ioe) {
-                Logger.getLogger("glassfish").log(Level.INFO,
-                        url != null ? url.toString() : "null", ioe); // NOI18N
+                LOGGER.log(Level.INFO,
+                        url != null ? url.toString() : "null", ioe);
             } finally {
                 if (null != httpConn) {
                     httpConn.disconnect();
@@ -1424,7 +1180,7 @@ public class CommonServerSupport
             } catch (InterruptedException ex) {
             }
         }
-        Logger.getLogger("glassfish").log(Level.FINE, "pingHttp returns {0}", retVal); // NOI18N
+        LOGGER.log(Level.FINE, "pingHttp returns {0}", retVal); // NOI18N
         return retVal;
     }
 }
