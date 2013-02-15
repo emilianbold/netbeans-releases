@@ -928,7 +928,7 @@ public class OptionsPanel extends JPanel {
                 Color res = UIManager.getColor( "Tree.selectionBackground" ); //NOI18N
                 if( null == res )
                     res = Color.blue;
-                return new Color( res.getRGB() ).brighter();
+                return new Color( res.getRGB() );
             }
         }
         return new Color (224, 232, 246);
