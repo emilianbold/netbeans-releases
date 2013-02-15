@@ -175,7 +175,7 @@ public final class ResultView extends TopComponent {
             setOpaque(true);
         } else {
             emptyPanel.setBackground(
-                    UIManager.getColor("Tree.textBackground"));         //NOI18N
+                    UIManager.getColor("Tree.background"));         //NOI18N
         }
         contentCards.show(this, CARD_NAME_EMPTY);
         associateLookup(Lookups.proxy(lookupProvider));
