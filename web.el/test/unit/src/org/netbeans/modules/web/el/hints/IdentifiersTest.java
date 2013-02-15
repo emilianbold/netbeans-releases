@@ -78,6 +78,14 @@ public class IdentifiersTest extends HintTestBase {
         checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers05.xhtml", null);
     }
 
+    public void testOperatorForListData01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers06.xhtml", null);
+    }
+
+    public void testWrongOperatorForListData01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers07.xhtml", null);
+    }
+
 //    public void testKnownOperatorForListData() throws Exception {
 //        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers01.xhtml", null);
 //    }

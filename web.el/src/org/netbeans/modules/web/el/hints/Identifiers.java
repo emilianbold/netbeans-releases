@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.*;
+import org.netbeans.modules.web.el.operators.OperatorDefinitions;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -95,6 +96,7 @@ public final class Identifiers extends ELRule {
 
             each.getNode().accept(new NodeVisitor() {
 
+                private Node parent;
                 private boolean finished;
 
                 @Override
@@ -102,16 +104,18 @@ public final class Identifiers extends ELRule {
                     if (finished) {
                         return;
                     }
-                    if (node instanceof AstIdentifier) {
+                    if (node instanceof AstMapData || node instanceof AstListData) {
+                        parent = node;
+                    } else if (node instanceof AstIdentifier) {
                         if (ELTypeUtilities.resolveElement(info, each, node) == null) {
                             // currently we can't reliably resolve all identifiers, so 
                             // if we couldn't resolve the base identifier skip checking properties / methods
                             finished = true;
                         }
+                        parent = node;
                     }
                     if (node instanceof AstDotSuffix || NodeUtil.isMethodCall(node)) {
-                        Element resolvedElement = ELTypeUtilities.resolveElement(info, each, node);
-                        if (resolvedElement == null) {
+                        if (!isValidNode(info, each, parent, node)) {
                             Hint hint = new Hint(Identifiers.this,
                                     getMsg(node),
                                     elResult.getFileObject(),
@@ -125,6 +129,27 @@ public final class Identifiers extends ELRule {
                 }
             });
         }
+    }
+
+    private static boolean isValidNode(CompilationContext info, ELElement element, Node parent, Node node) {
+        // valid bean's property/method
+        Element resolvedElement = ELTypeUtilities.resolveElement(info, element, node);
+        if (resolvedElement != null) {
+            return true;
+        }
+
+        // EL3.0 operators
+        if (!node.getImage().isEmpty() && OperatorDefinitions.OPERATORS.contains(node.getImage())) {
+            if (parent == null) {
+                return false;
+            } else {
+                // valid operator for static list, set, map
+                if (parent instanceof AstMapData || parent instanceof AstListData) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static String getMsg(Node node) {
