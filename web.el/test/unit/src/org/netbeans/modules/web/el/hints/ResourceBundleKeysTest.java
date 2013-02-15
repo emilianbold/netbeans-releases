@@ -60,19 +60,19 @@ public class ResourceBundleKeysTest extends HintTestBase {
     }
 
     public void testUnknownResourceBundleKeyInBrackets() throws Exception {
-        checkHints(this, createRule(), "projects/testWebProject/web/resourceBundle01.xhtml", null);
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/resourceBundle/resourceBundle01.xhtml", null);
     }
 
     public void testKnownResourceBundleKeyInBrackets() throws Exception {
-        checkHints(this, createRule(), "projects/testWebProject/web/resourceBundle02.xhtml", null);
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/resourceBundle/resourceBundle02.xhtml", null);
     }
 
     public void testUnknownResourceBundleKeyAsProperty() throws Exception {
-        checkHints(this, createRule(), "projects/testWebProject/web/resourceBundle03.xhtml", null);
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/resourceBundle/resourceBundle03.xhtml", null);
     }
 
     public void testKnownResourceBundleKeyAsProperty() throws Exception {
-        checkHints(this, createRule(), "projects/testWebProject/web/resourceBundle04.xhtml", null);
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/resourceBundle/resourceBundle04.xhtml", null);
     }
 
 }
