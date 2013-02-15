@@ -105,6 +105,53 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="SearchPattern_MatchType">
+            <api name="api.search"/>
+            <summary>Search pattern supports three match types (literal, basic wildcards, regexp)</summary>
+            <version major="1" minor="11"/>
+            <date day="29" month="1" year="2013"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Before, the search pattern distinguished two match types:
+                    Regular Expression and Standard. The standard meant that the
+                    text was searched literally in editor search, and that the
+                    searched text could contain basic wildcards (* and ?) in
+                    Find in Projects.
+                </p>
+                <p>
+                    Now, the Search pattern can specify exact match type:
+                    Regular Expression, Basic Wildcards and Literal. Basic
+                    wildcards are not supported by Editor search, but the
+                    fallback to Literal Search is transparent for the editor.
+                </p>
+                <p>
+                    To support extra match types, a few parts have to be added
+                    to the API:
+                </p>
+                <ul>
+                    <li>Enumeration SearchPattern.MatchType which contains
+                        all supported match types
+                    </li>
+                    <li>Method SearchPattern.create(String searchExpression,
+                        boolean wholeWords, boolean matchCase,
+                        MatchType matchType)
+                    </li>
+                    <li>Method SearchPattern.getMatchType() and
+                        SearchPattern.changeMatchType(MatchType)
+                    </li>
+                    <li>Method SearchPatternController.bindMatchTypeComboBox(
+                        JComboBox) for binding match type property to a combo
+                        box.
+                    </li>
+                </ul>
+            </description>
+            <class package="org.netbeans.api.search" name="SearchPattern"/>
+            <class package="org.netbeans.api.search.ui" name="SearchPatternController"/>
+            <issue number="224328"/>
+        </change>
+
         <change id="SearchScopeDefinition_getIcon">
             <api name="api.search"/>
             <summary>Added method getIcon to class SearchScopeDefinition</summary>

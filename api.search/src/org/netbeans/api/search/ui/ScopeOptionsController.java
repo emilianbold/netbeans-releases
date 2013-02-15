@@ -153,7 +153,8 @@ public final class ScopeOptionsController extends ComponentController<JPanel> {
         if (searchAndReplace) {
             jp.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
             jp.add(ignoreListOptionPanel);
-            jp.add(chkFileNameRegex);
+            jp.add(new CheckBoxWithButtonPanel(
+                    chkFileNameRegex, btnTestFileNamePattern));
             jp.setMaximumSize(jp.getMinimumSize());
         } else {
             FormLayoutHelper flh = new FormLayoutHelper(jp,
