@@ -755,15 +755,15 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Projects/org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance"/>
                     <attr name="position" intvalue="300"/>
                 </file>
                 <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingFolderItemsAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Projects/org-netbeans-modules-cnd-makeproject-actions-AddExistingFolderItemsAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-AddExistingFolderItemsAction.instance"/>
                     <attr name="position" intvalue="400"/>
                 </file>
                 <file name="org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Projects/org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.instance"/>
                     <attr name="position" intvalue="500"/>
                 </file>                                        
                 <file name="sep-1.1.instance">
