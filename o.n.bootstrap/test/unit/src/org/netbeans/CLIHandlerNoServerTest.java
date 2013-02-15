@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.java.ui;
+package org.netbeans;
+
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Jan Becicka
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class JavaRenameProperties {
+public class CLIHandlerNoServerTest extends NbTestCase {
+
+    public CLIHandlerNoServerTest(String name) {
+        super(name);
+    }
+
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("org.netbeans.CLIHandler.server", "false");
+        
+        // setups a temporary file
+        String p = getWorkDirPath();
+        if (p == null) {
+            p = System.getProperty("java.io.tmpdir");
+        }
+        String tmp = p;
+        assertNotNull(tmp);
+        System.getProperties().put("netbeans.user", tmp);
+
+        File f = new File(tmp, "lock");
+        if (f.exists()) {
+            assertTrue("Clean up previous mess", f.delete());
+            assertTrue(!f.exists());
+        }
+    }
     
-    private boolean isRenameGettersSetters;
-    private boolean isRenameTestClass;
-    private boolean isRenameTestClassMethod;
 
-    public boolean isIsRenameGettersSetters() {
-        return isRenameGettersSetters;
-    }
+    public void testCannotStartForTheSecondTime() {
+        CLIHandler.Status res = CLIHandlerTest.cliInitialize(
+            new String[0], 
+            new CLIHandler[0], 
+            CLIHandlerTest.nullInput, CLIHandlerTest.nullOutput, CLIHandlerTest.nullOutput
+        );
 
-    public void setIsRenameGettersSetters(boolean isRenameGettersSetters) {
-        this.isRenameGettersSetters = isRenameGettersSetters;
-    }
-
-    public boolean isIsRenameTestClass() {
-        return isRenameTestClass;
-    }
-
-    public void setIsRenameTestClass(boolean isRenameTestClass) {
-        this.isRenameTestClass = isRenameTestClass;
-    }
-
-    public boolean isIsRenameTestClassMethod() {
-	return isRenameTestClassMethod;
-    }
-
-    public void setIsRenameTestClassMethod(boolean isRenameTestClassMethod) {
-	this.isRenameTestClassMethod = isRenameTestClassMethod;
+        assertEquals("Started", 0, res.getExitCode());
+        
+        CLIHandler.Status snd = CLIHandlerTest.cliInitialize(
+            new String[0], 
+            new CLIHandler[0], 
+            CLIHandlerTest.nullInput, CLIHandlerTest.nullOutput, CLIHandlerTest.nullOutput
+        );
+        
+        assertEquals("Can't start for the second time", CLIHandler.Status.ALREADY_RUNNING, snd.getExitCode());
     }
 }

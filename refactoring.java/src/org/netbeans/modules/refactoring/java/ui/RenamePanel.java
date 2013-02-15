@@ -42,10 +42,16 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.refactoring.java.ui;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePathScanner;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -58,7 +64,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
@@ -113,6 +122,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         
         renameGettersAndCheckersCheckBox.setVisible(false);
         renameTestClassCheckBox.setVisible(false);
+	renameTestClassMethodCheckBox.setVisible(false);
     }
     
     private boolean initialized = false;
@@ -124,7 +134,8 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         }
 
         if (handle!=null && handle.getElementHandle() != null && (handle.getElementHandle().getKind() == ElementKind.FIELD
-                || handle.getElementHandle().getKind() == ElementKind.CLASS)) {
+                || handle.getElementHandle().getKind() == ElementKind.CLASS
+		|| handle.getElementHandle().getKind() == ElementKind.METHOD)) {
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
@@ -157,7 +168,8 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                         }
                     }
                     
-                    if(handle.getElementHandle().getKind() == ElementKind.CLASS) {
+                    if(handle.getElementHandle().getKind() == ElementKind.CLASS || handle.getElementHandle().getKind() == ElementKind.METHOD) {
+			final Element methodElement = handle.resolveElement(info);
                         final FileObject fileObject = handle.getFileObject();
                         Collection<? extends TestLocator> testLocators = Lookup.getDefault().lookupAll(TestLocator.class);
                         for (final TestLocator testLocator : testLocators) {
@@ -167,11 +179,19 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
                                         @Override
                                         public void foundLocation(FileObject fo, LocationResult location) {
-                                            addTestFile(location, testLocator);
+					    if(handle.getElementHandle().getKind() == ElementKind.CLASS) {
+						addTestFile(location, testLocator);
+					    } else if(handle.getElementHandle().getKind() == ElementKind.METHOD) {
+						addTestMethod(location, testLocator, methodElement);
+					    }
                                         }
                                     });
                                 } else {
-                                    addTestFile(testLocator.findOpposite(fileObject, -1), testLocator);
+				    if(handle.getElementHandle().getKind() == ElementKind.CLASS) {
+					addTestFile(testLocator.findOpposite(fileObject, -1), testLocator);
+				    } else if (handle.getElementHandle().getKind() == ElementKind.METHOD) {
+					addTestMethod(testLocator.findOpposite(fileObject, -1), testLocator, methodElement);
+				    }
                                 }
                             }
                         }
@@ -186,6 +206,68 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         }
         
         initialized = true;
+    }
+
+    private class TestClassMethodsVisitor extends TreePathScanner<Void, Void> {
+
+	private CompilationInfo info;
+	private List<ExecutableElement> testClassMethods;
+
+	public TestClassMethodsVisitor(CompilationInfo info) {
+	    this.info = info;
+	}
+
+	@Override
+	public Void visitClass(ClassTree t, Void v) {
+	    Element el = info.getTrees().getElement(getCurrentPath());
+	    if (el != null) {
+		testClassMethods = ElementFilter.methodsIn(((TypeElement) el).getEnclosedElements());
+	    }
+	    return null;
+	}
+
+	public boolean containsTestMethod(Element methodElement) {
+	    if (testClassMethods != null) {
+		String methodName = RefactoringUtils.getTestMethodName(methodElement.getSimpleName().toString());
+		for (ExecutableElement testClassMethod : testClassMethods) {
+		    if (testClassMethod.getSimpleName().contentEquals(methodName)) {
+			return true;
+		    }
+		}
+	    }
+	    return false;
+	}
+    }
+
+    private void addTestMethod(LocationResult location, TestLocator locator, final Element methodElement) {
+        if (!renameTestClassMethodCheckBox.isVisible()) {
+            if (location != null && location.getFileObject() != null) {
+                if(locator.getFileType(location.getFileObject()) == TestLocator.FileType.TEST) {
+		    JavaSource js = JavaSource.forFileObject(location.getFileObject());
+		    try {
+			js.runUserActionTask(new Task<CompilationController>() {
+			    @Override
+			    public void run(CompilationController parameter) throws IOException {
+				parameter.toPhase(Phase.ELEMENTS_RESOLVED);
+				TestClassMethodsVisitor testClassVisitor = new TestClassMethodsVisitor(parameter);
+				testClassVisitor.scan(parameter.getCompilationUnit(), null);
+
+				if (testClassVisitor.containsTestMethod(methodElement)) {
+				    SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+					    renameTestClassMethodCheckBox.setVisible(true);
+					}
+				    });
+				}
+			    }
+			}, true);
+		    } catch (IOException e) {
+			Logger.getLogger(RenamePanel.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+		    }
+                }
+            }
+        }
     }
     
     private void addTestFile(LocationResult location, TestLocator locator) {
@@ -230,6 +312,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         updateReferencesCheckBox = new javax.swing.JCheckBox();
         renameGettersAndCheckersCheckBox = new javax.swing.JCheckBox();
         renameTestClassCheckBox = new javax.swing.JCheckBox();
+        renameTestClassMethodCheckBox = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
@@ -254,6 +337,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 2;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
@@ -283,7 +367,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(updateReferencesCheckBox, gridBagConstraints);
@@ -313,6 +397,19 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(renameTestClassCheckBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(renameTestClassMethodCheckBox, org.openide.util.NbBundle.getMessage(RenamePanel.class, "RenamePanel.renameTestClassMethodCheckBox.text")); // NOI18N
+        renameTestClassMethodCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                renameTestClassMethodCheckBoxStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(renameTestClassMethodCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateReferencesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateReferencesCheckBoxActionPerformed
@@ -334,6 +431,10 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 private void renameTestClassCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_renameTestClassCheckBoxStateChanged
     parent.stateChanged(null);
 }//GEN-LAST:event_renameTestClassCheckBoxStateChanged
+
+    private void renameTestClassMethodCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_renameTestClassMethodCheckBoxStateChanged
+        parent.stateChanged(null);
+    }//GEN-LAST:event_renameTestClassMethodCheckBoxStateChanged
                                                              
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
@@ -341,6 +442,7 @@ private void renameTestClassCheckBoxStateChanged(javax.swing.event.ChangeEvent e
     private javax.swing.JTextField nameField;
     private javax.swing.JCheckBox renameGettersAndCheckersCheckBox;
     private javax.swing.JCheckBox renameTestClassCheckBox;
+    private javax.swing.JCheckBox renameTestClassMethodCheckBox;
     private javax.swing.JCheckBox textCheckBox;
     private javax.swing.JCheckBox updateReferencesCheckBox;
     // End of variables declaration//GEN-END:variables
@@ -371,5 +473,9 @@ private void renameTestClassCheckBoxStateChanged(javax.swing.event.ChangeEvent e
 
     boolean isRenameTestClass() {
         return renameTestClassCheckBox.isSelected();
+    }
+
+    boolean isRenameTestClassMethod() {
+        return renameTestClassMethodCheckBox.isSelected();
     }
 }

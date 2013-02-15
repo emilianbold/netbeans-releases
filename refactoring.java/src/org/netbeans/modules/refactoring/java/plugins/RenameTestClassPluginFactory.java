@@ -56,7 +56,7 @@ public class RenameTestClassPluginFactory implements RefactoringPluginFactory {
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         if (refactoring instanceof RenameRefactoring) {
             TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-            if (handle!=null && handle.getKind()==Tree.Kind.CLASS) {
+            if (handle!=null && (handle.getKind()==Tree.Kind.CLASS || handle.getKind()==Tree.Kind.METHOD)) {
                 return new RenameTestClassRefactoringPlugin((RenameRefactoring) refactoring);
             }
         }

@@ -136,7 +136,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                 config.setProperty(key, orig != null ? orig + ' ' + vmargs : vmargs);
             }
             try {
-                JPDAStart start = new JPDAStart(context.getInputOutput());
+                JPDAStart start = new JPDAStart(context.getInputOutput(), config.getActionName());
                 NbMavenProject prj = config.getProject().getLookup().lookup(NbMavenProject.class);
                 start.setName(prj.getMavenProject().getArtifactId());
                 start.setStopClassName(config.getProperties().get("jpda.stopclass")); //NOI18N

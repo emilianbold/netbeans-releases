@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.java.ui;
+package org.netbeans.modules.javascript2.editor.navigation;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Jan Becicka
+ * @author Petr Pisl
  */
-public final class JavaRenameProperties {
+public class Issue226152Test  extends JsTestBase{
+
+    public Issue226152Test(String testName) {
+        super(testName);
+    }
     
-    private boolean isRenameGettersSetters;
-    private boolean isRenameTestClass;
-    private boolean isRenameTestClassMethod;
-
-    public boolean isIsRenameGettersSetters() {
-        return isRenameGettersSetters;
+    public void testIssue226152_01() throws Exception {
+        checkDeclaration("/testfiles/navigation/226152/issue226152B.js", "var aa = new Test226^152(1);", "issue226152A.js", 9);
     }
-
-    public void setIsRenameGettersSetters(boolean isRenameGettersSetters) {
-        this.isRenameGettersSetters = isRenameGettersSetters;
+    
+    public void testIssue226152_02() throws Exception {
+        checkDeclaration("/testfiles/navigation/226152/issue226152B.js", "var bb = bb || new Test2^26152(22);", "issue226152A.js", 9);
     }
-
-    public boolean isIsRenameTestClass() {
-        return isRenameTestClass;
+    
+    public void testIssue226152_03() throws Exception {
+        checkDeclaration("/testfiles/navigation/226152/issue226152B.js", "cc = new Test22^6152(33);", "issue226152A.js", 9);
     }
-
-    public void setIsRenameTestClass(boolean isRenameTestClass) {
-        this.isRenameTestClass = isRenameTestClass;
-    }
-
-    public boolean isIsRenameTestClassMethod() {
-	return isRenameTestClassMethod;
-    }
-
-    public void setIsRenameTestClassMethod(boolean isRenameTestClassMethod) {
-	this.isRenameTestClassMethod = isRenameTestClassMethod;
+    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/navigation/226152")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 }

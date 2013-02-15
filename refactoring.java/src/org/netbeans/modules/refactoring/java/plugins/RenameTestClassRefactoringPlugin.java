@@ -37,26 +37,36 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.JavaRenameProperties;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -83,7 +93,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     public Problem checkParameters() {
-        if (!isRenameTestClass()) {
+        if (!isRenameTestClass() && !isRenameTestClassMethod()) {
             return null;
         }
 
@@ -101,7 +111,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     public Problem fastCheckParameters() {
-        if (!isRenameTestClass()) {
+        if (!isRenameTestClass() && !isRenameTestClassMethod()) {
             return null;
         }
         initDelegates();
@@ -109,7 +119,9 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         Problem p = null;
         for (RenameRefactoring delegate : renameDelegates) {
             FileObject delegateFile = delegate.getRefactoringSource().lookup(FileObject.class);
-            delegate.setNewName(newName(treePathHandle.getFileObject(), delegateFile, refactoring.getNewName()));
+	    if(!isRenameTestClassMethod()) {
+		delegate.setNewName(newName(treePathHandle.getFileObject(), delegateFile, refactoring.getNewName()));
+	    }
             p = JavaPluginUtils.chainProblems(p, delegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
@@ -120,7 +132,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     protected Problem preCheck(CompilationController javac) throws IOException {
-        if (!isRenameTestClass()) {
+        if (!isRenameTestClass() && !isRenameTestClassMethod()) {
             return null;
         }
         initDelegates();
@@ -136,7 +148,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     public Problem prepare(RefactoringElementsBag reb) {
-        if (!isRenameTestClass()) {
+        if (!isRenameTestClass() && !isRenameTestClassMethod()) {
             return null;
         }
         initDelegates();
@@ -161,6 +173,14 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         return false;
     }
 
+    private boolean isRenameTestClassMethod() {
+        JavaRenameProperties renameProps = refactoring.getContext().lookup(JavaRenameProperties.class);
+        if (renameProps != null && renameProps.isIsRenameTestClassMethod()) {
+            return true;
+        }
+        return false;
+    }
+
     private boolean inited = false;
 
     private void initDelegates() {
@@ -170,7 +190,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         
         final LinkedList<RenameRefactoring> renameRefactoringsList = new LinkedList<RenameRefactoring>();
 
-        if(treePathHandle.getElementHandle().getKind() == ElementKind.CLASS) {
+        if(treePathHandle.getElementHandle().getKind() == ElementKind.CLASS || treePathHandle.getElementHandle().getKind() == ElementKind.METHOD) {
             final FileObject fileObject = treePathHandle.getFileObject();
             Collection<? extends TestLocator> testLocators = Lookup.getDefault().lookupAll(TestLocator.class);
             for (final TestLocator testLocator : testLocators) {
@@ -186,7 +206,11 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
                                 public void foundLocation(FileObject fo, LocationResult location) {
                                     lock.lock();
                                     try {
-                                        addIfMatch(location, testLocator, fo, renameRefactoringsList);
+					if(treePathHandle.getElementHandle().getKind() == ElementKind.CLASS) {
+					    addIfMatch(location, testLocator, fo, renameRefactoringsList);
+					} else if(treePathHandle.getElementHandle().getKind() == ElementKind.METHOD) {
+					    addIfMatchMethod(location, testLocator, renameRefactoringsList);
+					}
                                         condition.signalAll();
                                     } finally {
                                         lock.unlock();
@@ -204,7 +228,11 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
                         }
                     } else {
                         LocationResult location = testLocator.findOpposite(fileObject, -1);
-                        addIfMatch(location, testLocator, fileObject, renameRefactoringsList);
+                        if (treePathHandle.getElementHandle().getKind() == ElementKind.CLASS) {
+			    addIfMatch(location, testLocator, fileObject, renameRefactoringsList);
+			} else if (treePathHandle.getElementHandle().getKind() == ElementKind.METHOD) {
+			    addIfMatchMethod(location, testLocator, renameRefactoringsList);
+			}
                     }
                 }
             }
@@ -228,5 +256,37 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
             renameRefactoring.setSearchInComments(true);
             renameRefactoringsList.add(renameRefactoring);
         }
+    }
+
+    private void addIfMatchMethod(final LocationResult location, final TestLocator testLocator, final LinkedList<RenameRefactoring> renameRefactoringsList) {
+        if(location.getFileObject() != null && testLocator.getFileType(location.getFileObject()).equals(TestLocator.FileType.TEST)) {
+	    try {
+		JavaSource.forFileObject(location.getFileObject()).runUserActionTask(new Task<CompilationController>() {
+		    @Override
+		    public void run(CompilationController javac) throws Exception {
+			final Element methodElement = treePathHandle.resolveElement(javac);
+			String methodName = methodElement.getSimpleName().toString();
+			String testMethodName = RefactoringUtils.getTestMethodName(methodName);
+			javac.toPhase(JavaSource.Phase.RESOLVED);
+			CompilationUnitTree cut = javac.getCompilationUnit();
+			Tree classTree = cut.getTypeDecls().get(0);
+			List<? extends Tree> methodTrees = ((ClassTree) classTree).getMembers();
+			for (int i = 0; i < methodTrees.size(); i++) {
+			    if(((MethodTree)methodTrees.get(i)).getName().contentEquals(testMethodName)) {
+				classTree = ((ClassTree) classTree).getMembers().get(i);
+				TreePath tp = TreePath.getPath(cut, classTree);				
+				RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(tp, javac)));
+				renameRefactoring.setNewName(RefactoringUtils.getTestMethodName(refactoring.getNewName()));
+				renameRefactoring.setSearchInComments(true);
+				renameRefactoringsList.add(renameRefactoring);
+				break;
+			    }
+			}
+		    }
+		}, true);
+	    } catch (IOException ex) {
+		Exceptions.printStackTrace(ex);
+	    }
+	}
     }
 }

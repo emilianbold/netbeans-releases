@@ -61,6 +61,8 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -92,10 +94,12 @@ public class JPDAStart implements Runnable {
     private final Object[] lock = new Object[2];
     
     private Project project;
+    private String actionName;
     private InputOutput io;
 
-    JPDAStart(InputOutput inputOutput) {
+    JPDAStart(InputOutput inputOutput, String actionName) {
         io = inputOutput;
+        this.actionName = actionName;
     }
     
     /**
@@ -174,6 +178,17 @@ public class JPDAStart implements Runnable {
                 properties.put("name", getName()); //NOI18N
                 properties.put("jdksources", jdkSourcePath); //NOI18N
                 properties.put("baseDir", FileUtil.toFile(project.getProjectDirectory())); // NOI18N
+                boolean isTest = ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equalsIgnoreCase(actionName);
+                boolean appCos;
+                if (isTest) {
+                    appCos = RunUtils.hasTestCompileOnSaveEnabled(project) ||
+                             RunUtils.hasApplicationCompileOnSaveEnabled(project);
+                } else {
+                    appCos = RunUtils.hasApplicationCompileOnSaveEnabled(project);
+                }
+                if (appCos) {
+                    properties.put ("listeningCP", "sourcepath"); // NOI18N
+                }
                 
                 final ListeningConnector flc = lc;
                 RP.post(new Runnable() {
