@@ -74,6 +74,12 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         table.put( "nb.imageicon.filter", new DarkIconFilter() ); //NOI18N
         table.put( "nb.errorForeground", new Color(255,0,0) ); //NOI18N
         table.put( "nb.warningForeground", new Color(255,255,255) ); //NOI18N
+        table.put( "PropSheet.setBackground", primary2 ); //NOI18N
+        table.put( "PropSheet.selectedSetBackground", primary1 ); //NOI18N
+        table.put( "PropSheet.selectedSetForeground", black ); //NOI18N
+        table.put( "PropSheet.setForeground", black ); //NOI18N
+        table.put( "PropSheet.selectionBackground", primary3 ); //NOI18N
+        table.put( "PropSheet.selectionForeground", black ); //NOI18N
     }
 
     @Override

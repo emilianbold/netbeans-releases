@@ -51,6 +51,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import org.netbeans.swing.plaf.util.GuaranteedValue;
 import org.netbeans.swing.plaf.util.UIUtils;
 
 /** Default system-provided customizer for Metal LF
@@ -155,12 +156,12 @@ public final class MetalLFCustoms extends LFCustoms {
         public Object[] createKeysAndValues() {
             return new Object[] {
                 //Property sheet settings as defined by HIE
-                 PROPSHEET_SELECTION_BACKGROUND, new Color(204,204,255),
-                 PROPSHEET_SELECTION_FOREGROUND, Color.BLACK,
-                 PROPSHEET_SET_BACKGROUND, new Color(224,224,224),
-                 PROPSHEET_SET_FOREGROUND, Color.BLACK,
-                 PROPSHEET_SELECTED_SET_BACKGROUND, new Color(204,204,255),
-                 PROPSHEET_SELECTED_SET_FOREGROUND, Color.BLACK,
+                 PROPSHEET_SELECTION_BACKGROUND, new GuaranteedValue( PROPSHEET_SELECTION_BACKGROUND, new Color(204,204,255) ),
+                 PROPSHEET_SELECTION_FOREGROUND, new GuaranteedValue( PROPSHEET_SELECTION_FOREGROUND, Color.BLACK ),
+                 PROPSHEET_SET_BACKGROUND, new GuaranteedValue( PROPSHEET_SET_BACKGROUND, new Color(224,224,224) ),
+                 PROPSHEET_SET_FOREGROUND, new GuaranteedValue( PROPSHEET_SET_FOREGROUND, Color.BLACK ),
+                 PROPSHEET_SELECTED_SET_BACKGROUND, new GuaranteedValue( PROPSHEET_SELECTED_SET_BACKGROUND, new Color(204,204,255) ),
+                 PROPSHEET_SELECTED_SET_FOREGROUND, new GuaranteedValue( PROPSHEET_SELECTED_SET_FOREGROUND, Color.BLACK ),
                  PROPSHEET_DISABLED_FOREGROUND, new Color(153,153,153),
             };
         }
