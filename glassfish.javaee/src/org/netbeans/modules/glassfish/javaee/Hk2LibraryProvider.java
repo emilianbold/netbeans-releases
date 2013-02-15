@@ -55,10 +55,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.glassfish.tools.ide.data.GlassFishLibrary;
 import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.server.config.LibraryBuilder;
-import org.glassfish.tools.ide.server.config.LibraryConfig;
-import org.glassfish.tools.ide.utils.ServerUtils;
+import org.glassfish.tools.ide.server.config.ConfigBuilder;
+import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import static org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties.fileToUrl;
@@ -99,19 +97,6 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
      *  JAX-RS library name must be unique so combination of instance name
      *  and some common suffix is used. */
     private static final String JAXRS_NAME_SUFFIX = " JAX-RS";
-
-    /** Library builder default configuration file. */
-    private static final URL LIBRARY_BUILDER_CONFIG_DEFAULT
-            = Hk2LibraryProvider.class.getResource("GlassFishLibsDefault.xml");
-
-    /** Library builder configuration since GlassFish 4. */
-    private static final LibraryConfig.Next LIBRARY_BUILDER_CONFIG_V2
-            = new LibraryConfig.Next(GlassFishVersion.GF_4,
-            Hk2LibraryProvider.class.getResource("GlassFishLibs2.xml"));
-
-    /** Library builder configuration for GlassFish cloud. */
-    private static final LibraryConfig libraryConfig = new LibraryConfig(
-            LIBRARY_BUILDER_CONFIG_DEFAULT, LIBRARY_BUILDER_CONFIG_V2);
 
     /** Java EE library name pattern to search for it in
      *  <code>GlassFishLibrary</code> list. */
@@ -164,7 +149,7 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     /** Library builder associated with current platform.
       * This attribute should be accessed only using {@see #getBuilder()} even
       * internally. */
-    private volatile LibraryBuilder builder;
+    private volatile ConfigBuilder builder;
 
     /** GlassFish server home directory. */
     private final String serverHome;
@@ -172,8 +157,8 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     /** GlassFish server name. */
     private final String serverName;
 
-    /** GlassFish server version. */
-    private final GlassFishVersion serverVersion;
+    /** GlassFish server instance. */
+    private final GlassFishServer server;
 
     /** Java EE library name associated with current GlassFish server context.
      *  This is lazy initialized internal cache. Do not access this attribute
@@ -197,7 +182,7 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     /**
      * Creates an instance of Jersey library provider.
      * <p/>
-     * @param server GlassFish Server Entity.
+     * @param server GlassFish server entity.
      */
     private Hk2LibraryProvider(GlassFishServer server) {
         if (server == null) {
@@ -206,10 +191,7 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
         }
         serverHome = server.getServerHome();
         serverName = server.getName();
-        if (server.getVersion() != null)
-            serverVersion = server.getVersion();
-        else
-            serverVersion = ServerUtils.getServerVersion(serverHome);
+        this.server = server;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -358,28 +340,6 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     }
 
     /**
-     * Get library builder.
-     * <p/>
-     * Library builder instance is initialized in first request and cached for
-     * subsequent usage. Library builder is thread safe so it should be used
-     * without additional locking.
-     * <p/>
-     * @return Library builder.
-     */
-    private LibraryBuilder getBuilder() {
-        if (builder != null) {
-            return builder;
-        }
-        synchronized(this) {
-            if (builder == null) {
-                builder = new LibraryBuilder(libraryConfig,
-                        serverHome, serverHome, serverHome);
-            }
-        }
-        return builder;
-    }
-
-    /**
      * Return libraries available in GlassFish.
      * <p/>
      * @param namePattern Library name pattern to search for it in
@@ -392,8 +352,8 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
         if (lib != null) {
             return lib;
         }
-        LibraryBuilder lb = getBuilder();
-        List<GlassFishLibrary> gfLibs = lb.getLibraries(serverVersion);
+        ConfigBuilder cb = ConfigBuilderProvider.getBuilder(server);
+        List<GlassFishLibrary> gfLibs = cb.getLibraries(server.getVersion());
         for (GlassFishLibrary gfLib : gfLibs) {
             if (namePattern.matcher(gfLib.getLibraryID()).matches()) {
                 Map<String,List<URL>> contents
@@ -431,8 +391,8 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
      */
     private void setLibraryImplementationContent(LibraryImplementation lib,
             Pattern namePattern, String libraryName) {
-        LibraryBuilder lb = getBuilder();
-        List<GlassFishLibrary> gfLibs = lb.getLibraries(serverVersion);
+        ConfigBuilder cb = ConfigBuilderProvider.getBuilder(server);
+        List<GlassFishLibrary> gfLibs = cb.getLibraries(server.getVersion());
         for (GlassFishLibrary gfLib : gfLibs) {
             if (namePattern.matcher(gfLib.getLibraryID()).matches()) {
                 List<String> javadocLookups = gfLib.getJavadocLookups();
@@ -478,8 +438,8 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
      * @param libraryName Library name in returned Library instance.
      */
     private List<URL> getLibraryClassPathURLs(Pattern namePattern) {
-        LibraryBuilder lb = getBuilder();
-        List<GlassFishLibrary> gfLibs = lb.getLibraries(serverVersion);
+        ConfigBuilder cb = ConfigBuilderProvider.getBuilder(server);
+        List<GlassFishLibrary> gfLibs = cb.getLibraries(server.getVersion());
         for (GlassFishLibrary gfLib : gfLibs) {
             if (namePattern.matcher(gfLib.getLibraryID()).matches()) {
                 return gfLib.getClasspath();

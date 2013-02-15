@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,24 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.glassfish.common.nodes.actions;
-
-import java.util.concurrent.Future;
-import org.glassfish.tools.ide.admin.ResultString;
-import org.openide.nodes.Node;
-
-
-/**
  *
- * @author Michal Mocnak
- * @auther Peter Williams
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-public interface UndeployModuleCookie extends Node.Cookie {
-    
-    public Future<ResultString> undeploy();
-    
-    public boolean isRunning();
-    
+package org.netbeans.modules.php.project.ui.wizards;
+
+import org.netbeans.junit.NbTestCase;
+
+public class NewFileNamespacePanelVisualTest extends NbTestCase {
+
+    public NewFileNamespacePanelVisualTest(String name) {
+        super(name);
+    }
+
+    public void testValidNamespace() {
+        assertNull(NewFileNamespacePanelVisual.validateNamespace(""));
+        assertNull(NewFileNamespacePanelVisual.validateNamespace("a"));
+        assertNull(NewFileNamespacePanelVisual.validateNamespace("ab"));
+        assertNull(NewFileNamespacePanelVisual.validateNamespace("ab_cd"));
+        assertNull(NewFileNamespacePanelVisual.validateNamespace("a\\b"));
+        assertNull(NewFileNamespacePanelVisual.validateNamespace("a25"));
+        assertNull(NewFileNamespacePanelVisual.validateNamespace("a\\a2"));
+        assertNull(NewFileNamespacePanelVisual.validateNamespace("FrontModule\\Presenters\\Secured"));
+    }
+
+    public void testInvalidNamespace() {
+        assertNotNull(NewFileNamespacePanelVisual.validateNamespace("a b"));
+        assertNotNull(NewFileNamespacePanelVisual.validateNamespace("\\a"));
+        assertNotNull(NewFileNamespacePanelVisual.validateNamespace("a\\"));
+        assertNotNull(NewFileNamespacePanelVisual.validateNamespace("1"));
+        assertNotNull(NewFileNamespacePanelVisual.validateNamespace("a\\2"));
+    }
+
 }

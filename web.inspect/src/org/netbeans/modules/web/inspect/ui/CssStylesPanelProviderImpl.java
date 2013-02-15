@@ -356,13 +356,13 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     }
 
     @NbBundle.Messages({
-        "CTL_CssStylesProviderImpl.selection.view.title=Selection"
+        "CTL_CssStylesProviderImpl.selection.view.title=Selection" // NOI18N
     })
     @ServiceProvider(service = CssStylesPanelProvider.class, position = 1000)
     public static class SelectionView extends CssStylesPanelProviderImpl {
 
         private static final String SELECTION_PANEL_ID = "selection"; //NOI18N
-        private static final Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/html", "text/xhtml"}));
+        private static final Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/html", "text/xhtml"})); // NOI18N
 
         @Override
         public String getPanelID() {

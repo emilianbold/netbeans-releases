@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -92,7 +93,7 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
         }
         try {
             Project prj = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
-            ProjectInformation info = prj.getLookup().lookup(ProjectInformation.class);
+            ProjectInformation info = ProjectUtils.getInformation(prj);
             if (info != null) {
                 String pname = info.getName();
                 if (pname != null) {

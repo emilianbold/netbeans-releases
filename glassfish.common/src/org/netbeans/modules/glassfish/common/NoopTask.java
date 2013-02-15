@@ -42,8 +42,9 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 
 /**
  * Empty command execution.
@@ -52,7 +53,7 @@ import org.netbeans.modules.glassfish.spi.OperationStateListener;
  * <p/>
  * @author vkraemer
  */
-class NoopTask extends BasicTask<OperationState> {
+class NoopTask extends BasicTask<TaskState> {
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -66,8 +67,8 @@ class NoopTask extends BasicTask<OperationState> {
      * @param stateListener 
      */
     public NoopTask(CommonServerSupport serverSupport,
-            OperationStateListener stopServerListener,
-            OperationStateListener stateListener) {
+            TaskStateListener stopServerListener,
+            TaskStateListener stateListener) {
         super(serverSupport.getInstance(), stopServerListener, stateListener);
     }
 
@@ -81,8 +82,9 @@ class NoopTask extends BasicTask<OperationState> {
      * @return Always returns <code>OperationState.COMPLETED</code> value.
      */
     @Override
-    public OperationState call() {
-        return fireOperationStateChanged(OperationState.COMPLETED, "MSG_NOOP");
+    public TaskState call() {
+        return fireOperationStateChanged(TaskState.COMPLETED,
+                TaskEvent.CMD_COMPLETED, "MSG_NOOP");
     }
 
 }
