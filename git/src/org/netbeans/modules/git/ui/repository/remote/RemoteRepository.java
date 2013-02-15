@@ -84,6 +84,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -724,7 +725,8 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 settingsPanel.savePassphrase.setSelected(false);
                 settingsPanel.rbPrivateKey.setSelected(false);
                 settingsPanel.rbUsernamePassword.setSelected(true);
-                settingsPanel.txtIdentityFile.setText(""); //NOI18N
+                String identityFile = getDefaultIdentityFilePath();
+                settingsPanel.txtIdentityFile.setText(identityFile);
                 return;
             }
             settingsPanel.userTextField.setText(settings.getUser());
@@ -810,17 +812,23 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
         
         private void onBrowse() {
-            File file = new File(settingsPanel.txtIdentityFile.getText());
+            String path = settingsPanel.txtIdentityFile.getText();
+            if (path.isEmpty()) {
+                path = getDefaultIdentityFilePath();
+            }
+            File file = new File(path);
             JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(RemoteRepositoryPanel.class, "RepositoryPanel.IdentityFile.FileChooser.Descritpion"), //NOI18N
-                    file);
+                    path.isEmpty() ? null : file.getParentFile());
+            if (!path.isEmpty()) {
+                fileChooser.setSelectedFile(file);
+            }
             fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
             fileChooser.setDialogTitle(NbBundle.getMessage(RemoteRepositoryPanel.class, "RepositoryPanel.IdentityFile.FileChooser.Title")); //NOI18N
             fileChooser.setMultiSelectionEnabled(false);
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             fileChooser.setFileHidingEnabled(false);
-            fileChooser.showDialog(panel, null);
-            File f = fileChooser.getSelectedFile();
-            if (f != null) {
+            if (JFileChooser.APPROVE_OPTION == fileChooser.showDialog(panel, null)) {
+                File f = fileChooser.getSelectedFile();
                 settingsPanel.txtIdentityFile.setText(f.getAbsolutePath());
             }
         }
@@ -845,6 +853,15 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         @Override
         protected int getPreferedPanelHeight () {
             return settingsPanel.getPreferredSize().height;
+        }
+
+        private String getDefaultIdentityFilePath () {
+            String identityFile = ""; //NOI18N
+            if (!Utilities.isWindows()) {
+                identityFile = System.getProperty("user.home") + File.separator //NOI18N
+                        + ".ssh" + File.separator + "id_dsa"; //NOI18N
+            }
+            return identityFile;
         }
     }
     
