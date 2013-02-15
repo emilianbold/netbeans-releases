@@ -45,6 +45,8 @@
 package org.netbeans.modules.java.j2seproject.queries;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -52,9 +54,12 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Mutex;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -71,7 +76,9 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
     private FileObject scratch;
     private FileObject projdir;
     private FileObject sources;
+    private FileObject tests;
     private FileObject buildClasses;
+    private FileObject buildTestClasses;
     private ProjectManager pm;
     private Project pp;
     AntProjectHelper helper;
@@ -98,8 +105,10 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         pm = ProjectManager.getDefault();
         pp = pm.findProject(projdir);
         sources = projdir.getFileObject("src");
+        tests = FileUtil.createFolder(projdir, "test");
         FileObject fo = projdir.createFolder("build");
         buildClasses = fo.createFolder("classes");
+        buildTestClasses = FileUtil.createFolder(fo, "test/classes");
     }
     
     public void testBinaryForSourceQuery() throws Exception {
@@ -115,6 +124,64 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         assertEquals("Project build folder must have source folder",buildClasses.toURL(),result.getRoots()[0]);
         BinaryForSourceQuery.Result result2 = BinaryForSourceQuery.findBinaryRoots(sources.toURL());
         assertTrue (result == result2);
-    }               
+    }
+
+    public void testChanges() throws Exception {
+        prepareProject();
+        final SourceRoots src = ((J2SEProject)pp).getSourceRoots();
+        final SourceRoots tsts = ((J2SEProject)pp).getTestSourceRoots();
+        assertTrue(Arrays.equals(new URL[] {sources.toURL()}, src.getRootURLs()));
+        assertTrue(Arrays.equals(new URL[] {tests.toURL()}, tsts.getRootURLs()));
+        BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(sources.toURL());
+        assertNotNull(r);
+        URL[] roots = r.getRoots();
+        assertTrue(Arrays.equals(new URL[] {buildClasses.toURL()}, roots));
+        r = BinaryForSourceQuery.findBinaryRoots(tests.toURL());
+        assertNotNull(r);
+        roots = r.getRoots();
+        assertTrue(Arrays.equals(new URL[] {buildTestClasses.toURL()}, roots));
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            @Override
+            public Void run() throws Exception {                
+                final URL[] srcRoots = tsts.getRootURLs();
+                final String[] srcLabels = tsts.getRootNames();
+                tsts.putRoots(new URL[0], new String[0]);
+                src.putRoots(srcRoots, srcLabels);
+                ProjectManager.getDefault().saveProject(pp);
+                return null;
+            }
+        });
+        assertTrue(Arrays.equals(new URL[]{tests.toURL()}, src.getRootURLs()));
+        assertTrue(Arrays.equals(new URL[0], tsts.getRootURLs()));
+        r = BinaryForSourceQuery.findBinaryRoots(sources.toURL());
+        assertNotNull(r);
+        roots = r.getRoots();
+        assertTrue(Arrays.equals(new URL[0], roots));
+        r = BinaryForSourceQuery.findBinaryRoots(tests.toURL());
+        assertNotNull(r);
+        roots = r.getRoots();
+        assertTrue(Arrays.equals(new URL[] {buildClasses.toURL()}, roots));
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            @Override
+            public Void run() throws Exception {
+                final URL[] srcRoots = src.getRootURLs();
+                final String[] srcLabels = src.getRootNames();
+                src.putRoots(new URL[]{sources.toURL()}, new String[]{"Sources"}); //NOI18N
+                tsts.putRoots(srcRoots, srcLabels);
+                ProjectManager.getDefault().saveProject(pp);
+                return null;
+            }
+        });
+        assertTrue(Arrays.equals(new URL[]{sources.toURL()}, src.getRootURLs()));
+        assertTrue(Arrays.equals(new URL[]{tests.toURL()}, tsts.getRootURLs()));
+        r = BinaryForSourceQuery.findBinaryRoots(sources.toURL());
+        assertNotNull(r);
+        roots = r.getRoots();
+        assertTrue(Arrays.equals(new URL[]{buildClasses.toURL()}, roots));
+        r = BinaryForSourceQuery.findBinaryRoots(tests.toURL());
+        assertNotNull(r);
+        roots = r.getRoots();
+        assertTrue(Arrays.equals(new URL[] {buildTestClasses.toURL()}, roots));
+    }
                     
 }
