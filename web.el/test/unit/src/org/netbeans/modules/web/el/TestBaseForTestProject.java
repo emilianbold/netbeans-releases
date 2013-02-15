@@ -55,9 +55,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.web.el.spi.ELPlugin;
+import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ResolverContext;
@@ -119,7 +121,8 @@ public class TestBaseForTestProject extends TestBase {
                 new TestMultiProjectFactory(projects),
                 new SimpleFileOwnerQueryImplementation(),
                 new FakeWebModuleProvider(webFo, srcFo),
-                new FaceletPlugin());
+                new TestFaceletPlugin(),
+                new TestVariableResolver());
 
         refreshIndexAndWait();
     }
@@ -165,7 +168,7 @@ public class TestBaseForTestProject extends TestBase {
 
     }
 
-    public static class FaceletPlugin extends ELPlugin {
+    public static class TestFaceletPlugin extends ELPlugin {
 
         @Override
         public String getName() {
@@ -195,6 +198,43 @@ public class TestBaseForTestProject extends TestBase {
         @Override
         public List<Function> getFunctions(FileObject file) {
             return Collections.emptyList();
+        }
+
+    }
+
+    public final class TestVariableResolver implements ELVariableResolver {
+
+        @Override
+        public String getBeanName(String clazz, FileObject target, ResolverContext context) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getBeanClass(String beanName, FileObject target, ResolverContext context) {
+            if ("bean".equals(beanName)) {
+                return "beans.Bean";
+            }
+            return null;
+        }
+
+        @Override
+        public List<VariableInfo> getManagedBeans(FileObject target, ResolverContext context) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public List<VariableInfo> getVariables(Snapshot snapshot, int offset, ResolverContext context) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot, ResolverContext context) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public List<VariableInfo> getRawObjectProperties(String name, Snapshot snapshot, ResolverContext context) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }

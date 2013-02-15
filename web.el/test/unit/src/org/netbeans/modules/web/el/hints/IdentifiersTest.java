@@ -42,37 +42,43 @@
 package org.netbeans.modules.web.el.hints;
 
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ResourceBundleKeysTest extends HintTestBase {
+public class IdentifiersTest extends HintTestBase {
 
-    public ResourceBundleKeysTest(String testName) {
+    public IdentifiersTest(String testName) {
         super(testName);
     }
 
     @Override
     protected Rule createRule() {
-        return new ResourceBundleKeys();
+        return new Identifiers();
     }
 
-    public void testUnknownResourceBundleKeyInBrackets() throws Exception {
-        checkHints(this, createRule(), "projects/testWebProject/web/resourceBundle01.xhtml", null);
+    public void testUnknownOperatorForListData() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers01.xhtml", null);
     }
 
-    public void testKnownResourceBundleKeyInBrackets() throws Exception {
-        checkHints(this, createRule(), "projects/testWebProject/web/resourceBundle02.xhtml", null);
+    public void testKnownBeanProperty01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers02.xhtml", null);
     }
 
-    public void testUnknownResourceBundleKeyAsProperty() throws Exception {
-        checkHints(this, createRule(), "projects/testWebProject/web/resourceBundle03.xhtml", null);
+    public void testKnownBeanProperty02() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers04.xhtml", null);
     }
 
-    public void testKnownResourceBundleKeyAsProperty() throws Exception {
-        checkHints(this, createRule(), "projects/testWebProject/web/resourceBundle04.xhtml", null);
+    public void testUnknownBeanProperty01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers03.xhtml", null);
     }
 
+    public void testUnknownBeanProperty02() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers05.xhtml", null);
+    }
+
+//    public void testKnownOperatorForListData() throws Exception {
+//        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers01.xhtml", null);
+//    }
 }
