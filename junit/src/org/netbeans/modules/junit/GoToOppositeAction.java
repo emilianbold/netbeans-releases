@@ -129,30 +129,19 @@ public final class GoToOppositeAction implements TestLocator {
         }
         ClassPath srcClassPath = ClassPathSupport.createClassPath(srcRoots);
 
-        /*
-        ClasspathInfo cpInfo = ClasspathInfo.create(
-                        ClassPath.getClassPath(fileObj, ClassPath.BOOT),
-                        ClassPath.getClassPath(fileObj, ClassPath.COMPILE),
-                        srcClassPath);
-        int caretPos = editorPane.getCaretPosition();
-        boolean fromSourceToTest = sourceToTest;
-        
-        JavaSource javaSource = JavaSource.create(
-                cpInfo,
-                Collections.<FileObject>singleton(fileObj));
-        
-        ElementFinder elementFinder = new ElementFinder(caretPos);
-        try {
-            javaSource.runUserActionTask(elementFinder, true);
-        } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.SEVERE, null, ex);     //NOI18N
-        }
-        Element element = elementFinder.getElement();
-        */
-        RequestProcessor.getDefault().post(
+        RequestProcessor requestProcessor = new RequestProcessor(GoToOppositeAction.class.getName(), 2);
+	requestProcessor.post(
                 new ActionImpl(plugin,
                                callback,
-                               new Location(fileObj/*, element*/),
+                               new Location(fileObj),
+                               sourceToTest,
+                               srcClassPath));
+	JUnitPlugin pluginIT = TestUtil.getITPluginForProject(project);
+        assert pluginIT != null;
+	requestProcessor.post(
+                new ActionImpl(pluginIT,
+                               callback,
+                               new Location(fileObj),
                                sourceToTest,
                                srcClassPath));
     }
@@ -345,12 +334,24 @@ public final class GoToOppositeAction implements TestLocator {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
             JUnitPlugin plugin = TestUtil.getPluginForProject(project);
+	    boolean applies = false;
             if (plugin instanceof DefaultPlugin) {
                 Location loc = new Location(fo);
                 Location test = ((DefaultPlugin) plugin).getTestLocation(loc);
                 Location tested = ((DefaultPlugin) plugin).getTestedLocation(loc);
-                return TestUtil.isJavaFile(fo) && (test != null || tested != null);
+                applies = TestUtil.isJavaFile(fo) && (test != null || tested != null);
             }
+	    if(applies) {
+		return true;
+	    } else {
+		plugin = TestUtil.getITPluginForProject(project);
+		if (plugin instanceof DefaultITPlugin) {
+		    Location loc = new Location(fo);
+		    Location test = ((DefaultITPlugin) plugin).getTestLocation(loc);
+		    Location tested = ((DefaultITPlugin) plugin).getTestedLocation(loc);
+		    return TestUtil.isJavaFile(fo) && (test != null || tested != null);
+		}
+	    }
         }
         return TestUtil.isJavaFile(fo);
     }

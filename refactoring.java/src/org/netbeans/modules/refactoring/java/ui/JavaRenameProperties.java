@@ -49,6 +49,7 @@ public final class JavaRenameProperties {
     
     private boolean isRenameGettersSetters;
     private boolean isRenameTestClass;
+    private boolean isRenameTestClassMethod;
 
     public boolean isIsRenameGettersSetters() {
         return isRenameGettersSetters;
@@ -64,5 +65,13 @@ public final class JavaRenameProperties {
 
     public void setIsRenameTestClass(boolean isRenameTestClass) {
         this.isRenameTestClass = isRenameTestClass;
+    }
+
+    public boolean isIsRenameTestClassMethod() {
+	return isRenameTestClassMethod;
+    }
+
+    public void setIsRenameTestClassMethod(boolean isRenameTestClassMethod) {
+	this.isRenameTestClassMethod = isRenameTestClassMethod;
     }
 }
