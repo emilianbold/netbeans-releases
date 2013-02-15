@@ -41,6 +41,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.ProxyHTTP;
 import com.jcraft.jsch.Session;
+import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -120,6 +121,11 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
         // default jsch to gain known hosts from
         if (defaultJSch == null) {
             defaultJSch = createDefaultJSch(fs);
+            final File home = fs.userHome();
+            if (home != null) {
+                File known_hosts = new File(new File(home, ".ssh"), "known_hosts"); //NOI18N
+                defaultJSch.setKnownHosts(known_hosts.getAbsolutePath());
+            }
             defaultJSch.removeAllIdentity();
         }
         String hostName = hc.getHostName();
