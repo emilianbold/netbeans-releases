@@ -235,6 +235,40 @@ public class RenameTest extends RefactoringTestBase {
                 + "public class BTest extends TestCase {\n"
                 + "}"));
     }
+
+    public void test62897() throws Exception { // #62897 rename class method renames test method as well
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "    }\n"
+                + "}"));
+        writeFilesAndWaitForScan(test,
+                new File("t/ATest.java", "package t;\n"
+                + "import junit.framework.TestCase;\n"
+                + "\n"
+                + "public class ATest extends TestCase {\n"
+                + "    public void testFoo() {\n"
+                + "    }\n"
+                + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        props.setIsRenameTestClassMethod(true);
+        performRename(src.getFileObject("t/A.java"), 1, "fooBar", props);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n" // XXX: Why use old filename, is it not renamed?
+                + "public class A {\n"
+                + "    public void fooBar() {\n"
+                + "    }\n"
+                + "}"));
+        verifyContent(test,
+                new File("t/ATest.java", "package t;\n"
+                + "import junit.framework.TestCase;\n"
+                + "\n"
+                + "public class ATest extends TestCase {\n"
+                + "    public void testFooBar() {\n"
+                + "    }\n"
+                + "}"));
+    }
     
     public void test111953() throws Exception {
         writeFilesAndWaitForScan(src, new File("t/B.java", "class B { public void m(){};}"),
