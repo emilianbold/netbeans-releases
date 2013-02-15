@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,76 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.mysql.impl;
 
-package org.netbeans.modules.db.mysql.installations;
-
-import org.netbeans.modules.db.mysql.impl.Installation;
-import org.netbeans.modules.db.mysql.util.Utils;
-import org.openide.util.Utilities;
+import java.util.Collection;
 
 /**
- * Supports the MySQL/NetBeans bundled installation.  The bundled
- * installation sets a system variable to tell us what the start
- * and stop commands and arguments are.
- * 
- * @author David Van Couvering
+ * This interface defines an abstraction of an installation of MySQL which can
+ * have several versions in the same system. For example, on Windows, there can
+ * be several versions of MySQL installed in C:\Program Files\.
+ *
+ * @author jhavlin
  */
-public class BundledInstallation implements Installation {
-    private String startExe;
-    private String startArgs;
-    private String stopExe;
-    private String stopArgs;
-    private String port;
-    
-    private static final BundledInstallation DEFAULT = 
-            new BundledInstallation();
-    
-    public static final BundledInstallation getDefault() {
-        return DEFAULT;
-    }
-    
-    private BundledInstallation() {
-        startExe = System.getProperty("com.sun.mysql.startcommand");
-        startArgs = System.getProperty("com.sun.mysql.startargs");
-        stopExe = System.getProperty("com.sun.mysql.stopcommand");
-        stopArgs = System.getProperty("com.sun.mysql.stopargs");
-        port = System.getProperty("com.sun.mysql.port", "3306");
-    }
+public interface MultiInstallation {
 
-    public boolean isStackInstall() {
-        return true;
-    }
+    /**
+     * Get collection of existing or theoretically possible installations in the
+     * local system.
+     */
+    public Collection<Installation> getInstallations();
 
-    public boolean isInstalled() {
-        return startExe != null && startExe.length() > 0;
-    }
-
-    public String[] getAdminCommand() {
-        return new String[] {
-            "",
-            ""
-        };
-    }
-
-    public String[] getStartCommand() {
-        return new String[] { startExe, startArgs };
-    }
-
-    public String[] getStopCommand() {
-        return new String[] { stopExe, stopArgs };
-    }
-    
-    public String getDefaultPort() {
-        return port;
-    }
-
-    @Override
-    public String toString() {
-        return "Bundled Installation";                                  //NOI18N
-    }
+    /**
+     * Result of last invocation of {@link #getInstallations()} can be cached.
+     * This method forces this object to return fresh results the next time the
+     * method is invoked.
+     */
+    public void refresh();
 }
