@@ -211,6 +211,9 @@ class NewFileNamespacePanel implements NewFileWizardIterator.BottomPanel {
                     panel.setNamespaces(namespacesCopy);
                     if (selectedNamespace != null) {
                         panel.setSelectedNamespace(selectedNamespace);
+                    } else if (namespacesCopy.size() == 2) {
+                        // exactly one namespace in the whole folder => preselect it
+                        panel.setSelectedNamespace(namespacesCopy.get(1));
                     }
                 }
             });
