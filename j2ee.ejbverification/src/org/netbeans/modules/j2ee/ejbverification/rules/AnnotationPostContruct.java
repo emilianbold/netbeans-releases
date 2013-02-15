@@ -73,7 +73,7 @@ public class AnnotationPostContruct extends EJBVerificationRule {
     })
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
         if (ctx.getEjb() instanceof Session) {
-            EjbJar ejbModule = EjbJar.getEjbJar(ctx.getFileObject());
+            EjbJar ejbModule = ctx.getEjbModule();
             Profile profile = ejbModule.getJ2eeProfile();
 
             // not EE6 project

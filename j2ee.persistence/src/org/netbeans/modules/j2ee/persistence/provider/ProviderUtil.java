@@ -89,12 +89,15 @@ public class ProviderUtil {
     // known providers
     public static final Provider HIBERNATE_PROVIDER = new HibernateProvider(Persistence.VERSION_1_0);
     public static final Provider HIBERNATE_PROVIDER2_0 = new HibernateProvider(Persistence.VERSION_2_0);
+    public static final Provider HIBERNATE_PROVIDER2_1 = new HibernateProvider(Persistence.VERSION_2_1);
     public static final Provider TOPLINK_PROVIDER1_0 = ToplinkProvider.create(Persistence.VERSION_1_0);
-    public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider(Persistence.VERSION_2_0);
+    public static final Provider ECLIPSELINK_PROVIDER2_0 = new EclipseLinkProvider(Persistence.VERSION_2_0);
+    public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider(Persistence.VERSION_2_1);
     public static final Provider ECLIPSELINK_PROVIDER1_0 = new EclipseLinkProvider(Persistence.VERSION_1_0);
     public static final Provider KODO_PROVIDER = new KodoProvider();
     public static final Provider DATANUCLEUS_PROVIDER = new DataNucleusProvider();
     public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider(Persistence.VERSION_2_0);
+    public static final Provider OPENJPA_PROVIDER2_1 = new OpenJPAProvider(Persistence.VERSION_2_1);
     public static final Provider OPENJPA_PROVIDER1_0 = new OpenJPAProvider(Persistence.VERSION_1_0);
     public static final Provider DEFAULT_PROVIDER = new DefaultProvider();
     /**
@@ -243,6 +246,8 @@ public class ProviderUtil {
         String version = Persistence.VERSION_1_0;
         if (persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) {
             version = Persistence.VERSION_2_0;
+        } else if (persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit) {
+            version = Persistence.VERSION_2_1;
         }
         Property tableGenerationProperty = provider.getTableGenerationProperty(tableGenerationStrategy, version);
         Properties properties = persistenceUnit.getProperties();
@@ -332,10 +337,11 @@ public class ProviderUtil {
         Parameters.notNull("provider", provider);
         Parameters.notNull("connection", connection);
         PersistenceUnit persistenceUnit = null;
-        if (Persistence.VERSION_2_0.equals(version)) {
+        if (Persistence.VERSION_2_1.equals(version)) {
+            persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit();
+        } else if (Persistence.VERSION_2_0.equals(version)) {
             persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
-        } else//currently default 1.0
-        {
+        } else {//currently default 1.0
             persistenceUnit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
         }
         persistenceUnit.setName(name);
@@ -398,7 +404,12 @@ public class ProviderUtil {
         }
         Property[] properties = getProperties(persistenceUnit);
 
-        String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit ? Persistence.VERSION_2_0 : Persistence.VERSION_1_0;// we have persistence unit with specific version, should use it
+        String version = Persistence.VERSION_1_0;
+        if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit) {// we have persistence unit with specific version, should use it
+            version =  Persistence.VERSION_2_1;
+        } else if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) {// we have persistence unit with specific version, should use it
+            version =  Persistence.VERSION_2_0;
+        }
         Map<String, String> propertiesMap = provider.getConnectionPropertiesMap(connection, version);
 
         for (String name : propertiesMap.keySet()) {
@@ -498,7 +509,12 @@ public class ProviderUtil {
      */
     public static Provider getProvider(PersistenceUnit persistenceUnit, Provider[] providers) {
         Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
-        String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit ? Persistence.VERSION_1_0 : Persistence.VERSION_2_0;
+        String version = Persistence.VERSION_1_0;
+        if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit) {// we have persistence unit with specific version, should use it
+            version =  Persistence.VERSION_2_1;
+        } else if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) {// we have persistence unit with specific version, should use it
+            version =  Persistence.VERSION_2_0;
+        }
         long top_version = Math.round(Double.parseDouble(version) * 100);
         long longVersion = top_version;
         Provider top_provider = null;
@@ -667,7 +683,12 @@ public class ProviderUtil {
      *
      */
     public static void addPersistenceUnit(PersistenceUnit persistenceUnit, Project project) throws InvalidPersistenceXmlException {
-        String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit ? Persistence.VERSION_2_0 : Persistence.VERSION_1_0;// we have persistence unit with specific version, should use it
+        String version = Persistence.VERSION_1_0;
+        if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit) {// we have persistence unit with specific version, should use it
+            version =  Persistence.VERSION_2_1;
+        } else if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) {// we have persistence unit with specific version, should use it
+            version =  Persistence.VERSION_2_0;
+        }
         PUDataObject pud = getPUDataObject(project, version);
         pud.addPersistenceUnit(persistenceUnit);
         pud.save();
@@ -824,7 +845,7 @@ public class ProviderUtil {
      */
     public static Provider[] getAllProviders() {
         return new Provider[]{
-                    ECLIPSELINK_PROVIDER, ECLIPSELINK_PROVIDER1_0, TOPLINK_PROVIDER1_0, HIBERNATE_PROVIDER2_0, HIBERNATE_PROVIDER,
+                    ECLIPSELINK_PROVIDER, ECLIPSELINK_PROVIDER2_0, ECLIPSELINK_PROVIDER1_0, TOPLINK_PROVIDER1_0, HIBERNATE_PROVIDER2_0, HIBERNATE_PROVIDER,
                     KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, OPENJPA_PROVIDER1_0, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
 

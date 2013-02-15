@@ -70,7 +70,7 @@ public class JackpotTrees {
         private final JCIdent jcIdent;
 
         public AnnotationWildcard(Name ident, JCIdent jcIdent) {
-            super(jcIdent, List.<JCExpression>nil());
+            super(Tag.ANNOTATION, jcIdent, List.<JCExpression>nil());
             this.ident = ident;
             this.jcIdent = jcIdent;
         }

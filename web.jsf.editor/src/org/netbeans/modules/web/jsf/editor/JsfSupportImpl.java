@@ -224,7 +224,20 @@ public class JsfSupportImpl implements JsfSupport {
     public Map<String, AbstractFaceletsLibrary> getLibraries() {
         return faceletsLibrarySupport.getLibraries();
     }
+    
+    public boolean isFileOnClasspath(FileObject file) {
+        return sourceClassPath.contains(file)
+                || compileClasspath.contains(file)
+                || executeClassPath.contains(file);
+    }
 
+    /**
+     * Called by the JSF indexers.
+     */
+    public void indexedContentPossiblyChanged() {
+        faceletsLibrarySupport.indexedContentPossiblyChanged();
+    }
+    
     //garbage methods below, needs cleanup!
     public synchronized JsfIndex getIndex() {
         if(index == null) {

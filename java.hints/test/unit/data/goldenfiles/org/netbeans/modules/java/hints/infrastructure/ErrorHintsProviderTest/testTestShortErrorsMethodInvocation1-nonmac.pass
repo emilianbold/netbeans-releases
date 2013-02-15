@@ -1,4 +1,4 @@
 7:13-7:14:error:method test in class TestShortErrorsMethodInvocation1 cannot be applied to given types;
   required:Integer
   found:Object
-  reason:actual argument Object cannot be converted to Integer by method invocation conversion
+  reason:argument mismatch; Object cannot be converted to Integer

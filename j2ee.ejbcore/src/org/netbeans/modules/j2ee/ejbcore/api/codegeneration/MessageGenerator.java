@@ -44,9 +44,20 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ModifiersTree;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
@@ -64,6 +75,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
+import org.netbeans.modules.javaee.resources.api.JndiResourcesDefinition;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -75,14 +87,14 @@ import org.openide.util.Exceptions;
 public final class MessageGenerator {
 
     private static final String EJB21_EJBCLASS = "Templates/J2EE/EJB21/MessageDrivenEjbClass.java"; // NOI18N
-    private static final String EJB30_QUEUE_EJBCLASS = "Templates/J2EE/EJB30/MessageDrivenQueueEjbClass.java"; // NOI18N
-    private static final String EJB30_TOPIC_EJBCLASS = "Templates/J2EE/EJB30/MessageDrivenTopicEjbClass.java"; // NOI18N
+    private static final String EJB30_MESSAGE_DRIVEN_BEAN = "Templates/J2EE/EJB30/MessageDrivenBean.java"; // NOI18N
 
     // informations collected in wizard
     private final FileObject pkg;
     private final MessageDestination messageDestination;
     private final boolean isSimplified;
     private final boolean isXmlBased;
+    private final Map<String, String> properties;
 
     // EJB naming options
     private final EJBNameOptions ejbNameOptions;
@@ -93,27 +105,29 @@ public final class MessageGenerator {
     private final String packageName;
     private final String packageNameWithDot;
     
-    private final Map<String, String> templateParameters;
+    private final Map<String, Object> templateParameters;
 
-    public static MessageGenerator create(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, boolean isXmlBased) {
-        return new MessageGenerator(wizardTargetName, pkg, messageDestination, isSimplified, isXmlBased, false);
+    public static MessageGenerator create(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties) {
+        return new MessageGenerator(wizardTargetName, pkg, messageDestination, isSimplified, properties, false);
     }
     
-    protected MessageGenerator(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, boolean isXmlBased, boolean isTest) {
+    protected MessageGenerator(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties, boolean isTest) {
         this.pkg = pkg;
         this.messageDestination = messageDestination;
         this.isSimplified = isSimplified;
-        this.isXmlBased = isXmlBased;
+        this.isXmlBased = !isSimplified;
+        this.properties = properties;
         this.ejbNameOptions = new EJBNameOptions();
         this.ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
         this.ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
         this.displayName = ejbNameOptions.getMessageDrivenDisplayNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenDisplayNameSuffix();
         this.packageName = EjbGenerationUtil.getSelectedPackageName(pkg);
         this.packageNameWithDot = packageName + ".";
-        this.templateParameters = new HashMap<String, String>();
+        this.templateParameters = new HashMap<String, Object>();
         // fill all possible template parameters
         this.templateParameters.put("package", packageName);
         this.templateParameters.put("messageDestinationName", messageDestination.getName());
+        this.templateParameters.put("activationConfigProperties", transformProperties(properties));
         if (isTest) {
             // set date, time and user to values used in goldenfiles
             this.templateParameters.put("date", "{date}");
@@ -121,7 +135,15 @@ public final class MessageGenerator {
             this.templateParameters.put("user", "{user}");
         }
     }
-    
+
+    private static List<KeyValuePair> transformProperties(Map<String, String> properties) {
+        List<KeyValuePair> props = new ArrayList<KeyValuePair>();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            props.add(new KeyValuePair(entry.getKey(), entry.getValue()));
+        }
+        return props;
+    }
+
     public FileObject generate() throws IOException {
         FileObject resultFileObject = null;
         if (isSimplified) {
@@ -162,8 +184,38 @@ public final class MessageGenerator {
     }
     
     private FileObject generateEJB30Classes() throws IOException {
-        String ejbClassTemplate = isQueue() ? EJB30_QUEUE_EJBCLASS : EJB30_TOPIC_EJBCLASS;
-        return GenerationUtils.createClass(ejbClassTemplate,  pkg, ejbClassName, null, templateParameters);
+        FileObject mdb = GenerationUtils.createClass(EJB30_MESSAGE_DRIVEN_BEAN,  pkg, ejbClassName, null, templateParameters);
+        if (messageDestination instanceof JmsDestinationDefinition
+                && ((JmsDestinationDefinition) messageDestination).isToGenerate()) {
+            generateJMSDestinationDefinition(mdb);
+        }
+        return mdb;
+    }
+
+    private void generateJMSDestinationDefinition(FileObject classFile) throws IOException {
+        JavaSource js = JavaSource.forFileObject(classFile);
+        js.runModificationTask(new Task<WorkingCopy>() {
+            @Override
+            public void run(WorkingCopy parameter) throws Exception {
+                parameter.toPhase(JavaSource.Phase.RESOLVED);
+                TypeElement classElement = parameter.getElements().getTypeElement(packageNameWithDot + ejbClassName);
+                ClassTree classTree = parameter.getTrees().getTree(classElement);
+                ModifiersTree modifiers = classTree.getModifiers();
+                TypeElement el = parameter.getElements().getTypeElement(JndiResourcesDefinition.ANN_JMS_DESTINATION);
+
+                TreeMaker tm = parameter.getTreeMaker();
+                List<ExpressionTree> values = new ArrayList<ExpressionTree>(2);
+                ExpressionTree nameQualIdent = tm.QualIdent("name"); //NOI18N
+                values.add(tm.Assignment(nameQualIdent, tm.Literal(properties.get("destinationLookup")))); //NOI18N
+                ExpressionTree classnameQualIdent = tm.QualIdent("className"); //NOI18N
+                values.add(tm.Assignment(classnameQualIdent, tm.Literal(properties.get("destinationType")))); //NOI18N
+
+                List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
+                annotations.add(0, tm.Annotation(tm.QualIdent(el), values));
+                ModifiersTree nueMods = tm.Modifiers(modifiers, annotations);
+                parameter.rewrite(modifiers, nueMods);
+            }
+        }).commit();
     }
     
     @SuppressWarnings("deprecation") //NOI18N
@@ -242,5 +294,23 @@ public final class MessageGenerator {
     private void generateEJB30Xml() throws IOException {
         throw new UnsupportedOperationException("Method not implemented yet.");
     }
-    
+
+    public static final class KeyValuePair {
+
+        private String key;
+        private String value;
+
+        public KeyValuePair(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
 }

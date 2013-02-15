@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -56,7 +58,11 @@ import org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
+import org.netbeans.modules.web.jsfapi.api.JsfSupport;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -186,4 +192,19 @@ public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
         return files;
     }
 
+    @Override
+    protected void scanFinished(Context context) {
+        //notify the FaceletsLibrarySupport that the libraries might have changed.
+        if(context.getRoot() != null) {  //looks like can be null
+            for(Project p : LibraryUtils.getOpenedJSFProjects()) {
+                JsfSupport support = JsfSupportProvider.get(p.getProjectDirectory());
+                if(support != null) {
+                    ((JsfSupportImpl)support).indexedContentPossiblyChanged();
+                }
+            }
+        }
+        
+        super.scanFinished(context); 
+    }
+    
 }

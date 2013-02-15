@@ -328,10 +328,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             if (c == '_' || c == '=') {
                 continue;
             }
-            if (remote && c == '\\') {
-                continue;
-            }
-            if (!remote && c == File.pathSeparatorChar) {
+            if (c == '\\' || c == '/') {
                 continue;
             }
             if (c == ':' && !remote && Utilities.isWindows()) {

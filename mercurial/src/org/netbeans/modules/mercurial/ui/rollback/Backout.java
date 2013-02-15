@@ -112,7 +112,7 @@ public class Backout implements PropertyChangeListener {
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision().getRevisionNumber();
+        return panel.getSelectedRevisionCSetId();
     }
     public String getCommitMessage() {
         if (panel == null) return null;

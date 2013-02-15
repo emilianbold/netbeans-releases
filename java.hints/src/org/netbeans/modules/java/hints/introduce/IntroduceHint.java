@@ -98,6 +98,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ErrorType;
@@ -143,6 +144,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.modules.java.hints.errors.CreateElementUtilities;
 import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -1534,6 +1536,23 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         return nueClass;
     }
+    
+    private static TypeMirror resolveType(CompilationInfo info, TreePath path) {
+        TypeMirror tm = info.getTrees().getTypeMirror(path);
+        
+        if (tm != null && tm.getKind() == TypeKind.NULL) {
+            List<? extends TypeMirror> targetType = CreateElementUtilities.resolveType(new HashSet<ElementKind>(), info, path.getParentPath(), path.getLeaf(), (int) info.getTrees().getSourcePositions().getStartPosition(path.getCompilationUnit(), path.getLeaf()), new TypeMirror[1], new int[1]);
+            
+            if (!targetType.isEmpty()) {
+                tm = targetType.get(0);
+            } else {
+                TypeElement object = info.getElements().getTypeElement("java.lang.Object");
+                tm = object != null ? object.asType() : null;
+            }
+        }
+        
+        return tm;
+    }
 
     private static final class IntroduceFix implements Fix {
 
@@ -1594,7 +1613,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return ; //TODO...
                     }
 
-                    TypeMirror tm = parameter.getTrees().getTypeMirror(resolved);
+                    TypeMirror tm = resolveType(parameter, resolved);
 
                     if (tm == null) {
                         return ; //TODO...
@@ -1705,8 +1724,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             List<StatementTree> nueStatements = new LinkedList<StatementTree>(getStatements(statement));
                             mods = make.Modifiers(declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class));
+                            VariableTree newVariable = make.Variable(mods, name, make.Type(tm), expression);
 
-                            nueStatements.add(index, make.Variable(mods, name, make.Type(tm), expression));
+                            nueStatements.add(index, newVariable);
+                            
+                            GeneratorUtilities.get(parameter).copyComments(resolved.getParentPath().getLeaf(), newVariable, true);
+                            GeneratorUtilities.get(parameter).copyComments(resolved.getParentPath().getLeaf(), newVariable, false);
 
                             if (expressionStatement)
                                 nueStatements.remove(resolved.getParentPath().getLeaf());
@@ -1777,7 +1800,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     parameter.toPhase(Phase.RESOLVED);
 
                     TreePath resolved = handle.resolve(parameter);
-                    TypeMirror tm = parameter.getTrees().getTypeMirror(resolved);
+                    TypeMirror tm = resolveType(parameter, resolved);
 
                     if (resolved == null || tm == null) {
                         return ; //TODO...
@@ -2384,7 +2407,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     copy.toPhase(Phase.RESOLVED);
 
                     TreePath expression = IntroduceExpressionBasedMethodFix.this.expression.resolve(copy);
-                    TypeMirror returnType = expression != null ? copy.getTrees().getTypeMirror(expression) : null;
+                    TypeMirror returnType = expression != null ? resolveType(copy, expression) : null;
 
                     if (expression == null || returnType == null) {
                         return ; //TODO...

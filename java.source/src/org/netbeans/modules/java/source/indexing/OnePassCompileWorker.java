@@ -46,7 +46,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -223,7 +223,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         public void visitClassDef(JCClassDecl node) {
                             if (node.sym != null) {
                                 Type st = ts.supertype(node.sym.type);
-                                if (st.tag == TypeTags.CLASS) {
+                                if (st.hasTag(TypeTag.CLASS)) {
                                     ClassSymbol c = st.tsym.outermostClass();
                                     Pair<CompilationUnitTree, CompileTuple> u = jfo2units.remove(c.sourcefile);
                                     if (u != null && !finished.contains(u.second.indexable) && !u.second.indexable.equals(activeIndexable)) {

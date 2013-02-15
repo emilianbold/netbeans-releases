@@ -115,7 +115,7 @@ public class FtpConfigurationValidator {
     // #195879
     @NbBundle.Messages({
         "FtpConfigurationValidator.error.proxyAndNotPassive=Only passive mode is supported with HTTP proxy.",
-        "FtpConfigurationValidator.warning.proxy=Configured HTTP proxy will be used only for Pure FTP. To avoid problems, do not use any SOCKS proxy."
+        "FtpConfigurationValidator.warning.proxy=Configured HTTP proxy will be used only for Pure FTP."
     })
     private void validateProxy(boolean passiveMode) {
         if (RemoteUtils.hasHttpProxy()) {

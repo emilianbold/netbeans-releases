@@ -45,6 +45,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ProcessBuilder;
 
 /**
@@ -52,6 +53,8 @@ import org.netbeans.api.extexecution.ProcessBuilder;
  * @author Jan Becicka
  */
 public class ProcessUtils {
+    
+    private static final Logger LOGGER = Logger.getLogger(ProcessUtils.class.getName());
 
     public static String callProcess(String executable, boolean wait, String... parameters) throws IOException {
         ProcessBuilder pb = ProcessBuilder.getLocal();
@@ -74,7 +77,7 @@ public class ProcessUtils {
                 inputStreamReader.read(ch);
                 error.append(ch);
             }
-            throw new IOException(error.toString());
+            LOGGER.warning(error.toString());
         }
         inputStreamReader = new InputStreamReader(call.getInputStream());
         StringBuilder avdString = new StringBuilder();

@@ -225,7 +225,9 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
             @Override
             public void run() {
 
-                final Set<String> appClassNames = JFXProjectUtils.getAppClassNames(classpathMap, isFXinSwing ? "java.lang.Object" : "javafx.application.Application"); //NOI18N
+                final Set<String> appClassNames = isFXinSwing ? 
+                        JFXProjectUtils.getMainClassNames(project) : 
+                        JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
                 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override

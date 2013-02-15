@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.maven.j2ee.ui.Server;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -69,10 +70,11 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class SelectAppServerPanel extends javax.swing.JPanel {
+
     private NotificationLineSupport nls;
     private Project project;
 
-    /** Creates new form SelectAppServerPanel */
+
     public SelectAppServerPanel(boolean showIgnore, Project project) {
         this.project = project;
         initComponents();
@@ -103,13 +105,11 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     }
 
     String getSelectedServerType() {
-        Wrapper wr = (Wrapper) comServer.getSelectedItem();
-        return wr.getServerID();
+        return ((Server) comServer.getSelectedItem()).getServerID();
     }
 
     String getSelectedServerInstance() {
-        Wrapper wr = (Wrapper) comServer.getSelectedItem();
-        return wr.getServerInstanceID();
+        return ((Server) comServer.getSelectedItem()).getServerInstanceID();
     }
 
     boolean isPermanent() {
@@ -135,21 +135,14 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
                                      ( war != null ? war.getJ2eeProfile() :
                                            (ejb != null ? ejb.getJ2eeProfile() : Profile.JAVA_EE_6_FULL));
         String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singletonList(type), profile);
-        Collection<Wrapper> col = new ArrayList<Wrapper>();
-//        Wrapper selected = null;
-        col.add(new Wrapper(ExecutionChecker.DEV_NULL));
-        for (int i = 0; i < ids.length; i++) {
-            Wrapper wr = new Wrapper(ids[i]);
-            col.add(wr);
-//            if (selectedId.equals(ids[i])) {
-//                selected = wr;
-//            }
+        Collection<Server> col = new ArrayList<Server>();
+        col.add(new Server(ExecutionChecker.DEV_NULL));
 
+        for (int i = 0; i < ids.length; i++) {
+            Server wr = new Server(ids[i]);
+            col.add(wr);
         }
         comServer.setModel(new DefaultComboBoxModel(col.toArray()));
-//        if (selected != null) {
-//            comServer.setSelectedItem(selected);
-//        }
     }
 
     /** This method is called from within the constructor to
@@ -255,35 +248,9 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_rbPermanentStateChanged
 
     private void btChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btChangeActionPerformed
-        /*JFileChooser fc = new JFileChooser(FileUtil.toFile(projDir));
-        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fc.setControlButtonsAreShown(false);*/
         SelectProjectPanel spp = new SelectProjectPanel(project);
-        final DialogDescriptor dd = new DialogDescriptor(spp,
-                NbBundle.getMessage(SelectAppServerPanel.class, "TIT_ChooseParent"));
+        final DialogDescriptor dd = new DialogDescriptor(spp, NbBundle.getMessage(SelectAppServerPanel.class, "TIT_ChooseParent"));
         spp.attachDD(dd);
-        /*fc.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propName = evt.getPropertyName();
-                if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(propName) ||
-                        JFileChooser.DIRECTORY_CHANGED_PROPERTY.equals(propName)) {
-                    Object val = evt.getNewValue();
-                    if (val instanceof File) {
-                        FileObject curFO = FileUtil.toFileObject((File)val);
-                        if (curFO != null) {
-                            if (curFO.getFileObject("pom.xml") != null) {
-                                fcNls.clearMessages();
-                                dd.setValid(true);
-                                return;
-                            }
-                        }
-                    }
-                    fcNls.setErrorMessage(NbBundle.getMessage(
-                            SelectAppServerPanel.class, "ERR_NotMaven"));
-                    dd.setValid(false);
-                }
-            }
-        });*/
 
         Object obj = DialogDisplayer.getDefault().notify(dd);
         if (obj == NotifyDescriptor.OK_OPTION) {
@@ -306,8 +273,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void checkIgnoreEnablement() {
-        Wrapper sel = (Wrapper) comServer.getSelectedItem();
-        if (ExecutionChecker.DEV_NULL.equals(sel.getServerID())) {
+        if (ExecutionChecker.DEV_NULL.equals(getSelectedServerType())) {
             rbIgnore.setEnabled(true);
         } else {
             if (rbIgnore.isSelected()) {
@@ -320,7 +286,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     void setNLS(NotificationLineSupport notif) {
         nls = notif;
     }
-    
+
     private void printIgnoreWarning() {
         if (rbIgnore.isSelected()) {
             nls.setWarningMessage(NbBundle.getMessage(SelectAppServerPanel.class, "WARN_Ignore_Server"));
@@ -329,7 +295,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         }
     }
 
-    private void updateProjectLbl () {
+    private void updateProjectLbl() {
         ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
         if (pi != null) {
             lblProject.setText(NbBundle.getMessage(SelectAppServerPanel.class,

@@ -202,6 +202,12 @@ public class BracketCompletionTestCase extends EditorBase  {
                 + " }");
     }
     
+    public void testRightParenSkipInPP() throws Exception {
+        // extra fix for #225194 - incorrect skipping of right parent 
+        setDefaultsOptions();
+        typeCharactersInText("#define A(|) 1\n", ")", "#define A()| 1\n");
+    }
+    
     public void testRightParenNoSkipNonBracketChar() {
         setDefaultsOptions();
         typeCharactersInText("m()| ", ")", "m())| ");

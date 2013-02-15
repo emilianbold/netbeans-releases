@@ -396,12 +396,9 @@ public class BracketCompletion {
 
         boolean skipClosingBracket = false;
         TokenId id = cppTS.token().id();
-        if ((Language<?>) cppTS.language() == CppTokenId.languagePreproc()) {
-            if (id == CppTokenId.PREPROCESSOR_SYS_INCLUDE && bracketId == CppTokenId.GT) {
-                char chr = context.getDocument().getText(context.getOffset(), 1).charAt(0);
-                return chr == '>';
-            }
-            return false;
+        if (id == CppTokenId.PREPROCESSOR_SYS_INCLUDE && bracketId == CppTokenId.GT) {
+            char chr = context.getDocument().getText(context.getOffset(), 1).charAt(0);
+            return chr == '>';
         }
         if (id == bracketId) {
             CppTokenId leftBracketId = matching(bracketId);

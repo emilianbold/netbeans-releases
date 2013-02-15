@@ -45,7 +45,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.spi.project.ActionProvider;
@@ -83,10 +82,6 @@ final class TestNGMethodNode extends TestMethodNode {
         if (preferred != null) {
             actions.add(preferred);
         }
-        if ((testcase.getTrouble() != null) && (testcase.getTrouble().getComparisonFailure() != null)){
-            //TODO: differs in TestNG
-            actions.add(new DiffViewAction(testcase));
-        }
 
         for (ActionProvider ap : Lookup.getDefault().lookupAll(ActionProvider.class)) {
             List<String> supportedActions = Arrays.asList(ap.getSupportedActions());
@@ -97,6 +92,7 @@ final class TestNGMethodNode extends TestMethodNode {
                 actions.add(new TestMethodNodeAction(ap, Lookups.singleton(sm), SingleMethod.COMMAND_DEBUG_SINGLE_METHOD, "LBL_DebugTest"));
             }
         }
+	actions.addAll(Arrays.asList(super.getActions(context)));
         return actions.toArray(new Action[actions.size()]);
     }
 

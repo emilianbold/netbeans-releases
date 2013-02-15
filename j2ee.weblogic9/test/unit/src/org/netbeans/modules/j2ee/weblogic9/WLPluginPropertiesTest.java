@@ -44,14 +44,22 @@
 
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -131,6 +139,33 @@ public class WLPluginPropertiesTest extends NbTestCase {
         assertNotSame(vendor2, vendor3);
     }
 
+    public void testDomainList() throws IOException {
+        File dir = getDataDir();
+        File registry = new File(dir, "domain-registry.xml");
+        File nodeManager = new File(dir, "nodemanager.domains");
+
+        File work = getWorkDir();
+        File wlServer = new File(work, "wlserver");
+        wlServer.mkdir();
+
+        File out = new File(work, registry.getName());
+
+        copyFile(registry, out);
+
+        String[] ret = WLPluginProperties.getRegisteredDomainPaths(wlServer.getAbsolutePath());
+        assertEquals(1, ret.length);
+        assertEquals("/home/test/software/wls12120/user_projects/domains/mydomain", ret[0]);
+
+        assertTrue(out.delete());
+
+        FileObject folder = FileUtil.createFolder(FileUtil.toFileObject(wlServer), "common/nodemanager");
+        copyFile(nodeManager, new File(FileUtil.toFile(folder), nodeManager.getName()));
+
+        ret = WLPluginProperties.getRegisteredDomainPaths(wlServer.getAbsolutePath());
+        assertEquals(1, ret.length);
+        assertEquals("/home/test/software/wls1036_dev/user_projects/domains/base_domain", ret[0]);
+    }
+
     private void createJar(File file, String... manifestLines) throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Manifest-Version: 1.0\n");
@@ -146,4 +181,17 @@ public class WLPluginPropertiesTest extends NbTestCase {
         }
     }
 
+    private void copyFile(File src, File dest) throws IOException {
+        InputStream is = new BufferedInputStream(new FileInputStream(src));
+        try {
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(dest));
+            try {
+                FileUtil.copy(is, os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            is.close();
+        }
+    }
 }

@@ -486,7 +486,7 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (targetName.equals(CLEAN_STEP)) {
             return onCleanStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.CLEAN);
         } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
-            return onCompileSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.BUILD);
+            return onCompileSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.COMPILE_SINGLE);
         } else if (targetName.equals(RUN_STEP)) {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.RUN);
         } else if (targetName.equals(TEST_STEP)) {
@@ -586,7 +586,8 @@ public final class MakeActionProvider implements ActionProvider {
                 path = conf.getMakefileConfiguration().getAbsOutput();
                 path = CndPathUtilitities.normalizeSlashes(path);
             }
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
+            RunProfile runProfile = conf.getProfile().clone(conf);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
         } else if (conf.isLibraryConfiguration()) {
             String path;
