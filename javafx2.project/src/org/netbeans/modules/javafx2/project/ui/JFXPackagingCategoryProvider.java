@@ -58,9 +58,9 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  * @author Milan Kubec
  */
 @ProjectServiceProvider(service=J2SECategoryExtensionProvider.class, projectType="org-netbeans-modules-java-j2seproject")
-public class J2SEJarConfigProviderImpl implements J2SECategoryExtensionProvider {
+public class JFXPackagingCategoryProvider implements J2SECategoryExtensionProvider {
     
-    public J2SEJarConfigProviderImpl() {}
+    public JFXPackagingCategoryProvider() {}
     
     @Override
     public ExtensibleCategory getCategory() {
@@ -75,7 +75,7 @@ public class J2SEJarConfigProviderImpl implements J2SECategoryExtensionProvider 
             fxDisabled = !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))
                     || JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_SWING));
         }
-        return fxDisabled ? null : JFXProjectProperties.getInstance(p.getLookup()).getCustomizerJarComponent();
+        return fxDisabled ? null : JFXProjectProperties.getInstance(p.getLookup()).getPackagingPanel();
     }
     
     @Override

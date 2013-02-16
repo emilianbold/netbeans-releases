@@ -51,7 +51,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -66,10 +69,13 @@ import org.openide.util.Utilities;
  *
  * @author Tomas Zezula
  */
+//@ThreadSafe
 final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementation {        
+
+    private static final String PROP_GENERATED_SOURCES = "build.generated.sources.dir";  //NOI18N
     
-    
-    private final Map<URL,BinaryForSourceQuery.Result>  cache = new HashMap<URL,BinaryForSourceQuery.Result>();
+    private final Map<URL,BinaryForSourceQuery.Result>  cache =
+            new ConcurrentHashMap<URL, Result>();
     private final SourceRoots src;
     private final SourceRoots test;
     private final PropertyEvaluator eval;
@@ -78,8 +84,13 @@ final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementati
     private String[] testProps;
     
     /** Creates a new instance of BinaryForSourceQueryImpl */
-    BinaryForSourceQueryImpl(SourceRoots src, SourceRoots test, AntProjectHelper helper, 
-            PropertyEvaluator eval, String[] sourceProps, String[] testProps) {
+    BinaryForSourceQueryImpl(
+            @NonNull final SourceRoots src,
+            @NonNull final SourceRoots test,
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final String[] sourceProps,
+            @NonNull final String[] testProps) {
         assert src != null;
         assert test != null;
         assert helper != null;
@@ -95,52 +106,74 @@ final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementati
     }
     
     @Override
-    public Result findBinaryRoots(URL sourceRoot) {
+    @CheckForNull
+    public Result findBinaryRoots(@NonNull final URL sourceRoot) {
         assert sourceRoot != null;
         BinaryForSourceQuery.Result result = cache.get(sourceRoot);
         if (result == null) {
-            for (URL root : this.src.getRootURLs()) {
-                if (root.equals(sourceRoot)) {
-                    result = new R (sourceProps);
-                    cache.put (sourceRoot,result);
-                    return result;
-                }
-            }
-            for (URL root : this.test.getRootURLs()) {
-                if (root.equals(sourceRoot)) {
-                    result = new R (testProps);
-                    cache.put (sourceRoot,result);
-                    return result;
-                }
-            }
-            String buildGeneratedDirS = eval.getProperty("build.generated.sources.dir");
-            if (buildGeneratedDirS != null) { // #105645
-                String parent = Utilities.toURI(helper.resolveFile(buildGeneratedDirS)).toString();
-                if (sourceRoot.toString().startsWith(parent)) {
-                    result = new R(sourceProps);
-                    cache.put(sourceRoot, result);
-                    return result;
-                }
+            final String[] activeNames = getActivePropertyNames(sourceRoot);
+            if (activeNames != null) {
+                result = new R (sourceRoot, activeNames);
+                cache.put (sourceRoot,result);
             }
         }
         return result;
     }
+
+    @CheckForNull
+    private String[] getActivePropertyNames(@NonNull final URL sourceRoot) {
+        for (URL root : this.src.getRootURLs()) {
+            if (root.equals(sourceRoot)) {
+                return sourceProps;
+            }
+        }
+        for (URL root : this.test.getRootURLs()) {
+            if (root.equals(sourceRoot)) {
+                return testProps;
+            }
+        }
+        final String buildGeneratedDirS = eval.getProperty(PROP_GENERATED_SOURCES);
+        if (buildGeneratedDirS != null) { // #105645
+            final String parent = Utilities.toURI(helper.resolveFile(buildGeneratedDirS)).toString();
+            if (sourceRoot.toString().startsWith(parent)) {
+                return sourceProps;
+            }
+        }
+        return null;
+    }
     
     class R implements BinaryForSourceQuery.Result, PropertyChangeListener {
-        
-        private final String[] propNames;
+                
         private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private final URL root;
+        private volatile String[] activeNames;
         
-        R (final String[] propNames) {
-            assert propNames != null && propNames.length > 0;
-            this.propNames = propNames;
+        R ( @NonNull final URL root,
+            @NonNull final String[] activeNames) {
+            assert root != null;
+            assert activeNames != null && activeNames.length > 0;
+            this.root = root;
+            this.activeNames = activeNames;
             eval.addPropertyChangeListener(this);
+            src.addPropertyChangeListener(this);
+            test.addPropertyChangeListener(this);
         }
         
         @Override
+        @NonNull
         public URL[] getRoots() {
-            List<URL> urls = new ArrayList<URL>();
-            for (String propName : propNames) {
+            String[] names = activeNames;
+            if (names == null) {
+                names = getActivePropertyNames(root);
+                activeNames = names;
+            }
+            if (names == null) {
+                //No more handled by this project, remove from cache.
+                cache.remove(root);
+                return new URL[0];
+            }
+            final List<URL> urls = new ArrayList<URL>();
+            for (String propName : names) {
                 String val = eval.getProperty(propName);
                 if (val != null) {
                     final URL url = FileUtil.urlForArchiveOrDir(helper.resolveFile(val));
@@ -153,19 +186,24 @@ final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementati
         }
 
         @Override
-        public void addChangeListener(ChangeListener l) {
+        public void addChangeListener(@NonNull final ChangeListener l) {
             assert l != null;
             changeSupport.addChangeListener(l);
         }
 
         @Override
-        public void removeChangeListener(ChangeListener l) {
+        public void removeChangeListener(@NonNull final ChangeListener l) {
             assert l != null;
             changeSupport.removeChangeListener(l);
         }
 
         @Override
-        public void propertyChange(PropertyChangeEvent event) {
+        public void propertyChange(@NonNull final PropertyChangeEvent event) {
+            final String propName = event.getPropertyName();
+            if (SourceRoots.PROP_ROOTS.equals(propName) ||
+                PROP_GENERATED_SOURCES.equals(propName)) {
+                activeNames = null;
+            }
             changeSupport.fireChange();
         }
 }

@@ -208,8 +208,7 @@ public class CompletionTestBase extends NbTestCase {
                     try {
                         final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
                         BinaryAnalyser ba = cii.getBinaryAnalyser();
-                        ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
-                        ba.finish();
+                        ba.analyse(url);
                     } finally {
                         TransactionContext.get().commit();
                     }

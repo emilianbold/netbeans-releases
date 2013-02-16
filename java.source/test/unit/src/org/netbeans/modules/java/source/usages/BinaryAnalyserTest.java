@@ -68,7 +68,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser.Changes;
-import org.netbeans.modules.java.source.usages.BinaryAnalyser.Result;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -102,10 +101,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
         BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
-        assertEquals(Result.FINISHED, a.start(FileUtil.getArchiveRoot(Utilities.toURI(binaryAnalyzerDataDir).toURL()), new AtomicBoolean(), new AtomicBoolean()));
-
-        a.finish();
-
+        assertTrue(a.analyse(FileUtil.getArchiveRoot(Utilities.toURI(binaryAnalyzerDataDir).toURL())).done);
         assertReference(index, "annotations.NoArgAnnotation", "usages.ClassAnnotations", "usages.MethodAnnotations", "usages.FieldAnnotations");
         assertReference(index, "annotations.ArrayOfStringArgAnnotation", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
         assertReference(index, "annotations.TestEnum", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
@@ -126,9 +122,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
         BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
-        assertEquals(Result.FINISHED, a.start(Utilities.toURI(classFolder).toURL(), new AtomicBoolean(), new AtomicBoolean()));
-
-        a.finish();
+        assertTrue(a.analyse(Utilities.toURI(classFolder).toURL()).done);
         
         Set<String> origClasses = listClasses(index);
 
@@ -140,8 +134,8 @@ public class BinaryAnalyserTest extends NbTestCase {
         
         a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
-        assertEquals(Result.FINISHED, a.start(Utilities.toURI(classFolder).toURL(), new AtomicBoolean(), new AtomicBoolean()));
-        Changes changes = a.finish();
+        final Changes changes = a.analyse(Utilities.toURI(classFolder).toURL());
+        assertTrue(changes.done);
         
         Set<String> removedClasses = new HashSet<String>();
         
@@ -167,10 +161,8 @@ public class BinaryAnalyserTest extends NbTestCase {
         final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
         BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
-        assertEquals(Result.FINISHED, a.start(Utilities.toURI(classFolder).toURL(), new AtomicBoolean(), new AtomicBoolean()));
+        assertTrue(a.analyse(Utilities.toURI(classFolder).toURL()).done);
 
-        a.finish();
-        
         Set<String> origClasses = listClasses(index);
 
         assertTrue(origClasses.toString(), !origClasses.isEmpty());
@@ -179,8 +171,8 @@ public class BinaryAnalyserTest extends NbTestCase {
         
         a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
-        assertEquals(Result.FINISHED, a.start(Utilities.toURI(classFolder).toURL(), new AtomicBoolean(), new AtomicBoolean()));
-        Changes changes = a.finish();
+        final Changes changes = a.analyse(Utilities.toURI(classFolder).toURL());
+        assertTrue(changes.done);
         
         Set<String> removedClasses = new HashSet<String>();
         
@@ -221,11 +213,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         );
 
         LowMemoryWatcherAccessor.setLowMemory(true);
-        assertEquals(Result.FINISHED, 
-                a.start(FileUtil.getArchiveRoot(Utilities.toURI(binaryAnalyzerDataDir).toURL()), new AtomicBoolean(), new AtomicBoolean()));
-
-        a.finish();
-
+        assertTrue(a.analyse(FileUtil.getArchiveRoot(Utilities.toURI(binaryAnalyzerDataDir).toURL())).done);
         // at least one flush occured.
         assertFalse(flushCount == 0);
 

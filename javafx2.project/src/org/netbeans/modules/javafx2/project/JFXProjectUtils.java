@@ -42,6 +42,10 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.io.*;
+import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.jar.JarEntry;
@@ -68,13 +72,14 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 /**
- * Utility class for JavaFX 2.0 Project
+ * Utility class for JavaFX 2.0+ Project
  * 
  * @author Petr Somol
  */
@@ -85,6 +90,8 @@ public final class JFXProjectUtils {
     
     private static final String JFX_BUILD_TEMPLATE = "Templates/JFX/jfx-impl.xml"; //NOI18N
     private static volatile String currentJfxImplCRCCache;
+    private static final String JFXRT_JAR_NAME = "jfxrt.jar"; // NOI18N
+    private static final String JFXRT_RELATIVE_LOCATIONS[] = new String[]{"lib", "lib" + File.separatorChar + "ext"}; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     
@@ -236,11 +243,28 @@ public final class JFXProjectUtils {
      * @param classType return only classes of this type
      * @return set of class names
      */
-    public static Set<String> getAppClassNamesInJar(@NonNull FileObject jarFile, final String classType) {
+    public static Set<String> getAppClassNamesInJar(@NonNull FileObject jarFile, final String classType, final String fxrtPath) {
         final File jarF = FileUtil.toFile(jarFile);
         if (jarF == null) {
             return null;
         }
+        boolean jfxrtExists = false;
+        List<URL> toLoad = new ArrayList<URL>();
+        try {
+            assert jarF.exists();
+            toLoad.add(jarF.toURI().toURL());
+            for(String rel : JFXRT_RELATIVE_LOCATIONS) {
+                final File jfxrt = new File(fxrtPath + File.separatorChar + rel + File.separatorChar + JFXRT_JAR_NAME);
+                if(jfxrt.exists()) {
+                    jfxrtExists = true;
+                }
+                toLoad.add(jfxrt.toURI().toURL());
+            }
+        } catch (MalformedURLException ex) {
+            return null;
+        }        
+        URLClassLoader clazzLoader = URLClassLoader.newInstance(toLoad.toArray(new URL[0]));
+
         final Set<String> appClassNames = new HashSet<String>();
         JarFile jf;
         try {
@@ -248,24 +272,45 @@ public final class JFXProjectUtils {
         } catch (IOException x) {
             return null;
         }
-        Enumeration<JarEntry> entries = jf.entries();
+        Enumeration<? extends JarEntry> entries = jf.entries();
         if (entries == null) {
             return null;
         }        
         while(entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();
-            if(!entry.getName().endsWith(".class")) { // NOI18N
+            // Relative path of file into the jar
+            String classFileName = entry.getName();
+            
+            if(!classFileName.endsWith(".class")) { // NOI18N
                 continue;
             }
-            if(entry.getName().contains("$")) { // NOI18N
+            if(classFileName.contains("$")) { // NOI18N
                 continue;
             }
-            String classname = entry.getName().substring(0, entry.getName().length() - 6) // cut off ".class"
-                    .replace('\\', '/').replace('/', '.');
-            if (classname.startsWith(".")) { // NOI18N
-                classname = classname.substring(1);
+            // Complete class name
+            String className = classFileName.replace(".class", "").replace('\\', '/').replace('/', '.'); // NOI18N
+            
+            if(clazzLoader != null && jfxrtExists) {
+                // Load class definition from JVM
+                Class<?> clazz;
+                try {
+                    clazz = Class.forName(className, true, clazzLoader);
+                    Type t = clazz.getGenericSuperclass();
+                    if(t.toString().contains(classType)) {
+                        if (className.startsWith(".")) { // NOI18N
+                            className = className.substring(1);
+                        }
+                        appClassNames.add(className);
+                    }
+                } catch (ClassNotFoundException ex) {
+                    return null;
+                }
+            } else {
+                if (className.startsWith(".")) { // NOI18N
+                    className = className.substring(1);
+                }
+                appClassNames.add(className);
             }
-            appClassNames.add(classname);
         }
 
         return appClassNames;

@@ -212,12 +212,10 @@ public class NBClassWriter extends ClassWriter {
                     // a valid position, once unknown.
                     // TODO: find a cleaner solution.
                     // System.err.println("ClassWriter: Position UNKNOWN in type annotation: " + tc);
-                    sourceLevel.append(tc);
                     continue;
                 }
             }
             if (!tc.position.emitToClassfile()) {
-                sourceLevel.append(tc);
                 continue;
             }
             if (types.getRetention(tc) == RetentionPolicy.SOURCE) {
