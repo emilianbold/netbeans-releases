@@ -907,35 +907,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(FunctionDeclaration node) {
-        //Scope scope = currentScope.peek();
-        ScopeImpl scope = modelBuilder.getCurrentScope();
-        assert scope != null && ((scope instanceof FunctionScope)
-                || (scope instanceof MethodScope) || (scope instanceof NamespaceScopeImpl));
-        if (scope instanceof NamespaceScopeImpl) {
-            NamespaceScopeImpl ps = (NamespaceScopeImpl) scope;
-            FunctionScopeImpl fncScope = ps.createElement(modelBuilder.getProgram(), node);
-            //currentScope.push(scope = fncScope);
-            scope = fncScope;
-            modelBuilder.setCurrentScope(scope);
-            occurencesBuilder.prepare(node, fncScope);
-            markerBuilder.prepare(node, modelBuilder.getCurrentScope());
-            checkComments(node);
-        } else if (!(scope instanceof NamespaceScope)) {
-            Scope tmpScope = scope;
-            while (!(tmpScope instanceof NamespaceScope)) {
-                tmpScope = tmpScope.getInScope();
-            }
-            if (tmpScope instanceof NamespaceScopeImpl) {
-                NamespaceScopeImpl ps = (NamespaceScopeImpl) tmpScope;
-                FunctionScopeImpl fncScope = ps.createElement(modelBuilder.getProgram(), node);
-                //currentScope.push(scope = fncScope);
-                scope = fncScope;
-                modelBuilder.setCurrentScope(scope);
-                occurencesBuilder.prepare(node, fncScope);
-                markerBuilder.prepare(node, modelBuilder.getCurrentScope());
-                checkComments(node);
-            }
+        Scope scope = modelBuilder.getCurrentScope();
+        assert (scope instanceof FunctionScope) || (scope instanceof NamespaceScopeImpl);
+        while (!(scope instanceof NamespaceScope)) {
+            scope = scope.getInScope();
         }
+        FunctionScopeImpl fncScope = ((NamespaceScopeImpl) scope).createElement(modelBuilder.getProgram(), node);
+        modelBuilder.setCurrentScope(fncScope);
+        occurencesBuilder.prepare(node, fncScope);
+        markerBuilder.prepare(node, fncScope);
+        checkComments(node);
         scan(node.getFormalParameters());
         scan(node.getBody());
         modelBuilder.reset();
