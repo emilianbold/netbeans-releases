@@ -550,7 +550,7 @@ public class JSTestDriverSupport {
                 report = testSession.getReport(0);
                 manager.displaySuiteRunning(testSession, ts.getName());
             }
-            Testcase testCase = new Testcase(testResult.getTestCaseName(), null, testSession);
+            Testcase testCase = new Testcase(testResult.getTestCaseName()+"."+testResult.getTestName(), null, testSession); //NOI18N
             testCase.setStatus(convert(testResult.getResult()));
             testCase.setTimeMillis(testResult.getDuration());
             if (testResult.getResult() == TestResult.Result.failed || testResult.getResult() == TestResult.Result.error) {
