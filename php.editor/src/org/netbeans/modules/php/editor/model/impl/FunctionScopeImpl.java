@@ -223,6 +223,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return result;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("SE_COMPARATOR_SHOULD_BE_SERIALIZABLE")
     private static final class ModelElementsPositionComparator implements Comparator<ModelElement> {
 
         @Override
