@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -231,7 +230,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             Collection<SimpleError> storedErrors = this.errors.get(indexable);
 
             if (storedErrors == null) {
-                this.errors.put(indexable, storedErrors = new LinkedList<SimpleError>());
+                this.errors.put(indexable, storedErrors = new ArrayList<SimpleError>());
             }
 
             if (errors == null) {
