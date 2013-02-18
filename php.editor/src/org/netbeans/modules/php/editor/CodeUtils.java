@@ -313,7 +313,7 @@ public final class CodeUtils {
     public static String extractVariableName(Variable var) {
         String variableName = VariableNameVisitor.getInstance().findName(var);
         if (variableName == null) {
-            LOGGER.log(Level.INFO, "Can not retrieve variable name: {0}", var);
+            LOGGER.log(Level.FINE, "Can not retrieve variable name: {0}", var);
         }
         return variableName;
     }
