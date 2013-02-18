@@ -69,4 +69,8 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion03.xhtml", "#{bean.myString.^}", false);
     }
 
+    public void testCompletionForStaticIterableElement() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion05.xhtml", "#{[\"one\", 2].^}", false);
+    }
+
 }
