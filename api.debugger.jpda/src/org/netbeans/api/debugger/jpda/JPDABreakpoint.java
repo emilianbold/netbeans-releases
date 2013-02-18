@@ -49,7 +49,6 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -136,7 +135,9 @@ public class JPDABreakpoint extends Breakpoint {
     public void setSuspend (int s) {
         int old;
         synchronized (this) {
-            if (s == suspend) return;
+            if (s == suspend) {
+                return;
+            }
             old = suspend;
             suspend = s;
         }
@@ -160,7 +161,9 @@ public class JPDABreakpoint extends Breakpoint {
     public void setHidden (boolean h) {
         boolean old;
         synchronized (this) {
-            if (h == hidden) return;
+            if (h == hidden) {
+                return;
+            }
             old = hidden;
             hidden = h;
         }
@@ -209,7 +212,9 @@ public class JPDABreakpoint extends Breakpoint {
     @Override
     public void disable () {
         synchronized (this) {
-            if (!enabled) return;
+            if (!enabled) {
+                return;
+            }
             enabled = false;
         }
         firePropertyChange 
@@ -222,7 +227,9 @@ public class JPDABreakpoint extends Breakpoint {
     @Override
     public void enable () {
         synchronized (this) {
-            if (enabled) return;
+            if (enabled) {
+                return;
+            }
             enabled = true;
         }
         firePropertyChange 
