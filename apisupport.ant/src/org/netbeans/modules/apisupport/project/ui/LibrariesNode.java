@@ -79,6 +79,7 @@ import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.modules.apisupport.project.NbModuleType;
 import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
@@ -475,8 +476,24 @@ final class LibrariesNode extends AbstractNode {
                                     final SuiteProperties suiteProps = new SuiteProperties((SuiteProject) suiteProject, ((SuiteProject) suiteProject).getHelper(),
                                         ((SuiteProject) suiteProject).getEvaluator(), subModules);
 
+                                    TreeSet<String> includedClusters = null;
+                                    Set<ClusterInfo> clusterInfoSet = suiteProps.getClusterPath();
+                                    if(clusterInfoSet!=null)
+                                    {
+                                        includedClusters = new TreeSet<String>();
+                                        for(ClusterInfo infoIter:clusterInfoSet)
+                                        {
+                                            File clusterDirectory = infoIter.getClusterDir();
+                                            if(clusterDirectory!=null)
+                                            {
+                                                includedClusters.add(clusterDirectory.getName());
+                                            }
+                                        }
+                                    }
+                                    
                                     Set<String> disabledModules = new HashSet<String>(Arrays.asList(suiteProps.getDisabledModules()));
                                     Set<ModuleDependency> dependenciesToIter = new HashSet<ModuleDependency>(Arrays.asList(newDeps));
+                                    List<ClusterInfo> updatedClusterPath = null;
                                     boolean changed = false;
                                     for(ModuleDependency moduleDepIter:dependenciesToIter)
                                     {
@@ -493,12 +510,55 @@ final class LibrariesNode extends AbstractNode {
                                                 dependencies.remove(moduleDepIter);
                                             }
                                          }
+                                         else if(includedClusters != null && !includedClusters.
+                                                 contains(moduleDepIter.getModuleEntry().getClusterDirectory().getName()))
+                                         {
+                                             if(suiteProps.getActivePlatform() != null)
+                                             {
+                                                NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(NbBundle.getMessage(LibrariesNode.class, "MSG_AddModuelToTargetPlatformWithItsCluster", moduleDepIter.getModuleEntry().getLocalizedName(), moduleDepIter.getModuleEntry().getClusterDirectory().getName()), NbBundle.getMessage(LibrariesNode.class, "MSG_AddModuelToTargetPlatformTitle"), NotifyDescriptor.YES_NO_OPTION);
+                                                DialogDisplayer.getDefault().notify(confirmation);
+                                                if (confirmation.getValue() == NotifyDescriptor.YES_OPTION) { 
+
+                                                    ClusterInfo newClusterInfo = ClusterInfo.create(moduleDepIter.getModuleEntry().getClusterDirectory(), 
+                                                            true, true);
+                                                    if(updatedClusterPath == null) {
+                                                        updatedClusterPath = new ArrayList<ClusterInfo>();
+                                                        updatedClusterPath.addAll(suiteProps.getClusterPath());
+                                                    }
+                                                    updatedClusterPath.add(newClusterInfo);
+
+                                                    Set<ModuleEntry> moduleList = suiteProps.getActivePlatform().getModules();
+                                                    TreeSet<String> disabledClusterDependencies = new TreeSet<String>();
+                                                    for(ModuleEntry entryIter:moduleList)
+                                                    {
+                                                        if(entryIter.getClusterDirectory().equals(moduleDepIter.getModuleEntry().getClusterDirectory()))
+                                                        {
+                                                            disabledClusterDependencies.add(entryIter.getCodeNameBase());
+                                                        }
+                                                    }
+                                                    disabledClusterDependencies.remove(moduleDepIter.getModuleEntry().getCodeNameBase());
+                                                    disabledModules.addAll(disabledClusterDependencies);
+                                                    changed = true;
+                                                }
+                                                else
+                                                {
+                                                    dependencies.remove(moduleDepIter);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                dependencies.remove(moduleDepIter);
+                                            }
+                                         }
                                       }
                                       if(changed)
                                       {
                                             String [] updatedDiasabledModules = new String[disabledModules.size()];
                                             disabledModules.toArray(updatedDiasabledModules);
                                             suiteProps.setDisabledModules(updatedDiasabledModules);
+                                            if(updatedClusterPath != null && updatedClusterPath.size() > 0) {
+                                                suiteProps.setClusterPath(updatedClusterPath);
+                                            }
                                             ProjectManager.mutex().writeAccess(new Runnable() {
                                                 @Override
                                                 public void run() {
@@ -520,20 +580,23 @@ final class LibrariesNode extends AbstractNode {
                         }
                     }
             }
-            ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                public @Override void run() {
-                    ProjectXMLManager pxm = new ProjectXMLManager(project);
-                    try {
-                        pxm.addDependencies(dependencies); // XXX cannot cancel
-                        ProjectManager.getDefault().saveProject(project);
-                    } catch (IOException e) {
-                        LOG.log(Level.INFO, "Cannot add selected dependencies: " + Arrays.asList(newDeps), e);
-                    } catch (ProjectXMLManager.CyclicDependencyException ex) {
-                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
-                        DialogDisplayer.getDefault().notify(msg);
+            if(dependencies.size() > 0)
+            {
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    public @Override void run() {
+                        ProjectXMLManager pxm = new ProjectXMLManager(project);
+                        try {
+                            pxm.addDependencies(dependencies); // XXX cannot cancel
+                            ProjectManager.getDefault().saveProject(project);
+                        } catch (IOException e) {
+                            LOG.log(Level.INFO, "Cannot add selected dependencies: " + Arrays.asList(newDeps), e);
+                        } catch (ProjectXMLManager.CyclicDependencyException ex) {
+                            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                            DialogDisplayer.getDefault().notify(msg);
+                        }
                     }
-                }
-            }, NbBundle.getMessage(LibrariesNode.class, "LibrariesNode.update_deps"), cancel, false);
+                }, NbBundle.getMessage(LibrariesNode.class, "LibrariesNode.update_deps"), cancel, false);
+            }
         }
     }
 
