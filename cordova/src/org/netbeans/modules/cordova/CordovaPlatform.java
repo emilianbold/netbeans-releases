@@ -54,8 +54,8 @@ public class CordovaPlatform {
     private static CordovaPlatform instance;
     
     private static String CORDOVA_SDK_ROOT_PREF = "cordova.home";//NOI18N
-    
-    private String version;
+
+    private Version version;
 
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
@@ -81,19 +81,52 @@ public class CordovaPlatform {
         NbPreferences.forModule(CordovaPlatform.class).put(CORDOVA_SDK_ROOT_PREF, sdkLocation);
         propertyChangeSupport.firePropertyChange("SDK", null, sdkLocation);//NOI18N
     }
+    
+    public static Version getVersion(String sdkLocation) {
+        if (!checkPhonegapLocation(sdkLocation)) {
+            throw new IllegalArgumentException();
+        }
 
-    public String getVersion() {
+        final BufferedReader bufferedReader;
+        try {
+            bufferedReader = new BufferedReader(new FileReader(sdkLocation + "/VERSION")); //NOI18N;
+            try {
+                String v = bufferedReader.readLine().trim();
+                return new Version(v);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+
+            } finally {
+                try {
+                    bufferedReader.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+            }
+        } catch (FileNotFoundException ex) {
+            throw new IllegalArgumentException();
+        }
+        throw new IllegalArgumentException();
+    }
+    
+    private static boolean checkPhonegapLocation(String sdkLocation) {
+        File cordovaLoc = new File(sdkLocation);
+        File cordovaAndroid = new File(cordovaLoc, "lib/android"); //NOI18N
+        File cordovaIOS = new File(cordovaLoc, "lib/ios"); //NOI18N
+        File version = new File(cordovaLoc, "VERSION");
+        return (cordovaLoc.exists() && cordovaLoc.isDirectory()
+                && cordovaAndroid.exists() && cordovaAndroid.isDirectory()
+                && cordovaIOS.exists() && cordovaIOS.isDirectory())
+                && version.exists();
+    }
+    
+
+    public Version getVersion() {
         final String sdkLocation = getSdkLocation();
         assert sdkLocation != null;
         if (version == null) {
-            final BufferedReader bufferedReader;
-            try {
-                bufferedReader = new BufferedReader(new FileReader(sdkLocation + "/VERSION"));//NOI18N
-                version = bufferedReader.readLine().trim();
-                bufferedReader.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            version = getVersion(sdkLocation);
         }
         return version;
     }
@@ -119,6 +152,30 @@ public class CordovaPlatform {
     
     public boolean isReady() {
         return getSdkLocation() != null;
+    }
+
+    public static class Version implements Comparable<Version> {
+
+        String version;
+        
+        public Version(String version) {
+            this.version = version;
+        }
+
+
+        @Override
+        public int compareTo(Version o) {
+            return version.compareTo(o.version);
+        }
+
+        @Override
+        public String toString() {
+            return version;
+        }
+        
+        public boolean isSupported() {
+            return compareTo(new Version(("2.4")))>0;
+        }
     }
 }
 

@@ -57,6 +57,7 @@ import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -202,5 +203,9 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         
         CordovaPerformer.storeBuildProperties(project, props);
         
+        if (cordovaPanel.isPanelEnabled()) {
+            Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-android", project);
+            Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-ios", project);
+        }
     }
 }
