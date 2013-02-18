@@ -541,20 +541,35 @@ rule
 
 declarations
     :
-         ( 
             (
-                (rulePredicate)=>rule
-                | 
-                ( (declarationPredicate)=>declaration SEMI )
+                (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
+		|
+		(~(LBRACE|SEMI|RBRACE)+ SEMI)=>declaration SEMI ws?
                 |
-                {isLessSource()}? less_mixin_call
-            )            
-            ws?
-        )*
-        
-//        ((lastDeclarationPredicate)=>declaration)
+                {isLessSource()}? less_mixin_call ws?
+            )*
+            (( ~(RBRACE)+ RBRACE)=>declaration)?
     ;
     
+//test 
+//    :
+//         ( 
+//            (
+//                t1
+//                | 
+//                t2 SEMI
+//            )            
+//            ws?
+//        )*
+//        
+//        t2
+//    ;
+//    
+//t1 : ir STAR;
+//t2: ir STAR GEN;
+//    
+//ir	:	IDENT COMMA;
+
 rulePredicate
     options { k = 1; }
     :
@@ -604,14 +619,7 @@ esPred
        
 typeSelector 
 	options { k = 2; }
- 	:  ((nsPred)=>namespacePrefix)? ( elementName ws? )
-// 	:  ((nsPred)=>namespacePrefix)? ( elementName ) 	
- 	;
-
-//predicate
-nsPred
- 	:	
- 	(IDENT | STAR)? PIPE
+ 	:  (((IDENT | STAR)? PIPE)=>namespacePrefix)? ( elementName ws? )
  	;
 
 namespacePrefix
