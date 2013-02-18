@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.editor.nav;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -137,11 +138,20 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         });
         final TokenHierarchy<?> tokenHierarchy = parseResult.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence(tokenHierarchy, offset) : null;
+        if (cancelled) {
+            return Collections.EMPTY_LIST;
+        }
         OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset, parseResult.getModel()) : OffsetRange.NONE;
         if (!referenceSpan.equals(OffsetRange.NONE)) {
             Model model = parseResult.getModel();
             OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpan);
+            if (cancelled) {
+                return Collections.EMPTY_LIST;
+            }
             Occurence caretOccurence = occurencesSupport.getOccurence();
+            if (cancelled) {
+                return Collections.EMPTY_LIST;
+            }
             if (caretOccurence != null) {
                 final EnumSet<Accuracy> handledAccuracyFlags = EnumSet.<Occurence.Accuracy>of(
                         Accuracy.EXACT, Accuracy.EXACT_TYPE, Accuracy.MORE, Accuracy.MORE_TYPES,
@@ -164,7 +174,13 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
                 Model model = parseResult.getModel();
                 OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpanForCodeMarkers);
+                if (cancelled) {
+                    return Collections.EMPTY_LIST;
+                }
                 CodeMarker codeMarker = occurencesSupport.getCodeMarker();
+                if (cancelled) {
+                    return Collections.EMPTY_LIST;
+                }
                 if (codeMarker != null) {
                     Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
                     for (CodeMarker marker : allMarkers) {
