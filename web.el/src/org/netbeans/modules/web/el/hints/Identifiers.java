@@ -42,17 +42,23 @@
 package org.netbeans.modules.web.el.hints;
 
 import com.sun.el.parser.*;
+import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.*;
 import org.netbeans.modules.web.el.operators.OperatorDefinitions;
+import org.netbeans.modules.web.el.operators.OperatorUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -123,8 +129,8 @@ public final class Identifiers extends ELRule {
                                     Collections.<HintFix>emptyList(), 200);
                             result.add(hint);
                             finished = true; // warn only about the first unknown property
-
                         }
+                        parent = node;
                     }
                 }
             });
@@ -146,6 +152,16 @@ public final class Identifiers extends ELRule {
                 // valid operator for static list, set, map
                 if (parent instanceof AstMapData || parent instanceof AstListData) {
                     return true;
+                }
+                // valid operator for Iterable or array return type
+                if (parent instanceof AstDotSuffix) {
+                    Element methodElement = ELTypeUtilities.resolveElement(info, element, parent);
+                    if (methodElement == null) {
+                        return true;
+                    }
+                    if (methodElement.getKind() == ElementKind.METHOD) {
+                        return OperatorUtils.isOperatorValidProperty(info, (ExecutableElement) methodElement);
+                    }
                 }
             }
         }

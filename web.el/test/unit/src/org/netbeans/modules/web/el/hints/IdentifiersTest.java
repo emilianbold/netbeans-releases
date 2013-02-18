@@ -86,7 +86,20 @@ public class IdentifiersTest extends HintTestBase {
         checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers07.xhtml", null);
     }
 
-//    public void testKnownOperatorForListData() throws Exception {
-//        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers01.xhtml", null);
-//    }
+    public void testOperatorForListProperty01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers08.xhtml", null);
+    }
+
+    public void testOperatorForStringProperty01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers10.xhtml", null);
+    }
+
+    public void testOperatorForArrayProperty01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers09.xhtml", null);
+    }
+
+    public void testOperatorForIterableProperty01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers11.xhtml", null);
+    }
+
 }
