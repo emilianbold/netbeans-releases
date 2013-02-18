@@ -152,14 +152,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
         if (currentThread != null) {
             breakpoint.setThreadFilters(debugger, new JPDAThread[] { currentThread });
         }
-        // TODO: mb.setSession(debugger);
-        try {
-            java.lang.reflect.Method setSessionMethod = JPDABreakpoint.class.getDeclaredMethod("setSession", JPDADebugger.class);
-            setSessionMethod.setAccessible(true);
-            setSessionMethod.invoke(breakpoint, debugger);
-        } catch (Exception ex) {
-            org.openide.util.Exceptions.printStackTrace(ex);
-        }
+        breakpoint.setSession(debugger);
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
         if (currentThread != null) {
             currentThread.resume();

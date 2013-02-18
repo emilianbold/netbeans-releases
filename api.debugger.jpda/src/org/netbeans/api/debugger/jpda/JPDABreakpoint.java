@@ -98,7 +98,7 @@ public class JPDABreakpoint extends Breakpoint {
     private int                         suspend;
     private String                      printText;
     private Collection<JPDABreakpointListener>  breakpointListeners = new HashSet<JPDABreakpointListener>();
-    private JPDADebugger                session;
+    private volatile JPDADebugger       session;
     private List<DebuggerEngine> engines = new ArrayList<DebuggerEngine>();
     
    
@@ -234,9 +234,9 @@ public class JPDABreakpoint extends Breakpoint {
      * This will make the breakpoint session-specific
      *
      * @param session the specific session
+     * @since 2.41
      */
-    // TODO: make this public API
-    synchronized void setSession(JPDADebugger session) {
+    public void setSession(JPDADebugger session) {
         this.session = session;
     }
 
@@ -246,9 +246,9 @@ public class JPDABreakpoint extends Breakpoint {
      * and is discarded after this session finishes.
      *
      * @return the specific session or <code>null</code>.
+     * @since 2.41
      */
-    // TODO: make this public API
-    synchronized JPDADebugger getSession() {
+    public JPDADebugger getSession() {
         return session;
     }
 
