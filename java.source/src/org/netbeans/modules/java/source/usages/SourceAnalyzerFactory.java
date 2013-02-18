@@ -788,7 +788,7 @@ public final class SourceAnalyzerFactory {
                     addUsage(s, nameOfCU, data, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                 }
                 for (Symbol s : staticImports) {
-                    addUsage(
+                    addUsages(
                         s,
                         nameOfCU,
                         data,
@@ -862,12 +862,12 @@ public final class SourceAnalyzerFactory {
                 @NullAllowed final Symbol sym,
                 @NonNull final Pair<String,String>owner,
                 @NonNull final Map<Pair<String,String>, UsagesData<String>> map,
-                @NonNull final ClassIndexImpl.UsageType... types) {
+                @NonNull final ClassIndexImpl.UsageType type) {
             assert map != null;
-            assert types != null;
+            assert type != null;
             if (sym != null) {
                 final String className = encodeClassName(sym);
-                addUsage(className, owner, map, types);
+                addUsage(className, owner, map, type);
                 final Symbol encElm = sym.getEnclosingElement();
                 if (encElm.getKind() == ElementKind.PACKAGE) {
                     unusedPkgImports.remove(encElm);
@@ -876,6 +876,34 @@ public final class SourceAnalyzerFactory {
         }
 
         private void addUsage(
+            @NullAllowed final String className,
+            @NonNull final Pair<String,String>owner,
+            @NonNull final Map<Pair<String,String>, UsagesData<String>> map,
+            @NonNull final ClassIndexImpl.UsageType type) {
+            if (className != null) {
+                final UsagesData<String> data = getData(owner, map);
+                data.addUsage(className, type);
+            }
+        }
+
+        private void addUsages (
+                @NullAllowed final Symbol sym,
+                @NonNull final Pair<String,String>owner,
+                @NonNull final Map<Pair<String,String>, UsagesData<String>> map,
+                @NonNull final ClassIndexImpl.UsageType... types) {
+            assert map != null;
+            assert types != null;
+            if (sym != null) {
+                final String className = encodeClassName(sym);
+                addUsages(className, owner, map, types);
+                final Symbol encElm = sym.getEnclosingElement();
+                if (encElm.getKind() == ElementKind.PACKAGE) {
+                    unusedPkgImports.remove(encElm);
+                }
+            }
+        }
+
+        private void addUsages(
             @NullAllowed final String className,
             @NonNull final Pair<String,String>owner,
             @NonNull final Map<Pair<String,String>, UsagesData<String>> map,
