@@ -108,11 +108,11 @@ import org.openide.util.lookup.InstanceContent;
 /**
  * @author Marek Fukala
  */
-public class TestBase extends CslTestBase {
+public class ELTestBase extends CslTestBase {
 
     private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
 
-    public TestBase(String name) {
+    public ELTestBase(String name) {
         super(name);
     }
 
@@ -181,12 +181,12 @@ public class TestBase extends CslTestBase {
 
     @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
-        return new HtmlLanguage();
+        return new ELLanguage();
     }
 
     @Override
     protected String getPreferredMimeType() {
-        return HtmlKit.HTML_MIME_TYPE;
+        return "text/xhtml";
     }
 
     public ParseResultInfo parse(String fileName) throws ParseException {

@@ -77,11 +77,11 @@ import org.openide.util.test.MockLookup;
  * @author marekfukala
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class TestBaseForTestProject extends TestBase {
+public class ELTestBaseForTestProject extends ELTestBase {
 
     private FileObject srcFo, webFo, projectFo;
 
-    public TestBaseForTestProject(String name) {
+    public ELTestBaseForTestProject(String name) {
         super(name);
     }
 

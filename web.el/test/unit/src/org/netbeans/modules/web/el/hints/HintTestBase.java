@@ -77,7 +77,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.el.ELLanguage;
 import org.netbeans.modules.web.el.ELParser;
 import org.netbeans.modules.web.el.ELParserResult;
-import org.netbeans.modules.web.el.TestBaseForTestProject;
+import org.netbeans.modules.web.el.ELTestBaseForTestProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -86,7 +86,7 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class HintTestBase extends TestBaseForTestProject {
+public abstract class HintTestBase extends ELTestBaseForTestProject {
 
     public HintTestBase(String testName) {
         super(testName);
@@ -103,21 +103,6 @@ public abstract class HintTestBase extends TestBaseForTestProject {
     }
 
     protected abstract Rule createRule();
-
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new ELLanguage();
-    }
-
-    @Override
-    protected Parser getParser() {
-        return new ELParser();
-    }
-
-    @Override
-    protected String getPreferredMimeType() {
-        return "text/xhtml";
-    }
 
     /* Next lines are copied from the CslTestBase - we need to be able to use EL parser */
     protected void checkHints(NbTestCase test, Rule hint, String relFilePath, String caretLine) throws Exception {
