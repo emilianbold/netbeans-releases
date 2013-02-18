@@ -80,6 +80,7 @@ import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -280,13 +281,8 @@ public final class SourceAnalyzerFactory {
         protected final void addClassReferences (final Pair<String,String> name, final UsagesData<String> data) {
             assert name != null;
             assert data != null;
-            final Object[] result = new Object[3];
-            final Map<String,Set<ClassIndexImpl.UsageType>> usages = data.usages;            
-            final List<String> ru = new LinkedList<String>();
-            for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : usages.entrySet()) {
-                ru.add (DocumentUtil.encodeUsage(ue.getKey(),ue.getValue()));
-            }            
-            result[0] = ru;
+            final Object[] result = new Object[3];                        
+            result[0] = data.usagesToStrings();
             result[1] = data.featureIdentsToString();
             result[2] = data.identsToString();
             this.references.add(Pair.<Pair<String,String>,Object[]>of(name,result));
@@ -296,6 +292,14 @@ public final class SourceAnalyzerFactory {
     private static class UsagesVisitor extends TreeScanner<Void,Map<Pair<String,String>,UsagesData<String>>> {
 
         enum State {EXTENDS, IMPLEMENTS, GT, OTHER, IMPORT, PACKAGE_ANN};
+
+        private static final Convertor<String,String> CONVERTOR =
+                new Convertor<String, String>() {
+            @Override
+            public String convert(String p) {
+                return p;
+            }
+        };
 
         private final Stack<Pair<String,String>> activeClass;
         private final Name errorName;
@@ -878,14 +882,7 @@ public final class SourceAnalyzerFactory {
             @NonNull final ClassIndexImpl.UsageType... types) {
             if (className != null) {
                 final UsagesData<String> data = getData(owner, map);
-                Set<ClassIndexImpl.UsageType> usageType = data.usages.get (className);
-                if (usageType == null) {
-                    usageType = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
-                    data.usages.put (className, usageType);
-                }
-                for (ClassIndexImpl.UsageType type : types) {
-                    usageType.add (type);
-                }
+                data.addUsages(className,types);
             }
         }
 
@@ -900,10 +897,10 @@ public final class SourceAnalyzerFactory {
             if (feature || fullIndex) {
                 final UsagesData<String> data = getData(owner, map);
                 if (fullIndex) {
-                    data.idents.add(ident);
+                    data.addIdent(ident);
                 }
                 if (feature) {
-                    data.featuresIdents.add(ident);
+                    data.addFeatureIdent(ident);
                 }
             }
         }
@@ -915,7 +912,7 @@ public final class SourceAnalyzerFactory {
                 if (owner.first.charAt(owner.first.length()-2) == '.') {    //NOI18N
                     throw new IllegalArgumentException(owner.first);
                 }
-                data = new UsagesData<String> ();
+                data = new UsagesData<String> (CONVERTOR);
                 map.put(owner,data);
             }
             return data;
