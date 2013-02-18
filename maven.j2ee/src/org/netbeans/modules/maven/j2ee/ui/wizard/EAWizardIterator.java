@@ -115,11 +115,10 @@ public class EAWizardIterator extends BaseWizardIterator {
                 continue;
             }
 
-            saveSettingsToNbConfiguration(project);
-
             // We don't want to set server in pom.xml for pom-packaging module
             String projectDirName = projectFile.getName();
             if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
+                saveSettingsToNbConfiguration(project);
                 saveServerToPom(project);
                 MavenProjectSupport.changeServer(project, true);
             }
