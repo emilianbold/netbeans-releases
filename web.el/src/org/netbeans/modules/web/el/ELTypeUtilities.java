@@ -595,6 +595,36 @@ public final class ELTypeUtilities {
         return result[0];
     }
 
+    /**
+     * Whether the given node represents static {@link Iterable} field where can be used operators.
+     * @param ccontext compilation context
+     * @param node node to examine
+     * @return {@code true} if the object is static {@link Iterable} field, {@code false} otherwise
+     * @since 1.26
+     */
+    public static boolean isStaticIterableElement(CompilationContext ccontext, Node node) {
+        return (node instanceof AstListData || node instanceof AstMapData);
+    }
+
+    /**
+     * Whether the given node represents static {@link Iterable} field where can be used operators.
+     * @param ccontext compilation context
+     * @param element element to examine
+     * @return {@code true} if the object is static {@link Iterable} field, {@code false} otherwise
+     * @since 1.26
+     */
+    public static boolean isIterableElement(CompilationContext ccontext, Element element) {
+        if (element.getKind() == ElementKind.METHOD) {
+            TypeMirror returnType = ELTypeUtilities.getReturnType(ccontext, (ExecutableElement) element);
+            TypeElement iterableElement = ccontext.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
+            if (returnType.getKind() == TypeKind.ARRAY
+                    || ccontext.info().getTypeUtilities().isCastable(returnType, iterableElement.asType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean isSubtypeOf(CompilationContext info, TypeMirror tm, CharSequence typeName) {
         Element element = info.info().getElements().getTypeElement(typeName);
         if (element == null) {

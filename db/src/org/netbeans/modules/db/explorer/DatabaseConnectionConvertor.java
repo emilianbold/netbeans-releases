@@ -58,7 +58,9 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -242,6 +244,12 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         if (handler.displayName != null) {
             dbconn.setDisplayName(handler.displayName);
         }
+        for (String importantSchema : handler.importantSchemas) {
+            dbconn.addImportantSchema(importantSchema);
+        }
+        for (String importantDatabase : handler.importantCatalogs) {
+            dbconn.addImportantCatalog(importantDatabase);
+        }
         LOGGER.fine("Created DatabaseConnection[" + dbconn.toString() + "] from file: " + handler.connectionFileName);
 
         return dbconn;
@@ -395,6 +403,12 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             if (!instance.getName().equals(instance.getDisplayName())) {
                 pw.println("  <display-name value='" + XMLUtil.toAttributeValue(instance.getDisplayName()) + "'/>"); //NOI18N
             }
+            for (String importantSchema : instance.getImportantSchemas()) {
+                pw.println("  <important-schema value='" + XMLUtil.toAttributeValue(importantSchema) + "'/>"); //NOI18N
+            }
+            for (String importantDatabase : instance.getImportantCatalogs()) {
+                pw.println("  <important-catalog value='" + XMLUtil.toAttributeValue(importantDatabase) + "'/>"); //NOI18N
+            }
             if (instance.rememberPassword() ) {
                 char[] password = instance.getPassword() == null ? new char[0] : instance.getPassword().toCharArray();
                 
@@ -418,6 +432,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         private static final String ELEMENT_USER = "user"; // NOI18N
         private static final String ELEMENT_PASSWORD = "password"; // NOI18N
         private static final String ELEMENT_DISPLAY_NAME = "display-name"; // NOI18N
+        private static final String ELEMENT_IMPORTANT_SCHEMA = "important-schema"; //NOI18N
+        private static final String ELEMENT_IMPORTANT_CATALOG = "important-catalog"; //NOI18N
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
         
         final String connectionFileName;
@@ -428,6 +444,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         String schema;
         String user;
         String displayName;
+        List<String> importantSchemas = new ArrayList<String>();
+        List<String> importantCatalogs = new ArrayList<String>();
         
         public Handler(String connectionFileName) {
             this.connectionFileName = connectionFileName;
@@ -480,6 +498,10 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                         // no password stored => this will require the user to re-enter the password
                     }
                 }
+            } else if (ELEMENT_IMPORTANT_SCHEMA.equals(qName)) {
+                importantSchemas.add(value);
+            } else if (ELEMENT_IMPORTANT_CATALOG.equals(qName)) {
+                importantCatalogs.add(value);
             }
         }
     }

@@ -89,19 +89,19 @@ public final class ServerUtilities {
         this.gwp = gwp;
     }
 
-    public static ServerUtilities getPreludeUtilities() {
-        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-        return null == gip ? null : new ServerUtilities(gip,null);
-    }
+//    public static ServerUtilities getPreludeUtilities() {
+//        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
+//        return null == gip ? null : new ServerUtilities(gip,null);
+//    }
     
     public static ServerUtilities getEe6Utilities() {
-        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
         return null == gip ? null : new ServerUtilities(gip,
                 GlassfishWizardProvider.createEe6());
     }
 
 //    public static ServerUtilities getEe6WCUtilities() {
-//        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+//        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
 //        return null == gip ? null : new ServerUtilities(gip,
 //                GlassfishWizardProvider.createEe6WC());
 //    }

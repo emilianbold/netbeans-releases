@@ -64,110 +64,12 @@ public class StartStopServer extends NbTestCase {
         super(testName);
     }
 
-    private static final String PRELUDE_URL = "["+Util._PRELUDE_LOCATION+"]deployer:gfv3:localhost:4848";
-
-    public void startPreludeServer() {
-        try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(PRELUDE_URL);
-                    
-
-            if(inst.isRunning())
-                return;
-
-            ProgressUI pui = new ProgressUI("Start Prelude V3", true);
-            inst.start(pui);
-
-            Util.sleep(SLEEP);
-
-            if(!inst.isRunning())
-                throw new Exception("Prelude V3 server start failed");
-
-            if (inst.isDebuggable(null))
-                fail("Server started in debug... it should not have done that");
-
-            Util.sleep(SLEEP);
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
-    }
-
-
-    public void stopPreludeServer() {
-        try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(PRELUDE_URL);
-
-            if(!inst.isRunning())
-                return;
-
-            ProgressUI pui = new ProgressUI("Stop Prelude V3", true);
-            inst.stop(pui);
-
-            Util.sleep(SLEEP);
-
-            if(inst.isRunning())
-                throw new Exception("Prelude V3 server stop failed");
-
-            Util.sleep(SLEEP);
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
-    }
-
-    public void restartPreludeServer() {
-        try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(PRELUDE_URL); 
-
-            if(!inst.isRunning())
-                return;
-
-            ProgressUI pui = new ProgressUI("Restart Prelude", true);
-            inst.restart(pui);
-
-            Util.sleep(SLEEP);
-
-            if(!inst.isRunning())
-                throw new Exception("Prelude server restart failed");
-
-            Util.sleep(SLEEP);
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
-    }
-
-     public void startDebugPreludeServer() {
-        try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getPrelude();
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(PRELUDE_URL);
-
-            if(inst.isRunning())
-                return;
-
-            ProgressUI pui = new ProgressUI("Start Debug Prelude", true);
-            inst.startDebug(pui);
-
-            Util.sleep(SLEEP);
-
-            if(!inst.isRunning())
-                throw new Exception("Prelude server start debug failed");
-
-            if (!inst.isDebuggable(null))
-                fail("server isn't debuggable...");
-
-            Util.sleep(SLEEP);
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
-    }
-
      private static final String V_URL = "["+Util._V3_LOCATION+"]deployer:gfv3ee6:localhost:4848";
 
 
     public void startV3Server() {
         try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(inst.isRunning())
@@ -196,7 +98,7 @@ public class StartStopServer extends NbTestCase {
 
     public void stopV3Server() {
         try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(!inst.isRunning())
@@ -219,7 +121,7 @@ public class StartStopServer extends NbTestCase {
 
     public void restartV3Server() {
         try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(!inst.isRunning())
@@ -241,7 +143,7 @@ public class StartStopServer extends NbTestCase {
 
     public void startDebugV3Server() {
         try {
-            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6();
+            GlassfishInstanceProvider gip = GlassfishInstanceProvider.getProvider();
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(V_URL);
 
             if(inst.isRunning())

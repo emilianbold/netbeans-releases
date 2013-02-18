@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -56,14 +58,19 @@ import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Rob Englander
  */
-public class SchemaNodeProvider extends NodeProvider {
+public class SchemaNodeProvider extends NodeProvider implements PropertyChangeListener {
 
     // lazy initialization holder class idiom for static fields is used
     // for retrieving the factory
@@ -81,6 +88,7 @@ public class SchemaNodeProvider extends NodeProvider {
         };
     }
 
+    private final List<Node> nodes = new ArrayList<Node>();
     private final DatabaseConnection connection;
     private final MetadataElementHandle<Catalog> catalogHandle;
 
@@ -93,9 +101,13 @@ public class SchemaNodeProvider extends NodeProvider {
     @Override
     protected synchronized void initialize() {
         final List<Node> newList = new ArrayList<Node>();
+        final List<Node> otherList = new ArrayList<Node>();
 
         boolean connected = !connection.getConnector().isDisconnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
+
+        nodes.clear();
+
         if (connected && metaDataModel != null) {
             try {
                 metaDataModel.runReadAction(
@@ -111,7 +123,18 @@ public class SchemaNodeProvider extends NodeProvider {
                                 } else {
                                     Collection<Schema> schemas = cat.getSchemas();
                                     for (Schema schema : schemas) {
-                                        updateNode(newList, schema);
+                                        if (isDefaultSchema(schema, connection)) {
+                                            updateNode(newList, schema);
+                                        } else {
+                                            updateNode(otherList, schema);
+                                        }
+                                    }
+                                    nodes.addAll(newList);
+                                    nodes.addAll(otherList);
+
+                                    if (!otherList.isEmpty()) {
+                                        newList.add(new OtherSchemasNode(
+                                                otherList));
                                     }
                                 }
 
@@ -130,12 +153,22 @@ public class SchemaNodeProvider extends NodeProvider {
         } else {
             setNodes(newList);
         }
+        connection.addPropertyChangeListener(WeakListeners.propertyChange(this, connection));
+    }
+
+    private boolean isDefaultSchema(Schema schema,
+            DatabaseConnection connection) {
+
+        String def = connection.getDefaultSchema();
+        return (def == null && schema.isDefault())
+                || (def != null && def.equals(schema.getName())
+                || connection.isImportantSchema(schema.getName()));
     }
 
     private void updateNode(List<Node> newList, Schema schema) {
         MetadataElementHandle<Schema> schemaHandle = MetadataElementHandle.create(schema);
         Collection<Node> matches = getNodes(schemaHandle);
-        if (matches.size() > 0) {
+        if (matches != null && matches.size() > 0) {
             newList.addAll(matches);
         } else {
             NodeDataLookup lookup = new NodeDataLookup();
@@ -146,14 +179,70 @@ public class SchemaNodeProvider extends NodeProvider {
         }
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent pce) {
+        if (this.initialized && "importantSchemas".equals(pce.getPropertyName())) {
+            final List<Node> mainList = new ArrayList<Node>();
+            final List<Node> otherList = new ArrayList<Node>();
+
+            for(Node node: new ArrayList<Node>(nodes)) {
+                if(connection.isImportantSchema(node.getName())) {
+                    mainList.add(node.cloneNode());
+                } else {
+                    otherList.add(node.cloneNode());
+                }
+            }
+            if(! otherList.isEmpty()) {
+                mainList.add(new OtherSchemasNode(otherList));
+            }
+            setNodes(mainList);
+        }
+    }
+
     static class SchemaComparator implements Comparator<Node> {
 
         @Override
         public int compare(Node node1, Node node2) {
             assert node1.getDisplayName() != null : node1 + " has display name.";
             assert node2.getDisplayName() != null : node2 + " has display name.";
+            if(node1 instanceof OtherSchemasNode) {
+                return 1;
+            }
+            if(node2 instanceof OtherSchemasNode) {
+                return -1;
+            }
             return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
         }
+    }
 
+    @NbBundle.Messages({
+        "LBL_OtherSchemas=Other schemas"
+    })
+    private static class OtherSchemasNode extends AbstractNode {
+
+        private static final String ICON_BASE =
+                "org/netbeans/modules/db/resources/schema.png";         //NOI18N
+
+        public OtherSchemasNode(List<Node> otherList) {
+            super(createChildren(otherList));
+            setDisplayName(Bundle.LBL_OtherSchemas());
+            setIconBaseWithExtension(ICON_BASE);
+        }
+
+        private static Children createChildren(final List<Node> otherList) {
+            Children c = Children.create(new ChildFactory<Node>() {
+                @Override
+                protected boolean createKeys(final List<Node> toPopulate) {
+                    toPopulate.addAll(otherList);
+                    return true;
+                }
+
+                @Override
+                protected Node createNodeForKey(Node key) {
+                    return key;
+                }
+            }, false);
+            return c;
+        }
     }
 }
