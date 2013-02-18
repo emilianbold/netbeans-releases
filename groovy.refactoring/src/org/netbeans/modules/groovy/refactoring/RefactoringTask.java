@@ -55,6 +55,7 @@ import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
@@ -161,6 +162,10 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             switch (kind) {
                 case CLASS:
                 case INTERFACE:
+                    if (currentNode instanceof VariableExpression) {
+                        return new ClassRefactoringElement(fileObject, TypeResolver.resolveType(path, fileObject));
+                    }
+
                     return new ClassRefactoringElement(fileObject, currentNode);
                 case METHOD:
                 case CONSTRUCTOR:
@@ -209,7 +214,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
                     assert false; // Should never happened!
                 case VARIABLE:
-                    final ClassNode variableType = TypeResolver.resolveType(path);
+                    final ClassNode variableType = TypeResolver.resolveType(path, fileObject);
                     return new VariableRefactoringElement(fileObject, variableType, currentNode.getText());
                 case PROPERTY:
                 case FIELD:
