@@ -127,7 +127,7 @@ made subject to such option by the copyright holder.
             <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/EmptyPHP"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator.simple"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPFileDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
@@ -136,7 +136,7 @@ made subject to such option by the copyright holder.
             <file name="EmptyPHPWebPage.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyWebPagePHP.php">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/EmptyPHPWebPage"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator.simple"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPWebPageDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
@@ -145,7 +145,7 @@ made subject to such option by the copyright holder.
             <file name="PHPClass.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyClassPHP.php">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/PHPClass"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator.withNamespace"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPClassDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
@@ -154,7 +154,7 @@ made subject to such option by the copyright holder.
             <file name="PHPInterface.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyInterfacePHP.php">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.ui.wizards.Bundle#Templates/Scripting/PHPInterface"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator.withNamespace"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPInterfaceDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>

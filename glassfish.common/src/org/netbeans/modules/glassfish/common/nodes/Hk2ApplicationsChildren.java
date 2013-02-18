@@ -50,7 +50,6 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.openide.nodes.Children;
@@ -87,10 +86,8 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
                         CommonServerSupport.class);
                 if(commonSupport != null) {
                     try {
-                        CommandRunner mgr = new CommandRunner(true,
-                                commonSupport.getCommandFactory(),
-                                commonSupport.getInstance());
-                        java.util.Map<String, List<AppDesc>> appMap = mgr.getApplications(null);
+                        java.util.Map<String, List<AppDesc>> appMap
+                                = commonSupport.getApplications(null);
                         for(Entry<String, List<AppDesc>> entry: appMap.entrySet()) {
                             List<AppDesc> apps = entry.getValue();
                             for(AppDesc app: apps) {

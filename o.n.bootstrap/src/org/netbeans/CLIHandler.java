@@ -282,6 +282,7 @@ public abstract class CLIHandler extends Object {
     static final class Status {
         public static final int CANNOT_CONNECT = -255;
         public static final int CANNOT_WRITE = -254;
+        public static final int ALREADY_RUNNING = -253;
         
         private final File lockFile;
         private final int port;
@@ -608,77 +609,88 @@ public abstract class CLIHandler extends Object {
                 
                 final RandomAccessFile os = raf;
                 raf.seek(0L);
-                
-                server = new Server(new FileAndLock(os, lock), arr, block, handlers, failOnUnknownOptions);
-                int p = server.getLocalPort();
+
+                int p;
+                if ("false".equals(System.getProperty("org.netbeans.CLIHandler.server"))) { // NOI18N
+                    server = null;
+                    p = 0;
+                } else {
+                    server = new Server(new FileAndLock(os, lock), arr, block, handlers, failOnUnknownOptions);
+                    p = server.getLocalPort();
+                }
                 os.writeInt(p);
                 os.getChannel().force(true);
                 
                 enterState(20, block);
                 
-                Task parael = secureCLIPort.post(new Runnable() { // NOI18N
-                    @Override
-                    public void run() {
-                        SecureRandom random = null;
-                        enterState(95, block);
-                        try {
-                            random = SecureRandom.getInstance("SHA1PRNG"); // NOI18N
-                        } catch (NoSuchAlgorithmException e) {
-                            // #36966: IBM JDK doesn't have it.
+                Task parael;
+                if (server != null) {
+                    parael = secureCLIPort.post(new Runnable() { // NOI18N
+                        @Override
+                        public void run() {
+                            SecureRandom random = null;
+                            enterState(95, block);
                             try {
-                                random = SecureRandom.getInstance("IBMSecureRandom"); // NOI18N
-                            } catch (NoSuchAlgorithmException e2) {
-                                // OK, disable server...
-                                server.stopServer();
+                                random = SecureRandom.getInstance("SHA1PRNG"); // NOI18N
+                            } catch (NoSuchAlgorithmException e) {
+                                // #36966: IBM JDK doesn't have it.
+                                try {
+                                    random = SecureRandom.getInstance("IBMSecureRandom"); // NOI18N
+                                } catch (NoSuchAlgorithmException e2) {
+                                    // OK, disable server...
+                                    server.stopServer();
+                                }
+                            }
+
+                            enterState(96, block);
+
+                            if (random != null) {
+                                random.nextBytes(arr);
+                            }
+
+                            enterState(97, block);
+
+                            try {
+                                os.write(arr);
+                                os.getChannel().force(true);
+
+                                enterState(27,block);
+                                // if this turns to be slow due to lookup of getLocalHost
+                                // address, it can be done asynchronously as nobody needs
+                                // the address in the stream if the server is listening
+                                byte[] host;
+                                try {
+                                    if (block != null && block.intValue() == 667) {
+                                        // this is here to emulate #64004
+                                        throw new UnknownHostException("dhcppc0"); // NOI18N
+                                    }
+                                    host = InetAddress.getLocalHost().getAddress();
+                                } catch (UnknownHostException unknownHost) {
+                                    if (!"dhcppc0".equals(unknownHost.getMessage())) { // NOI18N, see above
+                                        // if we just cannot get the address, we can go on
+                                        unknownHost.printStackTrace();
+                                    }
+                                    host = new byte[] {127, 0, 0, 1};
+                                }
+                                os.write(host);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                            try {
+                                os.getChannel().force(true);
+                            } catch (IOException ex) {
+                                // ignore
                             }
                         }
-                        
-                        enterState(96, block);
-                        
-                        if (random != null) {
-                            random.nextBytes(arr);
-                        }
-                        
-                        enterState(97, block);
-
-                        try {
-                            os.write(arr);
-                            os.getChannel().force(true);
-
-                            enterState(27,block);
-                            // if this turns to be slow due to lookup of getLocalHost
-                            // address, it can be done asynchronously as nobody needs
-                            // the address in the stream if the server is listening
-                            byte[] host;
-                            try {
-                                if (block != null && block.intValue() == 667) {
-                                    // this is here to emulate #64004
-                                    throw new UnknownHostException("dhcppc0"); // NOI18N
-                                }
-                                host = InetAddress.getLocalHost().getAddress();
-                            } catch (UnknownHostException unknownHost) {
-                                if (!"dhcppc0".equals(unknownHost.getMessage())) { // NOI18N, see above
-                                    // if we just cannot get the address, we can go on
-                                    unknownHost.printStackTrace();
-                                }
-                                host = new byte[] {127, 0, 0, 1};
-                            }
-                            os.write(host);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                        try {
-                            os.getChannel().force(true);
-                        } catch (IOException ex) {
-                            // ignore
-                        }
-                    }
-                });
+                    });
+                } else {
+                    parael = Task.EMPTY;
+                }
                 
                 int execCode = processInitLevelCLI (args, handlers, failOnUnknownOptions);
                 
                 enterState(0, block);
-                return new Status(lockFile, server.getLocalPort(), execCode, parael);
+                return new Status(lockFile, p, execCode, parael);
             } catch (IOException ex) {
                 if (!"EXISTS".equals(ex.getMessage())) { // NOI18N
                     ex.printStackTrace();
@@ -695,6 +707,9 @@ public abstract class CLIHandler extends Object {
                     }
                     is = raf;
                     port = is.readInt();
+                    if (port == 0) {
+                        return new Status(lockFile, 0, Status.ALREADY_RUNNING, Task.EMPTY);
+                    }
                     enterState(22, block);
                     key = new byte[KEY_LENGTH];
                     is.readFully(key);

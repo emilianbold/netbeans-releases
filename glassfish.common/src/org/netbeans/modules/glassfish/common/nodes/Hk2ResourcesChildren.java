@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.ui.*;
 import org.netbeans.modules.glassfish.spi.Decorator;
@@ -100,11 +99,9 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                         CommonServerSupport.class);
                 if (commonSupport != null) {
                     try {
-                        CommandRunner mgr = new CommandRunner(true,
-                                commonSupport.getCommandFactory(),
-                                commonSupport.getInstance());
                         Decorator decorator = DecoratorManager.findDecorator(childtype, null, true);
-                        List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
+                        List<ResourceDesc> reslourcesList
+                                = ResourceDesc.getResources(commonSupport.getInstance(), childtype);
                         for (ResourceDesc resource : reslourcesList) {
                             keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(childtype)));
                         }
@@ -167,9 +164,6 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                             CommonServerSupport.class);
                     if (commonSupport != null) {
                         try {
-                            CommandRunner mgr = new CommandRunner(true,
-                                    commonSupport.getCommandFactory(),
-                                    commonSupport.getInstance());
                             Decorator decorator = DecoratorManager.findDecorator(type, null,true);
                             if (decorator == null) {
                                 if (type.equals(GlassfishModule.JDBC_RESOURCE)) {
@@ -179,7 +173,8 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                                 }
                             }
                             if (decorator != null) {
-                                List<ResourceDesc> reslourcesList = mgr.getResources(type);
+                                List<ResourceDesc> reslourcesList
+                                        = ResourceDesc.getResources(commonSupport.getInstance(), type);
                                 for (ResourceDesc resource : reslourcesList) {
                                     keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, customizer));
                                 }

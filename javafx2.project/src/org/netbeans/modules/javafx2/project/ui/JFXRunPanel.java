@@ -64,7 +64,6 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
@@ -74,7 +73,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.UIResource;
-import javax.swing.table.TableModel;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
@@ -83,7 +81,6 @@ import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectConfigurations;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
-import org.netbeans.modules.javafx2.project.JFXProjectProperties.PropertiesTableModel;
 import org.netbeans.modules.javafx2.project.JFXProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDescriptor;
@@ -254,11 +251,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
                             setEmphasizedFont(checkBoxPreloader, change);
                             setEmphasizedFont(labelPreloaderClass, change);
                             buttonPreloaderDefault.setEnabled( (config != null && change) || (config == null && isPreloaderDefined(null)) );
-
-//                            setEmphasizedFont(checkBoxPreloader, preloaderConfigDiffersFromDefault(config));
-//                            String sel = (String)comboBoxPreloaderClass.getSelectedItem();
-//                            //setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, jfxProps.configsGet(null).get(JFXProjectProperties.PRELOADER_CLASS)));
-//                            setEmphasizedFont(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, configs.getDefaultProperty(JFXProjectProperties.PRELOADER_CLASS)));
                         }
                     });
                 }
@@ -1167,7 +1159,7 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
             } else {
                 if(type == JFXProjectProperties.PreloaderSourceType.JAR) {
                     //try {
-                        jfxProps.getPreloaderClassModel().fillFromJAR(fileObj, select, configs, activeConfig);
+                        jfxProps.getPreloaderClassModel().fillFromJAR(fileObj, jfxProps.getFXRunTimePath(), select, configs, activeConfig);
                     //}
                     //catch (IOException ex) {} // ignore
                 }
@@ -1558,6 +1550,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             }
         });
     }
+
     
      // Innerclasses -------------------------------------------------------------
      

@@ -96,13 +96,13 @@ class CSSUpdaterTask extends ParserResultTask<ParserResult> {
         return false;
     }
 
-    @MimeRegistration(mimeType = "text/css", service = TaskFactory.class)
+    @MimeRegistration(mimeType = "text/css", service = TaskFactory.class) // NOI18N
     public static class Factory extends TaskFactory {
 
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             String mimeType = snapshot.getMimeType();
-            if (mimeType.equals("text/css")) {
+            if (mimeType.equals("text/css")) { // NOI18N
                 return Collections.singletonList(new CSSUpdaterTask());
             } else {
                 return Collections.emptyList();

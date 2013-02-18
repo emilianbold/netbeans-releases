@@ -107,7 +107,8 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
         "JoinTable", //5
         "PersistenceUnit", //6
         "PersistenceContext", //7
-        "ManyToMany"//8
+        "ManyToMany", //8
+        "Index"
     };
     
     private static final String PERSISTENCE_PKG = "javax.persistence";
@@ -186,6 +187,8 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
                             break;
                         case 8:
                             completeManyToMany(ctx, parsedNN, nnattr, result);
+                        case 9:
+                            completeIndex(ctx, parsedNN, nnattr, result);
                     }
                 } finally {
                     //utils.endTrans(false);
@@ -331,6 +334,47 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
         return results;
     }
     
+    private List completeIndex(JPACodeCompletionProvider.Context ctx, CCParser.CC nn, CCParser.NNAttr nnattr, List<JPACompletionItem> results) throws SQLException {
+        String completedMember = nnattr.getName();
+        Map<String,Object> members = nn.getAttributes();
+        
+        if ("columnList".equals(completedMember)) { // NOI18N
+            String catalogName = getThisOrDefaultCatalog((String)members.get("catalog")); // NOI18N
+            String schemaName = getThisOrDefaultSchema((String)members.get("schema")); // NOI18N
+            Schema schema = DBMetaDataUtils.getSchema(provider, catalogName, schemaName);
+            if (schema != null) {
+                String[] tableNames = schema.getTableNames();
+                //additiona;l parsing inside of columnList literal is reequred
+                //TODO: made more general parsing??
+                //need new value offset and values
+                int cmplOffset = ctx.getCompletionOffset();
+                int testLen = cmplOffset - nnattr.getValueOffset();
+                String toParse = nnattr.getValue().toString();
+                //column list is simple structure with space and ',' separator
+                int lastSpace = toParse.lastIndexOf(" ");
+                int lastComma = toParse.lastIndexOf(",");
+                int shift  =  Math.max(lastComma, lastSpace) + 1 + (nnattr.isValueQuoted() ? 1 : 0);
+                //
+                boolean compleTables = false;
+                if(lastSpace == -1 && lastSpace ==-1) {
+                    compleTables = true;//we are at the beginning
+                } else if (lastComma > -1 && (lastComma == (testLen-1) || toParse.substring(lastComma+1).trim().length()==0)) {
+                    compleTables = true;
+                }
+                if(compleTables) {
+                    for (int i = 0; i < tableNames.length; i++) {
+                        results.add(new JPACompletionItem.IndexElementItem(tableNames[i], false, nnattr.getValueOffset(), shift));
+                    }
+                } else {
+                    for (int i = 0; i < JPACompletionItem.IndexElementItem.PARAMS.length; i++) {
+                        results.add(new JPACompletionItem.IndexElementItem(JPACompletionItem.IndexElementItem.PARAMS[i], false, nnattr.getValueOffset(), shift));
+                    }                    
+                }
+            }
+        }
+        return results;
+    }
+   
     private List completePrimaryKeyJoinColumn(JPACodeCompletionProvider.Context ctx, CCParser.CC nn, CCParser.NNAttr nnattr, List<JPACompletionItem> results) throws SQLException {
         String completedMember = nnattr.getName();
         

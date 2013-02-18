@@ -318,4 +318,17 @@ public class CSSUtils {
         return result.toString();
     }
 
+    /**
+     * Determines whether the CSS property with the specified name
+     * determines some color.
+     * 
+     * @param propertyName name of the property to check.
+     * @return {@code true} when the given property determines some color,
+     * returns {@code false} otherwise.
+     */
+    public static boolean isColorProperty(String propertyName) {
+        // Simple heuristics
+        return propertyName.contains("color"); // NOI18N
+    }
+
 }

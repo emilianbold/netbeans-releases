@@ -74,8 +74,9 @@ public class PullCurrentBranchAction extends ContextAction {
     public String getName(String role, Node[] activatedNodes) {
         VCSContext ctx = HgUtils.getCurrentContext(activatedNodes);
         Set<File> roots = HgUtils.getRepositoryRoots(ctx);
-        String name = roots.size() == 1 ? "CTL_MenuItem_PullBranchRoot" : "CTL_MenuItem_PullBranchLocal"; //NOI18N
-        return roots.size() == 1 ? NbBundle.getMessage(PullCurrentBranchAction.class, name, roots.iterator().next().getName()) : NbBundle.getMessage(FetchAction.class, name);
+        return roots.size() == 1 
+                ? NbBundle.getMessage(PullCurrentBranchAction.class, "CTL_MenuItem_PullBranchRoot", roots.iterator().next().getName()) //NOI18N
+                : NbBundle.getMessage(PullCurrentBranchAction.class, "CTL_MenuItem_PullBranchLocal"); //NOI18N
     }
 
     @Override

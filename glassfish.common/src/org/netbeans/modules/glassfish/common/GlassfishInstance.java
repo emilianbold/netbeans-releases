@@ -53,15 +53,16 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.data.GlassFishAdminInterface;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.modules.glassfish.common.ui.InstanceCustomizer;
 import org.netbeans.modules.glassfish.common.ui.VmCustomizer;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.*;
 import org.netbeans.spi.server.ServerInstanceFactory;
@@ -405,8 +406,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             GlassfishInstanceProvider gip, boolean updateNow) {
         String deployerUri = ip.get(GlassfishModule.URL_ATTR);
         GlassfishInstance instance = null;
+        GlassFishVersion version = ServerUtils.getServerVersion(
+                ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR));
         try {
-            instance = new GlassfishInstance(ip, gip);
+            instance = new GlassfishInstance(ip, version, gip);
             tagUnderConstruction(deployerUri);
             CommonServerSupport commonSupport = new CommonServerSupport(instance);
             if (!instance.isPublicAccess()) {
@@ -491,9 +494,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     /** GlassFish server properties. */
     private transient Map<String, String> properties;
 
-    /** GlassFish server version. Initial storedValue is <code>null</code>.
-     *  Proper GlassFish server version is set after first <code>version</code>
-     *  administration command response is received. */
+    /** GlassFish server version.
+      * <p/>
+      * This is always version of local GlassFish related to JavaEE platform,
+      * even when registered domain is remote. */
     private transient GlassFishVersion version;
 
     //private transient CommonServerSupport commonSupport;
@@ -515,10 +519,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     ////////////////////////////////////////////////////////////////////////////
 
     @SuppressWarnings("LeakingThisInConstructor")
-    private GlassfishInstance(Map<String, String> ip,
+    private GlassfishInstance(Map<String, String> ip, GlassFishVersion version,
             GlassfishInstanceProvider instanceProvider) {
         String deployerUri = ip.get(GlassfishModule.URL_ATTR);
-        this.version = null;
+        this.version = version;
         ic = new InstanceContent();
         localLookup = new AbstractLookup(ic);
         full = localLookup;
@@ -720,6 +724,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     /**
      * Get GlassFish server version.
      * <p/>
+     * This is always version of local GlassFish related to JavaEE platform,
+     * even when registered domain is remote.
+     * <p/>
      * @return GlassFish server version or <code>null</code> when version is
      *         not known.
      */
@@ -881,7 +888,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     File destdirFile = FileUtil.toFile(destdir);
                     setDomainsFolder(destdirFile.getAbsolutePath());
                     retVal = destdirFile.getAbsolutePath();
-                    // getEe6() eventually creates a call to getDomainsRoot()... which can lead to a deadlock
+                    // getProvider() eventually creates a call to getDomainsRoot()... which can lead to a deadlock
                     //  forcing the call to happen after getDomainsRoot returns will 
                     // prevent the deadlock.
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -890,7 +897,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                         public void run() {
                             CreateDomain cd = new CreateDomain("anonymous", "", // NOI18N
                                     new File(getServerHome()),
-                                    properties, GlassfishInstanceProvider.getEe6(),
+                                    properties, GlassfishInstanceProvider.getProvider(),
                                     false, true, "INSTALL_ROOT_KEY"); // NOI18N
                             cd.start();
                         }
@@ -978,10 +985,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     (state == ServerState.RUNNING
                     && GlassFishStatus.isReady(this, false))) {
                 try {
-                    Future<OperationState> stopServerTask = commonSupport.stopServer(null);
+                    Future<TaskState> stopServerTask = commonSupport.stopServer(null);
                     if(timeout > 0) {
-                        OperationState opState = stopServerTask.get(timeout, TimeUnit.MILLISECONDS);
-                        if(opState != OperationState.COMPLETED) {
+                        TaskState opState = stopServerTask.get(timeout, TimeUnit.MILLISECONDS);
+                        if(opState != TaskState.COMPLETED) {
                             Logger.getLogger("glassfish").info("Stop server failed..."); // NOI18N
                         }
                     }
@@ -1199,7 +1206,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         JPanel vmCustomizer = new VmCustomizer(commonSupport);
 
         Collection<JPanel> pages = new LinkedList<JPanel>();
-        Collection<? extends CustomizerCookie> lookupAll = localLookup.lookupAll(CustomizerCookie.class);
+        Collection<? extends CustomizerCookie> lookupAll
+                = localLookup.lookupAll(CustomizerCookie.class);
         for(CustomizerCookie cookie : lookupAll) {
             pages.addAll(cookie.getCustomizerPages());
         }

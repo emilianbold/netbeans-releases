@@ -46,11 +46,14 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -505,4 +508,36 @@ public class WebUtils {
 
         return new ImageIcon(i);
     }
+    
+    /**
+     * Returns IP address of localhost in local network
+     * @return 
+     */
+    public static InetAddress getLocalhostInetAddress() {
+        try {
+            InetAddress localHost = InetAddress.getLocalHost();
+            if (!localHost.isLoopbackAddress()) {
+                return localHost;
+            }
+            //workaround for strange behavior on debian, see #226087
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                final NetworkInterface netInterface = networkInterfaces.nextElement();
+                if (netInterface.isUp()) {
+                    Enumeration<InetAddress> inetAddresses = netInterface.getInetAddresses();
+                    while (inetAddresses.hasMoreElements()) {
+                        InetAddress nextElement = inetAddresses.nextElement();
+                        if (!nextElement.isLoopbackAddress() && nextElement.isSiteLocalAddress()) {
+                            return nextElement;
+                        }
+
+                    }
+                }
+            }
+            return localHost;
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
 }

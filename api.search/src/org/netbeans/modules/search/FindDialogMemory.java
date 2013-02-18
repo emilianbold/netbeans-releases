@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.search.SearchPattern.MatchType;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -89,9 +90,9 @@ public final class FindDialogMemory {
     private boolean preserveCase;
     
     /**
-     * Storage of last used Regular Expression option.
+     * Storage of last used search pattern match type.
      */
-    private boolean regularExpression;
+    private MatchType matchType;
 
     /**
      * whether a full text pattern was used last time
@@ -164,7 +165,7 @@ public final class FindDialogMemory {
     private static final String PROP_WHOLE_WORDS = "whole_words";  //NOI18N
     private static final String PROP_CASE_SENSITIVE = "case_sensitive";  //NOI18N
     private static final String PROP_PRESERVE_CASE = "preserve_case";  //NOI18N
-    private static final String PROP_REGULAR_EXPRESSION = "regular_expression";  //NOI18N
+    private static final String PROP_MATCH_TYPE = "match_type";  //NOI18N
     private static final String PROP_SCOPE_TYPE_ID = "scope_type_id"; //NOI18N
     private static final String PROP_FILENAME_PATTERN_SPECIFIED = "filename_specified";  //NOI18N
     private static final String PROP_FILENAME_PATTERN_PREFIX = "filename_pattern_";  //NOI18N
@@ -204,7 +205,12 @@ public final class FindDialogMemory {
     private void load () {
         wholeWords = prefs.getBoolean(PROP_WHOLE_WORDS, false);
         caseSensitive = prefs.getBoolean(PROP_CASE_SENSITIVE, false);
-        regularExpression = prefs.getBoolean(PROP_REGULAR_EXPRESSION, false);
+        try {
+            String name = prefs.get(PROP_MATCH_TYPE, MatchType.LITERAL.name());
+            matchType = MatchType.valueOf(name);
+        } catch (Exception e) {
+            matchType = MatchType.LITERAL;
+        }
         preserveCase = prefs.getBoolean(PROP_PRESERVE_CASE, false);
         scopeTypeId = prefs.get(PROP_SCOPE_TYPE_ID, "open projects");   //NOI18N
         fileNamePatternSpecified = prefs.getBoolean(PROP_FILENAME_PATTERN_SPECIFIED, false);
@@ -311,13 +317,13 @@ public final class FindDialogMemory {
         prefs.putBoolean(PROP_PRESERVE_CASE, preserveCase);
     }
     
-    public boolean isRegularExpression() {
-        return regularExpression;
+    public MatchType getMatchType() {
+        return matchType;
     }
 
-    public void setRegularExpression(boolean regularExpression) {
-        this.regularExpression = regularExpression;
-        prefs.putBoolean(PROP_REGULAR_EXPRESSION, regularExpression);
+    public void setMatchType(MatchType matchType) {
+        this.matchType = matchType;
+        prefs.put(PROP_MATCH_TYPE, matchType.name());
     }
 
     public String getScopeTypeId() {

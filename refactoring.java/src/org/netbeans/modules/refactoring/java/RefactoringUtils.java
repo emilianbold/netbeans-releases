@@ -915,6 +915,10 @@ public class RefactoringUtils {
                 && el.getParameters().isEmpty();
     }
 
+    public static String getTestMethodName(String propertyName) {
+	return "test" + capitalizeFirstLetter(propertyName); //NOI18N
+    }
+
     public static String getGetterName(String propertyName) {
         return "get" + capitalizeFirstLetter(propertyName); //NOI18N
     }
