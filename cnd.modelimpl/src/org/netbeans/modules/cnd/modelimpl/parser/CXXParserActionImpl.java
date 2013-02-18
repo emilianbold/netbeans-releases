@@ -58,6 +58,10 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     public CXXParserActionImpl(CsmParserProvider.CsmParserParameters params) {
         orig = new CppParserActionImpl(params, this);
     }
+    
+    public void setParser(CXXParserEx parser) {
+        orig.setParser(parser);
+    }
 
     @Override
     public boolean type_specifier_already_present(TokenStream input) {        

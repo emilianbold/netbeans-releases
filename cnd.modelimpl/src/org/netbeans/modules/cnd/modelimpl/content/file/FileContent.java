@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.FileDeclarationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileIncludesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.FileInstantiationsKey;
@@ -101,7 +102,7 @@ public final class FileContent implements MutableDeclarationsContainer {
     private final List<FakeIncludePair> fakeIncludeRegistrations;
     private final List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations;
     private int parserErrorsCount;    
-    private final Set<ErrorDirectiveImpl> errors;
+    private final Set<ErrorDirectiveImpl> errors;    
     private final Union2<FileComponentDeclarations, WeakContainer<FileComponentDeclarations>> fileComponentDeclarations;
     /*FileComponentMacros or WeakContainer<FileComponentMacros>*/
     private final Union2<FileComponentMacros, WeakContainer<FileComponentMacros>> fileComponentMacros;
@@ -112,7 +113,8 @@ public final class FileContent implements MutableDeclarationsContainer {
     private final Union2<FileComponentInstantiations, WeakContainer<FileComponentInstantiations>> fileComponentInstantiations;
     /*FileComponentReferences or WeakContainer<FileComponentReferences>*/
     private final Union2<FileComponentReferences, WeakContainer<FileComponentReferences>> fileComponentReferences;
-
+    private final Collection<CsmParserProvider.ParserError> parserErrors;
+    
     public static FileContent createFileContent(FileImpl fileImpl, ProjectBase project) {
         return new FileContent(fileImpl, project, true,
                 new FileComponentDeclarations(fileImpl),
@@ -123,7 +125,8 @@ public final class FileContent implements MutableDeclarationsContainer {
                 new FileComponentReferences(fileImpl),
                 createFakeIncludes(Collections.<FakeIncludePair>emptyList()),
                 createFakeFunctions(Collections.<CsmUID<FunctionImplEx<?>>>emptyList()),
-                createErrors(Collections.<ErrorDirectiveImpl>emptySet()), 0);
+                createErrors(Collections.<ErrorDirectiveImpl>emptySet()), 0,
+                createParserErrors(Collections.<CsmParserProvider.ParserError>emptyList()));
     }
     
     private FileContent(FileImpl fileImpl, ProjectBase project, boolean persistent,
@@ -132,7 +135,8 @@ public final class FileContent implements MutableDeclarationsContainer {
             FileComponentInstantiations fcinst, FileComponentReferences fcr,
             List<FakeIncludePair> fakeIncludeRegistrations, 
             List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations,
-            Set<ErrorDirectiveImpl> errors, int parserErrorsCount) {
+            Set<ErrorDirectiveImpl> errors, int parserErrorsCount, 
+            Collection<CsmParserProvider.ParserError> parserErrors) {
         this.persistent = persistent;
         this.fileImpl = fileImpl;
         this.fileComponentDeclarations = asUnion(project, fcd, persistent);
@@ -145,6 +149,7 @@ public final class FileContent implements MutableDeclarationsContainer {
         this.fakeFunctionRegistrations = fakeFunctionRegistrations;
         this.errors = errors;
         this.parserErrorsCount = parserErrorsCount;
+        this.parserErrors = parserErrors;
         if (persistent) {
             fcd.put();
             fcm.put();
@@ -180,7 +185,8 @@ public final class FileContent implements MutableDeclarationsContainer {
                 createFakeIncludes(emptyContent ? Collections.<FakeIncludePair>emptyList() : other.fakeIncludeRegistrations),
                 createFakeFunctions(emptyContent ? Collections.<CsmUID<FunctionImplEx<?>>>emptyList() : other.fakeFunctionRegistrations),
                 createErrors(emptyContent ? Collections.<ErrorDirectiveImpl>emptySet() : other.errors), 
-                emptyContent ? 0 : other.parserErrorsCount);
+                emptyContent ? 0 : other.parserErrorsCount,
+                createParserErrors(emptyContent ? Collections.<CsmParserProvider.ParserError>emptyList() : other.parserErrors));
     }
     
     /**
@@ -199,7 +205,8 @@ public final class FileContent implements MutableDeclarationsContainer {
                     this.getFileInstantiations(), this.getFileReferences(),
                     this.fakeIncludeRegistrations,
                     this.fakeFunctionRegistrations,
-                    this.errors, this.parserErrorsCount);
+                    this.errors, this.parserErrorsCount,
+                    this.parserErrors);
         } finally {
             // mark object as no more usable
             this.parserErrorsCount = -1;
@@ -286,6 +293,10 @@ public final class FileContent implements MutableDeclarationsContainer {
         checkValid();
         traceAddRemove("ERROR", error); // NOI18N
         errors.add(error);
+    }
+
+    public void addParsingError(CsmParserProvider.ParserError error) {
+        parserErrors.add(error);
     }
     
     public void addMacro(CsmMacro macro) {
@@ -387,6 +398,12 @@ public final class FileContent implements MutableDeclarationsContainer {
         out.addAll(in);
         return out;
     }
+
+    private static Collection<CsmParserProvider.ParserError> createParserErrors(Collection<CsmParserProvider.ParserError> in) {
+        Collection<CsmParserProvider.ParserError> out = new ArrayList<CsmParserProvider.ParserError>();
+        out.addAll(in);
+        return out;
+    }
     
     public FileComponentDeclarations getFileDeclarations() {
         checkValid();
@@ -398,6 +415,10 @@ public final class FileContent implements MutableDeclarationsContainer {
         return Collections.unmodifiableSet(errors);
     }
 
+    public Collection<CsmParserProvider.ParserError> getParserErrors() {
+        return Collections.unmodifiableCollection(parserErrors);
+    }
+    
     public FileComponentMacros getFileMacros() {
         checkValid();
         return getFileComponent(fileComponentMacros);
@@ -469,6 +490,8 @@ public final class FileContent implements MutableDeclarationsContainer {
         
         FakeIncludePair.write(fakeIncludeRegistrations, output);
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(this.fakeFunctionRegistrations, output, false);
+        
+        // TODO : store parser errors
     }
     
     public FileContent(FileImpl file, ProjectBase project, RepositoryDataInput input) throws IOException {
@@ -504,6 +527,9 @@ public final class FileContent implements MutableDeclarationsContainer {
         
         this.fakeFunctionRegistrations = createFakeFunctions(Collections.<CsmUID<FunctionImplEx<?>>>emptyList());
         UIDObjectFactory.getDefaultFactory().readUIDCollection(this.fakeFunctionRegistrations, input);
+        
+        this.parserErrors = createParserErrors(Collections.<CsmParserProvider.ParserError>emptyList());
+        // TODO : load parser errors
         
         checkValid();
     }

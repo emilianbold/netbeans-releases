@@ -1063,4 +1063,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         }
         xes.elementClose(TOOLS_SET_ELEMENT);
     }
+
+    @Override
+    protected void writeCompileConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
+    }
 }
