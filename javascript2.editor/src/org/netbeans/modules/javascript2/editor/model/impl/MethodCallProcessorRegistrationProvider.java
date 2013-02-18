@@ -91,7 +91,6 @@ public class MethodCallProcessorRegistrationProvider extends LayerGeneratingProc
 //        return true;
         
         for (Element element : roundEnv.getElementsAnnotatedWith(MethodCallProcessorRegistration.class)) {
-            System.out.println("@@@@@@ registruji anotaci");
             layer(element)
                     .instanceFile("JavaScript/Model/MethodCallProcessors", null, MethodCallProcessor.class)
                     .intvalue("position", element.getAnnotation(MethodCallProcessorRegistration.class).priority()) // NOI18N

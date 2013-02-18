@@ -95,9 +95,6 @@ public final class Model {
             long startCallingME = System.currentTimeMillis();
             ModelExtender modelExt = ModelExtender.getDefault();
             List<MethodCallProcessor> methodCallProcessors = modelExt.getMethodCallProcessors();
-            for (MethodCallProcessor methodCallProcessor : methodCallProcessors) {
-                System.out.println("@@@@@@ " + methodCallProcessor.getFullyQualifiedMethodName());
-            }
             Map<String, Collection<Collection<JsFunctionArgument>>> calls = visitor.getFuncCallsFroProcessing();
             if (calls != null && !calls.isEmpty()) {
                 Collection<MethodCallProcessor> processors = ModelExtender.getDefault().getMethodCallProcessors();

@@ -394,7 +394,6 @@ public class ModelVisitor extends PathNodeVisitor {
                     String name = sb.substring(0, sb.length() - 1);
                     if (functionCalls.containsKey(name)) {
 
-                        System.out.println("obsahuje");
                         Collection<JsFunctionArgument> funcArg = new ArrayList<JsFunctionArgument>();
                         for (int i = 0; i < callNode.getArgs().size(); i++) {
                             Node argument = callNode.getArgs().get(i);
@@ -419,14 +418,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                         calls.add(funcArg);
 
-                    } else {
-                        System.out.println("nebsahuje");
                     }
-
-                    System.out.println("name: " + name);
                 }
             }
-            System.out.println("visit CallNode end: " + ModelUtils.createFQN(modelBuilder.getCurrentObject()));
         return super.leave(callNode); //To change body of generated methods, choose Tools | Templates.
     }
 
