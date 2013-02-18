@@ -92,7 +92,7 @@ public class ELDeclarationFinder implements DeclarationFinder {
                     CompilationContext context = CompilationContext.create(file, cc);
                     Element javaElement = ELTypeUtilities.resolveElement(context, nodeElem.second, nodeElem.first);
                     if (javaElement != null) {
-                        refs.handle = ElementHandle.create(javaElement);
+                        refs.handle = ElementHandle.<Element>create(javaElement);
                         refs.fo = SourceUtils.getFile(refs.handle, cp);
                     }
                 }
@@ -136,7 +136,7 @@ public class ELDeclarationFinder implements DeclarationFinder {
     }
 
     private static class RefsHolder {
-        private ElementHandle handle;
+        private ElementHandle<Element> handle;
         private FileObject fo;
         private int offset = -1;
     }
