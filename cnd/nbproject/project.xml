@@ -305,7 +305,6 @@
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
                 <friend>com.microchip.mplab.nbide.programmer</friend>
                 <friend>com.microchip.mplab.nbide.toolchains</friend>
-                <friend>com.oracle.tools.ide.launchers</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
