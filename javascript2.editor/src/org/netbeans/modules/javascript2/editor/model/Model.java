@@ -47,11 +47,13 @@ import jdk.nashorn.internal.ir.Node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
@@ -89,9 +91,28 @@ public final class Model {
             }
             long startResolve = System.currentTimeMillis();
             resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
+            
+            long startCallingME = System.currentTimeMillis();
+            ModelExtender modelExt = ModelExtender.getDefault();
+            List<MethodCallProcessor> methodCallProcessors = modelExt.getMethodCallProcessors();
+            for (MethodCallProcessor methodCallProcessor : methodCallProcessors) {
+                System.out.println("@@@@@@ " + methodCallProcessor.getFullyQualifiedMethodName());
+            }
+            Map<String, Collection<Collection<JsFunctionArgument>>> calls = visitor.getFuncCallsFroProcessing();
+            if (calls != null && !calls.isEmpty()) {
+                Collection<MethodCallProcessor> processors = ModelExtender.getDefault().getMethodCallProcessors();
+                for(MethodCallProcessor mcp: processors) {
+                    Collection<Collection<JsFunctionArgument>> fncCalls = calls.get(mcp.getFullyQualifiedMethodName());
+                    if (fncCalls != null && !fncCalls.isEmpty()) {
+                        for(Collection<JsFunctionArgument> args : fncCalls) {
+                            mcp.process(visitor.getGlobalObject(), args);
+                        }
+                    }
+                }
+            }
             long end = System.currentTimeMillis();
             if(LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms", new Object[]{(end - start), (end - startResolve)}));
+                LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms. Extending model took {2}", new Object[]{(end - start), (startCallingME - startResolve), (end - startCallingME)}));
             }
         }
         return visitor;
