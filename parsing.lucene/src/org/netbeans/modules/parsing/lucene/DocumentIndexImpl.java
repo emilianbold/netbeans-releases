@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -248,7 +248,7 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
         assert fieldName != null;
         assert value != null;
         assert kind != null;
-        final List<IndexDocument> result = new LinkedList<IndexDocument>();
+        final List<IndexDocument> result = new ArrayList<IndexDocument>();
         final Query query = Queries.createQuery(fieldName, fieldName, value, kind);
         FieldSelector selector = null;
         if (fieldsToLoad != null && fieldsToLoad.length > 0) {
