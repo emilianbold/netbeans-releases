@@ -139,6 +139,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
     // Configurations
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
+    private CompileConfiguration compileConfiguration;
     private CompilerSet2Configuration compilerSet;
     private LanguageBooleanConfiguration cRequired;
     private LanguageBooleanConfiguration cppRequired;
@@ -225,6 +226,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
         fortranRequired = new LanguageBooleanConfiguration();
         assemblerRequired = new LanguageBooleanConfiguration();
         makefileConfiguration = new MakefileConfiguration(this);
+        compileConfiguration = new CompileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
         rebuildPropChanged = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getRebuildPropChanged());
         cCompilerConfiguration = new CCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
@@ -251,6 +253,15 @@ public class MakeConfiguration extends Configuration implements Cloneable {
 
     public MakefileConfiguration getMakefileConfiguration() {
         return makefileConfiguration;
+    }
+
+    public void setCompileConfiguration(CompileConfiguration compileConfiguration) {
+        this.compileConfiguration = compileConfiguration;
+        this.compileConfiguration.setMakeConfiguration(this);
+    }
+
+    public CompileConfiguration getCompileConfiguration() {
+        return compileConfiguration;
     }
 
     public IntConfiguration getConfigurationType() {
@@ -555,6 +566,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
         getRebuildPropChanged().assign(makeConf.getRebuildPropChanged());
 
         getMakefileConfiguration().assign(makeConf.getMakefileConfiguration());
+        getCompileConfiguration().assign(makeConf.getCompileConfiguration());
         getCCompilerConfiguration().assign(makeConf.getCCompilerConfiguration());
         getCCompilerConfiguration().setOwner(makeConf);
         getCCCompilerConfiguration().assign(makeConf.getCCCompilerConfiguration());
@@ -700,6 +712,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
         clone.setFortranRequired(getFortranRequired().clone());
         clone.setAssemblerRequired(getAssemblerRequired().clone());
         clone.setMakefileConfiguration(getMakefileConfiguration().clone());
+        clone.setCompileConfiguration(getCompileConfiguration().clone());
         clone.setDependencyChecking(getDependencyChecking().clone());
         clone.setRebuildPropChanged(getRebuildPropChanged().clone());
         clone.setCCompilerConfiguration(getCCompilerConfiguration().clone());
@@ -951,7 +964,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
     public void setCodeAssistanceConfiguration(CodeAssistanceConfiguration codeAssistanceConfiguration) {
         this.codeAssistanceConfiguration = codeAssistanceConfiguration;
     }
-    
+
     public class LanguageBooleanConfiguration extends BooleanConfiguration implements Cloneable {
 
         private boolean notYetSet = true;

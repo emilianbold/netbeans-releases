@@ -530,7 +530,6 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     })
     private void analyzeCreateItems() {
         int CREATION_SPEED_LIMIT = 100;
-        int CREATION_SPEED_EXPECTED = 1000;
         long itemCount = 0;
         long time = 0;
         long cpu = 0;
@@ -549,7 +548,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         if (wallTime > 15 && itemCount > 100 && creationSpeed < CREATION_SPEED_LIMIT) {
             if (!slowItemCreation) {
                 slowItemCreation = true;
-                final String details = Bundle.Details_slow_item_creation(format(wallTime), format(itemCount), format(creationSpeed), format(CREATION_SPEED_EXPECTED));
+                final String details = Bundle.Details_slow_item_creation(format(wallTime), format(itemCount), format(creationSpeed), format(CREATION_SPEED_LIMIT));
                 if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                     notifyProblem(NotifyProjectProblem.CREATE_PROBLEM, details);
                 }
@@ -572,7 +571,6 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     })
     private void analyzeReadFile() {
         int READING_SPEED_LIMIT = 100;
-        int READING_SPEED_EXPECTED = 1000;
         long fileCount = 0;
         long read = 0;
         long lines = 0;
@@ -595,7 +593,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         if (wallTime > 100 && fileCount > 100 && readSpeed < READING_SPEED_LIMIT) {
             if (!slowFileRead) {
                 slowFileRead = true;
-                final String details = Bundle.Details_slow_file_read(format(wallTime), format(read/1000), format(readSpeed), format(READING_SPEED_EXPECTED));
+                final String details = Bundle.Details_slow_file_read(format(wallTime), format(read/1000), format(readSpeed), format(READING_SPEED_LIMIT));
                 if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                     notifyProblem(NotifyProjectProblem.READ_PROBLEM, details);
                 }
@@ -617,7 +615,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
                                 +"The average parsing speed is {2} lines per second.<br>\n"
                                 +"In other hand IDE consumed {3} seconds of CPU time to parse these files.<br>\n"
                                 +"The ratio of wall time to CPU time is 1/{4}.<br>\n"
-                                +"It shows that IDE spent too mach time waiting for resources.<br>\n"
+                                +"It shows that IDE spent too much time waiting for resources.<br>\n"
                                 +"IDE expects the ratio is more than 1/{5}.<br>\n"
                                 +"Most probably this is caused by poor overall file system performance.\n"
     })
@@ -684,8 +682,17 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
             if (delta > 100) {
                 iterator.remove();
-                buf.append(Bundle.Details_infinite_file_parse(fo.getPath(), format(delta)));
-                LOG.log(Level.INFO, "Too long file {0} parsing time {1}s. Probably parser has infinite loop or file is too big", new Object[]{fo.getPath(), format(delta)}); //NOI18N
+                long time = event.getTime();
+                long cpu = event.getCpuTime();
+                if (event.getAttrs().length == 0) {
+                    //TODO: process timeout
+                    if (time > cpu && cpu > 0) {
+                        if (time/cpu < 5) {
+                            buf.append(Bundle.Details_infinite_file_parse(fo.getPath(), format(delta)));
+                            LOG.log(Level.INFO, "Too long file {0} parsing time {1}s. Probably parser has infinite loop or file is too big", new Object[]{fo.getPath(), format(delta)}); //NOI18N
+                        }
+                    }
+                }
             }
         }
         if (buf.length() > 0) {

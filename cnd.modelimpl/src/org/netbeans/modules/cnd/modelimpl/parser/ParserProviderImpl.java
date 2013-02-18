@@ -389,6 +389,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 tokens = new Antrl2ToAntlr3TokenStreamAdapter(tb);
             }
             parser = new CXXParserEx(tokens, cppCallback);
+            ((CXXParserActionImpl)cppCallback).setParser(parser);
             tokens.setParser(parser);
         }
 

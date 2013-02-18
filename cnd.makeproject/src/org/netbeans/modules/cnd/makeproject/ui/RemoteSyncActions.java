@@ -71,6 +71,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -290,9 +291,17 @@ class RemoteSyncActions {
         protected abstract void performAction(ExecutionEnvironment execEnv, Node[] activatedNodes);
         protected abstract String getDummyItemText();
         protected abstract String getItemText(String hostName);
+        
+        public BaseAction() {
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, Boolean.TRUE);
+        }
 
         @Override
         protected boolean enable(Node[] activatedNodes) {
+            boolean isSyncActionsEnabled = Boolean.getBoolean("cnd.remote.sync.project.action");
+            if (!isSyncActionsEnabled) {
+                return false;
+            }
             cacheActiveNodes(activatedNodes);
             ExecutionEnvironment execEnv = getEnv(activatedNodes);
             enabled = execEnv != null && execEnv.isRemote();
@@ -381,6 +390,17 @@ class RemoteSyncActions {
                 }
             });
         }
+
+        @Override
+        protected boolean enable(Node[] activatedNodes) {
+            boolean isEnabled =  super.enable(activatedNodes); //To change body of generated methods, choose Tools | Templates.
+            if (isEnabled) {
+                return Boolean.getBoolean("cnd.remote.download.project.action");
+            }
+            return isEnabled;
+        }
+        
+        
     }
 
     private static ExecutionEnvironment getEnv(Node[] activatedNodes) {
