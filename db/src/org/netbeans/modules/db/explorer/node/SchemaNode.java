@@ -44,6 +44,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.SwingWorker;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
@@ -82,12 +83,15 @@ public class SchemaNode extends BaseNode {
 
     private final MetadataElementHandle<Schema> schemaHandle;
     private final DatabaseConnection connection;
+    private final ToggleImportantInfo toggleImportantInfo =
+            new ToggleImportantInfo(Schema.class);
 
     @SuppressWarnings("unchecked")
     private SchemaNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
+        lookup.add(toggleImportantInfo);
     }
 
     @Override
@@ -108,21 +112,29 @@ public class SchemaNode extends BaseNode {
 
     private void setupNames() {
         boolean connected = !connection.getConnector().isDisconnected();
-        MetadataModel metaDataModel = connection.getMetadataModel();
+        final MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
-            try {
-                metaDataModel.runReadAction(
-                    new Action<Metadata>() {
-                    @Override
-                        public void run(Metadata metaData) {
-                            Schema schema = schemaHandle.resolve(metaData);
-                            renderNames(schema);
-                        }
+            new SwingWorker() {
+                @Override
+                protected Object doInBackground() throws Exception {
+                    try {
+                        metaDataModel.runReadAction(
+                                new Action<Metadata>() {
+                            @Override
+                            public void run(Metadata metaData) {
+                                Schema schema = schemaHandle.resolve(metaData);
+                                toggleImportantInfo.setDefault(schema.isDefault());
+                                toggleImportantInfo.setImportant(connection.isImportantSchema(name));
+                                renderNames(schema);
+                            }
+                        });
+                        return null;
+                    } catch (MetadataModelException e) {
+                        NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
+                        return null;
                     }
-                );
-            } catch (MetadataModelException e) {
-                NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
-            }
+                }
+            }.run();
         }
     }
 

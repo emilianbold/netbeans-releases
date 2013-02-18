@@ -157,7 +157,7 @@ public abstract class NodeProvider implements Lookup.Provider {
         synchronized (nodeSet) {
             for (Node child : nodeSet) {
                 Object obj = child.getLookup().lookup(dataObject.getClass());
-                if (obj.hashCode() == dataObject.hashCode() && obj.equals(dataObject)) {
+                if (obj != null && obj.hashCode() == dataObject.hashCode() && obj.equals(dataObject)) {
                     results.add(child);
                 }
             }

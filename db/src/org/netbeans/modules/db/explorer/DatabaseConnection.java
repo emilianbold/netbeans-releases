@@ -125,6 +125,10 @@ public final class DatabaseConnection implements DBConnection {
     /** The default schema */
     private String defaultSchema = null;
 
+    private Set<String> importantSchemas = null;
+
+    private Set<String> importantCatalogs = null;
+
     /** Schema name */
     private String schema;
 
@@ -1214,4 +1218,61 @@ public final class DatabaseConnection implements DBConnection {
         return this;
     }
 
+    public Set<String> getImportantSchemas() {
+        if (importantSchemas == null) {
+            return Collections.emptySet();
+        } else {
+            return Collections.unmodifiableSet(importantSchemas);
+        }
+    }
+
+    public void addImportantSchema(String schema) {
+        if (importantSchemas == null) {
+            importantSchemas = new HashSet<String>();
+        }
+        List<String> oldList = new ArrayList<String>(importantSchemas);
+        importantSchemas.add(schema);
+        propertySupport.firePropertyChange("importantSchemas", oldList, importantSchemas); //NOI18N
+    }
+
+    public void removeImportantSchema(String schema) {
+        if (importantSchemas != null) {
+            List<String> oldList = new ArrayList<String>(importantSchemas);
+            importantSchemas.remove(schema);
+            propertySupport.firePropertyChange("importantSchemas", oldList, importantSchemas); //NOI18N
+        }
+    }
+
+    public boolean isImportantSchema(String schema) {
+        return importantSchemas != null && importantSchemas.contains(schema);
+    }
+
+    public Set<String> getImportantCatalogs() {
+        if (importantCatalogs == null) {
+            return Collections.emptySet();
+        } else {
+            return Collections.unmodifiableSet(importantCatalogs);
+        }
+    }
+
+    public void addImportantCatalog(String database) {
+        if (importantCatalogs == null) {
+            importantCatalogs = new HashSet<String>();
+        }
+        List<String> oldList = new ArrayList<String>(importantCatalogs);
+        importantCatalogs.add(database);
+        propertySupport.firePropertyChange("importantCatalogs", oldList, importantCatalogs); //NOI18N
+    }
+
+    public void removeImportantCatalog(String database) {
+        if (importantCatalogs != null) {
+            List<String> oldList = new ArrayList<String>(importantCatalogs);
+            importantCatalogs.remove(database);
+            propertySupport.firePropertyChange("importantCatalogs", oldList, importantCatalogs); //NOI18N
+        }
+    }
+
+    public boolean isImportantCatalog(String database) {
+        return importantCatalogs != null && importantCatalogs.contains(database);
+    }
 }
