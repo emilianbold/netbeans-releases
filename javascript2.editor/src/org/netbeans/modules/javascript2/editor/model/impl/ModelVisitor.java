@@ -379,52 +379,48 @@ public class ModelVisitor extends PathNodeVisitor {
     public Node leave(CallNode callNode) {
         if(callNode.getFunction() instanceof AccessNode) {
                 List<Identifier> funcName = getName((AccessNode)callNode.getFunction(), parserResult);
-                StringBuilder sb = new StringBuilder();
-                for (Identifier identifier : funcName) {
-                    sb.append(identifier.getName());
-                    sb.append(".");
-                }
-                if(functionCalls == null) {
-                    functionCalls = new HashMap<String, Collection<Collection<JsFunctionArgument>>>();
-                    for(MethodCallProcessor mcp : ModelExtender.getDefault().getMethodCallProcessors()) {
-                        functionCalls.put(mcp.getFullyQualifiedMethodName(), null);
+                if (funcName != null) {
+                    StringBuilder sb = new StringBuilder();
+                    for (Identifier identifier : funcName) {
+                        sb.append(identifier.getName());
+                        sb.append(".");
                     }
-                }
-                String name = sb.substring(0, sb.length() - 1);
-                if (functionCalls.containsKey(name)) {
-                    
-                    System.out.println("obsahuje");
-                    Collection<JsFunctionArgument> funcArg = new ArrayList<JsFunctionArgument>();
-                    for (int i = 0; i < callNode.getArgs().size(); i++) {
-                        Node argument = callNode.getArgs().get(i);
-                        if (argument instanceof LiteralNode) {
-                            LiteralNode ln = (LiteralNode)argument;
-                            if (ln.isString()) {
-                                funcArg.add(JsFunctionArgumentImpl.create(i, argument.getStart(), ln.getString()));
-                            }
-                        } else if (argument instanceof ObjectNode) {
-                            for(JsObjectImpl jsObject: functionArguments) {
-                                if(jsObject.getOffset() == argument.getStart()) {
-                                    funcArg.add(JsFunctionArgumentImpl.create(i, jsObject.getOffset(), jsObject));
-                                    break;
+                    if(functionCalls == null) {
+                        functionCalls = new HashMap<String, Collection<Collection<JsFunctionArgument>>>();
+                        for(MethodCallProcessor mcp : ModelExtender.getDefault().getMethodCallProcessors()) {
+                            functionCalls.put(mcp.getFullyQualifiedMethodName(), null);
+                        }
+                    }
+                    String name = sb.substring(0, sb.length() - 1);
+                    if (functionCalls.containsKey(name)) {
+
+                        Collection<JsFunctionArgument> funcArg = new ArrayList<JsFunctionArgument>();
+                        for (int i = 0; i < callNode.getArgs().size(); i++) {
+                            Node argument = callNode.getArgs().get(i);
+                            if (argument instanceof LiteralNode) {
+                                LiteralNode ln = (LiteralNode)argument;
+                                if (ln.isString()) {
+                                    funcArg.add(JsFunctionArgumentImpl.create(i, argument.getStart(), ln.getString()));
+                                }
+                            } else if (argument instanceof ObjectNode) {
+                                for(JsObjectImpl jsObject: functionArguments) {
+                                    if(jsObject.getOffset() == argument.getStart()) {
+                                        funcArg.add(JsFunctionArgumentImpl.create(i, jsObject.getOffset(), jsObject));
+                                        break;
+                                    }
                                 }
                             }
                         }
+                        Collection<Collection<JsFunctionArgument>> calls = functionCalls.get(name);
+                        if (calls == null) {
+                            calls = new ArrayList<Collection<JsFunctionArgument>>();
+                            functionCalls.put(name, calls);
+                        }
+                        calls.add(funcArg);
+
                     }
-                    Collection<Collection<JsFunctionArgument>> calls = functionCalls.get(name);
-                    if (calls == null) {
-                        calls = new ArrayList<Collection<JsFunctionArgument>>();
-                        functionCalls.put(name, calls);
-                    }
-                    calls.add(funcArg);
-                    
-                } else {
-                    System.out.println("nebsahuje");
                 }
-                
-                System.out.println("name: " + name);
             }
-            System.out.println("visit CallNode end: " + ModelUtils.createFQN(modelBuilder.getCurrentObject()));
         return super.leave(callNode); //To change body of generated methods, choose Tools | Templates.
     }
 
