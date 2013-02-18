@@ -44,6 +44,7 @@ package org.netbeans.modules.db.explorer.node;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.SwingWorker;
 import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.api.db.explorer.node.ChildNodeFactory;
 import org.netbeans.api.db.explorer.node.NodeProvider;
@@ -81,16 +82,19 @@ public class CatalogNode extends BaseNode {
     private String htmlName = null;
     private final DatabaseConnection connection;
     private final MetadataElementHandle<Catalog> catalogHandle;
+    private final ToggleImportantInfo toggleImportantInfo =
+            new ToggleImportantInfo(Catalog.class);
 
     @SuppressWarnings("unchecked")
     private CatalogNode(NodeDataLookup lookup, NodeProvider provider) {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
         catalogHandle = getLookup().lookup(MetadataElementHandle.class);
+        lookup.add(toggleImportantInfo);
     }
 
     protected void initialize() {
-        setupNames();
+        refreshMetaData();
 
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
@@ -103,28 +107,37 @@ public class CatalogNode extends BaseNode {
         );
     }
 
-    private void setupNames() {
-        MetadataModel metaDataModel = connection.getMetadataModel();
+    private void refreshMetaData() {
+        final MetadataModel metaDataModel = connection.getMetadataModel();
         boolean connected = !connection.getConnector().isDisconnected();
         if (connected && metaDataModel != null) {
-            try {
-                metaDataModel.runReadAction(
-                    new Action<Metadata>() {
-                        public void run(Metadata metaData) {
-                            Catalog catalog = catalogHandle.resolve(metaData);
-                            renderNames(catalog);
-                        }
+            new SwingWorker() {
+                @Override
+                protected Object doInBackground() throws Exception {
+                    try {
+                        metaDataModel.runReadAction(
+                                new Action<Metadata>() {
+                            @Override
+                            public void run(Metadata metaData) {
+                                Catalog catalog = catalogHandle.resolve(metaData);
+                                toggleImportantInfo.setDefault(catalog.isDefault());
+                                toggleImportantInfo.setImportant(connection.isImportantCatalog(name));
+                                renderNames(catalog);
+                            }
+                        });
+                        return null;
+                    } catch (MetadataModelException e) {
+                        NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
+                        return null;
                     }
-                );
-            } catch (MetadataModelException e) {
-                NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
-            }
+                }
+            }.run();
         }
     }
 
     @Override
     protected void updateProperties() {
-        setupNames();
+        refreshMetaData();
         super.updateProperties();
     }
 
