@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.groovy.refactoring.utils;
 
+import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -55,45 +57,46 @@ import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Janicek
  */
-public class TypeResolver {
+public final class TypeResolver {
 
     private TypeResolver() {
     }
 
 
-    public static ClassNode resolveType(final AstPath path) {
+    public static ClassNode resolveType(AstPath path, FileObject fo) {
         final ASTNode leaf = path.leaf();
         final ASTNode leafParent = path.leafParent();
 
         if (leaf instanceof VariableExpression) {
-            return resolveType(path, (VariableExpression) leaf);
+            return resolveType(path, (VariableExpression) leaf, fo);
         }
         if (leaf instanceof ConstantExpression) {
             if (leafParent instanceof MethodCallExpression) {
-                return resolveMethodType(path, (MethodCallExpression) leafParent);
+                return resolveMethodType(path, (MethodCallExpression) leafParent, fo);
             }
             if (leafParent instanceof PropertyExpression) {
-                return resolveVariableType(path, (PropertyExpression) leafParent);
+                return resolveVariableType(path, (PropertyExpression) leafParent, fo);
             }
         }
-        
+
         return null;
     }
 
-    private static ClassNode resolveVariableType(AstPath path, PropertyExpression propertyExpression) {
-        return resolveType(path, propertyExpression.getObjectExpression());
+    private static ClassNode resolveVariableType(AstPath path, PropertyExpression propertyExpression, FileObject fo) {
+        return resolveType(path, propertyExpression.getObjectExpression(), fo);
     }
 
-    private static ClassNode resolveMethodType(AstPath path, MethodCallExpression methodCall) {
-        return resolveType(path, methodCall.getObjectExpression());
+    private static ClassNode resolveMethodType(AstPath path, MethodCallExpression methodCall, FileObject fo) {
+        return resolveType(path, methodCall.getObjectExpression(), fo);
     }
 
-    private static ClassNode resolveType(final AstPath path, Expression expression) {
+    private static ClassNode resolveType(AstPath path, Expression expression, FileObject fo) {
         if (expression instanceof VariableExpression) {
             VariableExpression variableExpression = ((VariableExpression) expression);
             Variable variable = variableExpression.getAccessedVariable();
@@ -111,6 +114,19 @@ public class TypeResolver {
             // Normal accessing through the type (e.g. someLocalVar.someInt = 3)
             if (variable instanceof VariableExpression) {
                 return variable.getType();
+            }
+
+            // Situations like: "GroovySupportObject.println()" but in cases where
+            // GroovySupportObject is not recognized as a class type (e.g. it's not
+            // imported --> see issue #226027 for more details)
+            if (variable instanceof DynamicVariable) {
+                Set<ClassNode> types = TypeFinder.findTypes(fo, variable.getName());
+
+                if (!types.isEmpty()) {
+                    return types.iterator().next();
+                } else {
+                    return null;
+                }
             }
         } else if (expression instanceof ClassExpression) {
             // Situations like: "GroovySupportObject.println()"
