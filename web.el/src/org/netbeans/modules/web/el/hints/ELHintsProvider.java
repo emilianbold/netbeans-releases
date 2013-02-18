@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.el.hints;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -71,28 +72,12 @@ public final class ELHintsProvider implements HintsProvider {
     }
 
     @Override
-    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-    }
-
-    @Override
-    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
-    }
-
-    @Override
-    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
-    }
-
-    @Override
-    public void computeErrors(final HintsManager manager, final RuleContext context, final List<Hint> hints, List<Error> unhandled) {
-        // parse errors are not handled here, so let the infrastructure just display
-        // them as they are
-        unhandled.addAll(context.parserResult.getDiagnostics());
-        
+    public void computeHints(final HintsManager manager, final RuleContext context, final List<Hint> hints) {
         // computing the all hints - not just errors - due to #189590
-        Map<?,List<? extends AstRule>> allHints = manager.getHints(false, context);
+        Map<?, List<? extends AstRule>> allHints = manager.getHints(false, context);
         final List<? extends ELRule> ids = (List<? extends ELRule>) allHints.get(Kind.DEFAULT);
-        if(ids == null) {
-            return ;
+        if (ids == null) {
+            return;
         }
         final FileObject file = context.parserResult.getSnapshot().getSource().getFileObject();
         JavaSource jsource = JavaSource.create(
@@ -109,14 +94,28 @@ public final class ELHintsProvider implements HintsProvider {
                             rule.run(ccontext, context, hints);
                         }
                     }
-                    
+
                 }
-                
+
             }, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
 
+    @Override
+    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
+    }
+
+    @Override
+    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
+    }
+
+    @Override
+    public void computeErrors(final HintsManager manager, final RuleContext context, final List<Hint> hints, List<Error> unhandled) {
+        // parse errors are not handled here, so let the infrastructure just display
+        // them as they are
+        unhandled.addAll(context.parserResult.getDiagnostics());
     }
 
     @Override

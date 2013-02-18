@@ -43,7 +43,6 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.AstIdentifier;
-import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import java.io.IOException;
@@ -172,7 +171,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
         if (!resourceBundles.canHaveBundles()) {
             return Collections.emptyMap();
         }
-        List<Pair<AstIdentifier, AstString>> keys = new ArrayList<Pair<AstIdentifier, AstString>>();
+        List<Pair<AstIdentifier, Node>> keys = new ArrayList<Pair<AstIdentifier, Node>>();
         // the logic here is a bit strange, maybe should add new methods to ResourceBundles
         // for a more straightforward computation.
         // first, check whether the current EL elements has keys
@@ -183,7 +182,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
 
         // second, if yes, check whether it has a key matching to the node under the caret
         boolean found = false;
-        for (Pair<AstIdentifier, AstString> pair : keys) {
+        for (Pair<AstIdentifier, Node> pair : keys) {
             if (pair.second.equals(target.second)) {
                 found = true;
                 break;
@@ -198,7 +197,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
             if (!each.isValid()) {
                 continue;
             }
-            for (Pair<AstIdentifier, AstString> candidate : resourceBundles.collectKeys(each.getNode())) {
+            for (Pair<AstIdentifier, Node> candidate : resourceBundles.collectKeys(each.getNode())) {
                 if (candidate.second.equals(target.second)) {
                     OffsetRange range = each.getOriginalOffset(candidate.second);
                     result.put(range, ColoringAttributes.MARK_OCCURRENCES);

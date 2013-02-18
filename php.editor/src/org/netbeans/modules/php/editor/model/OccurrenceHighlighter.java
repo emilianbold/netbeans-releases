@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.editor.model;
 
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
@@ -48,7 +50,20 @@ import org.netbeans.modules.csl.api.OffsetRange;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public interface OccurrenceHighlighter {
+    OccurrenceHighlighter NONE = new OccurrenceHighlighter() {
+
+        @Override
+        public void add(OffsetRange offsetRange) {
+        }
+
+        @Override
+        public Set<OffsetRange> getRanges() {
+            return Collections.EMPTY_SET;
+        }
+    };
 
     void add(OffsetRange offsetRange);
+
+    Set<OffsetRange> getRanges();
 
 }
