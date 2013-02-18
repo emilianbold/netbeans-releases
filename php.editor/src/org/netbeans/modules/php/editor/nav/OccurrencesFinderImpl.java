@@ -143,54 +143,64 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         }
         OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset, parseResult.getModel()) : OffsetRange.NONE;
         if (!referenceSpan.equals(OffsetRange.NONE)) {
-            Model model = parseResult.getModel();
-            OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpan);
-            if (cancelled) {
-                return Collections.EMPTY_LIST;
-            }
-            Occurence caretOccurence = occurencesSupport.getOccurence();
-            if (cancelled) {
-                return Collections.EMPTY_LIST;
-            }
-            if (caretOccurence != null) {
-                final EnumSet<Accuracy> handledAccuracyFlags = EnumSet.<Occurence.Accuracy>of(
-                        Accuracy.EXACT, Accuracy.EXACT_TYPE, Accuracy.MORE, Accuracy.MORE_TYPES,
-                        Accuracy.UNIQUE,  Accuracy.MORE_MEMBERS);
-                if (handledAccuracyFlags.contains(caretOccurence.degreeOfAccuracy())) {
-                    PhpElementKind kind = caretOccurence.getKind();
-                    if (!kind.equals(PhpElementKind.INCLUDE)) {
-                        Collection<Occurence> allOccurences = caretOccurence.getAllOccurences();
-                        for (Occurence occurence : allOccurences) {
-                            if (handledAccuracyFlags.contains(caretOccurence.degreeOfAccuracy())) {
-                                result.add(occurence.getOccurenceRange());
-                            }
-                        }
-                    }
-                }
-            }
+            result.addAll(getOccurrences(parseResult.getModel(), referenceSpan));
         } else {
-            OccurrenceHighlighterImpl highlighter = new OccurrenceHighlighterImpl();
+            OccurrenceHighlighter highlighter = OccurrenceHighlighter.NONE;
             OffsetRange referenceSpanForCodeMarkers = tokenSequence != null ? getReferenceSpanForCodeMarkers(tokenSequence, offset) : OffsetRange.NONE;
             if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
-                Model model = parseResult.getModel();
-                OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpanForCodeMarkers);
-                if (cancelled) {
-                    return Collections.EMPTY_LIST;
-                }
-                CodeMarker codeMarker = occurencesSupport.getCodeMarker();
-                if (cancelled) {
-                    return Collections.EMPTY_LIST;
-                }
-                if (codeMarker != null) {
-                    Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
-                    for (CodeMarker marker : allMarkers) {
-                        marker.highlight(highlighter);
-                    }
-                }
+                highlighter = getCodeMarkersHighlighter(parseResult.getModel(), referenceSpanForCodeMarkers);
             }
             result.addAll(highlighter.getRanges());
         }
         return result;
+    }
+
+    private Collection<OffsetRange> getOccurrences(Model model, OffsetRange referenceSpan) {
+        Collection<OffsetRange> result = new TreeSet<OffsetRange>();
+        OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpan);
+        if (cancelled) {
+            return Collections.EMPTY_LIST;
+        }
+        Occurence caretOccurence = occurencesSupport.getOccurence();
+        if (cancelled) {
+            return Collections.EMPTY_LIST;
+        }
+        if (caretOccurence != null) {
+            final EnumSet<Accuracy> handledAccuracyFlags = EnumSet.<Occurence.Accuracy>of(
+                    Accuracy.EXACT, Accuracy.EXACT_TYPE, Accuracy.MORE, Accuracy.MORE_TYPES,
+                    Accuracy.UNIQUE,  Accuracy.MORE_MEMBERS);
+            if (handledAccuracyFlags.contains(caretOccurence.degreeOfAccuracy())) {
+                PhpElementKind kind = caretOccurence.getKind();
+                if (!kind.equals(PhpElementKind.INCLUDE)) {
+                    Collection<Occurence> allOccurences = caretOccurence.getAllOccurences();
+                    for (Occurence occurence : allOccurences) {
+                        if (handledAccuracyFlags.contains(caretOccurence.degreeOfAccuracy())) {
+                            result.add(occurence.getOccurenceRange());
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private OccurrenceHighlighter getCodeMarkersHighlighter(Model model, OffsetRange referenceSpanForCodeMarkers) {
+        OccurrenceHighlighter highlighter = new OccurrenceHighlighterImpl();
+        OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpanForCodeMarkers);
+        if (cancelled) {
+            return highlighter;
+        }
+        CodeMarker codeMarker = occurencesSupport.getCodeMarker();
+        if (cancelled) {
+            return highlighter;
+        }
+        if (codeMarker != null) {
+            Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
+            for (CodeMarker marker : allMarkers) {
+                marker.highlight(highlighter);
+            }
+        }
+        return highlighter;
     }
 
     private static OffsetRange getReferenceSpanForCodeMarkers(TokenSequence<PHPTokenId> ts, final int caretOffset) {
@@ -223,7 +233,8 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             offsetRanges.add(offsetRange);
         }
 
-        private Set<OffsetRange> getRanges() {
+        @Override
+        public Set<OffsetRange> getRanges() {
             return new TreeSet<OffsetRange>(offsetRanges);
         }
     }
