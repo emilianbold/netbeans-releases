@@ -314,7 +314,11 @@ public class ClassFileUtil {
                 break;
             }
 	    default:
-		throw new IllegalArgumentException ();
+		throw new IllegalArgumentException (
+                    String.format(
+                        "Unsupported type: %s, kind: %s",   //NOI18N
+                        type,
+                        type.getKind()));
 	}                
     }        
     
