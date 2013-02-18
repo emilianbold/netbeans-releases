@@ -74,10 +74,10 @@ public final class ELHintsProvider implements HintsProvider {
     @Override
     public void computeHints(final HintsManager manager, final RuleContext context, final List<Hint> hints) {
         // computing the all hints - not just errors - due to #189590
-        Map<?,List<? extends AstRule>> allHints = manager.getHints(false, context);
+        Map<?, List<? extends AstRule>> allHints = manager.getHints(false, context);
         final List<? extends ELRule> ids = (List<? extends ELRule>) allHints.get(Kind.DEFAULT);
-        if(ids == null) {
-            return ;
+        if (ids == null) {
+            return;
         }
         final FileObject file = context.parserResult.getSnapshot().getSource().getFileObject();
         JavaSource jsource = JavaSource.create(

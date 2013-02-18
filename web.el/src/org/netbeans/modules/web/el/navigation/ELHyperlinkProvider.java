@@ -266,7 +266,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
         }
         final FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
         ClasspathInfo cp = ClasspathInfo.create(file);
-        final AtomicReference<ElementHandle> handleRef = new AtomicReference<ElementHandle>();
+        final AtomicReference<ElementHandle<Element>> handleRef = new AtomicReference<ElementHandle<Element>>();
         try {
             JavaSource.create(cp).runUserActionTask(new Task<CompilationController>() {
 
@@ -283,7 +283,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             Exceptions.printStackTrace(ex);
         }
         
-        ElementHandle handle = handleRef.get();
+        ElementHandle<Element> handle = handleRef.get();
         if(handle != null) {
             ElementOpen.open(cp, handle);
         }

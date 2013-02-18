@@ -66,7 +66,7 @@ public final class OperatorUtils {
      * @return {@code true} when the element is
      */
     public static Boolean isOperatorValidProperty(CompilationContext info, ExecutableElement methodElement) {
-        TypeMirror returnType = ELTypeUtilities.getReturnType(info, (ExecutableElement) methodElement);
+        TypeMirror returnType = ELTypeUtilities.getReturnType(info, methodElement);
         TypeElement iterableElement = info.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
         if (returnType.getKind() == TypeKind.ARRAY
                 || info.info().getTypeUtilities().isCastable(returnType, iterableElement.asType())) {
