@@ -41,7 +41,15 @@
  */
 package org.netbeans.modules.web.el.completion;
 
-import com.sun.el.parser.*;
+import com.sun.el.parser.AstDeferredExpression;
+import com.sun.el.parser.AstDotSuffix;
+import com.sun.el.parser.AstDynamicExpression;
+import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstListData;
+import com.sun.el.parser.AstMapData;
+import com.sun.el.parser.AstMethodArguments;
+import com.sun.el.parser.AstString;
+import com.sun.el.parser.Node;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,7 +76,15 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.web.el.*;
+import org.netbeans.modules.web.el.AstPath;
+import org.netbeans.modules.web.el.CompilationContext;
+import org.netbeans.modules.web.el.ELElement;
+import org.netbeans.modules.web.el.ELParserResult;
+import org.netbeans.modules.web.el.ELTypeUtilities;
+import org.netbeans.modules.web.el.ELVariableResolvers;
+import org.netbeans.modules.web.el.NodeUtil;
+import org.netbeans.modules.web.el.ResourceBundles;
+import org.netbeans.modules.web.el.operators.OperatorDefinitions;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
@@ -137,9 +153,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        Node previous = rootToNode.get(rootToNode.size() - 1);
-        final Node nodeToResolve = getNodeToResolve(target, previous);
-        
+        final Node nodeToResolve = getNodeToResolve(target, rootToNode);
         final FileObject file = context.getParserResult().getSnapshot().getSource().getFileObject();
         JavaSource jsource = JavaSource.create(ClasspathInfo.create(file));
         try {
@@ -149,18 +163,18 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 public void run(CompilationController info) throws Exception {
                     info.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationContext ccontext = CompilationContext.create(file, info);
-                    
-                    Element resolved =
-                            ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve);
-                    
-                    if (ELTypeUtilities.isRawObjectReference(ccontext, nodeToResolve)) {
-                        proposeRawObjectProperties(ccontext, context, prefixMatcher, nodeToResolve, proposals);            
-                    } else if(ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
+                    Element resolved = ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve);
+
+                    if (ELTypeUtilities.isStaticIterableElement(ccontext, nodeToResolve)) {
+                        proposeOperators(ccontext, context, prefixMatcher, proposals);
+                    } else if (ELTypeUtilities.isRawObjectReference(ccontext, nodeToResolve)) {
+                        proposeRawObjectProperties(ccontext, context, prefixMatcher, nodeToResolve, proposals);
+                    } else if (ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
                         // seems to be something like "sessionScope.^", so complete beans from the scope
                         proposeBeansFromScope(ccontext, context, prefixMatcher, element, nodeToResolve, proposals);
-                    } else if(ELTypeUtilities.isResourceBundleVar(ccontext, nodeToResolve)) {
+                    } else if (ELTypeUtilities.isResourceBundleVar(ccontext, nodeToResolve)) {
                         proposeBundleKeysInDotNotation(context, prefixMatcher, element, nodeToResolve, proposals);
-                    } else if(resolved == null) {
+                    } else if (resolved == null) {
                         proposeFunctions(ccontext, context, prefixMatcher, element, proposals);
                         proposeManagedBeans(ccontext, context, prefixMatcher, element, proposals);
                         proposeBundles(ccontext, context, prefixMatcher, element, proposals);
@@ -169,9 +183,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                         proposeKeywords(context, prefixMatcher, proposals);
                     } else {
                         proposeMethods(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
+                        if (ELTypeUtilities.isIterableElement(ccontext, resolved)) {
+                            proposeOperators(ccontext, context, prefixMatcher, proposals);
+                        }
                     }
-                    
-                    
                 }
             }, true);
         } catch (IOException ex) {
@@ -183,16 +198,25 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return proposals.isEmpty() ? CodeCompletionResult.NONE : result;
     }
 
-    private Node getNodeToResolve(Node target, Node previous) {
-        // due to the ast structure in the case of identifiers we need to try to
-        // resolve the type of the identifier, otherwise the type of the preceding
-        // node.
+    private Node getNodeToResolve(Node target, List<Node> rootToNode) {
+        Node previous = rootToNode.get(rootToNode.size() - 1);
+        // due to the ast structure in the case of identifiers we need to try to resolve the type of the identifier,
+        // otherwise the type of the preceding node.
         if (target instanceof AstIdentifier
                 && (previous instanceof AstIdentifier
                 || previous instanceof AstDotSuffix
                 || NodeUtil.isMethodCall(previous))) {
             return target;
         } else {
+            // prvious node was method call
+            if (previous instanceof AstMethodArguments) {
+                return rootToNode.get(rootToNode.size() - 2);
+            }
+            for (int i = rootToNode.size() - 1; i >= 0; i--) {
+                if (rootToNode.get(i) instanceof AstListData || rootToNode.get(i) instanceof AstMapData) {
+                    return rootToNode.get(i);
+                }
+            }
             return previous;
         }
     }
@@ -290,6 +314,18 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     }
                 }
             }
+        }
+    }
+
+    private void proposeOperators(CompilationContext info, CodeCompletionContext context, PrefixMatcher prefix, List<CompletionProposal> proposals) {
+        for (String operator : OperatorDefinitions.OPERATORS) {
+            if (!prefix.matches(operator)) {
+                continue;
+            }
+            ELOperatorCompletionItem completionItem = new ELOperatorCompletionItem(operator);
+            completionItem.setSmart(true);
+            completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
+            proposals.add(completionItem);
         }
     }
     
