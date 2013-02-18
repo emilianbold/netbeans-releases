@@ -618,11 +618,17 @@ public class JsFormatter implements Formatter {
             return;
         }
 
-        if (!comment.getText().toString().contains("\n")) { // NOI18N
+        String text = comment.getText().toString();
+        if (!text.contains("\n")) { // NOI18N
             return;
         }
 
-        CharSequence text = comment.getText();
+        // mootools packager see issue #
+        if (comment.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                && text.startsWith("/*\n---") && text.endsWith("...\n*/")) { // NOI18N
+            return;
+        }
+
         for (int i = 0; i < text.length(); i++) {
             char single = text.charAt(i);
             if (single == '\n') { // NOI18N
