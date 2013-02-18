@@ -76,6 +76,9 @@ public class AllClustersProcessedCheck extends NbTestCase {
             if (n.equals("ide")) {
                 continue;
             }
+            if (n.equals("extide")) {
+                continue;
+            }
             if (n.equals("ergonomics")) {
                 continue;
             }
