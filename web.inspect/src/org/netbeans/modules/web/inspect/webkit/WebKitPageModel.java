@@ -356,7 +356,6 @@ public class WebKitPageModel extends PageModel {
                                 if (selected) {
                                     setSelectedNodes(selection);
                                     firePropertyChange(PageModel.PROP_BROWSER_SELECTED_NODES, null, null);
-                                    activateStylesView();
                                 } else {
                                     setHighlightedNodesImpl(selection);
                                 }
@@ -643,7 +642,6 @@ public class WebKitPageModel extends PageModel {
         if (!selectionMode) {
             setHighlightedNodesImpl(Collections.EMPTY_LIST);
         }
-        activateStylesView();
     }
 
     @Override
@@ -787,29 +785,6 @@ public class WebKitPageModel extends PageModel {
      */
     boolean isExternal() {
         return external;
-    }
-
-    /**
-     * Activates CSS Styles view (to fill the content of Navigator).
-     */
-    void activateStylesView() {
-//        if (!isExternal()) {
-//            return;
-//        }
-//        if (EventQueue.isDispatchThread()) {
-//            WindowManager manager = WindowManager.getDefault();
-//            TopComponent stylesTC = manager.findTopComponent(MatchedRules.ID);
-//            if (stylesTC != null) {
-//                stylesTC.requestActive();
-//            }
-//        } else {
-//            EventQueue.invokeLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    activateStylesView();
-//                }
-//            });
-//        }
     }
 
     class WebPaneSynchronizer implements PropertyChangeListener {
