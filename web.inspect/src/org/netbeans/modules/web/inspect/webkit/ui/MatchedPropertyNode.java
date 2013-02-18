@@ -43,6 +43,7 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
+import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.actions.GoToPropertySourceAction;
@@ -64,6 +65,8 @@ import org.openide.util.lookup.Lookups;
 public class MatchedPropertyNode extends AbstractNode {
     /** Name of the "value" property. */
     public static final String PROPERTY_VALUE = "value"; // NOI18N
+    /** Name of an attribute that determines whether the matched property determines some color. */
+    static final String COLOR_PROPERTY = "color"; // NOI18N
     /** Property sets of this node. */
     private PropertySet[] propertySets;
     /** Property represented by this node. */
@@ -119,6 +122,9 @@ public class MatchedPropertyNode extends AbstractNode {
         PropertySet set = new PropertySet(Sheet.PROPERTIES, displayName, null) {
             private final Property<?> valueProperty = new PropertySupport.ReadOnly<String>(
                     PROPERTY_VALUE, String.class, null, null) {
+                {
+                    setValue(COLOR_PROPERTY, CSSUtils.isColorProperty(property.getName()));
+                }
                 @Override
                 public String getValue() throws IllegalAccessException, InvocationTargetException {
                     return property.getValue();
