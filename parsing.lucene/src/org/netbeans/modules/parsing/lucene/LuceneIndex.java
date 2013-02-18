@@ -58,7 +58,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -1071,7 +1070,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         }
         
         private Collection<? extends String> getOrphanLock () {
-            final List<String> locks = new LinkedList<String>();
+            final List<String> locks = new ArrayList<String>();
             final String[] content = folder.list();
             if (content != null) {
                 for (String name : content) {
