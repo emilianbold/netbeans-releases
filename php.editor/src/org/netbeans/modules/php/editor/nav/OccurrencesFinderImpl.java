@@ -127,7 +127,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         }
     }
 
-    static Collection<OffsetRange> compute(final ParserResult parameter, final int offset) {
+    private Collection<OffsetRange> compute(final ParserResult parameter, final int offset) {
         final PHPParseResult parseResult = (PHPParseResult) parameter;
         Set<OffsetRange> result = new TreeSet<OffsetRange>(new Comparator<OffsetRange>() {
             @Override
