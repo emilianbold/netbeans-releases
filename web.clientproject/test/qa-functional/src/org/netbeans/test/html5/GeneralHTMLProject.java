@@ -363,6 +363,30 @@ public class GeneralHTMLProject extends JellyTestCase {
         List<? extends org.openide.nodes.Node> nodes = page.getNodesMatchingSelectedRule();
         return getElements(nodes);
     }
+    
+    /**
+     * Opens given file and types space at the end of first line (on slow system this seems to help with parsing Remote files)
+     * @param pathAndFileName
+     * @param projectName
+     * @param fileName 
+     */
+    public void dummyEdit(String pathAndFileName, String projectName, String fileName){
+         
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        Node node = new Node(rootNode, "Site Root|" + pathAndFileName);
+        evt.waitNoEvent(500);
+
+        if (node.isLeaf()) {
+            node.select();
+            node.performPopupAction("Open");
+        }
+        
+        EditorOperator ep = new EditorOperator(fileName);
+        ep.setCaretPositionToEndOfLine(1);
+        type(ep, " ");
+        ep.save();
+        ep.close();
+    }
 
     private HTMLElement[] getElements(List<? extends org.openide.nodes.Node> nodes) {
         ArrayList<String> parents;
