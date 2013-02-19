@@ -196,6 +196,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         initDefaultButton();
         attachFieldStatusListeners();
         attachHideStatusListener();
+        if( "Metal".equals( UIManager.getLookAndFeel().getID() ) || "Nimbus".equals( UIManager.getLookAndFeel().getID() ) )
+            actionPanel.setBackground( UIUtils.getSectionPanelBackground() );
     }
 
     private void initDefaultButton() {
@@ -217,7 +219,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
             field.setUI(new BasicTextFieldUI());
         }
-        field.setBackground(getBackground());
+        Color bkColor = getBackground();
+        if( null != bkColor )
+            bkColor = new Color( bkColor.getRGB() );
+        field.setBackground(bkColor);
     }
 
     NbJiraIssue getIssue() {

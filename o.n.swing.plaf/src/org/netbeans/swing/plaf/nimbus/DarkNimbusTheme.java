@@ -89,5 +89,19 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.heapview.grid3.end", new Color( 105, 103, 95 ) ); //NOI18N
         UIManager.put( "nb.heapview.grid4.start", new Color( 107, 105, 97 ) ); //NOI18N
         UIManager.put( "nb.heapview.grid4.end", new Color( 109, 107, 99 ) ); //NOI18N
+
+        UIManager.put( "PropSheet.setBackground", new Color(112, 112, 112) ); //NOI18N
+        UIManager.put( "PropSheet.selectedSetBackground", new Color(100, 100, 100) ); //NOI18N
+
+        UIManager.put( "nb.bugtracking.comment.background", new Color(112, 112, 112) ); //NOI18N
+        UIManager.put( "nb.bugtracking.comment.foreground", new Color(230, 230, 230) ); //NOI18N
+        UIManager.put( "nb.bugtracking.label.highlight", new Color(160, 160, 160) ); //NOI18N
+        UIManager.put( "nb.bugtracking.table.background", new Color(18, 30, 49) ); //NOI18N
+        UIManager.put( "nb.bugtracking.table.background.alternate", new Color(13, 22, 36) ); //NOI18N
+
+        UIManager.put( "nb.html.link.foreground", new Color(32,32,255) ); //NOI18N
+        UIManager.put( "nb.html.link.foreground.hover", new Color(255,216,0) ); //NOI18N
+        UIManager.put( "nb.html.link.foreground.visited", new Color(0,200,0) ); //NOI18N
+        UIManager.put( "nb.html.link.foreground.focus", new Color(255,216,0) ); //NOI18N
    }
 }

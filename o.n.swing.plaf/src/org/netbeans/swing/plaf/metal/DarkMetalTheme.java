@@ -74,8 +74,8 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         table.put( "nb.imageicon.filter", new DarkIconFilter() ); //NOI18N
         table.put( "nb.errorForeground", new Color(255,0,0) ); //NOI18N
         table.put( "nb.warningForeground", new Color(255,255,255) ); //NOI18N
-        table.put( "PropSheet.setBackground", primary2 ); //NOI18N
-        table.put( "PropSheet.selectedSetBackground", primary1 ); //NOI18N
+        table.put( "PropSheet.setBackground", new Color( primary2.getRGB() ) ); //NOI18N
+        table.put( "PropSheet.selectedSetBackground", new Color( primary1.getRGB() ) ); //NOI18N
         table.put( "PropSheet.selectedSetForeground", black ); //NOI18N
         table.put( "PropSheet.setForeground", black ); //NOI18N
         table.put( "PropSheet.selectionBackground", primary3 ); //NOI18N
@@ -99,6 +99,17 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         table.put( "nb.heapview.grid3.end", new Color( 105, 103, 95 ) ); //NOI18N
         table.put( "nb.heapview.grid4.start", new Color( 107, 105, 97 ) ); //NOI18N
         table.put( "nb.heapview.grid4.end", new Color( 109, 107, 99 ) ); //NOI18N
+
+        UIManager.put( "nb.bugtracking.comment.background", new Color(71, 71, 75) ); //NOI18N
+        UIManager.put( "nb.bugtracking.comment.foreground", new Color(230, 230, 230) ); //NOI18N
+        UIManager.put( "nb.bugtracking.label.highlight", new Color(71, 71, 75) ); //NOI18N
+        UIManager.put( "nb.bugtracking.table.background", new Color(18, 30, 49) ); //NOI18N
+        UIManager.put( "nb.bugtracking.table.background.alternate", new Color(13, 22, 36) ); //NOI18N
+
+        UIManager.put( "nb.html.link.foreground", new Color(164,164,255) ); //NOI18N
+        UIManager.put( "nb.html.link.foreground.hover", new Color(255,216,0) ); //NOI18N
+        UIManager.put( "nb.html.link.foreground.visited", new Color(50,50,255) ); //NOI18N
+        UIManager.put( "nb.html.link.foreground.focus", new Color(255,216,0) ); //NOI18N
     }
 
     @Override
