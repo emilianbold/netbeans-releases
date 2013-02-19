@@ -51,6 +51,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -116,6 +117,8 @@ public final class TextDetail implements Selectable {
     private int markLength;
     /** Line. */
     private Line lineObj;
+    /** Neighboring lines */
+    private List<SurroundingLine> surroundingLines = null;
     /** SearchPattern used to create the hit of this DetailNode */
     private SearchPattern searchPattern;
     /** Start offset of the matched text in the file */
@@ -341,6 +344,13 @@ public final class TextDetail implements Selectable {
         }
     }
 
+    public void addSurroundingLine(int number, String text) {
+        if (surroundingLines == null) {
+            surroundingLines = new ArrayList<SurroundingLine>(5);
+        }
+        surroundingLines.add(new SurroundingLine(number, text));
+    }
+
     /**
      * Returns the maximum line in the <code>set</code>.
      * Used to display the end of file when the corresponding
@@ -503,6 +513,35 @@ public final class TextDetail implements Selectable {
                 return new Action[0];
             }
         }
+
+        @Override
+        public String getShortDescription() {
+            if (txtDetail.surroundingLines == null
+                    || txtDetail.surroundingLines.isEmpty()) {
+                return super.getShortDescription();
+            }
+            StringBuilder sb = new StringBuilder("<html>");             //NOI18N
+            try {
+                boolean used = false;
+                for (SurroundingLine l : txtDetail.surroundingLines) {
+                    if (txtDetail.getLine() == l.getNumber() - 1) {
+                        appendMarkedText(sb);
+                        sb.append("<br/>");                             //NOI18N
+                        used = true;
+                    }
+                    sb.append("<font color='!controlShadow'>");         //NOI18N
+                    sb.append(escape(l.getText()));
+                    sb.append("</font><br/>");                          //NOI18N
+                }
+                if (!used) {
+                    appendMarkedText(sb);
+                }
+            } catch (CharConversionException e) {
+                return null;
+            }
+            sb.append("</html>");                                       //NOI18N
+            return sb.toString();
+        }
         
         /** {@inheritDoc}
          * @return {@link GotoDetailAction}
@@ -543,7 +582,7 @@ public final class TextDetail implements Selectable {
                 return htmlDisplayName;
             }
             try {
-                StringBuffer text = new StringBuffer();
+                StringBuilder text = new StringBuilder();
                 text.append("<html><font color='!controlShadow'>");     //NOI18N
                 text.append(txtDetail.lineNumberIndent);
                 text.append(txtDetail.getLine());
@@ -588,7 +627,7 @@ public final class TextDetail implements Selectable {
                    col0 < txtDetail.getLineTextLength(); // #177891
         }
 
-        private void appendMarkedText(StringBuffer sb)
+        private void appendMarkedText(StringBuilder sb)
                 throws CharConversionException {
             final int lineLen = txtDetail.getLineTextLength();
             int matchStart = txtDetail.getColumn0();  // base 0
@@ -627,7 +666,7 @@ public final class TextDetail implements Selectable {
          * @param prefixStart Line index of the first character to be displayed.
          * @param matchStart Line index of the matched text.
          */
-        private void appendMarkedTextPrefix(StringBuffer text, int prefixStart,
+        private void appendMarkedTextPrefix(StringBuilder text, int prefixStart,
                 int matchStart) throws CharConversionException {
             if (prefixStart > 0) {
                 text.append(ELLIPSIS);
@@ -647,7 +686,7 @@ public final class TextDetail implements Selectable {
          * @param lineLength Lenght of the line.
          * @param detailLength Lengt of matched part.
          */
-        private void appendMarkedTextMatch(StringBuffer text, int matchStart,
+        private void appendMarkedTextMatch(StringBuilder text, int matchStart,
                 int matchEnd, int lineLength, int matchedLength)
                 throws CharConversionException {
 
@@ -681,7 +720,7 @@ public final class TextDetail implements Selectable {
          * @param suffixEnd Line index after the last character of displayed
          * text.
          */
-        private void appendMarkedTextSuffix(StringBuffer text, int matchEnd,
+        private void appendMarkedTextSuffix(StringBuilder text, int matchEnd,
                 int suffixEnd, int lineLength) throws CharConversionException {
 
             if (lineLength > matchEnd) {
@@ -694,7 +733,7 @@ public final class TextDetail implements Selectable {
         }
 
         private static String escape(String s) throws CharConversionException {
-            return XMLUtil.toElementContent(s);
+            return XMLUtil.toElementContent(s).replace(" ", "&nbsp;");  //NOI18N
         }
 
         /** Displays the matching string in a text editor. */
@@ -871,6 +910,28 @@ public final class TextDetail implements Selectable {
             detailNode.gotoDetail();
         }
     } // End of GotoDetailAction class.
+
+    /**
+     * Lines surrounding matches.
+     */
+    private class SurroundingLine {
+
+        private final int number;
+        private final String text;
+
+        public SurroundingLine(int number, String text) {
+            this.number = number;
+            this.text = text;
+        }
+
+        public int getNumber() {
+            return number;
+        }
+
+        public String getText() {
+            return text;
+        }
+    }
 
     void setLineNumberIndent(String lineNumberIndent) {
         this.lineNumberIndent = lineNumberIndent;

@@ -111,6 +111,8 @@ public class SingleLineStreamMatcher extends AbstractMatcher {
 
         List<TextDetail> dets = null;
         DataObject dataObject = null;
+        ReadLineBuffer lineBuffer = new ReadLineBuffer(3);
+        FinishingTextDetailList finishList = new FinishingTextDetailList(3);
 
         boolean canRun = true;
         final InputStream stream = fo.getInputStream();
@@ -130,6 +132,10 @@ public class SingleLineStreamMatcher extends AbstractMatcher {
                                 dataObject, line.getNumber(), line.getString(),
                                 line.getFileStart(), searchPattern);
                         dets.add(det);
+                        for (ReadLineBuffer.Line bl : lineBuffer.getLines()) {
+                            det.addSurroundingLine(bl.getNumber(), bl.getText());
+                        }
+                        finishList.addTextDetail(det);
                         count++;
                     }
                     if ((line.getNumber() % 50) == 0) {
@@ -139,6 +145,8 @@ public class SingleLineStreamMatcher extends AbstractMatcher {
                         listener.fileContentMatchingProgress(fo.getPath(),
                                 line.getFileEnd());
                     }
+                    lineBuffer.addLine(line.getNumber(), line.getString());
+                    finishList.nextLineRead(line.getNumber(), line.getString());
                 }
             } finally {
                 nelr.close();
