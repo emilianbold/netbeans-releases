@@ -166,6 +166,9 @@ public class BinaryAnalyser {
 
     private static final String INIT ="<init>"; //NOI18N
     private static final String CLINIT ="<clinit>"; //NOI18N
+    private static final String OUTHER_THIS_PREFIX = "this$"; //NOI18N
+    private static final String ACCESS_METHOD_PREFIX = "access$";   //NOI18N
+    private static final String ASSERTIONS_DISABLED = "$assertionsDisabled";    //NOI18N
     private static final String ROOT = "/"; //NOI18N
     private static final String TIME_STAMPS = "timestamps.properties";   //NOI18N
     private static final String CRC = "crc.properties"; //NOI18N
@@ -677,22 +680,39 @@ public class BinaryAnalyser {
         @Override
         void visit(@NonNull final Method m) {
             final String name = m.getName();
-            if (!m.isSynthetic() && !isInit(name)) {
+            if (!m.isSynthetic() &&
+                !isInit(name) &&
+                !isAccessorMethod(name)) {
                 addIdent(name);
             }
             super.visit(m);
         }
 
         @Override
-        void visit(@NonNull final Variable v) {            
-            if (!v.isSynthetic()) {
-                addIdent(v.getName());
+        void visit(@NonNull final Variable v) {
+            final String name = v.getName();
+            if (!v.isSynthetic() &&
+                !isOutherThis(name) &&
+                !isDisableAssertions(name)) {
+                addIdent(name);
             }
             super.visit(v);
         }
 
-        private boolean isInit(@NonNull final String name) {
+        private static boolean isInit(@NonNull final String name) {
             return INIT.equals(name) || CLINIT.equals(name);
+        }
+
+        private static boolean isOutherThis(@NonNull final String name) {
+            return name.startsWith(OUTHER_THIS_PREFIX);
+        }
+
+        private static boolean isAccessorMethod(@NonNull final String name) {
+            return name.startsWith(ACCESS_METHOD_PREFIX);
+        }
+
+        private static boolean isDisableAssertions(@NonNull final String name) {
+            return ASSERTIONS_DISABLED.equals(name);
         }
     }
 
