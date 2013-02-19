@@ -61,6 +61,8 @@ import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.WebBrowserSupport.BrowserComboBoxModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -73,6 +75,9 @@ import org.openide.util.NbBundle;
 public class CustomizerRunWeb extends BaseRunCustomizer {
 
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
+    public static final String PROP_SELECTED_BROWSER = "netbeans.selected.browser"; //NOI18N
+
+    private final BrowserComboBoxModel browserModel;
 
     private WebModule module;
 
@@ -96,6 +101,13 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         if (module != null) {
             contextPathTField.setText(module.getContextPath());
         }
+
+        String selectedBrowser = (String) project.getProjectDirectory().getAttribute(PROP_SELECTED_BROWSER);
+        if (selectedBrowser == null) {
+            selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
+        }
+        browserModel = WebBrowserSupport.createBrowserModel(selectedBrowser);
+        browserCBox.setModel(browserModel);
 
         initValues();
         initServerModel(serverCBox, serverLabel, J2eeModule.Type.WAR);
@@ -124,8 +136,14 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
     @Override
     public void applyChanges() {
-        changeServer(serverCBox);
-        changeContextPath();
+        try {
+            changeServer(serverCBox);
+            changeContextPath();
+
+            project.getProjectDirectory().setAttribute(PROP_SELECTED_BROWSER, browserModel.getSelectedBrowserId());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private void initValues() {
@@ -253,13 +271,14 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         contextPathLabel = new javax.swing.JLabel();
         contextPathTField = new javax.swing.JTextField();
         showBrowserCheckBox = new javax.swing.JCheckBox();
-        lblHint1 = new javax.swing.JLabel();
         lblRelativeUrl = new javax.swing.JLabel();
         txtRelativeUrl = new javax.swing.JTextField();
         lblHint2 = new javax.swing.JLabel();
         jCheckBoxDeployOnSave = new javax.swing.JCheckBox();
         dosDescription = new javax.swing.JLabel();
         javaeeVersionCBox = new javax.swing.JComboBox();
+        browserLabel = new javax.swing.JLabel();
+        browserCBox = new javax.swing.JComboBox();
 
         serverLabel.setLabelFor(serverCBox);
         org.openide.awt.Mnemonics.setLocalizedText(serverLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Server")); // NOI18N
@@ -276,18 +295,24 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         contextPathLabel.setLabelFor(contextPathTField);
         org.openide.awt.Mnemonics.setLocalizedText(contextPathLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Context_Path")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(showBrowserCheckBox, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Display_on_Run")); // NOI18N
+        contextPathTField.setMinimumSize(new java.awt.Dimension(4, 24));
+        contextPathTField.setPreferredSize(new java.awt.Dimension(4, 24));
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblHint1, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Hint1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(showBrowserCheckBox, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Display_on_Run")); // NOI18N
 
         lblRelativeUrl.setLabelFor(txtRelativeUrl);
         org.openide.awt.Mnemonics.setLocalizedText(lblRelativeUrl, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Relative_URL")); // NOI18N
+
+        txtRelativeUrl.setMinimumSize(new java.awt.Dimension(4, 24));
+        txtRelativeUrl.setPreferredSize(new java.awt.Dimension(4, 24));
 
         org.openide.awt.Mnemonics.setLocalizedText(lblHint2, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Hint2")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCheckBoxDeployOnSave.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.dosDescription.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(browserLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.browserLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -297,32 +322,33 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblRelativeUrl)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(lblHint2)
-                                .addContainerGap(324, Short.MAX_VALUE))
-                            .addComponent(txtRelativeUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)))
+                        .addGap(21, 21, 21)
+                        .addComponent(dosDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(contextPathLabel)
-                            .addComponent(javaeeVersionLabel)
-                            .addComponent(serverLabel))
+                            .addComponent(serverLabel)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(contextPathLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(javaeeVersionLabel)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(serverCBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 430, Short.MAX_VALUE)
-                            .addComponent(contextPathTField, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
+                            .addComponent(serverCBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(contextPathTField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(javaeeVersionCBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(browserLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblRelativeUrl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jCheckBoxDeployOnSave)
+                            .addComponent(browserCBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblHint2)
+                            .addComponent(txtRelativeUrl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(showBrowserCheckBox)
-                            .addComponent(lblHint1))
-                        .addContainerGap())))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(24, 24, 24)
-                .addComponent(dosDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE))
+                            .addComponent(jCheckBoxDeployOnSave))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -333,26 +359,28 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                     .addComponent(serverCBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(javaeeVersionLabel)
-                    .addComponent(javaeeVersionCBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(javaeeVersionCBox, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(javaeeVersionLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(contextPathLabel)
-                    .addComponent(contextPathTField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(20, 20, 20)
+                    .addComponent(contextPathTField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(contextPathLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(showBrowserCheckBox)
-                .addGap(16, 16, 16)
-                .addComponent(lblHint1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(27, 27, 27)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblRelativeUrl)
-                    .addComponent(txtRelativeUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtRelativeUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblRelativeUrl))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblHint2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblHint2, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(9, 9, 9)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(browserCBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browserLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jCheckBoxDeployOnSave)
-                .addGap(5, 5, 5)
-                .addComponent(dosDescription)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dosDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -386,13 +414,14 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox browserCBox;
+    private javax.swing.JLabel browserLabel;
     private javax.swing.JLabel contextPathLabel;
     private javax.swing.JTextField contextPathTField;
     private javax.swing.JLabel dosDescription;
     private javax.swing.JCheckBox jCheckBoxDeployOnSave;
     private javax.swing.JComboBox javaeeVersionCBox;
     private javax.swing.JLabel javaeeVersionLabel;
-    private javax.swing.JLabel lblHint1;
     private javax.swing.JLabel lblHint2;
     private javax.swing.JLabel lblRelativeUrl;
     private javax.swing.JComboBox serverCBox;
