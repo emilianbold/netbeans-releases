@@ -57,6 +57,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 public class NewFolderAction extends NodeAction {
+    
+    
+    public NewFolderAction() {
+         //TODO: uncomment when problem iwth MakeProjectLogicalViewRootNode folder will be fixed, now "Folder" can be null when it should not be null
+        //putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+    }
+    
     public String getName() {
 	return NbBundle.getBundle(getClass()).getString("CTL_NewFolderAction"); // NOI18N
     }
@@ -93,11 +100,18 @@ public class NewFolderAction extends NodeAction {
     }
 
     public boolean enable(Node[] activatedNodes) {
-	if (activatedNodes.length != 1)
+	if (activatedNodes.length != 1) {
 	    return false;
+        }
+        Object project = activatedNodes[0].getValue("Project"); // NOI18N
+        if (project == null || (!(project instanceof Project))) {
+            return false;
+        }
+        
 	Folder folder = (Folder)activatedNodes[0].getValue("Folder"); // NOI18N
-	if (folder == null)
+	if (folder == null) {
 	    return false;
+        }
 //	if (!folder.isProjectFiles())
 //	    return false;
 	return true;
