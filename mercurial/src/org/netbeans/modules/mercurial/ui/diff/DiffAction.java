@@ -132,8 +132,10 @@ public class DiffAction extends ContextAction {
         tc.requestActive();
     }
 
-    public void diff (File[] roots, HgRevision rev1, HgRevision rev2, String diffViewName, boolean displayUnversionedFiles) {
-        MultiDiffPanel panel = new MultiDiffPanel(roots, rev1, rev2, displayUnversionedFiles); // spawns background DiffPrepareTask
+    public void diff (File[] roots, HgRevision rev1, HgRevision rev2, String diffViewName,
+            boolean fixedRevisions, boolean displayUnversionedFiles) {
+        // spawns background DiffPrepareTask
+        MultiDiffPanel panel = new MultiDiffPanel(roots, rev1, rev2, fixedRevisions, displayUnversionedFiles);
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(diffViewName);
         tc.open();

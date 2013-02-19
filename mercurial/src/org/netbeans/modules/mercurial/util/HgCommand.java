@@ -125,6 +125,9 @@ public class HgCommand {
     public static final String HG_COMMAND_PLACEHOLDER = HG_COMMAND;
     public static final String HGK_COMMAND = "hgk";  // NOI18N
 
+    private static final String HG_DIFF_CMD = "diff"; //NOI18N
+    private static final String HG_OPT_STAT = "--stat"; //NOI18N
+    
     private static final String HG_STATUS_CMD = "status";  // NOI18N // need -A to see ignored files, specified in .hgignore, see man hgignore for details
     private static final String HG_OPT_REPOSITORY = "--repository"; // NOI18N
     private static final String HG_OPT_BUNDLE = "--bundle"; // NOI18N
@@ -429,6 +432,7 @@ public class HgCommand {
         HG_BRANCHES_CMD,
         HG_BUNDLE_CMD,
         HG_CAT_CMD,
+        HG_DIFF_CMD,
         HG_EXPORT_CMD,
         HG_HEADS_CMD,
         HG_INCOMING_CMD,
@@ -2004,7 +2008,7 @@ public class HgCommand {
         if (outFile.length() == 0 && retry) {
             if (revision == null) {
                 // maybe the file is copied?
-                FileInformation fi = getStatus(repository, Collections.singletonList(file), null, null).get(file);
+                FileInformation fi = getStatus(repository, Collections.singletonList(file), null, null, true).get(file);
                 if (fi != null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0
                         && fi.getStatus(null) != null && fi.getStatus(null).getOriginalFile() != null) {
                     doCat(repository, fi.getStatus(null).getOriginalFile(), outFile, revision, false, logger);
@@ -2941,7 +2945,25 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getStatus (File repository, List<File> files, String revisionFrom, String revisionTo) throws HgException{
-        return getStatusWithFlags(repository, files, HG_STATUS_FLAG_INTERESTING_CMD, revisionFrom, revisionTo, true);
+        return getStatus(repository, files, revisionFrom, revisionTo, true);
+    }
+
+    /**
+     * Returns the mercurial status for only files of interest to us in a given directory in a repository
+     * that is modified, locally added, locally removed, locally deleted, locally new and ignored.
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param files files or directories of interest
+     * @param listAlsoMidRevisionChanges if false then skips file changes modified just in between but keeping
+     * their content the same in the given revisions. For example files where a line was added and then the same line removed
+     * are skipped.
+     * <strong>Setting this to false results in a slower command.</strong>
+     * @return Map of files and status for all files of interest, map contains normalized files as keys
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static Map<File, FileInformation> getStatus (File repository, List<File> files,
+            String revisionFrom, String revisionTo, boolean listAlsoMidRevisionChanges) throws HgException{
+        return getStatusWithFlags(repository, files, HG_STATUS_FLAG_INTERESTING_CMD, revisionFrom, revisionTo, listAlsoMidRevisionChanges);
     }
 
     /**
@@ -3181,86 +3203,42 @@ public class HgCommand {
         return list;
     }
 
-    private static Map<File, FileInformation> getStatusWithFlags(File repository, List<File> dirs, String statusFlags, String revFrom, String revTo, boolean bIgnoreUnversioned)  throws HgException{
+    /**
+     * @param listAlsoMidRevisionChanges if false then skips file changes modified just in between but keeping
+     * their content the same in the given revisions. For example files where a line was added and then the same line removed
+     * are skipped.
+     * <strong>Setting this to false results in a slower command.</strong>
+     */
+    private static Map<File, FileInformation> getStatusWithFlags(File repository, List<File> dirs, String statusFlags,
+            String revFrom, String revTo, boolean listAlsoMidRevisionChanges)  throws HgException{
         if (repository == null) return null;
         long startTime = 0;
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
             Mercurial.STATUS_LOG.log(Level.FINER, "getStatusWithFlags: starting for {0}", dirs); //NOI18N
             startTime = System.currentTimeMillis();
         }
-        FileInformation prev_info = null;
-        List<String> list = doRepositoryDirStatusCmd(repository, dirs, statusFlags, revFrom, revTo);
-
-        Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>(list.size());
-
-        File file = null;
-        for(String statusLine: list){
-            FileInformation info = getFileInformationFromStatusLine(statusLine);
-            Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): status line {0}  info {1}", new Object[]{statusLine, info}); // NOI18N
-            if (statusLine.length() > 0) {
-                if (statusLine.charAt(0) == ' ') {
-                    // Locally Added but Copied
-                    if (file != null && (prev_info.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0) {
-                        File original = getFileFromStatusLine(statusLine, repository);
-                        prev_info =  new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY,
-                                new FileStatus(file, original), false);
-                        Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): prev_info {0}  filePath {1}", new Object[]{prev_info, file}); // NOI18N
-                    } else if (file == null) {
-                        Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status line {2} filepath == nullfor prev_info ", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine}); // NOI18N
-                    }
-                    continue;
-                } else {
-                    if (file != null) {
-                        repositoryFiles.put(file, prev_info);
-                    }
-                }
-            }
-            if(bIgnoreUnversioned){
-                if(info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED ||
-                        info.getStatus() == FileInformation.STATUS_UNKNOWN) continue;
-            }else{
-                if(info.getStatus() == FileInformation.STATUS_UNKNOWN) continue;
-            }
-            file = getFileFromStatusLine(statusLine, repository);
-
-            // Handle Conflict Status
-            // TODO: remove this if Hg status supports Conflict marker
-            if (existsConflictFile(file.getAbsolutePath())) {
-                info = new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, null, false);
-                Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): CONFLICT repository path: {0} status flags: {1} status line {2} CONFLICT {3}", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine, file + HgCommand.HG_STR_CONFLICT_EXT}); // NOI18N
-            }
-            prev_info = info;
-        }
-        if (prev_info != null) {
-            repositoryFiles.put(file, prev_info);
-        }
-
-        if (Mercurial.LOG.isLoggable(Level.FINE)) {
-            if (list.size() < 10) {
-                Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status list {2}", // NOI18N
-                    new Object[] {repository.getAbsolutePath(), statusFlags, list} );
-            } else {
-                Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status list has {2} elements", // NOI18N
-                    new Object[] {repository.getAbsolutePath(), statusFlags, list.size()} );
+        try {
+            return doRepositoryDirStatusCmd(repository, dirs, statusFlags, revFrom, revTo, listAlsoMidRevisionChanges);
+        } finally {
+            if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
+                Mercurial.STATUS_LOG.log(Level.FINER, "getStatusWithFlags for {0} lasted {1}", new Object[]{dirs, System.currentTimeMillis() - startTime}); //NOI18N
             }
         }
+    }
 
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.log(Level.FINER, "getStatusWithFlags for {0} lasted {1}", new Object[]{dirs, System.currentTimeMillis() - startTime}); //NOI18N
-        }
-        return repositoryFiles;
+    private static String getRelativePathFromStatusLine (String statusLine) {
+        String path = statusLine.substring(2);
+        return path;
     }
 
     private static File getFileFromStatusLine (String statusLine, File repository) {
         File file;
-        StringBuilder sb = new StringBuilder(statusLine);
-        sb.delete(0,2); // Strip status char and following 2 spaces: [MARC\?\!I][ ][ ]
-        if(Utilities.isWindows() && sb.toString().startsWith(repository.getAbsolutePath())) {
-            file = new File(sb.toString());  // prevent bogus paths (C:\tmp\hg\C:\tmp\hg\whatever) - see issue #139500
+        String path = getRelativePathFromStatusLine(statusLine);
+        if(Utilities.isWindows() && path.startsWith(repository.getAbsolutePath())) {
+            file = new File(path);  // prevent bogus paths (C:\tmp\hg\C:\tmp\hg\whatever) - see issue #139500
         } else {
-            file = new File(repository, sb.toString());
+            file = new File(repository, path);
         }
-        file = FileUtil.normalizeFile(file);
         return file;
     }
 
@@ -3313,7 +3291,8 @@ public class HgCommand {
     /**
      * Gets hg status command output cmdOutput for the specified status flags for a given repository and directory
      */
-    private static List<String> doRepositoryDirStatusCmd (File repository, List<File> dirs, String statusFlags, String rev1, String rev2)  throws HgException{
+    private static Map<File, FileInformation> doRepositoryDirStatusCmd (File repository, List<File> dirs, String statusFlags, String rev1, String rev2,
+            boolean listAlsoMidRevisionChanges) throws HgException{
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -3326,17 +3305,24 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         List<List<String>> attributeGroups = splitAttributes(repository, command, dirs, true);
         boolean workDirStatus = true;
+        boolean skipMidChanges = false;
         if (rev1 != null) {
             command.add(HG_FLAG_REV_CMD);
             if (rev2 == null || HgRevision.CURRENT.getRevisionNumber().equals(rev2)) {
+                skipMidChanges = !HgRevision.BASE.getRevisionNumber().equals(rev1);
                 command.add(rev1);
             } else {
+                skipMidChanges = true;
                 command.add(rev1 + ":" + rev2); //NOI18N
                 workDirStatus = false;
             }
         }
         List<String> commandOutput = new ArrayList<String>();
+        List<String> changedPaths = skipMidChanges ? new ArrayList<String>() : null;
         for (List<String> attributes : attributeGroups) {
+            if (changedPaths != null) {
+                changedPaths.addAll(getListOfChangedFiles(repository, attributes, rev1, rev2));
+            }
             List<String> finalCommand = new ArrayList<String>(command);
             finalCommand.addAll(attributes);
             List<String> list = exec(finalCommand);
@@ -3357,8 +3343,17 @@ public class HgCommand {
             }
             commandOutput.addAll(list);
         }
-
-        return commandOutput;
+        Map<File, FileInformation> infos = processStatusResult(commandOutput, repository, statusFlags, changedPaths);
+        if (Mercurial.LOG.isLoggable(Level.FINE)) {
+            if (commandOutput.size() < 10) {
+                Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status list {2}", // NOI18N
+                    new Object[] {repository.getAbsolutePath(), statusFlags, commandOutput} );
+            } else {
+                Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status list has {2} elements", // NOI18N
+                    new Object[] {repository.getAbsolutePath(), statusFlags, commandOutput.size()} );
+            }
+        }
+        return infos;
     }
 
     /**
@@ -4633,6 +4628,7 @@ public class HgCommand {
         HG_PARENT_CMD,
         HG_RESOLVE_CMD,
         HG_STATUS_CMD,
+        HG_DIFF_CMD,
         HG_TAGS_CMD,
         HG_VERSION_CMD
     ));
@@ -4677,6 +4673,99 @@ public class HgCommand {
             folderName += "-" + queueName; //NOI18N
         }
         return new File(HgUtils.getHgFolderForRoot(repository), folderName + File.separatorChar + "series");
+    }
+
+    private static List<String> getListOfChangedFiles (File repository, List<String> attributes,
+            String rev1, String rev2) throws HgException {
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(HG_DIFF_CMD);
+        command.add(HG_OPT_STAT);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        if (rev1 != null) {
+            command.add(HG_FLAG_REV_CMD);
+            if (rev2 == null || HgRevision.CURRENT.getRevisionNumber().equals(rev2)) {
+                command.add(rev1);
+            } else {
+                command.add(rev1 + ":" + rev2); //NOI18N
+            }
+        }
+        command.addAll(attributes);
+        List<String> list = exec(command);
+        List<String> changedFiles = new ArrayList<String>(list.size());
+        if (!list.isEmpty() && isErrorNoRepository(list.get(0))) {
+            OutputLogger logger = OutputLogger.getLogger(repository.getAbsolutePath());
+            try {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
+            } finally {
+                logger.closeLog();
+            }
+        }
+        Pattern p = Pattern.compile("^ (.+)\\s*\\|.*?$"); //NOI18N
+        for (String line : list) {
+            Matcher m = p.matcher(line);
+            if (m.matches()) {
+                String path = m.group(1);
+                while (path.endsWith(" ")) path = path.substring(0, path.length() - 1);
+                changedFiles.add(path);
+            }
+        }
+        return changedFiles;
+    }
+
+    private static Map<File, FileInformation> processStatusResult (List<String> commandOutput, File repository,
+            String statusFlags, List<String> changedPaths) {
+        Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>(commandOutput.size());
+        File file = null;
+        FileInformation prev_info = null;
+        for (String statusLine : commandOutput) {
+            FileInformation info = getFileInformationFromStatusLine(statusLine);
+            Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): status line {0}  info {1}", new Object[]{statusLine, info}); // NOI18N
+            if (statusLine.length() > 0) {
+                if (statusLine.charAt(0) == ' ') {
+                    // Locally Added but Copied
+                    if (file != null && (prev_info.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0) {
+                        File original = getFileFromStatusLine(statusLine, repository);
+                        prev_info =  new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY,
+                                new FileStatus(file, original), false);
+                        Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): prev_info {0}  filePath {1}", new Object[]{prev_info, file}); // NOI18N
+                    } else if (file == null) {
+                        Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status line {2} filepath == nullfor prev_info ", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine}); // NOI18N
+                    }
+                    continue;
+                } else {
+                    if (file != null) {
+                        repositoryFiles.put(file, prev_info);
+                    }
+                }
+            }
+            if(info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED 
+                    || info.getStatus() == FileInformation.STATUS_UNKNOWN) continue;
+            if (changedPaths == null || (info.getStatus() & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY) == 0
+                    || changedPaths.contains(getRelativePathFromStatusLine(statusLine))) {
+                file = getFileFromStatusLine(statusLine, repository);
+            } else {
+                // uninteresting file, changed in the middle of revision range and back again
+                // e.g. line added and then removed again
+                file = null;
+                continue;
+            }
+
+            // Handle Conflict Status
+            // TODO: remove this if Hg status supports Conflict marker
+            if (existsConflictFile(file.getAbsolutePath())) {
+                info = new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, null, false);
+                Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): CONFLICT repository path: {0} status flags: {1} status line {2} CONFLICT {3}", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine, file + HgCommand.HG_STR_CONFLICT_EXT}); // NOI18N
+            }
+            prev_info = info;
+        }
+        if (prev_info != null) {
+            repositoryFiles.put(file, prev_info);
+        }
+        return repositoryFiles;
     }
 
     /**
