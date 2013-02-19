@@ -826,6 +826,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;
             case selectorsGroup:
+            case simpleSelectorSequence:
             case combinator:
             case selector:
                 //complete selector list without prefix in selector list e.g. BODY, | { ... }
@@ -841,6 +842,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //completion of selectors after universal selector * | { ... }
                     case WS:
                         switch (parentNode.type()) {
+                            case rule:
                             case typeSelector:
                             case simpleSelectorSequence:
                                 //complete selector list in selector list with an error
@@ -862,6 +864,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 || nodeType == NodeType.page 
                 || nodeType == NodeType.charSet
                 || nodeType == NodeType.generic_at_rule
+                || nodeType == NodeType.bodyItem
                 || nodeType == NodeType.fontFace) {
             //complete at keywords with prefix - parse tree OK
             if (tokenFound) {
@@ -898,7 +901,7 @@ public class CssCompletion implements CodeCompletionHandler {
         //2. in a garbage (may be for example a dash prefix in a ruleset
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
-            if (parent != null && (parent.type() == NodeType.rule || parent.type() == NodeType.moz_document)) {
+            if (parent != null && (parent.type() == NodeType.rule || parent.type() == NodeType.declarations || parent.type() == NodeType.moz_document)) {
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
                 boolean bug204821 = false;
@@ -1062,11 +1065,13 @@ public class CssCompletion implements CodeCompletionHandler {
 
             case error:
                 NodeType parentType = node.parent().type();
-                if (!(parentType == NodeType.term || parentType == NodeType.expression || parentType == NodeType.operator)) {
+                if (!(parentType == NodeType.propertyValue || parentType == NodeType.term || parentType == NodeType.expression || parentType == NodeType.operator)) {
                     break;
                 }
             //fall through
 
+            case hexColor:
+            case propertyValue:
             case function:
             case functionName:
             case term:
@@ -1123,7 +1128,13 @@ public class CssCompletion implements CodeCompletionHandler {
                 //text from the node start to the embedded anchor offset (=embedded caret offset - prefix length)
 
                 Node expressionNode = NodeUtil.query(declaratioNode, "propertyValue/expression"); //NOI18N
-
+                if(expressionNode == null) {
+                    //no expression node, broken source => try just propertyValue node
+                    expressionNode = NodeUtil.query(declaratioNode, "propertyValue"); //NOI18N
+                    if(expressionNode == null) {
+                        return ;
+                    }
+                }
                 String expressionText = context.getSnapshot().getText().subSequence(
                         expressionNode.from(),
                         context.getEmbeddedAnchorOffset()).toString();
@@ -1136,6 +1147,8 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
 
                 ResolvedProperty propVal = new ResolvedProperty(context.getFileObject(), propertyDefinition, expressionText);
+                
+                
                 Collection<ValueGrammarElement> alts = propVal.getAlternatives();
                 Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
