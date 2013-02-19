@@ -75,8 +75,8 @@ import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.NotificationDisplayer;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -130,7 +130,7 @@ public final class OptionsChooserPanel extends JPanel {
 	    return;
 	}
         LOGGER.fine("showExportDialog");  //NOI18N
-        File sourceUserdir = new File(System.getProperty("netbeans.user")); // NOI18N
+	File sourceUserdir = Places.getUserDirectory();
         final OptionsChooserPanel optionsChooserPanel = new OptionsChooserPanel();
         optionsChooserPanel.panelType = PanelType.EXPORT;
         optionsChooserPanel.setOptionsExportModel(new OptionsExportModel(sourceUserdir));
@@ -263,7 +263,7 @@ public final class OptionsChooserPanel extends JPanel {
                 return;
             }
             // do import
-            File targetUserdir = new File(System.getProperty("netbeans.user")); // NOI18N
+            File targetUserdir = Places.getUserDirectory();
             try {
                 optionsChooserPanel.getOptionsExportModel().doImport(targetUserdir);
             } catch (IOException ioe) {
@@ -491,7 +491,12 @@ public final class OptionsChooserPanel extends JPanel {
 
     private void btnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseActionPerformed
         FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(OptionsChooserPanel.class);
-        fileChooserBuilder.setDefaultWorkingDirectory(new File(System.getProperty("user.home")));  //NOI18N
+	String defaultUserdirRoot = System.getProperty("netbeans.default_userdir_root"); // NOI18N
+	if (defaultUserdirRoot != null) {
+	    fileChooserBuilder.setDefaultWorkingDirectory(new File(defaultUserdirRoot));
+	} else {
+	    fileChooserBuilder.setDefaultWorkingDirectory(new File(System.getProperty("user.home")));  //NOI18N
+	}
         fileChooserBuilder.setFileFilter(new FileNameExtensionFilter("*.zip", "zip"));  //NOI18N
         String approveText = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.approve");
         fileChooserBuilder.setApproveText(approveText);

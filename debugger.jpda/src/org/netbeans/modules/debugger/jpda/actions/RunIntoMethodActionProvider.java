@@ -265,14 +265,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     doAction(url, event.getReferenceType(), methodLine, methodOffset, method, false);
                 }
             });
-            // TODO: cbrkp.setSession(debugger);
-            try {
-                java.lang.reflect.Method setSessionMethod = JPDABreakpoint.class.getDeclaredMethod("setSession", JPDADebugger.class);
-                setSessionMethod.setAccessible(true);
-                setSessionMethod.invoke(cbrkp, debugger);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            cbrkp.setSession(debugger);
             DebuggerManager.getDebuggerManager().addBreakpoint(cbrkp);
             resume(debugger);
         }

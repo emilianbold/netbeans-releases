@@ -42,13 +42,12 @@
 
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
 import javax.swing.JPanel;
-import org.netbeans.modules.welcome.content.Constants;
+import javax.swing.UIManager;
 import org.netbeans.modules.welcome.content.Utils;
 
 /**
@@ -69,9 +68,9 @@ class TabContentPane extends JPanel {
         int width = getWidth();
         int height = getHeight();
 
-        g2d.setColor(Color.white);
+        g2d.setColor(UIManager.getColor( "Tree.background") );
         g2d.fillRect(0, 0, width, height);
-        g2d.setColor( Utils.getColor( Constants.COLOR_BORDER ) );
+        g2d.setColor( Utils.getBorderColor() );
         g2d.drawLine( 0,0, 0, height);
         g2d.drawLine( width-1,0, width-1, height);
     }

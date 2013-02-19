@@ -66,11 +66,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.Constants;
@@ -178,10 +178,24 @@ class TabbedPane extends JPanel implements Constants {// , Scrollable {
         return d;
     }
 
-    private final static Color colBackground = Utils.getColor( COLOR_TAB_BACKGROUND );
+    private final static Color colBackground = Utils.getTopBarColor();
 
-    private static final Image imgSelected = ImageUtilities.loadImage( IMAGE_TAB_SELECTED, true );
-    private static final Image imgRollover = ImageUtilities.loadImage( IMAGE_TAB_ROLLOVER, true );
+    private static final Image imgSelected;
+    private static final Image imgRollover;
+
+    static {
+        String imgName = UIManager.getString( "nb.startpage.tab.imagename.selected" ); //NOI18N
+        if( null == imgName ) {
+            imgName = IMAGE_TAB_SELECTED;
+        }
+        imgSelected = ImageUtilities.loadImage( imgName, true );
+
+        imgName = UIManager.getString( "nb.startpage.tab.imagename.rollover" ); //NOI18N
+        if( null == imgName ) {
+            imgName = IMAGE_TAB_ROLLOVER;
+        }
+        imgRollover = ImageUtilities.loadImage( imgName, true );
+    }
 
     private static class TabButton extends JPanel {
         private boolean isSelected = false;
@@ -332,8 +346,8 @@ class TabbedPane extends JPanel implements Constants {// , Scrollable {
         }
     }
 
-    private static final Color COL__BORDER1 = Utils.getColor( COLOR_TAB_BORDER1 );
-    private static final Color COL__BORDER2 = Utils.getColor( COLOR_TAB_BORDER2 );
+    private static final Color COL__BORDER1 = Utils.getTabBorder1Color();
+    private static final Color COL__BORDER2 = Utils.getTabBorder2Color();
 
     private static final class TabBorder implements Border {
 
