@@ -281,4 +281,12 @@ public abstract class CssEditorModule {
         return null;
     }
             
+    public boolean isInstantRenameAllowed(EditorFeatureContext context) {
+        return false;
+    }
+    
+    public <T extends Set<OffsetRange>> NodeVisitor<T> getInstantRenamerVisitor(EditorFeatureContext context, T result) {
+        return null;
+    }
+    
 }

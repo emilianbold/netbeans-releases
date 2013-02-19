@@ -44,17 +44,28 @@ package org.netbeans.modules.css.less;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
+import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzer;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import static org.netbeans.modules.css.lib.api.NodeType.less_variable;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * Less Css Editor Module implementation.
+ * 
+ * TODO fix the instant rename and the mark occurrences - they are pretty naive - not scoped at all :-)
  *
  * @author marekfukala
  */
@@ -75,11 +86,7 @@ public class LessCssEditorModule extends CssEditorModule {
             @Override
             public boolean visit(Node node) {
                 switch (node.type()) {
-                    case less_variable:
-//                    case less_mixin_declaration: - overlaps with class selector
-//                    case less_args_list:
-//                    case less_mixin_guarded:
-                        
+                    case less_variable:                        
                     int dso = snapshot.getOriginalOffset(node.from());
                     int deo = snapshot.getOriginalOffset(node.to());
                         if (dso >= 0 && deo >= 0) { //filter virtual nodes
@@ -93,6 +100,48 @@ public class LessCssEditorModule extends CssEditorModule {
                 return false;
             }
         };
+    }
+
+    @Override
+    public <T extends Set<OffsetRange>> NodeVisitor<T> getMarkOccurrencesNodeVisitor(EditorFeatureContext context, T result) {
+        return Utilities.createMarkOccurrencesNodeVisitor(context, result, NodeType.less_variable);
+    }
+
+    @Override
+    public boolean isInstantRenameAllowed(EditorFeatureContext context) {
+        TokenSequence<CssTokenId> tokenSequence = context.getTokenSequence();
+        int diff = tokenSequence.move(context.getCaretOffset());
+        if(diff > 0 && tokenSequence.moveNext() || diff == 0 && tokenSequence.movePrevious()) {
+            Token<CssTokenId> token = tokenSequence.token();
+            return token.id() == CssTokenId.AT_IDENT;
+        }
+        return false;
+    }
+
+    @Override
+    public <T extends Set<OffsetRange>> NodeVisitor<T> getInstantRenamerVisitor(EditorFeatureContext context, T result) {
+        TokenSequence<CssTokenId> tokenSequence = context.getTokenSequence();
+        int diff = tokenSequence.move(context.getCaretOffset());
+        if(diff > 0 && tokenSequence.moveNext() || diff == 0 && tokenSequence.movePrevious()) {
+            Token<CssTokenId> token = tokenSequence.token();
+            final CharSequence varName = token.text();
+            return new NodeVisitor<T>(result) {
+                @Override
+                public boolean visit(Node node) {
+                    switch (node.type()) {
+                        case less_variable:
+                            if (LexerUtils.equals(varName, node.image(), false, false)) {
+                                OffsetRange range = new OffsetRange(node.from(), node.to());
+                                getResult().add(range);
+                                break;
+                            }
+                    }
+                    return false;
+                }
+            };
+
+        }
+        return null;
     }
     
     

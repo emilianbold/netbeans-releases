@@ -250,6 +250,40 @@ public class CssModuleSupport {
 
     }
     
+    /**
+     * @since 1.42
+     * @param context
+     * @return 
+     */
+    public static CssEditorModule getModuleForInstantRename(EditorFeatureContext context) {
+        Set<OffsetRange> all = new HashSet<OffsetRange>();
+        //first module allowing to instant rename the context will win and do the rename
+        for (CssEditorModule module : getModules()) {
+            if (module.isInstantRenameAllowed(context)) {
+                return module;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @since 1.42
+     * @param context
+     * @param module
+     * @return 
+     */
+    public static Set<OffsetRange> getInstantRenameRegions(EditorFeatureContext context, CssEditorModule module) {
+        Set<OffsetRange> all = new HashSet<OffsetRange>();
+        //first module allowing to instant rename the context will win and do the rename
+        assert module.isInstantRenameAllowed(context);
+
+        final NodeVisitor<Set<OffsetRange>> visitor = module.getInstantRenamerVisitor(context, all);
+        assert visitor != null;
+        
+        visitor.visitChildren(context.getParseTreeRoot());
+        return all;
+    }
+    
 //    //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
 //    //http://netbeans.org/bugzilla/show_bug.cgi?id=214819
 //    //o.n.m.javafx2.editor.css.JavaFXCSSModule

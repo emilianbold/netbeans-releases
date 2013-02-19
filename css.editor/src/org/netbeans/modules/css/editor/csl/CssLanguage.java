@@ -49,6 +49,7 @@ import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -117,6 +118,11 @@ public class CssLanguage extends DefaultLanguageConfig {
     @Override
     public String getPreferredExtension() {
         return "css"; // NOI18N
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new CssInstantRenamer();
     }
 
     // Service Registrations
