@@ -199,6 +199,27 @@ public class Utils {
         return res;
     }
 
+    public static Color getRssHeaderColor() {
+        Color res = UIManager.getColor("nb.startpage.rss.header.color"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_HEADER );
+        return res;
+    }
+
+    public static Color getRssDetailsColor() {
+        Color res = UIManager.getColor("nb.startpage.rss.details.color"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_RSS_DETAILS );
+        return res;
+    }
+
+    public static Color getRssDateColor() {
+        Color res = UIManager.getColor("nb.startpage.rss.date.color"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_RSS_DATE );
+        return res;
+    }
+
     public static boolean isDefaultButtons() {
         return UIManager.getBoolean( "nb.startpage.defaultbuttonborder" ); //NOI18N
     }

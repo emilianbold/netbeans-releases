@@ -122,7 +122,7 @@ public abstract class LinkButton extends JButton
         addMouseListener(this);
         setFocusable( true );
 
-        if( !showBorder ) {
+        if( !showBorder || !Utils.isDefaultButtons() ) {
             setBorderPainted( false );
             setFocusPainted( false );
             setRolloverEnabled( true );

@@ -118,6 +118,8 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "nb.startpage.border.color", new Color(18, 30, 49) );
         UIManager.put( "nb.startpage.tab.border1.color", new Color(64,64,64) );
         UIManager.put( "nb.startpage.tab.border2.color", new Color(64,64,64) );
+        UIManager.put( "nb.startpage.rss.details.color", new Color(222, 222, 222) );
+        UIManager.put( "nb.startpage.rss.header.color", new Color(164,164,255) );
         UIManager.put( "nb.startpage.tab.imagename.selected", "org/netbeans/swing/plaf/resources/tab_selected.png" );
         UIManager.put( "nb.startpage.tab.imagename.rollover", "org/netbeans/swing/plaf/resources/tab_rollover.png" );
 
