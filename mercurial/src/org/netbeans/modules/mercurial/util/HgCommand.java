@@ -284,6 +284,7 @@ public class HgCommand {
     public static final String HG_PROXY_ENV = "http_proxy="; // NOI18N
 
     private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)"; // NOI18N
+    private static final String HG_HEADS_NEEDED_ERR = "(run 'hg heads' to see heads)"; //NOI18N
     private static final String HG_UPDATE_NEEDED_ERR = "(run 'hg update' to get a working copy)"; //NOI18N
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
     public static final String HG_MERGE_FAILED1_ERR = "merging"; // NOI18N
@@ -4215,6 +4216,10 @@ public class HgCommand {
 
     public static boolean isUpdateNeededMsg (String msg) {
         return msg.contains(HG_UPDATE_NEEDED_ERR);
+    }
+
+    public static boolean isHeadsNeededMsg (String msg) {
+        return msg.contains(HG_HEADS_NEEDED_ERR);
     }
 
     public static boolean isBackoutMergeNeededMsg(String msg) {
