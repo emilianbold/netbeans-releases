@@ -256,7 +256,11 @@ public class BaseDocumentTest extends NbTestCase {
     }
     
     public void testReleaseDocAndHoldPosition() throws Exception {
-        BaseDocument doc = new BaseDocument(false, "text/plain"); // NOI18N
+        releaseDocAndHoldPosition(new BaseDocument(false, "text/plain")); // NOI18N
+        releaseDocAndHoldPosition(new PlainDocument()); // NOI18N
+    }
+    
+    private void releaseDocAndHoldPosition(Document doc) throws Exception {
         doc.insertString(0, "Nazdar", null);
         Position pos = doc.createPosition(3);
         doc.insertString(2, "abc", null);
