@@ -114,12 +114,12 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
 
     @Override
     public boolean activate() {
-        return addClasspath() && addExcludes() && addBuildScript() && addDisableCompileOnSaveProperty();
+        return addClasspath() & addExcludes() & addBuildScript() & addDisableCompileOnSaveProperty();
     }
 
     @Override
     public boolean deactivate() {
-        return removeClasspath() && removeExcludes() && removeBuildScript() && removeDisableCompileOnSaveProperty();
+        return removeClasspath() & removeExcludes() & removeBuildScript() & removeDisableCompileOnSaveProperty();
     }
 
     /**
