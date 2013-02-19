@@ -59,7 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Petr Pisl
  */
 @ServiceProvider(service=Processor.class)
-@SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.model.spi.MethodCallProcessorRegistration") //NOI18N
+@SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor.Registration") //NOI18N
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class MethodInterceptorRegistrationProcessor extends LayerGeneratingProcessor {
 
