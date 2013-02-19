@@ -220,7 +220,7 @@ public final class AddExistingFolderItemsAction extends NodeAction {
         @Override
         public void run() {
             for (SourceFolderInfo folderInfo : foldersToAdd) {
-                confDescriptor.addFilesFromRoot(targetFolder, folderInfo.getFileObject(), false, Folder.Kind.SOURCE_LOGICAL_FOLDER, fileFilter);
+                confDescriptor.addFilesFromRoot(targetFolder, folderInfo.getFileObject(), null, false, Folder.Kind.SOURCE_LOGICAL_FOLDER, fileFilter);
             }
         }
     }

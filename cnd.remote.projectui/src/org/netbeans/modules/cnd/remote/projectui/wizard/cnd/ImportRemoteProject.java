@@ -52,6 +52,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -62,6 +63,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,6 +101,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
@@ -185,6 +188,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
     private static final String CND_TOOLS_VALUE = System.getProperty("cnd.buildtrace.tools", "gcc:c++:g++:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95"); //NOI18N
     private static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
     private boolean useBuildTrace = true;
+    private final CountDownLatch waitSources = new CountDownLatch(1);
 
 
     public ImportRemoteProject(WizardDescriptor wizard) {
@@ -349,7 +353,8 @@ public class ImportRemoteProject implements PropertyChangeListener {
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
         prjParams
                 .setConfiguration(extConf)
-                .setSourceFolders(sources)
+                .setSourceFolders(Collections.<SourceFolderInfo>emptyList().iterator())
+                //.setSourceFolders(sources)
                 .setSourceFoldersFilter(sourceFoldersFilter)
                 .setTestFolders(tests)
                 .setImportantFiles(importantItemsIterator)
@@ -413,6 +418,24 @@ public class ImportRemoteProject implements PropertyChangeListener {
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.getConfigurationDescriptor();
             if (pdp.gotDescriptor()) {
+                final MakeConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
+                if (sources != null) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ImportRemoteProject.class, "ImportProject.Progress.AnalyzeRoot"));
+                            handle.start();
+                            while(sources.hasNext()) {
+                                SourceFolderInfo next = sources.next();
+                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                            }
+                            handle.finish();
+                            waitSources.countDown();
+                        }
+                    });
+                } else {
+                    waitSources.countDown();
+                }
                 if (pdp.getConfigurationDescriptor().getActiveConfiguration() != null) {
                     if (runConfigure && configurePath != null && configurePath.length() > 0 &&
                             configureFileObject != null && configureFileObject.isValid()) {
@@ -872,6 +895,10 @@ public class ImportRemoteProject implements PropertyChangeListener {
         // Make sure that descriptor was stored and readed
         ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         provider.getConfigurationDescriptor(true);
+        try {
+            waitSources.await();
+        } catch (InterruptedException ex) {
+        }
     }
 
     private void discovery(int rc, String makeLog, File execLog) {

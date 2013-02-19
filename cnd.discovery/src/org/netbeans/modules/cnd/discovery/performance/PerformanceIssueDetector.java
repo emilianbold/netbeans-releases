@@ -435,6 +435,10 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         return true;
     }
     
+    private boolean alreadyNotified() {
+        return slowFileRead || slowItemCreation || slowParsed;
+    }
+    
     private void notifyProblem(final int problem, final String details) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -546,7 +550,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long wallTime = time/NANO_TO_SEC;
         long creationSpeed = (itemCount*NANO_TO_SEC)/time;
         if (wallTime > 15 && itemCount > 100 && creationSpeed < CREATION_SPEED_LIMIT) {
-            if (!slowItemCreation) {
+            if (!alreadyNotified()) {
                 slowItemCreation = true;
                 final String details = Bundle.Details_slow_item_creation(format(wallTime), format(itemCount), format(creationSpeed), format(CREATION_SPEED_LIMIT));
                 if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
@@ -591,7 +595,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long wallTime = time/NANO_TO_SEC;
         long readSpeed = (read*1000*1000)/time;
         if (wallTime > 100 && fileCount > 100 && readSpeed < READING_SPEED_LIMIT) {
-            if (!slowFileRead) {
+            if (!alreadyNotified()) {
                 slowFileRead = true;
                 final String details = Bundle.Details_slow_file_read(format(wallTime), format(read/1000), format(readSpeed), format(READING_SPEED_LIMIT));
                 if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
@@ -645,7 +649,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         if (cpuTime > 1) {
             long k = time/cpu;
             if (wallTime > 100 && fileCount > 100 && parseSpeed < 1000 && k > 5) {
-                if (!slowParsed) {
+                if (!alreadyNotified()) {
                     slowParsed = true;
                     final String details = Bundle.Details_slow_file_parse(format(wallTime), format(lines), format(parseSpeed), format(cpuTime), format(k), format(RATIO_LIMIT));
                     if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {

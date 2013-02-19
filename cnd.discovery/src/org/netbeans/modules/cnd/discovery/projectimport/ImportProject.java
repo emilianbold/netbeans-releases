@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -193,7 +194,7 @@ public class ImportProject implements PropertyChangeListener {
     private String sourceFoldersFilter = null;
     private FileObject configureFileObject;
     private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
-    private Task initSourceRootTask;
+    private final CountDownLatch waitSources = new CountDownLatch(1);
 
     public ImportProject(WizardDescriptor wizard) {
         pathMode = MakeProjectOptions.getPathMode();
@@ -413,18 +414,21 @@ public class ImportProject implements PropertyChangeListener {
             if (pdp.gotDescriptor()) {
                 final MakeConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
                 if (sources != null) {
-                    initSourceRootTask = RP.post(new Runnable() {
+                    RP.post(new Runnable() {
                         @Override
                         public void run() {
                             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ImportProject.class, "ImportProject.Progress.AnalyzeRoot"));
                             handle.start();
                             while(sources.hasNext()) {
                                 SourceFolderInfo next = sources.next();
-                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), false, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
                             }
                             handle.finish();
+                            waitSources.countDown();
                         }
                     });
+                } else {
+                    waitSources.countDown();
                 }
                 if (configurationDescriptor.getActiveConfiguration() != null) {
                     if (runConfigure && configurePath != null && configurePath.length() > 0 &&
@@ -1039,8 +1043,9 @@ public class ImportProject implements PropertyChangeListener {
         // Make sure that descriptor was stored and readed
         ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         provider.getConfigurationDescriptor(true);
-        if (initSourceRootTask != null) {
-            initSourceRootTask.waitFinished();
+        try {
+            waitSources.await();
+        } catch (InterruptedException ex) {
         }
     }
 
