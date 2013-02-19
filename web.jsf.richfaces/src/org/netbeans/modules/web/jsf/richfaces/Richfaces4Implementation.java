@@ -227,7 +227,7 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
 
     @Override
     public Set<JSFVersion> getJsfVersion() {
-        return EnumSet.of(JSFVersion.JSF_2_0, JSFVersion.JSF_2_1);
+        return EnumSet.of(JSFVersion.JSF_2_0, JSFVersion.JSF_2_1, JSFVersion.JSF_2_2);
     }
 
     @Override
