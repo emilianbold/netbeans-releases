@@ -45,22 +45,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
-import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -73,6 +79,8 @@ public class ProjectWhiteListQueryImplementation implements WhiteListQueryImplem
     private SoftReference<TreeSet<String>> cachedPrivatePackages;
     private boolean isCached = false;
     private static final WhiteListQuery.Result OK = new WhiteListQuery.Result();
+    private final Set<ProjectWhiteListImplementation> results = Collections.synchronizedSet(new WeakSet<ProjectWhiteListImplementation>());
+    private static final RequestProcessor RP = new RequestProcessor(ProjectWhiteListQueryImplementation.class.getName(), 3);
 
     /**
      * Constructor
@@ -91,9 +99,8 @@ public class ProjectWhiteListQueryImplementation implements WhiteListQueryImplem
     public WhiteListImplementation getWhiteList(FileObject file) {
 
         ProjectXMLManager pxm = new ProjectXMLManager(this.project);
-        Attributes projAttrs = this.project.getManifest().getMainAttributes();
         
-        if (projAttrs == null || projAttrs.getValue("Enable-Whitelist") == null || !projAttrs.getValue("Enable-Whitelist").equals("true")) {
+        if (System.getProperty("Enable-Whitelist") == null || !System.getProperty("Enable-Whitelist").equals("true")) {
             return null;
         }
         
@@ -109,40 +116,34 @@ public class ProjectWhiteListQueryImplementation implements WhiteListQueryImplem
             isCached = true;
         }
         
+        fireChangeAllExistingResults(privatePackages);
         
-        return new ProjectWhiteListImplementation(privatePackages);
-        //final TreeSet<String> privatePackageList = privatePackages;
+        ProjectWhiteListImplementation pwi = new ProjectWhiteListImplementation(privatePackages);
+        results.add(pwi);
+        
+        return pwi;
+    }
+    
+    private void fireChangeAllExistingResults(final TreeSet<String> privatePackages) {
+            final Set<ProjectWhiteListImplementation> set;
+            synchronized (results) {
+                set = new HashSet(results);
+            }
 
-        /*return new WhiteListImplementation() {
-            @Override
-            public WhiteListQuery.Result check(ElementHandle<?> element, WhiteListQuery.Operation operation) {
-                if (!operation.equals(WhiteListQuery.Operation.USAGE)) {
-                    return OK;
-                }
+            RP.post(new Runnable() {
 
-                if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
-                    String qualifiedName = element.getQualifiedName();
-                    if (qualifiedName!=null && qualifiedName.lastIndexOf(".") > 0) {
-                        qualifiedName = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
-                        if (privatePackageList.contains(qualifiedName)) {
-                            List<WhiteListQuery.RuleDescription> descs = new ArrayList<WhiteListQuery.RuleDescription>();
-                            descs.add(new WhiteListQuery.RuleDescription("Private package dependency access", "Element comes from private package of spec version dependency", null));
-                            return new WhiteListQuery.Result(descs);
+                 @Override  
+                 public void run() {
+                    for (ProjectWhiteListImplementation res : set) {
+                        if (res != null) {
+                            res.changeData(privatePackages);
                         }
                     }
                 }
-                return OK;
-            }
+            });
+        }
 
-            @Override
-            public void addChangeListener(ChangeListener listener) {
-            }
 
-            @Override
-            public void removeChangeListener(ChangeListener listener) {
-            }
-        };*/
-    }
 
     private Manifest getManifest(FileObject root) {
         FileObject manifestFo = root.getFileObject("META-INF/MANIFEST.MF");
@@ -215,9 +216,12 @@ public class ProjectWhiteListQueryImplementation implements WhiteListQueryImplem
                 Attributes attrs = mf.getMainAttributes();
 
                 publicPackagesStr = attrs.getValue("OpenIDE-Module-Public-Packages");
+                if(publicPackagesStr != null && !"".equals(publicPackagesStr)) {
+                    publicPackagesStr = publicPackagesStr.replaceAll(" ", "");
+                }
 
                 if (publicPackagesStr != null && !"-".equals(publicPackagesStr)) {
-                    StringTokenizer tokenizer = new StringTokenizer(publicPackagesStr, ", ");
+                    StringTokenizer tokenizer = new StringTokenizer(publicPackagesStr, ",");
                     while (tokenizer.hasMoreElements()) {
                         String packageIter = tokenizer.nextToken();
                         if (packageIter.endsWith(".**")) {
@@ -239,11 +243,8 @@ public class ProjectWhiteListQueryImplementation implements WhiteListQueryImplem
 
         for (String allPkgIter : allPackages) {
             boolean contains = false;
-            System.out.println("All pkg iter: "+allPkgIter);
             for (String publicPkgIter : eqPublicPackages) {
-                System.out.println("Public eq pkg iter: "+allPkgIter);
                 if (allPkgIter.equals(publicPkgIter)) {
-                    System.out.println("Not added");
                     contains = true;
                     break;
                 }
@@ -251,9 +252,7 @@ public class ProjectWhiteListQueryImplementation implements WhiteListQueryImplem
 
             if (!contains) {
                 for (String publicPkgIter : subPublicPackages) {
-                    System.out.println("Public sub pkg iter: "+allPkgIter);
                     if (allPkgIter.startsWith(publicPkgIter)) {
-                        System.out.println("Not added");
                         contains = true;
                         break;
                     }
@@ -280,6 +279,10 @@ public class ProjectWhiteListQueryImplementation implements WhiteListQueryImplem
         
         private TreeSet<String> privatePackages;
         
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        
+        private final Object IMPL_LOCK = new Object();
+        
         public ProjectWhiteListImplementation(TreeSet<String> privatePackages)
         {
             this.privatePackages = privatePackages;
@@ -288,17 +291,19 @@ public class ProjectWhiteListQueryImplementation implements WhiteListQueryImplem
         @Override
         public WhiteListQuery.Result check(ElementHandle<?> element, WhiteListQuery.Operation operation) {
             if (!operation.equals(WhiteListQuery.Operation.USAGE)) {
-                    return OK;
-                }
+                return OK;
+            }
 
                 if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
                     String qualifiedName = element.getQualifiedName();
                     if (qualifiedName!=null && qualifiedName.lastIndexOf(".") > 0) {
                         qualifiedName = qualifiedName.substring(0, qualifiedName.lastIndexOf("."));
-                        if (privatePackages.contains(qualifiedName)) {
-                            List<WhiteListQuery.RuleDescription> descs = new ArrayList<WhiteListQuery.RuleDescription>();
-                            descs.add(new WhiteListQuery.RuleDescription("Private package dependency access", "Element comes from private package of spec version dependency", null));
-                            return new WhiteListQuery.Result(descs);
+                        synchronized (IMPL_LOCK) {
+                            if (privatePackages.contains(qualifiedName)) {
+                                List<WhiteListQuery.RuleDescription> descs = new ArrayList<WhiteListQuery.RuleDescription>();
+                                descs.add(new WhiteListQuery.RuleDescription("Private package dependency access", "Element comes from private package of spec version dependency", null));
+                                return new WhiteListQuery.Result(descs);
+                            }
                         }
                     }
                 }
@@ -307,13 +312,29 @@ public class ProjectWhiteListQueryImplementation implements WhiteListQueryImplem
 
         @Override
         public void addChangeListener(ChangeListener listener) {
-            
+            this.listeners.add(listener);
         }
 
         @Override
         public void removeChangeListener(ChangeListener listener) {
-            
+            this.listeners.remove(listener);
         }
         
+        public void changeData(@NonNull TreeSet<String> privatePackages) {
+            synchronized (IMPL_LOCK) {
+                this.privatePackages = privatePackages;
+            }
+
+            ArrayList<ChangeListener> changes = new ArrayList<ChangeListener>();
+
+            synchronized (listeners) {
+                changes.addAll(listeners);
+            }
+
+            for (ChangeListener change : changes) {
+                change.stateChanged(new ChangeEvent(this));
+            }
+
+        }
     }
 }
