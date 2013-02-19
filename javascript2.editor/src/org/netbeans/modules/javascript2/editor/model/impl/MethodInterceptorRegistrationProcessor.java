@@ -90,7 +90,7 @@ public class MethodInterceptorRegistrationProcessor extends LayerGeneratingProce
         
         for (Element element : roundEnv.getElementsAnnotatedWith(MethodInterceptor.Registration.class)) {
             layer(element)
-                    .instanceFile("JavaScript/Model/MethodCallProcessors", null, MethodInterceptor.class)
+                    .instanceFile(ModelExtender.METHOD_INTERCEPTORS_PATH, null, MethodInterceptor.class)
                     .intvalue("position", element.getAnnotation(MethodInterceptor.Registration.class).priority()) // NOI18N
                     .stringvalue("fullyQualifiedName", element.getAnnotation(MethodInterceptor.Registration.class).fullQualifiedName()) // NOI18N
                     .write();

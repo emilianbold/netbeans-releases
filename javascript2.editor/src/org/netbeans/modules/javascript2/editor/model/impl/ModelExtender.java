@@ -52,8 +52,8 @@ import org.openide.util.lookup.Lookups;
  * @author Petr Pisl
  */
 public final class ModelExtender {
-    public static final String METHODCALLS_PATH = "JavaScript/Model/MethodCallProcessors";
-    private static final Lookup.Result<MethodInterceptor> METHOD_CALLS = Lookups.forPath(METHODCALLS_PATH).lookupResult(MethodInterceptor.class);
+    public static final String METHOD_INTERCEPTORS_PATH = "JavaScript/Model/MethodInterceptors";
+    private static final Lookup.Result<MethodInterceptor> METHOD_INTERCEPTORS = Lookups.forPath(METHOD_INTERCEPTORS_PATH).lookupResult(MethodInterceptor.class);
             
     static class InstanceWrapper {
         static ModelExtender extender = new ModelExtender();
@@ -72,7 +72,7 @@ public final class ModelExtender {
      * @return a list of all registered {@link MethodCallProcessor}s; never null.
      */
     public List<MethodInterceptor> getMethodCallProcessors() {
-        return new ArrayList<MethodInterceptor>(METHOD_CALLS.allInstances());
+        return new ArrayList<MethodInterceptor>(METHOD_INTERCEPTORS.allInstances());
     }
     
 }
