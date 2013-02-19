@@ -162,7 +162,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                     StyledDocument doc = pane.getStyledDocument();
                     Style hlStyle = doc.addStyle("regularBlue-findtype", defStyle);     // NOI18N
                     hlStyle.addAttribute(HyperlinkSupport.TYPE_ATTRIBUTE, new TypeLink());
-                    StyleConstants.setForeground(hlStyle, Color.BLUE);
+                    StyleConstants.setForeground(hlStyle, UIUtils.getLinkColor());
                     StyleConstants.setUnderline(hlStyle, true);            
 
                     List<Integer> l = Collections.emptyList();

@@ -262,7 +262,7 @@ class DemoPanel extends RSSFeedReaderPanel {
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            Color borderColor = Utils.getColor( visited ? VISITED_LINK_COLOR : LINK_COLOR  );
+            Color borderColor = visited ? Utils.getVisitedLinkColor() : Utils.getLinkColor();
             setBorder( BorderFactory.createLineBorder(borderColor, 1) );
             StatusDisplayer.getDefault().setStatusText( url );
         }

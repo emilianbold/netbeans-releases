@@ -57,7 +57,7 @@ public class ActionButton extends LinkButton {
     private boolean visited = false;
 
     public ActionButton( Action a, String urlString, boolean showBorder, String usageTrackingId ) {
-        this( a, urlString, Utils.getColor(LINK_COLOR), showBorder, usageTrackingId );
+        this( a, urlString, Utils.getLinkColor(), showBorder, usageTrackingId );
     }
 
     public ActionButton( Action a, String urlString, Color foreground, boolean showBorder, String usageTrackingId ) {

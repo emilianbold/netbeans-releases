@@ -97,7 +97,6 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class AttachmentsPanel extends JPanel {
-    private static final Color BG_COLOR = new Color(220, 220, 220);
     private static final String NAME_FIELD_CP = "ATTACHMENT_NAME_FIELD"; // NOI18N
     private static final String BROWSE_CP = "ATTACHMENT_BROWSE_BUTTON"; // NOI18N
     private List<JTextField> newAttachments = new LinkedList<JTextField>();
@@ -244,7 +243,7 @@ public class AttachmentsPanel extends JPanel {
     private JPanel createHighlightPanel() {
         JPanel panel = new JPanel();
         // PENDING what color (e.g. what key from UIDefaults) should I use?
-        panel.setBackground(BG_COLOR);
+        panel.setBackground(UIUtils.getSectionPanelBackground());
         add(panel);
         return panel;
     }

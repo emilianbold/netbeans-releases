@@ -80,6 +80,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.plaf.basic.BasicTextPaneUI;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
@@ -91,6 +92,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
@@ -108,8 +110,8 @@ public class CommentsPanel extends JPanel {
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private final static int MAX_COMMENT_HEIGHT = 10000;
     
-    private final static Color BLUE_BACKGROUND = new Color(0xf3f6fd);
-    private final static Color GREY_FOREGROUND = new Color(0x999999);
+    private static Color blueBackground = null;
+    private static Color greyForeground = null;
     
     private final JPopupMenu commentsPopup = new PopupMenu();
     private BugzillaIssue issue;
@@ -119,10 +121,18 @@ public class CommentsPanel extends JPanel {
 
     private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
     private final Link issueLink;
-    
+
+    static {
+        blueBackground = UIManager.getColor( "nb.bugtracking.comment.background" ); //NOI18N
+        if( null == blueBackground )
+            blueBackground = new Color(0xf3f6fd);
+        greyForeground = UIManager.getColor( "nb.bugtracking.comment.foreground" ); //NOI18N
+        if( null == greyForeground )
+            greyForeground = new Color(0x999999);
+    }
+
     public CommentsPanel() {
-        setBackground(UIManager.getColor("TextArea.background")); // NOI18N
-        
+        setOpaque( false );
         issueLink = new HyperlinkSupport.Link() {
             @Override
             public void onClick(String linkText) {
@@ -202,6 +212,7 @@ public class CommentsPanel extends JPanel {
         setupTextPane(textPane, text);
         
         JPanel headerPanel = new JPanel();
+        headerPanel.setOpaque( false );
         JPanel placeholder = createTextPanelPlaceholder();      
         JLabel commentLabel = new JLabel();
         JLabel rightLabel = new JLabel();
@@ -223,7 +234,7 @@ public class CommentsPanel extends JPanel {
         }
         leftLabel.setText(leftTxt);
         leftLabel.setLabelFor(textPane);
-        leftLabel.setForeground(GREY_FOREGROUND);
+        leftLabel.setForeground(greyForeground);
         leftLabel.setOpaque(false);
         leftLabel.addMouseListener(iconLabel);
         leftLabel.setComponentPopupMenu(expandPopup);
@@ -235,7 +246,7 @@ public class CommentsPanel extends JPanel {
         
         // right label
         rightLabel.setText(dateTimeString);
-        rightLabel.setForeground(GREY_FOREGROUND);
+        rightLabel.setForeground(greyForeground);
         rightLabel.setOpaque(false);
         rightLabel.addMouseListener(iconLabel);
         rightLabel.setComponentPopupMenu(expandPopup);
@@ -304,6 +315,9 @@ public class CommentsPanel extends JPanel {
         }
 
     private void setupTextPane(final JTextPane textPane, String comment) {
+        if( UIUtils.isNimbus() ) {
+            textPane.setUI( new BasicTextPaneUI() );
+        }
         textPane.setText(comment);
         HyperlinkSupport.getInstance().registerForTypes(textPane);
         HyperlinkSupport.getInstance().registerForStacktraces(textPane);
@@ -336,7 +350,8 @@ public class CommentsPanel extends JPanel {
         // pop-ups
         textPane.setComponentPopupMenu(commentsPopup);
 
-        textPane.setBackground(BLUE_BACKGROUND);
+        textPane.setBackground(blueBackground);
+
         textPane.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
         textPane.setEditable(false);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
@@ -410,7 +425,7 @@ public class CommentsPanel extends JPanel {
 
     private JPanel createTextPanelPlaceholder() {
         JPanel placeholder = new JPanel();
-        placeholder.setBackground(BLUE_BACKGROUND);
+        placeholder.setBackground(blueBackground);
         GroupLayout layout = new GroupLayout(placeholder);
         placeholder.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, ICON_WIDTH, Short.MAX_VALUE));
@@ -576,14 +591,15 @@ public class CommentsPanel extends JPanel {
                 placeholderPanel.setVisible(false);
                 commentLabel.setText(textPane.getText().replace("\n", " ").replace("\t", " ")); // NOI18N
                 setIcon(ci);
-                headerPanel.setBackground(BLUE_BACKGROUND);
+                headerPanel.setBackground(blueBackground);
+                headerPanel.setOpaque( true );
                 commentCollapsed(number);
             } else {
                 textPane.setVisible(true);
                 placeholderPanel.setVisible(true);
                 commentLabel.setText("");
                 setIcon(ei);
-                headerPanel.setBackground(Color.white);
+                headerPanel.setOpaque( false );
                 commentExpanded(number);
             }           
         }

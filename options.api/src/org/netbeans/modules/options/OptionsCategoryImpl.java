@@ -87,19 +87,16 @@ public class OptionsCategoryImpl extends OptionsCategory {
     @Override
     public Icon getIcon() {
         if (icon == null) {
-            Image image = ImageUtilities.loadImage(iconBase);
-            if (image != null) {
-                return new ImageIcon(image);
+            Icon res = ImageUtilities.loadImageIcon(iconBase, true);
+            if (res != null) {
+                return res;
             }
-            image = ImageUtilities.loadImage(iconBase + ".png");
-            if (image != null) {
-                return new ImageIcon(image);
+            res = ImageUtilities.loadImageIcon(iconBase + ".png", true);
+            if (res != null) {
+                return res;
             }
-            image = ImageUtilities.loadImage(iconBase + ".gif");
-            if (image == null) {
-                return null;
-            }
-            icon = new ImageIcon(image);
+            res = ImageUtilities.loadImageIcon(iconBase + ".gif", true);
+            return res;
         }
         return icon;
     }

@@ -273,6 +273,8 @@ public class SwitcherTable extends JTable {
             background = UIManager.getColor( "nb.popupswitcher.background" ); //NOI18N
             if (background == null)
                 background = UIManager.getColor("ComboBox.background"); //NOI18N
+            if( null != background )
+                background = new Color( background.getRGB() );
         }
         return background != null ? background : super.getBackground();
     }

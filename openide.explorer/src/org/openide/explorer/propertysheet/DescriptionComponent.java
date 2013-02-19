@@ -111,6 +111,8 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         }
         jep.setEditorKit( htmlKit );
 
+        jep.putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
+
 
         //We use a JScrollPane to suppress the changes in layout that will be
         //caused by adding the raw JTextArea directly - JTextAreas can fire

@@ -58,17 +58,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 final class AllLFCustoms extends LFCustoms {
 
     public Object[] createApplicationSpecificKeysAndValues () {
-        //ColorUIResource errorColor = new ColorUIResource(89, 79, 191);
-        // 65358: asked Red color for error messages
-        ColorUIResource errorColor = new ColorUIResource (255, 0, 0);
-        //#204598 - there's no cross-platform warning-like color...
-        ColorUIResource warningColor = new ColorUIResource(51 , 51, 51);
-        
         Object[] uiDefaults = {
-
-            ERROR_FOREGROUND, errorColor,
-
-            WARNING_FOREGROUND, warningColor,
 
             //Tab control in case of unknown look and feel
             TAB_ACTIVE_SELECTION_BACKGROUND,
@@ -107,6 +97,12 @@ final class AllLFCustoms extends LFCustoms {
     }
 
     public Object[] createGuaranteedKeysAndValues () {
+        //ColorUIResource errorColor = new ColorUIResource(89, 79, 191);
+        // 65358: asked Red color for error messages
+        ColorUIResource errorColor = new ColorUIResource (255, 0, 0);
+        //#204598 - there's no cross-platform warning-like color...
+        ColorUIResource warningColor = new ColorUIResource(51 , 51, 51);
+
         int fontsize = 11;
         Integer in = (Integer) UIManager.get(CUSTOM_FONT_SIZE); //NOI18N
         boolean hasCustomFontSize = in != null;
@@ -124,6 +120,10 @@ final class AllLFCustoms extends LFCustoms {
                 new Font ("Dialog", Font.PLAIN, fontsize)),
             
             DEFAULT_FONT_SIZE, new Integer(11),
+            ERROR_FOREGROUND, new GuaranteedValue(ERROR_FOREGROUND, errorColor),
+
+            WARNING_FOREGROUND, new GuaranteedValue(WARNING_FOREGROUND, warningColor ),
+
         };
         return uiDefaults;
     }

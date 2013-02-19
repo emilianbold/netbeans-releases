@@ -158,7 +158,7 @@ public final class HyperlinkSupport {
                     Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
                     final Style hlStyle = doc.addStyle("regularBlue-link", defStyle); // NOI18N
                     hlStyle.addAttribute(LINK_ATTRIBUTE, link);
-                    StyleConstants.setForeground(hlStyle, Color.BLUE);
+                    StyleConstants.setForeground(hlStyle, UIUtils.getLinkColor());
                     StyleConstants.setUnderline(hlStyle, true);
 
                     for (int i=0; i<pos.length; i+=2) {
