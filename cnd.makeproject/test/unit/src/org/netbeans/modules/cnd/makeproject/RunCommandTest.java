@@ -67,7 +67,7 @@ public class RunCommandTest extends CndBaseTestCase{
         
         File folderBase = getBaseFolder();
         final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
-        conf = new MakeConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION);  // NOI18N
+        conf = MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION, null, null);  // NOI18N
     }
     
     private static File getBaseFolder(){
