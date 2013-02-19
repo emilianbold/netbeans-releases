@@ -1137,17 +1137,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             }
-        }
-
-        if (jobs.isEmpty()) {
-            // either all documents are up-to-date or we can't find owning source roots,
-            // which may happen right after start when no roots have been scanned yet,
-            // try forcing the initial scan in order to block TaskProcessor (#165170)
-            scheduleWork(null, false);
-        } else {
-            for(FileListWork job : jobs.values()) {
-                scheduleWork(job, false);
-            }
+        }       
+        for(FileListWork job : jobs.values()) {
+            scheduleWork(job, false);
         }
     }
 

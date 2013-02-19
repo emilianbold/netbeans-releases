@@ -32,6 +32,7 @@ package org.netbeans.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.event.DocumentEvent;
@@ -253,6 +254,18 @@ public class BaseDocumentTest extends NbTestCase {
             fail("Failed sleep");
         }
     }
+    
+    public void testReleaseDocAndHoldPosition() throws Exception {
+        BaseDocument doc = new BaseDocument(false, "text/plain"); // NOI18N
+        doc.insertString(0, "Nazdar", null);
+        Position pos = doc.createPosition(3);
+        doc.insertString(2, "abc", null);
+        assertEquals(6, pos.getOffset());
+        WeakReference<Document> docRef = new WeakReference<Document>(doc);
+        doc = null;
+        assertGC("Doc not released", docRef);
+        assertEquals(6, pos.getOffset()); // Doc released but position can still be referenced
+    }    
 
     public void testBackwardBiasPosition() throws Exception {
         BaseDocument doc = new BaseDocument(false, "text/plain"); // NOI18N
