@@ -46,6 +46,10 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import org.netbeans.spi.options.OptionsPanelController;
 
+/**
+ *
+ * @since 1.39
+ */
 @OptionsPanelController.Keywords(keywords={"#KW_HighlightPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "#Editor_tab.displayName")
 public class HighlightingPanelController implements FontsColorsController{
 

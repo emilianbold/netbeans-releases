@@ -110,6 +110,33 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="AddedHiglightingPanelController">
+      <summary>Separating HighlightingPanel and its controller</summary>
+      <version major="1" minor="39"/>
+      <date day="19" month="2" year="2012"/>
+      <author login="mkristofic"/>
+      <compatibility source="incompatible" binary="compatible" deletion="yes" addition="yes" modification="yes"/>
+      <description>
+        <p>
+        [sigtest] Missing Superclasses or Superinterfaces
+        [sigtest] ---------------------------------------
+        [sigtest]
+        [sigtest] org.netbeans.modules.options.colors.HighlightingPanel:      interface @ org.netbeans.modules.options.colors.spi.FontsColorsController
+        [sigtest]
+        [sigtest] Missing Methods
+        [sigtest] ---------------
+        [sigtest]
+        [sigtest] org.netbeans.modules.options.colors.HighlightingPanel:      method public javax.swing.JComponent org.netbeans.modules.options.colors.HighlightingPanel.getComponent()
+        [sigtest]
+        [sigtest] Added Classes
+        [sigtest] -------------
+        [sigtest]
+        [sigtest] org.netbeans.modules.options.colors.HighlightingPanelController
+        </p>
+      </description>
+      <class package="org.netbeans.modules.options.colors" name="HighlightingPanelController"/>
+      <issue number="199592"/>
+  </change>
   <change id="FormattingCustomizerPanel.moved">
       <api name="spi"/>
       <summary>Moving FormattingCustomizerPanel to editor.indent.project module</summary>
