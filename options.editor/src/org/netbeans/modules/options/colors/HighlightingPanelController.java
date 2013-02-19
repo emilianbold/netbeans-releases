@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.project;
+package org.netbeans.modules.options.colors;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.clientproject.api.ClientSideModule;
-import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.openide.filesystems.FileObject;
+import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.options.colors.spi.FontsColorsController;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
- * @author Jan Becicka
+ * @since 1.39
  */
-public class ClientProjectUtilities {
+@OptionsPanelController.Keywords(keywords={"#KW_HighlightPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "#Editor_tab.displayName")
+public class HighlightingPanelController implements FontsColorsController{
+
+    private HighlightingPanel component = null;
     
-    public static FileObject getSiteRoot(Project project) {
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5);
-        assert sourceGroups.length == 1;
-        return sourceGroups[0].getRootFolder();
-    }
-    
-    public static FileObject getStartFile(Project project) {
-        ClientSideModule clientSide = project.getLookup().lookup(ClientSideModule.class);
-        return clientSide.getProperties().getStartFile();
+    @Override
+    public void update(ColorModel model) {
+        getHighlightingPanel().update(model);
     }
 
-    public static String getWebContextRoot(Project p) {
-        ClientSideModule clientSide = p.getLookup().lookup(ClientSideModule.class);
-        return clientSide.getProperties().getWebContextRoot();
+    @Override
+    public void setCurrentProfile(String profile) {
+        getHighlightingPanel().setCurrentProfile(profile);
     }
 
-    public static boolean isUsingEmbeddedServer(Project p) {
-        return true;
+    @Override
+    public void deleteProfile(String profile) {
+        getHighlightingPanel().deleteProfile(profile);
     }
-    
-    public static String getProperty(Project p, String key) {
-        ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
-        if (!(provider.getActiveConfiguration() instanceof ClientProjectConfigurationImpl))
-            return null;
-        ClientProjectConfigurationImpl activeConfiguration = (ClientProjectConfigurationImpl) provider.getActiveConfiguration();
-        return activeConfiguration.getProperty(key);
+
+    @Override
+    public void applyChanges() {
+        getHighlightingPanel().applyChanges();
     }
+
+    @Override
+    public void cancel() {
+        getHighlightingPanel().cancel();
+    }
+
+    @Override
+    public boolean isChanged() {
+        return getHighlightingPanel().isChanged();
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return getHighlightingPanel();
+    }
+
+    private HighlightingPanel getHighlightingPanel() {
+        if (component == null) {
+            component = new HighlightingPanel();
+        }
+        return component;
+    }
+
 }
