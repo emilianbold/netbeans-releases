@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
@@ -79,6 +81,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -628,12 +631,18 @@ public class DiscoveryProjectGeneratorImpl {
     }
     
     public Set<Project> makeProject(){
-        if (projectBridge.isValid() && wizard.getConfigurations() != null && wizard.getConfigurations().size() > 0) {
-            projectBridge.startModifications();
-            process();
-            return projectBridge.getResult();
+        ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DiscoveryProjectGeneratorImpl.class, "UpdateCodeAssistance"));
+        handle.start();
+        try {
+            if (projectBridge.isValid() && wizard.getConfigurations() != null && wizard.getConfigurations().size() > 0) {
+                projectBridge.startModifications();
+                process();
+                return projectBridge.getResult();
+            }
+            return Collections.<Project>emptySet();
+        } finally {
+            handle.finish();
         }
-        return Collections.<Project>emptySet();
     }
 
     private Set<String> getSourceFolders(){
