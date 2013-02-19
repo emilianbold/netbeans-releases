@@ -41,49 +41,18 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-
 /**
  *
  * @author Petr Pisl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
+public interface JsFunctionArgument {
+    static public enum Kind {
+        STRING,
+        ANONYMOUS_OBJECT
+    };
     
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();  
-    List<Occurrence> getOccurrences();
-
-    public void addOccurrence(OffsetRange offsetRange);
-
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
-    
-    Collection<? extends TypeUsage> getAssignments();
-    
-    public boolean isAnonymous();
-    
-    public boolean isDeprecated();
-    
-    /**
-     * 
-     * @return true if the object/function is identified by a name. 
-     * False if the function is declared as an item in array or the name is an expression
-     */ 
-    public boolean hasExactName();
-    
-    public String getDocumentation();
+    public Kind getKind();
+    public int getOrder();
+    public int getOffset();
+    public Object getValue();
 }

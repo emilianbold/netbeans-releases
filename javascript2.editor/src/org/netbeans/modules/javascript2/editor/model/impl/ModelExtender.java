@@ -39,51 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
+public final class ModelExtender {
+    public static final String METHOD_INTERCEPTORS_PATH = "JavaScript/Model/MethodInterceptors";
+    private static final Lookup.Result<MethodInterceptor> METHOD_INTERCEPTORS = Lookups.forPath(METHOD_INTERCEPTORS_PATH).lookupResult(MethodInterceptor.class);
+            
+    static class InstanceWrapper {
+        static ModelExtender extender = new ModelExtender();
+    }
+    
+    private ModelExtender() {
+        
+    }
+    
+    public static ModelExtender getDefault() {
+        return InstanceWrapper.extender;
+    }
     
     /**
-     * 
-     * @return the object within this is declared
+     * Get all registered {@link MethodCallProcessor}s.
+     * @return a list of all registered {@link MethodCallProcessor}s; never null.
      */
-    public JsObject getParent();  
-    List<Occurrence> getOccurrences();
-
-    public void addOccurrence(OffsetRange offsetRange);
-
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
+    public List<MethodInterceptor> getMethodCallProcessors() {
+        return new ArrayList<MethodInterceptor>(METHOD_INTERCEPTORS.allInstances());
+    }
     
-    Collection<? extends TypeUsage> getAssignments();
-    
-    public boolean isAnonymous();
-    
-    public boolean isDeprecated();
-    
-    /**
-     * 
-     * @return true if the object/function is identified by a name. 
-     * False if the function is declared as an item in array or the name is an expression
-     */ 
-    public boolean hasExactName();
-    
-    public String getDocumentation();
 }

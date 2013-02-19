@@ -64,7 +64,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -79,7 +81,9 @@ import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
@@ -100,6 +104,10 @@ public class ModelVisitor extends PathNodeVisitor {
     private final List<List<FunctionNode>> functionStack;
     private final JsParserResult parserResult;
 
+    // keeps objects that are created as arguments of a function call
+    private Collection<JsObjectImpl> functionArguments = new ArrayList<JsObjectImpl>();
+    private Map<String, Collection<Collection<JsFunctionArgument>>> functionCalls = null;
+    
     private JsObjectImpl fromAN = null;
 
     public ModelVisitor(JsParserResult parserResult) {
@@ -354,6 +362,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(CallNode callNode) {
+        functionArguments.clear();
         if (callNode.getFunction() instanceof IdentNode) {
             IdentNode iNode = (IdentNode)callNode.getFunction();
             addOccurence(iNode, false, true, callNode.getArgs().size());
@@ -364,6 +373,55 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         return super.enter(callNode);
+    }
+
+    @Override
+    public Node leave(CallNode callNode) {
+        if(callNode.getFunction() instanceof AccessNode) {
+                List<Identifier> funcName = getName((AccessNode)callNode.getFunction(), parserResult);
+                if (funcName != null) {
+                    StringBuilder sb = new StringBuilder();
+                    for (Identifier identifier : funcName) {
+                        sb.append(identifier.getName());
+                        sb.append(".");
+                    }
+                    if(functionCalls == null) {
+                        functionCalls = new HashMap<String, Collection<Collection<JsFunctionArgument>>>();
+                        for(MethodInterceptor mcp : ModelExtender.getDefault().getMethodCallProcessors()) {
+                            functionCalls.put(mcp.getFullyQualifiedMethodName(), null);
+                        }
+                    }
+                    String name = sb.substring(0, sb.length() - 1);
+                    if (functionCalls.containsKey(name)) {
+
+                        Collection<JsFunctionArgument> funcArg = new ArrayList<JsFunctionArgument>();
+                        for (int i = 0; i < callNode.getArgs().size(); i++) {
+                            Node argument = callNode.getArgs().get(i);
+                            if (argument instanceof LiteralNode) {
+                                LiteralNode ln = (LiteralNode)argument;
+                                if (ln.isString()) {
+                                    funcArg.add(JsFunctionArgumentImpl.create(i, argument.getStart(), ln.getString()));
+                                }
+                            } else if (argument instanceof ObjectNode) {
+                                for(JsObjectImpl jsObject: functionArguments) {
+                                    if(jsObject.getOffset() == argument.getStart()) {
+                                        funcArg.add(JsFunctionArgumentImpl.create(i, jsObject.getOffset(), jsObject));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        Collection<Collection<JsFunctionArgument>> calls = functionCalls.get(name);
+                        if (calls == null) {
+                            calls = new ArrayList<Collection<JsFunctionArgument>>();
+                            functionCalls.put(name, calls);
+                        }
+                        calls.add(funcArg);
+
+                    }
+                }
+            }
+        return super.leave(callNode); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -675,6 +733,7 @@ public class ModelVisitor extends PathNodeVisitor {
             JsObjectImpl object = ModelElementFactory.createAnonymousObject(parserResult, objectNode,  modelBuilder);
             modelBuilder.setCurrentObject(object);
             object.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+            functionArguments.add(object);
             return super.enter(objectNode);
         } else if (previousVisited instanceof ReturnNode) {
             JsObjectImpl objectScope = ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
@@ -985,6 +1044,10 @@ public class ModelVisitor extends PathNodeVisitor {
 
 //--------------------------------End of visit methods--------------------------------------
 
+    public Map<String, Collection<Collection<JsFunctionArgument>>> getFuncCallsFroProcessing() {
+        return functionCalls;
+    }
+    
     private List<Identifier> getName(PropertyNode propertyNode) {
         List<Identifier> name = new ArrayList(1);
         if (propertyNode.getGetter() != null || propertyNode.getSetter() != null) {

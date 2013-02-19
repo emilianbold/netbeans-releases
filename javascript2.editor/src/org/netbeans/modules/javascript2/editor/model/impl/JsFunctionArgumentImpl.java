@@ -39,51 +39,54 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
-    
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();  
-    List<Occurrence> getOccurrences();
+public class JsFunctionArgumentImpl implements JsFunctionArgument {
 
-    public void addOccurrence(OffsetRange offsetRange);
+    private final Kind kind;
+    private final int order;
+    private final int offset;
+    private final Object value;
 
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
+    public JsFunctionArgumentImpl(Kind kind, int order, int offset, Object value) {
+        this.kind = kind;
+        this.order = order;
+        this.offset = offset;
+        this.value = value;
+    }
     
-    Collection<? extends TypeUsage> getAssignments();
+    public static JsFunctionArgument create(int order, int offset, JsObjectImpl value) {
+        return new JsFunctionArgumentImpl(Kind.ANONYMOUS_OBJECT, order, offset, value);
+    }
     
-    public boolean isAnonymous();
+    public static JsFunctionArgument create(int order, int offset, String value) {
+        return new JsFunctionArgumentImpl(Kind.STRING, order, offset, value);
+    }
     
-    public boolean isDeprecated();
+    @Override
+    public Kind getKind() {
+        return this.kind;
+    }
+
+    @Override
+    public int getOrder() {
+        return this.order;
+    }
+
+    @Override
+    public int getOffset() {
+        return this.offset;
+    }
+
+    @Override
+    public Object getValue() {
+        return this.value;
+    }
     
-    /**
-     * 
-     * @return true if the object/function is identified by a name. 
-     * False if the function is declared as an item in array or the name is an expression
-     */ 
-    public boolean hasExactName();
-    
-    public String getDocumentation();
 }

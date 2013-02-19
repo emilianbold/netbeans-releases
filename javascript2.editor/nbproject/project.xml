@@ -365,7 +365,11 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.javascript2.extjs</friend>
+                <package>org.netbeans.modules.javascript2.editor.model</package>
+                <package>org.netbeans.modules.javascript2.editor.model.spi</package>
+            </friend-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>netbeans</word>
