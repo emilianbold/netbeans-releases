@@ -98,12 +98,16 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         final String mimeType = file.getMIMEType();
 
         LOG.log(Level.FINER, "run(), file: {0}", new Object[]{file});
+        
+        if(!mimeType.equals("text/css")) {
+            LOG.log(Level.FINE, "ignoring non-pure (text/css) file, actual mimetype is {0}", mimeType);
+            return ;
+        }
 
         cancelled = false;
 
         final int caretOffset;
         if (event == null) {
-            LOG.log(Level.FINE, "run() - NULL SchedulerEvent?!?!?!");
             caretOffset = -1;
         } else {
             if (event instanceof CursorMovedSchedulerEvent) {
