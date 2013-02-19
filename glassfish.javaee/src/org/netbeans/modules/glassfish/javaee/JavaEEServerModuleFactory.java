@@ -206,7 +206,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
 
             File j2eeDoc = InstalledFileLocator.getDefault().locate(
-                    "docs/" + PERSISTENCE_JAVADOC, null, false); // NOI18N
+                    "docs/" + PERSISTENCE_JAVADOC,
+                    Hk2LibraryProvider.JAVAEE_DOC_CODE_BASE, false);
             if (j2eeDoc != null) {
                 docList.add(ServerUtilities.fileToUrl(j2eeDoc));
             } else {
@@ -281,7 +282,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         File j2eeDoc = InstalledFileLocator.getDefault().locate(
-                "docs/" + JAVA_EE_JAVADOC, null, false); // NOI18N
+                "docs/" + JAVA_EE_JAVADOC,
+                Hk2LibraryProvider.JAVAEE_DOC_CODE_BASE, false);
         if (j2eeDoc != null) {
             try {
                 docList.add(ServerUtilities.fileToUrl(j2eeDoc));
