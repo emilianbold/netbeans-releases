@@ -511,7 +511,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     @Override
-    public Configuration defaultConf(String name, int type) {
+    public Configuration defaultConf(String name, int type, String customizerId) {
         String defaultHost = CppUtils.getDefaultDevelopmentHost();
         Project proj = getProject();
         if (proj != null) {
@@ -521,7 +521,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
         }
         
-        MakeConfiguration c = new MakeConfiguration(FSPath.toFSPath(baseDirFO), name, type, defaultHost);
+        MakeConfiguration c = MakeConfiguration.createConfiguration(FSPath.toFSPath(baseDirFO), name, type, customizerId, defaultHost);
         Item[] items = getProjectItems();
         for (int i = 0; i < items.length; i++) {
             c.addAuxObject(new ItemConfiguration(c, items[i]));

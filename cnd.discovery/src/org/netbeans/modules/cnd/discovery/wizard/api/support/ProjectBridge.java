@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -128,7 +129,7 @@ public class ProjectBridge {
     public ProjectBridge(String baseFolder) throws IOException{
         this.baseFolder = baseFolder;
         // TODO: create localhost based project
-        MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST); // NOI18N
+        MakeConfiguration extConf = MakeConfiguration.createMakefileConfiguration(new FSPath(CndFileUtils.getLocalFileSystem(), baseFolder), "Default",  HostInfoUtils.LOCALHOST); // NOI18N
         String workingDir = baseFolder;
         String workingDirRel = CndPathUtilitities.toRelativePath(baseFolder, CndPathUtilitities.naturalizeSlashes(workingDir));
         workingDirRel = CndPathUtilitities.normalizeSlashes(workingDirRel);

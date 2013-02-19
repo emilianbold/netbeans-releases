@@ -1012,7 +1012,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } catch (FileStateInvalidException ex) {
             throw new IllegalStateException(ex);
         }
-        MakeConfiguration makeConfiguration = new MakeConfiguration(fsPath, getString(value), confType, customizerId, host);
+        MakeConfiguration makeConfiguration = MakeConfiguration.createConfiguration(fsPath, getString(value), confType, customizerId, host);
         return makeConfiguration;
     }
 
