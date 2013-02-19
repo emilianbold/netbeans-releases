@@ -87,7 +87,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public class MakeConfiguration extends Configuration implements Cloneable {
+public final class MakeConfiguration extends Configuration implements Cloneable {
 
     public static final String NBPROJECT_FOLDER = "nbproject"; // NOI18N
     public static final String NBPROJECT_PRIVATE_FOLDER = "nbproject/private"; // NOI18N
@@ -139,6 +139,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
     // Configurations
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
+    private CompileConfiguration compileConfiguration;
     private CompilerSet2Configuration compilerSet;
     private LanguageBooleanConfiguration cRequired;
     private LanguageBooleanConfiguration cppRequired;
@@ -165,37 +166,37 @@ public class MakeConfiguration extends Configuration implements Cloneable {
     
     private String customizerId = null;
 
-    //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
-    public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
-        this(baseDir, name, configurationTypeValue, null);
-    }
-
-    //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
-    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID) {
-        this(baseDir, name, configurationTypeValue, hostUID, null, true);
-    }
-
-    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
-        this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, configurationTypeValue, null, hostUID, hostCS, defaultToolCollection);
-    }
+//    //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
+//    public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
+//        this(baseDir, name, configurationTypeValue, null);
+//    }
+//
+//    //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
+//    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID) {
+//        this(baseDir, name, configurationTypeValue, hostUID, null, true);
+//    }
+//
+//    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
+//        this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, configurationTypeValue, null, hostUID, hostCS, defaultToolCollection);
+//    }
+//    
+//    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue) {
+//        this(fsPath, name, configurationTypeValue, null);
+//    }
+//
+//    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID) {
+//        this(fsPath, name, configurationTypeValue, null, hostUID, null, true);
+//    }
     
-    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue) {
-        this(fsPath, name, configurationTypeValue, null);
-    }
-
-    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID) {
-        this(fsPath, name, configurationTypeValue, null, hostUID, null, true);
-    }
-    
-    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID) {
+    private MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID) {
         this(fsPath, name, configurationTypeValue, customizerId, hostUID, null, true);
     }
-    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
+    private MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         this(fsPath, name, configurationTypeValue, null, hostUID,  hostCS, defaultToolCollection);
     }
         
 
-    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
+    private MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         super(fsPath, name);
         remoteMode = RemoteProject.DEFAULT_MODE;
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
@@ -225,6 +226,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
         fortranRequired = new LanguageBooleanConfiguration();
         assemblerRequired = new LanguageBooleanConfiguration();
         makefileConfiguration = new MakefileConfiguration(this);
+        compileConfiguration = new CompileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
         rebuildPropChanged = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getRebuildPropChanged());
         cCompilerConfiguration = new CCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
@@ -243,6 +245,37 @@ public class MakeConfiguration extends Configuration implements Cloneable {
         codeAssistanceConfiguration = new CodeAssistanceConfiguration(this);
         initAuxObjects();
     }
+    
+    /**
+     * Will create the configuration of type MakeConfiguration.TYPE_MAKEFILE, the configuration will be saved on the local machine
+     * and will be created for default Build Host, which is returned by {@link #org.netbeans.modules.cnd.makeproject.configurations.CppUtils.getDefaultDevelopmentHost()} method
+     * For full remote project should use {@link #createMakefileConfiguration(FSPath, String, String)}
+     * @param baseDir path to the folder the configuration will be saved in
+     * @param name the name of the configuration
+     * @return the MakeConfiguration
+     */
+    public static MakeConfiguration createDefaultHostMakefileConfiguration(String baseDir, String name) {
+        return new MakeConfiguration(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, MakeConfiguration.TYPE_MAKEFILE, null, null);
+    }
+    
+    public static MakeConfiguration createMakefileConfiguration(FSPath baseDir, String name, String hostID) {
+        return new MakeConfiguration(baseDir, name, MakeConfiguration.TYPE_MAKEFILE, null, hostID);
+    }
+    
+    public static MakeConfiguration createMakefileConfiguration(FSPath baseDir, String name, String hostID, CompilerSet hostCS, boolean defaultToolCollection) {
+        return new MakeConfiguration(baseDir, name, MakeConfiguration.TYPE_MAKEFILE, null, hostID, hostCS, defaultToolCollection);
+    }
+    
+    
+    public static MakeConfiguration createConfiguration(FSPath baseDir, String name, int configurationType, String customizerID, String hostID) {
+        return new MakeConfiguration(baseDir, name, configurationType, customizerID, hostID);
+    }    
+    
+    public static MakeConfiguration createConfiguration(FSPath baseDir, String name, 
+            int configurationType, String customizerID, String hostID, CompilerSet hostCS, boolean defaultToolCollection) {
+        return new MakeConfiguration(baseDir, 
+                name, configurationType, customizerID, hostID, hostCS, defaultToolCollection);
+    }        
 
     public void setMakefileConfiguration(MakefileConfiguration makefileConfiguration) {
         this.makefileConfiguration = makefileConfiguration;
@@ -251,6 +284,15 @@ public class MakeConfiguration extends Configuration implements Cloneable {
 
     public MakefileConfiguration getMakefileConfiguration() {
         return makefileConfiguration;
+    }
+
+    public void setCompileConfiguration(CompileConfiguration compileConfiguration) {
+        this.compileConfiguration = compileConfiguration;
+        this.compileConfiguration.setMakeConfiguration(this);
+    }
+
+    public CompileConfiguration getCompileConfiguration() {
+        return compileConfiguration;
     }
 
     public IntConfiguration getConfigurationType() {
@@ -555,6 +597,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
         getRebuildPropChanged().assign(makeConf.getRebuildPropChanged());
 
         getMakefileConfiguration().assign(makeConf.getMakefileConfiguration());
+        getCompileConfiguration().assign(makeConf.getCompileConfiguration());
         getCCompilerConfiguration().assign(makeConf.getCCompilerConfiguration());
         getCCompilerConfiguration().setOwner(makeConf);
         getCCCompilerConfiguration().assign(makeConf.getCCCompilerConfiguration());
@@ -596,7 +639,9 @@ public class MakeConfiguration extends Configuration implements Cloneable {
      */
     @Override
     public Configuration copy() {
-        MakeConfiguration copy = new MakeConfiguration(getBaseFSPath(), getName(), getConfigurationType().getValue());
+        MakeConfiguration copy = 
+                MakeConfiguration.createConfiguration(getBaseFSPath(), getName(), getConfigurationType().getValue(), 
+                getCustomizerId(), ExecutionEnvironmentFactory.toUniqueID(developmentHost.getExecutionEnvironment()));
         copy.assign(this);
         // copy aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects();
@@ -700,6 +745,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
         clone.setFortranRequired(getFortranRequired().clone());
         clone.setAssemblerRequired(getAssemblerRequired().clone());
         clone.setMakefileConfiguration(getMakefileConfiguration().clone());
+        clone.setCompileConfiguration(getCompileConfiguration().clone());
         clone.setDependencyChecking(getDependencyChecking().clone());
         clone.setRebuildPropChanged(getRebuildPropChanged().clone());
         clone.setCCompilerConfiguration(getCCompilerConfiguration().clone());
@@ -951,7 +997,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
     public void setCodeAssistanceConfiguration(CodeAssistanceConfiguration codeAssistanceConfiguration) {
         this.codeAssistanceConfiguration = codeAssistanceConfiguration;
     }
-    
+
     public class LanguageBooleanConfiguration extends BooleanConfiguration implements Cloneable {
 
         private boolean notYetSet = true;
