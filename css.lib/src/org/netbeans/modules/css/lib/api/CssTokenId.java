@@ -234,7 +234,11 @@ public enum CssTokenId implements TokenId {
     MOZ_URL_PREFIX(Css3Lexer.MOZ_URL_PREFIX, URIS),
     MOZ_REGEXP(Css3Lexer.MOZ_REGEXP, STRINGS),
     
-    AT_IDENT(Css3Lexer.AT_IDENT, AT_RULE_SYMBOL);
+    AT_IDENT(Css3Lexer.AT_IDENT, AT_RULE_SYMBOL),
+    
+    GREATER_OR_EQ(Css3Lexer.GREATER_OR_EQ, OPERATORS),
+    LESS(Css3Lexer.LESS, OPERATORS),
+    LESS_OR_EQ(Css3Lexer.LESS_OR_EQ, OPERATORS);
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
     static {

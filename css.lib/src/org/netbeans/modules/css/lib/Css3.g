@@ -526,7 +526,11 @@ property
     ;
     
 rule 
-    :   ( selectorsGroup | {isLessSource()}? less_mixin_declaration )
+    :   ( 
+            ( {isLessSource()}? less_mixin_declaration )
+            | 
+            ( selectorsGroup )
+        )
 //        LBRACE ws? syncToDeclarationsRule
         LBRACE ws? syncToFollow
             declarations
@@ -537,8 +541,8 @@ rule
         consumeUntil(input, BitSet.of(RBRACE));
         input.consume(); //consume the RBRACE as well   
         }
-    
 
+    
 declarations
     :
             (
@@ -715,7 +719,7 @@ pseudo
 declaration
     : 
     //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
-    STAR? property COLON ws? propertyValue prio?
+    STAR? property COLON ws? propertyValue (prio ws?)?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -743,7 +747,7 @@ propertyValue
 expressionPredicate
     options { k = 1; }
     :
-    ( ~ (PLUS | MINUS | STAR | SOLIDUS | LBRACE | SEMI | RBRACE) )+ ( SEMI | RBRACE )
+    ( ~ (AT_IDENT | STAR | SOLIDUS | LBRACE | SEMI | RBRACE) )+ ( SEMI | RBRACE )
     ;
     
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
@@ -827,8 +831,8 @@ functionName
         //css spec allows? here just IDENT, 
         //but due to some nonstandart MS extension like progid:DXImageTransform.Microsoft.gradien
         //the function name can be a bit more complicated
-	//: (IDENT COLON)? IDENT (DOT IDENT)*
-	: IDENT
+	: (IDENT COLON)? IDENT (DOT IDENT)*
+//	: IDENT
     	;
     	
 fnAttribute

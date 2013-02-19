@@ -391,7 +391,7 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(content);
 //        TestUtil.dumpResult(result);
 
-        assertResult(result, 2);
+        assertResult(result, 1);
     }
 
     public void testIdParsing() throws ParseException, BadLocationException {
@@ -619,7 +619,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "rule/declarations/declaration/propertyValue/expression/term/function/expression/error");
         assertNotNull(error);
 
-        assertResult(result, 3);
+        assertResult(result, 2);
 
     }
 
@@ -831,10 +831,10 @@ public class Css3ParserTest extends CssTestBase {
     }
 
     public void testParserRecovery_Issue203579() throws BadLocationException, ParseException {
-        String code = "p {} #{} .{} div {}";
+        String code = "p {} #{} div {}";
         CssParserResult result = TestUtil.parse(code);
 
-//        NodeUtil.dumpTree(result.getParseTree());
+        NodeUtil.dumpTree(result.getParseTree());
 
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem|0/"
@@ -848,8 +848,16 @@ public class Css3ParserTest extends CssTestBase {
         assertNotNull(node);
         assertTrue(NodeUtil.containsError(node));
 
-        node = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem|2/"
+    }
+    
+    public void testParserRecovery_Issue203579_fails() throws BadLocationException, ParseException {
+        String code = ".{}";
+        CssParserResult result = TestUtil.parse(code);
+
+        NodeUtil.dumpTree(result.getParseTree());
+
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/body/bodyItem/"
                 + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssClass");
         assertNotNull(node);
         assertTrue(NodeUtil.containsError(node));
@@ -893,7 +901,10 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(result);
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
-                + "rule/declarations/declaration/propertyValue/expression/error");
+                + "rule/declarations/declaration/propertyValue/error");
+//        Node node = NodeUtil.query(result.getParseTree(),
+//                "styleSheet/body/bodyItem/"
+//                + "rule/declarations/declaration/propertyValue/expression/error");
         assertNotNull(node);
         assertEquals(15, node.from());
         assertEquals(16, node.to());
@@ -953,7 +964,7 @@ public class Css3ParserTest extends CssTestBase {
 
         TestUtil.dumpResult(result);
 
-        assertResult(result, 2);
+        assertResult(result, 1);
 
     }
 
