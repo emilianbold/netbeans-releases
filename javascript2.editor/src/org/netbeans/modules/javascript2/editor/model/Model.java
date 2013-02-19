@@ -94,8 +94,6 @@ public final class Model {
             resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
             
             long startCallingME = System.currentTimeMillis();
-            ModelExtender modelExt = ModelExtender.getDefault();
-            List<MethodInterceptor> methodCallProcessors = modelExt.getMethodCallProcessors();
             Map<String, Collection<Collection<JsFunctionArgument>>> calls = visitor.getFuncCallsFroProcessing();
             if (calls != null && !calls.isEmpty()) {
                 Collection<MethodInterceptor> processors = ModelExtender.getDefault().getMethodCallProcessors();
