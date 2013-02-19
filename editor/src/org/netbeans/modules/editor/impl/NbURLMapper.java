@@ -50,7 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.editor.lib.URLMapper;
+import org.netbeans.modules.editor.lib2.URLMapper;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -62,7 +62,7 @@ import org.openide.util.Lookup;
  *
  * @author Vita Stejskal
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.lib.URLMapper.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.lib2.URLMapper.class)
 public final class NbURLMapper extends URLMapper {
 
     private static final Logger LOG = Logger.getLogger(NbURLMapper.class.getName());
