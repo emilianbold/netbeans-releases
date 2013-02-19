@@ -45,14 +45,26 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Collection;
+import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
  * @author Petr Pisl
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.TYPE)
-public @interface MethodCallProcessorRegistration {
-    String fullQualifiedName();
-    int priority() default 100;
+public interface MethodInterceptor {
+
+    String getFullyQualifiedMethodName();
+
+    Collection<? extends JsObject> intercept(JsObject globalObject, Collection<JsFunctionArgument> args);
+
+    @Retention(RetentionPolicy.SOURCE)
+    @Target(ElementType.TYPE)
+    public @interface Registration {
+
+        String fullQualifiedName();
+
+        int priority() default 100;
+    }
 }

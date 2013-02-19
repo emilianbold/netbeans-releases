@@ -43,7 +43,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.MethodCallProcessor;
+import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -53,7 +53,7 @@ import org.openide.util.lookup.Lookups;
  */
 public final class ModelExtender {
     public static final String METHODCALLS_PATH = "JavaScript/Model/MethodCallProcessors";
-    private static final Lookup.Result<MethodCallProcessor> METHOD_CALLS = Lookups.forPath(METHODCALLS_PATH).lookupResult(MethodCallProcessor.class);
+    private static final Lookup.Result<MethodInterceptor> METHOD_CALLS = Lookups.forPath(METHODCALLS_PATH).lookupResult(MethodInterceptor.class);
             
     static class InstanceWrapper {
         static ModelExtender extender = new ModelExtender();
@@ -71,8 +71,8 @@ public final class ModelExtender {
      * Get all registered {@link MethodCallProcessor}s.
      * @return a list of all registered {@link MethodCallProcessor}s; never null.
      */
-    public List<MethodCallProcessor> getMethodCallProcessors() {
-        return new ArrayList<MethodCallProcessor>(METHOD_CALLS.allInstances());
+    public List<MethodInterceptor> getMethodCallProcessors() {
+        return new ArrayList<MethodInterceptor>(METHOD_CALLS.allInstances());
     }
     
 }

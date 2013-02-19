@@ -49,9 +49,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.javascript2.editor.model.MethodCallProcessor;
-import org.netbeans.modules.javascript2.editor.model.spi.MethodCallProcessorRegistration;
-import org.openide.filesystems.annotations.LayerBuilder;
+import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -63,9 +61,9 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=Processor.class)
 @SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.model.spi.MethodCallProcessorRegistration") //NOI18N
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class MethodCallProcessorRegistrationProvider extends LayerGeneratingProcessor {
+public class MethodInterceptorRegistrationProcessor extends LayerGeneratingProcessor {
 
-    public MethodCallProcessorRegistrationProvider() {
+    public MethodInterceptorRegistrationProcessor() {
         super();
     }
     
@@ -90,11 +88,11 @@ public class MethodCallProcessorRegistrationProvider extends LayerGeneratingProc
         
 //        return true;
         
-        for (Element element : roundEnv.getElementsAnnotatedWith(MethodCallProcessorRegistration.class)) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(MethodInterceptor.Registration.class)) {
             layer(element)
-                    .instanceFile("JavaScript/Model/MethodCallProcessors", null, MethodCallProcessor.class)
-                    .intvalue("position", element.getAnnotation(MethodCallProcessorRegistration.class).priority()) // NOI18N
-                    .stringvalue("fullyQualifiedName", element.getAnnotation(MethodCallProcessorRegistration.class).fullQualifiedName()) // NOI18N
+                    .instanceFile("JavaScript/Model/MethodCallProcessors", null, MethodInterceptor.class)
+                    .intvalue("position", element.getAnnotation(MethodInterceptor.Registration.class).priority()) // NOI18N
+                    .stringvalue("fullyQualifiedName", element.getAnnotation(MethodInterceptor.Registration.class).fullQualifiedName()) // NOI18N
                     .write();
         }
         return true;

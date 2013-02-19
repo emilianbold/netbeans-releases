@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
 import java.text.MessageFormat;
 import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.ir.Node;
@@ -94,15 +95,15 @@ public final class Model {
             
             long startCallingME = System.currentTimeMillis();
             ModelExtender modelExt = ModelExtender.getDefault();
-            List<MethodCallProcessor> methodCallProcessors = modelExt.getMethodCallProcessors();
+            List<MethodInterceptor> methodCallProcessors = modelExt.getMethodCallProcessors();
             Map<String, Collection<Collection<JsFunctionArgument>>> calls = visitor.getFuncCallsFroProcessing();
             if (calls != null && !calls.isEmpty()) {
-                Collection<MethodCallProcessor> processors = ModelExtender.getDefault().getMethodCallProcessors();
-                for(MethodCallProcessor mcp: processors) {
+                Collection<MethodInterceptor> processors = ModelExtender.getDefault().getMethodCallProcessors();
+                for(MethodInterceptor mcp: processors) {
                     Collection<Collection<JsFunctionArgument>> fncCalls = calls.get(mcp.getFullyQualifiedMethodName());
                     if (fncCalls != null && !fncCalls.isEmpty()) {
                         for(Collection<JsFunctionArgument> args : fncCalls) {
-                            mcp.process(visitor.getGlobalObject(), args);
+                            mcp.intercept(visitor.getGlobalObject(), args);
                         }
                     }
                 }

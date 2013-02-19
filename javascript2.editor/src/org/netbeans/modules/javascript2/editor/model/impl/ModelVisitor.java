@@ -83,7 +83,7 @@ import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.MethodCallProcessor;
+import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
@@ -387,7 +387,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                     if(functionCalls == null) {
                         functionCalls = new HashMap<String, Collection<Collection<JsFunctionArgument>>>();
-                        for(MethodCallProcessor mcp : ModelExtender.getDefault().getMethodCallProcessors()) {
+                        for(MethodInterceptor mcp : ModelExtender.getDefault().getMethodCallProcessors()) {
                             functionCalls.put(mcp.getFullyQualifiedMethodName(), null);
                         }
                     }
