@@ -107,6 +107,7 @@ import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.SuspendSupport;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
@@ -165,6 +166,9 @@ public class BinaryAnalyser {
 
     private static final String INIT ="<init>"; //NOI18N
     private static final String CLINIT ="<clinit>"; //NOI18N
+    private static final String OUTHER_THIS_PREFIX = "this$"; //NOI18N
+    private static final String ACCESS_METHOD_PREFIX = "access$";   //NOI18N
+    private static final String ASSERTIONS_DISABLED = "$assertionsDisabled";    //NOI18N
     private static final String ROOT = "/"; //NOI18N
     private static final String TIME_STAMPS = "timestamps.properties";   //NOI18N
     private static final String CRC = "crc.properties"; //NOI18N
@@ -450,10 +454,7 @@ public class BinaryAnalyser {
         }
         return new Changes(true, added, removed, changed, preBuildArgs);
     }
-
-    private static String nameToString( ClassName name ) {
-        return name.getInternalName().replace('/', '.');        // NOI18N
-    }
+    
         
     private void releaseData() {
         refs.clear();
@@ -503,15 +504,9 @@ public class BinaryAnalyser {
         @NonNull final Pair<String,String> name,
         @NonNull final UsagesData<ClassName> usages) {
         assert name != null;
-        assert usages != null;
-        final List<String> typeUsages = new ArrayList<String>();
-        for (Map.Entry<ClassName,Set<ClassIndexImpl.UsageType>> entry : usages.usages.entrySet()) {
-            final ClassName cn = entry.getKey();
-            final Set<ClassIndexImpl.UsageType> usage = entry.getValue();
-            typeUsages.add (DocumentUtil.encodeUsage(nameToString(cn), usage));
-        }
+        assert usages != null;        
         final Object[] cr = new Object[] {
-            typeUsages,
+            usages.usagesToStrings(),
             usages.featureIdentsToString(),
             usages.identsToString()
         };
@@ -534,15 +529,23 @@ public class BinaryAnalyser {
     //<editor-fold defaultstate="collapsed" desc="ClassFileProcessor implementations">
     private static class ClassFileProcessor {
 
+        private static final Convertor<ClassName,String> CONVERTOR =
+                new Convertor<ClassName, String>() {
+                    @Override
+                    public String convert(ClassName p) {
+                        return p.getInternalName().replace('/', '.');        // NOI18N
+                    }
+                };
+
         private final ClassFile classFile;
         private final String className;
         private final UsagesData<ClassName> usages =
-                new UsagesData<ClassName>();
+                new UsagesData<ClassName>(CONVERTOR);
 
         ClassFileProcessor(
                 @NonNull final ClassFile classFile) {
             this.classFile = classFile;
-            this.className = nameToString (classFile.getName ());
+            this.className = CONVERTOR.convert(classFile.getName ());
         }
 
         final String getClassName() {
@@ -572,7 +575,7 @@ public class BinaryAnalyser {
 
         final void addIdent (@NonNull final CharSequence ident) {
             assert ident != null;
-            usages.featuresIdents.add(ident);
+            usages.addFeatureIdent(ident);
         }
 
         final void addUsage (
@@ -581,16 +584,11 @@ public class BinaryAnalyser {
             if (OBJECT.equals(name.getExternalName())) {
                 return;
             }
-            Set<ClassIndexImpl.UsageType> uset = usages.usages.get(name);
-            if (uset == null) {
-                uset = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
-                usages.usages.put(name, uset);
-            }
-            uset.add(usage);
+            usages.addUsage(name, usage);
         }
 
         final boolean hasUsage(@NonNull final ClassName name) {
-            return usages.usages.keySet().contains (name);
+            return usages.hasUsage(name);
         }
 
         final void handleAnnotations(
@@ -682,22 +680,39 @@ public class BinaryAnalyser {
         @Override
         void visit(@NonNull final Method m) {
             final String name = m.getName();
-            if (!m.isSynthetic() && !isInit(name)) {
+            if (!m.isSynthetic() &&
+                !isInit(name) &&
+                !isAccessorMethod(name)) {
                 addIdent(name);
             }
             super.visit(m);
         }
 
         @Override
-        void visit(@NonNull final Variable v) {            
-            if (!v.isSynthetic()) {
-                addIdent(v.getName());
+        void visit(@NonNull final Variable v) {
+            final String name = v.getName();
+            if (!v.isSynthetic() &&
+                !isOutherThis(name) &&
+                !isDisableAssertions(name)) {
+                addIdent(name);
             }
             super.visit(v);
         }
 
-        private boolean isInit(@NonNull final String name) {
+        private static boolean isInit(@NonNull final String name) {
             return INIT.equals(name) || CLINIT.equals(name);
+        }
+
+        private static boolean isOutherThis(@NonNull final String name) {
+            return name.startsWith(OUTHER_THIS_PREFIX);
+        }
+
+        private static boolean isAccessorMethod(@NonNull final String name) {
+            return name.startsWith(ACCESS_METHOD_PREFIX);
+        }
+
+        private static boolean isDisableAssertions(@NonNull final String name) {
+            return ASSERTIONS_DISABLED.equals(name);
         }
     }
 

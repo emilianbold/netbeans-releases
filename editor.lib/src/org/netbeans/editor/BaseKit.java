@@ -102,7 +102,7 @@ import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
-import org.netbeans.modules.editor.lib.NavigationHistory;
+import org.netbeans.api.editor.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.KeyBindingsUpdater;
@@ -1749,6 +1749,12 @@ public class BaseKit extends DefaultEditorKit {
         protected boolean nextChar;
 
         static final long serialVersionUID =-4321971925753148556L;
+        
+        /**
+         * This may be used to overcome a JDK bug on Mac OS X (NB issue #219853).
+         */
+        private static final boolean disableDeleteFromScreenMenu = Boolean.TRUE.equals(
+                Boolean.getBoolean("netbeans.editor.disable.delete.from.screen.menu"));
 
         public DeleteCharAction(String nm, boolean nextChar) {
             super(nm, MAGIC_POSITION_RESET | ABBREV_RESET | WORD_MATCH_RESET);
@@ -1757,6 +1763,10 @@ public class BaseKit extends DefaultEditorKit {
 
         public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
+                // ScreenMenuItem from screen menu on Mac OS X should extend java.awt.MenuItem
+                if (disableDeleteFromScreenMenu && (evt.getSource() instanceof java.awt.MenuItem)) {
+                    return;
+                }
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
                     return;

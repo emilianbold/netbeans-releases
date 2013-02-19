@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
@@ -237,7 +238,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
 
             commandLine = pae.getRunCommandAsString();
-        } else { // Build or Clean
+        } else { // Build or Clean or compile
             // Build or Clean
             cs = conf.getCompilerSet().getCompilerSet();
             String csdirs = cs.getDirectory();
@@ -259,6 +260,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 qmakePath = CppUtils.normalizeDriveLetter(cs, qmakePath.replace('\\', '/')); // NOI18N
                 args = pae.getArguments();
                 args.add("QMAKE=" + CndPathUtilitities.escapeOddCharacters(qmakePath)); // NOI18N
+            }
+            if (conf.isMakefileConfiguration() && !CompileConfiguration.AUTO_COMPILE.equals(conf.getCompileConfiguration().getCompileCommand().getValue())) {
+                commandLine = pae.getRunCommandAsString();
             }
         }
 

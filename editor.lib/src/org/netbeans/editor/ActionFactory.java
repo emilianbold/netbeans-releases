@@ -93,7 +93,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.editor.lib.NavigationHistory;
+import org.netbeans.api.editor.NavigationHistory;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.openide.util.ContextAwareAction;

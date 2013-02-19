@@ -59,6 +59,7 @@ import org.openide.util.ImageUtilities;
 public final class MakeProjectTypeImpl implements NativeProjectType {
 
     public static final String TYPE = "org.netbeans.modules.cnd.makeproject"; // NOI18N
+    public static final String PROJECT_TYPE = "org-netbeans-modules-cnd-makeproject";//NOI18N
     public static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
     public static final String PROJECT_CONFIGURATION__NAME_NAME = "name"; // NOI18N
@@ -167,6 +168,6 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     }
 
     private String projectLayerPath() {
-        return "Projects/org-netbeans-modules-cnd-makeproject"; //NOI18N
+        return "Projects/" + PROJECT_TYPE; //NOI18N
     }
 }

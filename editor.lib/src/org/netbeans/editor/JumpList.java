@@ -52,7 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.editor.lib.NavigationHistory;
+import org.netbeans.api.editor.NavigationHistory;
 import org.openide.modules.PatchedPublic;
 import org.openide.util.WeakListeners;
 
