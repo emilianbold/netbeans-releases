@@ -194,6 +194,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataObject;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -1068,7 +1069,8 @@ public final class WebProject implements Project {
         private void updateProject() {
             // Make it easier to run headless builds on the same machine at least.
             EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+
+            File buildProperties = new File(Places.getUserDirectory(), "build.properties"); // NOI18N
             ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
 
             //remove jaxws.endorsed.dir property
