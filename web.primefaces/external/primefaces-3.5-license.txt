@@ -1,9 +1,9 @@
 Name: PrimeFaces
-Version: 3.4
-Description: Bundles PrimeFaces components that can be used with JSF
+Version: 3.5
+Description: Bundles PrimeFaces components library that can be used with JSF framework
 License: Apache-2.0
 Origin: http://www.primefaces.org/downloads.html
-Files: primefaces-3.4.jar
+Files: primefaces-3.5.jar
 
 
                                  Apache License
