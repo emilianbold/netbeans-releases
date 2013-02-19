@@ -69,6 +69,7 @@ import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -113,52 +114,49 @@ class HeapView extends JComponent {
     /**
      * Colors for the grid. This is alternating pairs for a linear gradient.
      */
-    private static final Color[] GRID_COLORS = new Color[] {    // FIXME
-        new Color(0xE3DFCF), new Color(0xE7E4D3),
-        new Color(0xDAD7C6), new Color(0xDFDCCB),
-        new Color(0xD3CFBF), new Color(0xD7D3C3),
-        new Color(0xCECABA), new Color(0xD0CCBC)
-    };
+    private static final Color[] GRID_COLORS = new Color[8];
     
     /**
      * Border color.
      */
-    private static final Color BORDER1_COLOR = new Color(0xA6A295);
+    private static Color border1Color;
 
     /**
      * Border color of line below the top.
      */
-    private static final Color BORDER2_COLOR = new Color(0xC0BCAD);
+    private static Color border2Color;
+
+    private static Color border3Color;
     
     /**
      * Start color for the tick gradient.
      */
-    private static final Color MIN_TICK_COLOR = new Color(0xC7D6AD);
+    private static Color minTickColor;
 
     /**
      * End color for the tick gradient.
      */
-    private static final Color MAX_TICK_COLOR = new Color(0x615d0f);
+    private static Color maxTickColor;
 
     /**
      * Color for the text before blurred.
      */
-    private static final Color TEXT_BLUR_COLOR = Color.WHITE;
+    private static Color textBlurColor;
     
     /**
      * Color for text drawn on top of blurred text.
      */
-    private static final Color TEXT_COLOR = Color.WHITE;
+    private static Color textColor;
 
     /**
      * Start color for the background gradient.
      */
-    private static final Color BACKGROUND1_COLOR = new Color(0xD0CCBC);
+    private static Color background1Color;
 
     /**
      * End color for the background gradient.
      */
-    private static final Color BACKGROUND2_COLOR = new Color(0xEAE7D7);
+    private static Color background2Color;
     
     /**
      * Size used for Kernel used to generate drop shadow.
@@ -179,6 +177,94 @@ class HeapView extends JComponent {
      * How far to shift the drop shadow along the vertical axis.
      */
     private static final int SHIFT_Y = 1;
+
+    static {
+        //init colors
+        Color c = UIManager.getColor( "nb.heapview.border1" ); //NOI18N
+        if( null == c )
+            c = new Color(0xA6A295);
+        border1Color = c;
+
+        c = UIManager.getColor( "nb.heapview.border2" ); //NOI18N
+        if( null == c )
+            c = new Color(0xC0BCAD);
+        border2Color = c;
+
+        c = UIManager.getColor( "nb.heapview.border3" ); //NOI18N
+        if( null == c )
+            c = Color.WHITE;
+        border3Color = c;
+
+        c = UIManager.getColor( "nb.heapview.mintick.color" ); //NOI18N
+        if( null == c )
+            c = new Color(0xC7D6AD);
+        minTickColor = c;
+
+        c = UIManager.getColor( "nb.heapview.maxtick.color" ); //NOI18N
+        if( null == c )
+            c = new Color(0x615d0f);
+        maxTickColor = c;
+
+        c = UIManager.getColor( "nb.heapview.textblur" ); //NOI18N
+        if( null == c )
+            c = Color.WHITE;
+        textBlurColor = c;
+
+        c = UIManager.getColor( "nb.heapview.foreground" ); //NOI18N
+        if( null == c )
+            c = Color.WHITE;
+        textColor = c;
+
+        c = UIManager.getColor( "nb.heapview.background1" ); //NOI18N
+        if( null == c )
+            c = new Color(0xD0CCBC);
+        background1Color = c;
+
+        c = UIManager.getColor( "nb.heapview.background2" ); //NOI18N
+        if( null == c )
+            c = new Color(0xEAE7D7);
+        background2Color = c;
+
+        c = UIManager.getColor( "nb.heapview.grid1.start" );
+        if( null == c )
+            c = new Color(0xE3DFCF);
+        GRID_COLORS[0] = c;
+
+        c = UIManager.getColor( "nb.heapview.grid1.end" );
+        if( null == c )
+            c = new Color(0xE7E4D3);
+        GRID_COLORS[1] = c;
+
+        c = UIManager.getColor( "nb.heapview.grid2.start" );
+        if( null == c )
+            c = new Color(0xDAD7C6);
+        GRID_COLORS[2] = c;
+
+        c = UIManager.getColor( "nb.heapview.grid2.end" );
+        if( null == c )
+            c = new Color(0xDFDCCB);
+        GRID_COLORS[3] = c;
+
+        c = UIManager.getColor( "nb.heapview.grid3.start" );
+        if( null == c )
+            c = new Color(0xD3CFBF);
+        GRID_COLORS[4] = c;
+
+        c = UIManager.getColor( "nb.heapview.grid3.end" );
+        if( null == c )
+            c = new Color(0xD7D3C3);
+        GRID_COLORS[5] = c;
+
+        c = UIManager.getColor( "nb.heapview.grid4.start" );
+        if( null == c )
+            c = new Color(0xCECABA);
+        GRID_COLORS[6] = c;
+
+        c = UIManager.getColor( "nb.heapview.grid4.end" );
+        if( null == c )
+            c = new Color(0xD0CCBC);
+        GRID_COLORS[7] = c;
+    }
     
     /**
      * Used to generate drop shadown.
@@ -512,7 +598,7 @@ class HeapView extends JComponent {
                 if (getShowDropShadow()) {
                     paintDropShadowText(g, innerW, innerH);
                 } else {
-                    g.setColor(Color.WHITE);
+                    g.setColor(textColor);
                     paintText(g, innerW, innerH);
                 }
             }
@@ -585,7 +671,7 @@ class HeapView extends JComponent {
             blurryImageG.fillRect(0, 0, w, h);
             blurryImageG.setComposite(AlphaComposite.SrcOver);
             blurryImageG.drawImage(tsi, blur, SHIFT_X, SHIFT_Y);
-            blurryImageG.setColor(TEXT_COLOR);
+            blurryImageG.setColor(textColor);
             blurryImageG.setFont(getFont());
 
             // Step 3: render the text again on top.
@@ -603,7 +689,7 @@ class HeapView extends JComponent {
                     textImageG.setComposite(AlphaComposite.Clear);
                     textImageG.fillRect(0, 0, w, h);
                     textImageG.setComposite(AlphaComposite.SrcOver);
-                    textImageG.setColor(TEXT_BLUR_COLOR);
+                    textImageG.setColor(textBlurColor);
                     paintText(textImageG, w, h);
                     textImageG.dispose();
 
@@ -668,24 +754,24 @@ class HeapView extends JComponent {
     }
     
     private void paintBackground(Graphics2D g, int w, int h) {
-        g.setPaint(new GradientPaint(0, 0, BACKGROUND1_COLOR,
-                0, h, BACKGROUND2_COLOR));
+        g.setPaint(new GradientPaint(0, 0, background1Color,
+                0, h, background2Color));
         g.fillRect(0, 0, w, h);
     }
     
     private void paintBorder(Graphics g, int w, int h) {
         // Draw the border
         if (containsMouse) {
-            g.setColor(Color.WHITE);
+            g.setColor(border3Color);
             g.drawRect(0, 0, w - 1, h - 1);
             g.drawRect(1, 1, w - 3, h - 3);
         }
         else {
-            g.setColor(BORDER1_COLOR);
+            g.setColor(border1Color);
             g.drawRect(0, 0, w - 1, h - 2);
-            g.setColor(BORDER2_COLOR);
+            g.setColor(border2Color);
             g.fillRect(1, 1, w - 2, 1);
-            g.setColor(Color.WHITE);
+            g.setColor(border3Color);
             g.fillRect(0, h - 1, w, 1);
         }
     }
@@ -734,8 +820,8 @@ class HeapView extends JComponent {
             graphFilled = false;
             graphIndex = 0;
         }
-        GradientPaint tickGradient = new GradientPaint(0, h, MIN_TICK_COLOR,
-                w, 0, MAX_TICK_COLOR);
+        GradientPaint tickGradient = new GradientPaint(0, h, minTickColor,
+                w, 0, maxTickColor);
         tickGradientImage = createImage(w, h);
         imageG = (Graphics2D)tickGradientImage.getGraphics();
         imageG.setPaint(tickGradient);

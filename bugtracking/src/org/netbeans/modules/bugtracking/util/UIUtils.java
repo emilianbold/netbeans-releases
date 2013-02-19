@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.awt.AWTKeyStroke;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -69,6 +70,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
@@ -115,7 +117,41 @@ public class UIUtils {
         }
         keepFocusedComponentVisible(component, listener);
     }
+
+    public static Color getSectionPanelBackground() {
+        //force initialization of PropSheet look'n'feel values
+        UIManager.get( "nb.propertysheet" );
+
+        Color res = UIManager.getColor( "PropSheet.setBackground" );//NOI18N
+        if( null == res ) {
+            res = new Color( 224, 224, 224 );
+        }
+        return res;
+    }
     
+    public static Color getCollapsedPanelBackground() {
+        //force initialization of PropSheet look'n'feel values
+        UIManager.get( "nb.propertysheet" );
+
+        Color res = UIManager.getColor( "PropSheet.selectedSetBackground" );//NOI18N
+        if( null == res ) {
+            res = new Color( 224, 224, 224 );
+        }
+        return res;
+    }
+
+    public static Color getLinkColor() {
+        Color res = UIManager.getColor( "nb.html.link.foreground" );//NOI18N
+        if( null == res ) {
+            res = Color.blue;
+        }
+        return res;
+    }
+
+    public static boolean isNimbus() {
+        return "Nimbus".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
+    }
+
     private static void keepFocusedComponentVisible(Component component, FocusListener l) {
         component.removeFocusListener(l); // Making sure that it is not added twice
         component.addFocusListener(l);

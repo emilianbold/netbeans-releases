@@ -46,6 +46,7 @@ package org.netbeans.modules.form;
 
 import java.awt.Color;
 import java.util.prefs.Preferences;
+import javax.swing.UIManager;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.form.codestructure.*;
 import org.openide.util.NbPreferences;
@@ -496,7 +497,10 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
      * @return background color of the designer.
      */
     public java.awt.Color getFormDesignerBackgroundColor() {
-        int rgb = getPreferences().getInt(PROP_FORMDESIGNER_BACKGROUND_COLOR , Color.white.getRGB());
+        Color defaultBackground = UIManager.getColor( "Tree.background" ); //NOI18N
+        if( null == defaultBackground )
+            defaultBackground = Color.white;
+        int rgb = getPreferences().getInt(PROP_FORMDESIGNER_BACKGROUND_COLOR , defaultBackground.getRGB());
         return new Color(rgb);        
         
     }
