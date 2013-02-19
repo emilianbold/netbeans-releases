@@ -42,10 +42,17 @@
 
 package org.netbeans.modules.groovy.antproject.base;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -60,10 +67,13 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.groovy.support.spi.GroovyExtender;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.Parameters;
 
 /**
  * Base class for each Ant based groovy extender. This class encapsulates most of
@@ -118,7 +128,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
      * Add groovy-all.jar to the project ClassPath.
      */
     protected final boolean addClasspath() {
-        Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
+        Library groovyAllLib = getGroovyAllLibrary();
         if (groovyAllLib != null) {
             try {
                 Sources sources = ProjectUtils.getSources(project);
@@ -143,7 +153,7 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
      * Removes groovy-all.jar from project ClassPath.
      */
     protected final boolean removeClasspath() {
-        Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
+        Library groovyAllLib = getGroovyAllLibrary(); // NOI18N
         if (groovyAllLib != null) {
             try {
                 Sources sources = ProjectUtils.getSources(project);
@@ -156,6 +166,83 @@ public abstract class AbstractGroovyExtender implements GroovyExtender {
                 Exceptions.printStackTrace(ex);
             } catch (UnsupportedOperationException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+        return false;
+    }
+
+    private Library getGroovyAllLibrary() {
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            List<URL> uriContent = library.getContent("classpath"); // NOI18N
+            try {
+                if (containsClass(uriContent, "groovy.lang.GroovyObject")) { // NOI18N
+                    return library;
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+        }
+        return null;
+    }
+
+    private boolean containsClass(List<URL> classPath, String className) throws IOException {
+        Parameters.notNull("classpath", classPath); // NOI18N
+        Parameters.notNull("className", className); // NOI18N
+
+        List<File> diskFiles = new ArrayList<File>();
+        for (URL url : classPath) {
+            URL archiveURL = FileUtil.getArchiveFile(url);
+
+            if (archiveURL != null) {
+                url = archiveURL;
+            }
+
+            if ("nbinst".equals(url.getProtocol())) { // NOI18N
+                // try to get a file: URL for the nbinst: URL
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                    if (localURL != null) {
+                        url = localURL;
+                    }
+                }
+            }
+
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                File diskFile = FileUtil.toFile(fo);
+                if (diskFile != null) {
+                    diskFiles.add(diskFile);
+                }
+            }
+        }
+
+        return containsClass(diskFiles, className);
+    }
+
+    private boolean containsClass(Collection<File> classpath, String className) throws IOException {
+        Parameters.notNull("classpath", classpath); // NOI18N
+        Parameters.notNull("driverClassName", className); // NOI18N
+        String classFilePath = className.replace('.', '/') + ".class"; // NOI18N
+        for (File file : classpath) {
+            if (file.isFile()) {
+                JarFile jf = new JarFile(file);
+                try {
+                    Enumeration entries = jf.entries();
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = (JarEntry) entries.nextElement();
+                        if (classFilePath.equals(entry.getName())) {
+                            return true;
+                        }
+                    }
+                } finally {
+                    jf.close();
+                }
+            } else {
+                if (new File(file, classFilePath).exists()) {
+                    return true;
+                }
             }
         }
         return false;
