@@ -120,6 +120,8 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "nb.startpage.tab.border2.color", new Color(64,64,64) );
         UIManager.put( "nb.startpage.tab.imagename.selected", "org/netbeans/swing/plaf/resources/tab_selected.png" );
         UIManager.put( "nb.startpage.tab.imagename.rollover", "org/netbeans/swing/plaf/resources/tab_rollover.png" );
+
+        UIManager.put( "nb.editor.errorstripe.caret.color", new Color(222, 222, 222) ); //NOI18N
     }
 
     @Override

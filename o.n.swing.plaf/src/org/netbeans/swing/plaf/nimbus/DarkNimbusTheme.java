@@ -115,5 +115,7 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.startpage.tab.imagename.rollover", "org/netbeans/swing/plaf/resources/tab_rollover.png" );
 
         UIManager.put( "nb.popupswitcher.background", new Color(18, 30, 49) );
+
+        UIManager.put( "nb.editor.errorstripe.caret.color", new Color(230, 230, 230) ); //NOI18N
    }
 }
