@@ -43,6 +43,7 @@
 package org.netbeans.spi.project.ui.support;
 
 import org.netbeans.modules.project.uiapi.Utilities;
+import org.openide.filesystems.FileObject;
 
 /**
  * Register running and finished build/run/debug tasks for use
@@ -68,7 +69,7 @@ public final class BuildExecutionSupport {
 
     /**
      * Notify that the build job finished. The instance passed shall be the same
-     * (or at least equal) to the one passed to registerRunningItem().
+     * to the one passed to registerRunningItem().
      * It is assumed that the given job instance is registered only once and only after the
      * registerRunningItem() method was called.
      * @param item
@@ -102,5 +103,24 @@ public final class BuildExecutionSupport {
          */
         void stopRunning();
 
+    }
+    /**
+     * Wrapper for the build job used by <code>BuildExecutionSupport</code>, extending <code>Item</code>,
+     * allows collecting history of executions keyed by the <code>getAction()</code> values.
+     * Implement <code>equals</code> and <code>hashcode</code> for advanced duplicate item resolution.
+     * @since 1.69
+     */
+    public static interface ActionItem extends Item {
+        /**
+         * <code>ActionProvider</code> constants, used for grouping the history items, as of 1.69 only <code>ActionProvider.COMMAND_RUN</code> is supported in UI.
+         * @return never null
+         */
+        String getAction();
+        
+        /**
+         * used for memory releasing purposes, all items from given project will be removed when the project is no longer opened.
+         * @return directory fileobject or null when not part of a project execution 
+         */
+        FileObject getProjectDirectory();
     }
 }

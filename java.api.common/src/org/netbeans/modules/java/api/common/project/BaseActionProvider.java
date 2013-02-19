@@ -479,6 +479,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
             void doRun() {
                 Properties p = new Properties();
+                p.put("nb.internal.action.name", command);
                 String[] targetNames;
 
                 targetNames = getTargetNames(command, context, p, doJavaChecks);
@@ -491,6 +492,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         return ;
                     }
                     Map<String, Object> execProperties = new HashMap<String, Object>();
+                    execProperties.put("nb.internal.action.name", command);
 
                     copyMultiValue(ProjectProperties.RUN_JVM_ARGS, execProperties);
                     prepareWorkDir(execProperties);
