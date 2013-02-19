@@ -511,6 +511,7 @@ public class HgCommand {
         command.add(HG_UPDATE_ALL_CMD);
         command.add(HG_VERBOSE_CMD);
         if (bForce) command.add(HG_UPDATE_FORCE_ALL_CMD);
+        command.add(HG_MERGE_SIMPLE_TOOL);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         if (revision != null){
