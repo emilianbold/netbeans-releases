@@ -110,6 +110,16 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "nb.html.link.foreground.hover", new Color(255,216,0) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.visited", new Color(50,50,255) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.focus", new Color(255,216,0) ); //NOI18N
+
+        UIManager.put( "nb.startpage.defaultbackground", Boolean.TRUE );
+        UIManager.put( "nb.startpage.defaultbuttonborder", Boolean.TRUE );
+        UIManager.put( "nb.startpage.bottombar.background", new Color(64,64,64) );
+        UIManager.put( "nb.startpage.topbar.background", new Color(64,64,64) );
+        UIManager.put( "nb.startpage.border.color", new Color(18, 30, 49) );
+        UIManager.put( "nb.startpage.tab.border1.color", new Color(64,64,64) );
+        UIManager.put( "nb.startpage.tab.border2.color", new Color(64,64,64) );
+        UIManager.put( "nb.startpage.tab.imagename.selected", "org/netbeans/swing/plaf/resources/tab_selected.png" );
+        UIManager.put( "nb.startpage.tab.imagename.rollover", "org/netbeans/swing/plaf/resources/tab_rollover.png" );
     }
 
     @Override

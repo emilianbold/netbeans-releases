@@ -91,7 +91,7 @@ public abstract class LinkButton extends JButton
     }
 
     public LinkButton( String label, boolean showBorder, String usageTrackingId ) {
-        this( label, Utils.getColor(LINK_COLOR), showBorder, usageTrackingId );
+        this( label, Utils.getLinkColor(), showBorder, usageTrackingId );
     }
 
     public LinkButton( String label, Color foreground, String usageTrackingId ) {
@@ -102,13 +102,16 @@ public abstract class LinkButton extends JButton
         super( label );
         this.defaultForeground = foreground;
         this.showBorder = showBorder;
-        setForeground( defaultForeground );
+        if( !showBorder || !Utils.isDefaultButtons() )
+            setForeground( defaultForeground );
         setFont( BUTTON_FONT );
         this.usageTrackingId = usageTrackingId;
 
         if( showBorder ) {
-            setBorder( BorderFactory.createEmptyBorder(6, 12, 6, 12) );
-            setMargin( new Insets(12,12,12,12) );
+            if( !Utils.isDefaultButtons() ) {
+                setBorder( BorderFactory.createEmptyBorder(6, 12, 6, 12) );
+                setMargin( new Insets(12,12,12,12) );
+            }
         } else {
             setBorder( new EmptyBorder(1, 1, 1, 1) );
             setMargin( new Insets(0, 0, 0, 0) );
@@ -119,10 +122,12 @@ public abstract class LinkButton extends JButton
         addMouseListener(this);
         setFocusable( true );
 
-        setBorderPainted( false );
-        setFocusPainted( false );
-        setRolloverEnabled( true );
-        setContentAreaFilled( false );
+        if( !showBorder ) {
+            setBorderPainted( false );
+            setFocusPainted( false );
+            setRolloverEnabled( true );
+            setContentAreaFilled( false );
+        }
 
         addActionListener( this );
         addFocusListener( this );
@@ -154,7 +159,7 @@ public abstract class LinkButton extends JButton
         if( isEnabled() ) {
             underline = false;
             if( !showBorder )
-                setForeground( isVisited() ? Utils.getColor(VISITED_LINK_COLOR): defaultForeground );
+                setForeground( isVisited() ? Utils.getVisitedLinkColor(): defaultForeground );
             repaint();
             onMouseExited( e );
         }
@@ -163,16 +168,19 @@ public abstract class LinkButton extends JButton
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = Utils.prepareGraphics( g );
-        if( showBorder ) {
+        if( showBorder && !Utils.isDefaultButtons() ) {
             Border b = underline ? mouseoverBorder : regularBorder;
             b.paintBorder(this, g, 0, 0, getWidth(), getHeight());
         }
         super.paintComponent(g2);
 
+        if( showBorder && Utils.isDefaultButtons() )
+            return;
+
         Dimension size = getSize();
         if( hasFocus() && isEnabled() ) {
             g2.setStroke( LINK_IN_FOCUS_STROKE );
-            g2.setColor( Utils.getColor(LINK_IN_FOCUS_COLOR) );
+            g2.setColor( Utils.getFocusedLinkColor() );
             g2.drawRect( 0, 0, size.width - 1, size.height - 1 );
         }
     }
@@ -201,7 +209,7 @@ public abstract class LinkButton extends JButton
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        if( underline && isEnabled() && !showBorder) {
+        if( underline && isEnabled() && !showBorder ) {
             g.setColor( getForeground() );
             Font f = getFont();
             FontMetrics fm = getFontMetrics(f);
