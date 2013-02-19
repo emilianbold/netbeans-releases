@@ -107,6 +107,7 @@ import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.SuspendSupport;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
@@ -450,10 +451,7 @@ public class BinaryAnalyser {
         }
         return new Changes(true, added, removed, changed, preBuildArgs);
     }
-
-    private static String nameToString( ClassName name ) {
-        return name.getInternalName().replace('/', '.');        // NOI18N
-    }
+    
         
     private void releaseData() {
         refs.clear();
@@ -503,15 +501,9 @@ public class BinaryAnalyser {
         @NonNull final Pair<String,String> name,
         @NonNull final UsagesData<ClassName> usages) {
         assert name != null;
-        assert usages != null;
-        final List<String> typeUsages = new ArrayList<String>();
-        for (Map.Entry<ClassName,Set<ClassIndexImpl.UsageType>> entry : usages.usages.entrySet()) {
-            final ClassName cn = entry.getKey();
-            final Set<ClassIndexImpl.UsageType> usage = entry.getValue();
-            typeUsages.add (DocumentUtil.encodeUsage(nameToString(cn), usage));
-        }
+        assert usages != null;        
         final Object[] cr = new Object[] {
-            typeUsages,
+            usages.usagesToStrings(),
             usages.featureIdentsToString(),
             usages.identsToString()
         };
@@ -534,15 +526,23 @@ public class BinaryAnalyser {
     //<editor-fold defaultstate="collapsed" desc="ClassFileProcessor implementations">
     private static class ClassFileProcessor {
 
+        private static final Convertor<ClassName,String> CONVERTOR =
+                new Convertor<ClassName, String>() {
+                    @Override
+                    public String convert(ClassName p) {
+                        return p.getInternalName().replace('/', '.');        // NOI18N
+                    }
+                };
+
         private final ClassFile classFile;
         private final String className;
         private final UsagesData<ClassName> usages =
-                new UsagesData<ClassName>();
+                new UsagesData<ClassName>(CONVERTOR);
 
         ClassFileProcessor(
                 @NonNull final ClassFile classFile) {
             this.classFile = classFile;
-            this.className = nameToString (classFile.getName ());
+            this.className = CONVERTOR.convert(classFile.getName ());
         }
 
         final String getClassName() {
@@ -572,7 +572,7 @@ public class BinaryAnalyser {
 
         final void addIdent (@NonNull final CharSequence ident) {
             assert ident != null;
-            usages.featuresIdents.add(ident);
+            usages.addFeatureIdent(ident);
         }
 
         final void addUsage (
@@ -581,16 +581,11 @@ public class BinaryAnalyser {
             if (OBJECT.equals(name.getExternalName())) {
                 return;
             }
-            Set<ClassIndexImpl.UsageType> uset = usages.usages.get(name);
-            if (uset == null) {
-                uset = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
-                usages.usages.put(name, uset);
-            }
-            uset.add(usage);
+            usages.addUsage(name, usage);
         }
 
         final boolean hasUsage(@NonNull final ClassName name) {
-            return usages.usages.keySet().contains (name);
+            return usages.hasUsage(name);
         }
 
         final void handleAnnotations(
