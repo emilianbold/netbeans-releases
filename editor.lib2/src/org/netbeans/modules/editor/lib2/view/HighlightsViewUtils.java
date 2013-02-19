@@ -288,6 +288,8 @@ public class HighlightsViewUtils {
                     renderEndOffset = hiEndOffset;
                     AttributeSet attrs = highlights.getAttributes();
                     Shape renderPartAlloc;
+                    // For nonPrinting TABs display use a special text-layout rectangle
+                    Rectangle2D specialTextLayoutRect = null;
                     if (textLayout != null) {
                         TextHitInfo startHit = TextHitInfo.leading(hiStartOffset - textLayoutOffset);
                         TextHitInfo endHit = TextHitInfo.leading(renderEndOffset - textLayoutOffset);
@@ -320,6 +322,8 @@ public class HighlightsViewUtils {
                             Rectangle2D rEnd = ViewUtils.shapeAsRect(renderEndAlloc);
                             r.width = rEnd.getX() - r.x;
                             renderPartAlloc = r;
+                            specialTextLayoutRect = r;
+                            
                             if (showNonPrintingChars) {
                                 renderTextLayout = docView.op.getTabCharTextLayout(r.width);
                             } else {
@@ -371,7 +375,10 @@ public class HighlightsViewUtils {
 
                             } else { // Aggregation not done => regular painting
                                 if (renderTextLayout != null) {
-                                    paintTextLayout(g, textLayoutRect, renderTextLayout, docView);
+                                    Rectangle2D tlRect = (specialTextLayoutRect != null)
+                                            ? specialTextLayoutRect
+                                            : textLayoutRect;
+                                    paintTextLayout(g, tlRect, renderTextLayout, docView);
                                 }
                             }
                         }
