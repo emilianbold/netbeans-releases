@@ -300,6 +300,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
      */
     public void testBreakpointRemoteFile() throws Exception {
         startTest();
+        waitForRemoteFiles(LineDebuggerTest.current_project);
         openRemoteFile("common.js", LineDebuggerTest.current_project);
         openFile("debug.html", LineDebuggerTest.current_project);
         runFile(LineDebuggerTest.current_project, "debug.html");
