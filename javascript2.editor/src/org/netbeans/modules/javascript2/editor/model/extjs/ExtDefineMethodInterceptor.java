@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor.model.extjs;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -65,7 +64,7 @@ public class ExtDefineMethodInterceptor implements MethodInterceptor {
     }
 
     @Override
-    public Collection<? extends JsObject> intercept(JsObject globalObject, Collection<JsFunctionArgument> args) {
+    public void intercept(JsObject globalObject, Collection<JsFunctionArgument> args) {
         if (args.size() == 2) {
             Iterator<JsFunctionArgument> iterator = args.iterator();
             JsFunctionArgument arg1 = iterator.next();
@@ -131,7 +130,6 @@ public class ExtDefineMethodInterceptor implements MethodInterceptor {
                 }
             }
         }
-        return Collections.EMPTY_LIST;
     }
 
     @Override

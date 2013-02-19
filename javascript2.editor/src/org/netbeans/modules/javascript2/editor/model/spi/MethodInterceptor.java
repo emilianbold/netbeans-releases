@@ -57,7 +57,7 @@ public interface MethodInterceptor {
 
     String getFullyQualifiedMethodName();
 
-    Collection<? extends JsObject> intercept(JsObject globalObject, Collection<JsFunctionArgument> args);
+    void intercept(JsObject globalObject, Collection<JsFunctionArgument> args);
 
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.TYPE)
