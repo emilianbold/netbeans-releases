@@ -61,14 +61,12 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
     private final InputAttributes inputAttributes;
     private final TokenFactory<XhtmlElTokenId> tokenFactory;
 
-    @Override
-    public Object state() {
-        return lexerState;
-    }
-
-    private boolean EL_ENABLED;
     //main internal lexer state
     private int lexerState = INIT;
+
+    // how many curly braces are nested inside the EL
+    private int lexerCurlyNestedLevel = 0;
+
     // Internal analyzer states
     private static final int INIT = 0;  // initial lexer state = content language
     private static final int ISA_EL_DELIM = 1; //after $ or # in content language
@@ -84,15 +82,17 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
         this.tokenFactory = info.tokenFactory();
         if (info.state() == null) {
             lexerState = INIT;
+            lexerCurlyNestedLevel = 0;
         } else {
-            lexerState = ((Integer) info.state()).intValue();
+            CompoundState cs = (CompoundState) info.state();
+            lexerState = cs.lexerState;
+            lexerCurlyNestedLevel = cs.lexerCurlyNestedLevel;
         }
-        // let EL be always enabled, needed EL infrastructure
-//        if (inputAttributes != null) {
-//            EL_ENABLED = inputAttributes.getValue(LanguagePath.get(XhtmlElTokenId.language()), "el_enabled") != null; //NOI18N
-//        } else {
-            EL_ENABLED = true;
-//        }
+    }
+
+    @Override
+    public Object state() {
+        return new CompoundState(lexerState, lexerCurlyNestedLevel);
     }
 
     @Override
@@ -117,10 +117,8 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
                     switch (actChar) {
                         case '$':
                         case '#': //maybe expression language
-                            if(EL_ENABLED) {
-                                lexerState = ISA_EL_DELIM;
-                                break;
-                            }
+                            lexerState = ISA_EL_DELIM;
+                            break;
                     }
                     break;
 
@@ -164,10 +162,17 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
                         case '"':
                             lexerState = ISI_EL_DOUBLE_QUOTE;
                             break;
+                        case '{':
+                            lexerCurlyNestedLevel++;
+                            break;
                         case '}':
-                            //return EL token
-                            lexerState = INIT;
-                            return token(XhtmlElTokenId.EL);
+                            if (lexerCurlyNestedLevel == 0) {
+                                //return EL token
+                                lexerState = INIT;
+                                return token(XhtmlElTokenId.EL);
+                            } else {
+                                lexerCurlyNestedLevel--;
+                            }
                     }
                     break;
                     
@@ -242,5 +247,43 @@ public class XhtmlElLexer implements Lexer<XhtmlElTokenId> {
     public void release() {
         //no-op
     }
+
+    private static class CompoundState {
+
+        private final int lexerState;
+        private final int lexerCurlyNestedLevel;
+
+        public CompoundState(int lexerState, int lexerCurlyNestedLevel) {
+            this.lexerState = lexerState;
+            this.lexerCurlyNestedLevel = lexerCurlyNestedLevel;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CompoundState other = (CompoundState) obj;
+            if (this.lexerState != other.lexerState) {
+                return false;
+            }
+            if (this.lexerCurlyNestedLevel != other.lexerCurlyNestedLevel) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 11 * hash + lexerState;
+            hash = 11 * hash + lexerCurlyNestedLevel;
+            return hash;
+        }
+    }
+
 }
 

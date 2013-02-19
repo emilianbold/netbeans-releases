@@ -129,6 +129,28 @@ public class XhtmlElLexerTest extends TestBase {
         
     }
 
+    public void testSetData() throws BadLocationException {
+        BaseDocument doc = createDocument();
+        doc.insertString(0, "<div> #{{'one', 2}} </div>", null);
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence<XhtmlElTokenId> ts = th.tokenSequence(XhtmlElTokenId.language());
+
+        assertToken("<div> ", XhtmlElTokenId.HTML, ts);
+        assertToken("#{{'one', 2}}", XhtmlElTokenId.EL, ts);
+        assertToken(" </div>\n", XhtmlElTokenId.HTML, ts);
+    }
+
+    public void testMapData() throws BadLocationException {
+        BaseDocument doc = createDocument();
+        doc.insertString(0, "<div>#{{'one' : 1, 'two' : 2}}</div>", null);
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence<XhtmlElTokenId> ts = th.tokenSequence(XhtmlElTokenId.language());
+
+        assertToken("<div>", XhtmlElTokenId.HTML, ts);
+        assertToken("#{{'one' : 1, 'two' : 2}}", XhtmlElTokenId.EL, ts);
+        assertToken("</div>\n", XhtmlElTokenId.HTML, ts);
+    }
+
      private void assertToken(String expectedImage, XhtmlElTokenId expectedType, TokenSequence<XhtmlElTokenId> ts) {
         assertTrue(ts.moveNext());
         Token<XhtmlElTokenId> token = ts.token();
