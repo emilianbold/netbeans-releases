@@ -104,7 +104,7 @@ Contributor(s):
                     <attr name="originalFile" stringvalue="Actions/NativeProject/org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance"/>
                     <attr name="position" intvalue="2660"/> 
                 </file>
-                <file name="sep-6.1.instance">
+                <file name="sep-6.2.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="2670"/>
                 </file>                                                
