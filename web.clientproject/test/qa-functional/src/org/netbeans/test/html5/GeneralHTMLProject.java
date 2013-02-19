@@ -258,7 +258,33 @@ public class GeneralHTMLProject extends JellyTestCase {
     public void openProject(String projectName) throws IOException {
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects(projectName);
-        evt.waitNoEvent(3000);
+        waitScanFinished();
+    }
+
+    /**
+     * Waits for Remote Files node to appear in Projects tab
+     *
+     * @param projectName
+     */
+    public void waitForRemoteFiles(String projectName) {
+        final String project = projectName;
+        try {
+            Waiter waiter = new Waiter(new Waitable() {
+                @Override
+                public Object actionProduced(Object obj) {
+                    Node rootNode = new ProjectsTabOperator().getProjectRootNode(project);
+                    return rootNode.isChildPresent("Remote Files") ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return ("Wait for Remote Files node to appear");
+                }
+            });
+
+            waiter.waitAction(null);
+        } catch (InterruptedException e) {
+        }
     }
 
     /**
