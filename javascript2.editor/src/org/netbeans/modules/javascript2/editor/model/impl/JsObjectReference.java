@@ -55,9 +55,9 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public class JsObjectReference extends JsObjectImpl {
  
-    private final JsObjectImpl original;
+    private final JsObject original;
     
-    public JsObjectReference(JsObject parent, Identifier declarationName, JsObjectImpl original, boolean isDeclared) {
+    public JsObjectReference(JsObject parent, Identifier declarationName, JsObject original, boolean isDeclared) {
         super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
         this.original = original;
     }

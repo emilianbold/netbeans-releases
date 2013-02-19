@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
 import java.text.MessageFormat;
 import jdk.nashorn.internal.ir.FunctionNode;
@@ -58,6 +59,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
+import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -92,7 +94,8 @@ public final class Model {
             }
             long startResolve = System.currentTimeMillis();
             resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
-            
+
+            ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory(visitor);
             long startCallingME = System.currentTimeMillis();
             Map<String, Collection<Collection<JsFunctionArgument>>> calls = visitor.getFuncCallsFroProcessing();
             if (calls != null && !calls.isEmpty()) {
@@ -101,7 +104,7 @@ public final class Model {
                     Collection<Collection<JsFunctionArgument>> fncCalls = calls.get(mcp.getFullyQualifiedMethodName());
                     if (fncCalls != null && !fncCalls.isEmpty()) {
                         for(Collection<JsFunctionArgument> args : fncCalls) {
-                            mcp.intercept(visitor.getGlobalObject(), args);
+                            mcp.intercept(visitor.getGlobalObject(), elementFactory, args);
                         }
                     }
                 }

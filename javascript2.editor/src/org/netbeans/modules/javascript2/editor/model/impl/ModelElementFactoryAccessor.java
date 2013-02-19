@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.spi;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.Collection;
-import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
+import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 
 /**
  *
- * @author Petr Pisl
  * @author Petr Hejl
  */
-public interface MethodInterceptor {
+public abstract class ModelElementFactoryAccessor {
 
-    String getFullyQualifiedMethodName();
+    private static volatile ModelElementFactoryAccessor DEFAULT;
 
-    void intercept(JsObject globalObject, ModelElementFactory factory,
-            Collection<JsFunctionArgument> args);
+    public static ModelElementFactoryAccessor getDefault() {
+        ModelElementFactoryAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
 
-    @Retention(RetentionPolicy.SOURCE)
-    @Target(ElementType.TYPE)
-    public @interface Registration {
-
-        String fullQualifiedName();
-
-        int priority() default 100;
+        // invokes static initializer of ModelElementFactory.class
+        // that will assign value to the DEFAULT field above
+        Class c = ModelElementFactory.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+        return DEFAULT;
     }
+
+    public static void setDefault(ModelElementFactoryAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+
+        DEFAULT = accessor;
+    }
+
+    public abstract ModelElementFactory createModelElementFactory(ModelVisitor visitor);
 }

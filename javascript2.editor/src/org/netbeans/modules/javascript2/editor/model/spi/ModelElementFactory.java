@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor.model.spi;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.Collection;
-import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 
 /**
  *
- * @author Petr Pisl
  * @author Petr Hejl
  */
-public interface MethodInterceptor {
+public final class ModelElementFactory {
 
-    String getFullyQualifiedMethodName();
+    static {
+        ModelElementFactoryAccessor.setDefault(new ModelElementFactoryAccessor() {
 
-    void intercept(JsObject globalObject, ModelElementFactory factory,
-            Collection<JsFunctionArgument> args);
+            @Override
+            public ModelElementFactory createModelElementFactory(ModelVisitor visitor) {
+                return new ModelElementFactory(visitor);
+            }
+        });
+    }
 
-    @Retention(RetentionPolicy.SOURCE)
-    @Target(ElementType.TYPE)
-    public @interface Registration {
+    private final ModelVisitor visitor;
 
-        String fullQualifiedName();
+    private ModelElementFactory(ModelVisitor visitor) {
+        this.visitor = visitor;
+    }
 
-        int priority() default 100;
+    public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange, boolean isDeclared) {
+        return new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, isDeclared);
+    }
+
+    public JsObject newReference(JsObject parent, String name, OffsetRange offsetRange, JsObject original, boolean isDeclared) {
+        return new JsObjectReference(parent, new IdentifierImpl(name, offsetRange), original, isDeclared);
     }
 }

@@ -48,10 +48,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
+import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 
 /**
  *
@@ -64,7 +62,7 @@ public class ExtDefineMethodInterceptor implements MethodInterceptor {
     }
 
     @Override
-    public void intercept(JsObject globalObject, Collection<JsFunctionArgument> args) {
+    public void intercept(JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
         if (args.size() == 2) {
             Iterator<JsFunctionArgument> iterator = args.iterator();
             JsFunctionArgument arg1 = iterator.next();
@@ -79,12 +77,12 @@ public class ExtDefineMethodInterceptor implements MethodInterceptor {
                         JsObject jsObject = oldParent.getProperty(name);
                         OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
                         if (jsObject == null) {
-                            jsObject = new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, true);
+                            jsObject = factory.newObject(parent, name, offsetRange, true);
                             parent.addProperty(name, jsObject);
                             oldParent = jsObject;
                         }
                         else if (!jsObject.isDeclared()) {
-                            JsObjectImpl newJsObject = new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, true);
+                            JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
                             parent.addProperty(name, newJsObject);
                             for (Occurrence occurrence : jsObject.getOccurrences()) {
                                 newJsObject.addOccurrence(occurrence.getOffsetRange());
@@ -94,15 +92,15 @@ public class ExtDefineMethodInterceptor implements MethodInterceptor {
                             jsObject = newJsObject;
                         }
                         else {
-                            ((JsObjectImpl) jsObject).addOccurrence(offsetRange);
+                            jsObject.addOccurrence(offsetRange);
                         }
                         parent = jsObject;
                     }
                     else {
-                        JsObjectImpl jsObject = (JsObjectImpl) oldParent.getProperty(name);
+                        JsObject jsObject = oldParent.getProperty(name);
                         if (jsObject == null) {
                             OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                            jsObject = new JsObjectReference(oldParent, new IdentifierImpl(name, offsetRange), (JsObjectImpl) arg2.getValue(), true);
+                            jsObject = factory.newReference(oldParent, name, offsetRange, (JsObject) arg2.getValue(), true);
                             oldParent.addProperty(name, jsObject);
                             for (Occurrence occurrence : jsObject.getOccurrences()) {
                                 jsObject.addOccurrence(occurrence.getOffsetRange());
@@ -118,7 +116,7 @@ public class ExtDefineMethodInterceptor implements MethodInterceptor {
                         }
                         else {
                             OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                            JsObjectImpl newJsObject = new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, true);
+                            JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
                             parent.addProperty(name, newJsObject);
                             for (Occurrence occurrence : jsObject.getOccurrences()) {
                                 newJsObject.addOccurrence(occurrence.getOffsetRange());
