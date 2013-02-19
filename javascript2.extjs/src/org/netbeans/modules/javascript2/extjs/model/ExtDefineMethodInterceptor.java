@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.extjs;
+package org.netbeans.modules.javascript2.extjs.model;
 
 import java.util.Collection;
 import java.util.Iterator;
