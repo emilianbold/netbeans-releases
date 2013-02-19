@@ -826,7 +826,11 @@ public class NPECheck {
                 
                 scan(ct, null);
 
-                mergeIntoVariable2State(variable2StateBeforeCatch);
+                if (Utilities.exitsFromAllBranchers(info, new TreePath(getCurrentPath(), ct))) {
+                    variable2State = variable2StateBeforeCatch;
+                } else {
+                    mergeIntoVariable2State(variable2StateBeforeCatch);
+                }
             }
 
             if (node.getFinallyBlock() != null) {

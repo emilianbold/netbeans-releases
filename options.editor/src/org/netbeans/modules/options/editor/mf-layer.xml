@@ -214,7 +214,7 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="HighlightingPanel.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.options.colors.spi.FontsColorsController"/>
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.colors.HighlightingPanel"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.colors.HighlightingPanelController"/>
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="AnnotationsPanel.instance">
