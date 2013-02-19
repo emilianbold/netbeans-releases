@@ -42,7 +42,7 @@
 package org.netbeans.modules.web.el.hints;
 
 import com.sun.el.parser.AstIdentifier;
-import com.sun.el.parser.AstString;
+import com.sun.el.parser.Node;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -94,10 +94,11 @@ public final class ResourceBundleKeys extends ELRule {
                 // broken AST, skip (perhaps could try just plain string search)
                 continue;
             }
-            for (Pair<AstIdentifier, AstString> pair : resourceBundles.collectKeys(each.getNode(), info.context())) {
-                if (!resourceBundles.isValidKey(pair.first.getImage(), pair.second.getString())) {
+            for (Pair<AstIdentifier, Node> pair : resourceBundles.collectKeys(each.getNode(), info.context())) {
+                String clearedKey = pair.second.getImage().replace("'", "").replace("\"", "");
+                if (!resourceBundles.isValidKey(pair.first.getImage(), clearedKey)) {
                     Hint hint = new Hint(this,
-                            NbBundle.getMessage(ResourceBundleKeys.class, "ResourceBundleKeys_Unknown", pair.second.getString()),
+                            NbBundle.getMessage(ResourceBundleKeys.class, "ResourceBundleKeys_Unknown", clearedKey),
                             elResult.getFileObject(),
                             each.getOriginalOffset(pair.second),
                             Collections.<HintFix>emptyList(), 200);

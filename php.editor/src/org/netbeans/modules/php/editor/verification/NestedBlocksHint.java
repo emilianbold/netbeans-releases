@@ -44,9 +44,13 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -68,6 +72,7 @@ import org.openide.util.NbBundle;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class NestedBlocksHint extends HintRule implements CustomisableRule {
+    private static final Logger LOGGER = Logger.getLogger(NestedBlocksHint.class.getName());
     private static final String HINT_ID = "Nested.Blocks.Hint"; //NOI18N
     private static final String NUMBER_OF_ALLOWED_NESTED_BLOCKS = "php.verification.number.of.allowed.nested.blocks"; //NOI18N
     private static final int DEFAULT_NUMBER_OF_ALLOWED_NESTED_BLOCKS = 2;
@@ -115,7 +120,13 @@ public class NestedBlocksHint extends HintRule implements CustomisableRule {
         }
 
         private void createHint(ASTNode block) {
-            OffsetRange offsetRange = new OffsetRange(block.getStartOffset(), block.getEndOffset());
+            int lineEnd = block.getEndOffset();
+            try {
+                lineEnd = Utilities.getRowEnd(baseDocument, block.getStartOffset());
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+            OffsetRange offsetRange = new OffsetRange(block.getStartOffset(), lineEnd);
             if (showHint(offsetRange, baseDocument)) {
                 hints.add(new Hint(NestedBlocksHint.this, Bundle.NestedBlocksHintText(), fileObject, offsetRange, null, 500));
             }

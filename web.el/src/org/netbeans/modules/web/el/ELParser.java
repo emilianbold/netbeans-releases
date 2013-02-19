@@ -141,7 +141,7 @@ public final class ELParser extends Parser {
     }
 
     @Override
-    public void cancel() {
+    public void cancel(CancelReason reason, SourceModificationEvent event) {
     }
 
     @Override

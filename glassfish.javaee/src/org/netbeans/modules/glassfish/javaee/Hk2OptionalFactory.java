@@ -79,11 +79,11 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
         this.hasWizard = hasWizard;
     }
 
-    public static Hk2OptionalFactory createPrelude() {
-        ServerUtilities t = ServerUtilities.getPreludeUtilities();
-        return null == t ? null : new Hk2OptionalFactory(Hk2DeploymentFactory.createPrelude(),
-                t, false);
-    }
+//    public static Hk2OptionalFactory createPrelude() {
+//        ServerUtilities t = ServerUtilities.getPreludeUtilities();
+//        return null == t ? null : new Hk2OptionalFactory(Hk2DeploymentFactory.createPrelude(),
+//                t, false);
+//    }
     
     public static Hk2OptionalFactory createEe6() {
         ServerUtilities t = ServerUtilities.getEe6Utilities();

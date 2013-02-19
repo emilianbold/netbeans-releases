@@ -1,0 +1,2 @@
+#{[1,2,3].skipy(5).sum()}          --------
+HINT:Unknown method "skipy"

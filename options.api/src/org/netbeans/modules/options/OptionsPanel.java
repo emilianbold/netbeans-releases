@@ -432,6 +432,7 @@ public class OptionsPanel extends JPanel {
         int tabIndex = pane == null ? -1 : pane.indexOfTab(tabTitle);
 
         Set<String> keywords = new HashSet<String>();
+	keywords.add(location.toUpperCase());
 	Enumeration<String> attributes = keywordsFO.getAttributes();
 	while(attributes.hasMoreElements()) {
 	    String attribute = attributes.nextElement();
@@ -606,8 +607,10 @@ public class OptionsPanel extends JPanel {
         private void handleSearch(String searchText) {
             List<String> stWords = Arrays.asList(searchText.toUpperCase().split(" "));
             String exactCategory = null;
+	    String exactTabTitle = null;
             int exactTabIndex = -1;
             for (String id : CategoryModel.getInstance().getCategoryIDs()) {
+		exactTabIndex = -1;
                 ArrayList<String> entry = categoryid2words.get(id);
 		List<String> matchedKeywords;
                 if (entry != null) {
@@ -633,11 +636,19 @@ public class OptionsPanel extends JPanel {
                                         foundInTab = true;
                                         foundInNoTab = false;
                                         exactTabIndex = tabIndex;
-                                        setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+					if ((exactCategory == null && exactTabTitle == null) || (exactCategory != null && exactCategory.equals(id))) {
+					    setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+					}
                                     }
                                     if (foundInTab) {
+					for (String stWord : stWords) {
+					    if (pane.getTitleAt(tabIndex).toUpperCase().contains(stWord)) {
+						exactTabTitle = pane.getTitleAt(tabIndex);
+					    }
+					}
                                         pane.setEnabledAt(tabIndex, true);
-                                        if (exactTabIndex == tabIndex) {
+                                        if (exactTabIndex == tabIndex
+						&& (exactTabTitle == null || (exactTabTitle != null && pane.getTitleAt(tabIndex).equals(exactTabTitle)))) {
                                             pane.setSelectedIndex(tabIndex);
                                         }
 					matchedKeywords = getAllMatchedKeywords(tabWords, stWords);
@@ -649,7 +660,9 @@ public class OptionsPanel extends JPanel {
                                         }
                                     }
                                 } else {
-                                    setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+				    if ((exactCategory == null && exactTabTitle == null) || (exactCategory != null && exactCategory.equals(id))) {
+					setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+				    }
                                     if(tabsInfo.size() == 1) {
                                         foundInNoTab = false;
 					matchedKeywords = getAllMatchedKeywords(entry, stWords);
@@ -658,23 +671,25 @@ public class OptionsPanel extends JPanel {
                                 }
                             }
                             if(foundInNoTab) {
-                                handleNotFound(id, exactCategory);
+                                handleNotFound(id, exactCategory, exactTabTitle);
                             }
                         } else {
-                            setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+			    if ((exactCategory == null && exactTabTitle == null) || (exactCategory != null && exactCategory.equals(id))) {
+				setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+			    }
 			    matchedKeywords = getAllMatchedKeywords(entry, stWords);
 			    CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                         }
                     } else {
-                        handleNotFound(id, exactCategory);
+                        handleNotFound(id, exactCategory, exactTabTitle);
                     }
                 } else {
-                    handleNotFound(id, exactCategory);
+                    handleNotFound(id, exactCategory, exactTabTitle);
                 }
             }
         }
 
-        private void handleNotFound(String id, String exactCategory) {
+        private void handleNotFound(String id, String exactCategory, String exactTabTitle) {
             if (!disabledCategories.contains(id)) {
                 disabledCategories.add(id);
             }
@@ -689,7 +704,7 @@ public class OptionsPanel extends JPanel {
                 setCurrentCategory(null, null);
             } else {
                 for (String id3 : CategoryModel.getInstance().getCategoryIDs()) {
-                    if (buttons.get(id3).isEnabled() && exactCategory == null) {
+                    if (buttons.get(id3).isEnabled() && ((exactCategory != null && exactCategory.equals(id3)) || (exactCategory == null && exactTabTitle == null))) {
                         setCurrentCategory(CategoryModel.getInstance().getCategory(id3), null);
                         break;
                     }
