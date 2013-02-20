@@ -106,6 +106,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -115,7 +116,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author  mkleint
  */
-public class ActionMappings extends javax.swing.JPanel {
+public class ActionMappings extends javax.swing.JPanel implements HelpCtx.Provider {
     private static final String CUSTOM_ACTION_PREFIX = "CUSTOM-"; //NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(ActionMappings.class);
@@ -649,6 +650,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             return "";
         }
     }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return CustomizerProviderImpl.HELP_CTX;
+    }    
     
     private void clearFields() {
         comConfiguration.removeActionListener(comboListener);

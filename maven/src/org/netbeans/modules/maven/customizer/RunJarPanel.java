@@ -79,6 +79,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,7 +88,7 @@ import org.openide.util.NbBundle;
  * exec-maven-plugin:exec
  * @author Milos Kleint 
  */
-public class RunJarPanel extends javax.swing.JPanel {
+public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider {
     
     private boolean isCurrentRun = true;
     private boolean isCurrentDebug = true;
@@ -590,6 +591,11 @@ public class RunJarPanel extends javax.swing.JPanel {
         comConfiguration.setModel(comModel);
         comConfiguration.setSelectedItem(handle.getActiveConfiguration());
     }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return CustomizerProviderImpl.HELP_CTX;
+    }    
     // End of variables declaration
 
         // Innercasses -------------------------------------------------------------

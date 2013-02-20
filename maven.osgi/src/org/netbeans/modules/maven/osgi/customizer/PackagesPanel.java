@@ -52,12 +52,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable;
 import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable.SelectedItemsTableModel;
+import org.openide.util.HelpCtx;
 
 /**
  *
  * @author dafe
  */
-public class PackagesPanel extends javax.swing.JPanel {
+public class PackagesPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private final SelectedItemsTableModel tableModel;
     private final FelixExportPersister exportPersist;
@@ -169,5 +170,9 @@ public class PackagesPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton rbCustom;
     private javax.swing.JRadioButton rbDefaults;
     // End of variables declaration//GEN-END:variables
-
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("maven_settings");
+    }
 }
