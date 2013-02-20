@@ -48,20 +48,20 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
+import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 
 /**
  *
  * @author Petr Hejl
  */
-public class ExtNamespaceMethodInterceptor implements MethodInterceptor {
+public class ExtNamespaceFunctionInterceptor implements FunctionInterceptor {
 
-    public ExtNamespaceMethodInterceptor() {
+    public ExtNamespaceFunctionInterceptor() {
     }
 
     @Override
-    public void intercept(JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
+    public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
         if (args.size() == 1) {
             Iterator<JsFunctionArgument> iterator = args.iterator();
             JsFunctionArgument arg1 = iterator.next();
@@ -97,8 +97,8 @@ public class ExtNamespaceMethodInterceptor implements MethodInterceptor {
     }
 
     @Override
-    public String getFullyQualifiedMethodName() {
-        return "Ext.namespace";
+    public String getNamePattern() {
+        return "Ext\\.namespace";
     }
 
 }

@@ -367,6 +367,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.javascript2.extjs</friend>
+                <friend>org.netbeans.modules.javascript2.knockout</friend>
                 <package>org.netbeans.modules.javascript2.editor.model</package>
                 <package>org.netbeans.modules.javascript2.editor.model.spi</package>
             </friend-packages>

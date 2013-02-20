@@ -51,21 +51,18 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
- * @author Petr Pisl
  * @author Petr Hejl
  */
-public interface MethodInterceptor {
+public interface FunctionInterceptor {
 
-    String getFullyQualifiedMethodName();
+    String getNamePattern();
 
-    void intercept(JsObject globalObject, ModelElementFactory factory,
+    void intercept(String name, JsObject globalObject, ModelElementFactory factory,
             Collection<JsFunctionArgument> args);
 
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.TYPE)
     public @interface Registration {
-
-        String fullQualifiedName();
 
         int priority() default 100;
     }

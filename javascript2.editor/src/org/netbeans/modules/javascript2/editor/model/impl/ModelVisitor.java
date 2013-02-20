@@ -58,16 +58,16 @@ import jdk.nashorn.internal.ir.ReturnNode;
 import jdk.nashorn.internal.ir.TernaryNode;
 import jdk.nashorn.internal.ir.UnaryNode;
 import jdk.nashorn.internal.ir.VarNode;
-import jdk.nashorn.internal.parser.Token;
 import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
@@ -83,11 +83,11 @@ import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
 
@@ -106,7 +106,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     // keeps objects that are created as arguments of a function call
     private Collection<JsObjectImpl> functionArguments = new ArrayList<JsObjectImpl>();
-    private Map<String, Collection<Collection<JsFunctionArgument>>> functionCalls = null;
+    private Map<FunctionInterceptor, Collection<FunctionCall>> functionCalls = null;
     
     private JsObjectImpl fromAN = null;
 
@@ -385,15 +385,22 @@ public class ModelVisitor extends PathNodeVisitor {
                         sb.append(identifier.getName());
                         sb.append(".");
                     }
-                    if(functionCalls == null) {
-                        functionCalls = new HashMap<String, Collection<Collection<JsFunctionArgument>>>();
-                        for(MethodInterceptor mcp : ModelExtender.getDefault().getMethodCallProcessors()) {
-                            functionCalls.put(mcp.getFullyQualifiedMethodName(), null);
+                    if (functionCalls == null) {
+                        functionCalls = new LinkedHashMap<FunctionInterceptor, Collection<FunctionCall>>();
+                    }
+
+                    String name = sb.substring(0, sb.length() - 1);
+                    FunctionInterceptor interceptorToUse = null;
+                    for (FunctionInterceptor interceptor : ModelExtender.getDefault().getMethodInterceptors()) {
+                        // XXX performance
+                        if (Pattern.compile(interceptor.getNamePattern()).matcher(name).matches()) {
+                            interceptorToUse = interceptor;
+                            break;
                         }
                     }
-                    String name = sb.substring(0, sb.length() - 1);
-                    if (functionCalls.containsKey(name)) {
 
+
+                    if (interceptorToUse != null) {
                         Collection<JsFunctionArgument> funcArg = new ArrayList<JsFunctionArgument>();
                         for (int i = 0; i < callNode.getArgs().size(); i++) {
                             Node argument = callNode.getArgs().get(i);
@@ -411,12 +418,12 @@ public class ModelVisitor extends PathNodeVisitor {
                                 }
                             }
                         }
-                        Collection<Collection<JsFunctionArgument>> calls = functionCalls.get(name);
+                        Collection<FunctionCall> calls = functionCalls.get(interceptorToUse);
                         if (calls == null) {
-                            calls = new ArrayList<Collection<JsFunctionArgument>>();
-                            functionCalls.put(name, calls);
+                            calls = new ArrayList<FunctionCall>();
+                            functionCalls.put(interceptorToUse, calls);
                         }
-                        calls.add(funcArg);
+                        calls.add(new FunctionCall(name, funcArg));
 
                     }
                 }
@@ -1044,7 +1051,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
 //--------------------------------End of visit methods--------------------------------------
 
-    public Map<String, Collection<Collection<JsFunctionArgument>>> getFuncCallsFroProcessing() {
+    public Map<FunctionInterceptor, Collection<FunctionCall>> getCallsForProcessing() {
         return functionCalls;
     }
     
@@ -1294,13 +1301,31 @@ public class ModelVisitor extends PathNodeVisitor {
         }
     }
 
-
-
     private Node getPreviousFromPath(int back) {
         int size = getPath().size();
         if (size >= back) {
             return getPath().get(size - back);
         }
         return null;
-    }    
+    }
+
+    public static class FunctionCall {
+
+        private final String name;
+
+        private final Collection<JsFunctionArgument> arguments;
+
+        public FunctionCall(String name, Collection<JsFunctionArgument> arguments) {
+            this.name = name;
+            this.arguments = arguments;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Collection<JsFunctionArgument> getArguments() {
+            return arguments;
+        }
+    }
 }

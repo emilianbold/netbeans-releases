@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.javascript2.knockout.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
+import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
-public final class ModelExtender {
-    public static final String METHOD_INTERCEPTORS_PATH = "JavaScript/Model/MethodInterceptors";
-    private static final Lookup.Result<FunctionInterceptor> METHOD_INTERCEPTORS = Lookups.forPath(METHOD_INTERCEPTORS_PATH).lookupResult(FunctionInterceptor.class);
-            
-    static class InstanceWrapper {
-        static ModelExtender extender = new ModelExtender();
+@FunctionInterceptor.Registration(priority = 100)
+public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor {
+
+    @Override
+    public String getNamePattern() {
+        return "[a-z]\\.b";
     }
-    
-    private ModelExtender() {
-        
+
+    @Override
+    public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
+        Iterator<JsFunctionArgument> iterator = args.iterator();
+        JsFunctionArgument arg1 = iterator.next();
+        JsFunctionArgument arg2 = null;
+        if (iterator.hasNext()) {
+            arg2 = iterator.next();
+        }
+        System.out.println("====" + functionName + " " + arg1.getValue() + " " + arg2 + " " + (arg2 != null ? arg2.getKind() : null));
     }
-    
-    public static ModelExtender getDefault() {
-        return InstanceWrapper.extender;
-    }
-    
-    /**
-     * Get all registered {@link MethodCallProcessor}s.
-     * @return a list of all registered {@link MethodCallProcessor}s; never null.
-     */
-    public List<FunctionInterceptor> getMethodInterceptors() {
-        return new ArrayList<FunctionInterceptor>(METHOD_INTERCEPTORS.allInstances());
-    }
-    
 }

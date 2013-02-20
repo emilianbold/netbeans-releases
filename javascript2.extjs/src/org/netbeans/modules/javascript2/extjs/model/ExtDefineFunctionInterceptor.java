@@ -48,21 +48,21 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.spi.MethodInterceptor;
+import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 
 /**
  *
  * @author Petr Hejl
  */
-@MethodInterceptor.Registration(fullQualifiedName = "Ext.define", priority = 10)
-public class ExtDefineMethodInterceptor implements MethodInterceptor {
+@FunctionInterceptor.Registration(priority = 10)
+public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
 
-    public ExtDefineMethodInterceptor() {
+    public ExtDefineFunctionInterceptor() {
     }
 
     @Override
-    public void intercept(JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
+    public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
         if (args.size() == 2) {
             Iterator<JsFunctionArgument> iterator = args.iterator();
             JsFunctionArgument arg1 = iterator.next();
@@ -131,8 +131,8 @@ public class ExtDefineMethodInterceptor implements MethodInterceptor {
     }
 
     @Override
-    public String getFullyQualifiedMethodName() {
-        return "Ext.define";
+    public String getNamePattern() {
+        return "Ext\\.define";
     }
 
 }
