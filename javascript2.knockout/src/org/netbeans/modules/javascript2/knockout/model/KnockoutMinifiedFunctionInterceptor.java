@@ -61,7 +61,7 @@ public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor 
     private static final String GLOBAL_KO_OBJECT = "ko"; // NOI18N
     @Override
     public String getNamePattern() {
-        return "[a-z]\\.b";
+        return "[a-z]\\.b"; // NOI18N
     }
 
     @Override
