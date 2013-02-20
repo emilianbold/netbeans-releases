@@ -70,7 +70,7 @@
 grammar Css3;
 
 //options {
-//	output=AST;
+//	k='*';
 //}
 
 @header {
@@ -120,6 +120,11 @@ package org.netbeans.modules.css.lib;
 }
 
 @members {
+
+    protected boolean isLessSource() {
+        return false;
+    }
+    
 /**
      * Use the current stacked followset to work out the valid tokens that
      * can follow on from the current point in the parse, then recover by
@@ -369,8 +374,8 @@ mediaType
  ;
  
 mediaExpression
- : '(' ws? mediaFeature ws? ( ':' ws? expression )? ')' ws?
- ;
+    : '(' ws? mediaFeature ws? ( ':' ws? expression )? ')' ws?
+    ;
  
 mediaFeature
  : IDENT
@@ -388,6 +393,7 @@ bodyItem
         | counterStyle
         | fontFace
         | vendorAtRule
+        | {isLessSource()}? less_variable_declaration
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -405,7 +411,7 @@ atRuleId
 	;
     
 generic_at_rule
-    : GENERIC_AT_RULE WS* ( atRuleId WS* )? 
+    : AT_IDENT WS* ( atRuleId WS* )? 
         LBRACE 
         	syncTo_RBRACE
         RBRACE
@@ -435,7 +441,8 @@ webkitKeyframes
 webkitKeyframesBlock
 	:
 	webkitKeyframeSelectors ws?
-	LBRACE  ws? syncToDeclarationsRule
+//	LBRACE  ws? syncToDeclarationsRule
+	LBRACE  ws? syncToFollow
 		declarations
 	RBRACE 
 	;	
@@ -498,9 +505,8 @@ pseudoPage
     ;
     
 operator
-    : SOLIDUS ws?
-    | COMMA ws?
-    |
+    : SOLIDUS
+    | COMMA
     ;
     
 combinator
@@ -516,26 +522,77 @@ unaryOperator
     ;  
     
 property
-    : (IDENT | GEN) ws?
+    : (IDENT | GEN | {isLessSource()}? less_variable) ws?
     ;
     
 rule 
-    :   selectorsGroup
-        LBRACE ws? syncToDeclarationsRule
+    :   ( 
+            ( {isLessSource()}? less_mixin_declaration )
+            | 
+            ( selectorsGroup )
+        )
+//        LBRACE ws? syncToDeclarationsRule
+        LBRACE ws? syncToFollow
             declarations
         RBRACE
     ;
     	catch[ RecognitionException rce] {
         reportError(rce);
         consumeUntil(input, BitSet.of(RBRACE));
-        input.consume(); //consume the RBRACE as well
+        input.consume(); //consume the RBRACE as well   
         }
+
     
 declarations
     :
-        //Allow empty rule. Allows? multiple semicolons
-        //http://en.wikipedia.org/wiki/CSS_filter#Star_hack
-        (declaration)? (SEMI ws? (declaration)?)*
+            (
+                (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
+		|
+		(~(LBRACE|SEMI|RBRACE)+ SEMI)=>declaration SEMI ws?
+                |
+                {isLessSource()}? less_mixin_call ws?
+            )*
+            (( ~(RBRACE)+ RBRACE)=>declaration)?
+    ;
+    
+//test 
+//    :
+//         ( 
+//            (
+//                t1
+//                | 
+//                t2 SEMI
+//            )            
+//            ws?
+//        )*
+//        
+//        t2
+//    ;
+//    
+//t1 : ir STAR;
+//t2: ir STAR GEN;
+//    
+//ir	:	IDENT COMMA;
+
+rulePredicate
+    options { k = 1; }
+    :
+//    ( ~ (LBRACE ))+ LBRACE
+    ( ~(LBRACE | SEMI | RBRACE ))+ LBRACE
+    ;
+    
+declarationPredicate
+    options { k = 1; }
+    :
+//    ( ~SEMI )+ SEMI
+    ( ~(LBRACE | SEMI | RBRACE ) )+ SEMI
+    ;
+    
+lastDeclarationPredicate
+    options { k = 1; }
+    :
+//    ( ~RBRACE )+ RBRACE
+    ( ~(LBRACE | SEMI | RBRACE ) )+ RBRACE
     ;
     
 selectorsGroup
@@ -550,9 +607,9 @@ selector
 simpleSelectorSequence
 	:   
         //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
-	(  typeSelector ((esPred)=>elementSubsequent)* )
+	( typeSelector ((esPred)=>elementSubsequent ws?)* )
 	| 
-	( ((esPred)=>elementSubsequent)+ )
+	( ((esPred)=>elementSubsequent ws?)+ )
 	;
 	catch[ RecognitionException rce] {
             reportError(rce);
@@ -566,13 +623,7 @@ esPred
        
 typeSelector 
 	options { k = 2; }
- 	:  ((nsPred)=>namespacePrefix)? ( elementName ws? )
- 	;
-
-//predicate
-nsPred
- 	:	
- 	(IDENT | STAR)? PIPE
+ 	:  (((IDENT | STAR)? PIPE)=>namespacePrefix)? ( elementName ws? )
  	;
 
 namespacePrefix
@@ -588,7 +639,6 @@ elementSubsequent
         | slAttribute
         | pseudo
     )
-    ws?
     ;
     
 //Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
@@ -610,7 +660,7 @@ cssClass
     
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
-    : ( IDENT | GEN ) | '*'
+    : ( IDENT | GEN | LESS_AND) | '*'
     ;
 
 slAttribute
@@ -669,7 +719,7 @@ pseudo
 declaration
     : 
     //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
-    STAR? property COLON ws? propertyValue prio?
+    STAR? property COLON ws? propertyValue (prio ws?)?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -679,14 +729,33 @@ declaration
     }
 
 propertyValue
-	:	expression
+	:
+        ( (expressionPredicate)=>expression )
+        | 
+        
+//this is a bit mysterious - if the use the semantic predicate for the less_expression
+//then the parser won't use the expression rule either?!?!?!?! and won't parse 
+//trivial sample like this:
+//a {
+//    color : black;
+//}
+//
+        ( {isLessSource()}? less_expression )
 	;
 
+//an expression wich doesn't contain less expression operators
+expressionPredicate
+    options { k = 1; }
+    :
+    ( ~ (AT_IDENT | STAR | SOLIDUS | LBRACE | SEMI | RBRACE) )+ ( SEMI | RBRACE )
+    ;
+    
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
 //since the rule matches epsilon it will always be entered
 syncToDeclarationsRule
     @init {
-        syncToSet(BitSet.of(IDENT, RBRACE, STAR));
+        //why sync to DOT? - LESS allows class rules nested
+        syncToSet(BitSet.of(IDENT, RBRACE, STAR, DOT)); 
     }
     	:	
     	;
@@ -707,17 +776,17 @@ syncToFollow
     	;
     
 prio
-    : IMPORTANT_SYM ws?
+    : IMPORTANT_SYM
     ;
     
 expression
-    : term (operator term)*
+    : term ( (operator ws?)? term)*
     ;
     
 term
     : ( unaryOperator ws? )?
         (
-        (
+        ( 
               NUMBER
             | PERCENTAGE
             | LENGTH
@@ -736,6 +805,7 @@ term
     | URI
     | hexColor
     | function
+    | {isLessSource()}? less_variable
     )
     ws?
     ;
@@ -743,7 +813,7 @@ term
 function
 	: 	functionName ws?
 		LPAREN ws?
-		( 
+		(
 			expression
 		| 
 		  	(
@@ -762,6 +832,7 @@ functionName
         //but due to some nonstandart MS extension like progid:DXImageTransform.Microsoft.gradien
         //the function name can be a bit more complicated
 	: (IDENT COLON)? IDENT (DOT IDENT)*
+//	: IDENT
     	;
     	
 fnAttribute
@@ -784,6 +855,165 @@ ws
     : ( WS | NL | COMMENT )+
     ;
     
+//*** LESS SYNTAX ***
+//Some additional modifications to the standard syntax rules has also been done.
+//ENTRY POINT FROM CSS GRAMMAR
+less_variable_declaration
+    : less_variable ws? COLON ws? less_expression SEMI
+    ;
+
+//ENTRY POINT FROM CSS GRAMMAR    
+less_variable
+    : AT_IDENT | MEDIA_SYM //TODO add all meaningful at-rules here
+    ;
+
+//ENTRY POINT FROM CSS GRAMMAR
+less_expression
+    :    less_additionExp
+    ;
+
+less_additionExp
+    :    less_multiplyExp 
+         ( PLUS ws? less_multiplyExp
+         | MINUS ws? less_multiplyExp
+         )* 
+    ;
+
+less_multiplyExp
+    :    less_atomExp
+         ( STAR ws? less_atomExp 
+         | SOLIDUS ws? less_atomExp
+         )* 
+    ;
+
+less_atomExp
+    :    term ((term)=>term)* //multiple terms separated just by whitespace
+    |    LPAREN ws? less_additionExp RPAREN ws?
+    ;
+
+//term w/o unary operators
+less_term
+    : 
+        (
+        ( 
+              NUMBER
+            | PERCENTAGE
+            | LENGTH
+            | EMS
+            | REM
+            | EXS
+            | ANGLE
+            | TIME
+            | FREQ
+            | RESOLUTION
+            | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
+        )
+    | STRING
+    | IDENT
+    | GEN
+    | URI
+    | hexColor
+    | function
+    | less_variable
+    )
+    ws?
+    ;
+
+//less_expression
+//    : term ( (less_expression_operator ws?)? term)*    
+//    ;
+//    
+//less_expression_operator
+//    : (
+//        SOLIDUS 
+////        | COMMA
+//        | STAR 
+////        | PLUS //are covered by term's unary operator
+////        | MINUS
+//      )
+//    ;
+
+//parametric mixins: 
+//    .border-radius (@radius) 
+//    .box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000)
+//
+//normal mixin has common css syntax: .mixin so cannot be distinguished from a css class
+//ENTRY POINT FROM CSS GRAMMAR
+less_mixin_declaration
+    :
+    cssClass ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
+    ;
+
+//allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
+//ENTRY POINT FROM CSS GRAMMAR
+less_mixin_call
+    :
+    cssClass (ws? LPAREN less_mixin_call_args? RPAREN)? (ws? SEMI)?
+    ;
+    
+less_mixin_call_args
+    : 
+    //the term separatos is supposed to be just COMMA, but in some weird old? samples
+    //I found semicolon used as a delimiter between arguments
+    term ( (COMMA | SEMI) ws? term)*     
+    ;
+
+//.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
+less_args_list
+    : 
+    //the term separatos is supposed to be just COMMA, but in some weird old? samples
+    //I found semicolon used as a delimiter between arguments
+    ( less_arg ( ( COMMA | SEMI ) ws? less_arg)* ( ( COMMA | SEMI ) ws? ('...' | '@rest...'))?)
+    | 
+    ('...' | '@rest...')
+    ;
+    
+//.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
+less_arg
+    :
+    less_variable ( COLON ws? less_expression )?
+    ;
+
+//.mixin (@a) "when (lightness(@a) >= 50%)" {
+//.mixin (@a) "when (@a > 10), (@a < -10)" { ... }
+less_mixin_guarded
+    :
+    LESS_WHEN ws? less_condition ( (COMMA | AND) ws? less_condition)*
+    ;
+    
+//.truth (@a) when (@a) { ... }
+//.truth (@a) when (@a = true) { ... }
+less_condition
+    :
+    (NOT ws?)?
+    LPAREN ws? 
+        (
+            less_function_in_condition ws?
+            |
+            ( less_variable (ws? less_condition_operator ws? less_expression)?)  
+        )        
+    RPAREN
+    ;
+    
+//.mixin (@a, @b: 0) when ("isnumber(@b)") { ... }
+less_function_in_condition
+    :
+    less_fn_name ws? LPAREN ws? less_variable ws? RPAREN
+    ;
+
+//.mixin (@a, @b: 0) when ("isnumber"(@b)) { ... }
+less_fn_name
+    :
+    IDENT
+    ;
+
+less_condition_operator
+    :
+    GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
+    ;
+
+//*** END OF LESS SYNTAX ***
+
 // ==============================================================
 // LEXER
 //
@@ -1105,6 +1335,12 @@ DOT             : '.'       ;
 TILDE		: '~'       ;
 PIPE            : '|'       ;
 
+LESS            : '<'       ;
+GREATER_OR_EQ   : '>='      ;
+LESS_OR_EQ      : '=<'      ;
+LESS_WHEN       : 'WHEN'    ;
+LESS_AND        : '&'     ;
+
 // -----------------
 // Literal strings. Delimited by either ' or "
 //
@@ -1168,7 +1404,7 @@ MOZ_DOCUMENT_SYM      : '@-MOZ-DOCUMENT';
 WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 
 //this generic at rule must be after the last of the specific at rule tokens
-GENERIC_AT_RULE	    : '@' NMCHAR+;	
+AT_IDENT	    : '@' NMCHAR+;	
 
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units
