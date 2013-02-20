@@ -97,6 +97,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.queues.QPatch;
 import org.netbeans.modules.mercurial.ui.queues.Queue;
+import org.netbeans.modules.mercurial.ui.rebase.RebaseResult;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
@@ -112,6 +113,9 @@ import org.openide.util.Utilities;
  *
  * @author jrice
  */
+@NbBundle.Messages({
+    "MSG_HgCommand.Rebase.failed=Rebase failed!"
+})
 public class HgCommand {
     public static final String HG_COMMAND = "hg";  // NOI18N
     public static final String HG_WINDOWS_EXE = ".exe";  // NOI18N
@@ -235,6 +239,14 @@ public class HgCommand {
     private static final String HG_QFINISH_CMD = "qfinish"; //NOI18N
     private static final String QUEUE_ACTIVE = "(active)"; //NOI18N
 
+    private static final String HG_REBASE_CMD = "rebase"; //NOI18N
+    private static final String HG_REBASE_EXT_CMD = "extensions.rebase="; // NOI18N
+    private static final String HG_REBASE_OPT_ABORT = "--abort"; //NOI18N
+    private static final String HG_REBASE_OPT_CONTINUE = "--continue"; //NOI18N
+    private static final String HG_REBASE_OPT_BASE = "--base"; //NOI18N
+    private static final String HG_REBASE_OPT_SOURCE = "--source"; //NOI18N
+    private static final String HG_REBASE_OPT_DEST = "--dest"; //NOI18N
+    
     // TODO: replace this hack
     // Causes /usr/bin/hgmerge script to return when a merge
     // has conflicts with exit 0, instead of throwing up EDITOR.
@@ -421,6 +433,7 @@ public class HgCommand {
         HG_QPOP_CMD,
         HG_QPUSH_CMD,
         HG_QREFRESH_PATCH,
+        HG_REBASE_CMD,
         HG_STRIP_CMD,
         HG_TAG_CMD,
         HG_UNBUNDLE_CMD,
@@ -963,6 +976,61 @@ public class HgCommand {
             }
         }
         return list;
+    }
+
+    public static RebaseResult finishRebase (File repository, boolean continueRebase, OutputLogger logger) throws HgException {
+        if (repository == null) return null;
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_REBASE_CMD);
+        if (continueRebase) {
+            command.add(HG_REBASE_OPT_CONTINUE);
+        } else {
+            command.add(HG_REBASE_OPT_ABORT);
+        }
+        command.add(HG_VERBOSE_CMD);
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_REBASE_EXT_CMD);
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MERGE_SIMPLE_TOOL);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+
+        List<String> list = exec(command);
+        if (!list.isEmpty() && isErrorAbort(list.get(0))) {
+            handleError(command, list, Bundle.MSG_HgCommand_Rebase_failed(), logger);
+        }
+        return RebaseResult.build(repository, list);
+    }
+
+    public static RebaseResult doRebase (File repository, String revisionBase, String revisionDest, OutputLogger logger) throws HgException {
+        if (repository == null) return null;
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_REBASE_CMD);
+        if (revisionBase != null) {
+            command.add(HG_REBASE_OPT_BASE);
+            command.add(revisionBase);
+        }
+        if (revisionDest != null) {
+            command.add(HG_REBASE_OPT_DEST);
+            command.add(revisionDest);
+        }
+        command.add(HG_VERBOSE_CMD);
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_REBASE_EXT_CMD);
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MERGE_SIMPLE_TOOL);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+
+        List<String> list = exec(command);
+        if (!list.isEmpty() && isErrorAbort(list.get(0))) {
+            handleError(command, list, Bundle.MSG_HgCommand_Rebase_failed(), logger);
+        }
+        return RebaseResult.build(repository, list);
     }
 
     private static String getGlobalProxyIfNeeded(String defaultPath, boolean bOutputDetails, OutputLogger logger){

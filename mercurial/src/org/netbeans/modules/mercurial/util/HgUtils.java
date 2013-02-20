@@ -106,6 +106,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgException.HgCommandCanceledException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
@@ -343,6 +344,17 @@ public class HgUtils {
      */
     public static boolean isNullOrEmpty(String str) {
         return (str == null) || (str.trim().length() == 0);
+    }
+
+    public static boolean isRebasing (File repositoryRoot) {
+        WorkingCopyInfo info = WorkingCopyInfo.getInstance(repositoryRoot);
+        info.refresh();
+        HgLogMessage[] parents = info.getWorkingCopyParents();
+        if (parents.length > 1) {
+            // two parents, possible abort, rebase or simply inside a merge
+            return new File(getHgFolderForRoot(repositoryRoot), "rebasestate").exists(); //NOI18N
+        }
+        return false;
     }
     
     private static void resetIgnorePatterns(File file) {
