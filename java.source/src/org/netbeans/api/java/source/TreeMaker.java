@@ -43,6 +43,29 @@
  */
 package org.netbeans.api.java.source;
 
+import com.sun.source.doctree.AttributeTree;
+import com.sun.source.doctree.AuthorTree;
+import com.sun.source.doctree.CommentTree;
+import com.sun.source.doctree.DeprecatedTree;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocRootTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.EndElementTree;
+import com.sun.source.doctree.InheritDocTree;
+import com.sun.source.doctree.LinkTree;
+import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.doctree.SeeTree;
+import com.sun.source.doctree.SerialDataTree;
+import com.sun.source.doctree.SerialFieldTree;
+import com.sun.source.doctree.SerialTree;
+import com.sun.source.doctree.SinceTree;
+import com.sun.source.doctree.StartElementTree;
+import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.ThrowsTree;
+import com.sun.source.doctree.UnknownBlockTagTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.VersionTree;
 import com.sun.source.tree.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
@@ -3108,6 +3131,118 @@ public final class TreeMaker {
             return super.scan(tree, p);
         }
 
+    }
+
+    public AttributeTree Attribute(CharSequence name, AttributeTree.ValueKind vkind, List<? extends DocTree> value) {
+        return delegate.Attribute(name, vkind, value);
+    }
+
+    public AuthorTree Author(List<? extends DocTree> name) {
+        return delegate.Author(name);
+    }
+
+    public DeprecatedTree Deprecated(List<? extends DocTree> text) {
+        return delegate.Deprecated(text);
+    }
+
+    public DocCommentTree DocComment(DocCommentTree comment, List<? extends DocTree> firstSentence, List<? extends DocTree> body, List<? extends DocTree> tags) {
+        return delegate.DocComment(comment, firstSentence, body, tags);
+    }
+
+    public ParamTree Param(boolean isTypeParameter, com.sun.source.doctree.IdentifierTree name, List<? extends DocTree> description) {
+        return delegate.Param(isTypeParameter, name, description);
+    }
+
+    public LinkTree Link(ReferenceTree ref, List<? extends DocTree> label) {
+        return delegate.Link(ref, label);
+    }
+
+    public com.sun.source.doctree.LiteralTree DocLiteral(TextTree text) {
+        return delegate.Literal(text);
+    }
+
+    public com.sun.source.doctree.ReturnTree DocReturn(List<? extends DocTree> description) {
+        return delegate.Return(description);
+    }
+
+    public ReferenceTree Reference(String signature) {
+        return delegate.Reference(signature);
+    }
+
+    public SeeTree See(List<? extends DocTree> reference) {
+        return delegate.See(reference);
+    }
+
+    public SerialTree Serial(List<? extends DocTree> description) {
+        return delegate.Serial(description);
+    }
+
+    public SerialDataTree SerialData(List<? extends DocTree> description) {
+        return delegate.SerialData(description);
+    }
+
+    public SerialFieldTree SerialField(com.sun.source.doctree.IdentifierTree name, ReferenceTree type, List<? extends DocTree> description) {
+        return delegate.SerialField(name, type, description);
+    }
+
+    public SinceTree Since(List<? extends DocTree> text) {
+        return delegate.Since(text);
+    }
+
+    public StartElementTree StartElement(CharSequence name, List<? extends DocTree> attrs, boolean selfClosing) {
+        return delegate.StartElement(name, attrs, selfClosing);
+    }
+
+    public TextTree Text(String text) {
+        return delegate.Text(text);
+    }
+
+    public ThrowsTree Throws(ReferenceTree name, List<? extends DocTree> description) {
+        return delegate.Throws(name, description);
+    }
+
+    public UnknownBlockTagTree UnknownBlockTag(CharSequence name, List<? extends DocTree> content) {
+        return delegate.UnknownBlockTag(name, content);
+    }
+
+    public UnknownInlineTagTree UnknownInlineTag(CharSequence name, List<? extends DocTree> content) {
+        return delegate.UnknownInlineTag(name, content);
+    }
+
+    public VersionTree Version(List<? extends DocTree> text) {
+        return delegate.Version(text);
+    }
+
+    public com.sun.source.doctree.LiteralTree Code(TextTree text) {
+        return delegate.Code(text);
+    }
+
+    public CommentTree Comment(String text) {
+        return delegate.Comment(text);
+    }
+
+    public DocRootTree DocRoot() {
+        return delegate.DocRoot();
+    }
+
+    public EndElementTree EndElement(CharSequence name) {
+        return delegate.EndElement(name);
+    }
+
+    public ThrowsTree Exception(ReferenceTree name, List<? extends DocTree> description) {
+        return delegate.Exception(name, description);
+    }
+
+    public com.sun.source.doctree.IdentifierTree DocIdentifier(CharSequence name) {
+        return delegate.DocIdentifier(name);
+    }
+
+    public InheritDocTree InheritDoc() {
+        return delegate.InheritDoc();
+    }
+
+    public LinkTree LinkPlain(ReferenceTree ref, List<? extends DocTree> label) {
+        return delegate.LinkPlain(ref, label);
     }
 
     /**

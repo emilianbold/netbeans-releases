@@ -50,7 +50,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 
@@ -90,7 +89,7 @@ public class AnalyzerTest extends JavadocTestSupport {
         
         TreePath zimapath = info.getTrees().getPath(leden);
         assertNotNull(zimapath);
-        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, true, Access.PRIVATE);
+        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, Access.PRIVATE);
         List<ErrorDescription> errs = an.analyze();
         assertNotNull(errs);
         assertTrue(errs.toString(), errs.isEmpty());
@@ -152,13 +151,13 @@ public class AnalyzerTest extends JavadocTestSupport {
 
         TreePath zimapath = info.getTrees().getPath(leden);
         assertNotNull(zimapath);
-        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, false, Access.PRIVATE);
+        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, Access.PRIVATE);
         List<ErrorDescription> errs = an.analyze();
         assertNotNull(errs);
         List<String> errorsAsStrings = new ArrayList<String>(errs.size());
         for (ErrorDescription ed : errs) {
             errorsAsStrings.add(ed.toString());
         }
-        assertEquals(Arrays.asList("5:7-5:14:warning:Unknown throwable: @throws IOException"), errorsAsStrings);
+        assertEquals(Arrays.asList("5:7-5:34:warning:Unknown throwable: @throws java.io.IOException"), errorsAsStrings);
     }
 }

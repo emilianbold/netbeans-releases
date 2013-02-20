@@ -138,7 +138,7 @@ public final class GenerateJavadocAction extends TextAction {
 
         final Descriptor desc = new Descriptor();
         FileObject file = js.getFileObjects().iterator().next();
-        SourceVersion sv = Analyzer.resolveSourceVersion(file);
+        SourceVersion sv = JavadocUtilities.resolveSourceVersion(file);
         final JavadocGenerator gen = new JavadocGenerator(sv);
         gen.updateSettings(file);
         
@@ -188,7 +188,7 @@ public final class GenerateJavadocAction extends TextAction {
                     return;
                 }
                 
-                if (kind != Kind.COMPILATION_UNIT && !Analyzer.hasErrors(leaf) && Access.PRIVATE.isAccessible(javac, tp, true)) {
+                if (kind != Kind.COMPILATION_UNIT && !JavadocUtilities.hasErrors(leaf) && Access.PRIVATE.isAccessible(javac, tp, true)) {
                     Element el = javac.getTrees().getElement(tp);
                     if (el != null) {
                         desc.javadoc = gen.generateComment(el, javac);

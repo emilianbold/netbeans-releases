@@ -56,12 +56,44 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 
+import com.sun.source.doctree.AttributeTree;
+import com.sun.source.doctree.AuthorTree;
+import com.sun.source.doctree.CommentTree;
+import com.sun.source.doctree.DeprecatedTree;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocRootTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.DocTreeVisitor;
+import com.sun.source.doctree.EndElementTree;
+import com.sun.source.doctree.EntityTree;
+import com.sun.source.doctree.ErroneousTree;
+import com.sun.source.doctree.IdentifierTree;
+import com.sun.source.doctree.InheritDocTree;
+import com.sun.source.doctree.LinkTree;
+import com.sun.source.doctree.LiteralTree;
+import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.doctree.ReturnTree;
+import com.sun.source.doctree.SeeTree;
+import com.sun.source.doctree.SerialDataTree;
+import com.sun.source.doctree.SerialFieldTree;
+import com.sun.source.doctree.SerialTree;
+import com.sun.source.doctree.SinceTree;
+import com.sun.source.doctree.StartElementTree;
+import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.ThrowsTree;
+import com.sun.source.doctree.UnknownBlockTagTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.ValueTree;
+import com.sun.source.doctree.VersionTree;
+
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.*;
 import static com.sun.tools.javac.code.Flags.*;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.main.JavaCompiler;
+import com.sun.tools.javac.tree.DCTree;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -98,7 +130,7 @@ import org.openide.util.Exceptions;
 
 /** Prints out a tree as an indented Java source program.
  */
-public final class VeryPretty extends JCTree.Visitor {
+public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<Void, Void> {
 
     private static final char[] hex = "0123456789ABCDEF".toCharArray();
     private static final String REPLACEMENT = "%[a-z]*%";
@@ -246,6 +278,14 @@ public final class VeryPretty extends JCTree.Visitor {
         printTrailingComments(t, true);
         blankLines(t, false);
     }
+    
+    public void print(DCTree t) {
+        if (t == null) return;
+        blankLines(t, true);
+        toLeftMargin();
+        doAccept(t);
+        blankLines(t, false);
+    }
 
     private static int getOldPos(JCTree oldT) {
         return TreeInfo.getStartPos(oldT);
@@ -291,6 +331,24 @@ public final class VeryPretty extends JCTree.Visitor {
         if (tag != null) {
             tag2Span.put(tag, new int[]{start + initialOffset, end + initialOffset});
         }
+    }
+    
+    private void doAccept(DCTree t) {
+//        int start = toString().length();
+
+//        if (!handlePossibleOldTrees(Collections.singletonList(t), false)) {
+            t.accept(this, null);
+//        }
+
+//        int end = toString().length();
+
+//        System.err.println("t: " + t);
+//        System.err.println("thr=" + System.identityHashCode(t));
+//        Object tag = tree2Tag != null ? tree2Tag.get(t) : null;
+//
+//        if (tag != null) {
+//            tag2Span.put(tag, new int[]{start + initialOffset, end + initialOffset});
+//        }
     }
 
     public boolean handlePossibleOldTrees(java.util.List<? extends JCTree> toPrint, boolean includeStartingComments) {
@@ -1760,6 +1818,49 @@ public final class VeryPretty extends JCTree.Visitor {
                 return;
         }
     }
+    
+    /**
+     * The following tags are block-tags
+     * <ul>
+     * <li>@author (classes and interfaces only, required)</li>
+     * <li>@version (classes and interfaces only, required. See footnote 1)</li>
+     * <li>@param (methods and constructors only)</li>
+     * <li>@return (methods only)</li>
+     * <li>@exception (</li>
+     * <li>@throws is a synonym added in Javadoc 1.2)</li>
+     * <li>@see</li>
+     * <li>@since</li>
+     * <li>@serial (or @serialField or @serialData)</li>
+     * <li>@deprecated (see How and When To Deprecate APIs)</li>
+     * </ul>
+     */
+    private void blankLines(DCTree tree, boolean before) {
+        if (tree == null) {
+            return;
+        }
+        switch (tree.getKind()) {
+            case AUTHOR:
+            case DEPRECATED:
+            case EXCEPTION:
+            case PARAM:
+            case RETURN:
+            case SEE:
+            case SERIAL:
+            case SERIAL_DATA:
+            case SERIAL_FIELD:
+            case SINCE:
+            case THROWS:
+            case VERSION:
+                newline();
+                toLeftMargin();
+                if(before) {
+                    print(" * ");
+                }
+                break;
+            default:
+                return;
+        }
+    }
 
     private void toColExactly(int n) {
 	if (n < out.col) newline();
@@ -1785,6 +1886,183 @@ public final class VeryPretty extends JCTree.Visitor {
 	    print('.');
 	}
 	print(t.name);
+    }
+    
+    protected void printTagName(DocTree node) {
+        out.append("@");
+        out.append(node.getKind().tagName);
+    }
+
+    @Override
+    public Void visitAttribute(AttributeTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitAuthor(AuthorTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitComment(CommentTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitDeprecated(DeprecatedTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitDocComment(DocCommentTree node, Void p) {
+        
+        return null;
+    }
+
+    @Override
+    public Void visitDocRoot(DocRootTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitEndElement(EndElementTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitEntity(EntityTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitErroneous(ErroneousTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree node, Void p) {
+        print(node.getName().toString());
+        return null;
+    }
+
+    @Override
+    public Void visitInheritDoc(InheritDocTree node, Void p) {
+        printTagName(node);
+        return null;
+    }
+
+    @Override
+    public Void visitLink(LinkTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitLiteral(LiteralTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitParam(ParamTree node, Void p) {
+        printTagName(node);
+        needSpace();
+        if(node.isTypeParameter()) {
+           print('<');
+        }
+        doAccept((DCTree)node.getName());
+        if(node.isTypeParameter()) {
+           print('>');
+        }
+        for (DocTree docTree : node.getDescription()) {
+            doAccept((DCTree)docTree);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitReference(ReferenceTree node, Void p) {
+        print(node.getSignature());
+        return null;
+    }
+
+    @Override
+    public Void visitReturn(ReturnTree node, Void p) {
+        printTagName(node);
+        print(" ");
+        for (DocTree docTree : node.getDescription()) {
+            doAccept((DCTree)docTree);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitSee(SeeTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitSerial(SerialTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitSerialData(SerialDataTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitSerialField(SerialFieldTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitSince(SinceTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitStartElement(StartElementTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitText(TextTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitThrows(ThrowsTree node, Void p) {
+        printTagName(node);
+        needSpace();
+        doAccept((DCTree)node.getExceptionName());
+        for (DocTree docTree : node.getDescription()) {
+            doAccept((DCTree)docTree);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitUnknownBlockTag(UnknownBlockTagTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitUnknownInlineTag(UnknownInlineTagTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitValue(ValueTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitVersion(VersionTree node, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitOther(DocTree node, Void p) {
+        return null;
     }
 
     private final class Linearize extends TreeScanner<Boolean, java.util.List<Tree>> {

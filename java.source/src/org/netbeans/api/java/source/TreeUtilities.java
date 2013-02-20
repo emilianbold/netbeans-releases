@@ -43,8 +43,13 @@
  */
 package org.netbeans.api.java.source;
 
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.DocTreePath;
+import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -81,6 +86,7 @@ import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
+import org.netbeans.modules.java.source.transform.ImmutableDocTreeTranslator;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 
 /**
@@ -357,6 +363,83 @@ public final class TreeUtilities {
                     break;
             }
         }
+        return path;
+    }
+    
+    public DocTreePath pathFor(TreePath treepath, DocCommentTree doc, int pos) {
+        return pathFor(treepath, new DocTreePath(treepath, doc), pos);
+    }
+
+    public DocTreePath pathFor(TreePath treepath, DocTreePath path, int pos) {
+        return pathFor(treepath, path, pos, (DocSourcePositions)info.getTrees().getSourcePositions());
+    }
+    
+    public DocTreePath pathFor(TreePath treepath, DocTreePath path, int pos, DocSourcePositions sourcePositions) {
+        if (info == null || path == null || sourcePositions == null)
+            throw new IllegalArgumentException();
+        
+        class Result extends Error {
+            DocTreePath path;
+            Result(DocTreePath path) {
+                this.path = path;
+            }
+        }
+        
+        class PathFinder extends DocTreePathScanner<Void,TreePath> {
+            private int pos;
+            private DocSourcePositions sourcePositions;
+            
+            private PathFinder(int pos, DocSourcePositions sourcePositions) {
+                this.pos = pos;
+                this.sourcePositions = sourcePositions;
+            }
+            
+            public Void scan(DocTree tree, TreePath p) {
+                if (tree != null) {
+                    if (sourcePositions.getStartPosition(p.getCompilationUnit(), getCurrentPath().getDocComment(), tree) < pos && sourcePositions.getEndPosition(p.getCompilationUnit(), getCurrentPath().getDocComment(), tree) >= pos) {
+                        if (tree.getKind() == DocTree.Kind.ERRONEOUS) {
+                            tree.accept(this, p);
+                            throw new Result(getCurrentPath());
+                        }
+                        super.scan(tree, p);
+                        throw new Result(new DocTreePath(getCurrentPath(), tree));
+                    }
+                }
+                return null;
+            }
+
+//            @Override
+//            public Void visitVariable(VariableTree node, Void p) {
+//                int[] span = findNameSpan(node);
+//                
+//                if (span != null && span[0] <= pos && pos < span[1]) {
+//                    throw new Result(getCurrentPath());
+//                }
+//                
+//                return super.visitVariable(node, p);
+//            }
+//
+//            @Override
+//            public Void visitMethod(MethodTree node, Void p) {
+//                int[] span = findNameSpan(node);
+//                
+//                if (span != null && span[0] <= pos && pos < span[1]) {
+//                    throw new Result(getCurrentPath());
+//                }
+//                
+//                return super.visitMethod(node, p);
+//            }
+        }
+        
+        try {
+            new PathFinder(pos, sourcePositions).scan(path, treepath);
+        } catch (Result result) {
+            path = result.path;
+        }
+        
+        if (path.getLeaf() == path.getDocComment())
+            return path;
+        
         return path;
     }
     
@@ -946,7 +1029,7 @@ public final class TreeUtilities {
     public @NonNull Tree translate(final @NonNull Tree original, final @NonNull Map<? extends Tree, ? extends Tree> original2Translated) {
         return translate(original, original2Translated, new NoImports(info), null);
     }
-
+    
     @NonNull Tree translate(final @NonNull Tree original, final @NonNull Map<? extends Tree, ? extends Tree> original2Translated, ImportAnalysis2 ia, Map<Tree, Object> tree2Tag) {
         ImmutableTreeTranslator itt = new ImmutableTreeTranslator(info instanceof WorkingCopy ? (WorkingCopy)info : null) {
             private @NonNull Map<Tree, Tree> map = new HashMap<Tree, Tree>(original2Translated);
@@ -965,6 +1048,32 @@ public final class TreeUtilities {
         Context c = info.impl.getJavacTask().getContext();
 
         itt.attach(c, ia, tree2Tag);
+
+        return itt.translate(original);
+    }
+    
+    public @NonNull DocTree translate(final @NonNull DocTree original, final @NonNull Map<? extends DocTree, ? extends DocTree> original2Translated) {
+        return translate(original, original2Translated, null);
+    }
+    
+    @NonNull DocTree translate(final @NonNull DocTree original, final @NonNull Map<? extends DocTree, ? extends DocTree> original2Translated, Map<DocTree, Object> tree2Tag) {
+        ImmutableDocTreeTranslator itt = new ImmutableDocTreeTranslator(info instanceof WorkingCopy ? (WorkingCopy)info : null) {
+            private @NonNull Map<DocTree, DocTree> map = new HashMap<DocTree, DocTree>(original2Translated);
+            @Override
+            public DocTree translate(DocTree tree) {
+                DocTree translated = map.remove(tree);
+
+                if (translated != null) {
+                    return translate(translated);
+                } else {
+                    return super.translate(tree);
+                }
+            }
+        };
+
+        Context c = info.impl.getJavacTask().getContext();
+
+        itt.attach(c, tree2Tag);
 
         return itt.translate(original);
     }

@@ -43,6 +43,9 @@
  */
 package org.netbeans.modules.java.source.save;
 
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
+import static com.sun.source.doctree.DocTree.Kind.RETURN;
 import org.netbeans.api.java.source.WorkingCopy;
 import com.sun.tools.javac.util.Names;
 import java.util.*;
@@ -53,12 +56,17 @@ import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static com.sun.source.tree.Tree.*;
+import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.SourcePositions;
+import com.sun.tools.javac.api.JavacTrees;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 import com.sun.tools.javac.code.*;
+import com.sun.tools.javac.tree.DCTree;
+import com.sun.tools.javac.tree.DCTree.*;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.Pretty;
@@ -69,6 +77,7 @@ import com.sun.tools.javac.util.Position;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
+import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import static java.util.logging.Level.*;
@@ -100,13 +109,14 @@ public class CasualDiff {
     private final Map<Tree, ?> tree2Tag;
     private final Map<Object, int[]> tag2Span;
     private final Set<Tree> oldTrees;
+    private final Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc;
 
     // used for diffing var def, when parameter is printed, annotation of
     // such variable should not provide new line at the end.
     private boolean parameterPrint = false;
     private boolean enumConstantPrint = false;
 
-    protected CasualDiff(Context context, DiffContext diffContext, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, Set<Tree> oldTrees) {
+    protected CasualDiff(Context context, DiffContext diffContext, Map<Tree, ?> tree2Tag, Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc, Map<?, int[]> tag2Span, Set<Tree> oldTrees) {
         diffs = new LinkedHashSet<Diff>();
         comments = CommentHandlerService.instance(context);
         this.diffContext = diffContext;
@@ -115,6 +125,7 @@ public class CasualDiff {
         this.context = context;
         this.names = Names.instance(context);
         this.tree2Tag = tree2Tag;
+        this.tree2Doc = tree2Doc;
         this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
         printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tag2Span, origText);
         printer.oldTrees = oldTrees;
@@ -131,10 +142,11 @@ public class CasualDiff {
             JCTree newTree,
             Map<Integer, String> userInfo,
             Map<Tree, ?> tree2Tag,
+            Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc,
             Map<?, int[]> tag2Span,
             Set<Tree> oldTrees)
     {
-        CasualDiff td = new CasualDiff(context, diffContext, tree2Tag, tag2Span, oldTrees);
+        CasualDiff td = new CasualDiff(context, diffContext, tree2Tag, tree2Doc, tag2Span, oldTrees);
         JCTree oldTree = (JCTree) oldTreePath.getLeaf();
         td.oldTopLevel =  (JCCompilationUnit) (oldTree.getKind() == Kind.COMPILATION_UNIT ? oldTree : diffContext.origUnit);
 
@@ -245,10 +257,11 @@ public class CasualDiff {
             List<? extends ImportTree> nue,
             Map<Integer, String> userInfo,
             Map<Tree, ?> tree2Tag,
+            Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc,
             Map<?, int[]> tag2Span,
             Set<Tree> oldTrees)
     {
-        CasualDiff td = new CasualDiff(context, diffContext, tree2Tag, tag2Span, oldTrees);
+        CasualDiff td = new CasualDiff(context, diffContext, tree2Tag, tree2Doc, tag2Span, oldTrees);
         td.oldTopLevel = diffContext.origUnit;
         int start = td.oldTopLevel.getPackageName() != null ? td.endPos(td.oldTopLevel.getPackageName()) : 0;
 
@@ -336,6 +349,48 @@ public class CasualDiff {
         }
         
         return indent;
+    }
+    
+    private boolean needStar(int localPointer) {
+        if (localPointer <= 0) {
+            return false;
+        }
+
+        while (localPointer > 0) {
+            char c = diffContext.origText.charAt(--localPointer);
+
+            if (c == '\n') {
+                return false;
+            } else if(!Character.isWhitespace(c)) {
+                if(localPointer > 3 && diffContext.origText.substring(localPointer-2, localPointer+1).equals("/**")) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private int adjustToPreviousNewLine(int oldPos, int localPointer) {
+        int offset = oldPos;
+
+        if (offset < 0) {
+            return localPointer;
+        }
+
+        while (offset > localPointer) {
+            char c = diffContext.origText.charAt(--offset);
+
+            if (c == '\n') {
+                break;
+            } else if(c != '*' && !Character.isWhitespace(c)) {
+                return oldPos;
+            }
+        }
+
+        return offset;
     }
 
     private static enum ChangeKind {
@@ -3072,9 +3127,11 @@ public class CasualDiff {
         CommentSet old = comments.getComments(oldT);
         List<Comment> oldPrecedingComments = old.getComments(CommentSet.RelativePosition.PRECEDING);
         List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
-        if (sameComments(oldPrecedingComments, newPrecedingComments))
+        Pair<DocCommentTree, DocCommentTree> doc = tree2Doc.get(oldT);
+        if (sameComments(oldPrecedingComments, newPrecedingComments) && doc == null)
             return localPointer;
-        return diffCommentLists(oldTreeStartPos, oldPrecedingComments, newPrecedingComments, false, true, localPointer);
+        if(doc == null) doc = Pair.of(null, null);
+        return diffCommentLists(oldTreeStartPos, oldPrecedingComments, newPrecedingComments, doc.first, doc.second, false, true, localPointer);
     }
 
     protected int diffTrailingComments(JCTree oldT, JCTree newT, int localPointer) {
@@ -3093,7 +3150,7 @@ public class CasualDiff {
                 printer.eatChars(1);
         }
         
-        localPointer = diffCommentLists(getOldPos(oldT), oldInlineComments, newInlineComments, false, false, localPointer);
+        localPointer = diffCommentLists(getOldPos(oldT), oldInlineComments, newInlineComments, null, null, false, false, localPointer);
 
         boolean containedEmbeddedNewLine = false;
         boolean containsEmbeddedNewLine = false;
@@ -3110,7 +3167,7 @@ public class CasualDiff {
             printer.print("\n");
         }
 
-        return diffCommentLists(getOldPos(oldT), oldTrailingComments, newTrailingComments, true, false, localPointer);
+        return diffCommentLists(getOldPos(oldT), oldTrailingComments, newTrailingComments, null, null, true, false, localPointer);
     }
 
     private boolean sameComments(List<Comment> oldList, List<Comment> newList) {
@@ -3129,8 +3186,14 @@ public class CasualDiff {
     }
     
     // refactor it! make it better
-    private int diffCommentLists(int oldTreeStartPos, List<Comment>oldList,
-                                  List<Comment>newList, boolean trailing, boolean preceding, int localPointer) {
+    private int diffCommentLists(int oldTreeStartPos, List<Comment> oldList,
+            List<Comment> newList, DocCommentTree oldDoc, DocCommentTree newDoc, boolean trailing, boolean preceding, int localPointer) {
+        Comment javadoc = null;
+        for (Comment comment : oldList) {
+            if(comment.style() == Style.JAVADOC) {
+                javadoc = comment;
+            }
+        }
         Iterator<Comment> oldIter = oldList.iterator();
         Iterator<Comment> newIter = newList.iterator();
         Comment oldC = safeNext(oldIter);
@@ -3145,14 +3208,16 @@ public class CasualDiff {
             first = false;
             int nextTarget = Math.max(localPointer, oldC.endPos());
             if (commentsMatch(oldC, newC)) {
+                if(preceding && oldC == javadoc && oldDoc != null) {
+                    localPointer = diffDocTree((DCDocComment)oldDoc, (DCTree)oldDoc, (DCTree)newDoc, new int[]{localPointer, oldC.endPos()});
+                }
                 if (nextTarget > localPointer) {
                     copyTo(localPointer, nextTarget);
                 }
                 oldC = safeNext(oldIter);
                 newC = safeNext(newIter);
                 firstNewCommentPrinted = true;
-            }
-            else if (!listContains(newList, oldC)) {
+            } else if (!listContains(newList, oldC)) {
                 if  (!listContains(oldList, newC)) {
 //                    append(Diff.modify(oldT, newT, oldC, newC));
                     copyTo(localPointer, localPointer = oldC.pos());
@@ -3163,8 +3228,7 @@ public class CasualDiff {
 //                    append(Diff.delete(oldT, newT, oldC));
                     oldC = safeNext(oldIter);
                 }
-            }
-            else {
+            } else {
                 if (!firstNewCommentPrinted && preceding) {
                     copyTo(localPointer, localPointer = oldTreeStartPos);
                 }
@@ -3195,7 +3259,371 @@ public class CasualDiff {
             }
             newC = safeNext(oldIter);
         }
+        
+        return localPointer;
+    }
+    
+    private int diffDocTree(DCDocComment doc, DCTree oldT, DCTree newT, int[] elementBounds) {
+        if (oldT == null && newT != null) {
+            throw new IllegalArgumentException("Null is not allowed in parameters.");
+        }
 
+        if (oldT == newT) {
+            return elementBounds[0];
+        }
+
+        if (newT == null) {
+            tokenSequence.move(elementBounds[1]);
+            if (!tokenSequence.moveNext()) {
+                return elementBounds[1];
+            }
+            while (tokenSequence.token().id() == JavaTokenId.WHITESPACE && tokenSequence.moveNext()) {
+                // Skip whitespace
+            }
+            return tokenSequence.offset();
+        }
+        
+        int localpointer = elementBounds[0];
+        
+        if (oldT.getKind() != newT.getKind()) {
+            // different kind of trees found, print the whole new one.
+            int[] oldBounds = getBounds(oldT, doc);
+            if (oldBounds[0] > elementBounds[0]) {
+                copyTo(elementBounds[0], oldBounds[0]);
+            }
+            printer.print(newT);
+            return oldBounds[1];
+        }
+        
+        switch(oldT.getKind()) {
+            case ATTRIBUTE:
+                localpointer = diffAttribute(doc, (DCAttribute) oldT, (DCAttribute) newT, elementBounds);
+                break;
+            case DOC_COMMENT:
+                localpointer = diffDocComment(doc, (DCDocComment) oldT, (DCDocComment) newT, elementBounds);
+                break;
+            case PARAM:
+                localpointer = diffParam(doc, (DCParam) oldT, (DCParam) newT, elementBounds);
+                break;
+            case RETURN:
+                localpointer = diffReturn(doc, (DCReturn) oldT, (DCReturn) newT, elementBounds);
+                break;
+            /**
+             * Used for instances of {@link LinkTree} representing an @linkplain tag.
+             */
+            case LINK_PLAIN:
+            case LINK:
+                localpointer = diffLink(doc, (DCLink)oldT, (DCLink)newT, elementBounds);
+                break;
+            case TEXT:
+                localpointer = diffText(doc, (DCText)oldT, (DCText)newT, elementBounds);
+                break;
+                
+            case AUTHOR:
+
+            case COMMENT:
+                
+            case DEPRECATED:
+                
+            
+                
+            case DOC_ROOT:    
+                
+            case ENTITY:
+                
+            case ERRONEOUS:
+
+            /**
+             * Used for instances of {@link ThrowsTree} representing an
+             *
+             * @exception tag.
+             */
+            case EXCEPTION:
+            case THROWS:
+                
+            case IDENTIFIER:
+                
+            case INHERIT_DOC:
+            
+            /**
+             * Used for instances of {@link LiteralTree} representing an @code tag.
+             */
+            case CODE:
+            case LITERAL:
+                
+            case REFERENCE:
+                
+            case SEE:
+
+            case SERIAL:
+
+            case SERIAL_DATA:
+
+            case SERIAL_FIELD:
+
+            case SINCE:
+
+            /**
+             * Used for instances of {@link EndElementTree} representing the
+             * start of an HTML element.
+             */
+            case START_ELEMENT:
+            case END_ELEMENT:
+
+            case UNKNOWN_BLOCK_TAG:
+
+            case UNKNOWN_INLINE_TAG:
+
+            case VALUE:
+
+            case VERSION:
+
+            default:
+                // handle special cases like field groups and enum constants
+                if (oldT.getKind() == DocTree.Kind.OTHER) {
+//                  if (oldT instanceof FieldGroupTree) {
+//                      return diffFieldGroup((FieldGroupTree) oldT, (FieldGroupTree) newT, elementBounds);
+//                  }
+                    break;
+                }
+                String msg = "Diff not implemented: "
+                        + ((com.sun.source.doctree.DocTree) oldT).getKind().toString()
+                        + " " + oldT.getClass().getName();
+                throw new AssertionError(msg);
+        }
+
+        return localpointer;
+    }
+    
+    private int diffAttribute(DCDocComment doc, DCAttribute oldT, DCAttribute newT, int[] elementBounds) {
+        return elementBounds[1];
+    }
+    
+    private int diffDocComment(DCDocComment doc, DCDocComment oldT, DCDocComment newT, int[] elementBounds) {
+        tokenSequence.move(elementBounds[0]);
+        if (!tokenSequence.moveNext()) {
+            return elementBounds[1];
+        }
+        while (tokenSequence.token().id() == JavaTokenId.WHITESPACE && tokenSequence.moveNext()) {
+            // Skip whitespace
+        }
+        int localpointer = tokenSequence.offset() + 3; // copy the first characters of the javadoc comment /**;
+//        int localpointer = getOldPos((DCTree)oldT.getFirstSentence().head, doc);
+        copyTo(elementBounds[0], localpointer);
+        localpointer = diffList(doc, oldT.firstSentence, newT.firstSentence, localpointer, Measure.TAGS);
+        localpointer = diffList(doc, oldT.body, newT.body, localpointer, Measure.TAGS);
+        if(oldT.tags.isEmpty()) {
+            int commentEnd = commentEnd(doc);
+            if(localpointer < commentEnd) {
+                copyTo(localpointer, localpointer = commentEnd);
+            }
+        }
+        localpointer = diffList(doc, oldT.tags, newT.tags, localpointer, Measure.TAGS);
+//        localpointer = endPos(oldT.tags, doc);
+        if(localpointer < elementBounds[1]) {
+            copyTo(localpointer, elementBounds[1]);
+        }
+        return elementBounds[1];
+    }
+    
+    private int diffParam(DCDocComment doc, DCParam oldT, DCParam newT, int[] elementBounds) {
+        int localpointer;
+        if(oldT.isTypeParameter != newT.isTypeParameter) { // TODO: At test for changing between typeParam
+            if(oldT.isTypeParameter) {
+                localpointer = getOldPos(oldT.name, doc);
+                copyTo(elementBounds[0], localpointer - 1);
+            } else {
+                localpointer = getOldPos(oldT.name, doc);
+                copyTo(elementBounds[0], localpointer);
+                printer.print("<");
+            }
+        } else {
+            localpointer = getOldPos(oldT.name, doc);
+            copyTo(elementBounds[0], localpointer);
+        }
+        localpointer = diffDocTree(doc, oldT.name, newT.name, new int[] {localpointer, endPos(oldT.name, doc)});
+        localpointer = diffList(doc, oldT.description, newT.description, localpointer, Measure.TAGS);
+        if(localpointer < elementBounds[1]) {
+            copyTo(localpointer, elementBounds[1]);
+        }
+        return elementBounds[1];
+    }
+    
+    private int diffReturn(DCDocComment doc, DCReturn oldT, DCReturn newT, int[] elementBounds) {
+        int localpointer = getOldPos(oldT.description.head, doc);
+        copyTo(elementBounds[0], localpointer);
+        localpointer = diffList(doc, oldT.description, newT.description, localpointer, Measure.TAGS);
+        if(localpointer < elementBounds[1]) {
+            copyTo(localpointer, elementBounds[1]);
+        }
+        return elementBounds[1];
+    }
+    
+    private int diffLink(DCDocComment doc, DCLink oldT, DCLink newT, int[] elementBounds) {
+        int localpointer = getOldPos(oldT.ref, doc);
+        copyTo(elementBounds[0], localpointer);
+        
+        localpointer = diffDocTree(doc, oldT.ref, newT.ref, new int[] {localpointer, endPos(oldT.ref, doc)});
+        localpointer = diffList(doc, oldT.label, newT.label, localpointer, Measure.TAGS);
+        
+        if(localpointer < elementBounds[1]) {
+            copyTo(localpointer, elementBounds[1]);
+        }
+        return elementBounds[1];
+    }
+    
+    private int diffText(DCDocComment doc, DCText oldT, DCText newT, int[] elementBounds) {
+        if(oldT.text.equals(newT.text)) {
+            copyTo(elementBounds[0], elementBounds[1]);
+        } else {
+            printer.print(newT.text);
+        }
+        return elementBounds[1];
+    }
+    
+    private int diffList(
+            DCDocComment doc,
+            List<? extends DCTree> oldList,
+            List<? extends DCTree> newList,
+            int localPointer,
+            Comparator<DCTree> measure)
+    {
+        assert oldList != null && newList != null;
+        
+        if (oldList == newList || oldList.equals(newList)) {
+            return localPointer;
+        }
+
+        ListMatcher<DCTree> matcher = ListMatcher.<DCTree>instance(
+                oldList,
+                newList,
+                measure
+        );
+        if (!matcher.match()) {
+            return localPointer;
+        }
+        DCTree lastdel = null; // last deleted element
+        ResultItem<DCTree>[] result = matcher.getResult();
+
+        if (oldList.isEmpty() && !newList.isEmpty()) {
+            // such a situation needs special handling. It is difficult to
+            // obtain a correct position.
+            StringBuilder aHead = new StringBuilder(), aTail = new StringBuilder();
+//            int pos = estimator.prepare(localPointer, aHead, aTail);
+//            copyTo(localPointer, pos, printer);
+//
+//            printer.print(aHead.toString());
+            for (DCTree item : newList) {
+//                if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
+                printer.print(item);
+//                if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
+            }
+//            printer.print(aTail.toString());
+            return localPointer;
+        }
+
+        // if there has been imports which is removed now
+        if (newList.isEmpty() && !oldList.isEmpty()) {
+            int oldPos = adjustToPreviousNewLine(getOldPos(oldList.get(0), doc), localPointer);
+            copyTo(localPointer, oldPos);
+            return endPos(oldList, doc);
+        }
+
+        // copy to start position
+        int insertPos = adjustToPreviousNewLine(getOldPos(oldList.get(0), doc), localPointer);
+        if (insertPos > localPointer) {
+            copyTo(localPointer, localPointer = insertPos);
+        }
+        // go on, match it!
+        int i = 0;
+        for (int j = 0; j < result.length; j++) {
+            ResultItem<DCTree> item = result[j];
+            switch (item.operation) {
+                case MODIFY: {
+                    DCTree oldT = oldList.get(i);
+                    int[] pos = getBounds(oldT, doc);
+                    copyTo(localPointer, pos[0]);
+                    localPointer = diffDocTree(doc, oldT, item.element, pos);
+                    ++i;
+                    break;
+                }
+                case INSERT: {
+                    int oldPos = item.element.pos;
+                    boolean found = false;
+                    if (oldPos > 0) {
+                        for (DCTree oldT : oldList) {
+                            int oldNodePos = oldT.pos;
+                            if (oldPos == oldNodePos) {
+                                found = true;
+                                VeryPretty oldPrinter = this.printer;
+                                int old = oldPrinter.indent();
+                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                                this.printer.reset(old);
+                                this.printer.oldTrees = oldTrees;
+                                int[] poss = getBounds(oldT, doc);
+                                int end = diffDocTree(doc, oldT, item.element, poss);
+                                copyTo(end, poss[1]);
+                                printer.print(this.printer.toString());
+                                this.printer = oldPrinter;
+                                this.printer.undent(old);
+                                break;
+                            }
+                        }
+                    }
+                    if (!found) {
+//                        if (lastdel != null) {
+//                            if(treesMatch(item.element, lastdel, false)) {
+//                                VeryPretty oldPrinter = this.printer;
+//                                int old = oldPrinter.indent();
+//                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+//                                this.printer.reset(old);
+//                                this.printer.oldTrees = oldTrees;
+//                                int index = oldList.indexOf(lastdel);
+//                                int[] poss = estimator.getPositions(index);
+//                                //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
+//                                localPointer = diffTree(lastdel, item.element, poss);
+//                                printer.print(this.printer.toString());
+//                                this.printer = oldPrinter;
+//                                this.printer.undent(old);
+//                                lastdel = null;
+//                                break;
+//                            }
+//                        }
+                        printer.print(item.element);
+                    }
+                    break;
+                }
+                case DELETE: {
+                    DCTree oldT = oldList.get(i);
+                    lastdel = oldT;
+                    int[] pos = getBounds(oldT, doc);
+//                    if (localPointer < pos[0] && lastdel == null) {
+//                        copyTo(localPointer, pos[0], printer);
+//                    }
+                    localPointer = pos[1];
+                    ++i;
+                    break;
+                }
+                case NOCHANGE: {
+                    DCTree oldT = oldList.get(i);
+                    int[] pos = getBounds(oldT, doc);
+//                    if (pos[0] > localPointer && i != 0) {
+//                        // print fill-in
+//                        copyTo(localPointer, pos[0], printer);
+//                    }
+//                    if (pos[0] >= localPointer) {
+//                        localPointer = pos[0];
+//                    }
+                    if(needStar(pos[0])) {
+                        printer.print(" * ");
+                    }
+                    copyTo(localPointer, localPointer = pos[1], printer);
+                    lastdel = null;
+                    ++i;
+                    break;
+                }
+            }
+        }
         return localPointer;
     }
 
@@ -3217,7 +3645,7 @@ public class CasualDiff {
                 return true;
         return false;
     }
-
+    
     private int commentStartCorrect(Comment c) {
         tokenSequence.move(c.pos());
 
@@ -3262,9 +3690,29 @@ public class CasualDiff {
             return list.get(list.size() - 1).endPos();
         }
     }
+    
+    private static int commentEnd(DCDocComment doc) {
+        int length = doc.comment.getText().length();
+        return doc.comment.getSourcePos(length-1);
+    }
 
     private static int getOldPos(JCTree oldT) {
         return TreeInfo.getStartPos(oldT);
+    }
+    
+    private int getOldPos(DCTree oldT, DCDocComment doc) {
+        return (int) oldT.getSourcePosition(doc);
+    }
+    
+    public int endPos(DCTree oldT, DCDocComment doc) {
+        DocSourcePositions sp = JavacTrees.instance(context).getSourcePositions();
+        return (int) sp.getEndPosition(null, doc, oldT);
+    }
+    
+    private int endPos(List<? extends DCTree> trees, DCDocComment doc) {
+        if (trees.isEmpty())
+            return -1;
+        return endPos(trees.get(trees.size()-1), doc);
     }
 
     /**
@@ -3825,6 +4273,10 @@ public class CasualDiff {
 
     private int[] getBounds(JCTree tree) {
         return new int[] { getOldPos(tree), endPos(tree) };
+    }
+    
+    private int[] getBounds(DCTree tree, DCDocComment doc) {
+        return new int[] { getOldPos(tree, doc), endPos(tree, doc) };
     }
 
     private void copyTo(int from, int to) {
