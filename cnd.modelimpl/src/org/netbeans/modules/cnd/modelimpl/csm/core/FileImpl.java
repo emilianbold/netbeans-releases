@@ -669,87 +669,6 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    private void ensureParsedOnInclusion(Collection<APTPreprocHandler> handlers, CsmParserProvider.CsmParseCallback semaHandler) {
-        try {
-            CsmModelState modelState = ModelImpl.instance().getState();
-            if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
-                if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
-                    System.err.printf("ensureParsed: %s file is interrupted on closing model\n", this.getAbsolutePath());
-                }                
-                synchronized (changeStateLock) {
-                    state = State.INITIAL;
-                }         
-                RepositoryUtils.put(this);
-                return;
-            }
-            assert handlers != DUMMY_HANDLERS : "dummy handlers can not be on inclusion";
-            assert handlers != PARTIAL_REPARSE_HANDLERS : "dummy reparse handlers can not be on inclusion";
-
-            long time;
-            State curState;
-            APTFile fullAPT = getFileAPT(true);
-            if (fullAPT == null) {
-                // probably file was removed
-                return;
-            }
-            time = System.currentTimeMillis();
-            try {
-                int parseLevel;
-                synchronized (changeStateLock) {
-                    parseLevel = inEnsureParsed.incrementAndGet();
-                    curState = state;
-                    parsingState = ParsingState.BEING_PARSED;
-                }
-                if (parseLevel > 1 && TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
-                    System.err.printf(parseLevel + ((curState == State.PARSED) ? " additional " : " ") + "include parse with curState " + curState + "for %s\n", getAbsolutePath()); // NOI18N
-                }
-                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, semaHandler, false, false);
-                for (APTPreprocHandler preprocHandler : handlers) {
-                    parseParams.setCurrentPreprocHandler(preprocHandler);
-                    _parse(parseParams);
-                    if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
-                        break; // does not make sense parsing old data
-                    }
-                }
-                updateModelAfterParsing(parseParams.content);
-            } finally {
-                synchronized (changeStateLock) {
-                    final int val = inEnsureParsed.decrementAndGet();
-                    if (val < 0) {
-                        assert false : "broken state in file " + getAbsolutePath() + parsingState + state;
-                    }
-                    if (val == 0) {
-                        // if not, someone marked it with new state     
-                        if (parsingState == ParsingState.BEING_PARSED) {
-                            state = State.PARSED;
-                        }
-                        parsingState = ParsingState.NOT_BEING_PARSED;
-                    }
-                }                
-                lastParseTime = (int)(System.currentTimeMillis() - time);
-                postParse();
-                postParseNotify();
-                //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
-            }
-            // check state at the end as well, because there could be interruption during parse of file
-            modelState = ModelImpl.instance().getState();
-            if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
-                if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
-                    System.err.printf("after ensureParsed: %s file is interrupted on closing model\n", this.getAbsolutePath());
-                }
-                synchronized (changeStateLock) {
-                    state = State.INITIAL;
-                }
-                RepositoryUtils.put(this);
-            }
-        } finally {
-            // all exist points must have state change notifcation
-            synchronized (stateLock) {
-                stateLock.notifyAll();
-            }
-        }
-    }
-
     private void postParse() {
         // do not call fix fakes after file parsed
         // if something is not resolved, postpone till project parse finished
@@ -861,20 +780,6 @@ public final class FileImpl implements CsmFile,
         return currentFileContent.getErrorCount();
     }
     
-    public void parseOnInclude(APTPreprocHandler.State stateBefore, CsmParserProvider.CsmParseCallback semaHandler) {
-        assert stateBefore != null;
-        assert !stateBefore.isCleaned() : "have to be not cleaned state";
-        ProjectBase prj = getProjectImpl(true);
-        if (prj == null) {
-            return;
-        }
-        APTPreprocHandler preprocHandler = prj.createPreprocHandlerFromState(this.getAbsolutePath(), stateBefore);
-        if (preprocHandler == null) {
-            return;
-        }
-        ensureParsedOnInclusion(Collections.singletonList(preprocHandler), semaHandler);
-    }
-
     public APTFile getFileAPT(boolean full) {
         APTFile fileAPT = null;
         ChangedSegment changedSegment = null;
