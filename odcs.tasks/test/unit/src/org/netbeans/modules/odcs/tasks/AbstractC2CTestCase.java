@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.odcs.tasks;
 
-import org.netbeans.modules.odcs.tasks.C2C;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import java.io.BufferedReader;
 import java.io.File;

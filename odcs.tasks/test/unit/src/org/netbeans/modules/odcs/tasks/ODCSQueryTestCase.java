@@ -45,7 +45,6 @@ package org.netbeans.modules.odcs.tasks;
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
-import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.io.IOException;
 import java.util.ArrayList;
