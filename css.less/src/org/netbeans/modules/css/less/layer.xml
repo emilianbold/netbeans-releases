@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="less">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/less/less.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/css/less/less.png"/>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
