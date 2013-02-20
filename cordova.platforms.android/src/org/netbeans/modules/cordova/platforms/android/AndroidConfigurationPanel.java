@@ -123,6 +123,7 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
      * Creates new form AndroidConfigurationPanel
      */
     public AndroidConfigurationPanel(final PropertyProvider config) {
+        assert config != null;
         this.config = config;
         if (!PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
             setLayout(new BorderLayout());

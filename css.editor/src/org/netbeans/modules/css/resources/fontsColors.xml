@@ -88,7 +88,7 @@ made subject to such option by the copyright holder.
     
     <!-- element, class, id selectors -->
     <fontcolor name="mod-method" foreColor="007c00" >
-        <font style="bold" />
+        <!--<font style="bold" />-->
     </fontcolor>
     
     <!-- namespace prefix -->
@@ -99,6 +99,11 @@ made subject to such option by the copyright holder.
     <!-- pseudo class -->
     <fontcolor name="mod-class" >
         <font style="italic" />
+    </fontcolor>
+    
+    <!-- less/sass variable -->
+    <fontcolor name="mod-local-variable" foreColor="000000" >
+        <font style="bold" />
     </fontcolor>
     
 <!--    
