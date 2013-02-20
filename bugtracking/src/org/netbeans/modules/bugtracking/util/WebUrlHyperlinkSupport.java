@@ -87,7 +87,7 @@ class WebUrlHyperlinkSupport {
                                      .getStyle(StyleContext.DEFAULT_STYLE);
                     final Style hlStyle = doc.addStyle("regularBlue-url", defStyle);      //NOI18N
                     hlStyle.addAttribute(HyperlinkSupport.URL_ATTRIBUTE, new UrlAction());
-                    StyleConstants.setForeground(hlStyle, Color.BLUE);
+                    StyleConstants.setForeground(hlStyle, UIUtils.getLinkColor());
                     StyleConstants.setUnderline(hlStyle, true);
                     for (int i = 0; i < boundaries.length; i+=2) {
                         doc.setCharacterAttributes(boundaries[i], boundaries[i + 1] - boundaries[i], hlStyle, true);

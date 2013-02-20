@@ -112,6 +112,8 @@ public class DetailsPanel extends JTextPane  {
                         NbBundle.getMessage (DetailsPanel.class, "ACN_DetailsPanel")); // NOI18N
             }
         });
+
+        putClientProperty( JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
     }
 
     @Override

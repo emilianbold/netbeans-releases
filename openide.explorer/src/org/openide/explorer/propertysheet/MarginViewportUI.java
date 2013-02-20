@@ -110,7 +110,7 @@ class MarginViewportUI extends ViewportUI implements ComponentListener, Containe
 
         c.setForeground(fg);
 
-        Color bg = UIManager.getColor("window"); //NOI18N
+        Color bg = UIManager.getColor("Tree.background"); //NOI18N
 
         if (bg == null) {
             bg = Color.WHITE;

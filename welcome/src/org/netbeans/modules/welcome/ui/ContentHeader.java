@@ -50,6 +50,7 @@ import java.awt.Image;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.Utils;
 import org.openide.util.ImageUtilities;
@@ -60,10 +61,27 @@ import org.openide.util.ImageUtilities;
  */
 public class ContentHeader extends JPanel implements Constants {
 
-    private static final Image IMG_BANNER = ImageUtilities.loadImage(IMAGE_CONTENT_BANNER, true);;
+    private static final Image IMG_BANNER;
+    private static final Color COL_BANNER_LEFT;
+    private static final Color COL_BANNER_RIGHT;
+    
+    static {
+        String imgName = UIManager.getString( "nb.startpage.imagename.contentheader"); //NOI18N
+        if( null == imgName )
+            imgName = IMAGE_CONTENT_BANNER;
+        IMG_BANNER = ImageUtilities.loadImage(imgName, true);
+        Color c = UIManager.getColor( "nb.startpage.contentheader.color1" ); //NOI18N
+        if( null == c )
+            c = new Color( 28, 82, 157 );
+        COL_BANNER_LEFT = c;
+
+        c = UIManager.getColor( "nb.startpage.contentheader.color2" ); //NOI18N
+        if( null == c )
+            c = new Color( 41, 62, 109 );
+        COL_BANNER_RIGHT = c;
+    };
+
     private final JLabel lblTitle = new JLabel();
-    private final Color COL_BANNER_LEFT = new Color( 28, 82, 157 );
-    private final Color COL_BANNER_RIGHT = new Color( 41, 62, 109 );
 
     private final Color COL_GRADIENT_START = new Color( 249, 255, 249 );
     private final Color COL_GRADIENT_END = new Color( 237, 241, 244 );
@@ -83,10 +101,14 @@ public class ContentHeader extends JPanel implements Constants {
         int width = getWidth();
         int height = getHeight();
 
-        g2d.setColor( Utils.getColor( COLOR_BORDER ) );
+        g2d.setColor( Utils.getBorderColor() );
         g2d.drawRect( 0, 0, width, 12 );
 
-        g2d.setPaint( new GradientPaint( 0, 0, COL_GRADIENT_START, 0, 12, COL_GRADIENT_END ) );
+        if( UIManager.getBoolean( "nb.startpage.defaultbackground" ) ) { //NOI18N
+            g2d.setColor( UIManager.getColor("Tree.background") ); //NOI18N
+        } else {
+            g2d.setPaint( new GradientPaint( 0, 0, COL_GRADIENT_START, 0, 12, COL_GRADIENT_END ) );
+        }
         g2d.fillRect( 1, 0, width-2, 12 );
 
         int imgWidth = IMG_BANNER.getWidth( this );

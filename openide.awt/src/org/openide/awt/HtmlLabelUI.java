@@ -400,7 +400,7 @@ class HtmlLabelUI extends LabelUI {
     static Color ensureContrastingColor(Color fg, Color bg) {
         if (bg == null) {
             if (isNimbus()) {
-                bg = UIManager.getColor( "textBackground" ); //NOI18N
+                bg = UIManager.getColor( "Tree.background" ); //NOI18N
                 if( null == bg )
                     bg = Color.WHITE;
             } else {
@@ -413,7 +413,7 @@ class HtmlLabelUI extends LabelUI {
         }
         if (fg == null) {
             if (isNimbus()) {
-                fg = UIManager.getColor( "textForeground" ); //NOI18N
+                fg = UIManager.getColor( "Tree.foreground" ); //NOI18N
                 if( null == fg )
                     fg = Color.BLACK;
             } else {

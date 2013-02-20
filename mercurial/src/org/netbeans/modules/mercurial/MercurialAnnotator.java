@@ -71,13 +71,13 @@ import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
-import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.menu.ExportMenu;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.menu.BranchMenu;
+import org.netbeans.modules.mercurial.ui.menu.DiffMenu;
 import org.netbeans.modules.mercurial.ui.menu.QueuesMenu;
 import org.netbeans.modules.mercurial.ui.menu.TagMenu;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
@@ -340,7 +340,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             } else {
                 actions.add(null);
                 actions.add(SystemAction.get(StatusAction.class));
-                actions.add(SystemAction.get(DiffAction.class));
+                actions.add(new DiffMenu(null));
                 actions.add(SystemAction.get(UpdateAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(AddAction.class));
@@ -392,7 +392,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 if(a != null) actions.add(a);
             }else{
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context)); //NOI18N
+                actions.add(new DiffMenu(context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "CTL_PopupMenuItem_Add"), context)); //NOI18N
                 actions.add(null);

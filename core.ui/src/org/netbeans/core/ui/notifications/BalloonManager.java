@@ -85,6 +85,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -457,9 +458,9 @@ class BalloonManager {
             Point2D p1 = s.getBounds().getLocation();
             Point2D p2 = new Point2D.Double(p1.getX(), p1.getY()+s.getBounds().getHeight());
             if( isMouseOverEffect )
-                g2d.setPaint( new GradientPaint( p2, mouseOverGradientStartColor, p1, mouseOverGradientFinishColor ) );
+                g2d.setPaint( new GradientPaint( p2, getMouseOverGradientStartColor(), p1, getMouseOverGradientFinishColor() ) );
             else
-                g2d.setPaint( new GradientPaint( p2, defaultGradientStartColor, p1, defaultGradientFinishColor ) );
+                g2d.setPaint( new GradientPaint( p2, getDefaultGradientStartColor(), p1, getDefaultGradientFinishColor() ) );
             g2d.fill(s);
             g2d.setColor( Color.black );
             g2d.draw(s);
@@ -474,12 +475,68 @@ class BalloonManager {
             super.paintChildren(g);
             g2d.setComposite( oldC );
         }
-        
-        private static final Color mouseOverGradientStartColor = new Color(224,224,185);
-        private static final Color mouseOverGradientFinishColor = new Color(255,255,241);
-        
-        private static final Color defaultGradientStartColor = new Color(225,225,225);
-        private static final Color defaultGradientFinishColor = new Color(255,255,255);
+
+        private static Color mouseOverGradientStartColor = null;
+        private static Color mouseOverGradientFinishColor = null;
+
+        private static Color defaultGradientStartColor = null;
+        private static Color defaultGradientFinishColor = null;
+
+        private static final boolean isMetal = UIManager.getLookAndFeel() instanceof MetalLookAndFeel;
+        private static final boolean isNimbus = "Nimbus".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
+
+        private static Color getMouseOverGradientStartColor() {
+            if( null == mouseOverGradientStartColor ) {
+                mouseOverGradientStartColor = new Color(224,224,185);
+                if( isMetal || isNimbus ) {
+                    Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
+                    if( null != c ) {
+                        mouseOverGradientStartColor = c.darker();
+                    }
+                }
+            }
+            return mouseOverGradientStartColor;
+        }
+
+        private static Color getMouseOverGradientFinishColor() {
+            if( null == mouseOverGradientFinishColor ) {
+                mouseOverGradientFinishColor = new Color(255,255,241);
+                if( isMetal || isNimbus ) {
+                    Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
+                    if( null != c ) {
+                        mouseOverGradientFinishColor = c.brighter();
+                    }
+                }
+            }
+            return mouseOverGradientFinishColor;
+        }
+
+        private static Color getDefaultGradientStartColor() {
+            if( null == defaultGradientStartColor ) {
+                defaultGradientStartColor = new Color(225,225,225);
+                if( isMetal || isNimbus ) {
+                    Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
+                    if( null != c ) {
+                        defaultGradientStartColor = c.darker();
+                    }
+                }
+            }
+            return defaultGradientStartColor;
+        }
+
+
+        private static Color getDefaultGradientFinishColor() {
+            if( null == defaultGradientFinishColor ) {
+                defaultGradientFinishColor = new Color(255,255,255);
+                if( isMetal || isNimbus ) {
+                    Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
+                    if( null != c ) {
+                        defaultGradientFinishColor = c;
+                    }
+                }
+            }
+            return defaultGradientFinishColor;
+        }
     }
     
     static class DismissButton extends JButton {

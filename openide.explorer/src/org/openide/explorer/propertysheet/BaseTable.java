@@ -48,6 +48,7 @@ import java.awt.AWTKeyStroke;
 import java.awt.event.ComponentEvent;
 import org.openide.util.NbBundle;
 import java.awt.AWTEvent;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -623,6 +624,15 @@ abstract class BaseTable extends JTable implements FocusListener {
         boolean isSelected = isSelected(row, focusOwner);
 
         Component result = renderer.getTableCellRendererComponent(this, value, isSelected, false, row, col);
+
+        if( PropUtils.isNimbus ) {
+            //HACK to get rid of alternate row background colors
+            if( !isSelected ) {
+                Color bkColor = getBackground();
+                if( null != bkColor ) 
+                    result.setBackground( new Color( bkColor.getRGB() ) );
+            }
+        }
 
         return result;
     }

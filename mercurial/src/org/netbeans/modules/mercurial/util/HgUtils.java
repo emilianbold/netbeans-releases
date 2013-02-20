@@ -115,10 +115,13 @@ import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.text.Line;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -1824,6 +1827,14 @@ itor tabs #66700).
             }
         }
         return branchHeadsMap;
+    }
+    
+    public static VCSContext buildVCSContext (File[] roots) {
+        List<Node> nodes = new ArrayList<Node>(roots.length);
+        for (File root : roots) {
+            nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(root)));
+        }
+        return VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
     }
 
     public static <T> T runWithoutIndexing (Callable<T> callable, List<File> files) throws HgException {

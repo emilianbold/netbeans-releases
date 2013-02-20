@@ -53,6 +53,7 @@ import static java.lang.Math.max;
 import static javax.swing.SwingConstants.EAST;
 import static javax.swing.SwingConstants.WEST;
 import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 
 /**
  * Top part of the {@code QueryTopComponent} - displays the combo-box for
@@ -74,7 +75,7 @@ class RepoPanel extends ViewportWidthAwarePanel {
         queriesPanel      = new QueriesPanel();
         queriesPanel.setVisible(false);
 
-        queriesPanel.setBackground(new Color(224, 224, 224));
+        queriesPanel.setBackground(UIUtils.getSectionPanelBackground());
 
         LayoutStyle layoutStyle = LayoutStyle.getInstance();
         setBorder(BorderFactory.createEmptyBorder(

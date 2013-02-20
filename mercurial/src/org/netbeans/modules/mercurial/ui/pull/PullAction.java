@@ -377,7 +377,7 @@ public class PullAction extends ContextAction {
                                 logger.output(HgUtils.replaceHttpPassword(s));
                                 if (HgCommand.isMergeNeededMsg(s)) {
                                     bMergeNeeded = true;
-                                } else if (HgCommand.isUpdateNeededMsg(s)) {
+                                } else if (HgCommand.isUpdateNeededMsg(s) || HgCommand.isHeadsNeededMsg(s)) {
                                     updateNeeded = true;
                                 }
                             }

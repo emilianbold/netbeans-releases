@@ -1330,12 +1330,22 @@ public class WizardDescriptor extends DialogDescriptor {
                 getIntFromBundle("INT_WizardBackGreen"), // NOI18N
                 getIntFromBundle("INT_WizardBackBlue") // NOI18N
             ); // NOI18N
+        if( Color.white.equals( contentBackColor ) ) {
+            Color c = UIManager.getColor( "Tree.background" ); //NOI18N
+            if( null != c )
+                contentBackColor = new Color( c.getRGB() );
+        }
 
         contentForegroundColor = new Color(
                 getIntFromBundle("INT_WizardForegroundRed"), // NOI18N
                 getIntFromBundle("INT_WizardForegroundGreen"), // NOI18N
                 getIntFromBundle("INT_WizardForegroundBlue") // NOI18N
             ); // NOI18N
+        if( Color.black.equals( contentForegroundColor ) ) {
+            Color c = UIManager.getColor( "Tree.foreground" ); //NOI18N
+            if( null != c )
+                contentForegroundColor = new Color( c.getRGB() );
+        }
         imageAlignment = bundle.getString("STRING_WizardImageAlignment"); //NOI18N
     }
 
@@ -2758,7 +2768,7 @@ public class WizardDescriptor extends DialogDescriptor {
             iconLabel.setIcon(icon);
             iconLabel.setForeground(fgColor);
             messagePane.setForeground(fgColor);
-            messagePane.setText(message);
+             messagePane.setText(message);
             messagePane.setFocusable(message != null);
         }
 
@@ -3145,6 +3155,9 @@ public class WizardDescriptor extends DialogDescriptor {
 
             setEditorKit(htmlkit);
             setOpaque(false);
+            putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+            if( "Nimbus".equals( UIManager.getLookAndFeel().getID() ) ) //NOI18N
+                setBackground(new Color( 0, 0, 0, 0) );
             addHyperlinkListener(new HyperlinkListener() {
                 @Override
                 public void hyperlinkUpdate(HyperlinkEvent hlevt) {
