@@ -1,0 +1,7 @@
+Code completion result for source line:
+NetBeans.s|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      stuff                           [PUBLIC]   defineMethod.js
+METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
+FIELD      s                               [PUBLIC]   test02.js
