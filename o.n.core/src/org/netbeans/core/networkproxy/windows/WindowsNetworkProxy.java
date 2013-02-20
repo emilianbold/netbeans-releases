@@ -50,6 +50,15 @@ import org.netbeans.core.networkproxy.NetworkProxySettings;
  * @author lfischme
  */
 public class WindowsNetworkProxy implements NetworkProxyResolver {
+    
+    private final static String HTTP_PROPERTY_NAME = "http="; //NOI18N
+    private final static String HTTPS_PROPERTY_NAME = "https="; //NOI18N
+    private final static String SOCKS_PROPERTY_NAME = "socks="; //NOI18N
+    
+    private final static String SPACE = " "; //NOI18N
+    private final static String COLON = ":"; //NOI18N
+    private final static String SEMI_COLON = ";"; //NOI18N
+    
 
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
@@ -71,26 +80,33 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
             Pointer proxyBypassPointer = prxCnf.proxyBypass;
             if (proxyPointer != null) {
                 String httpProxy = null;
+                String httpsProxy = null;
                 String socksProxy = null;
                 String[] noProxyHosts;
 
+                //@TODO to lower case
                 String proxyString = proxyPointer.getString(0L, true);
-                if (proxyString.contains(";")) {
-                    String[] proxies = proxyString.split(";");
+                if (proxyString.contains(SEMI_COLON)) {
+                    String[] proxies = proxyString.split(SEMI_COLON);
                     for (String singleProxy : proxies) {
-                        if (singleProxy.startsWith("http=")) {
-                            httpProxy = singleProxy.substring(5);                            
-                        } else if (singleProxy.startsWith("socks=")) {
-                            socksProxy = singleProxy.substring(6);
+                        if (singleProxy.startsWith(HTTP_PROPERTY_NAME)) {
+                            httpProxy = singleProxy.substring(HTTP_PROPERTY_NAME.length());
+                        } else if (singleProxy.startsWith(HTTPS_PROPERTY_NAME)) {
+                            httpsProxy = singleProxy.substring(HTTPS_PROPERTY_NAME.length()); 
+                        } else if (singleProxy.startsWith(SOCKS_PROPERTY_NAME)) {
+                            socksProxy = singleProxy.substring(SOCKS_PROPERTY_NAME.length());
                         }
                     }
                 } else {
-                    if (proxyString.startsWith("http=")) {
-                        proxyString = proxyString.substring(5);
-                        httpProxy = proxyString.replace(" ", ":");
-                    } else if (proxyString.startsWith("socks=")) {
-                        proxyString = proxyString.substring(6);
-                        socksProxy = proxyString.replace(" ", ":");
+                    if (proxyString.startsWith(HTTP_PROPERTY_NAME)) {
+                        proxyString = proxyString.substring(HTTP_PROPERTY_NAME.length());
+                        httpProxy = proxyString.replace(SPACE, COLON);
+                    } else if (proxyString.startsWith(HTTPS_PROPERTY_NAME)) {
+                        proxyString = proxyString.substring(HTTPS_PROPERTY_NAME.length());
+                        httpsProxy = proxyString.replace(SPACE, COLON);
+                    } else if (proxyString.startsWith(SOCKS_PROPERTY_NAME)) {
+                        proxyString = proxyString.substring(SOCKS_PROPERTY_NAME.length());
+                        socksProxy = proxyString.replace(SPACE, COLON);
                     } else {
                         httpProxy = proxyString;
                     }
@@ -98,12 +114,12 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
 
                 if (proxyBypassPointer != null) {
                     String proxyBypass = proxyBypassPointer.getString(0L, true);
-                    noProxyHosts = proxyBypass.split(";");
+                    noProxyHosts = proxyBypass.split(SEMI_COLON);
                 } else {
                     noProxyHosts = new String[0];
                 }
 
-                return new NetworkProxySettings(httpProxy, socksProxy, noProxyHosts);
+                return new NetworkProxySettings(httpProxy, httpsProxy, socksProxy, noProxyHosts);
             }
         }
 

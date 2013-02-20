@@ -207,9 +207,8 @@ class GeneralOptionsModel {
     }
     
     static boolean usePAC() {
-        String s = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
-        boolean usePAC = s != null && s.startsWith("PAC"); // NOI18N
-        return usePAC;
+        String pacUrl = getProxyPreferences().get(ProxySettings.SYSTEM_PAC, ""); // NOI18N
+        return pacUrl != null && pacUrl.length() > 0;
     }
     
     // private helper methods ..................................................

@@ -41,7 +41,10 @@
  */
 package org.netbeans.core.networkproxy;
 
+import java.util.prefs.Preferences;
+import org.netbeans.core.ProxySettings;
 import org.netbeans.core.networkproxy.windows.WindowsNetworkProxy;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -50,30 +53,41 @@ import org.netbeans.core.networkproxy.windows.WindowsNetworkProxy;
 public class NetworkProxySelector {
     
     private static NetworkProxyResolver networkProxyResolver = new WindowsNetworkProxy();
-        
-    private final static String HTTP_PROXY_PROPERTY_KEY = "netbeans.system_http_proxy";
-    private final static String HTTP_NONPROXY_PROPERTY_KEY = "netbeans.system_http_non_proxy_hosts";
-    private final static String SOCKS_PROXY_PROPERTY_KEY = "netbeans.system_socks_proxy";
     
     public static void reloadNetworkProxy() {                
-        NetworkProxySettings proxySettings = networkProxyResolver.getNetworkProxySettings();
+        NetworkProxySettings networkProxySettings = networkProxyResolver.getNetworkProxySettings();
                 
-        switch (proxySettings.getProxyMode()) {
+        switch (networkProxySettings.getProxyMode()) {
             case AUTO:
-                setSystemProperty(HTTP_PROXY_PROPERTY_KEY, "PAC " + proxySettings.getPacFileUrl());
-                setSystemProperty(HTTP_NONPROXY_PROPERTY_KEY, null);
-                setSystemProperty(SOCKS_PROXY_PROPERTY_KEY, null);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTP_HOST);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTP_PORT);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTPS_HOST);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTPS_PORT);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_SOCKS_HOST);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_SOCKS_PORT);
+                getPreferences().remove(ProxySettings.SYSTEM_NON_PROXY_HOSTS);
+                getPreferences().put(ProxySettings.SYSTEM_PAC, networkProxySettings.getPacFileUrl());
                 break;
             case MANUAL:
-                setSystemProperty(HTTP_PROXY_PROPERTY_KEY, proxySettings.getHttpProxy());
-                setSystemProperty(HTTP_PROXY_PROPERTY_KEY, getStringFromArray(proxySettings.getNoProxyHosts()));
-                setSystemProperty(HTTP_PROXY_PROPERTY_KEY, proxySettings.getSocksProxy());                
+                getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTP_HOST, networkProxySettings.getHttpProxyHost());
+                getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTP_PORT, networkProxySettings.getHttpProxyPort());
+                getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTPS_HOST, networkProxySettings.getHttpsProxyHost());
+                getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTPS_PORT, networkProxySettings.getHttpsProxyPort());
+                getPreferences().put(ProxySettings.SYSTEM_PROXY_SOCKS_HOST, networkProxySettings.getSocksProxyHost());
+                getPreferences().put(ProxySettings.SYSTEM_PROXY_SOCKS_PORT, networkProxySettings.getSocksProxyPort());
+                getPreferences().put(ProxySettings.SYSTEM_NON_PROXY_HOSTS, getStringFromArray(networkProxySettings.getNoProxyHosts()));
+                getPreferences().remove(ProxySettings.SYSTEM_PAC);
                 break;
             case DIRECT:
             default:
-                setSystemProperty(HTTP_PROXY_PROPERTY_KEY, "DIRECT");
-                setSystemProperty(HTTP_NONPROXY_PROPERTY_KEY, null);
-                setSystemProperty(SOCKS_PROXY_PROPERTY_KEY, null);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTP_HOST);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTP_PORT);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTPS_HOST);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTPS_PORT);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_SOCKS_HOST);
+                getPreferences().remove(ProxySettings.SYSTEM_PROXY_SOCKS_PORT);
+                getPreferences().remove(ProxySettings.SYSTEM_NON_PROXY_HOSTS);
+                getPreferences().remove(ProxySettings.SYSTEM_PAC);
         }
     }
     
@@ -88,13 +102,7 @@ public class NetworkProxySelector {
         return sb.toString();
     }
     
-    private static void setSystemProperty(String key, String value) {
-        if (key != null) {
-            if (value == null) {
-                System.clearProperty(key);
-            } else {
-                System.setProperty(key, value);
-            }
-        }
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(ProxySettings.class);
     }
 }

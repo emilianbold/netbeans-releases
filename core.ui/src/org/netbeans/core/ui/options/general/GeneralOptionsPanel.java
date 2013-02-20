@@ -52,6 +52,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -72,6 +73,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Implementation of one panel in Options Dialog.
@@ -517,14 +519,13 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     private void bReloadProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bReloadProxyActionPerformed
         NetworkProxySelector.reloadNetworkProxy();
+        rbUseSystemProxy.setToolTipText(getUseSystemProxyToolTip());
     }//GEN-LAST:event_bReloadProxyActionPerformed
 
     private void bTestConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bTestConnectionActionPerformed
-        String a = System.getProperty("netbeans.system_http_proxy");
-        String b = System.getProperty("netbeans.system_http_non_proxy_hosts");
-        String c = System.getProperty("netbeans.system_socks_proxy");
         
-        lblTestResult.setText(a + " " + b + " " + c);
+        
+        //lblTestResult.setText(a + " " + b + " " + c);
     }//GEN-LAST:event_bTestConnectionActionPerformed
     
     
@@ -596,18 +597,17 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return NbBundle.getMessage (GeneralOptionsPanel.class, key, params);
     }
     
-    private String getUseSystemProxyToolTip () {
-        if (rbUseSystemProxy.isSelected ()) {
+    private String getUseSystemProxyToolTip() {
+        if (rbUseSystemProxy.isSelected()) {
             String toolTip;
-            String sHost = System.getProperty ("http.proxyHost"); // NOI18N
-            if (sHost == null || sHost.trim ().length () == 0) {
-                toolTip = loc ("GeneralOptionsPanel_rbUseSystemProxy_Direct"); // NOI18N
-            } else {
-                String sPort = System.getProperty ("http.proxyPort"); // NOI18N
-                toolTip = loc ("GeneralOptionsPanel_rbUseSystemProxy_Format", sHost, sPort);
-            }
+            String sHost = getProxyPreferences().get(ProxySettings.SYSTEM_PROXY_HTTP_HOST, ""); // NOI18N            
             if (GeneralOptionsModel.usePAC()) {
                 toolTip = getPacFile();
+            } else if (sHost == null || sHost.trim().length() == 0) {
+                toolTip = loc("GeneralOptionsPanel_rbUseSystemProxy_Direct"); // NOI18N
+            } else {
+                String sPort = getProxyPreferences().get(ProxySettings.SYSTEM_PROXY_HTTP_PORT, ""); // NOI18N
+                toolTip = loc("GeneralOptionsPanel_rbUseSystemProxy_Format", sHost, sPort);
             }
             return toolTip;
         } else {
@@ -764,8 +764,10 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     private static String getPacFile() {
-        String init = System.getProperty("netbeans.system_http_proxy"); // NOI18N
-        return init.substring(4).trim();
+        return getProxyPreferences().get(ProxySettings.SYSTEM_PAC, "");
     }
     
+    private static Preferences getProxyPreferences() {
+        return NbPreferences.forModule(ProxySettings.class);
+    }
 }
