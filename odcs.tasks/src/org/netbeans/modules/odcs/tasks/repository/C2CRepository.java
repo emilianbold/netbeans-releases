@@ -85,7 +85,6 @@ import org.netbeans.modules.odcs.tasks.query.C2CQuery;
 import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 import org.netbeans.modules.odcs.tasks.util.C2CUtil;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
-import org.netbeans.modules.odcs.tasks.repository.Bundle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
