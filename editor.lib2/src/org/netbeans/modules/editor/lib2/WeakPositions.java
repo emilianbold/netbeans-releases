@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.lib;
+package org.netbeans.modules.editor.lib2;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -106,6 +106,7 @@ public final class WeakPositions {
 
     private static final DocumentListener documentsTracker = new DocumentListener() {
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             synchronized (OGLS) {
                 OffsetGapList<WeakPositions.WeakP> ogl = getOgl(e);
@@ -115,6 +116,7 @@ public final class WeakPositions {
             }
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             synchronized (OGLS) {
                 OffsetGapList<WeakPositions.WeakP> ogl = getOgl(e);
@@ -124,6 +126,7 @@ public final class WeakPositions {
             }
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             // attribute's changed, ignore
         }

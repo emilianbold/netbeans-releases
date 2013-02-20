@@ -51,6 +51,8 @@ import javax.swing.text.Position;
  * <br/>
  * Each position has its corresponding mark which holds a weak reference to it
  * and there's queue that notifies mark vector once the position can be GCed.
+ * <br/>
+ * Position object does not reference document directly (see EditorDocumentContent javadoc).
  *
  * @author Miloslav Metelka
  * @since 1.46
@@ -81,7 +83,7 @@ final class EditorPosition implements Position {
         return mark;
     }
     
-    void setMark(Mark mark) {
+    void initMark(Mark mark) { // Should only be called once from Mark's constructor
         this.mark = mark;
     }
     

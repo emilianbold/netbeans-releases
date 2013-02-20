@@ -69,7 +69,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.lib.NavigationHistory;
+import org.netbeans.api.editor.NavigationHistory;
 import org.netbeans.api.editor.EditorActionNames;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;

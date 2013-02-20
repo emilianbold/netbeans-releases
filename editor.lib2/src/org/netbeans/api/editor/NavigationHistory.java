@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.lib;
+package org.netbeans.api.editor;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -60,6 +60,8 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.modules.editor.lib2.URLMapper;
+import org.netbeans.modules.editor.lib2.WeakPositions;
 
 /**
  *                       0    1    2    3    4    waypoints.size()
@@ -74,17 +76,23 @@ import javax.swing.text.Position;
  * navigateBack() == W3, moves pointer one position left
  * navigateForward() == W4, moves pointer one position right
  * 
- * 
+ * @since 1.74
  * @author Vita Stejskal
  */
 public final class NavigationHistory {
 
     public static final String PROP_WAYPOINTS = "NavigationHHistory.PROP_WAYPOINTS"; //NOI18N
 
+    /**
+     * @return list of waypoints where user navigated.
+     */
     public static NavigationHistory getNavigations() {
         return get("navigation-history"); //NOI18N
     }
-    
+
+    /**
+     * @return list of waypoints where user edited content.
+     */
     public static NavigationHistory getEdits() {
         return get("last-edit-history"); //NOI18N
     }
@@ -98,6 +106,7 @@ public final class NavigationHistory {
     }
     
     /**
+     * Create and add new waypoint to navigation history
      * @param offset A valid ofset inside the component's document or -1 if the
      *   offset is unspecified.
      */
@@ -153,7 +162,10 @@ public final class NavigationHistory {
         
         return newWpt;
     }
-    
+
+    /**
+     * @return waypoint under pointer
+     */
     public Waypoint getCurrentWaypoint() {
         synchronized (LOCK) {
             if (pointer < waypoints.size()) {
@@ -163,19 +175,28 @@ public final class NavigationHistory {
             }
         }
     }
-    
+
+    /**
+     * Is pointer showing other than first waypoint entry
+     */
     public boolean hasPreviousWaypoints() {
         synchronized (LOCK) {
             return pointer > 0;
         }
     }
-    
+
+    /**
+     * Is pointer showing other than last waypoint entry
+     */
     public boolean hasNextWaypoints() {
         synchronized (LOCK) {
             return pointer + 1 < waypoints.size();
         }
     }
-    
+
+    /**
+     * @return all waypoints before waypoint under pointer
+     */
     public List<Waypoint> getPreviousWaypoints() {
         synchronized (LOCK) {
             if (hasPreviousWaypoints()) {
@@ -185,7 +206,10 @@ public final class NavigationHistory {
             }
         }
     }
-    
+
+    /**
+     * @return all waypoints after waypoint under pointer
+     */
     public List<Waypoint> getNextWaypoints() {
         synchronized (LOCK) {
             if (hasNextWaypoints()) {
@@ -195,7 +219,10 @@ public final class NavigationHistory {
             }
         }
     }
-    
+
+    /**
+     * Change selected waypoint by moving pointer to previous waypoint
+     */
     public Waypoint navigateBack() {
         Waypoint waypoint = null;
         
@@ -212,7 +239,10 @@ public final class NavigationHistory {
         
         return waypoint;
     }
-    
+
+    /**
+     * Change selected waypoint by moving pointer to next waypoint
+     */
     public Waypoint navigateForward() {
         Waypoint waypoint = null;
         
@@ -230,6 +260,9 @@ public final class NavigationHistory {
         return waypoint;
     }
 
+    /**
+     * Change selected waypoint by moving pointer to waypoint in parameter
+     */
     public Waypoint navigateTo(Waypoint waypoint) {
         assert waypoint != null : "The waypoint parameter must not be null"; //NOI18N
         
@@ -257,6 +290,9 @@ public final class NavigationHistory {
         return waypoint;
     }
 
+    /**
+     * Change selected waypoint by moving pointer to first waypoint
+     */
     public Waypoint navigateFirst() {
         Waypoint waypoint = null;
         
@@ -273,7 +309,10 @@ public final class NavigationHistory {
         
         return waypoint;
     }
-    
+
+    /**
+     * Change selected waypoint by moving pointer to last waypoint
+     */
     public Waypoint navigateLast() {
         Waypoint waypoint = null;
         
@@ -290,10 +329,13 @@ public final class NavigationHistory {
         
         return waypoint;
     }
-    
+
+    /*
+     * @since 1.74
+     */
     public static final class Waypoint {
 
-        private NavigationHistory navigationHistory;
+        private final NavigationHistory navigationHistory;
         private Reference<JTextComponent> compRef;
         private Position pos;
         private URL url;
@@ -466,6 +508,7 @@ public final class NavigationHistory {
             return buffer[getRawIndex(index)];
         }
 
+        @Override
         public int size() {
             return (tail - head + buffer.length) % buffer.length;
         }

@@ -65,7 +65,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.editor.lib.NavigationHistory;
+import org.netbeans.api.editor.NavigationHistory;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;

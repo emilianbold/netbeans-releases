@@ -107,8 +107,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="NavigationHistoryClassAdded">
+            <summary>NavigationHistory class added</summary>
+            <version major="1" minor="74"/>
+            <date day="15" month="2" year="2013"/>
+            <author login="mkristofic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added NavigationHistory and NavigationHistory.Waypoint classes. It enables to add position to 
+                    edit history. It also enables get edit history and look on last edits.
+                </p>
+            </description>
+            <issue number="225808"/>
+        </change>
+
         <change id="TypedTextInterceptor.getReplacedText">
-            <summary>OnSaveTask interface added</summary>
+            <summary>method getReplacedText added</summary>
             <version major="1" minor="73"/>
             <date day="30" month="1" year="2013"/>
             <author login="mkristofic"/>

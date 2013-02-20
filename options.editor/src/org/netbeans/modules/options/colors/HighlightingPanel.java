@@ -61,7 +61,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.AbstractButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
@@ -70,9 +69,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.options.colors.spi.FontsColorsController;
-import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.ColorComboBox;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -81,8 +77,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
-@OptionsPanelController.Keywords(keywords={"#KW_HighlightPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "#Editor_tab.displayName")
-public class HighlightingPanel extends JPanel implements ActionListener, ItemListener, FontsColorsController {
+public class HighlightingPanel extends JPanel implements ActionListener, ItemListener {
     
     private ColorModel          colorModel = null;
     private boolean             listen = false;
@@ -218,7 +213,6 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         changed = true;
     }
     
-    @Override
     public void update (ColorModel colorModel) {
         this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
@@ -231,14 +225,12 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         changed = false;
     }
     
-    @Override
     public void cancel () {
         toBeSaved = new HashSet<String>();
         profileToCategories = new HashMap<String, Vector<AttributeSet>>();        
         changed = false;
     }
     
-    @Override
     public void applyChanges() {
         if (colorModel == null) return;
         for(String profile : toBeSaved) {
@@ -254,12 +246,10 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         profileToCategories = new HashMap<String, Vector<AttributeSet>>();
     }
     
-    @Override
     public boolean isChanged () {
         return changed;
     }
     
-    @Override
     public void setCurrentProfile (String currentProfile) {
         String oldScheme = this.currentProfile;
         this.currentProfile = currentProfile;
@@ -274,7 +264,6 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         refreshUI ();
     }
 
-    @Override
     public void deleteProfile (String profile) {
         if (colorModel.isCustomProfile (profile))
             profileToCategories.remove (profile);
@@ -283,11 +272,6 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             refreshUI ();
         }
         toBeSaved.add (profile);
-    }
-    
-    @Override
-    public JComponent getComponent() {
-        return this;
     }
         
     // other methods ...........................................................

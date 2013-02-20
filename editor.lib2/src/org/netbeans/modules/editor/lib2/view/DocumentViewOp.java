@@ -108,7 +108,8 @@ public final class DocumentViewOp
     private static final Logger LOG = Logger.getLogger(DocumentViewOp.class.getName());
 
     static final char PRINTING_SPACE = '\u00B7';
-    static final char PRINTING_TAB = '\u00BB'; // \u21FE
+    static final char PRINTING_TAB = '\u2192';
+    static final char PRINTING_TAB_ALTERNATE = '\u00BB';
     static final char PRINTING_NEWLINE = '\u00B6';
     static final char LINE_CONTINUATION = '\u21A9';
     static final char LINE_CONTINUATION_ALTERNATE = '\u2190';
@@ -1126,14 +1127,16 @@ public final class DocumentViewOp
 
     TextLayout getTabCharTextLayout(double availableWidth) {
         if (tabTextLayout == null) {
-            tabTextLayout = createTextLayout(String.valueOf(PRINTING_TAB), defaultFont);
+            char tabChar = defaultFont.canDisplay(PRINTING_TAB) ? PRINTING_TAB : PRINTING_TAB_ALTERNATE;
+            tabTextLayout = createTextLayout(String.valueOf(tabChar), defaultFont);
         }
         TextLayout ret = tabTextLayout;
         if (tabTextLayout != null && availableWidth > 0 && tabTextLayout.getAdvance() > availableWidth) {
             if (singleCharTabTextLayout == null) {
                 for (int i = defaultFont.getSize() - 1; i >= 0; i--) {
                     Font font = new Font(defaultFont.getName(), defaultFont.getStyle(), i);
-                    singleCharTabTextLayout = createTextLayout(String.valueOf(PRINTING_TAB), font);
+                    char tabChar = font.canDisplay(PRINTING_TAB) ? PRINTING_TAB : PRINTING_TAB_ALTERNATE;
+                    singleCharTabTextLayout = createTextLayout(String.valueOf(tabChar), font);
                     if (singleCharTabTextLayout != null) {
                         if (singleCharTabTextLayout.getAdvance() <= getDefaultCharWidth()) {
                             LOG.log(Level.FINE, "singleChar font size={0}\n", i);

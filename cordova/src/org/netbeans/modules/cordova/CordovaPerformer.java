@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
 import org.netbeans.modules.cordova.project.ClientProjectUtilities;
 import org.netbeans.modules.web.browser.api.PageInspector;
@@ -64,6 +65,7 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -118,11 +120,11 @@ public class CordovaPerformer implements BuildPerformer {
 
     private Properties properties(Project p) {
         ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
-        ClientProjectConfigurationImpl activeConfiguration = (ClientProjectConfigurationImpl) provider.getActiveConfiguration();
+        ProjectConfiguration  activeConfiguration = provider.getActiveConfiguration();
         Properties props = new Properties();
         final CordovaPlatform phoneGap = CordovaPlatform.getDefault();
         props.put("cordova.home", phoneGap.getSdkLocation());//NOI18N
-        props.put("cordova.version", phoneGap.getVersion());//NOI18N
+        props.put("cordova.version", phoneGap.getVersion().toString());//NOI18N
         props.put("site.root", org.netbeans.modules.cordova.project.ClientProjectUtilities.getSiteRoot(p).getPath());
         props.put("start.file", org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p).getPath());
 
@@ -133,8 +135,12 @@ public class CordovaPerformer implements BuildPerformer {
         props.put("debug.enable", debug);//NOI18N
         //workaround for some strange behavior of ant execution in netbeans
         props.put("env.DISPLAY", ":0.0");//NOI18N
-        props.put("config", activeConfiguration.getId());
-        activeConfiguration.getDevice().addProperties(props);
+        if (activeConfiguration instanceof ClientProjectConfigurationImpl) {
+            props.put("config", ((ClientProjectConfigurationImpl) activeConfiguration).getId());
+            ((ClientProjectConfigurationImpl) activeConfiguration).getDevice().addProperties(props);
+        }
+        
+        props.put("android.sdk.home", PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
         return props;
     }
 
@@ -142,6 +148,7 @@ public class CordovaPerformer implements BuildPerformer {
         try {
             createScript(project, "build.xml", "nbproject/build.xml");//NOI18N
             createProperties(project, "build.properties", "nbproject/build.properties");//NOI18N
+            createScript(project, "config.xml", "public_html/config.xml");//NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

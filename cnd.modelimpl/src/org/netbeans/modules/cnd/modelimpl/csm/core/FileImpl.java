@@ -1439,19 +1439,6 @@ public final class FileImpl implements CsmFile,
             assert parser != null : "no parser for " + this;
 
             parser.init(this, filteredTokenStream, parseParams.callback);
-            if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
-                if(parsingErrors == null) {
-                    parsingErrors = new ArrayList<ParserError>();
-                }
-                parsingErrors.clear();
-                CsmParserProvider.ParserErrorDelegate delegate = new CsmParserProvider.ParserErrorDelegate() {
-                    @Override
-                    public void onError(ParserError e) {
-                        parsingErrors.add(e);
-                    }
-                };
-                parser.setErrorDelegate(delegate);
-            }
             
             parseResult = parser.parse(parseParams.lazyCompound ? CsmParser.ConstructionKind.TRANSLATION_UNIT : CsmParser.ConstructionKind.TRANSLATION_UNIT_WITH_COMPOUND);
             FilePreprocessorConditionState pcState = pcBuilder.build();
@@ -1523,11 +1510,29 @@ public final class FileImpl implements CsmFile,
         currentFileContent = fileContent.toWeakReferenceBasedCopy();
         currentFileContent.put();
         RepositoryUtils.put(this);
+        if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
+            if(parsingErrors == null) {
+                parsingErrors = new ArrayList<ParserError>();
+            }
+            parsingErrors.clear();
+            if(currentFileContent != null) {
+                parsingErrors.addAll(currentFileContent.getParserErrors());
+            }
+        }
         if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
             for (FileContent includedFileContent : fileContent.getIncludedFileContents()) {
                 FileImpl fileImplIncluded = includedFileContent.getFile();
                 fileImplIncluded.updateModelAfterParsing(includedFileContent);
                 fileImplIncluded.parsingFileContentRef.get().set(null);
+                if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
+                    if(fileImplIncluded.parsingErrors == null) {
+                        fileImplIncluded.parsingErrors = new ArrayList<ParserError>();
+                    }
+                    fileImplIncluded.parsingErrors.clear();
+                    if(includedFileContent != null) {
+                        fileImplIncluded.parsingErrors.addAll(includedFileContent.getParserErrors());
+                    }
+                }
                 synchronized (fileImplIncluded.changeStateLock) {
                     fileImplIncluded.state = State.PARSED;
                 }
