@@ -43,7 +43,10 @@
  */
 package org.netbeans.modules.mercurial.ui.rebase;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import javax.swing.JButton;
 import org.netbeans.modules.mercurial.HgException;
@@ -54,6 +57,7 @@ import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.rebase.RebaseResult.State;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.DialogDisplayer;
@@ -72,7 +76,13 @@ import org.openide.util.NbBundle;
 @ActionID(id = "org.netbeans.modules.mercurial.ui.rebase.RebaseAction", category = "Mercurial")
 @ActionRegistration(displayName = "#CTL_MenuItem_RebaseAction")
 @NbBundle.Messages({
-    "CTL_MenuItem_RebaseAction=Rebase..."
+    "MSG_Rebase_Progress=Rebasing...",
+    "MSG_Rebase_Started=Starting rebase",
+    "CTL_MenuItem_RebaseAction=Rebase...",
+    "MSG_Rebase_Title_Sep=----------------",
+    "MSG_Rebase_Title=Mercurial Rebase",
+    "# Capitalized letters used intentionally to emphasize the words in an output window, should be translated",
+    "MSG_Rebase_Finished=INFO: End of Rebase"
 })
 public class RebaseAction extends ContextAction {
     
@@ -88,24 +98,8 @@ public class RebaseAction extends ContextAction {
 
     @Override
     @NbBundle.Messages({
-        "MSG_Rebase_Progress=Rebasing...",
-        "# Capitalized letters used intentionally to emphasize the words in an output window, should be translated",
-        "MSG_Rebase_Finished=INFO: End of Rebase",
-        "MSG_Rebase_Info_Sep=Rebase blablabla",
-        "MSG_Rebase_Abort=Aborting an interrupted rebase",
-        "MSG_Rebase_Aborted=Rebase Aborted",
-        "MSG_Rebase_Merging_Failed=Rebase interrupted because of a failed merge.\nResolve the conflicts and run the rebase again.",
-        "MSG_Rebase_Continue=Continuing an interrupted rebase",
-        "MSG_Rebase_Title_Sep=----------------",
-        "MSG_Rebase_Title=Mercurial Rebase",
         "MSG_Rebase.unfinishedMerge=Cannot rebase because of an unfinished merge.",
-        "CTL_RebaseAction.continueButton.text=C&ontinue",
-        "CTL_RebaseAction.continueButton.TTtext=Continue the interrupted rebase",
-        "CTL_RebaseAction.abortButton.text=Abo&rt",
-        "CTL_RebaseAction.abortButton.TTtext=Abort the interrupted rebase",
-        "LBL_Rebase.rebasingState.title=Unfinished Rebase",
-        "# {0} - repository name", "MSG_Rebase.rebasingState.text=Repository {0} is in the middle of an unfinished rebase.\n"
-            + "Do you want to continue or abort the unfinished rebase?"
+        "MSG_Rebase_Preparing_Progress=Preparing Rebase..."
     })
     protected void performContextAction(Node[] nodes) {
         VCSContext ctx = HgUtils.getCurrentContext(nodes);
@@ -117,60 +111,157 @@ public class RebaseAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() {
+                HgLogMessage[] workingCopyParents = WorkingCopyInfo.getInstance(root).getWorkingCopyParents();
                 if (HgUtils.isRebasing(root)) {
-                    // abort or continue?
-                    JButton btnContinue = new JButton();
-                    Mnemonics.setLocalizedText(btnContinue, Bundle.CTL_RebaseAction_continueButton_text());
-                    btnContinue.setToolTipText(Bundle.CTL_RebaseAction_continueButton_TTtext());
-                    JButton btnAbort = new JButton();
-                    Mnemonics.setLocalizedText(btnAbort, Bundle.CTL_RebaseAction_abortButton_text());
-                    btnAbort.setToolTipText(Bundle.CTL_RebaseAction_abortButton_TTtext());
-                    Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                            Bundle.MSG_Rebase_rebasingState_text(root.getName()),
-                            Bundle.LBL_Rebase_rebasingState_title(),
-                            NotifyDescriptor.YES_NO_CANCEL_OPTION,
-                            NotifyDescriptor.QUESTION_MESSAGE,
-                            new Object[] { btnContinue, btnAbort, NotifyDescriptor.CANCEL_OPTION }, 
-                            btnContinue));
-                    if (value == btnAbort || value == btnContinue) {
-                        final boolean cont = btnContinue == value;
-                        final OutputLogger logger = getLogger();
-                        try {
-                            logger.outputInRed(Bundle.MSG_Rebase_Title());
-                            logger.outputInRed(Bundle.MSG_Rebase_Title_Sep());
-                            logger.output(cont
-                                    ? Bundle.MSG_Rebase_Continue()
-                                    : Bundle.MSG_Rebase_Abort());
-                            HgUtils.runWithoutIndexing(new Callable<Void>() {
-                                @Override
-                                public Void call () throws Exception {
-                                    RebaseResult rebaseResult = HgCommand.finishRebase(root, cont, logger);
-                                    HgUtils.forceStatusRefresh(root);
-                                    handleRebaseResult(rebaseResult, logger);
-                                    return null;
-                                }
-                            }, root);
-                        } catch (HgException.HgCommandCanceledException ex) {
-                            // canceled by user, do nothing
-                        } catch (HgException ex) {
-                            HgUtils.notifyException(ex);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            finishRebase(root);
                         }
-                        logger.outputInRed(Bundle.MSG_Rebase_Finished());
-                        logger.output(""); // NOI18N
-                    }
-                } else if (WorkingCopyInfo.getInstance(root).getWorkingCopyParents().length > 1) {
+                    });
+                } else if (workingCopyParents.length > 1) {
                     // inside a merge
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 Bundle.MSG_Rebase_unfinishedMerge(),
                                 NotifyDescriptor.ERROR_MESSAGE));
                 } else {
-                    // select and rebase
+                    try {
+                        final HgLogMessage workingCopyParent = workingCopyParents[0];
+                        final String currentBranch = HgCommand.getBranch(root);
+                        HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                        final Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
+                        if (isCanceled()) {
+                            return;
+                        }
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                doRebase(root, workingCopyParent, currentBranch, branchHeads);
+                            }
+                        });
+                    } catch (HgException.HgCommandCanceledException ex) {
+                        // canceled by user, do nothing
+                    } catch (HgException ex) {
+                        HgUtils.notifyException(ex);
+                    }
                 }
             }
         };
-        support.start(rp, root, Bundle.MSG_Rebase_Progress());
+        support.start(rp, root, Bundle.MSG_Rebase_Preparing_Progress());
     }
 
+    public static boolean doRebase (File root, String base, String source, String dest,
+            OutputLogger logger) throws HgException {
+        RebaseResult rebaseResult = HgCommand.doRebase(root, base, source, dest, logger);
+        HgUtils.forceStatusRefresh(root);
+        handleRebaseResult(rebaseResult, logger);
+        return rebaseResult.getState() == State.OK;
+    }
+
+    private void doRebase (final File root, HgLogMessage workingCopyParent,
+            String currentBranch, Map<String, Collection<HgLogMessage>> branchHeads) {
+        final Rebase rebase = new Rebase(root, workingCopyParent, currentBranch, branchHeads);
+        if (rebase.showDialog()) {
+            new HgProgressSupport() {
+                @Override
+                protected void perform () {
+                    doRebase(rebase);
+                }
+
+                private void doRebase (final Rebase rebase) {
+                    final OutputLogger logger = getLogger();
+                    try {
+                        logger.outputInRed(Bundle.MSG_Rebase_Title());
+                        logger.outputInRed(Bundle.MSG_Rebase_Title_Sep());
+                        logger.output(Bundle.MSG_Rebase_Started());
+                        HgUtils.runWithoutIndexing(new Callable<Void>() {
+                            @Override
+                            public Void call () throws Exception {
+                                RebaseAction.doRebase(root, rebase.getRevisionBase(),
+                                        rebase.getRevisionSource(),
+                                        rebase.getRevisionDest(), logger);
+                                return null;
+                            }
+                        }, root);
+                    } catch (HgException.HgCommandCanceledException ex) {
+                        // canceled by user, do nothing
+                    } catch (HgException ex) {
+                        HgUtils.notifyException(ex);
+                    }
+                    logger.outputInRed(Bundle.MSG_Rebase_Finished());
+                    logger.output(""); // NOI18N
+                }
+            }.start(Mercurial.getInstance().getRequestProcessor(root), root, Bundle.MSG_Rebase_Progress());
+        }
+    }
+
+    @NbBundle.Messages({
+        "MSG_Rebase_Abort=Aborting an interrupted rebase",
+        "MSG_Rebase_Aborted=Rebase Aborted",
+        "MSG_Rebase_Merging_Failed=Rebase interrupted because of a failed merge.\nResolve the conflicts and run the rebase again.",
+        "MSG_Rebase_Continue=Continuing an interrupted rebase",
+        "CTL_RebaseAction.continueButton.text=C&ontinue",
+        "CTL_RebaseAction.continueButton.TTtext=Continue the interrupted rebase",
+        "CTL_RebaseAction.abortButton.text=Abo&rt",
+        "CTL_RebaseAction.abortButton.TTtext=Abort the interrupted rebase",
+        "LBL_Rebase.rebasingState.title=Unfinished Rebase",
+        "# {0} - repository name", "MSG_Rebase.rebasingState.text=Repository {0} is in the middle of an unfinished rebase.\n"
+            + "Do you want to continue or abort the unfinished rebase?"
+    })
+    private void finishRebase (final File root) {
+        // abort or continue?
+        JButton btnContinue = new JButton();
+        Mnemonics.setLocalizedText(btnContinue, Bundle.CTL_RebaseAction_continueButton_text());
+        btnContinue.setToolTipText(Bundle.CTL_RebaseAction_continueButton_TTtext());
+        JButton btnAbort = new JButton();
+        Mnemonics.setLocalizedText(btnAbort, Bundle.CTL_RebaseAction_abortButton_text());
+        btnAbort.setToolTipText(Bundle.CTL_RebaseAction_abortButton_TTtext());
+        Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                Bundle.MSG_Rebase_rebasingState_text(root.getName()),
+                Bundle.LBL_Rebase_rebasingState_title(),
+                NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                new Object[] { btnContinue, btnAbort, NotifyDescriptor.CANCEL_OPTION }, 
+                btnContinue));
+        if (value == btnAbort || value == btnContinue) {
+            final boolean cont = btnContinue == value;
+            new HgProgressSupport() {
+                @Override
+                protected void perform () {
+                    finishRebase(cont);
+                }
+                
+                private void finishRebase (final boolean cont) {
+                    final OutputLogger logger = getLogger();
+                    try {
+                        logger.outputInRed(Bundle.MSG_Rebase_Title());
+                        logger.outputInRed(Bundle.MSG_Rebase_Title_Sep());
+                        logger.output(cont
+                                ? Bundle.MSG_Rebase_Continue()
+                                : Bundle.MSG_Rebase_Abort());
+                        HgUtils.runWithoutIndexing(new Callable<Void>() {
+                            @Override
+                            public Void call () throws Exception {
+                                RebaseResult rebaseResult = HgCommand.finishRebase(root, cont, logger);
+                                HgUtils.forceStatusRefresh(root);
+                                handleRebaseResult(rebaseResult, logger);
+                                return null;
+                            }
+                        }, root);
+                    } catch (HgException.HgCommandCanceledException ex) {
+                        // canceled by user, do nothing
+                    } catch (HgException ex) {
+                        HgUtils.notifyException(ex);
+                    }
+                    logger.outputInRed(Bundle.MSG_Rebase_Finished());
+                    logger.output(""); // NOI18N
+                }
+            }.start(Mercurial.getInstance().getRequestProcessor(root), root, Bundle.MSG_Rebase_Progress());
+        }
+    }
+
+    @NbBundle.Messages({
+    })
     public static void handleRebaseResult (RebaseResult rebaseResult, OutputLogger logger) {
         for (File f : rebaseResult.getTouchedFiles()) {
             Mercurial.getInstance().notifyFileChanged(f);

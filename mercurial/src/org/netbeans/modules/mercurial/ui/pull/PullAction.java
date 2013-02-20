@@ -70,8 +70,6 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction;
 import org.netbeans.modules.mercurial.ui.queues.QPatch;
 import org.netbeans.modules.mercurial.ui.rebase.RebaseAction;
-import org.netbeans.modules.mercurial.ui.rebase.RebaseResult;
-import org.netbeans.modules.mercurial.ui.rebase.RebaseResult.State;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
@@ -499,9 +497,7 @@ public class PullAction extends ContextAction {
                 if (rebaseAccepted) {
                     logger.output(""); //NOI18N
                     logger.outputInRed(Bundle.MSG_PULL_REBASE_DO());
-                    RebaseResult rebaseResult = HgCommand.doRebase(root, null, null, logger);
-                    finished = rebaseResult.getState() == State.OK;
-                    RebaseAction.handleRebaseResult(rebaseResult, logger);
+                    finished = RebaseAction.doRebase(root, null, null, null, logger);
                 } else if (mergeAccepted) {
                     logger.output(""); //NOI18N
                     logger.outputInRed(Bundle.MSG_PULL_MERGE_DO());

@@ -1004,7 +1004,8 @@ public class HgCommand {
         return RebaseResult.build(repository, list);
     }
 
-    public static RebaseResult doRebase (File repository, String revisionBase, String revisionDest, OutputLogger logger) throws HgException {
+    public static RebaseResult doRebase (File repository, String revisionBase, 
+            String revisionSource, String revisionDest, OutputLogger logger) throws HgException {
         if (repository == null) return null;
         List<String> command = new ArrayList<String>();
 
@@ -1013,6 +1014,10 @@ public class HgCommand {
         if (revisionBase != null) {
             command.add(HG_REBASE_OPT_BASE);
             command.add(revisionBase);
+        }
+        if (revisionSource != null) {
+            command.add(HG_REBASE_OPT_SOURCE);
+            command.add(revisionSource);
         }
         if (revisionDest != null) {
             command.add(HG_REBASE_OPT_DEST);
