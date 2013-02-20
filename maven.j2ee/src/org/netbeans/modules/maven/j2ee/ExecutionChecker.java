@@ -49,7 +49,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -87,13 +86,18 @@ import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
 
-@ProjectServiceProvider(service = {ExecutionResultChecker.class, PrerequisitesChecker.class}, projectType={
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
-})
+@ProjectServiceProvider(
+    service = {
+        ExecutionResultChecker.class,
+        PrerequisitesChecker.class
+    }, projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
+    }
+)
 public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesChecker {
 
     private final Project project;
@@ -108,7 +112,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         project = prj;
     }
 
-    
+
     @Override
     public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
         boolean depl = Boolean.parseBoolean(config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
@@ -124,20 +128,24 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             }
             String _redeploy = config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_REDEPLOY);
             boolean redeploy = _redeploy != null ? Boolean.parseBoolean(_redeploy) : true;
-            boolean debugmode = Boolean.parseBoolean(config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); 
+            boolean debugmode = Boolean.parseBoolean(config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE));
             boolean profilemode = Boolean.parseBoolean(config.getProperties().get("netbeans.deploy.profilemode")); //NOI18N
             String openInBrowser = config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_OPEN);
-            boolean showInBrowser = openInBrowser == null ? true : Boolean.parseBoolean( openInBrowser );
+            boolean showInBrowser = openInBrowser == null ? true : Boolean.parseBoolean(openInBrowser);
 
-            performDeploy(res, debugmode, profilemode, moduleUri, clientUrl, 
-                    redeploy, showInBrowser );
+            performDeploy(res, debugmode, profilemode, moduleUri, clientUrl, redeploy, showInBrowser);
         }
     }
 
-    private void performDeploy(ExecutionContext res, boolean debugmode, 
-            boolean profilemode, String clientModuleUri, String clientUrlPart, 
-            boolean forceRedeploy, boolean showInBrowser ) 
-    {
+    private void performDeploy(
+            ExecutionContext res,
+            boolean debugmode,
+            boolean profilemode,
+            String clientModuleUri,
+            String clientUrlPart,
+            boolean forceRedeploy,
+            boolean showInBrowser) {
+
         FileUtil.refreshFor(FileUtil.toFile(project.getProjectDirectory()));
         OutputWriter err = res.getInputOutput().getErr();
         OutputWriter out = res.getInputOutput().getOut();
@@ -145,29 +153,26 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         if (jmp == null) {
             err.println();
             err.println();
-            err.println("NetBeans: Application Server deployment not available for Maven project '" + ProjectUtils.getInformation(project).getDisplayName() + "'");//NOI18N - no localization in maven build
+            err.println("NetBeans: Application Server deployment not available for Maven project '" + ProjectUtils.getInformation(project).getDisplayName() + "'"); // NOI18N
             return;
         }
         String serverInstanceID = jmp.getServerInstanceID();
         if (DEV_NULL.equals(serverInstanceID)) {
             err.println();
             err.println();
-            err.println("NetBeans: No suitable Deployment Server is defined for the project or globally.");//NOI18N - no localization in maven build now.
-            //TODO - click here to setup..
+            err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
             return;
         }
         ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
         try {
             out.println("NetBeans: Deploying on " + (si != null ? si.getDisplayName() : serverInstanceID)); //NOI18N - no localization in maven build now.
         } catch (InstanceRemovedException ex) {
-            out.println("NetBeans: Deploying on " + serverInstanceID); //NOI18N - no localization in maven build now.
+            out.println("NetBeans: Deploying on " + serverInstanceID); // NOI18N
         }
         try {
-            out.println("    profile mode: " + profilemode); //NOI18N - no localization in maven build now.
-            out.println("    debug mode: " + debugmode);//NOI18N - no localization in maven build now.
-//                log.info("    clientModuleUri: " + clientModuleUri);//NOI18N - no localization in maven build now.
-//                log.info("    clientUrlPart: " + clientUrlPart);//NOI18N - no localization in maven build now.
-            out.println("    force redeploy: " + forceRedeploy);//NOI18N - no localization in maven build now.
+            out.println("    profile mode: " + profilemode); // NOI18N
+            out.println("    debug mode: " + debugmode); // NOI18N
+            out.println("    force redeploy: " + forceRedeploy); //NOI18N
 
 
             Deployment.Mode mode = Deployment.Mode.RUN;
@@ -181,7 +186,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             if (clientUrl != null) {
                 FileObject fo = project.getProjectDirectory();
                 boolean show = showInBrowser;
-                if (fo != null && show ) {
+                if (fo != null && show) {
                     String browser = (String) fo.getAttribute(CustomizerRunWeb.PROP_SHOW_IN_BROWSER);
                     show = browser != null ? Boolean.parseBoolean(browser) : true;
                 }
@@ -201,7 +206,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                 if (sdi != null) { //fix for bug 57854, this can be null
                     String h = sdi.getHost();
                     String transport = sdi.getTransport();
-                    String address = "";   //NOI18N
+                    String address;
 
                     if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
                         address = sdi.getShmemName();
@@ -209,7 +214,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                         address = Integer.toString(sdi.getPort());
                     }
                     MavenDebugger deb = project.getLookup().lookup(MavenDebugger.class);
-                    deb.attachDebugger(res.getInputOutput(), "Debug Deployed app", transport, h, address);//NOI18N - no localization in maven build now.
+                    deb.attachDebugger(res.getInputOutput(), "Debug Deployed app", transport, h, address); // NOI18N
                 }
             }
         } catch (Deployment.DeploymentException ex) {
@@ -239,10 +244,9 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                         if (sc != null) {
                             sc.setServerInstanceId(instanceId);
                         }
-                        
+
                         // We want to initiate context path to default value if there isn't related deployment descriptor yet
                         MavenProjectSupport.changeServer(project, true);
-                        provider = null;
                     }
 
                     LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { MavenProjectSupport.obtainServerName(project) }, "maven"); //NOI18N
@@ -347,7 +351,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
         project.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, false);
         MavenProjectSupport.storeSettingsToPom(targetPrj, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
-        
+
         // We want to initiate context path to default value if there isn't related deployment descriptor yet
         MavenProjectSupport.changeServer(project, true);
 
