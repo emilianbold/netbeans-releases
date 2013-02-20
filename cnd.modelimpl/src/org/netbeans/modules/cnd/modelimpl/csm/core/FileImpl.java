@@ -104,6 +104,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -225,7 +226,7 @@ public final class FileImpl implements CsmFile,
         this.state = State.INITIAL;
     }
 
-    public static enum State {
+    /*package*/static enum State {
 
         /** The file has never been parsed */
         INITIAL,
@@ -266,11 +267,7 @@ public final class FileImpl implements CsmFile,
     private Reference<List<CsmReference>> lastMacroUsages = null;
 
     /** For test purposes only */
-    public interface Hook {
-
-        void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler);
-    }
-    private static Hook hook = null;
+    private static TraceModel.TestHook hook = null;
 
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, FileType fileType, NativeFileItem nativeFileItem) {
         state = State.INITIAL;
@@ -293,7 +290,7 @@ public final class FileImpl implements CsmFile,
     }
 
     /** For test purposes only */
-    public static void setHook(Hook aHook) {
+    /*package*/static void setTestHook(TraceModel.TestHook aHook) {
         hook = aHook;
     }
 
@@ -708,11 +705,11 @@ public final class FileImpl implements CsmFile,
     }
 
     // returns parse/rearse time in milliseconds.
-    int getLastParseTime(){
+    /*package*/int getLastParseTime(){
         return lastParseTime;
     }
     
-    public boolean validate() {
+    /*package*/boolean validate() {
         synchronized (changeStateLock) {
             if (state == State.PARSED) {
                 long lastModified = getBuffer().lastModified();
@@ -758,7 +755,7 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    public final void markMoreParseNeeded() {
+    /*package*/final void markMoreParseNeeded() {
         synchronized (changeStateLock) {
             if (reportParse || logState || TraceFlags.DEBUG) {
                 System.err.printf("#markMoreParseNeeded %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
@@ -775,12 +772,12 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    public final int getErrorCount() {
+    /*package*/final int getErrorCount() {
         checkNotInParsingThreadImpl();
         return currentFileContent.getErrorCount();
     }
     
-    public APTFile getFileAPT(boolean full) {
+    /*package*/APTFile getFileAPT(boolean full) {
         APTFile fileAPT = null;
         ChangedSegment changedSegment = null;
         try {
@@ -886,7 +883,7 @@ public final class FileImpl implements CsmFile,
     }
 
     /**enapsulates all parameters which should be used during parse or reparse of the file */
-    public static final class ParseDescriptor implements CsmParserProvider.CsmParserParameters {
+    /*package*/static final class ParseDescriptor implements CsmParserProvider.CsmParserParameters {
 
         private final CsmParserProvider.CsmParseCallback callback;
         private final FileContent content;
@@ -1185,15 +1182,8 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    
     /** For test purposes only */
-    public interface ErrorListener {
-
-        void error(String text, int line, int column);
-    }
-
-    /** For test purposes only */
-    public void getErrors(ErrorListener errorListener) {
+    /*package*/ void testErrors(TraceModel.ErrorListener errorListener) {
         Collection<ParserError> parserErrors = new ArrayList<ParserError>();
         getErrors(parserErrors);
         for (ParserError e : parserErrors) {
@@ -1382,7 +1372,7 @@ public final class FileImpl implements CsmFile,
             System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n",
                     getAbsolutePath(), fileBuffer.lastModified(), lastParsed, fileBuffer.lastModified() - lastParsed);
         }
-        Hook aHook = hook;
+        TraceModel.TestHook aHook = hook;
         if (aHook != null) {
             aHook.parsingFinished(this, preprocHandler);
         }
@@ -2083,7 +2073,7 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    public static boolean traceFile(CharSequence file) {
+    /*package*/static boolean traceFile(CharSequence file) {
         if (TraceFlags.TRACE_FILE_NAME != null) {
             if (TraceFlags.TRACE_FILE_NAME.length() == 0) {
                 // trace all files

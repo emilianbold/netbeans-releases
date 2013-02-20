@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
@@ -60,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
@@ -194,10 +193,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 case TRANSLATION_UNIT:
                     if (ast != null) {
                         CsmParserProvider.CsmParserParameters descr = (CsmParserProvider.CsmParserParameters) context[0];
-                        FileContent parseFileContent = null;
-                        if (descr instanceof FileImpl.ParseDescriptor) {
-                            parseFileContent = ((FileImpl.ParseDescriptor)descr).getFileContent();
-                        }
+                        FileContent parseFileContent = CsmCorePackageAccessor.get().getFileContent(descr);
                         new AstRenderer(file, parseFileContent, objects).render(ast);
                     }            
                     break;
@@ -316,7 +312,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             switch (kind) {
                 case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
-                    new DataRenderer((FileImpl.ParseDescriptor)context[0]).render(parser.parsedObjects);
+                    new DataRenderer((CsmParserProvider.CsmParserParameters)context[0]).render(parser.parsedObjects);
                     break;
                 default:
                     assert false : "unexpected render kind " + kind;

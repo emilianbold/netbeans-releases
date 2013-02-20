@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 /**
@@ -95,9 +96,9 @@ public final class IncludeHierarchyResolverImpl extends CsmIncludeHierarchyResol
     }
 
     private Collection<CsmFile> getReferences(ProjectBase project, CsmFile referencedFile){
-        Set<CsmFile> res = project.getGraph().getInLinks(referencedFile);
+        Set<CsmFile> res = CsmCorePackageAccessor.get().getGraph(project).getInLinks(referencedFile);
         for(ProjectBase dependent : project.getDependentProjects()){
-            res.addAll(dependent.getGraph().getInLinks(referencedFile));
+            res.addAll(CsmCorePackageAccessor.get().getGraph(dependent).getInLinks(referencedFile));
         }
         return res;
     }
