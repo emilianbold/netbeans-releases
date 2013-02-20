@@ -39,26 +39,27 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.metadata.model.api;
 
 import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.spi.ProcedureImplementation;
+import org.netbeans.modules.db.metadata.model.spi.FunctionImplementation;
 
 /**
  *
- * @author Andrei Badea
+ * @author Andrei Badea, Matthias42
+ *
+ * @since db.metadata.model/1.0
  */
-public class Procedure extends Tuple {
+public class Function extends Tuple {
 
-    final ProcedureImplementation impl;
+    final FunctionImplementation impl;
 
-    Procedure(ProcedureImplementation impl) {
+    Function(FunctionImplementation impl) {
         this.impl = impl;
     }
 
     /**
-     * Returns the schema containing this procedure.
+     * Returns the schema containing this function.
      *
      * @return the parent schema.
      */
@@ -76,19 +77,20 @@ public class Procedure extends Tuple {
     }
 
     /**
-     * Returns the return value of this procedure
-     * 
-     * @return the return value for this procedure
+     * Returns the return value of this function
+     *
+     * @return the return value for this function
      */
     public Value getReturnValue() {
         return impl.getReturnValue();
     }
 
     /**
-     * Returns the columns in the result set for this procedure.
+     * Returns the columns in the result set for this function.
      *
      * @return the columns.
-     * @throws MetadataException if an error occurs while retrieving the metadata.
+     * @throws MetadataException if an error occurs while retrieving the
+     * metadata.
      */
     public Collection<Column> getColumns() {
         return impl.getColumns();
@@ -98,18 +100,21 @@ public class Procedure extends Tuple {
      * Returns the column with the given name.
      *
      * @param name a column name.
-     * @return a column named {@code name} or {@code null} if there is no such column.
-     * @throws MetadataException if an error occurs while retrieving the metadata.
+     * @return a column named {@code name} or {@code null} if there is no such
+     * column.
+     * @throws MetadataException if an error occurs while retrieving the
+     * metadata.
      */
     public Column getColumn(String name) {
         return impl.getColumn(name);
     }
 
     /**
-     * Returns the list of parameters for this procedure
+     * Returns the list of parameters for this function
      *
-     * @return the list of parameters for this procedure
-     * @throws MetadataException if an error occurs while retrieving the metadata
+     * @return the list of parameters for this function
+     * @throws MetadataException if an error occurs while retrieving the
+     * metadata
      */
     public Collection<Parameter> getParameters() {
         return impl.getParameters();
@@ -117,7 +122,9 @@ public class Procedure extends Tuple {
 
     /**
      * Returns the parameter with the given name
-     * @throws MetadataException if an error occurs while retrieving the metadata
+     *
+     * @throws MetadataException if an error occurs while retrieving the
+     * metadata
      */
     public Parameter getParameter(String name) {
         return impl.getParameter(name);
@@ -132,6 +139,6 @@ public class Procedure extends Tuple {
 
     @Override
     public String toString() {
-        return "Procedure[name='" + getName() + "']";                  // NOI18N
+        return "Function[name='" + getName() + "']"; // NOI18N
     }
 }

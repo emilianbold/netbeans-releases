@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.metadata.model.jdbc;
 
 import java.sql.DatabaseMetaData;
@@ -55,27 +54,24 @@ import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
-import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Value;
-import org.netbeans.modules.db.metadata.model.spi.ProcedureImplementation;
+import org.netbeans.modules.db.metadata.model.spi.FunctionImplementation;
 
 /**
  *
  * @author David Van Couvering
  */
-public class JDBCProcedure extends ProcedureImplementation {
+public class JDBCFunction extends FunctionImplementation {
 
-    private static final Logger LOGGER = Logger.getLogger(JDBCProcedure.class.getName());
-
+    private static final Logger LOGGER = Logger.getLogger(JDBCFunction.class.getName());
     private final JDBCSchema jdbcSchema;
     private final String name;
-
     private Map<String, Column> columns;
     private Map<String, Parameter> parameters;
     private Value returnValue;
 
-    public JDBCProcedure(JDBCSchema jdbcSchema, String name) {
+    public JDBCFunction(JDBCSchema jdbcSchema, String name) {
         this.jdbcSchema = jdbcSchema;
         this.name = name;
     }
@@ -123,46 +119,46 @@ public class JDBCProcedure extends ProcedureImplementation {
 
     @Override
     public String toString() {
-        return "JDBCProcedure[name='" + name + "']"; // NOI18N
+        return "JDBCFunction[name='" + name + "']"; // NOI18N
     }
 
     protected JDBCColumn createJDBCColumn(int position, ResultSet rs) throws SQLException {
-        return new JDBCColumn(this.getProcedure(), position, JDBCValue.createProcedureValue(rs, this.getProcedure()));
+        return new JDBCColumn(this.getFunction(), position, JDBCValue.createFunctionValue(rs, this.getFunction()));
     }
 
     protected JDBCParameter createJDBCParameter(int position, ResultSet rs) throws SQLException {
-        Direction direction = JDBCUtils.getProcedureDirection(rs.getShort("COLUMN_TYPE")); //NOI18N
-        return new JDBCParameter(this.getProcedure(), JDBCValue.createProcedureValue(rs, this.getProcedure()), direction, position);
+        Parameter.Direction direction = JDBCUtils.getFunctionDirection(rs.getShort("COLUMN_TYPE"));
+        return new JDBCParameter(this.getFunction(), JDBCValue.createFunctionValue(rs, this.getFunction()), direction, position);
     }
 
     protected JDBCValue createJDBCValue(ResultSet rs) throws SQLException {
-        return JDBCValue.createProcedureValue(rs, this.getProcedure());
+        return JDBCValue.createFunctionValue(rs, this.getFunction());
     }
 
     protected void createProcedureInfo() {
         LOGGER.log(Level.FINE, "Initializing procedure info in " + this);
-        
+
         Map<String, Column> newColumns = new LinkedHashMap<String, Column>();
         Map<String, Parameter> newParams = new LinkedHashMap<String, Parameter>();
         int resultCount = 0;
         int paramCount = 0;
 
         try {
-            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getProcedureColumns(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, "%"); // NOI18N
+            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getFunctionColumns(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, "%"); // NOI18N
             try {
                 while (rs.next()) {
                     short columnType = rs.getShort("COLUMN_TYPE");
                     switch (columnType) {
-                        case DatabaseMetaData.procedureColumnResult:
+                        case DatabaseMetaData.functionColumnResult:
                             addColumn(++resultCount, rs, newColumns);
                             break;
-                        case DatabaseMetaData.procedureColumnIn:
-                        case DatabaseMetaData.procedureColumnInOut:
-                        case DatabaseMetaData.procedureColumnOut:
-                        case DatabaseMetaData.procedureColumnUnknown:
+                        case DatabaseMetaData.functionColumnIn:
+                        case DatabaseMetaData.functionColumnInOut:
+                        case DatabaseMetaData.functionColumnOut:
+                        case DatabaseMetaData.functionColumnUnknown:
                             addParameter(++paramCount, rs, newParams);
                             break;
-                        case DatabaseMetaData.procedureColumnReturn:
+                        case DatabaseMetaData.functionReturn:
                             setReturnValue(rs);
                             break;
                         default:
@@ -181,14 +177,14 @@ public class JDBCProcedure extends ProcedureImplementation {
         parameters = Collections.unmodifiableMap(newParams);
     }
 
-    private void addColumn(int position, ResultSet rs, Map<String,Column> newColumns) throws SQLException {
+    private void addColumn(int position, ResultSet rs, Map<String, Column> newColumns) throws SQLException {
         Column column = createJDBCColumn(position, rs).getColumn();
         newColumns.put(column.getName(), column);
         LOGGER.log(Level.FINE, "Created column {0}", column);
     }
 
-    private void addParameter(int position, ResultSet rs, Map<String,Parameter> newParams) throws SQLException {
-        Parameter  param = createJDBCParameter(position, rs).getParameter();
+    private void addParameter(int position, ResultSet rs, Map<String, Parameter> newParams) throws SQLException {
+        Parameter param = createJDBCParameter(position, rs).getParameter();
         newParams.put(param.getName(), param);
         LOGGER.log(Level.FINE, "Created parameter {0}", param);
     }

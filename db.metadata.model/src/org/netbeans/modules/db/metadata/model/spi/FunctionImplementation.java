@@ -39,67 +39,45 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.metadata.model.spi;
 
 import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
+import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Function;
-import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
-import org.netbeans.modules.db.metadata.model.api.View;
+import org.netbeans.modules.db.metadata.model.api.Value;
 
 /**
  *
- * @author Andrei Badea
+ * @author Andrei Badea, Matthias42
+ * @since db.metadata.model/1.0
  */
-public abstract class SchemaImplementation {
+public abstract class FunctionImplementation {
 
-    private Schema schema;
+    private Function table;
 
-    public final Schema getSchema() {
-        if (schema == null) {
-            schema = MetadataAccessor.getDefault().createSchema(this);
+    public final Function getFunction() {
+        if (table == null) {
+            table = MetadataAccessor.getDefault().createFunction(this);
         }
-        return schema;
+        return table;
     }
 
-    public abstract Catalog getParent();
+    public abstract Schema getParent();
 
     public abstract String getName();
 
-    public abstract View getView(String name);
+    public abstract Collection<Column> getColumns();
 
-    public abstract Collection<View> getViews();
+    public abstract Column getColumn(String name);
 
-    public abstract Procedure getProcedure(String name);
+    public abstract Collection<Parameter> getParameters();
 
-    public abstract Collection<Procedure> getProcedures();
+    public abstract Parameter getParameter(String name);
 
-    /**
-     * @since db.metadata.model/1.0
-     */
-    public Function getFunction(String name) {
-        return null;
-    }
-
-    /**
-     * @since db.metadata.model/1.0
-     */
-    public Collection<Function> getFunctions() {
-        return Collections.emptyList();
-    }
-
-    public abstract boolean isDefault();
-
-    public abstract boolean isSynthetic();
-
-    public abstract Collection<Table> getTables();
-
-    public abstract Table getTable(String name);
+    public abstract Value getReturnValue();
 
     public abstract void refresh();
 }

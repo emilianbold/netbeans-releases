@@ -50,6 +50,7 @@ import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ForeignKeyColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
+import org.netbeans.modules.db.metadata.model.spi.FunctionImplementation;
 import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
@@ -167,6 +168,11 @@ public class Metadata {
         @Override
         public Procedure createProcedure(ProcedureImplementation impl) {
             return new Procedure(impl);
+        }
+
+        @Override
+        public Function createFunction(FunctionImplementation impl) {
+            return new Function(impl);
         }
 
         @Override
