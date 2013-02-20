@@ -101,7 +101,7 @@ public class ExtDefineMethodInterceptor implements MethodInterceptor {
                         if (jsObject == null) {
                             OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
                             jsObject = factory.newReference(oldParent, name, offsetRange, (JsObject) arg2.getValue(), true);
-                            oldParent.addProperty(name, jsObject);
+                            parent.addProperty(name, jsObject);
                             for (Occurrence occurrence : jsObject.getOccurrences()) {
                                 jsObject.addOccurrence(occurrence.getOffsetRange());
                             }
@@ -116,7 +116,7 @@ public class ExtDefineMethodInterceptor implements MethodInterceptor {
                         }
                         else {
                             OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                            JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
+                            JsObject newJsObject = factory.newReference(oldParent, name, offsetRange, (JsObject) arg2.getValue(), true);
                             parent.addProperty(name, newJsObject);
                             for (Occurrence occurrence : jsObject.getOccurrences()) {
                                 newJsObject.addOccurrence(occurrence.getOffsetRange());

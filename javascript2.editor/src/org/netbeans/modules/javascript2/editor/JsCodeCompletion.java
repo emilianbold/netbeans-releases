@@ -788,8 +788,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
         for (JsObject property : jsObject.getProperties().values()) {
             String propertyName = property.getName();
-            if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
-                    && !property.getModifiers().contains(Modifier.PRIVATE)
+            boolean isAnonymous  = property.isAnonymous();
+            if (!(property instanceof JsFunction && isAnonymous)
+                    && (!property.getModifiers().contains(Modifier.PRIVATE) || isAnonymous)
                     && (!filter || startsWith(propertyName, request.prefix))
                     && !property.getJSKind().isPropertyGetterSetter()) {
                 JsElement element = addedProperties.get(propertyName);
