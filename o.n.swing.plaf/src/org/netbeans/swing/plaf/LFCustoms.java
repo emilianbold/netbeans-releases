@@ -105,8 +105,10 @@ public abstract class LFCustoms {
         synchronized(LFCustoms.class) {
             if (textFgColorHTML.isEmpty()) {
                     Object o = UIManager.getLookAndFeel().getDefaults().get("windowText");
-                    if (o instanceof ColorUIResource) {
-                            ColorUIResource resource = (ColorUIResource)o;
+                    if( null == o )
+                        o = UIManager.getLookAndFeel().getDefaults().get("Tree.foreground");
+                    if (o instanceof Color) {
+                            Color resource = (Color)o;
                             textFgColorHTML = "<font color=#" + getHexString(resource.getRed()) + getHexString(resource.getGreen()) + getHexString(resource.getBlue())+">";
                     } else {
                             textFgColorHTML = "<font color=#000000>";
@@ -127,7 +129,9 @@ public abstract class LFCustoms {
         synchronized(LFCustoms.class) {
             if (textFgColor == null) {
                 Object o = UIManager.getLookAndFeel().getDefaults().get("windowText");
-                if (o instanceof ColorUIResource) {
+                if( null == o )
+                    o = UIManager.getLookAndFeel().getDefaults().get("Tree.foreground");
+                if (o instanceof Color) {
                     textFgColor = (Color) o;
                 } else {
                     textFgColor = Color.BLACK;
