@@ -65,6 +65,7 @@ import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.spi.customizer.SelectedItemsTablePersister;
+import org.openide.util.HelpCtx;
 
 /**
  * Panel showing list of public packages for a module, also implements
@@ -72,7 +73,7 @@ import org.netbeans.modules.maven.spi.customizer.SelectedItemsTablePersister;
  *
  * @author Dafe Simonek
  */
-public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedItemsTablePersister {
+public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedItemsTablePersister, HelpCtx.Provider {
     private static final String ALL_SUBPACKAGES = ".*";
     private static final String ALL_SUBPACKAGES_2 = ".**";
     private static final int COALESCE_LIMIT = 2;
@@ -286,4 +287,8 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
         return result;
     }
 
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("maven_settings");
+    }    
 }

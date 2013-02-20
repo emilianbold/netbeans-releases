@@ -68,11 +68,12 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 
-public class InstallerPanel extends JPanel {
+public class InstallerPanel extends JPanel implements HelpCtx.Provider {
 
     private static final String PROP_LICENSE = "installerLicenseFile";
     private static final String PROP_LINUX = "installerOsLinux";
@@ -271,6 +272,11 @@ public class InstallerPanel extends JPanel {
         }
         return config;
     }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("maven_settings");
+    }    
 
     private class BooleanPropUpdater extends CheckBoxUpdater implements ModelOperation<POMModel> {
 

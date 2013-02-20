@@ -59,6 +59,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
 
@@ -66,7 +67,7 @@ import org.openide.xml.XMLUtil;
  *
  * @author  mkleint
  */
-public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListener {
+public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListener, HelpCtx.Provider {
     private final ModelHandle2 handle;
     private List<TextComponentUpdater> listeners;
     private final Category category;
@@ -310,6 +311,11 @@ public class BasicInfoPanel extends javax.swing.JPanel implements DocumentListen
 
         }
         return false;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return CustomizerProviderImpl.HELP_CTX;
     }
     
 }
