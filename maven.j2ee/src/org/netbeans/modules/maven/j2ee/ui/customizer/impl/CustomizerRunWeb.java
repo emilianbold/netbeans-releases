@@ -108,6 +108,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         }
         browserModel = WebBrowserSupport.createBrowserModel(selectedBrowser);
         browserCBox.setModel(browserModel);
+        browserCBox.setRenderer(WebBrowserSupport.createBrowserRenderer());
 
         initValues();
         initServerModel(serverCBox, serverLabel, J2eeModule.Type.WAR);
