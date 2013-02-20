@@ -497,7 +497,7 @@ public class PullAction extends ContextAction {
                 if (rebaseAccepted) {
                     logger.output(""); //NOI18N
                     logger.outputInRed(Bundle.MSG_PULL_REBASE_DO());
-                    finished = RebaseAction.doRebase(root, null, null, null, logger);
+                    finished = RebaseAction.doRebase(root, null, null, null, supp);
                 } else if (mergeAccepted) {
                     logger.output(""); //NOI18N
                     logger.outputInRed(Bundle.MSG_PULL_MERGE_DO());

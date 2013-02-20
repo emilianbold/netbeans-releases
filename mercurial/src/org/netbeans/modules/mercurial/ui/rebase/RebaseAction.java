@@ -44,10 +44,22 @@
 package org.netbeans.modules.mercurial.ui.rebase;
 
 import java.awt.EventQueue;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -60,6 +72,9 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.rebase.RebaseResult.State;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.versioning.hooks.HgHook;
+import org.netbeans.modules.versioning.hooks.HgHookContext;
+import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
@@ -85,6 +100,9 @@ import org.openide.util.NbBundle;
     "MSG_Rebase_Finished=INFO: End of Rebase"
 })
 public class RebaseAction extends ContextAction {
+    
+    private static final Logger LOG = Logger.getLogger(RebaseAction.class.getName());
+    private static final String NB_REBASE_INFO_FILE = "netbeans-rebase.info"; //NOI18N
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -151,10 +169,51 @@ public class RebaseAction extends ContextAction {
     }
 
     public static boolean doRebase (File root, String base, String source, String dest,
-            OutputLogger logger) throws HgException {
+            HgProgressSupport supp) throws HgException {
+        OutputLogger logger = supp.getLogger();
+        Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
+        String destRev = dest;
+        String sourceRev = source;
+        if (!hooks.isEmpty()) {
+            try {
+                if (destRev == null) {
+                    HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                    final Collection<HgLogMessage> branchHeads = HgUtils.sortByBranch(heads).get(HgCommand.getBranch(root));
+                    if (branchHeads != null && !branchHeads.isEmpty()) {
+                        HgLogMessage tipmostHead = branchHeads.iterator().next();
+                        for (HgLogMessage head : branchHeads) {
+                            if (head.getRevisionAsLong() > tipmostHead.getRevisionAsLong()) {
+                                tipmostHead = head;
+                            }
+                        }
+                        destRev = tipmostHead.getCSetShortID();
+                    }
+                }
+                if (supp.isCanceled()) {
+                    return false;
+                }
+                if (sourceRev == null) {
+                    String baseRev = base;
+                    if (baseRev == null) {
+                        baseRev = HgCommand.getParent(root, null, null).getChangesetId();
+                    }
+                    sourceRev = HgCommand.getRevisionInfo(root, Collections.<String>singletonList(
+                            MessageFormat.format("last(limit(ancestor({0},{1})::{1}, 2), 1)", //NOI18N
+                            destRev, baseRev)), null)[0].getCSetShortID();
+                }
+            } catch (HgException.HgCommandCanceledException ex) {
+            } catch (HgException ex) {
+                // do nothing, just log, probably an unsupported hg revision language
+                LOG.log(Level.INFO, null, ex);
+            }
+        }
+        if (supp.isCanceled()) {
+            return false;
+        }
+        
         RebaseResult rebaseResult = HgCommand.doRebase(root, base, source, dest, logger);
         HgUtils.forceStatusRefresh(root);
-        handleRebaseResult(rebaseResult, logger);
+        handleRebaseResult(new RebaseHookContext(root, sourceRev, destRev, hooks), rebaseResult, logger);
         return rebaseResult.getState() == State.OK;
     }
 
@@ -169,17 +228,19 @@ public class RebaseAction extends ContextAction {
                 }
 
                 private void doRebase (final Rebase rebase) {
-                    final OutputLogger logger = getLogger();
+                    final HgProgressSupport supp = this;
+                    OutputLogger logger = getLogger();
                     try {
                         logger.outputInRed(Bundle.MSG_Rebase_Title());
                         logger.outputInRed(Bundle.MSG_Rebase_Title_Sep());
                         logger.output(Bundle.MSG_Rebase_Started());
+                        
                         HgUtils.runWithoutIndexing(new Callable<Void>() {
                             @Override
                             public Void call () throws Exception {
                                 RebaseAction.doRebase(root, rebase.getRevisionBase(),
                                         rebase.getRevisionSource(),
-                                        rebase.getRevisionDest(), logger);
+                                        rebase.getRevisionDest(), supp);
                                 return null;
                             }
                         }, root);
@@ -242,9 +303,10 @@ public class RebaseAction extends ContextAction {
                         HgUtils.runWithoutIndexing(new Callable<Void>() {
                             @Override
                             public Void call () throws Exception {
+                                RebaseHookContext rebaseCtx = buildRebaseContext(root);
                                 RebaseResult rebaseResult = HgCommand.finishRebase(root, cont, logger);
                                 HgUtils.forceStatusRefresh(root);
-                                handleRebaseResult(rebaseResult, logger);
+                                handleRebaseResult(rebaseCtx, rebaseResult, logger);
                                 return null;
                             }
                         }, root);
@@ -262,19 +324,165 @@ public class RebaseAction extends ContextAction {
 
     @NbBundle.Messages({
     })
-    public static void handleRebaseResult (RebaseResult rebaseResult, OutputLogger logger) {
+    private static void handleRebaseResult (RebaseHookContext rebaseCtx, RebaseResult rebaseResult, OutputLogger logger) {
         for (File f : rebaseResult.getTouchedFiles()) {
             Mercurial.getInstance().notifyFileChanged(f);
         }
         logger.output(rebaseResult.getOutput());
+        File repository = rebaseCtx.repository;
+        getNetBeansRebaseInfoFile(repository).delete();
+        
         if (rebaseResult.getState() == State.ABORTED) {
             logger.outputInRed(Bundle.MSG_Rebase_Aborted());
         } else if (rebaseResult.getState() == State.MERGING) {
+            storeRebaseContext(rebaseCtx);
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         Bundle.MSG_Rebase_Merging_Failed(),
                         NotifyDescriptor.ERROR_MESSAGE));
             logger.outputInRed(Bundle.MSG_Rebase_Merging_Failed());
+        } else if (rebaseResult.getState() == State.OK) {
+            if (!rebaseCtx.hooks.isEmpty() && rebaseCtx.source != null && rebaseCtx.dest != null) {
+                File bundleFile = rebaseResult.getBundleFile();
+                if (bundleFile != null && bundleFile.exists()) {
+                    try {
+                        HgHookContext.LogEntry[] originalEntries = findOriginalEntries(repository, bundleFile);
+                        HgHookContext.LogEntry[] newEntries = findNewEntries(repository, rebaseCtx.dest);
+                        Map<String, String> mapping = findChangesetMapping(originalEntries, newEntries);
+                        for (HgHook hgHook : rebaseCtx.hooks) {
+                            hgHook.afterCommitReplace(
+                                    new HgHookContext(new File[] { repository }, null, originalEntries),
+                                    new HgHookContext(new File[] { repository }, null, newEntries),
+                                    mapping);
+                        }
+                    } catch (HgException.HgCommandCanceledException ex) {
+                        // canceled by user, do nothing
+                    } catch (HgException ex) {
+                        // do nothing, just log
+                        // probably an unsupported hg revision language
+                        LOG.log(Level.INFO, null, ex);
+                    }
+                }
+            }
         }
         logger.output("");
+    }
+
+    private static HgHookContext.LogEntry[] findOriginalEntries (File repository, File bundleFile) throws HgException {
+        List<HgLogMessage> originalMessages = HgCommand.getBundleChangesets(repository, bundleFile, null);
+        return convertToEntries(originalMessages.toArray(new HgLogMessage[originalMessages.size()]));
+    }
+
+    private static HgHookContext.LogEntry[] findNewEntries (File repository, String destRevision) {
+        HgLogMessage[] newMessages = HgCommand.getRevisionInfo(repository,
+                Collections.<String>singletonList(MessageFormat.format(
+                "descendants(last(children({0}), 1))", //NOI18N
+                destRevision)), null);
+        return convertToEntries(newMessages);
+    }
+
+    private static HgHookContext.LogEntry[] convertToEntries (HgLogMessage[] messages) {
+        List<HgHookContext.LogEntry> entries = new ArrayList<HgHookContext.LogEntry>(messages.length);
+        for (HgLogMessage msg : messages) {
+            entries.add(new HgHookContext.LogEntry(
+                    msg.getMessage(),
+                    msg.getAuthor(),
+                    msg.getCSetShortID(),
+                    msg.getDate()));
+        }
+        return entries.toArray(new HgHookContext.LogEntry[entries.size()]);
+    }
+    
+    private static Map<String, String> findChangesetMapping (HgHookContext.LogEntry[] originalEntries, HgHookContext.LogEntry[] newEntries) {
+        Map<String, String> mapping = new HashMap<String, String>(originalEntries.length);
+        for (HgHookContext.LogEntry original : originalEntries) {
+            boolean found = false;
+            for (HgHookContext.LogEntry newEntry : newEntries) {
+                if (original.getDate().equals(newEntry.getDate())
+                        && original.getAuthor().equals(newEntry.getAuthor())
+                        && original.getMessage().equals(newEntry.getMessage())) {
+                    // is it really the same commit???
+                    mapping.put(original.getChangeset(), newEntry.getChangeset());
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                // delete ????
+                mapping.put(original.getChangeset(), null);
+            }
+        }
+        return mapping;
+    }
+
+    private static File getNetBeansRebaseInfoFile (File root) {
+        return new File(HgUtils.getHgFolderForRoot(root), NB_REBASE_INFO_FILE);
+    }
+
+    private static RebaseHookContext buildRebaseContext (File root) {
+        Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
+        File info = getNetBeansRebaseInfoFile(root);
+        String source = null;
+        String dest = null;
+        if (info.canRead()) {
+            BufferedReader br = null;
+            try {
+                br = new BufferedReader(new FileReader(info));
+                String line = br.readLine();
+                if (line != null) {
+                    source = line;
+                }
+                line = br.readLine();
+                if (line != null) {
+                    dest = line;
+                }
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, null, ex);
+            } finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (IOException ex) {}
+                }
+            }
+        }
+        return new RebaseHookContext(root, source, dest, hooks);
+    }
+
+    private static void storeRebaseContext (RebaseHookContext context) {
+        if (context.source == null || context.dest == null) {
+            return;
+        }
+        File info = getNetBeansRebaseInfoFile(context.repository);
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(info));
+            bw.write(context.source);
+            bw.newLine();
+            bw.write(context.dest);
+            bw.newLine();
+            bw.flush();
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, null, ex);
+        } finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (IOException ex) {}
+            }
+        }
+    }
+    
+    private static class RebaseHookContext {
+        private final File repository;
+        private final String source;
+        private final String dest;
+        private final Collection<HgHook> hooks;
+
+        public RebaseHookContext (File repository, String sourceRev, String destRev, Collection<HgHook> hooks) {
+            this.repository = repository;
+            this.source = sourceRev;
+            this.dest = destRev;
+            this.hooks = hooks;
+        }
     }
 }

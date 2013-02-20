@@ -1823,6 +1823,38 @@ public class HgCommand {
             Utils.deleteRecursively(tempFolder);
         }
     }
+
+    public static List<HgLogMessage> getBundleChangesets (File repository, File bundleFile, OutputLogger logger) throws HgException {
+        if (repository == null ) return null;
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_INCOMING_CMD);
+        command.add(bundleFile.getAbsolutePath());
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        
+        File tempFolder = Utils.getTempFolder(false);
+        try {
+            command.add(prepareLogTemplate(tempFolder, HG_LOG_BASIC_CHANGESET_NAME));
+            List<String> list;
+            list = exec(command);
+
+            if (!list.isEmpty()) {
+                if (isErrorNoRepository(list.get(0))) {
+                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
+                } else if (isErrorAbort(list.get(0)) || isErrorAbort(list.get(list.size() - 1))) {
+                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
+                }
+            }
+            return processLogMessages(repository, null, list);
+        } catch (IOException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+            throw new HgException(ex.getMessage());
+        } finally {
+            Utils.deleteRecursively(tempFolder);
+        }
+    }
     
     private static List<String> doIncomingForSearch (File repository, HgURL repositoryUrl, String to, boolean bShowMerges, boolean bGetFileInfo, boolean getParents, int limit, OutputLogger logger) throws HgException {
         InterRepositoryCommand command = new InterRepositoryCommand();

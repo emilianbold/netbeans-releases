@@ -53,6 +53,8 @@ import java.util.Set;
  * @author Ondrej Vrabec
  */
 public class RebaseResult {
+    private static final String SAVED_BACKUP_BUNDLE_TO = "saved backup bundle to "; //NOI18N
+    private File bundleFile;
 
     public static enum State {
         OK,
@@ -91,9 +93,15 @@ public class RebaseResult {
                 res.state = State.MERGING;
             } else if (line.equals("rebase aborted")) { //NOI18N
                 res.state = State.ABORTED;
+            } else if (line.startsWith(SAVED_BACKUP_BUNDLE_TO)) {
+                res.bundleFile = new File(line.substring(SAVED_BACKUP_BUNDLE_TO.length()));
             }
         }
         return res;
+    }
+
+    public File getBundleFile () {
+        return bundleFile;
     }
 
     public Collection<File> getConflicts () {
