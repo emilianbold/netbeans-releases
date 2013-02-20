@@ -43,8 +43,11 @@ package org.netbeans.modules.javascript2.knockout.model;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.StringTokenizer;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 
@@ -55,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 @FunctionInterceptor.Registration(priority = 100)
 public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor {
 
+    private static final String GLOBAL_KO_OBJECT = "ko"; // NOI18N
     @Override
     public String getNamePattern() {
         return "[a-z]\\.b";
@@ -62,12 +66,55 @@ public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor 
 
     @Override
     public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
+        if (args.size() < 1) {
+            return;
+        }
+        JsObject ko = globalObject.getProperty(GLOBAL_KO_OBJECT); // NOI18N
+        if (ko == null) {
+            ko = factory.newObject(globalObject, GLOBAL_KO_OBJECT, OffsetRange.NONE, false);
+            globalObject.addProperty(GLOBAL_KO_OBJECT, ko);
+        }
+
         Iterator<JsFunctionArgument> iterator = args.iterator();
         JsFunctionArgument arg1 = iterator.next();
-        JsFunctionArgument arg2 = null;
-        if (iterator.hasNext()) {
-            arg2 = iterator.next();
+        int offset = arg1.getOffset();
+        if (arg1.getKind() == JsFunctionArgument.Kind.STRING) {
+            JsObject parent = ko;
+            JsObject oldParent = parent;
+
+            String[] names = ((String) arg1.getValue()).split("\\."); // NOI18N
+            int i = 0;
+            if (names[0].equals(GLOBAL_KO_OBJECT)) {
+                i++;
+            }
+
+
+            for (; i < names.length; i++) {
+                String name = names[i];
+                JsObject jsObject = oldParent.getProperty(name);
+                OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
+                if (jsObject == null) {
+                    jsObject = factory.newObject(parent, name, offsetRange, true);
+                    parent.addProperty(name, jsObject);
+                    oldParent = jsObject;
+                } else if (!jsObject.isDeclared()) {
+                    JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
+                    parent.addProperty(name, newJsObject);
+                    for (Occurrence occurrence : jsObject.getOccurrences()) {
+                        newJsObject.addOccurrence(occurrence.getOffsetRange());
+                    }
+                    newJsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
+                    oldParent = jsObject;
+                    jsObject = newJsObject;
+                } else {
+                    jsObject.addOccurrence(offsetRange);
+                }
+                parent = jsObject;
+
+                // XXX ?
+                offset += name.length() + 1;
+            }
         }
-        System.out.println("====" + functionName + " " + arg1.getValue() + " " + arg2 + " " + (arg2 != null ? arg2.getKind() : null));
+
     }
 }
