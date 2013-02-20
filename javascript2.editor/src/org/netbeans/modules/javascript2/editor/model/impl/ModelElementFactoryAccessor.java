@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
+import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
-    
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();  
-    List<Occurrence> getOccurrences();
+public abstract class ModelElementFactoryAccessor {
 
-    public void addOccurrence(OffsetRange offsetRange);
+    private static volatile ModelElementFactoryAccessor DEFAULT;
 
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
-    
-    Collection<? extends TypeUsage> getAssignments();
-    
-    public boolean isAnonymous();
-    
-    public boolean isDeprecated();
-    
-    /**
-     * 
-     * @return true if the object/function is identified by a name. 
-     * False if the function is declared as an item in array or the name is an expression
-     */ 
-    public boolean hasExactName();
-    
-    public String getDocumentation();
+    public static ModelElementFactoryAccessor getDefault() {
+        ModelElementFactoryAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        // invokes static initializer of ModelElementFactory.class
+        // that will assign value to the DEFAULT field above
+        Class c = ModelElementFactory.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+        return DEFAULT;
+    }
+
+    public static void setDefault(ModelElementFactoryAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+
+        DEFAULT = accessor;
+    }
+
+    public abstract ModelElementFactory createModelElementFactory(ModelVisitor visitor);
 }
