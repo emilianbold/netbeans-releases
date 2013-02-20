@@ -39,61 +39,45 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.extjs.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.io.File;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.*;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
+import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 
 /**
  *
  * @author Petr Pisl
  */
-public class ExtDefineMethodInterceptorCompletionTest extends JsCodeComplationBase {
+public class ModelTestBase extends JsTestBase {
     
-    public ExtDefineMethodInterceptorCompletionTest(String testName) {
+    public ModelTestBase(String testName) {
         super(testName);
     }
-    
-    public void testDefineMethodInterceptor_01() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test01.js", "NetB^", false);
-    }
-    
-    public void testDefineMethodInterceptor_02() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test02.js", "NetBeans.s^", false);
-    }
-    
-    public void testDefineMethodInterceptor_03() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test03.js", "NetBeans.stuff.e^", false);
-    }
-    
-    public void testDefineMethodInterceptor_04() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test04.js", "NetBeans.stuff.engineer.d^", false);
-    }
-    
-    public void testDefineMethodInterceptor_05() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test05.js", "NetBeans.stuff.engineer.developer.a^", false);
-    }
-    
-    public void testDefineMethodInterceptor_06() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test06.js", "NetBeans.stuff.engineer.developer.address.z^", false);
-    }
-    
+
     @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/defineMethod")));
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
-        );
+    protected void setUp() throws Exception {
+        super.setUp();
+        JQueryModel.skipInTest = true;
+    }
+    
+    public Model getModel(String file) throws Exception {
+        final Model[] globals = new Model[1];
+        Source source = getTestSource(getTestFile(file));
+        
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                JsParserResult parameter = (JsParserResult) resultIterator.getParserResult();
+                Model model = parameter.getModel();
+                globals[0] = model;
+            }
+        });        
+        return globals[0];
     }
 }

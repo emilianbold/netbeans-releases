@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.extjs.model;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import javax.lang.model.element.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -98,9 +99,15 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
                     }
                     else {
                         JsObject jsObject = oldParent.getProperty(name);
+                        JsObject definedObject = (JsObject) arg2.getValue();
+                        if(definedObject.getModifiers().remove(org.netbeans.modules.csl.api.Modifier.PRIVATE)) {
+                            definedObject.getModifiers().add(org.netbeans.modules.csl.api.Modifier.PUBLIC);
+                        }
                         if (jsObject == null) {
-                            OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                            jsObject = factory.newReference(oldParent, name, offsetRange, (JsObject) arg2.getValue(), true);
+                            OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());    
+//                            jsObject = factory.newObject(parent, name, offsetRange, true);
+//                            jsObject.addAssignment(new TypeUsageImpl(ModelUtils.createFQN(definedObject)), offset);
+                            jsObject = factory.newReference(parent, name, offsetRange, definedObject, true);
                             parent.addProperty(name, jsObject);
                             for (Occurrence occurrence : jsObject.getOccurrences()) {
                                 jsObject.addOccurrence(occurrence.getOffsetRange());
@@ -116,7 +123,9 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
                         }
                         else {
                             OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                            JsObject newJsObject = factory.newReference(oldParent, name, offsetRange, (JsObject) arg2.getValue(), true);
+//                            JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
+//                            newJsObject.addAssignment(new TypeUsageImpl(ModelUtils.createFQN(definedObject)), offset);
+                            JsObject newJsObject = factory.newReference(parent, name, offsetRange, definedObject, true);
                             parent.addProperty(name, newJsObject);
                             for (Occurrence occurrence : jsObject.getOccurrences()) {
                                 newJsObject.addOccurrence(occurrence.getOffsetRange());

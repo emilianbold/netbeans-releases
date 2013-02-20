@@ -41,59 +41,49 @@
  */
 package org.netbeans.modules.javascript2.extjs.model;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.*;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
 
 /**
  *
  * @author Petr Pisl
  */
-public class ExtDefineMethodInterceptorCompletionTest extends JsCodeComplationBase {
+public class ExtModelTest extends ModelTestBase {
     
-    public ExtDefineMethodInterceptorCompletionTest(String testName) {
+    public ExtModelTest(String testName) {
         super(testName);
     }
     
-    public void testDefineMethodInterceptor_01() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test01.js", "NetB^", false);
-    }
-    
-    public void testDefineMethodInterceptor_02() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test02.js", "NetBeans.s^", false);
-    }
-    
-    public void testDefineMethodInterceptor_03() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test03.js", "NetBeans.stuff.e^", false);
-    }
-    
-    public void testDefineMethodInterceptor_04() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test04.js", "NetBeans.stuff.engineer.d^", false);
-    }
-    
-    public void testDefineMethodInterceptor_05() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test05.js", "NetBeans.stuff.engineer.developer.a^", false);
-    }
-    
-    public void testDefineMethodInterceptor_06() throws Exception {
-        checkCompletion("testfiles/completion/defineMethod/test06.js", "NetBeans.stuff.engineer.developer.address.z^", false);
-    }
-    
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/defineMethod")));
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
-        );
+    public void testExtDefineMethod() throws Exception {
+        Model model = getModel("testfiles/completion/defineMethod/defineMethod.js");
+        assertNotNull(model);
+        JsObject  global = model.getGlobalObject();
+        assertEquals(3, global.getProperties().size());
+        JsObject jsObject = global.getProperty("NetBeans");
+        assertNotNull(jsObject);
+        jsObject = jsObject.getProperty("stuff");
+        assertNotNull(jsObject);
+        jsObject = jsObject.getProperty("engineer");
+        assertNotNull(jsObject);
+        jsObject = jsObject.getProperty("developer");
+        assertNotNull(jsObject);
+        assertFalse(jsObject.getModifiers().contains(Modifier.PRIVATE));
+        JsObject property = jsObject.getProperty("name");
+        assertNotNull(property);
+        property = jsObject.getProperty("surname");
+        assertNotNull(property);
+        jsObject = jsObject.getProperty("address");
+        assertNotNull(jsObject);
+        property = jsObject.getProperty("street");
+        assertNotNull(property);
+        property = jsObject.getProperty("city");
+        assertNotNull(property);
+        property = jsObject.getProperty("zip");
+        assertNotNull(property);
     }
 }
