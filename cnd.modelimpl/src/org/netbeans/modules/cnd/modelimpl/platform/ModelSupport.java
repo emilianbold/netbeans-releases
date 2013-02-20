@@ -56,6 +56,8 @@ import java.util.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.netbeans.api.project.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -364,10 +366,16 @@ public class ModelSupport implements PropertyChangeListener {
             NamedRunnable task = new NamedRunnable(taskName) {
                 @Override
                 protected void runImpl() {
-                    NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
-                    // enable by default
-                    boolean enableModel = (settings == null) ? true : settings.isCodeAssistanceEnabled();
-                    model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
+                    ProgressHandle handle = ProgressHandleFactory.createHandle(getName());
+                    handle.start();
+                    try {
+                        NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
+                        // enable by default
+                        boolean enableModel = (settings == null) ? true : settings.isCodeAssistanceEnabled();
+                        model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
+                    } finally {
+                        handle.finish();
+                    }
                 }
             };
             nativeProject.runOnProjectReadiness(task);
