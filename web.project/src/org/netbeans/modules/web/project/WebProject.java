@@ -2491,10 +2491,10 @@ public final class WebProject implements Project {
             }
             String selectedBrowser = evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
             WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
-            boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
-            if (browser == null) {
+            if (selectedBrowser == null || browser == null) {
                 browserSupport = null;
             } else {
+                boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
                 browserSupport = BrowserSupport.create(browser, !integrated);
             }
             browserSupportInitialized = true;
