@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -68,6 +69,7 @@ import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
+import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -184,8 +186,13 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     show = browser != null ? Boolean.parseBoolean(browser) : true;
                 }
                 if (show) {
-//                        log.info("Executing browser to show " + clientUrl);//NOI18N - no localization in maven build now.
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(clientUrl));
+                    URL url = new URL(clientUrl);
+                    URLDisplayerImplementation urlDisplayer = project.getLookup().lookup(URLDisplayerImplementation.class);
+                    if (urlDisplayer != null) {
+                        urlDisplayer.showURL(url, url, fo);
+                    } else {
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                    }
                 }
             }
             if (debugmode) {
