@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -64,6 +65,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.DialogDisplayer;
@@ -72,6 +74,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.lookup.Lookups;
 import org.xml.sax.Attributes;
 
 /**
@@ -134,6 +137,12 @@ public class ConfigurationXMLReader extends XMLDocReader {
                     if (_read(relativeOffset, tag, xml, configurationDescriptor) == null) {
                         // TODO configurationDescriptor is broken
                         configurationDescriptor.setState(State.BROKEN);
+                        return;
+                    }
+                    String customizerId = configurationDescriptor.getActiveConfiguration() == null ? null : 
+                            configurationDescriptor.getActiveConfiguration().getCustomizerId();
+                    for (ProjectMetadataFactory f : Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class)){
+                        f.read(project.getProjectDirectory());
                     }
                 } catch (IOException ex) {
                     configurationDescriptor.setState(State.BROKEN);

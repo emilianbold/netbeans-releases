@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -170,4 +171,9 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     private String projectLayerPath() {
         return "Projects/" + PROJECT_TYPE; //NOI18N
     }
+    
+
+    public static String projectMetadataFactoryPath(String customizerId) {
+        return "Projects/" + (customizerId == null ?  PROJECT_TYPE : customizerId) + "/" + ProjectMetadataFactory.LAYER_PATH; //NOI18N
+    }    
 }
