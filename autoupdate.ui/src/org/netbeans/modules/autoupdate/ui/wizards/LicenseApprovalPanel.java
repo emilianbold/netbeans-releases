@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.*;
@@ -67,6 +68,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     /** Creates new form LicenseApprovalPanel */
     public LicenseApprovalPanel (InstallUnitWizardModel model, boolean isApproved) {
         initComponents ();
+        taTitle.setBackground( new Color( 0, 0, 0, 0 ) );
         cbAccept.setSelected (isApproved);
         if (model != null) {
             writeLicenses(model);
@@ -138,7 +140,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         taTitle.setLineWrap(true);
         taTitle.setText(org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel_taTitle_Text")); // NOI18N
         taTitle.setWrapStyleWord(true);
-        taTitle.setMargin(new java.awt.Insets(0, 4, 0, 0));
+        taTitle.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
         taTitle.setOpaque(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(cbAccept, org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel.cbAccept.text")); // NOI18N
@@ -154,8 +156,8 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
             }
         });
 
-        taLicense.setColumns(20);
         taLicense.setEditable(false);
+        taLicense.setColumns(20);
         taLicense.setLineWrap(true);
         taLicense.setRows(5);
         taLicense.setWrapStyleWord(true);

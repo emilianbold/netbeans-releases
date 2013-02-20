@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JTextPane;
 import javax.swing.LayoutStyle;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
@@ -87,6 +89,8 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         tpPrimaryTitle.setOpaque (false);
         tpPrimaryTitle.getAccessibleContext ().setAccessibleName (tpPrimaryTitleText);
         tpPrimaryTitle.getAccessibleContext ().setAccessibleName (ACD_TEXT_HTML);
+        tpPrimaryTitle.setBackground( new Color(0,0,0,0) );
+        tpPrimaryTitle.putClientProperty( JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
 
         tpPrimaryPlugins.setContentType ("text/html"); // NOI18N
         tpPrimaryPlugins.setEditable(false);
@@ -102,6 +106,8 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         });
         tpPrimaryPlugins.getAccessibleContext ().setAccessibleName (tpPrimaryPluginsText);
         tpPrimaryPlugins.getAccessibleContext ().setAccessibleName (ACD_TEXT_HTML);
+        tpPrimaryPlugins.setBackground( new Color(0,0,0,0) );
+        tpPrimaryPlugins.putClientProperty( JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
 
 
         tpDependingTitle.setContentType ("text/html"); // NOI18N
@@ -109,12 +115,16 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         tpDependingTitle.setOpaque (false);
         tpDependingTitle.getAccessibleContext ().setAccessibleName (tpDependingTitleText);
         tpDependingTitle.getAccessibleContext ().setAccessibleName (ACD_TEXT_HTML);
+        tpDependingTitle.setBackground( new Color(0,0,0,0) );
+        tpDependingTitle.putClientProperty( JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
 
         tpDependingPlugins.setContentType ("text/html"); // NOI18N
         tpDependingPlugins.setEditable(false);
         tpDependingPlugins.setOpaque (false);
         tpDependingPlugins.getAccessibleContext ().setAccessibleName (tpDependingPluginsText);
         tpDependingPlugins.getAccessibleContext ().setAccessibleName (ACD_TEXT_HTML);
+        tpDependingPlugins.setBackground( new Color(0,0,0,0) );
+        tpDependingPlugins.putClientProperty( JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
 
         tpPrimaryTitle.setText(tpPrimaryTitleText);
         tpPrimaryPlugins.setText(tpPrimaryPluginsText);

@@ -99,6 +99,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         }
         
         tpPanelHeader.setEditorKit(htmlkit);
+        tpPanelHeader.putClientProperty( JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
         writeToHeader (head, message);
         initBodyPanel ();
     }

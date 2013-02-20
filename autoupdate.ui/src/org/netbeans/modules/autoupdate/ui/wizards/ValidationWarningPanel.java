@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -57,6 +58,8 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
     /** Creates new form ValidationWarningPanel */
     public ValidationWarningPanel (List<UpdateElement> unsigned, List<UpdateElement> untrusted) {
         initComponents ();
+        taHead.setBackground( new Color(0,0,0,0) );
+        taWarning.setBackground( new Color(0,0,0,0) );
         postInitComponents (unsigned, untrusted);
     }
     
