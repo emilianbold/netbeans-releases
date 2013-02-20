@@ -1863,6 +1863,8 @@ itor tabs #66700).
             }
         } catch (HgException ex) {
             throw ex;
+        } catch (RuntimeException ex) {
+            throw ex;
         } catch (Exception ex) {
             Mercurial.LOG.log(Level.INFO, "Cannot run block without indexing", ex); //NOI18N
             throw new HgException("Cannot run without indexing due to: " + ex.getMessage()); //NOI18N
