@@ -208,14 +208,16 @@ public final class AddModulePanel extends JPanel {
         moduleList.setEnabled(false);
         showNonAPIModules.setEnabled(false);
         matchCaseValue.setEnabled(false);
+        showExclModulesCheckBox.setEnabled(false);
         final String lastFilter = filterValue.getText();
         filterValue.setText(UIUtil.WAIT_VALUE);
         moduleList.setModel(UIUtil.createListWaitModel());
         final boolean nonApiDeps = showNonAPIModules.isSelected();
+        final boolean exclModules = showExclModulesCheckBox.isSelected();
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
                 props.resetUniverseDependencies();  // #165300 refresh in case of added friends/public packages
-                final Set<ModuleDependency> universeDeps = props.getUniverseDependencies(true, !nonApiDeps);
+                final Set<ModuleDependency> universeDeps = props.getUniverseDependencies(!exclModules, !nonApiDeps);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         universeModules = CustomizerComponentFactory.createSortedDependencyListModel(universeDeps);
@@ -225,6 +227,8 @@ public final class AddModulePanel extends JPanel {
                         filterValue.setEnabled(true);
                         showNonAPIModules.setEnabled(true);
                         matchCaseValue.setEnabled(true);
+                        boolean enableExclModuleChckBox = props.isHasExcludedModules() && props.isSuiteComponent()?true:false;
+                        showExclModulesCheckBox.setEnabled(enableExclModuleChckBox);
                         filterValue.setText(lastFilter);
                         if (!FILTER_DESCRIPTION.equals(lastFilter)) {
                             search();
@@ -412,6 +416,7 @@ public final class AddModulePanel extends JPanel {
         showJavadocButton = new javax.swing.JButton();
         showNonAPIModules = new javax.swing.JCheckBox();
         matchCaseValue = new javax.swing.JCheckBox();
+        showExclModulesCheckBox = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
         setPreferredSize(new java.awt.Dimension(500, 450));
@@ -507,7 +512,7 @@ public final class AddModulePanel extends JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(showNonAPIModules, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(matchCaseValue, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "CTL_MatchCase"));
@@ -518,11 +523,24 @@ public final class AddModulePanel extends JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 0);
+        add(matchCaseValue, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(showExclModulesCheckBox, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "CTL_ShowExclModules"));
+        showExclModulesCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showExclModulesCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(9, 6, 0, 0);
-        add(matchCaseValue, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 0);
+        add(showExclModulesCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void showNonAPIModulesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showNonAPIModulesActionPerformed
@@ -536,6 +554,10 @@ public final class AddModulePanel extends JPanel {
     private void matchCaseValueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_matchCaseValueActionPerformed
         fillUpUniverseModules();
     }//GEN-LAST:event_matchCaseValueActionPerformed
+
+    private void showExclModulesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showExclModulesCheckBoxActionPerformed
+        fillUpUniverseModules();
+    }//GEN-LAST:event_showExclModulesCheckBoxActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -548,6 +570,7 @@ public final class AddModulePanel extends JPanel {
     private javax.swing.JLabel moduleLabel;
     javax.swing.JList moduleList;
     private javax.swing.JScrollPane moduleSP;
+    private javax.swing.JCheckBox showExclModulesCheckBox;
     private javax.swing.JButton showJavadocButton;
     private javax.swing.JCheckBox showNonAPIModules;
     // End of variables declaration//GEN-END:variables

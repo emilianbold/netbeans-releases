@@ -107,6 +107,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -150,6 +151,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private boolean implementationVersionChange;
     private boolean providedTokensChanged;
     private boolean autoUpdateShowInClientChanged;
+    private boolean hasExcludedModules;
 
     static {
         // setup defaults
@@ -217,6 +219,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         // XXX consider SingleModuleProperties(NbModuleProject) constructor. Life would be easier.
         super(helper, evaluator);
         this.bundleInfoProvider = bundleInfoProvider;
+        this.hasExcludedModules = false;
         refresh(moduleType, sp);
     }
 
@@ -653,6 +656,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                         Message.WARNING_MESSAGE));
                 return Collections.emptySet();
             }
+            
             String[] disabledModules = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY);
             String[] enabledClusters = SuiteProperties.getArrayProperty(
@@ -669,7 +673,28 @@ public final class SingleModuleProperties extends ModuleProperties {
                     continue;
                 }
                 if (isExcluded(me, Arrays.asList(disabledModules), Arrays.asList(enabledClusters), Arrays.asList(disabledClusters))) {
+                    this.hasExcludedModules = true;
                     it.remove();
+                }
+            }
+        }
+        else if(!filterExcludedModules && isSuiteComponent())
+        {
+            SuiteProject suite = getSuite();
+            if (suite == null) {
+                DialogDisplayer.getDefault().notify(new Message(NbBundle.getMessage(SingleModuleProperties.class,
+                        "SingleModuleProperties.incorrectSuite", getSuiteDirectoryPath(), getProjectDisplayName()),
+                        Message.WARNING_MESSAGE));
+                return Collections.emptySet();
+            }
+            Set<NbModuleProject> subModules = SuiteUtils.getSubProjects(suite);
+            SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
+                                        suite.getEvaluator(), subModules);
+            if(suiteProps.getActivePlatform() != null)
+            {
+                for(ModuleEntry entryIter:suiteProps.getActivePlatform().getModules())
+                {
+                    result.add(new ModuleDependency(entryIter));
                 }
             }
         }
@@ -684,6 +709,18 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         return Collections.unmodifiableSet(result);
     }
+    
+    /**
+     * Returns whether a set of available {@link ModuleDependency modules dependencies}
+     * in the module's universe according to the currently selected {@link
+     * #getActivePlatform() platform} has at least one excluded module.<p>
+     * 
+     */
+    public boolean isHasExcludedModules() {
+        return hasExcludedModules;
+    }
+
+    
 
     /**
      * Delegates to {@link #getUniverseDependencies(boolean, boolean)} with
