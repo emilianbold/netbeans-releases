@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
@@ -61,12 +64,16 @@ public class JsFunctionArgumentImpl implements JsFunctionArgument {
         this.value = value;
     }
     
-    public static JsFunctionArgument create(int order, int offset, JsObjectImpl value) {
+    public static JsFunctionArgument create(int order, int offset, JsObject value) {
         return new JsFunctionArgumentImpl(Kind.ANONYMOUS_OBJECT, order, offset, value);
     }
     
     public static JsFunctionArgument create(int order, int offset, String value) {
         return new JsFunctionArgumentImpl(Kind.STRING, order, offset, value);
+    }
+
+    public static JsFunctionArgument create(int order, int offset, List<Identifier> value) {
+        return new JsFunctionArgumentImpl(Kind.REFERENCE, order, offset, value);
     }
     
     @Override

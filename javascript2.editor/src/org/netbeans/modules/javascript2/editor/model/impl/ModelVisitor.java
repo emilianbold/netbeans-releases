@@ -416,6 +416,18 @@ public class ModelVisitor extends PathNodeVisitor {
                                         break;
                                     }
                                 }
+                            } else if (argument instanceof AccessNode) {
+                                AccessNode an = (AccessNode) argument;
+                                List<Identifier> fqn = getName(an, parserResult);
+                                JsObject current = modelBuilder.getCurrentObject();
+                                while (current != null && current.getDeclarationName() != null) {
+                                    if (current != modelBuilder.getGlobal()) {
+                                        fqn.add(0, current.getDeclarationName());
+                                    }
+                                    current = current.getParent();
+                                }
+
+                                funcArg.add(JsFunctionArgumentImpl.create(i, argument.getStart(), fqn));
                             }
                         }
                         Collection<FunctionCall> calls = functionCalls.get(interceptorToUse);

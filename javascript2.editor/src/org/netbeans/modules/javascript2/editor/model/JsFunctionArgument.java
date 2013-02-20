@@ -48,6 +48,7 @@ package org.netbeans.modules.javascript2.editor.model;
 public interface JsFunctionArgument {
     static public enum Kind {
         STRING,
+        REFERENCE,
         ANONYMOUS_OBJECT
     };
     

@@ -43,8 +43,9 @@ package org.netbeans.modules.javascript2.knockout.model;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.StringTokenizer;
+import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -66,19 +67,22 @@ public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor 
 
     @Override
     public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
-        if (args.size() < 1) {
+        if (args.size() < 2) {
             return;
         }
         JsObject ko = globalObject.getProperty(GLOBAL_KO_OBJECT); // NOI18N
         if (ko == null) {
-            ko = factory.newObject(globalObject, GLOBAL_KO_OBJECT, OffsetRange.NONE, false);
+            ko = factory.newObject(globalObject, GLOBAL_KO_OBJECT, OffsetRange.NONE, true);
             globalObject.addProperty(GLOBAL_KO_OBJECT, ko);
         }
 
         Iterator<JsFunctionArgument> iterator = args.iterator();
         JsFunctionArgument arg1 = iterator.next();
+        JsFunctionArgument arg2 = iterator.next();
+        
         int offset = arg1.getOffset();
-        if (arg1.getKind() == JsFunctionArgument.Kind.STRING) {
+        if (arg1.getKind() == JsFunctionArgument.Kind.STRING
+                && !((String) arg1.getValue()).startsWith("__")) { // NOI18N
             JsObject parent = ko;
             JsObject oldParent = parent;
 
@@ -88,33 +92,47 @@ public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor 
                 i++;
             }
 
-
             for (; i < names.length; i++) {
                 String name = names[i];
-                JsObject jsObject = oldParent.getProperty(name);
-                OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                if (jsObject == null) {
-                    jsObject = factory.newObject(parent, name, offsetRange, true);
-                    parent.addProperty(name, jsObject);
-                    oldParent = jsObject;
-                } else if (!jsObject.isDeclared()) {
-                    JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
-                    parent.addProperty(name, newJsObject);
-                    for (Occurrence occurrence : jsObject.getOccurrences()) {
-                        newJsObject.addOccurrence(occurrence.getOffsetRange());
+//                if (i < names.length - 1) {
+                    JsObject jsObject = oldParent.getProperty(name);
+                    OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
+                    if (jsObject == null) {
+                        jsObject = factory.newObject(parent, name, offsetRange, true);
+                        parent.addProperty(name, jsObject);
+                        oldParent = jsObject;
+                    } else if (!jsObject.isDeclared()) {
+                        JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
+                        parent.addProperty(name, newJsObject);
+                        for (Occurrence occurrence : jsObject.getOccurrences()) {
+                            newJsObject.addOccurrence(occurrence.getOffsetRange());
+                        }
+                        newJsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
+                        oldParent = jsObject;
+                        jsObject = newJsObject;
+                    } else {
+                        jsObject.addOccurrence(offsetRange);
                     }
-                    newJsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
-                    oldParent = jsObject;
-                    jsObject = newJsObject;
-                } else {
-                    jsObject.addOccurrence(offsetRange);
-                }
-                parent = jsObject;
-
+                    parent = jsObject;
+//                } else {
+//
+//                }
                 // XXX ?
                 offset += name.length() + 1;
             }
         }
+
+    }
+
+    private JsObject getReference(JsObject object, List<Identifier> identifier) {
+        // XXX performance
+        if (object == null) {
+            return null;
+        }
+        if (identifier.isEmpty()) {
+            return object;
+        }
+        return getReference(object.getProperty(identifier.get(0).getName()), identifier.subList(1, identifier.size()));
 
     }
 }
