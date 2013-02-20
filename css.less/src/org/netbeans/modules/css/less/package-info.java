@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@TemplateRegistration(folder = "Other", content = "LessTemplate.less")
+@TemplateRegistration(folder = "Other", content = "LessTemplate.less", position = 660)
 package org.netbeans.modules.css.less;
 
 import org.netbeans.api.templates.TemplateRegistration;
