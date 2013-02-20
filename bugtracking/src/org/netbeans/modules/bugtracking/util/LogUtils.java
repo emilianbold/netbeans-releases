@@ -178,30 +178,10 @@ public final class LogUtils {
         if (name == null) {
             name = "Find Issues"; // NOI18N
         } else {
-            name = getMD5(name);
+            name = TextUtils.getMD5(name);
         }
         return name;
     }
     
-    private static String getMD5(String name) {
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance("MD5");                          // NOI18N
-        } catch (NoSuchAlgorithmException e) {
-            // should not happen
-            return null;
-        }
-        digest.update(name.getBytes());
-        byte[] hash = digest.digest();
-        StringBuffer ret = new StringBuffer();
-        for (int i = 0; i < hash.length; i++) {
-            String hex = Integer.toHexString(hash[i] & 0x000000FF);
-            if(hex.length()==1) {
-                hex = "0" + hex;                                                // NOI18N
-            }
-            ret.append(hex);
-        }
-        return ret.toString();
-    }    
     
 }

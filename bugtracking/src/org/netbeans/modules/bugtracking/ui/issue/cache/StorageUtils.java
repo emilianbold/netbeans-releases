@@ -49,8 +49,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 
 /**
@@ -59,6 +63,9 @@ import org.netbeans.modules.bugtracking.util.TextUtils;
  */
 public final class StorageUtils {
 
+    private static  final Logger LOG = Logger.getLogger(StorageUtils.class.getName());
+    private static Map<String, String> loggedUrls;
+    
     private StorageUtils() {}
     
     static DataOutputStream getDataOutputStream(File file, boolean append) throws IOException, InterruptedException {
@@ -109,9 +116,24 @@ public final class StorageUtils {
     }
 
     static File getNameSpaceFolder(File storage, String url) {
-        File folder = new File(storage, TextUtils.encodeURL(url));
+        File folderLegacy = new File(storage, TextUtils.encodeURL(url));
+        File folder = new File(storage, TextUtils.getMD5(url));
+        if(folderLegacy.exists()) {
+            folderLegacy.renameTo(folder);
+        } 
         if(!folder.exists()) {
             folder.mkdirs();
+        }
+        if(LOG.isLoggable(Level.FINE)) {
+            if(loggedUrls == null) {
+                loggedUrls = new HashMap<String, String>(1);
+            }
+            String folderPath = loggedUrls.get(url);
+            if(folderPath == null) {
+                folderPath = folder.getAbsolutePath();
+                loggedUrls.put(url, folderPath);
+                LOG.log(Level.FINE, "storage folder for URL {0} is {1}", new Object[]{url, folderPath}); // NOI18N
+            }
         }
         return folder;
     }
@@ -158,5 +180,4 @@ public final class StorageUtils {
         }
     }
 
-    
 }
