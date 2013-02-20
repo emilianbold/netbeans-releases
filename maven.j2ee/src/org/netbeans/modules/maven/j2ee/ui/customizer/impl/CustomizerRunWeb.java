@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven.j2ee.ui.customizer.impl;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -213,18 +212,15 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
 
     private boolean checkMapping(NetbeansActionMapping map) {
-        if (map == null) {
-            return false;
-        }
-        Iterator it = map.getGoals().iterator();
-        while (it.hasNext()) {
-            String goal = (String) it.next();
-            if (goal.indexOf("netbeans-deploy-plugin") > -1) { //NOI18N
+        if (map != null) {
+            for (String goal : map.getGoals()) {
+                if (goal.indexOf("netbeans-deploy-plugin") > -1) { //NOI18N
+                    return true;
+                }
+            }
+            if (map.getProperties().containsKey(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY)) {
                 return true;
             }
-        }
-        if (map.getProperties().containsKey(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY)) {
-            return true;
         }
         return false;
     }
