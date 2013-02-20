@@ -348,7 +348,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 }
             }
             try {
-                regexp = Pattern.compile(sb.toString());
+                regexp = Pattern.compile(sb.toString(), Pattern.CASE_INSENSITIVE);
             } catch (PatternSyntaxException e) {
                 // Internal error: the regexp should have been validated when
                 // the user edited it
@@ -423,7 +423,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
     private String trim(String comment, Collection<String> patterns) {
         int index = Integer.MAX_VALUE;
         for( String p : patterns ) {
-            int i = comment.indexOf( p );
+            int i = comment.toLowerCase().indexOf(p.toLowerCase());
             if( i > 0 && i < index ) {
                 index = i;
             }
