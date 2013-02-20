@@ -87,7 +87,9 @@ public class AVD implements Device {
         while (r.ready()) {
             String line = r.readLine();
             if (line == null) {
-                result.add(current);
+                if (current.name !=null) {
+                    result.add(current);
+                }
                 break;
             }
             Matcher m = pattern.matcher(line);
