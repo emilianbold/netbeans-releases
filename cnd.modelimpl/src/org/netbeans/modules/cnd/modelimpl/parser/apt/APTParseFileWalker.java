@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
@@ -205,7 +206,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             FileImpl includedFile = inclFileOwner.prepareIncludedFile(inclFileOwner, inclPath, preprocHandler);
             if (includedFile != null) {
                 if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-                    APTFile aptFile = includedFile.getFileAPT(true);
+                    APTFile aptFile = CsmCorePackageAccessor.get().getFileAPT(includedFile, true);
                     APTParseFileWalker walker = createIncludedHeaderWalker(aptFile, includedFile);
                     if (walker != null) {
                         FileContent inclFileContent = includedFile.prepareIncludedFileParsingContent();
