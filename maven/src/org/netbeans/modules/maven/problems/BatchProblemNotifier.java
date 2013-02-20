@@ -187,6 +187,7 @@ public class BatchProblemNotifier {
         // validate, test-compile, dependency:go-offline also possible
         cfg.setGoals(Arrays.asList("--fail-at-end", "--also-make", "--projects", pl.toString(), "install"));
         cfg.setUpdateSnapshots(true);
+        cfg.setProperty("skipTests", "true");
         pnl.readConfig(cfg);
         DialogDescriptor dd = new DialogDescriptor(pnl, dialog_title());
         if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
