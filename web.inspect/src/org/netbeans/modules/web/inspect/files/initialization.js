@@ -254,6 +254,7 @@ NetBeans.setSelectionMode = function(selectionMode) {
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
     canvas.style.pointerEvents = value;
     this.lastHighlighted = null;
+    this.selectionMode = selectionMode;
 };
 
 // Repaints the glass-pane
@@ -430,6 +431,28 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
     ctx.restore();
 };
 
+// Filters/blocks some mouse events when Select/Inspect mode is turned on.
+// This, for example, allows design/selection of JavaScript-based menus.
+NetBeans.installMouseEventFilters = function() {
+    var blockingListener = function(e) {
+        if (NetBeans.selectionMode && (e.target.id !== NetBeans.GLASSPANE_ID)) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+        }
+    };
+    document.documentElement.addEventListener('click', blockingListener, true);
+    document.documentElement.addEventListener('contextmenu', blockingListener, true);
+    document.documentElement.addEventListener('dblclick', blockingListener, true);
+    document.documentElement.addEventListener('mousedown', blockingListener, true);
+    document.documentElement.addEventListener('mouseenter', blockingListener, true);
+    document.documentElement.addEventListener('mouseleave', blockingListener, true);
+    document.documentElement.addEventListener('mousemove', blockingListener, true);
+    document.documentElement.addEventListener('mouseout', blockingListener, true);
+    document.documentElement.addEventListener('mouseover', blockingListener, true);
+    document.documentElement.addEventListener('mouseup', blockingListener, true);
+    document.documentElement.addEventListener('mousewheel', blockingListener, true);
+};
+
 NetBeans.setWindowActive = function(active) {
     this.windowActive = active;
     if (!active) {
@@ -439,5 +462,7 @@ NetBeans.setWindowActive = function(active) {
 
 // Insert glass-pane into the inspected page
 NetBeans.insertGlassPane();
+
+NetBeans.installMouseEventFilters();
 
 }
