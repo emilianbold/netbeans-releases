@@ -69,7 +69,7 @@ public class CssStylesTCController implements PropertyChangeListener {
     /**
      * Which mimetypes should cause the CssStyles window to be activated.
      */
-    private static final Set<String> SUPPORTED_MIMES = new HashSet<String>(Arrays.asList("text/css", "text/html", "text/xhtml")); //NOI18N
+    private static final Set<String> SUPPORTED_MIMES = new HashSet<String>(Arrays.asList("text/css", "text/html", "text/xhtml", "text/x-jsp", "text/x-php5")); //NOI18N
     
     private static CssStylesTCController STATIC_INSTANCE;
     
