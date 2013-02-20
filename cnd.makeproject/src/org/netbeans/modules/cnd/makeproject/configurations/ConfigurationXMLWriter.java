@@ -50,12 +50,15 @@ import org.netbeans.modules.cnd.api.xml.LineSeparatorDetector;
 import org.netbeans.modules.cnd.api.xml.XMLDocWriter;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.Lookups;
 
 public class ConfigurationXMLWriter extends XMLDocWriter {
 
@@ -100,6 +103,11 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
             finally {
                 lock.releaseLock();
             }
+            String customizerId = projectDescriptor.getActiveConfiguration() == null ? null
+                    : projectDescriptor.getActiveConfiguration().getCustomizerId();
+            for (ProjectMetadataFactory f : Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class)) {
+                f.write(projectDirectory);
+            }      
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
