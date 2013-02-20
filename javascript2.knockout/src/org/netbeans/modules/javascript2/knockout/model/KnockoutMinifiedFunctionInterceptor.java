@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -94,7 +95,7 @@ public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor 
 
             for (; i < names.length; i++) {
                 String name = names[i];
-//                if (i < names.length - 1) {
+                if (i < names.length - 1) {
                     JsObject jsObject = oldParent.getProperty(name);
                     OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
                     if (jsObject == null) {
@@ -114,9 +115,15 @@ public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor 
                         jsObject.addOccurrence(offsetRange);
                     }
                     parent = jsObject;
-//                } else {
-//
-//                }
+                } else {
+                    if (arg2.getKind() == JsFunctionArgument.Kind.REFERENCE) {
+                        JsObject value = getReference(globalObject, (List<Identifier>) arg2.getValue());
+                        if (value != null) {
+                            OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
+                            parent.addProperty(name, factory.newReference(parent, name, offsetRange, value, true));
+                        }
+                    }
+                }
                 // XXX ?
                 offset += name.length() + 1;
             }

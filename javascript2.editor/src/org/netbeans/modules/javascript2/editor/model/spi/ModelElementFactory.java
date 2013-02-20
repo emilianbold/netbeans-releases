@@ -42,9 +42,12 @@
 package org.netbeans.modules.javascript2.editor.model.spi;
 
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
@@ -71,11 +74,16 @@ public final class ModelElementFactory {
         this.visitor = visitor;
     }
 
-    public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange, boolean isDeclared) {
+    public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange,
+            boolean isDeclared) {
         return new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, isDeclared);
     }
 
-    public JsObject newReference(JsObject parent, String name, OffsetRange offsetRange, JsObject original, boolean isDeclared) {
+    public JsObject newReference(JsObject parent, String name, OffsetRange offsetRange,
+            JsObject original, boolean isDeclared) {
+        if (original instanceof JsFunction) {
+            return new JsFunctionReference(parent, new IdentifierImpl(name, offsetRange), (JsFunction) original, isDeclared);
+        }
         return new JsObjectReference(parent, new IdentifierImpl(name, offsetRange), original, isDeclared);
     }
 }
