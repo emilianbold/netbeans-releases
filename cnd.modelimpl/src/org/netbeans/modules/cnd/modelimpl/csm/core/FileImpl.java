@@ -499,7 +499,7 @@ public final class FileImpl implements CsmFile,
     // only by one thread.
     /*package*/ void ensureParsed(Collection<APTPreprocHandler> handlers) {
         if (TraceFlags.PARSE_HEADERS_WITH_SOURCES && this.isHeaderFile()) {
-            return;
+            System.err.printf("HEADERS_WITH_SOURCES: ensureParsed: %s\n", this.getAbsolutePath());
         }
         try {
             if (inEnsureParsed.incrementAndGet() != 1) {
