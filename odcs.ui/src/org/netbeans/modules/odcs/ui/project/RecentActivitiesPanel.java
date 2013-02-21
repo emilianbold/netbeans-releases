@@ -56,7 +56,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -90,6 +92,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
     private JCheckBox chbBuildUnwatched;
     private JCheckBox chbScm;
     private List<ProjectActivity> recentActivities = Collections.emptyList();
+    private final Map<ProjectActivity, ActivityPanel> activity2Panel = new HashMap<ProjectActivity, ActivityPanel>();
     private int maxWidth = -1;
     private final BuilderAccessor<ODCSProject> buildAccessor;
     private Cursor defaultCursor;
@@ -107,6 +110,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
     }
 
     void update() {
+        activity2Panel.clear();
         loadRecentActivities();
     }
 
@@ -312,8 +316,11 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
             if (maxWidth == -1) {
                 maxWidth = this.getVisibleRect().width - 150;
             }
-
-            final ActivityPanel activityPanel = new ActivityPanel(activity, projectHandle, maxWidth);
+            ActivityPanel activityPanel = activity2Panel.get(activity);
+            if (activityPanel == null) {
+                activityPanel = new ActivityPanel(activity, projectHandle, maxWidth);
+                activity2Panel.put(activity, activityPanel);
+            }
             if (activityPanel.hasDetails()) {
                 activityPanel.addMouseListener(new ExpandableMouseListener(activityPanel, this));
             }
