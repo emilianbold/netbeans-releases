@@ -246,20 +246,6 @@ public class ModelUtils {
         return result;
     }
     
-    public static String createFQN(JsObject object) {
-        StringBuilder result = new StringBuilder();
-        result.append(object.getName());
-        JsObject parent = object;
-        if (object.getParent() == null) {
-            return object.getName();
-        }
-        while((parent = parent.getParent()).getParent() != null) {
-            result.insert(0, ".");
-            result.insert(0, parent.getName());
-        }
-        return result.toString();
-    }
-    
     public static OffsetRange documentOffsetRange(JsParserResult result, int start, int end) {
         int lStart = LexUtilities.getLexerOffset(result, start);
         int lEnd = LexUtilities.getLexerOffset(result, end);
@@ -367,7 +353,7 @@ public class ModelUtils {
             result.add(type);
         } else if (Type.UNDEFINED.equals(type.getType())) {
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-                result.add(new TypeUsageImpl(ModelUtils.createFQN(object), type.getOffset(), true));
+                result.add(new TypeUsageImpl(object.getFullyQualifiedName(), type.getOffset(), true));
             } else {
                 result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
             }
@@ -386,17 +372,17 @@ public class ModelUtils {
             } 
             if (parent != null && (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD)) {
                 if (parent.getParent().getJSKind() == JsElement.Kind.FILE) {
-                    result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), 0, true)); //NOI18N
+                    result.add(new TypeUsageImpl(parent.getFullyQualifiedName(), 0, true)); //NOI18N
                 } else {
                     JsObject grandParent = parent.getParent();
                     if ( grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
-                        result.add(new TypeUsageImpl(ModelUtils.createFQN(grandParent), type.getOffset(), true));
+                        result.add(new TypeUsageImpl(grandParent.getFullyQualifiedName(), type.getOffset(), true));
                     } else {
-                        result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
+                        result.add(new TypeUsageImpl(parent.getFullyQualifiedName(), type.getOffset(), true));
                     }
                 }
             } else if (parent != null) {
-                result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
+                result.add(new TypeUsageImpl(parent.getFullyQualifiedName(), type.getOffset(), true));
             }
         } else if (type.getType().startsWith("@this.")) {
             Identifier objectName = object.getDeclarationName();
@@ -424,7 +410,7 @@ public class ModelUtils {
 //                if (possible instanceof JsFunction) {
 //                    result.addAll(((JsFunction)possible).getReturnTypes());
 //                } else {
-                    result.add(new TypeUsageImpl(ModelUtils.createFQN(possible), possible.getOffset(), true));
+                    result.add(new TypeUsageImpl(possible.getFullyQualifiedName(), possible.getOffset(), true));
 //                }
             } else {
                 result.add(type);
@@ -441,7 +427,7 @@ public class ModelUtils {
 //            JsObject globalObject = ModelUtils.getGlobalObject(object);
             JsObject byOffset = ModelUtils.findJsObject(object, start);
             if(byOffset != null && byOffset.isAnonymous()) {
-                result.add(new TypeUsageImpl(ModelUtils.createFQN(byOffset), byOffset.getOffset(), true));
+                result.add(new TypeUsageImpl(byOffset.getFullyQualifiedName(), byOffset.getOffset(), true));
             }
 //            for(JsObject children : globalObject.getProperties().values()) {
 //                if(children.getOffset() == start && children.getName().startsWith("Anonym$")) {
@@ -700,7 +686,7 @@ public class ModelUtils {
             }
             for (JsObject jsObject : lastResolvedObjects) {
 //                if (jsObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
-                    String fqn = ModelUtils.createFQN(jsObject);
+                    String fqn = jsObject.getFullyQualifiedName();
                     if(!resultTypes.containsKey(fqn)) {
                         resultTypes.put(fqn, new TypeUsageImpl(fqn, offset));
                     }

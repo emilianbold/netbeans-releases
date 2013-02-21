@@ -47,6 +47,7 @@ import static junit.framework.Assert.assertNotNull;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
 
 /**
@@ -70,20 +71,11 @@ public class ExtModelTest extends ModelTestBase {
         assertNotNull(jsObject);
         jsObject = jsObject.getProperty("engineer");
         assertNotNull(jsObject);
-        jsObject = jsObject.getProperty("developer");
-        assertNotNull(jsObject);
-        assertFalse(jsObject.getModifiers().contains(Modifier.PRIVATE));
-        JsObject property = jsObject.getProperty("name");
-        assertNotNull(property);
-        property = jsObject.getProperty("surname");
-        assertNotNull(property);
-        jsObject = jsObject.getProperty("address");
-        assertNotNull(jsObject);
-        property = jsObject.getProperty("street");
-        assertNotNull(property);
-        property = jsObject.getProperty("city");
-        assertNotNull(property);
-        property = jsObject.getProperty("zip");
-        assertNotNull(property);
+        JsObject developer = jsObject.getProperty("developer");
+        assertNotNull(developer);
+        assertFalse(developer.getModifiers().contains(Modifier.PRIVATE));
+        assertEquals(1, developer.getAssignments().size());
+        TypeUsage type = developer.getAssignments().iterator().next();
+        assertEquals("Anonym$0", type.getType());
     }
 }

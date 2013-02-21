@@ -105,9 +105,9 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
                         }
                         if (jsObject == null) {
                             OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());    
-//                            jsObject = factory.newObject(parent, name, offsetRange, true);
-//                            jsObject.addAssignment(new TypeUsageImpl(ModelUtils.createFQN(definedObject)), offset);
-                            jsObject = factory.newReference(parent, name, offsetRange, definedObject, true);
+                            jsObject = factory.newObject(parent, name, offsetRange, true);
+                            jsObject.addAssignment(factory.newType(definedObject.getFullyQualifiedName(), offset, false), offset);
+//                            jsObject = factory.newReference(parent, name, offsetRange, definedObject, true);
                             parent.addProperty(name, jsObject);
                             for (Occurrence occurrence : jsObject.getOccurrences()) {
                                 jsObject.addOccurrence(occurrence.getOffsetRange());
@@ -123,9 +123,9 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
                         }
                         else {
                             OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-//                            JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
-//                            newJsObject.addAssignment(new TypeUsageImpl(ModelUtils.createFQN(definedObject)), offset);
-                            JsObject newJsObject = factory.newReference(parent, name, offsetRange, definedObject, true);
+                            JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
+                            newJsObject.addAssignment(factory.newType(definedObject.getFullyQualifiedName(), offset, false), offset);
+//                            JsObject newJsObject = factory.newReference(parent, name, offsetRange, definedObject, true);
                             parent.addProperty(name, newJsObject);
                             for (Occurrence occurrence : jsObject.getOccurrences()) {
                                 newJsObject.addOccurrence(occurrence.getOffsetRange());

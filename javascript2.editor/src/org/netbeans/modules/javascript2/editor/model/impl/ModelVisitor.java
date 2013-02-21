@@ -284,7 +284,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         IdentNode rhs = (IdentNode)binaryNode.rhs();
                         JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationFunction();
                         if(/*function.getProperty(rhs.getName()) == null &&*/ function.getParameter(rhs.getName()) != null) {
-                            parameter = "@param;" + ModelUtils.createFQN(function) + ":" + rhs.getName();
+                            parameter = "@param;" + function.getFullyQualifiedName() + ":" + rhs.getName();
                         }
                     }
                     Collection<TypeUsage> types; 
