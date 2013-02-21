@@ -1,0 +1,3 @@
+Alert:METHOD:[PRIVATE]:ESCAPED{Alert}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+alert:VARIABLE:[PRIVATE]:ESCAPED{alert}<font color="#999999">ESCAPED{ : }_L1.Alert</font>:
+bar:VARIABLE:[PRIVATE]:ESCAPED{bar}<font color="#999999">ESCAPED{ : }String</font>:

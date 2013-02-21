@@ -107,8 +107,8 @@ public class JsStructureScanner implements StructureScanner {
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    if (function.isDeclared() && !(jsObject.isAnonymous() && function.getModifiers().contains(Modifier.PRIVATE))) {
-                        collectedItems.add(new JsFunctionStructureItem(function, children, result));
+                    if (function.isDeclared() && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && ModelUtils.createFQN(jsObject).indexOf('.') == -1))) {
+                        collectedItems.add(new JsFunctionStructureItem(function, children, result));                          
                     }
                 }
             } else if (((child.getJSKind() == JsElement.Kind.OBJECT && hasDeclaredProperty(child)) || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
@@ -119,9 +119,8 @@ public class JsStructureScanner implements StructureScanner {
                         || !(jsObject.getParent() instanceof JsFunction)))
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
-                    && !jsObject.isAnonymous()
-                    /*&& (jsObject.getJSKind() == JsElement.Kind.FILE || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR)*/) {
-                collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
+                && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && ModelUtils.createFQN(jsObject).indexOf('.') == -1))) {
+                    collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
             }
          }
         return collectedItems;
