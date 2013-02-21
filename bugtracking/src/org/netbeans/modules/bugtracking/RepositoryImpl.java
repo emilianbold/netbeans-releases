@@ -69,7 +69,6 @@ public final class RepositoryImpl<R, Q, I> {
     private final static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.Repository"); // NOI18N
     
     private final PropertyChangeSupport support;
-    private RepositoryNode node;
         
     private final RepositoryProvider<R, Q, I> repositoryProvider;
     private final IssueProvider<I> issueProvider;
@@ -116,19 +115,6 @@ public final class RepositoryImpl<R, Q, I> {
     public Image getIcon() {
         return repositoryProvider.getIcon(r);
     }
-    
-    /**
-     * Returns a {@link Node} representing this repository
-     * 
-     * @return
-     * @deprecated 
-     */
-    public final Node getNode() {
-        if(node == null) {
-            node = new RepositoryNode(this);
-        }
-        return node;
-    }    
     
     /**
      * Returns the display name for this repository

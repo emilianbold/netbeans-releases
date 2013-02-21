@@ -79,11 +79,11 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     public static final String PROPERTY_FORMAT = "format";                      // NOI18N
     public static final String PROPERTY_HIGHLIGHT_PATTERN = "highlightPattern"; // NOI18N
 
-    private QueryImpl query;
-    private IssueTable issueTable;
+    private final QueryImpl query;
+    private final IssueTable issueTable;
 
     private static final int VISIBLE_START_CHARS = 0;
-    private static Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
+    private static final Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
 
     private static final MessageFormat issueNewFormat       = getFormat("issueNewFormat");      // NOI18N
     private static final MessageFormat issueObsoleteFormat  = getFormat("issueObsoleteFormat"); // NOI18N
