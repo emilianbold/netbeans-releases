@@ -44,9 +44,9 @@ package org.netbeans.modules.javascript2.knockout.model;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -61,74 +61,91 @@ import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor {
 
     private static final String GLOBAL_KO_OBJECT = "ko"; // NOI18N
+
     @Override
-    public String getNamePattern() {
-        return "[a-z]\\.b"; // NOI18N
+    public Pattern getNamePattern() {
+        return Pattern.compile("[a-z]\\.[a-z]"); // NOI18N
     }
 
     @Override
     public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
-        if (args.size() < 2) {
-            return;
-        }
-        JsObject ko = globalObject.getProperty(GLOBAL_KO_OBJECT); // NOI18N
-        if (ko == null) {
-            ko = factory.newObject(globalObject, GLOBAL_KO_OBJECT, OffsetRange.NONE, true);
-            globalObject.addProperty(GLOBAL_KO_OBJECT, ko);
-        }
-
-        Iterator<JsFunctionArgument> iterator = args.iterator();
-        JsFunctionArgument arg1 = iterator.next();
-        JsFunctionArgument arg2 = iterator.next();
-        
-        int offset = arg1.getOffset();
-        if (arg1.getKind() == JsFunctionArgument.Kind.STRING
-                && !((String) arg1.getValue()).startsWith("__")) { // NOI18N
-            JsObject parent = ko;
-            JsObject oldParent = parent;
-
-            String[] names = ((String) arg1.getValue()).split("\\."); // NOI18N
-            int i = 0;
-            if (names[0].equals(GLOBAL_KO_OBJECT)) {
-                i++;
+        if (args.size() == 2) {
+            JsObject ko = globalObject.getProperty(GLOBAL_KO_OBJECT); // NOI18N
+            if (ko == null) {
+                ko = factory.newObject(globalObject, GLOBAL_KO_OBJECT, OffsetRange.NONE, true);
+                globalObject.addProperty(GLOBAL_KO_OBJECT, ko);
             }
 
-            for (; i < names.length; i++) {
-                String name = names[i];
-                if (i < names.length - 1) {
-                    JsObject jsObject = oldParent.getProperty(name);
-                    OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                    if (jsObject == null) {
-                        jsObject = factory.newObject(parent, name, offsetRange, true);
-                        parent.addProperty(name, jsObject);
-                        oldParent = jsObject;
-                    } else if (!jsObject.isDeclared()) {
-                        JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
-                        parent.addProperty(name, newJsObject);
-                        for (Occurrence occurrence : jsObject.getOccurrences()) {
-                            newJsObject.addOccurrence(occurrence.getOffsetRange());
-                        }
-                        newJsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
-                        oldParent = jsObject;
-                        jsObject = newJsObject;
-                    } else {
-                        jsObject.addOccurrence(offsetRange);
-                    }
-                    parent = jsObject;
-                } else {
-                    if (arg2.getKind() == JsFunctionArgument.Kind.REFERENCE) {
-                        JsObject value = getReference(globalObject, (List<Identifier>) arg2.getValue());
-                        if (value != null) {
-                            OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                            parent.addProperty(name, factory.newReference(parent, name, offsetRange, value, true));
-                        }
-                    }
+            Iterator<JsFunctionArgument> iterator = args.iterator();
+            JsFunctionArgument arg1 = iterator.next();
+            JsFunctionArgument arg2 = iterator.next();
+
+            int offset = arg1.getOffset();
+            if (arg1.getKind() == JsFunctionArgument.Kind.STRING
+                    && !((String) arg1.getValue()).startsWith("__")) { // NOI18N
+                JsObject parent = ko;
+                JsObject oldParent = parent;
+
+                String[] names = ((String) arg1.getValue()).split("\\."); // NOI18N
+                int i = 0;
+                if (names[0].equals(GLOBAL_KO_OBJECT)) {
+                    i++;
                 }
-                // XXX ?
-                offset += name.length() + 1;
+
+                for (; i < names.length; i++) {
+                    String name = names[i];
+                    if (i < names.length - 1) {
+                        JsObject jsObject = oldParent.getProperty(name);
+                        OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
+                        if (jsObject == null) {
+                            jsObject = factory.newObject(parent, name, offsetRange, true);
+                            parent.addProperty(name, jsObject);
+                            oldParent = jsObject;
+                        } else if (!jsObject.isDeclared()) {
+                            JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
+                            parent.addProperty(name, newJsObject);
+                            for (Occurrence occurrence : jsObject.getOccurrences()) {
+                                newJsObject.addOccurrence(occurrence.getOffsetRange());
+                            }
+                            newJsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
+                            oldParent = jsObject;
+                            jsObject = newJsObject;
+                        } else {
+                            jsObject.addOccurrence(offsetRange);
+                        }
+                        parent = jsObject;
+                    } else {
+                        if (arg2.getKind() == JsFunctionArgument.Kind.REFERENCE) {
+                            JsObject value = getReference(globalObject, (List<Identifier>) arg2.getValue());
+                            if (value != null) {
+                                OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
+                                parent.addProperty(name, factory.newReference(parent, name, offsetRange, value, true));
+                            }
+                        }
+                    }
+                    offset += name.length() + 1;
+                }
+            }
+        } else if (args.size() == 3) {
+            Iterator<JsFunctionArgument> iterator = args.iterator();
+            JsFunctionArgument arg1 = iterator.next();
+            JsFunctionArgument arg2 = iterator.next();
+            JsFunctionArgument arg3 = iterator.next();
+
+            int offset = arg2.getOffset();
+            if (arg1.getKind() == JsFunctionArgument.Kind.REFERENCE
+                    && arg2.getKind() == JsFunctionArgument.Kind.STRING
+                    && arg3.getKind() == JsFunctionArgument.Kind.REFERENCE) {
+
+                JsObject object = getReference(globalObject, (List<Identifier>) arg1.getValue());
+                JsObject value = getReference(globalObject, (List<Identifier>) arg3.getValue());
+                if (object != null && value != null) {
+                    String name = (String) arg2.getValue();
+                    OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
+                    object.addProperty(name, factory.newReference(object, name, offsetRange, value, true));
+                }
             }
         }
-
     }
 
     private JsObject getReference(JsObject object, List<Identifier> identifier) {
