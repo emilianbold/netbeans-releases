@@ -37,21 +37,17 @@
  */
 package org.netbeans.modules.bugtracking;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.issuetable.IssueTable;
-import org.netbeans.modules.bugtracking.issuetable.IssueTable.IssueTableProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
@@ -184,14 +180,6 @@ public final class QueryImpl<Q, I>  {
             return ((KenaiQueryProvider<Q, I>)queryProvider).needsLogin(data);
         } 
         return false;
-    }
-
-    public IssueTable getIssueTable() {
-        QueryController controller = getController();
-        if((controller instanceof IssueTableProvider)) {
-            return ((IssueTableProvider)controller).getIssueTable();
-        } 
-        return null;
     }
 
     public boolean isData(Object obj) {
