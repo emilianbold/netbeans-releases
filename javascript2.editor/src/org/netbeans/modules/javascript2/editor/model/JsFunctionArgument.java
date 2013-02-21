@@ -39,73 +39,21 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
-
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
+package org.netbeans.modules.javascript2.editor.model;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsObjectReference extends JsObjectImpl {
- 
-    private final JsObject original;
-
-    public JsObjectReference(JsObject parent, Identifier declarationName,
-            JsObject original, boolean isDeclared) {
-        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
-        this.original = original;
-    }
-
-    @Override
-    public Map<String, ? extends JsObject> getProperties() {
-        return original.getProperties();
-    }
-
-    @Override
-    public void addProperty(String name, JsObject property) {
-        original.addProperty(name, property);
-    }
-
-    @Override
-    public JsObject getProperty(String name) {
-        return original.getProperty(name);
-    }
-
-    @Override
-    public boolean isAnonymous() {
-        return original.isAnonymous();
-    }
-
-    @Override
-    public Kind getJSKind() {
-        return original.getJSKind();
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return original.getKind();
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return original.getModifiers();
-    }
+public interface JsFunctionArgument {
+    static public enum Kind {
+        STRING,
+        REFERENCE,
+        ANONYMOUS_OBJECT
+    };
     
-    public JsObject getOriginal() {
-        return original;
-    }
-
-    @Override
-    public void resolveTypes(JsDocumentationHolder docHolder) {
-        // do nothing
-    }
-
-    
+    public Kind getKind();
+    public int getOrder();
+    public int getOffset();
+    public Object getValue();
 }

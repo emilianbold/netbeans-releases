@@ -60,14 +60,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.StringTokenizer;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -408,10 +405,11 @@ public class ModelUtils {
                 String pName = type.getType().substring(type.getType().indexOf('.') + 1);
                 JsObject property = object.getParent().getProperty(pName);
                 if (property != null && property.getJSKind().isFunction()) {
-                    JsFunctionImpl function = property instanceof JsFunctionImpl
+                    JsFunction function = property instanceof JsFunction
                             ? (JsFunctionImpl) property
                             : ((JsFunctionReference)property).getOriginal();
-                    object.getParent().addProperty(object.getName(), new JsFunctionReference(object.getParent(), object.getDeclarationName(), function, true));
+                    object.getParent().addProperty(object.getName(), new JsFunctionReference(
+                            object.getParent(), object.getDeclarationName(), function, true));
                 }
             }
         } else if (type.getType().startsWith("@new;")) {

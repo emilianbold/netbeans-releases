@@ -41,71 +41,38 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsObjectReference extends JsObjectImpl {
- 
-    private final JsObject original;
-
-    public JsObjectReference(JsObject parent, Identifier declarationName,
-            JsObject original, boolean isDeclared) {
-        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
-        this.original = original;
-    }
-
-    @Override
-    public Map<String, ? extends JsObject> getProperties() {
-        return original.getProperties();
-    }
-
-    @Override
-    public void addProperty(String name, JsObject property) {
-        original.addProperty(name, property);
-    }
-
-    @Override
-    public JsObject getProperty(String name) {
-        return original.getProperty(name);
-    }
-
-    @Override
-    public boolean isAnonymous() {
-        return original.isAnonymous();
-    }
-
-    @Override
-    public Kind getJSKind() {
-        return original.getJSKind();
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return original.getKind();
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return original.getModifiers();
+public final class ModelExtender {
+    public static final String METHOD_INTERCEPTORS_PATH = "JavaScript/Model/MethodInterceptors";
+    private static final Lookup.Result<FunctionInterceptor> METHOD_INTERCEPTORS = Lookups.forPath(METHOD_INTERCEPTORS_PATH).lookupResult(FunctionInterceptor.class);
+            
+    static class InstanceWrapper {
+        static ModelExtender extender = new ModelExtender();
     }
     
-    public JsObject getOriginal() {
-        return original;
+    private ModelExtender() {
+        
     }
-
-    @Override
-    public void resolveTypes(JsDocumentationHolder docHolder) {
-        // do nothing
+    
+    public static ModelExtender getDefault() {
+        return InstanceWrapper.extender;
     }
-
+    
+    /**
+     * Get all registered {@link MethodCallProcessor}s.
+     * @return a list of all registered {@link MethodCallProcessor}s; never null.
+     */
+    public List<FunctionInterceptor> getMethodInterceptors() {
+        return new ArrayList<FunctionInterceptor>(METHOD_INTERCEPTORS.allInstances());
+    }
     
 }

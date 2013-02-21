@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.javascript2.extjs.model;
 
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementKind;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsObjectReference extends JsObjectImpl {
- 
-    private final JsObject original;
-
-    public JsObjectReference(JsObject parent, Identifier declarationName,
-            JsObject original, boolean isDeclared) {
-        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
-        this.original = original;
-    }
-
-    @Override
-    public Map<String, ? extends JsObject> getProperties() {
-        return original.getProperties();
-    }
-
-    @Override
-    public void addProperty(String name, JsObject property) {
-        original.addProperty(name, property);
-    }
-
-    @Override
-    public JsObject getProperty(String name) {
-        return original.getProperty(name);
-    }
-
-    @Override
-    public boolean isAnonymous() {
-        return original.isAnonymous();
-    }
-
-    @Override
-    public Kind getJSKind() {
-        return original.getJSKind();
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return original.getKind();
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return original.getModifiers();
+public class ExtModelTest extends ModelTestBase {
+    
+    public ExtModelTest(String testName) {
+        super(testName);
     }
     
-    public JsObject getOriginal() {
-        return original;
+    public void testExtDefineMethod() throws Exception {
+        Model model = getModel("testfiles/completion/defineMethod/defineMethod.js");
+        assertNotNull(model);
+        JsObject  global = model.getGlobalObject();
+        assertEquals(3, global.getProperties().size());
+        JsObject jsObject = global.getProperty("NetBeans");
+        assertNotNull(jsObject);
+        jsObject = jsObject.getProperty("stuff");
+        assertNotNull(jsObject);
+        jsObject = jsObject.getProperty("engineer");
+        assertNotNull(jsObject);
+        jsObject = jsObject.getProperty("developer");
+        assertNotNull(jsObject);
+        assertFalse(jsObject.getModifiers().contains(Modifier.PRIVATE));
+        JsObject property = jsObject.getProperty("name");
+        assertNotNull(property);
+        property = jsObject.getProperty("surname");
+        assertNotNull(property);
+        jsObject = jsObject.getProperty("address");
+        assertNotNull(jsObject);
+        property = jsObject.getProperty("street");
+        assertNotNull(property);
+        property = jsObject.getProperty("city");
+        assertNotNull(property);
+        property = jsObject.getProperty("zip");
+        assertNotNull(property);
     }
-
-    @Override
-    public void resolveTypes(JsDocumentationHolder docHolder) {
-        // do nothing
-    }
-
-    
 }

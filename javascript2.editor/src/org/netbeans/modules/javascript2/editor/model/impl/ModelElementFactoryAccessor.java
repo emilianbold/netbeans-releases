@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
+import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
-public class JsObjectReference extends JsObjectImpl {
- 
-    private final JsObject original;
+public abstract class ModelElementFactoryAccessor {
 
-    public JsObjectReference(JsObject parent, Identifier declarationName,
-            JsObject original, boolean isDeclared) {
-        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
-        this.original = original;
+    private static volatile ModelElementFactoryAccessor DEFAULT;
+
+    public static ModelElementFactoryAccessor getDefault() {
+        ModelElementFactoryAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        // invokes static initializer of ModelElementFactory.class
+        // that will assign value to the DEFAULT field above
+        Class c = ModelElementFactory.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+        return DEFAULT;
     }
 
-    @Override
-    public Map<String, ? extends JsObject> getProperties() {
-        return original.getProperties();
+    public static void setDefault(ModelElementFactoryAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+
+        DEFAULT = accessor;
     }
 
-    @Override
-    public void addProperty(String name, JsObject property) {
-        original.addProperty(name, property);
-    }
-
-    @Override
-    public JsObject getProperty(String name) {
-        return original.getProperty(name);
-    }
-
-    @Override
-    public boolean isAnonymous() {
-        return original.isAnonymous();
-    }
-
-    @Override
-    public Kind getJSKind() {
-        return original.getJSKind();
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return original.getKind();
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return original.getModifiers();
-    }
-    
-    public JsObject getOriginal() {
-        return original;
-    }
-
-    @Override
-    public void resolveTypes(JsDocumentationHolder docHolder) {
-        // do nothing
-    }
-
-    
+    public abstract ModelElementFactory createModelElementFactory(ModelVisitor visitor);
 }

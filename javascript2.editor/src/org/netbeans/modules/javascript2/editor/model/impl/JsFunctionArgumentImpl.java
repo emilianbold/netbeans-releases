@@ -41,71 +41,59 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import java.util.List;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsObjectReference extends JsObjectImpl {
- 
-    private final JsObject original;
+public class JsFunctionArgumentImpl implements JsFunctionArgument {
 
-    public JsObjectReference(JsObject parent, Identifier declarationName,
-            JsObject original, boolean isDeclared) {
-        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
-        this.original = original;
-    }
+    private final Kind kind;
+    private final int order;
+    private final int offset;
+    private final Object value;
 
-    @Override
-    public Map<String, ? extends JsObject> getProperties() {
-        return original.getProperties();
-    }
-
-    @Override
-    public void addProperty(String name, JsObject property) {
-        original.addProperty(name, property);
-    }
-
-    @Override
-    public JsObject getProperty(String name) {
-        return original.getProperty(name);
-    }
-
-    @Override
-    public boolean isAnonymous() {
-        return original.isAnonymous();
-    }
-
-    @Override
-    public Kind getJSKind() {
-        return original.getJSKind();
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return original.getKind();
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return original.getModifiers();
+    public JsFunctionArgumentImpl(Kind kind, int order, int offset, Object value) {
+        this.kind = kind;
+        this.order = order;
+        this.offset = offset;
+        this.value = value;
     }
     
-    public JsObject getOriginal() {
-        return original;
+    public static JsFunctionArgument create(int order, int offset, JsObject value) {
+        return new JsFunctionArgumentImpl(Kind.ANONYMOUS_OBJECT, order, offset, value);
+    }
+    
+    public static JsFunctionArgument create(int order, int offset, String value) {
+        return new JsFunctionArgumentImpl(Kind.STRING, order, offset, value);
+    }
+
+    public static JsFunctionArgument create(int order, int offset, List<Identifier> value) {
+        return new JsFunctionArgumentImpl(Kind.REFERENCE, order, offset, value);
+    }
+    
+    @Override
+    public Kind getKind() {
+        return this.kind;
     }
 
     @Override
-    public void resolveTypes(JsDocumentationHolder docHolder) {
-        // do nothing
+    public int getOrder() {
+        return this.order;
     }
 
+    @Override
+    public int getOffset() {
+        return this.offset;
+    }
+
+    @Override
+    public Object getValue() {
+        return this.value;
+    }
     
 }

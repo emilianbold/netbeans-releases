@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.javascript2.editor.model.spi;
 
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
-public class JsObjectReference extends JsObjectImpl {
- 
-    private final JsObject original;
+public final class ModelElementFactory {
 
-    public JsObjectReference(JsObject parent, Identifier declarationName,
+    static {
+        ModelElementFactoryAccessor.setDefault(new ModelElementFactoryAccessor() {
+
+            @Override
+            public ModelElementFactory createModelElementFactory(ModelVisitor visitor) {
+                return new ModelElementFactory(visitor);
+            }
+        });
+    }
+
+    private final ModelVisitor visitor;
+
+    private ModelElementFactory(ModelVisitor visitor) {
+        this.visitor = visitor;
+    }
+
+    public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange,
+            boolean isDeclared) {
+        return new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, isDeclared);
+    }
+
+    public JsObject newReference(JsObject parent, String name, OffsetRange offsetRange,
             JsObject original, boolean isDeclared) {
-        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
-        this.original = original;
+        if (original instanceof JsFunction) {
+            return new JsFunctionReference(parent, new IdentifierImpl(name, offsetRange), (JsFunction) original, isDeclared);
+        }
+        return new JsObjectReference(parent, new IdentifierImpl(name, offsetRange), original, isDeclared);
     }
-
-    @Override
-    public Map<String, ? extends JsObject> getProperties() {
-        return original.getProperties();
-    }
-
-    @Override
-    public void addProperty(String name, JsObject property) {
-        original.addProperty(name, property);
-    }
-
-    @Override
-    public JsObject getProperty(String name) {
-        return original.getProperty(name);
-    }
-
-    @Override
-    public boolean isAnonymous() {
-        return original.isAnonymous();
-    }
-
-    @Override
-    public Kind getJSKind() {
-        return original.getJSKind();
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return original.getKind();
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return original.getModifiers();
-    }
-    
-    public JsObject getOriginal() {
-        return original;
-    }
-
-    @Override
-    public void resolveTypes(JsDocumentationHolder docHolder) {
-        // do nothing
-    }
-
-    
 }
