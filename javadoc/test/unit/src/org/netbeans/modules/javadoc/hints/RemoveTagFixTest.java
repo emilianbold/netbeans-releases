@@ -62,7 +62,7 @@ public class RemoveTagFixTest extends NbTestCase {
                 .preference(AVAILABILITY_KEY + true, true)
                 .preference(SCOPE_KEY, "private")
                 .run(JavadocHint.class)
-                .findWarning("5:7-5:15:warning:@return tag cannot be used in method with void return type.")
+                .findWarning("5:7-5:14:warning:@return tag cannot be used in method with void return type.")
                 .applyFix("Remove @return tag")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -90,7 +90,7 @@ public class RemoveTagFixTest extends NbTestCase {
                 .preference(AVAILABILITY_KEY + true, true)
                 .preference(SCOPE_KEY, "private")
                 .run(JavadocHint.class)
-                .findWarning("4:7-4:15:warning:@return tag cannot be used in method with void return type.")
+                .findWarning("4:7-4:14:warning:@return tag cannot be used in method with void return type.")
                 .applyFix("Remove @return tag")
                 .assertCompilable()
                 .assertOutput("package test;\n" +
@@ -189,7 +189,7 @@ public class RemoveTagFixTest extends NbTestCase {
                 .preference(AVAILABILITY_KEY + true, true)
                 .preference(SCOPE_KEY, "private")
                 .run(JavadocHint.class)
-                .findWarning("4:7-4:15:warning:@return tag cannot be used in method with void return type.")
+                .findWarning("4:7-4:14:warning:@return tag cannot be used in method with void return type.")
                 .applyFix("Remove @return tag")
                 .assertCompilable()
                 .assertOutput("package test;\n" +

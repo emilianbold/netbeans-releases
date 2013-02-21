@@ -51,6 +51,7 @@ import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -251,6 +252,128 @@ public class DoctreeTest extends GeneratorTestBase {
                                         docComment.getFirstSentence(),
                                         docComment.getBody(),
                                         Collections.singletonList(param));
+                                wc.rewrite(mt, docComment, newDoc);
+                                return super.visitDocComment(docComment, p);
+                            }
+                        };
+                        scanner.scan(docTree, null);
+                        return super.visitMethod(mt, p);
+                    }
+                }.scan(wc.getCompilationUnit(), null);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddTypeParamEndPos() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    /**\n" +
+            "     * @param <T> \n" +
+            "     */\n" +
+            "    private void test() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    /**\n" +
+            "     * @param <T> \n" +
+            "     * @param test \n" +
+            "     */\n" +
+            "    private void test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker make = wc.getTreeMaker();
+                final DocTrees trees = (DocTrees) wc.getTrees();
+                new TreePathScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(final MethodTree mt, Void p) {
+                        DocCommentTree docTree = trees.getDocCommentTree(getCurrentPath());
+                        DocTreeScanner<Void, Void> scanner = new DocTreeScanner<Void, Void>() {
+                            @Override
+                            public Void visitDocComment(DocCommentTree docComment, Void p) {
+                                List<DocTree> params = new ArrayList<DocTree>(docComment.getBlockTags());
+                                params.add(make.Param(false, make.DocIdentifier("test"), new LinkedList<DocTree>()));
+                                DocCommentTree newDoc = make.DocComment(docComment,
+                                        docComment.getFirstSentence(),
+                                        docComment.getBody(),
+                                        params);
+                                wc.rewrite(mt, docComment, newDoc);
+                                return super.visitDocComment(docComment, p);
+                            }
+                        };
+                        scanner.scan(docTree, null);
+                        return super.visitMethod(mt, p);
+                    }
+                }.scan(wc.getCompilationUnit(), null);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddTypeParamEndPosB() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    /**\n" +
+            "     * @param <T> some param\n" +
+            "     */\n" +
+            "    private void test() {\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    /**\n" +
+            "     * @param <T> some param\n" +
+            "     * @param test\n" +
+            "     */\n" +
+            "    private void test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker make = wc.getTreeMaker();
+                final DocTrees trees = (DocTrees) wc.getTrees();
+                new TreePathScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(final MethodTree mt, Void p) {
+                        DocCommentTree docTree = trees.getDocCommentTree(getCurrentPath());
+                        DocTreeScanner<Void, Void> scanner = new DocTreeScanner<Void, Void>() {
+                            @Override
+                            public Void visitDocComment(DocCommentTree docComment, Void p) {
+                                List<DocTree> params = new ArrayList<DocTree>(docComment.getBlockTags());
+                                params.add(make.Param(false, make.DocIdentifier("test"), new LinkedList<DocTree>()));
+                                DocCommentTree newDoc = make.DocComment(docComment,
+                                        docComment.getFirstSentence(),
+                                        docComment.getBody(),
+                                        params);
                                 wc.rewrite(mt, docComment, newDoc);
                                 return super.visitDocComment(docComment, p);
                             }

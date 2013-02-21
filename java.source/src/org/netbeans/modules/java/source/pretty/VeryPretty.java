@@ -1851,9 +1851,9 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             case SINCE:
             case THROWS:
             case VERSION:
-                newline();
-                toLeftMargin();
                 if(before) {
+                    newline();
+                    toLeftMargin();
                     print(" * ");
                 }
                 break;
