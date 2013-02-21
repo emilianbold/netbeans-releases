@@ -143,6 +143,10 @@ class CloneWizard  implements ChangeListener {
     List<? extends GitBranch> getBranches() {
         return wizardIterator.fetchBranchesStep.getSelectedBranches();
     }
+
+    List<String> getBranchNames () {
+        return wizardIterator.fetchBranchesStep.getSelectedBranchNames();
+    }
     
     File getDestination() {
         return wizardIterator.cloneDestinationStep.getDestination();
