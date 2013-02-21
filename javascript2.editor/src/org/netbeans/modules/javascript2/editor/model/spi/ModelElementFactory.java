@@ -45,12 +45,14 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 
 /**
  *
@@ -85,5 +87,9 @@ public final class ModelElementFactory {
             return new JsFunctionReference(parent, new IdentifierImpl(name, offsetRange), (JsFunction) original, isDeclared);
         }
         return new JsObjectReference(parent, new IdentifierImpl(name, offsetRange), original, isDeclared);
+    }
+    
+    public TypeUsage newType(String name, int offset, boolean resolved) {
+        return new TypeUsageImpl(name, offset, resolved);
     }
 }

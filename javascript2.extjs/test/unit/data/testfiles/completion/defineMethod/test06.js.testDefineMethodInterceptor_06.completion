@@ -3,3 +3,4 @@ NetBeans.stuff.engineer.developer.address.z|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 FIELD      z                               [PUBLIC]   test06.js
+FIELD      zip: Number                     [PUBLIC]   defineMethod.js

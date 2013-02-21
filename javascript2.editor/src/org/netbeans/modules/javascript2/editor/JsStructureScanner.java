@@ -243,7 +243,7 @@ public class JsStructureScanner implements StructureScanner {
             this.modelElement = elementHandle;
             this.sortPrefix = sortPrefix;
             this.parserResult = parserResult;
-            this.fqn = ModelUtils.createFQN(modelElement);
+            this.fqn = modelElement.getFullyQualifiedName();
             if (children != null) {
                 this.children = children;
             } else {
