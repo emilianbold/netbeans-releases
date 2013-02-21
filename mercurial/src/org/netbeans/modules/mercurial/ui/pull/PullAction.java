@@ -483,8 +483,6 @@ public class PullAction extends ContextAction {
             if (!supp.isCanceled()) {
                 if (bMergeNeeded) {
                     List<HgLogMessage> parents = HgCommand.getParents(root, null, null);
-                    // updating to branch tip
-                    HgCommand.doUpdateAll(root, false, null, false);
                     askForMerge(parents);
                     warnMoreHeads = false;
                 } else if (updateNeeded) {
