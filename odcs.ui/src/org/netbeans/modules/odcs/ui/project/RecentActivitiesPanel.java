@@ -46,8 +46,12 @@ import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.activity.ScmActivity;
 import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
 import com.tasktop.c2c.server.profile.domain.activity.WikiActivity;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
@@ -55,7 +59,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
@@ -67,6 +73,7 @@ import org.netbeans.modules.team.ui.spi.JobHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -85,6 +92,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
     private List<ProjectActivity> recentActivities = Collections.emptyList();
     private int maxWidth = -1;
     private final BuilderAccessor<ODCSProject> buildAccessor;
+    private Cursor defaultCursor;
 
     /**
      * Creates new form RecentActivitiesPanel
@@ -245,41 +253,43 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
 
         chbTask = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Tasks"), Utils.Settings.isShowTasks());
         chbTask.setOpaque(false);
-        chbTask.addActionListener(new ShowActionListener());
+        chbTask.addActionListener(new ShowActionListener(TaskActivity.class));
         pnlShow.add(chbTask, gbc);
 
         chbWiki = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Wiki"), Utils.Settings.isShowWiki());
         chbWiki.setOpaque(false);
-        chbWiki.addActionListener(new ShowActionListener());
+        chbWiki.addActionListener(new ShowActionListener(WikiActivity.class));
         pnlShow.add(chbWiki, gbc);
 
         chbScm = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Commits"), Utils.Settings.isShowScm());
         chbScm.setOpaque(false);
-        chbScm.addActionListener(new ShowActionListener());
+        chbScm.addActionListener(new ShowActionListener(ScmActivity.class));
         pnlShow.add(chbScm, gbc);
 
         chbBuildWatched = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Builds"), Utils.Settings.isShowBuilds());
         chbBuildWatched.setOpaque(false);
-        chbBuildWatched.addActionListener(new ShowActionListener());
+        chbBuildWatched.addActionListener(new ShowActionListener(BuildActivity.class));
         pnlShow.add(chbBuildWatched, gbc);
 
         chbBuildUnwatched = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_BuildsUnwatched"), Utils.Settings.isShowBuildsUnwatched());
         chbBuildUnwatched.setOpaque(false);
-        chbBuildUnwatched.addActionListener(new ShowActionListener());
+        chbBuildUnwatched.addActionListener(new ShowActionListener(BuildActivity.class));
         pnlShow.add(chbBuildUnwatched, gbc);
 
         pnlShow.revalidate();
     }
 
     private void showRecentActivities() {
+        showWaitCursor(true);
         Date lastDate = null;
         DateSeparatorPanel currentDatePanel = null;
         pnlContent.removeAll();
-        updateShowButtons();
+        boolean isEmpty = true;
         for (ProjectActivity activity : recentActivities) {
             if (!isActivityAllowed(activity)) {
                 continue;
             }
+            isEmpty = false;
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(0, 3, 0, 0);
             gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -310,13 +320,46 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
             currentDatePanel.addActivityPanel(activityPanel, gbc);
             lastDate = currentDate;
         }
+        if (isEmpty) {
+            showEmptyContent();
+        } else {
+            GridBagConstraints gbc1 = new GridBagConstraints();
+            gbc1.weighty = 1.0;
+            gbc1.fill = GridBagConstraints.VERTICAL;
+            pnlContent.add(new JLabel(), gbc1);
+            pnlContent.revalidate();
+            this.repaint();
+        }
+        showWaitCursor(false);
+    }
 
-        GridBagConstraints gbc1 = new GridBagConstraints();
-        gbc1.weighty = 1.0;
-        gbc1.fill = GridBagConstraints.VERTICAL;
-        pnlContent.add(new JLabel(), gbc1);
-        pnlContent.revalidate();
-        this.repaint();
+    private void showWaitCursor(boolean showWait){
+        Window window = null;
+        Component glassPane = null;
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (focusOwner != null) {
+            window = SwingUtilities.getWindowAncestor(focusOwner);
+            if (window != null) {
+                RootPaneContainer root = (RootPaneContainer) SwingUtilities.getAncestorOfClass(RootPaneContainer.class, focusOwner);
+                glassPane = root.getGlassPane();
+            }
+        }
+        if (window == null || glassPane == null) {
+            window = WindowManager.getDefault().getMainWindow();
+            glassPane = ((JFrame) window).getGlassPane();
+        }
+
+        if (showWait) {
+            defaultCursor = window.getCursor();
+            Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+            window.setCursor(waitCursor);
+            glassPane.setCursor(waitCursor);
+            glassPane.setVisible(true);
+        } else {
+            glassPane.setVisible(false);
+            window.setCursor(defaultCursor);
+            glassPane.setCursor(defaultCursor);
+        }
     }
 
     private boolean isActivityAllowed(ProjectActivity activity) {
@@ -336,73 +379,14 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         return job.isWatched();
     }
 
-    private void updateShowButtons() {
-        boolean taskEnable = isTaskEnable(recentActivities);
-        chbTask.setSelected(Utils.Settings.isShowTasks() && taskEnable);
-        chbTask.setVisible(taskEnable);
-
-        boolean wikiEnable = isWikiEnable(recentActivities);
-        chbWiki.setSelected(Utils.Settings.isShowWiki() && wikiEnable);
-        chbWiki.setVisible(wikiEnable);
-
-        boolean scmEnable = isScmEnable(recentActivities);
-        chbScm.setSelected(Utils.Settings.isShowScm() && scmEnable);
-        chbScm.setVisible(scmEnable);
-
-        boolean buildEnable = isBuildEnable(recentActivities);
-        chbBuildWatched.setSelected(Utils.Settings.isShowBuilds() && buildEnable);
-        chbBuildWatched.setVisible(buildEnable);
-
-        boolean buildUnwatchedEnable = isBuildUnwatchedEnable(recentActivities);
-        chbBuildUnwatched.setSelected(Utils.Settings.isShowBuildsUnwatched() && buildUnwatchedEnable);
-        chbBuildUnwatched.setVisible(buildUnwatchedEnable);
-    }
-
-    private boolean isTaskEnable(List<ProjectActivity> recentActivities) {
+    private boolean isActivityEnable(List<ProjectActivity> recentActivities, Class clazz) {
         for (ProjectActivity activity : recentActivities) {
-            if (activity instanceof TaskActivity) {
+            if (activity.getClass().isAssignableFrom(clazz)) {
                 return true;
             }
         }
         return false;
     }
-
-    private boolean isScmEnable(List<ProjectActivity> recentActivities) {
-        for (ProjectActivity activity : recentActivities) {
-            if (activity instanceof ScmActivity) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isWikiEnable(List<ProjectActivity> recentActivities) {
-        for (ProjectActivity activity : recentActivities) {
-            if (activity instanceof WikiActivity) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isBuildEnable(List<ProjectActivity> recentActivities) {
-        for (ProjectActivity activity : recentActivities) {
-            if (activity instanceof BuildActivity && isJobWatched((BuildActivity) activity)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isBuildUnwatchedEnable(List<ProjectActivity> recentActivities) {
-        for (ProjectActivity activity : recentActivities) {
-            if (activity instanceof BuildActivity && !isJobWatched((BuildActivity) activity)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void showEmptyContent() {
         pnlContent.removeAll();
         pnlContent.add(lblEmptyContent, new GridBagConstraints());
@@ -432,10 +416,18 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
 
     private class ShowActionListener implements ActionListener {
 
+        private final Class clazz;
+
+        public ShowActionListener(Class clazz) {
+            this.clazz = clazz;
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
             persistShowSettings();
-            showRecentActivities();
+            if (isActivityEnable(recentActivities, clazz)) {
+                showRecentActivities();
+            }
         }
     }
 }
