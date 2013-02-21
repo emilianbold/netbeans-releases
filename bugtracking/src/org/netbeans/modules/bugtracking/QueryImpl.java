@@ -117,6 +117,10 @@ public final class QueryImpl<Q, I>  {
         QueryAction.openQuery(null, repository);
     }
     
+    public void openShowAll(final boolean suggestedSelectionOnly) {
+        open(suggestedSelectionOnly, Query.QueryMode.SHOW_ALL);
+    }
+    
     public void open(final boolean suggestedSelectionOnly, Query.QueryMode mode) {
         switch(mode) {
             case SHOW_ALL:
