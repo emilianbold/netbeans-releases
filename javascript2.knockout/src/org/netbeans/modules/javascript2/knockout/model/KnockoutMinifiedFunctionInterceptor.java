@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
+import org.netbeans.modules.javascript2.editor.model.spi.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
@@ -68,7 +68,7 @@ public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor 
     }
 
     @Override
-    public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
+    public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (args.size() == 2) {
             JsObject ko = globalObject.getProperty(GLOBAL_KO_OBJECT); // NOI18N
             if (ko == null) {
@@ -76,12 +76,12 @@ public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor 
                 globalObject.addProperty(GLOBAL_KO_OBJECT, ko);
             }
 
-            Iterator<JsFunctionArgument> iterator = args.iterator();
-            JsFunctionArgument arg1 = iterator.next();
-            JsFunctionArgument arg2 = iterator.next();
+            Iterator<FunctionArgument> iterator = args.iterator();
+            FunctionArgument arg1 = iterator.next();
+            FunctionArgument arg2 = iterator.next();
 
             int offset = arg1.getOffset();
-            if (arg1.getKind() == JsFunctionArgument.Kind.STRING
+            if (arg1.getKind() == FunctionArgument.Kind.STRING
                     && !((String) arg1.getValue()).startsWith("__")) { // NOI18N
                 JsObject parent = ko;
                 JsObject oldParent = parent;
@@ -115,7 +115,7 @@ public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor 
                         }
                         parent = jsObject;
                     } else {
-                        if (arg2.getKind() == JsFunctionArgument.Kind.REFERENCE) {
+                        if (arg2.getKind() == FunctionArgument.Kind.REFERENCE) {
                             JsObject value = getReference(globalObject, (List<Identifier>) arg2.getValue());
                             if (value != null) {
                                 OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
@@ -127,15 +127,15 @@ public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor 
                 }
             }
         } else if (args.size() == 3) {
-            Iterator<JsFunctionArgument> iterator = args.iterator();
-            JsFunctionArgument arg1 = iterator.next();
-            JsFunctionArgument arg2 = iterator.next();
-            JsFunctionArgument arg3 = iterator.next();
+            Iterator<FunctionArgument> iterator = args.iterator();
+            FunctionArgument arg1 = iterator.next();
+            FunctionArgument arg2 = iterator.next();
+            FunctionArgument arg3 = iterator.next();
 
             int offset = arg2.getOffset();
-            if (arg1.getKind() == JsFunctionArgument.Kind.REFERENCE
-                    && arg2.getKind() == JsFunctionArgument.Kind.STRING
-                    && arg3.getKind() == JsFunctionArgument.Kind.REFERENCE) {
+            if (arg1.getKind() == FunctionArgument.Kind.REFERENCE
+                    && arg2.getKind() == FunctionArgument.Kind.STRING
+                    && arg3.getKind() == FunctionArgument.Kind.REFERENCE) {
 
                 JsObject object = getReference(globalObject, (List<Identifier>) arg1.getValue());
                 JsObject value = getReference(globalObject, (List<Identifier>) arg3.getValue());

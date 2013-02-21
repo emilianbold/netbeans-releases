@@ -47,7 +47,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
+import org.netbeans.modules.javascript2.editor.model.spi.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
@@ -64,13 +64,13 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
+    public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (args.size() == 2) {
-            Iterator<JsFunctionArgument> iterator = args.iterator();
-            JsFunctionArgument arg1 = iterator.next();
-            JsFunctionArgument arg2 = iterator.next();
+            Iterator<FunctionArgument> iterator = args.iterator();
+            FunctionArgument arg1 = iterator.next();
+            FunctionArgument arg2 = iterator.next();
             int offset = arg1.getOffset();
-            if (arg1.getKind() == JsFunctionArgument.Kind.STRING && arg2.getKind() == JsFunctionArgument.Kind.ANONYMOUS_OBJECT) {
+            if (arg1.getKind() == FunctionArgument.Kind.STRING && arg2.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
                 JsObject parent = globalObject;
                 JsObject oldParent = parent;
                 for (StringTokenizer st = new StringTokenizer((String) arg1.getValue(), "."); st.hasMoreTokens();) {

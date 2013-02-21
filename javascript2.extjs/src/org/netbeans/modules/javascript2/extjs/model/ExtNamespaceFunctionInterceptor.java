@@ -46,7 +46,7 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
+import org.netbeans.modules.javascript2.editor.model.spi.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
@@ -62,12 +62,12 @@ public class ExtNamespaceFunctionInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<JsFunctionArgument> args) {
+    public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (args.size() == 1) {
-            Iterator<JsFunctionArgument> iterator = args.iterator();
-            JsFunctionArgument arg1 = iterator.next();
+            Iterator<FunctionArgument> iterator = args.iterator();
+            FunctionArgument arg1 = iterator.next();
             int offset = arg1.getOffset();
-            if (arg1.getKind() == JsFunctionArgument.Kind.STRING) {
+            if (arg1.getKind() == FunctionArgument.Kind.STRING) {
                 JsObject parent = globalObject;
                 JsObject oldParent = parent;
                 for (StringTokenizer st = new StringTokenizer((String) arg1.getValue(), "."); st.hasMoreTokens();) {

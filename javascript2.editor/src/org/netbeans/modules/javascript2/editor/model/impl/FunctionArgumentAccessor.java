@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.spi.FunctionArgument;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
-public class JsFunctionArgumentImpl implements JsFunctionArgument {
+public abstract class FunctionArgumentAccessor {
 
-    private final Kind kind;
-    private final int order;
-    private final int offset;
-    private final Object value;
+    private static volatile FunctionArgumentAccessor DEFAULT;
 
-    public JsFunctionArgumentImpl(Kind kind, int order, int offset, Object value) {
-        this.kind = kind;
-        this.order = order;
-        this.offset = offset;
-        this.value = value;
-    }
-    
-    public static JsFunctionArgument create(int order, int offset, JsObject value) {
-        return new JsFunctionArgumentImpl(Kind.ANONYMOUS_OBJECT, order, offset, value);
-    }
-    
-    public static JsFunctionArgument create(int order, int offset, String value) {
-        return new JsFunctionArgumentImpl(Kind.STRING, order, offset, value);
-    }
+    public static FunctionArgumentAccessor getDefault() {
+        FunctionArgumentAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
 
-    public static JsFunctionArgument create(int order, int offset, List<Identifier> value) {
-        return new JsFunctionArgumentImpl(Kind.REFERENCE, order, offset, value);
+        // invokes static initializer of FunctionArgument.class
+        // that will assign value to the DEFAULT field above
+        Class c = FunctionArgument.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+        return DEFAULT;
     }
 
-    public static JsFunctionArgument create(int order) {
-        return new JsFunctionArgumentImpl(Kind.UNKNOWN, order, -1, null);
-    }
-    
-    @Override
-    public Kind getKind() {
-        return this.kind;
+    public static void setDefault(FunctionArgumentAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+
+        DEFAULT = accessor;
     }
 
-    @Override
-    public int getOrder() {
-        return this.order;
-    }
+    public abstract FunctionArgument createForAnonymousObject(int order, int offset, JsObject value);
 
-    @Override
-    public int getOffset() {
-        return this.offset;
-    }
+    public abstract FunctionArgument createForString(int order, int offset, String value);
 
-    @Override
-    public Object getValue() {
-        return this.value;
-    }
-    
+    public abstract FunctionArgument createForReference(int order, int offset, List<Identifier> value);
+
+    public abstract FunctionArgument createForUnknown(int order);
 }

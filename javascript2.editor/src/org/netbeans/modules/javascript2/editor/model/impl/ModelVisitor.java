@@ -80,7 +80,7 @@ import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
+import org.netbeans.modules.javascript2.editor.model.spi.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -399,18 +399,18 @@ public class ModelVisitor extends PathNodeVisitor {
 
 
                     if (interceptorToUse != null) {
-                        Collection<JsFunctionArgument> funcArg = new ArrayList<JsFunctionArgument>();
+                        Collection<FunctionArgument> funcArg = new ArrayList<FunctionArgument>();
                         for (int i = 0; i < callNode.getArgs().size(); i++) {
                             Node argument = callNode.getArgs().get(i);
                             if (argument instanceof LiteralNode) {
                                 LiteralNode ln = (LiteralNode)argument;
                                 if (ln.isString()) {
-                                    funcArg.add(JsFunctionArgumentImpl.create(i, argument.getStart(), ln.getString()));
+                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForString(i, argument.getStart(), ln.getString()));
                                 }
                             } else if (argument instanceof ObjectNode) {
-                                for(JsObjectImpl jsObject: functionArguments) {
-                                    if(jsObject.getOffset() == argument.getStart()) {
-                                        funcArg.add(JsFunctionArgumentImpl.create(i, jsObject.getOffset(), jsObject));
+                                for (JsObjectImpl jsObject: functionArguments) {
+                                    if (jsObject.getOffset() == argument.getStart()) {
+                                        funcArg.add(FunctionArgumentAccessor.getDefault().createForAnonymousObject(i, jsObject.getOffset(), jsObject));
                                         break;
                                     }
                                 }
@@ -425,7 +425,7 @@ public class ModelVisitor extends PathNodeVisitor {
                                     current = current.getParent();
                                 }
 
-                                funcArg.add(JsFunctionArgumentImpl.create(i, argument.getStart(), fqn));
+                                funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(i, argument.getStart(), fqn));
                             } else if (argument instanceof IdentNode) {
                                 IdentNode in = (IdentNode) argument;
                                 String inName = in.getName();
@@ -446,9 +446,9 @@ public class ModelVisitor extends PathNodeVisitor {
                                     }
                                     current = current.getParent();
                                 }
-                                funcArg.add(JsFunctionArgumentImpl.create(i, argument.getStart(), fqn));
+                                funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(i, argument.getStart(), fqn));
                             } else {
-                                funcArg.add(JsFunctionArgumentImpl.create(i));
+                                funcArg.add(FunctionArgumentAccessor.getDefault().createForUnknown(i));
                             }
                         }
                         Collection<FunctionCall> calls = functionCalls.get(interceptorToUse);
@@ -1346,9 +1346,9 @@ public class ModelVisitor extends PathNodeVisitor {
 
         private final String name;
 
-        private final Collection<JsFunctionArgument> arguments;
+        private final Collection<FunctionArgument> arguments;
 
-        public FunctionCall(String name, Collection<JsFunctionArgument> arguments) {
+        public FunctionCall(String name, Collection<FunctionArgument> arguments) {
             this.name = name;
             this.arguments = arguments;
         }
@@ -1357,7 +1357,7 @@ public class ModelVisitor extends PathNodeVisitor {
             return name;
         }
 
-        public Collection<JsFunctionArgument> getArguments() {
+        public Collection<FunctionArgument> getArguments() {
             return arguments;
         }
     }

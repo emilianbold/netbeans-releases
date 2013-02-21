@@ -39,22 +39,78 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.spi;
+
+import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.impl.FunctionArgumentAccessor;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
-public interface JsFunctionArgument {
-    static public enum Kind {
+public final class FunctionArgument {
+
+    static {
+        FunctionArgumentAccessor.setDefault(new FunctionArgumentAccessor() {
+
+            @Override
+            public FunctionArgument createForAnonymousObject(int order, int offset, JsObject value) {
+                return new FunctionArgument(Kind.ANONYMOUS_OBJECT, order, offset, value);
+            }
+
+            @Override
+            public FunctionArgument createForString(int order, int offset, String value) {
+                return new FunctionArgument(Kind.STRING, order, offset, value);
+            }
+
+            @Override
+            public FunctionArgument createForReference(int order, int offset, List<Identifier> value) {
+                return new FunctionArgument(Kind.REFERENCE, order, offset, value);
+            }
+
+            @Override
+            public FunctionArgument createForUnknown(int order) {
+                return new FunctionArgument(Kind.UNKNOWN, order, -1, null);
+            }
+        });
+    }
+    private final Kind kind;
+
+    private final int order;
+
+    private final int offset;
+    
+    private final Object value;
+
+    private FunctionArgument(Kind kind, int order, int offset, Object value) {
+        this.kind = kind;
+        this.order = order;
+        this.offset = offset;
+        this.value = value;
+    }
+
+    public Kind getKind() {
+        return this.kind;
+    }
+
+    public int getOrder() {
+        return this.order;
+    }
+
+    public int getOffset() {
+        return this.offset;
+    }
+
+    public Object getValue() {
+        return this.value;
+    }
+
+    public static enum Kind {
         STRING,
         REFERENCE,
         ANONYMOUS_OBJECT,
         UNKNOWN
     };
-    
-    public Kind getKind();
-    public int getOrder();
-    public int getOffset();
-    public Object getValue();
 }
