@@ -107,6 +107,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ProjectServiceProvider(service={CustomizerProvider.class, CustomizerProviderImpl.class}, projectType="org-netbeans-modules-maven")
 public class CustomizerProviderImpl implements CustomizerProvider {
+    public static final HelpCtx HELP_CTX = new HelpCtx("maven_settings");
     
     private final Project project;
     private ModelHandle handle;
@@ -165,7 +166,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                                                 public void actionPerformed(ActionEvent ae) {
                                                     //noop
                                                 }
-                                            }, listener, new HelpCtx("maven_settings"));
+                                            }, listener, HELP_CTX);
             dialog.setTitle( TIT_Project_Properties(ProjectUtils.getInformation(project).getDisplayName()));
             dialog.setModal(true);
             dialog.setVisible(true);

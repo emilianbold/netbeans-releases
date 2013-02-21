@@ -135,7 +135,8 @@ public final class RepositoryImpl<R, Q, I> {
      * @return
      */
     public String getDisplayName() {
-        return repositoryProvider.getInfo(r).getDisplayName();
+        RepositoryInfo info = repositoryProvider.getInfo(r);
+        return info != null ? info.getDisplayName() : null;
     }
 
     /**
@@ -143,7 +144,8 @@ public final class RepositoryImpl<R, Q, I> {
      * @return
      */
     public String getTooltip() {
-        return repositoryProvider.getInfo(r).getTooltip();
+        RepositoryInfo info = repositoryProvider.getInfo(r);
+        return info != null ? info.getTooltip() : null;
     }
     
     /**

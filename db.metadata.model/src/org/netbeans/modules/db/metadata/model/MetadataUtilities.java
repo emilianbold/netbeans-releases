@@ -188,4 +188,21 @@ public class MetadataUtilities {
             throw new SQLException(t);
         }
     }
+
+    /**
+     * Call {@link DatabaseMetaData#geFunctions(String, String, String)},
+     * wrapping any internal runtime exception into an {@link SQLException}.
+     */
+    public static ResultSet getFunctions(DatabaseMetaData dmd,
+            String catalog, String schemaPattern, String functionNamePattern)
+            throws SQLException {
+        try {
+            return dmd.getFunctions(catalog, schemaPattern,
+                    functionNamePattern);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new SQLException(t);
+        }
+    }
 }

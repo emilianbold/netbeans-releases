@@ -277,16 +277,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
             boolean removed = removeBreakpointImpl (bs [i]);
             if (removed && bs[i] instanceof JPDABreakpoint) {
                 JPDABreakpoint jb = (JPDABreakpoint) bs[i];
-                // TODO: JPDADebugger bDebugger = jb.getSession();
-                JPDADebugger bDebugger;
-                try {
-                    java.lang.reflect.Method getSessionMethod = JPDABreakpoint.class.getDeclaredMethod("getSession");
-                    getSessionMethod.setAccessible(true);
-                    bDebugger = (JPDADebugger) getSessionMethod.invoke(jb);
-                } catch (Exception ex) {
-                    bDebugger = null;
-                    Exceptions.printStackTrace(ex);
-                }
+                JPDADebugger bDebugger = jb.getSession();
                 if (bDebugger != null && bDebugger.equals(debugger)) {
                     // A hidden breakpoint submitted just for this one session. Remove it with the end of the session.
                     DebuggerManager.getDebuggerManager ().removeBreakpoint(jb);
@@ -317,16 +308,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
         synchronized (breakpointToImpl) {
             if (breakpointToImpl.containsKey (b)) return;
             if (!(b instanceof JPDABreakpoint)) return ;
-            JPDADebugger bDebugger;
-            try {
-                // TODO: bDebugger = ((JPDADebugger) b).getSession();
-                java.lang.reflect.Method getSessionMethod = JPDABreakpoint.class.getDeclaredMethod("getSession");
-                getSessionMethod.setAccessible(true);
-                bDebugger = (JPDADebugger) getSessionMethod.invoke(b);
-            } catch (Exception ex) {
-                bDebugger = null;
-                Exceptions.printStackTrace(ex);
-            }
+            JPDADebugger bDebugger = ((JPDABreakpoint) b).getSession();
             if (bDebugger != null && !bDebugger.equals(debugger)) {
                 return ;
             }

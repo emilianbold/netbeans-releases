@@ -801,6 +801,21 @@ These are mainly class and thread filters and hit counts.
         <issue number="215680"/>
     </change>
 
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Breakpoints can be made session-specific.</summary>
+        <version major="2" minor="41"/>
+        <date day="19" month="2" year="2013"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            getSession()/setSession() methods are added to JPDABreakpoint class.
+            They can be used to make the breakpoint debugger session-specific.
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="JPDABreakpoint" />
+        <issue number="226029"/>
+    </change>
+
 
 </changes>
 

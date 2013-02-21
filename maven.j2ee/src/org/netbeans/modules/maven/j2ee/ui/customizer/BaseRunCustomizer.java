@@ -68,13 +68,14 @@ import org.netbeans.modules.maven.j2ee.ui.util.JavaEEVersionComboBoxUpdater;
 import org.netbeans.modules.maven.j2ee.ui.util.ServerComboBoxUpdater;
 import org.netbeans.modules.maven.j2ee.ui.wizard.ServerSelectionHelper;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Martin Janicek
  */
-public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCustomizer {
+public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCustomizer, HelpCtx.Provider {
 
     protected Project project;
     protected ModelHandle2 handle;
@@ -144,4 +145,9 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
             dosDescription.setText(DosDescriptionIfDisabled_text());
         }
     }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("maven_settings");
+    }     
 }

@@ -113,6 +113,12 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         byPeople = new ExpandablePanel(byPeopleLabel, byPeopleContainer, ei, ci);
         byOther = new ExpandablePanel(byOtherLabel, byOtherContainer, ei, ci);
 
+        Color bkColor = UIUtils.getSectionPanelBackground();
+        gotoPanel.setBackground( bkColor );
+        tablePanel.setBackground( bkColor );
+        criteriaPanel.setBackground( bkColor );
+
+
         byText.expand();
         byDetails.expand();
         byPeople.colapse();
@@ -1466,6 +1472,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     }
                 }
             });
+            Color bkColor = UIUtils.getSectionPanelBackground();
+            panel.setBackground( bkColor );
         }
         public void expand() {
             expaned = true;
