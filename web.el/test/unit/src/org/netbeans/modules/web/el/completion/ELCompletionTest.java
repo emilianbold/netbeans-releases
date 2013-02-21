@@ -93,4 +93,8 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/java/java_completion05.xhtml", "#{java.math.^}", false);
     }
 
+    public void testJavaCompletion06() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion06.xhtml", "#{T(Bo^)}", false);
+    }
+
 }

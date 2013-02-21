@@ -43,6 +43,7 @@ package org.netbeans.modules.web.el.completion;
 
 import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstMethodArguments;
 import com.sun.el.parser.Node;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,6 +85,7 @@ public class ELJavaCompletion {
     private static final Set<ElementKind> FIELD_METHOD = EnumSet.<ElementKind>of(ElementKind.FIELD, ElementKind.METHOD);
     private static final String JAVA_LANG_PACKAGE = "java.lang"; //NOI18N
     private static final String JAVA_LANG_PREFIX = JAVA_LANG_PACKAGE + "."; //NOI18N
+    private static final PackageEntry DEFAULT_PACKAGE = new PackageEntry(JAVA_LANG_PACKAGE, true);
 
     protected static void propose(
             CompilationContext ccontext,
@@ -95,6 +97,9 @@ public class ELJavaCompletion {
         if (targetNode instanceof AstDotSuffix) {
             AstPath path = new AstPath(element.getNode());
             prefix = extractPrefixFromPath(path.rootToNode(targetNode)) + "."; //NOI18N
+        } else if (targetNode instanceof AstMethodArguments) {
+            AstPath path = new AstPath(targetNode);
+            prefix = extractPrefixFromPath(path.rootToLeaf()); //NOI18N
         }
         prefix = prefix != null ? prefix : ""; //NOI18N
         doJavaCompletion(ccontext, prefix, context.getCaretOffset() - prefix.length(), proposals);
@@ -111,12 +116,12 @@ public class ELJavaCompletion {
         // adds packages to the CC
         addPackages(cc, typedPrefix, offset, proposals);
 
-        Set<String> packages = new HashSet<String>();
+        Set<PackageEntry> packages = new HashSet<PackageEntry>();
         if (dotIndex == -1) {
             // java.lang package is imported by default
-            packages.add(JAVA_LANG_PACKAGE);
+            packages.add(DEFAULT_PACKAGE);
         }
-        packages.add(packName);
+        packages.add(new PackageEntry(packName, false));
 
         // adds types to the CC
         addTypesFromPackages(cc, typedPrefix, packages, offset + dotIndex + 1, proposals);
@@ -140,18 +145,24 @@ public class ELJavaCompletion {
 //            proposals.add(new JavaTypeCompletionItem(ccontext, name));
 //        }
 //    }
-    private static void addTypesFromPackages(CompilationController cc, String typedPrefix, Set<String> packages, int offset, List<CompletionProposal> proposals) {
-        for (String packageEntry : packages) {
-            PackageElement pkgElem = cc.getElements().getPackageElement(packageEntry);
+    private static void addTypesFromPackages(CompilationController cc, String typedPrefix, Set<PackageEntry> packages, int offset, List<CompletionProposal> proposals) {
+        for (PackageEntry packageEntry : packages) {
+            PackageElement pkgElem = cc.getElements().getPackageElement(packageEntry.packageName);
             if (pkgElem == null) {
                 continue;
             }
             List<TypeElement> tes = new TypeScanner().scan(pkgElem);
             for (TypeElement te : tes) {
-                String fqn = te.getQualifiedName().toString();
-                if (fqn.startsWith(typedPrefix) || fqn.startsWith(JAVA_LANG_PREFIX + typedPrefix)) {
-                    JavaTypeCompletionItem item = new JavaTypeCompletionItem(te, offset);
-                    proposals.add(item);
+                if (packageEntry.imported) {
+                    if (te.getSimpleName().toString().startsWith(typedPrefix)) {
+                        JavaTypeCompletionItem item = new JavaTypeCompletionItem(te, offset);
+                        proposals.add(item);
+                    }
+                } else {
+                    if (te.getQualifiedName().toString().startsWith(typedPrefix)) {
+                        JavaTypeCompletionItem item = new JavaTypeCompletionItem(te, offset);
+                        proposals.add(item);
+                    }
                 }
             }
         }
@@ -171,12 +182,10 @@ public class ELJavaCompletion {
         if (fqnPrefix == null || fqnPrefix.isEmpty()) {
             fqnPrefix = "java"; //NOI18N
         }
-        if (fqnPrefix.startsWith("java")) { //NOI18N
-            for (String pkgName : controler.getClasspathInfo().getClassIndex().getPackageNames(
-                    fqnPrefix, true, EnumSet.allOf(ClassIndex.SearchScope.class))) {
-                if (isImportedPackage(pkgName)) {
-                    proposals.add(new JavaPackageCompletionItem(pkgName, offset));
-                }
+        for (String pkgName : controler.getClasspathInfo().getClassIndex().getPackageNames(
+                fqnPrefix, true, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+            if (isImportedPackage(pkgName)) {
+                proposals.add(new JavaPackageCompletionItem(pkgName, offset));
             }
         }
     }
@@ -345,6 +354,42 @@ public class ELJavaCompletion {
                 DEFAULT_VALUE.add(typeElement);
             }
             return super.visitType(typeElement, arg);
+        }
+    }
+
+    private static final class PackageEntry {
+        private final String packageName;
+        private final boolean imported;
+
+        public PackageEntry(String packageName, boolean imported) {
+            this.packageName = packageName;
+            this.imported = imported;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 23 * hash + packageName.hashCode();
+            hash = 23 * hash + Boolean.valueOf(imported).hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (this.getClass() != obj.getClass()) {
+                return false;
+            }
+            PackageEntry other = (PackageEntry) obj;
+            if (!this.packageName.equals(other.packageName)) {
+                return false;
+            }
+            if (this.imported != other.imported) {
+                return false;
+            }
+            return true;
         }
     }
 }
