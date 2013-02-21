@@ -65,6 +65,9 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.models.ExceptionVariableImpl;
+import org.netbeans.modules.debugger.jpda.models.FieldReadVariableImpl;
+import org.netbeans.modules.debugger.jpda.models.FieldToBeVariableImpl;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
@@ -155,6 +158,19 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (o instanceof ReturnVariable) {
             return "return "+((ReturnVariable) o).methodName()+"()";
         }
+        if (o instanceof ExceptionVariableImpl) {
+            ExceptionVariableImpl ev = (ExceptionVariableImpl) o;
+            //return "Thrown exception "+ev.getExceptionClassName();
+            return NbBundle.getMessage(VariablesNodeModel.class, "ThrownExceptionVar", ev.getExceptionClassName());
+        }
+        if (o instanceof FieldReadVariableImpl) {
+            FieldReadVariableImpl frv = (FieldReadVariableImpl) o;
+            return NbBundle.getMessage(VariablesNodeModel.class, "FieldValueReadVar", frv.getFieldVariable().getName());
+        }
+        if (o instanceof FieldToBeVariableImpl) {
+            FieldToBeVariableImpl ftbv = (FieldToBeVariableImpl) o;
+            return NbBundle.getMessage(VariablesNodeModel.class, "FieldValueToBeVar", ftbv.getFieldVariable().getName());
+        }
         if (o instanceof Operation) {
             Operation op = (Operation) o;
             Operation lastOperation = null;
@@ -229,6 +245,18 @@ public class VariablesNodeModel implements ExtendedNodeModel {
             } else {
                 return NbBundle.getMessage(VariablesNodeModel.class, "beforeOperation_descr", op.getMethodName());
             }
+        }
+        if (o instanceof ExceptionVariableImpl) {
+            ExceptionVariableImpl ev = (ExceptionVariableImpl) o;
+            return NbBundle.getMessage(VariablesNodeModel.class, "ThrownExceptionVar_descr", ev.getExceptionClassName());
+        }
+        if (o instanceof FieldReadVariableImpl) {
+            FieldReadVariableImpl frv = (FieldReadVariableImpl) o;
+            return NbBundle.getMessage(VariablesNodeModel.class, "FieldValueReadVar_descr", frv.getFieldVariable().getName());
+        }
+        if (o instanceof FieldToBeVariableImpl) {
+            FieldToBeVariableImpl ftbv = (FieldToBeVariableImpl) o;
+            return NbBundle.getMessage(VariablesNodeModel.class, "FieldValueToBeVar_descr", ftbv.getFieldVariable().getName());
         }
         if (o == "lastOperations") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "MSG_LastOperations_descr");
@@ -366,6 +394,9 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (o instanceof JPDAClassType) return ;
         if (o instanceof ClassVariable) return ;
         if (o instanceof ReturnVariable) return ;
+        if (o instanceof ExceptionVariableImpl) return ;
+        if (o instanceof FieldReadVariableImpl) return ;
+        if (o instanceof FieldToBeVariableImpl) return ;
         if (o instanceof Operation) return ;
         throw new UnknownTypeException (o);
     }
@@ -430,6 +461,12 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof ReturnVariable || node == "lastOperations") {
             return RETURN;
+        }
+        if (node instanceof ExceptionVariableImpl) {
+            return RETURN;
+        }
+        if (node instanceof FieldReadVariableImpl || node instanceof FieldToBeVariableImpl) {
+            return FIELD;
         }
         if (node == "noDebugInfoWarning") {
             return NO_DEBUG_INFO;

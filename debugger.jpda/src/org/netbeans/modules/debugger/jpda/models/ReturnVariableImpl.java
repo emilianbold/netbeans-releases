@@ -80,7 +80,7 @@ public class ReturnVariableImpl extends AbstractObjectVariable implements Return
         this.methodName = methodName;
     }
     
-    private static String getStringValue(Value v) {
+    static String getStringValue(Value v) {
         if (v == null) {
             return "null";
         }

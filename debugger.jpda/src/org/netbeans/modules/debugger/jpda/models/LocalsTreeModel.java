@@ -71,6 +71,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -539,17 +540,17 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 return new String [] {"No current thread"};
             ObjectReference thisR = StackFrameWrapper.thisObject (stackFrame);
             List<Operation> operations = thread.getLastOperations();
-            ReturnVariableImpl returnVariable;
+            Variable breakpointVariable;
             boolean haveLastOperations;
             if (operations != null && operations.size() > 0 && operations.get(0).getReturnValue() != null) {
                 haveLastOperations = true;
-                returnVariable = null;
+                breakpointVariable = null;
             } else {
-                returnVariable = thread.getReturnVariable();
+                breakpointVariable = getBreakpointVar(thread);
                 haveLastOperations = false;
             }
             //int retValShift = (haveLastOperations || returnVariable != null) ? 1 : 0;
-            int retValShift = (returnVariable != null) ? 1 : 0;
+            int retValShift = (breakpointVariable != null) ? 1 : 0;
             Operation currentOperation = thread.getCurrentOperation();
             //int currArgShift = (currentOperation != null && CallStackFrameImpl.IS_JDK_160_02) ? 1 : 0;
             int currArgShift = (currentOperation != null) ? 1 : 0;
@@ -565,7 +566,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 );
                 Object[] result = new Object [avs.length + shift + 1];
                 if (from < 1 && retValShift > 0) {
-                    result[0] = returnVariable;
+                    result[0] = breakpointVariable;
                 }
                 if (from < 1 && currArgShift > 0) {
                     //result[retValShift] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
@@ -587,7 +588,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 );
                 Object[] result = new Object [avs.length + shift + 1];
                 if (from < 1 && retValShift > 0) {
-                    result[0] = returnVariable;
+                    result[0] = breakpointVariable;
                 }
                 if (from < 1 && currArgShift > 0) {
                     //result[retValShift] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
@@ -695,6 +696,24 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         return local;
     }
      */
+    
+    private Variable getBreakpointVar(JPDAThreadImpl thread) {
+        Variable bv = thread.getReturnVariable();
+        if (bv == null) {
+            JPDABreakpointEvent be = thread.getCurrentBreakpointEvent();
+            if (be != null) {
+                bv = be.getVariable();
+            }
+        }
+        if (bv != null) {
+            Class<? extends Variable> clazz = bv.getClass();
+            if (clazz == AbstractObjectVariable.class || clazz == AbstractVariable.class) {
+                // Anonymous variable, ignore
+                bv = null;
+            }
+        }
+        return bv;
+    }
     
     private void updateVarListeners(Object[] vars) {
         varListeners = new PropertyChangeListener[vars.length];
