@@ -279,6 +279,13 @@ public class OptionsPanel extends JPanel {
     void update () {
         CategoryModel.getInstance().update(controllerListener, true);
     }
+
+    void save(boolean applyPressed) {
+	save();
+	if (applyPressed) {
+	    CategoryModel.getInstance().update(controllerListener, false);
+	}
+    }
     
     void save () {
         clearSearchField();
