@@ -91,7 +91,11 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     private final ScheduledFuture<?> periodicTask;
     private static final int SCHEDULE = 15; // period in seconds
     static final long NANO_TO_SEC = 1000*1000*1000;
-    private static final long NANO_TO_MILLI = 1000*1000;
+    static final long NANO_TO_MILLI = 1000*1000;
+    static final int CREATION_SPEED_LIMIT = 100;
+    static final int READING_SPEED_LIMIT = 100;
+    static final int PARSING_SPEED_LIMIT = 1000;
+    static final int PARSING_RATIO_LIMIT = 5;
     private boolean slowItemCreation = false;
     private boolean slowFileRead = false;
     private boolean slowParsed = false;
@@ -102,6 +106,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     static final Logger LOG = Logger.getLogger(PerformanceIssueDetector.class.getName());
     static final Level level = Level.FINE;
     private static final Level timeOutLevel = Level.INFO;
+    private static PerformanceIssueDetector INSTANCE;
 
     public PerformanceIssueDetector() {
         if (PerformanceLogger.isProfilingEnabled()) {
@@ -114,6 +119,11 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         } else {
             periodicTask = null;
         }
+        INSTANCE = this;
+    }
+    
+    public static PerformanceIssueDetector getActiveInstance() {
+        return INSTANCE;
     }
     
     public void start(Project project) {
@@ -481,6 +491,18 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
     }
 
+    TreeMap<String, AgregatedStat> getStatistic() {
+        lock.readLock().lock();
+        try {
+            return gatherStat();
+        } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
+            return null;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    
     private TreeMap<String, AgregatedStat> gatherStat() {
         TreeMap<String, AgregatedStat> map = new TreeMap<String, AgregatedStat>();
         for(Map.Entry<String,CreateEntry> entry : createPerformance.entrySet()) {
@@ -533,7 +555,6 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
                                    +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeCreateItems() {
-        int CREATION_SPEED_LIMIT = 100;
         long itemCount = 0;
         long time = 0;
         long cpu = 0;
@@ -574,7 +595,6 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
                                +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeReadFile() {
-        int READING_SPEED_LIMIT = 100;
         long fileCount = 0;
         long read = 0;
         long lines = 0;
@@ -624,7 +644,6 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
                                 +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeParseFile() {
-        int RATIO_LIMIT = 5;
         long fileCount = 0;
         long lines = 0;
         long time = 0;
@@ -648,10 +667,10 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long parseSpeed = lines/wallTime;
         if (cpuTime > 1) {
             long k = time/cpu;
-            if (wallTime > 100 && fileCount > 100 && parseSpeed < 1000 && k > 5) {
+            if (wallTime > 100 && fileCount > 100 && parseSpeed < PARSING_SPEED_LIMIT && k > PARSING_RATIO_LIMIT) {
                 if (!alreadyNotified()) {
                     slowParsed = true;
-                    final String details = Bundle.Details_slow_file_parse(format(wallTime), format(lines), format(parseSpeed), format(cpuTime), format(k), format(RATIO_LIMIT));
+                    final String details = Bundle.Details_slow_file_parse(format(wallTime), format(lines), format(parseSpeed), format(cpuTime), format(k), format(PARSING_RATIO_LIMIT));
                     if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                         notifyProblem(NotifyProjectProblem.PARSE_PROBLEM, details);
                     }

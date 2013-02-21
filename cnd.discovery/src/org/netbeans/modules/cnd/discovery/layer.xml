@@ -72,6 +72,12 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance"/>
                 <attr name="position" intvalue="200"/>
             </file>
+            <folder name="NativeProjectCodeAssistance">
+                <file name="PerformanceStatisticAction.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.discovery.performance.PerformanceStatisticAction"/>
+                <attr name="position" intvalue="1300"/>
+                </file>
+            </folder>    
         </folder>
     </folder>
 
