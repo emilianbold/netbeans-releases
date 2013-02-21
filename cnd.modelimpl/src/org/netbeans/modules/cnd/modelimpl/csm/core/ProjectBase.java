@@ -1152,7 +1152,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         } else {
             // put directly into parser queue if needed
             if (lwm == null || !lwm.fill(fileAndHandler.fileImpl)){
-                ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                boolean addToQueue = true;
+                if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                    addToQueue = fileAndHandler.fileImpl.isSourceFile();
+                }
+                if (addToQueue) {
+                    ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                }
             }
         }
         return fileAndHandler.fileImpl;
