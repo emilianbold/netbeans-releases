@@ -75,6 +75,10 @@ public class JsFunctionArgumentImpl implements JsFunctionArgument {
     public static JsFunctionArgument create(int order, int offset, List<Identifier> value) {
         return new JsFunctionArgumentImpl(Kind.REFERENCE, order, offset, value);
     }
+
+    public static JsFunctionArgument create(int order) {
+        return new JsFunctionArgumentImpl(Kind.UNKNOWN, order, -1, null);
+    }
     
     @Override
     public Kind getKind() {

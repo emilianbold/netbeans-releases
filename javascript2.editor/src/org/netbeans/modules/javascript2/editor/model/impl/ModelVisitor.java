@@ -67,7 +67,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
@@ -392,8 +391,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     String name = sb.substring(0, sb.length() - 1);
                     FunctionInterceptor interceptorToUse = null;
                     for (FunctionInterceptor interceptor : ModelExtender.getDefault().getMethodInterceptors()) {
-                        // XXX performance
-                        if (Pattern.compile(interceptor.getNamePattern()).matcher(name).matches()) {
+                        if (interceptor.getNamePattern().matcher(name).matches()) {
                             interceptorToUse = interceptor;
                             break;
                         }
@@ -428,6 +426,29 @@ public class ModelVisitor extends PathNodeVisitor {
                                 }
 
                                 funcArg.add(JsFunctionArgumentImpl.create(i, argument.getStart(), fqn));
+                            } else if (argument instanceof IdentNode) {
+                                IdentNode in = (IdentNode) argument;
+                                String inName = in.getName();
+                                List<Identifier> fqn = new ArrayList<Identifier>();
+                                if ("this".equals(inName)) { // NOI18N
+                                    fqn.add(modelBuilder.getCurrentDeclarationFunction().getDeclarationName());
+                                } else {
+                                    fqn.add(new IdentifierImpl(in.getName(),
+                                            ModelUtils.documentOffsetRange(parserResult, in.getStart(), in.getFinish())));
+                                }
+                                JsObject current = modelBuilder.getCurrentObject();
+                                if ("this".equals(inName) && current.equals(modelBuilder.getCurrentDeclarationFunction())) { // NOI18N
+                                    current = current.getParent();
+                                }
+                                while (current != null && current.getDeclarationName() != null) {
+                                    if (current != modelBuilder.getGlobal()) {
+                                        fqn.add(0, current.getDeclarationName());
+                                    }
+                                    current = current.getParent();
+                                }
+                                funcArg.add(JsFunctionArgumentImpl.create(i, argument.getStart(), fqn));
+                            } else {
+                                funcArg.add(JsFunctionArgumentImpl.create(i));
                             }
                         }
                         Collection<FunctionCall> calls = functionCalls.get(interceptorToUse);

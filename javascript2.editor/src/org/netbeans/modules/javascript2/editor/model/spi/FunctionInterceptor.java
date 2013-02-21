@@ -46,6 +46,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collection;
+import java.util.regex.Pattern;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 
@@ -55,7 +56,7 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public interface FunctionInterceptor {
 
-    String getNamePattern();
+    Pattern getNamePattern();
 
     void intercept(String name, JsObject globalObject, ModelElementFactory factory,
             Collection<JsFunctionArgument> args);

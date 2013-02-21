@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript2.extjs.model;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.StringTokenizer;
-import javax.lang.model.element.Modifier;
+import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -140,8 +140,8 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public String getNamePattern() {
-        return "Ext\\.define";
+    public Pattern getNamePattern() {
+        return Pattern.compile("Ext\\.define");
     }
 
 }

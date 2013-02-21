@@ -49,7 +49,8 @@ public interface JsFunctionArgument {
     static public enum Kind {
         STRING,
         REFERENCE,
-        ANONYMOUS_OBJECT
+        ANONYMOUS_OBJECT,
+        UNKNOWN
     };
     
     public Kind getKind();
