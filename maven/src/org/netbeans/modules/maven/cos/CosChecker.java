@@ -86,6 +86,7 @@ import org.netbeans.modules.maven.configurations.M2Configuration;
 import static org.netbeans.modules.maven.cos.Bundle.*;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
+import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.spi.cos.CompileOnSaveSkipper;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -105,8 +106,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -125,7 +124,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     private static final String PROFILE_MAIN = ActionProvider.COMMAND_PROFILE_SINGLE + ".main"; // NOI18N
     private static final Logger LOG = Logger.getLogger(CosChecker.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(CosChecker.class);
-
+    // a maven property name denoting that the old, javarunner based execution is to be used.    
+    public static final String USE_OLD_COS_EXECUTION = "use.old.cos.execution";
+    
     @Override
     public boolean checkRunConfig(RunConfig config) {
         if (config.getProject() == null) {
@@ -200,7 +201,35 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                         return true;
                     }
                 }
+                
+                Properties javarunnerCheckprops = config.getMavenProject().getProperties();
+                if ((javarunnerCheckprops != null && javarunnerCheckprops.containsKey(USE_OLD_COS_EXECUTION)) || config.getProperties().containsKey(USE_OLD_COS_EXECUTION)) {
+                    LOG.fine("use.old.cos.execution found, using JavaRunner to execute.");
+                } else {
+                    //now attempt to extract
+                    if (config instanceof BeanRunConfig) {
+                        BeanRunConfig brc = (BeanRunConfig) config;
+                        List<String> processedGoals = new ArrayList<String>();
+                        for (String goal : brc.getGoals()) {
+                            if (Constants.DEFAULT_PHASES.contains(goal) || Constants.CLEAN_PHASES.contains(goal)) {
+                                continue;
+                            }
+                            processedGoals.add(goal);
+                        }
+                        if (processedGoals.size() > 0) {
+                            brc.setGoals(processedGoals);
+                            return true;
+                        }
+                    } else {
+                        LOG.log(Level.INFO, "could not strip phase goals from RunConfig subclass {0}", config.getClass().getName());
+                        return true;
+                    }
+                }
 
+                // #######################################################
+                // following code is more or less deprecated.
+                // #######################################################
+                //
                 final Map<String, Object> params = new HashMap<String, Object>();
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName() + "/CoS");
                 String proppath = config.getProperties().get("exec.workingdir"); //NOI18N
@@ -273,12 +302,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                                                 collectStartupArgs(config, params);
                                                 ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
                                                 warnCoSInOutput(tsk, config);
-                                                tsk.addTaskListener(new TaskListener() {
-                                                    @Override
-                                                    public void taskFinished(Task task) {
-                                                        warnTestCoS(config);
-                                                    }
-                                                });
+//not relevant anymore when we by default execute via maven                                                
+//                                                tsk.addTaskListener(new TaskListener() {
+//                                                    @Override
+//                                                    public void taskFinished(Task task) {
+//                                                        warnTestCoS(config);
+//                                                    }
+//                                                });
 
                                             } catch (IOException ex) {
                                                 Exceptions.printStackTrace(ex);
@@ -358,6 +388,35 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     return true;
                 }
             }
+            Properties javarunnerCheckprops = config.getMavenProject().getProperties();
+            if ((javarunnerCheckprops != null && javarunnerCheckprops.containsKey(USE_OLD_COS_EXECUTION)) || config.getProperties().containsKey(USE_OLD_COS_EXECUTION) ) {
+                LOG.fine("use.old.cos.execution found, using JavaRunner to execute.");
+            } else {
+                //now attempt to extract
+                if (config instanceof BeanRunConfig) {
+                    BeanRunConfig brc = (BeanRunConfig) config;
+                    List<String> processedGoals = new ArrayList<String>();
+                    for (String goal : brc.getGoals()) {
+                        if (Constants.DEFAULT_PHASES.contains(goal) || Constants.CLEAN_PHASES.contains(goal)) {
+                            continue;
+                        }
+                        processedGoals.add(goal);
+                    }
+                    if (processedGoals.size() > 0) {
+                        brc.setGoals(processedGoals);
+                        return true;
+                    }
+                } else {
+                    LOG.log(Level.INFO, "could not strip phase goals from RunConfig subclass {0}", config.getClass().getName());
+                    return true;
+                }
+            }
+            
+            // #######################################################
+            // following code is more or less deprecated.
+            // #######################################################
+            //
+            
             FileObject selected = config.getSelectedFileObject();
             ProjectSourcesClassPathProvider cpp = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class);
             ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
@@ -439,7 +498,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 }
             }
             //add properties from action config,
-            if (config.getProperties() != null) {
+            
                 for (Map.Entry entry : config.getProperties().entrySet()) {
                     //#158039
                     if ("maven.surefire.debug".equals(entry.getKey())) { //NOI18N
@@ -462,7 +521,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                         jvmPropNames.add((String) entry.getKey());
                     }
                 }
-            }
+            
 
             String argLine = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                     Constants.PLUGIN_SUREFIRE, "argLine", "test", "argLine"); //NOI18N
@@ -544,12 +603,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                                         collectStartupArgs(config, params);
                                         final ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
                                         warnCoSInOutput(tsk, config);
-                                        tsk.addTaskListener(new TaskListener() {
-                                            @Override
-                                            public void taskFinished(Task task) {
-                                                warnTestCoS(config);
-                                            }
-                                        });
+//no longer relevant since we use maven to execute by default                                        
+//                                        tsk.addTaskListener(new TaskListener() {
+//                                            @Override
+//                                            public void taskFinished(Task task) {
+//                                                warnTestCoS(config);
+//                                            }
+//                                        });
                                         //TODO listen on result of execution
                                         //if failed, tweak the timestamps to force a non-CoS build
                                         //next time around.
@@ -887,32 +947,32 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         warnedNoCoS = true;
     }
     
-    private static boolean warnedCoS;
-    @Messages({
-        "CosChecker.test_cos.title=Using Compile on Save (CoS)",
-        "CosChecker.test_cos.details=CoS mode is not executing tests through Maven. Disable if causing problems."
-    })
-    private static void warnTestCoS(RunConfig config) {
-        if (warnedCoS) {
-            return;
-        }
-        final Project project = config.getProject();
-        if (project == null) {
-            return;
-        }
-        final Notification n = NotificationDisplayer.getDefault().notify(CosChecker_test_cos_title(), ImageUtilities.loadImageIcon(SUGGESTION, true), CosChecker_test_cos_details(), new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) {
-                showCompilePanel(project);
-            }
-
-        }, NotificationDisplayer.Priority.LOW);
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override public void run() {
-                n.clear();
-            }
-        }, 15 * 1000);
-        warnedCoS = true;
-    }
+//    private static boolean warnedCoS;
+//    @Messages({
+//        "CosChecker.test_cos.title=Using Compile on Save (CoS)",
+//        "CosChecker.test_cos.details=CoS mode is not executing tests through Maven. Disable if causing problems."
+//    })
+//    private static void warnTestCoS(RunConfig config) {
+//        if (warnedCoS) {
+//            return;
+//        }
+//        final Project project = config.getProject();
+//        if (project == null) {
+//            return;
+//        }
+//        final Notification n = NotificationDisplayer.getDefault().notify(CosChecker_test_cos_title(), ImageUtilities.loadImageIcon(SUGGESTION, true), CosChecker_test_cos_details(), new ActionListener() {
+//            @Override public void actionPerformed(ActionEvent e) {
+//                showCompilePanel(project);
+//            }
+//
+//        }, NotificationDisplayer.Priority.LOW);
+//        RequestProcessor.getDefault().post(new Runnable() {
+//            @Override public void run() {
+//                n.clear();
+//            }
+//        }, 15 * 1000);
+//        warnedCoS = true;
+//    }
     
     private static void showCompilePanel(Project project) {
         CustomizerProviderImpl prv = project.getLookup().lookup(CustomizerProviderImpl.class);
@@ -925,7 +985,6 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     // and we try to write to it. In reality for short lived executions it either prints first or never at all.
     // I suppose that for long running tasks we cannot guarantee the position at which the warning appears.
     private void warnCoSInOutput(final ExecutorTask tsk, final RunConfig config) throws IOException {
-        return;
 //        if (IOColorPrint.isSupported(tsk.getInputOutput())) {
 //            IOColorPrint.print(tsk.getInputOutput(), "NetBeans: Compile on Save Execution is not done through Maven.", null, false, Color.GRAY);
 //            IOColorPrint.print(tsk.getInputOutput(), "Disable if it's causing problems.\n", new OutputListener() {
@@ -986,18 +1045,19 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             if (prj != null) {
                 prj.removePropertyChangeListener(listener);
                 final MavenProject mvn = prj.getMavenProject();
+                //TODO do we want to reconsider this?
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            //also delete the IDE generated class files now?
-                            cleanGeneratedClassfiles(project);
-                        } catch (IOException ex) {
-                            LOG.log(Level.FINE, "Error cleaning up", ex);
-                        } finally {
+//                        try {
+//                            //also delete the IDE generated class files now?
+//                            cleanGeneratedClassfiles(project);
+//                        } catch (IOException ex) {
+//                            LOG.log(Level.FINE, "Error cleaning up", ex);
+//                        } finally {
                             deleteCoSTimeStamp(mvn, true);
                             deleteCoSTimeStamp(mvn, false);
-                        }
+//                        }
                     }
                 });
             }
