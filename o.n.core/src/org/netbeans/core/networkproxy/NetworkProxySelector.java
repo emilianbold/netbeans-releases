@@ -45,6 +45,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.core.ProxySettings;
 import org.netbeans.core.networkproxy.windows.WindowsNetworkProxy;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -52,7 +53,9 @@ import org.openide.util.NbPreferences;
  */
 public class NetworkProxySelector {
     
-    private static NetworkProxyResolver networkProxyResolver = new WindowsNetworkProxy();
+    private static NetworkProxyResolver networkProxyResolver = getNetworkProxyResolver();
+    
+    private final static String COMMA = ","; //NOI18N
     
     public static void reloadNetworkProxy() {                
         NetworkProxySettings networkProxySettings = networkProxyResolver.getNetworkProxySettings();
@@ -95,7 +98,7 @@ public class NetworkProxySelector {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < stringArray.length - 1; i++) {
             sb.append(stringArray[i]);
-            sb.append(",");
+            sb.append(COMMA);
         }
         sb.append(stringArray[stringArray.length - 1]);
         
@@ -104,5 +107,21 @@ public class NetworkProxySelector {
     
     private static Preferences getPreferences() {
         return NbPreferences.forModule(ProxySettings.class);
+    }
+    
+    private static NetworkProxyResolver getNetworkProxyResolver() {
+        if (networkProxyResolver == null) {        
+            if (Utilities.isWindows()) {
+                return new WindowsNetworkProxy();
+            } else if (Utilities.isMac()) {
+                return null;
+            } else if (Utilities.isUnix()){
+                return null;
+            } else {
+                return null;
+            }
+        } else {
+            return networkProxyResolver;
+        }        
     }
 }

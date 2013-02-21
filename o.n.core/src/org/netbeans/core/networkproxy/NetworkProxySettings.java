@@ -41,16 +41,11 @@
  */
 package org.netbeans.core.networkproxy;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author lfischme
  */
 public class NetworkProxySettings {
-
-    private static final Logger LOG = Logger.getLogger(NetworkProxySettings.class.getName());
 
     public static enum ProxyMode {
 
@@ -58,6 +53,10 @@ public class NetworkProxySettings {
         AUTO,
         MANUAL
     }
+    
+    private final static String COLON = ":"; //NOI18N
+    private final static String EMPTY_STRING = ""; //NOI18N
+    
     private final ProxyMode proxyMode;
     private final String httpProxyHost;
     private final String httpProxyPort;
@@ -118,17 +117,17 @@ public class NetworkProxySettings {
 
     private String getHost(String string) {
         if (string == null) {
-            return "";
+            return EMPTY_STRING;
         } else {
-            return string.substring(0, string.lastIndexOf(":"));
+            return string.substring(0, string.lastIndexOf(COLON));
         }
     }
 
     private String getPort(String string) {
         if (string == null) {
-            return "";
+            return EMPTY_STRING;
         } else {
-            return string.substring(string.lastIndexOf(":") + 1);            
+            return string.substring(string.lastIndexOf(COLON) + 1);
         }
     }
 

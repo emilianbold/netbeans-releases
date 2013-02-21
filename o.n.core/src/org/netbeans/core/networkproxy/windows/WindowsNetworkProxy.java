@@ -42,6 +42,8 @@
 package org.netbeans.core.networkproxy.windows;
 
 import com.sun.jna.Pointer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.core.networkproxy.NetworkProxyResolver;
 import org.netbeans.core.networkproxy.NetworkProxySettings;
 
@@ -50,6 +52,8 @@ import org.netbeans.core.networkproxy.NetworkProxySettings;
  * @author lfischme
  */
 public class WindowsNetworkProxy implements NetworkProxyResolver {
+    
+    private static final Logger LOG = Logger.getLogger(WindowsNetworkProxy.class.getName());
     
     private final static String HTTP_PROPERTY_NAME = "http="; //NOI18N
     private final static String HTTPS_PROPERTY_NAME = "https="; //NOI18N
@@ -84,8 +88,11 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
                 String socksProxy = null;
                 String[] noProxyHosts;
 
-                //@TODO to lower case
                 String proxyString = proxyPointer.getString(0L, true);
+                if (proxyString != null) {
+                    proxyString = proxyString.toLowerCase();
+                }
+                
                 if (proxyString.contains(SEMI_COLON)) {
                     String[] proxies = proxyString.split(SEMI_COLON);
                     for (String singleProxy : proxies) {
@@ -109,6 +116,7 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
                         socksProxy = proxyString.replace(SPACE, COLON);
                     } else {
                         httpProxy = proxyString;
+                        httpsProxy = proxyString;                        
                     }
                 }
 
@@ -121,6 +129,8 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
 
                 return new NetworkProxySettings(httpProxy, httpsProxy, socksProxy, noProxyHosts);
             }
+        } else {
+            LOG.log(Level.SEVERE, "Windows system proxy resolver cannot retrieve proxy settings from Windows API!"); //NOI18N
         }
 
         return new NetworkProxySettings();
