@@ -39,7 +39,10 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@TemplateRegistration(folder = "Other", content = "LessTemplate.less", position = 660)
+@NbBundle.Messages({"less.template.displayname=Less CSS Source File"})
+@TemplateRegistration(folder = "Other", content = "LessTemplate.less", 
+        position = 660, displayName = "#less.template.displayname") 
 package org.netbeans.modules.css.less;
 
 import org.netbeans.api.templates.TemplateRegistration;
+import org.openide.util.NbBundle;
