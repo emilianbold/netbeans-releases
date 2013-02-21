@@ -180,6 +180,7 @@ public class StatisticPanel extends JPanel {
     private static final class MyPanel extends JPanel {
         private static final int MY_WIDTH = 200;
         private static final int MY_HEIGHT= 20;
+        private static final int DARK_COLOR = 160;
         private static final int NORMAL_COLOR = 192;
         private static final int BRIGHT_COLOR = 224;
         private final int low;
@@ -222,13 +223,17 @@ public class StatisticPanel extends JPanel {
             Color def = graphics.getColor();
             
             float[] fractions = new float[]{0f, 1f};  
-            Color[] colors = new Color[]{new Color(NORMAL_COLOR, 0, 0), new Color(NORMAL_COLOR, NORMAL_COLOR, 0)};  
+            Color[] colors = new Color[]{new Color(BRIGHT_COLOR, 0, 0), new Color(NORMAL_COLOR, 0, 0)};  
             LinearGradientPaint gradient = new LinearGradientPaint(1, 1, m1x-1, 1, fractions, colors);  
             graphics.setPaint(gradient);
             graphics.fillRect(1, 1, m1x-1, MY_HEIGHT-1);
 
-            fractions = new float[]{0f, 0.7f, 1f};
-            colors = new Color[]{new Color(NORMAL_COLOR, NORMAL_COLOR, 0), new Color(BRIGHT_COLOR, BRIGHT_COLOR, 0), new Color(0, NORMAL_COLOR, 0)};  
+            fractions = new float[]{0f, 0.3f, 0.5f, 0.7f, 1f};
+            colors = new Color[]{new Color(NORMAL_COLOR, 0, 0),
+                                 new Color(NORMAL_COLOR, NORMAL_COLOR, 0),
+                                 new Color(BRIGHT_COLOR, BRIGHT_COLOR, 0),
+                                 new Color(NORMAL_COLOR, NORMAL_COLOR, 0),
+                                 new Color(0, NORMAL_COLOR, 0)};  
             gradient = new LinearGradientPaint(m1x+1, 1, m2x-1 ,1, fractions, colors);  
             graphics.setPaint(gradient);
             graphics.fillRect(m1x+1, 1, m2x-m1x-1 ,MY_HEIGHT-1);
@@ -240,7 +245,7 @@ public class StatisticPanel extends JPanel {
             graphics.fillRect(m2x+1, 1, MY_WIDTH-m2x-1 ,MY_HEIGHT-1);
 
             graphics.setColor(Color.blue);
-            graphics.fillOval(m3x, MY_HEIGHT/4, MY_HEIGHT/2, MY_HEIGHT/2);
+            graphics.fillOval(m3x-MY_HEIGHT/4, MY_HEIGHT/4, MY_HEIGHT/2, MY_HEIGHT/2);
             graphics.setColor(def);
 
             graphics.drawLine(m1x, MY_HEIGHT-1, m1x, 1);
