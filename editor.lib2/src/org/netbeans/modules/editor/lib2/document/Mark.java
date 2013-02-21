@@ -84,7 +84,7 @@ final class Mark extends WeakReference<EditorPosition> implements Runnable {
         super(pos, org.openide.util.Utilities.activeReferenceQueue()); // The queue calls run() when unreachable
         this.markVector = markVector;
         this.rawOffset = rawOffset;
-        pos.setMark(this);
+        pos.initMark(this);
     }
     
     public int getOffset() {

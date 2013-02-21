@@ -875,31 +875,29 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     private void updateLocation(final boolean andShow, final ShowMode showModeOverride, final boolean focus) {
         
         NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
-            final boolean haveSource = haveSource();
-            // Locations should already be in local path form.
-            final Line l = !haveSource ? null : EditorBridge.getLine(fmap().engineToWorld(getVisitedLocation().src()), getVisitedLocation().line(),
-                    NativeDebuggerImpl.this);            
             @Override
             public void run() {
+                final boolean haveSource = haveSource();
+                // Locations should already be in local path form.
+                final Line curentLine = !haveSource ? null : EditorBridge.getLine(fmap().engineToWorld(getVisitedLocation().src()), getVisitedLocation().line(),
+                        NativeDebuggerImpl.this);                            
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        if (haveSource) {
-                            if (l != null) {
-                                ShowMode showMode = ShowMode.NONE;
-                                if (andShow) {
-                                    showMode = showModeOverride;
-                                    NativeBreakpoint breakpoint = getVisitedLocation().getBreakpoint();
-                                    if (breakpoint != null) {
-                                        if (breakpoint instanceof InstructionBreakpoint) {
-                                            showMode = ShowMode.DIS;
-                                        } else {
-                                            showMode = ShowMode.SOURCE;
-                                        }
+                        if (haveSource && curentLine != null) {
+                            ShowMode showMode = ShowMode.NONE;
+                            if (andShow) {
+                                showMode = showModeOverride;
+                                NativeBreakpoint breakpoint = getVisitedLocation().getBreakpoint();
+                                if (breakpoint != null) {
+                                    if (breakpoint instanceof InstructionBreakpoint) {
+                                        showMode = ShowMode.DIS;
+                                    } else {
+                                        showMode = ShowMode.SOURCE;
                                     }
                                 }
-                                setCurrentLine(l, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), showMode, focus);
                             }
+                            setCurrentLine(curentLine, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), showMode, focus);
                         } else {
                             if (getVisitedLocation() != null && getVisitedLocation().pc() != 0) {
                                 Disassembly.open();

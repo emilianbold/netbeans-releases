@@ -195,11 +195,11 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
         if (!resourceBundles.canHaveBundles()) {
             return null;
         }
-        for (Pair<AstIdentifier,AstString> each : resourceBundles.collectKeys(pair.second.getNode())) {
+        for (Pair<AstIdentifier, Node> each : resourceBundles.collectKeys(pair.second.getNode())) {
             if (each.second.equals(pair.first)) {
                 StringBuilder result = new StringBuilder();
-                String key = each.second.getString();
-                String value = resourceBundles.getValue(each.first.getImage(), each.second.getString());
+                String key = each.second.getImage();
+                String value = resourceBundles.getValue(each.first.getImage(), each.second.getImage());
                 String bundle = each.first.getImage();
                 result.append("<html><body>")
                         /* displaying the bundle in the tooltip looks a bit strange,
@@ -266,7 +266,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
         }
         final FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
         ClasspathInfo cp = ClasspathInfo.create(file);
-        final AtomicReference<ElementHandle> handleRef = new AtomicReference<ElementHandle>();
+        final AtomicReference<ElementHandle<Element>> handleRef = new AtomicReference<ElementHandle<Element>>();
         try {
             JavaSource.create(cp).runUserActionTask(new Task<CompilationController>() {
 
@@ -283,7 +283,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             Exceptions.printStackTrace(ex);
         }
         
-        ElementHandle handle = handleRef.get();
+        ElementHandle<Element> handle = handleRef.get();
         if(handle != null) {
             ElementOpen.open(cp, handle);
         }

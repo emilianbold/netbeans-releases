@@ -44,11 +44,13 @@ package org.netbeans.modules.css.lib;
 import java.io.PrintWriter;
 import java.util.*;
 import junit.framework.AssertionFailedError;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.css.lib.api.properties.GrammarResolver;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
@@ -87,7 +89,15 @@ public class CssTestBase extends CslTestBase {
         }
 
         int foundProblemsCount = result.getDiagnostics().size();
-        assertEquals(problems, foundProblemsCount);
+        if(problems != foundProblemsCount) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Unexpected error(s):\n");
+            for(Error e : result.getDiagnostics()) {
+                sb.append(e.toString());
+            }
+            assertEquals(sb.toString(), problems, foundProblemsCount);            
+        }
+        
 
         if (foundProblemsCount == 0) {
             //Check whether the parse tree covers the whole file only if it is not broken. 

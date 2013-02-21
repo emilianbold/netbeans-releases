@@ -45,7 +45,6 @@ package org.netbeans.modules.db.metadata.model.spi;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Parameter;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
-import org.netbeans.modules.db.metadata.model.api.Procedure;
 
 /**
  *
@@ -63,8 +62,6 @@ public abstract class ParameterImplementation extends ValueImplementation {
     }
 
     public abstract Direction getDirection();
-
-    public abstract Procedure getParent();
 
     public abstract int getOrdinalPosition();
 

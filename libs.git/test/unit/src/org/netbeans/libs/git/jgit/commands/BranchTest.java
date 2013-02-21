@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.errors.NotSupportedException;
+import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
@@ -409,5 +410,22 @@ public class BranchTest extends AbstractGitTestCase {
         } catch (GitException ex) {
             assertEquals("It seems the config file for repository at [" + workDir + "] is corrupted.\nEnsure it's valid.", ex.getMessage());
         }
+    }
+    
+    public void testCreateInitialBranch () throws Exception {
+        File emptyRepo = new File(workDir, "empty");
+        GitClient client = getClient(emptyRepo);
+        client.init(NULL_PROGRESS_MONITOR);
+        Config cfg = getRepository(client).getConfig();
+        assertFalse(cfg.getSections().contains(ConfigConstants.CONFIG_BRANCH_SECTION));
+        client.createBranch(Constants.MASTER, Constants.R_REMOTES + "origin/whateverbranch", NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
+        assertTrue(branches.isEmpty());
+        cfg = getRepository(client).getConfig();
+        assertTrue(cfg.getSections().contains(ConfigConstants.CONFIG_BRANCH_SECTION));
+        assertEquals("origin", cfg.getString(ConfigConstants.CONFIG_BRANCH_SECTION,
+                Constants.MASTER, ConfigConstants.CONFIG_KEY_REMOTE));
+        assertEquals(Constants.R_HEADS + "whateverbranch", cfg.getString(ConfigConstants.CONFIG_BRANCH_SECTION,
+                Constants.MASTER, ConfigConstants.CONFIG_KEY_MERGE));
     }
 }

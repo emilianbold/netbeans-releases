@@ -62,9 +62,9 @@ public class AnalyzeStat {
     
     void process() {
         upEmptyFolder();
-        dumpAll();
         getBigUnused();
         groupByReadingSpeed();
+        dumpAll();
         getSlowReading();
     }
 
@@ -129,11 +129,16 @@ public class AnalyzeStat {
                 return (int)(k2 - k1);
             }
         });
+        i = 0;
         for (Map.Entry<String, AgregatedStat> entry : slow) {
              PerformanceIssueDetector.LOG.log(Level.INFO, "Slow reading files in the folder {0}. Reading {1} lines consumes {2}s.", // NOI18N
                      new Object[]{entry.getKey(),
                                   PerformanceIssueDetector.format(entry.getValue().readLines),
                                   PerformanceIssueDetector.format(entry.getValue().readTime/PerformanceIssueDetector.NANO_TO_SEC)});
+             i++;
+             if (i > 5) {
+                 break;
+             }
         }
     }
     

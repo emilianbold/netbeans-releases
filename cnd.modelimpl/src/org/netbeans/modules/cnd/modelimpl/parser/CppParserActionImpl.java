@@ -125,6 +125,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.SwitchStatementImpl.SwitchSta
 import org.netbeans.modules.cnd.modelimpl.csm.deep.UniversalStatement.UniversalStatementBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.parser.symtab.*;
 import org.openide.util.CharSequences;
 
@@ -144,6 +145,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     private final Deque<Pair> contexts;
     private CsmParserProvider.CsmParserParameters params;
     private CXXParserActionEx wrapper;
+    private CXXParserEx parser;
     
     private static final class Pair {
         final Map<Integer, CsmObject> objects = new HashMap<Integer, CsmObject>();
@@ -168,6 +170,17 @@ public class CppParserActionImpl implements CppParserActionEx {
 //        this.contexts.push(currentContext);
         this.globalSymTab = createGlobal();
         this.builderContext = new CppParserBuilderContext();
+    }
+
+    public void setParser(CXXParserEx parser) {
+        this.parser = parser;
+        parser.setErrorDelegate(new CsmParserProvider.ParserErrorDelegate() {
+
+            @Override
+            public void onError(ParserError e) {
+                currentContext.file.getParsingFileContent().addParsingError(e);
+            }
+        });
     }
     
     @Override

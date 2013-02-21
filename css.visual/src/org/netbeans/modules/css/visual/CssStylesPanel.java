@@ -227,6 +227,10 @@ public class CssStylesPanel extends javax.swing.JPanel {
         boolean first = true;
         
         CssStylesPanelProvider selected = selectedTabs.get(file.getMIMEType());
+        
+        //do the active providers contain the pre-selected provider for this mimetype?
+        boolean containsPreselected = selected == null ? false : activeProviders.contains(selected);
+        
         for (CssStylesPanelProvider provider : activeProviders) {
             JToggleButton button = new JToggleButton();
             button.setText(provider.getPanelDisplayName());
@@ -252,13 +256,15 @@ public class CssStylesPanel extends javax.swing.JPanel {
             buttonGroup.add(button);
             toolBar.add(button);
             
-            if(selected != null) {
-                //user has already selected a provider for this mimetype
+            if(containsPreselected) {
+                //one of the active providers is already pre-selected by user
                 if(provider == selected) {
+                    //the selected one - activate it
                     button.setSelected(true);
                     setActiveProvider(provider);
+                } else {
+                    button.setSelected(false);
                 }
-                button.setSelected(false);
             } else {
                 //no provider has been explicitly selected by the user yet
                 button.setSelected(first);

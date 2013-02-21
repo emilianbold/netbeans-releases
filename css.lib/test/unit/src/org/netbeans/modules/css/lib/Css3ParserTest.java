@@ -48,6 +48,8 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -61,7 +63,7 @@ import org.openide.filesystems.FileObject;
  * @author marekfukala
  */
 public class Css3ParserTest extends CssTestBase {
-
+    
     public Css3ParserTest(String testName) {
         super(testName);
     }
@@ -78,9 +80,11 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult.IN_UNIT_TESTS = true;
     }
 
-    public void testAllANTLRRulesHaveNodeTypes() {
+   public void testAllANTLRRulesHaveNodeTypes() {
         for (String rule : Css3Parser.ruleNames) {
-            assertNotNull(NodeType.valueOf(rule));
+            if (!rule.startsWith("synpred") && !rule.toLowerCase().endsWith("predicate")) {
+                assertNotNull(NodeType.valueOf(rule));
+            }
         }
     }
 
@@ -103,7 +107,9 @@ public class Css3ParserTest extends CssTestBase {
 
         CssParserResult res = TestUtil.parse(code);
 
-        assertResult(res, 2);
+        //one error: 
+        //DefaultError[Unexpected token IDENT found, Unexpected token IDENT found, ERROR] (file:null, from:8, to:11)
+        assertResult(res, 1); 
 //        TestUtil.dumpResult(res);
 
         //the background: red; declaration is properly parsed even if the previous declaration is broken
@@ -342,7 +348,6 @@ public class Css3ParserTest extends CssTestBase {
 //        NodeUtil.dumpTree(res.getParseTree());
         AtomicBoolean recoveryNodeFound = new AtomicBoolean(false);
         NodeVisitor<AtomicBoolean> visitor = new NodeVisitor<AtomicBoolean>(recoveryNodeFound) {
-
             @Override
             public boolean visit(Node node) {
                 if (node.type() == NodeType.recovery) {
@@ -385,8 +390,8 @@ public class Css3ParserTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(content);
 //        TestUtil.dumpResult(result);
-        
-        assertResult(result, 2);
+
+        assertResult(result, 1);
     }
 
     public void testIdParsing() throws ParseException, BadLocationException {
@@ -614,7 +619,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "rule/declarations/declaration/propertyValue/expression/term/function/expression/error");
         assertNotNull(error);
 
-        assertResult(result, 3);
+        assertResult(result, 2);
 
     }
 
@@ -729,7 +734,7 @@ public class Css3ParserTest extends CssTestBase {
 
 
     }
-    
+
     public void testPagedMediaWithoutPseudoClass() throws ParseException, BadLocationException {
         String content = "@page test {"
                 + "color: green;"
@@ -826,10 +831,10 @@ public class Css3ParserTest extends CssTestBase {
     }
 
     public void testParserRecovery_Issue203579() throws BadLocationException, ParseException {
-        String code = "p {} #{} .{} div {}";
+        String code = "p {} #{} div {}";
         CssParserResult result = TestUtil.parse(code);
 
-//        NodeUtil.dumpTree(result.getParseTree());
+        NodeUtil.dumpTree(result.getParseTree());
 
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem|0/"
@@ -843,8 +848,16 @@ public class Css3ParserTest extends CssTestBase {
         assertNotNull(node);
         assertTrue(NodeUtil.containsError(node));
 
-        node = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem|2/"
+    }
+    
+    public void testParserRecovery_Issue203579_fails() throws BadLocationException, ParseException {
+        String code = ".{}";
+        CssParserResult result = TestUtil.parse(code);
+
+        NodeUtil.dumpTree(result.getParseTree());
+
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/body/bodyItem/"
                 + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssClass");
         assertNotNull(node);
         assertTrue(NodeUtil.containsError(node));
@@ -859,23 +872,23 @@ public class Css3ParserTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(code);
 //        TestUtil.dumpResult(result);
-        
+
         assertResultOK(result);
 
     }
-    
+
     public void testMozDocumentAtRule() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse(
                 "@-moz-document url(http://www.w3.org/),  "
                 + "url-prefix(http://www.w3.org/Style/),  "
                 + "domain(mozilla.org),  "
                 + "regexp(\"^https:.*\") { div { color: red; } }");
-        
+
         assertResultOK(result);
 //        NodeUtil.dumpTree(result.getParseTree());
         assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/vendorAtRule/moz_document"));
     }
-    
+
     //Bug 204128 - CC stops work after # in a color attribute 
     public void testErrorRecoveryAfterHash() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse(
@@ -884,51 +897,54 @@ public class Css3ParserTest extends CssTestBase {
                 + "\n"
                 + "   }\n"
                 + "div { color: red; }\n");
-                
+
 //        TestUtil.dumpResult(result);
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
-                + "rule/declarations/declaration/propertyValue/expression/error");
+                + "rule/declarations/declaration/propertyValue/error");
+//        Node node = NodeUtil.query(result.getParseTree(),
+//                "styleSheet/body/bodyItem/"
+//                + "rule/declarations/declaration/propertyValue/expression/error");
         assertNotNull(node);
         assertEquals(15, node.from());
         assertEquals(16, node.to());
     }
-    
+
     public void testParsingOfAsterixOnly() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse("*     ");
         //                                       0123456
 //        TestUtil.dumpResult(result);
-        
+
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
                 + "rule/selectorsGroup/selector/simpleSelectorSequence/error");
         assertNotNull(node);
         assertEquals(6, node.from());
         assertEquals(6, node.to());
-        
+
     }
-    
+
     public void testErrorInSelector() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse("h1[|");
 //        TestUtil.dumpResult(result);
-        
+
 //        Node node = NodeUtil.query(result.getParseTree(),
 //                "styleSheet/body/bodyset/"
 //                + "rule/selectorsGroup/selector/simpleSelectorSequence/error");
 //        assertNotNull(node);
 //        assertEquals(1, node.from());
 //        assertEquals(6, node.to());
-        
+
     }
-    
+
     public void testNoEmptyRuleNodesInTheParseTree() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse("*  ");
         AtomicBoolean foundEmptyRuleNode = new AtomicBoolean(false);
-        NodeVisitor<AtomicBoolean> visitor  = new NodeVisitor<AtomicBoolean>(foundEmptyRuleNode) {
+        NodeVisitor<AtomicBoolean> visitor = new NodeVisitor<AtomicBoolean>(foundEmptyRuleNode) {
             @Override
             public boolean visit(Node node) {
-                if(node instanceof RuleNode) {
-                    if(node.children().isEmpty()) {
+                if (node instanceof RuleNode) {
+                    if (node.children().isEmpty()) {
                         getResult().set(true);
                         return true;
                     }
@@ -942,56 +958,56 @@ public class Css3ParserTest extends CssTestBase {
 
     public void testDuplicatedErrors() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse(
-                  "head{\n"
+                "head{\n"
                 + "    background-image: uri();"
                 + "}");
-        
+
         TestUtil.dumpResult(result);
-        
-        assertResult(result, 2);
-        
+
+        assertResult(result, 1);
+
     }
-    
+
     public void testParseWSAfterImportantSym() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse(".green { "
                 + "    background-color : lime ! important "
                 + "}");
         assertResultOK(result);
     }
-    
+
     public void testParse_nth_child() throws BadLocationException, ParseException {
         assertResultOK(TestUtil.parse("table.t1 tr:nth-child(-n+4) { background-color : red }"));
         assertResultOK(TestUtil.parse("table.t2 td:nth-child(3n+1) { background-color : red }"));
     }
-    
+
     public void testParseNotInPseudo() throws BadLocationException, ParseException {
         assertResultOK(TestUtil.parse("a:not(a) {  }"));
     }
-    
+
     public void testParseAsterixInPseudo() throws BadLocationException, ParseException {
         assertResultOK(TestUtil.parse("a:not(*) { }"));
     }
-    
+
     public void testParseClassInPseudo() throws BadLocationException, ParseException {
         assertResultOK(TestUtil.parse("a:not(.t2) {  }"));
     }
-    
+
     public void testParseAttribInPseudo() throws BadLocationException, ParseException {
         assertResultOK(TestUtil.parse("div.stub *|*:not([test]) { }"));
     }
- 
+
     public void testParsePseudoClassInPseudo() throws BadLocationException, ParseException {
         assertResultOK(TestUtil.parse("p:not(:target) { }"));
     }
-    
+
     public void testParsePipeWithoutPrefixInSelector() throws BadLocationException, ParseException {
         assertResultOK(TestUtil.parse("|testA {background-color : lime }"));
     }
-    
+
     public void testParseNsPrefixedElementInPseudo() throws BadLocationException, ParseException {
         assertResultOK(TestUtil.parse("div.test *:not(a|p) {  }"));
     }
-    
+
     //Bug 207080 - Insufficient CSS parser error recovery
     public void testIssue_207080() {
         String code = "#wrapper {\n"
@@ -1002,43 +1018,43 @@ public class Css3ParserTest extends CssTestBase {
                 + "#header {\n"
                 + "}\n";
         CssParserResult result = TestUtil.parse(code);
-        
+
 //        TestUtil.dumpResult(result);
-        
+
         assertResult(result, 1); //ProblemDescription{from=28, to=36, description=Unexpected token HASH found, key=PARSING, type=ERROR}
 
-        
+
         //check if the #header rule is properly parsed
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem|1/"
                 + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
         assertNotNull(node);
-        
+
 
     }
-    
+
     public void testGenericAtRule() {
         String code = "@-cool-rule spin { h2 { color: red; } }";
         CssParserResult result = TestUtil.parse(code);
-        
+
         assertResultOK(result);
-        
+
 //        TestUtil.dumpResult(result);
-        
+
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/vendorAtRule/generic_at_rule");
-                
+
         assertNotNull(node);
-        
+
     }
-    
+
     //Bug 211103 - Freezes on starting IDE at "Scanning project" for too long
     public void testIssue211103() throws IOException, ParseException, BadLocationException {
         FileObject file = getTestFile("testfiles/itabbar.css.testfile");
         //check if we can even parse the file w/o an infinite loop in the recovery
         TestUtil.parse(file);
     }
-    
+
 //    public void testRecoveryInBodySet() {
 //        String code = "div { } ;@ a { } h1 { }";
 //        CssParserResult result = TestUtil.parse(code);
@@ -1054,52 +1070,50 @@ public class Css3ParserTest extends CssTestBase {
 //        
 //        
 //    }
-    
-    
     public void testWebkitKeyFrames() {
         String code = "@-webkit-keyframes spin { 40% {  left: 150px;  } from { left: 2px } }";
         //             012345678901234567890123456789012345678901234567890123456789
         //             0         1         2         3         4         5
         CssParserResult result = TestUtil.parse(code);
-        
+
         assertResultOK(result);
-        
+
 //        TestUtil.dumpResult(result);
-        
+
         Node wkf = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/vendorAtRule/webkitKeyframes");
-                
+
         assertNotNull(wkf);
-        
+
         Node atRuleName = NodeUtil.query(wkf, "atRuleId");
         assertNotNull(atRuleName);
         assertEquals("spin", atRuleName.image().toString());
-        
+
         //block1
         Node block = NodeUtil.query(wkf, "webkitKeyframesBlock|0");
         Node selectors = NodeUtil.query(block, "webkitKeyframeSelectors");
         assertNotNull(selectors);
         assertEquals("40%", selectors.image().toString());
-        
+
         Node declarations = NodeUtil.query(wkf, "webkitKeyframesBlock/declarations");
         assertNotNull(declarations);
         assertNotNull(NodeUtil.query(declarations, "declaration/property"));
         assertNotNull(NodeUtil.query(declarations, "declaration/propertyValue"));
-        
+
         //block2
         block = NodeUtil.query(wkf, "webkitKeyframesBlock|1");
         selectors = NodeUtil.query(block, "webkitKeyframeSelectors");
         assertNotNull(selectors);
         assertEquals("from", selectors.image().toString());
-        
+
         declarations = NodeUtil.query(wkf, "webkitKeyframesBlock/declarations");
         assertNotNull(declarations);
         assertNotNull(NodeUtil.query(declarations, "declaration/property"));
         assertNotNull(NodeUtil.query(declarations, "declaration/propertyValue"));
-        
-        
+
+
     }
-    
+
     //http://en.wikipedia.org/wiki/CSS_filter#Star_hack
     //Bug 215168 - Netbeans doesn't know about CSS star hack 
     public void testIEPropertyStarHack() throws ParseException, BadLocationException {
@@ -1109,7 +1123,7 @@ public class Css3ParserTest extends CssTestBase {
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertEquals(0, result.getDiagnostics().size());
-        
+
         //case #2 - error happens in the declarations grammar rule
         source = ".aclass { padding: 2px; *color: red; }";
         result = TestUtil.parse(source);
@@ -1125,7 +1139,7 @@ public class Css3ParserTest extends CssTestBase {
         NodeUtil.dumpTree(result.getParseTree());
         assertEquals(0, result.getDiagnostics().size());
     }
-    
+
     //Bug 219587 - parsing error on .box:nth-child(4n - 2)
     public void testWSInExpression() throws ParseException, BadLocationException {
         String source = ".box:nth-child(4n - 2) { } ";
@@ -1133,9 +1147,9 @@ public class Css3ParserTest extends CssTestBase {
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertEquals(0, result.getDiagnostics().size());
-        
+
     }
-    
+
     public void testDataURI() throws ParseException, BadLocationException {
         String source = "div.menu {"
                 + "    background-image: url('data:image/png;base64,iVBORw0KGgoAA"
@@ -1146,29 +1160,30 @@ public class Css3ParserTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 //        NodeUtil.dumpTree(result.getParseTree());
-        
+
         assertEquals(0, result.getDiagnostics().size());
-        
+
         Node term = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/rule/declarations/declaration/propertyValue/expression/term");
         assertNotNull(term);
-        
+
         Node uri = NodeUtil.getChildTokenNode(term, CssTokenId.URI);
         assertNotNull(uri);
-        
+
     }
-    
-     //Bug 223809 - Incorrect CSS syntax error highlighting when @-ms-viewport rule is added 
+
+    //Bug 223809 - Incorrect CSS syntax error highlighting when @-ms-viewport rule is added 
     public void testVendorAtRuleInMedia() throws ParseException, BadLocationException {
         String source = "@media screen and (max-width: 400px) {"
                 + "  @-ms-viewport { width: 320px; }"
                 + "  @-o-viewport {}"
                 + "}";
-        
+
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertEquals(0, result.getDiagnostics().size());
-        
+
     }
+
 }

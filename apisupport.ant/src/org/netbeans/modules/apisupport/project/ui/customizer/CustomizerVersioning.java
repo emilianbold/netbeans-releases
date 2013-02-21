@@ -59,6 +59,8 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.ApisupportAntUIUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -159,6 +161,24 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
                 checkValidity();
             }
         });
+        publicPkgsTable.getModel().addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                int row = publicPkgsTable.getSelectedRow();
+                if (row == -1) {
+                    // Nothing selected; e.g. user has tabbed into the table but not pressed Down key.
+                    return;
+                }
+                Boolean b = (Boolean) publicPkgsTable.
+                        getValueAt(row, 0);
+                if(!b && !selectAllPkgsButton.isEnabled())
+                    selectAllPkgsButton.setEnabled(true);
+                if(b && !deselectAllPkgsButton.isEnabled())
+                    deselectAllPkgsButton.setEnabled(true);
+                checkPublicPackagesSelectionButtons();
+                checkValidity();
+            }
+        });
     }
     
     boolean isCustomizerValid() {
@@ -235,6 +255,8 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         publicPkgsTable.getInputMap().put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "startEditing"); // NOI18N
         publicPkgsTable.getActionMap().put("startEditing", switchAction); // NOI18N
+        
+        checkPublicPackagesSelectionButtons();
     }
     
     private void updateAppendImpl() {
@@ -308,12 +330,8 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         tokensValue = new javax.swing.JTextField();
         appendImpl = new javax.swing.JCheckBox();
         publicPkgs = new javax.swing.JLabel();
-        publicPkgsSP = new javax.swing.JScrollPane();
-        publicPkgsTable = new javax.swing.JTable();
-        Dimension tableDim = publicPkgsTable.getPreferredScrollableViewportSize();
-        publicPkgsTable.setPreferredScrollableViewportSize(new Dimension(tableDim.width, 100));
         bottomPanel = new javax.swing.JPanel();
-        buttonPanel = new javax.swing.JPanel();
+        buttonPanel1 = new javax.swing.JPanel();
         addFriendButton = new javax.swing.JButton();
         removeFriendButton = new javax.swing.JButton();
         filler1 = new javax.swing.JLabel();
@@ -325,6 +343,15 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         autoloadMod = new javax.swing.JRadioButton();
         eagerMod = new javax.swing.JRadioButton();
         typeTxt = new javax.swing.JLabel();
+        publicPackagesPanel = new javax.swing.JPanel();
+        publicPkgsSP = new javax.swing.JScrollPane();
+        publicPkgsTable = new javax.swing.JTable();
+        Dimension tableDim = publicPkgsTable.getPreferredScrollableViewportSize();
+        publicPkgsTable.setPreferredScrollableViewportSize(new Dimension(tableDim.width, 100));
+        buttonPanel3 = new javax.swing.JPanel();
+        selectAllPkgsButton = new javax.swing.JButton();
+        deselectAllPkgsButton = new javax.swing.JButton();
+        filler3 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -421,7 +448,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
 
         org.openide.awt.Mnemonics.setLocalizedText(appendImpl, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_AppendImplementation")); // NOI18N
         appendImpl.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        appendImpl.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -440,20 +466,9 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 2, 12);
         add(publicPkgs, gridBagConstraints);
 
-        publicPkgsTable.setShowHorizontalLines(false);
-        publicPkgsSP.setViewportView(publicPkgsTable);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 0.8;
-        add(publicPkgsSP, gridBagConstraints);
-
         bottomPanel.setLayout(new java.awt.GridBagLayout());
 
-        buttonPanel.setLayout(new java.awt.GridBagLayout());
+        buttonPanel1.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(addFriendButton, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_AddButton")); // NOI18N
         addFriendButton.addActionListener(new java.awt.event.ActionListener() {
@@ -463,7 +478,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        buttonPanel.add(addFriendButton, gridBagConstraints);
+        buttonPanel1.add(addFriendButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(removeFriendButton, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_RemoveButton")); // NOI18N
         removeFriendButton.addActionListener(new java.awt.event.ActionListener() {
@@ -476,18 +491,18 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        buttonPanel.add(removeFriendButton, gridBagConstraints);
+        buttonPanel1.add(removeFriendButton, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.weighty = 1.0;
-        buttonPanel.add(filler1, gridBagConstraints);
+        buttonPanel1.add(filler1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        bottomPanel.add(buttonPanel, gridBagConstraints);
+        bottomPanel.add(buttonPanel1, gridBagConstraints);
 
         friendsList.setVisibleRowCount(3);
         friendsSP.setViewportView(friendsList);
@@ -515,7 +530,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         org.openide.awt.Mnemonics.setLocalizedText(exportOnlyToFriend, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_ExportOnlyToFriends")); // NOI18N
         exportOnlyToFriend.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         exportOnlyToFriend.setEnabled(false);
-        exportOnlyToFriend.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
@@ -530,7 +544,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         regularMod.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(regularMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_RegularModule")); // NOI18N
         regularMod.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        regularMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -541,7 +554,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         moduleTypeGroup.add(autoloadMod);
         org.openide.awt.Mnemonics.setLocalizedText(autoloadMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_AutoloadModule")); // NOI18N
         autoloadMod.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        autoloadMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -552,7 +564,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         moduleTypeGroup.add(eagerMod);
         org.openide.awt.Mnemonics.setLocalizedText(eagerMod, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_EagerModule")); // NOI18N
         eagerMod.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        eagerMod.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
@@ -576,6 +587,67 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         add(typePanel, gridBagConstraints);
+
+        publicPackagesPanel.setMinimumSize(new java.awt.Dimension(112, 62));
+        publicPackagesPanel.setPreferredSize(new java.awt.Dimension(347, 62));
+        publicPackagesPanel.setLayout(new java.awt.GridBagLayout());
+
+        publicPkgsTable.setShowHorizontalLines(false);
+        publicPkgsSP.setViewportView(publicPkgsTable);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 3;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        publicPackagesPanel.add(publicPkgsSP, gridBagConstraints);
+
+        buttonPanel3.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(selectAllPkgsButton, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_SelectAll"));
+        selectAllPkgsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectAllPkgsButtonaddFriend(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        buttonPanel3.add(selectAllPkgsButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(deselectAllPkgsButton, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "CTL_DeselectAll"));
+        deselectAllPkgsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deselectAllPkgsButtonremoveFriend(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        buttonPanel3.add(deselectAllPkgsButton, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.weighty = 1.0;
+        buttonPanel3.add(filler3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        publicPackagesPanel.add(buttonPanel3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 0.8;
+        add(publicPackagesPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void removeFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFriend
@@ -629,6 +701,14 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
 private void tokensValueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tokensValueActionPerformed
 // TODO add your handling code here:
 }//GEN-LAST:event_tokensValueActionPerformed
+
+    private void selectAllPkgsButtonaddFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectAllPkgsButtonaddFriend
+        selectOrDeselectAllPackages(true);
+    }//GEN-LAST:event_selectAllPkgsButtonaddFriend
+
+    private void deselectAllPkgsButtonremoveFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deselectAllPkgsButtonremoveFriend
+        selectOrDeselectAllPackages(false);
+    }//GEN-LAST:event_deselectAllPkgsButtonremoveFriend
     
     private String getMessage(String key) {
         return NbBundle.getMessage(CustomizerVersioning.class, key);
@@ -647,17 +727,61 @@ private void tokensValueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         }
     }
     
+    private void selectOrDeselectAllPackages(boolean check)
+    {
+        int rowCount = publicPkgsTable.getRowCount();
+        if(rowCount > 0)
+        {
+            for(int i = 0; i < rowCount; i++)
+            {
+                publicPkgsTable.setValueAt(check,
+                        i, 0);
+            }
+        }
+        selectAllPkgsButton.setEnabled(!check);
+        deselectAllPkgsButton.setEnabled(check);
+        checkValidity();
+    }
+    
+    private void checkPublicPackagesSelectionButtons()
+    {
+        boolean enableSelectAllPkgsButton = false;
+        boolean enableDeselectAllPkgsButton = false;
+        int rowCount = publicPkgsTable.getRowCount();
+        if(rowCount > 0)
+        {
+            for(int i = 0; i < rowCount; i++)
+            {
+                if(!(Boolean) publicPkgsTable.
+                        getValueAt(i, 0))
+                {
+                    enableSelectAllPkgsButton = true;
+                }
+                else if((Boolean) publicPkgsTable.
+                        getValueAt(i, 0))
+                {
+                    enableDeselectAllPkgsButton = true;
+                }
+            }
+        }
+        selectAllPkgsButton.setEnabled(enableSelectAllPkgsButton);
+        deselectAllPkgsButton.setEnabled(enableDeselectAllPkgsButton);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addFriendButton;
     private javax.swing.JCheckBox appendImpl;
     private javax.swing.JRadioButton autoloadMod;
     private javax.swing.JPanel bottomPanel;
-    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JPanel buttonPanel1;
+    private javax.swing.JPanel buttonPanel3;
     private javax.swing.JLabel cnb;
     private javax.swing.JTextField cnbValue;
+    private javax.swing.JButton deselectAllPkgsButton;
     private javax.swing.JRadioButton eagerMod;
     private javax.swing.JCheckBox exportOnlyToFriend;
     private javax.swing.JLabel filler1;
+    private javax.swing.JLabel filler3;
     private javax.swing.JList friendsList;
     private javax.swing.JScrollPane friendsSP;
     private javax.swing.JLabel implVer;
@@ -665,11 +789,13 @@ private void tokensValueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JLabel majorRelVer;
     private javax.swing.JTextField majorRelVerValue;
     private javax.swing.ButtonGroup moduleTypeGroup;
+    private javax.swing.JPanel publicPackagesPanel;
     private javax.swing.JLabel publicPkgs;
     private javax.swing.JScrollPane publicPkgsSP;
     private javax.swing.JTable publicPkgsTable;
     private javax.swing.JRadioButton regularMod;
     private javax.swing.JButton removeFriendButton;
+    private javax.swing.JButton selectAllPkgsButton;
     private javax.swing.JLabel specificationVer;
     private javax.swing.JTextField specificationVerValue;
     private javax.swing.JLabel tokens;

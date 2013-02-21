@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.49.3
+#Version 6.54.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -1132,7 +1132,7 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,docFilter,documentReloading,documentStatus,inUserQuestionExceptionHandler,isStrongSet,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,undoRedo,warnedClasses
+hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_NOTIFY_MODIFIED,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,docFilter,documentReloading,documentStatus,inUserQuestionExceptionHandler,isStrongSet,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,undoRedo,warnedClasses
 hcls DelegateIOExc,DocFilter,Listener,PlainEditorKit,StrongRef
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Env
@@ -1554,7 +1554,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
@@ -1679,6 +1679,7 @@ meth public final void makeBusy(boolean)
 meth public final void openAtTabPosition(int)
 meth public final void requestAttention(boolean)
 meth public final void setActivatedNodes(org.openide.nodes.Node[])
+meth public final void setAttentionHighlight(boolean)
 meth public final void setCloseOperation(int)
  anno 0 java.lang.Deprecated()
 meth public int getPersistenceType()

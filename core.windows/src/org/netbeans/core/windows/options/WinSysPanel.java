@@ -569,7 +569,7 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             lafs.add( i );
             if( MetalLookAndFeel.class.getName().equals( i.getClassName() ) ) {
                 lafs.add( DARK_METAL );
-            } else if( NimbusLookAndFeel.class.getName().equals( i.getClassName() ) ) {
+            } else if( "Nimbus".equals( i.getName() ) ) { //NOI18N
                 lafs.add( DARK_NIMBUS );
             }
         }
@@ -586,11 +586,12 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 currentLaf = li;
                 if( darkTheme ) {
                     if( MetalLookAndFeel.class.getName().equals( currentLAFClassName ) ) {
-                        li = DARK_METAL;
-                    } else if( NimbusLookAndFeel.class.getName().equals( currentLAFClassName ) ) {
-                        li = DARK_NIMBUS;
+                        currentLaf = DARK_METAL;
+                    } else if( "Nimbus".equals( UIManager.getLookAndFeel().getID() ) ) { //NOI18N
+                        currentLaf = DARK_NIMBUS;
                     }
                 }
+                break;
             }
         }
         return currentLaf;

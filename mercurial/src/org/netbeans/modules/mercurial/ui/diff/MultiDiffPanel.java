@@ -80,7 +80,10 @@ import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.mercurial.ui.repository.HeadRevisionPicker;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
@@ -120,7 +123,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * Context in which to DIFF.
      */
     private final VCSContext context;
-    private final File[] roots;
 
     private int displayStatuses;
 
@@ -156,23 +158,35 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private JComponent infoPanelLoadingFromRepo;
 
     private HgProgressSupport executeStatusSupport;
+    private final HgRevision revisionOriginalLeft;
+    private final HgRevision revisionOriginalRight;
     private HgRevision revisionLeft;
     private HgRevision revisionRight;
+    private final boolean fixedRevisions;
+    @NbBundle.Messages("MSG_Revision_Select=Select...")
+    private static final String REVISION_SELECT = Bundle.MSG_Revision_Select();
+    @NbBundle.Messages("MSG_Revision_Select_Separator=----------------------")
+    private static final String REVISION_SELECT_SEP = Bundle.MSG_Revision_Select_Separator();
     private boolean displayUnversionedFiles = true;
+    private RequestProcessor.Task refreshComboTask;
+    private static final Logger LOG = Logger.getLogger(MultiDiffPanel.class.getName());
     
     /**
      * Creates diff panel and immediatelly starts loading...
      */
     public MultiDiffPanel (VCSContext context, int initialType, String contextName) {
-        this(context, null, initialType, contextName);
+        this(context, contextName, HgLogMessage.HgRevision.BASE, HgLogMessage.HgRevision.CURRENT, false);
+        currentType = initialType;
         refreshStatuses();
     }
 
-    private MultiDiffPanel (VCSContext context, File[] roots, int initialType, String contextName) {
+    private MultiDiffPanel (VCSContext context, String contextName, HgRevision revisionLeft,
+            HgRevision revisionRight, boolean fixedRevisions) {
         this.context = context;
-        this.roots = roots;
         this.contextName = contextName;
-        currentType = initialType;
+        this.revisionLeft = revisionOriginalLeft = revisionLeft;
+        this.revisionRight = revisionOriginalRight = revisionRight;
+        this.fixedRevisions = fixedRevisions;
         initComponents();
         setAquaBackground();
 
@@ -180,15 +194,19 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         initFileTable();
         initToolbarButtons();
         initNextPrevActions();
+        splitPane.setDividerLocation(fileTable.getTable().getTableHeader().getPreferredSize().height);
+        initSelectionCombos();
+        refreshComboTask = Mercurial.getInstance().getRequestProcessor().create(new RefreshComboTask());
+        refreshSelectionCombos();
         refreshComponents();
 
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
     }
 
-    public MultiDiffPanel (File[] roots, HgRevision revisionLeft, HgRevision revisionRight, boolean displayUnversionedFiles) {
-        this(null, roots, Setup.DIFFTYPE_LOCAL, null);
-        this.revisionLeft = revisionLeft;
-        this.revisionRight = revisionRight;
+    public MultiDiffPanel (File[] roots, HgRevision revisionLeft, HgRevision revisionRight,
+            boolean fixedRevisions, boolean displayUnversionedFiles) {
+        this(HgUtils.buildVCSContext(roots), null, revisionLeft, revisionRight, fixedRevisions);
+        currentType = Setup.DIFFTYPE_LOCAL;        
         this.displayUnversionedFiles = displayUnversionedFiles;
         refreshStatuses();
     }
@@ -198,7 +216,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
             setBackground(color); 
             controlsToolBar.setBackground(color); 
-            jPanel1.setBackground(color); 
             jPanel2.setBackground(color); 
             jPanel4.setBackground(color); 
             jPanel5.setBackground(color); 
@@ -219,9 +236,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      */
     public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, FileInformation fi, boolean forceNonEditable) {
         context = null;
-        roots = null;
         contextName = file.getName();
+        revisionOriginalLeft = rev1;
+        revisionOriginalRight = rev2;
+        fixedRevisions = true;
         initComponents();
+        initSelectionCombos();
         setAquaBackground();
 
         diffViewPanel = new PlaceholderPanel();
@@ -269,6 +289,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
         if(executeStatusSupport!=null) {
             executeStatusSupport.cancel();
+        }
+        if (refreshTask != null) {
+            refreshTask.cancel();
         }
     }
 
@@ -378,9 +401,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             commitButton.setEnabled(false);     //until the diff is loaded
         } else {
             commitButton.setVisible(false);
-            if (roots == null) {
-                refreshButton.setVisible(false);
-            }
+            refreshButton.setVisible(false);
         }
     }
 
@@ -483,14 +504,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         } else {
             if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
         }
-        return containsFile(file);
+        return revisionRight == HgRevision.CURRENT && containsFile(file);
     }
     
     private boolean containsFile (File file) {
         if (context != null) {
             return HgUtils.contains(context.getRootFiles(), file);
-        } else if (roots != null) {
-            return HgUtils.contains(roots, file);
         } else {
             return false;
         }
@@ -565,6 +584,68 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
         if (source == commitButton) onCommitButton();
+        else if (source == cmbDiffTreeSecond) {
+            HgRevision oldSelection = revisionLeft;
+            HgRevision newSelection = getSelectedRevision(cmbDiffTreeSecond);
+            if (newSelection != null) {
+                revisionLeft = newSelection;
+            }
+            boolean refresh = !oldSelection.getChangesetId().equals(revisionLeft.getChangesetId());
+            if (refresh) {
+                refreshTask.schedule(100);
+            }
+        } else if (source == cmbDiffTreeFirst) {
+            HgRevision oldSelection = revisionRight;
+            HgRevision newSelection = getSelectedRevision(cmbDiffTreeFirst);
+            if (newSelection != null) {
+                revisionRight = newSelection;
+            }
+            boolean refresh = !oldSelection.getChangesetId().equals(revisionRight.getChangesetId());
+            if (refresh) {
+                refreshTask.schedule(100);
+            }
+        }
+    }
+    
+    private HgRevision getSelectedRevision (JComboBox cmbDiffTree) {
+        Object selectedItem = cmbDiffTree.getSelectedItem();
+        HgRevision selection = null;
+        if (selectedItem instanceof HgRevision) {
+            selection = (HgRevision) selectedItem;
+        } else if (selectedItem instanceof HgLogMessage) {
+            selection = ((HgLogMessage) selectedItem).getHgRevision();
+        } else if (selectedItem == REVISION_SELECT) {
+            HeadRevisionPicker picker = new HeadRevisionPicker(HgUtils.getRootFile(context), null);
+            if (picker.showDialog()) {
+                HgLogMessage selectedRevision = picker.getSelectionRevision();
+                selection = selectedRevision.getHgRevision();
+                addToModel(selectedRevision, cmbDiffTree);
+            }
+        }
+        return selection;
+    }
+
+    private void addToModel (final HgLogMessage newItem, final JComboBox cmbDiffTree) {
+        DefaultComboBoxModel model = (DefaultComboBoxModel) cmbDiffTree.getModel();
+        for (int i = 0; i < model.getSize(); ++i) {
+            final Object item = model.getElementAt(i);
+            if (item instanceof HgLogMessage && ((HgLogMessage) item).getCSetShortID().equals(newItem.getCSetShortID())) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        cmbDiffTree.setSelectedItem(item);
+                    }
+                });
+                return;
+            }
+        }
+        model.addElement(newItem);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                cmbDiffTree.setSelectedItem(newItem);
+            }
+        });
     }
 
     private void onRefreshButton() {
@@ -572,7 +653,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private void refreshStatuses() {
-        if ((context == null || context.getRootFiles().isEmpty()) && (roots == null || roots.length == 0)) {
+        if ((context == null || context.getRootFiles().isEmpty())) {
             return;
         }
 
@@ -586,13 +667,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         executeStatusSupport = new HgProgressSupport() {
             @Override
             public void perform() {
-                if (context != null) {
+                if (context != null && revisionLeft == HgRevision.BASE && revisionRight == HgRevision.CURRENT) {
                     StatusAction.executeStatus(context, this);
                 }
                 refreshSetups();
             }
         };
-        File repositoryRoot = context == null ? Mercurial.getInstance().getRepositoryRoot(roots[0]) : HgUtils.getRootFile(context);
+        File repositoryRoot = HgUtils.getRootFile(context);
         executeStatusSupport.start(rp, repositoryRoot, NbBundle.getMessage(MultiDiffPanel.class, "MSG_Refresh_Progress"));
     }
     
@@ -692,7 +773,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
         final int localDisplayStatuses = status;
         final Setup[] localSetups;
-        if (roots == null) {
+        if (revisionLeft == HgRevision.BASE && revisionRight == HgRevision.CURRENT) {
             File [] files = HgUtils.getModifiedFiles(context, status, true);
             localSetups = computeSetups(files);
         } else {
@@ -801,27 +882,171 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private Setup[] computeSetupsBetweenRevisions () {
-        File repository = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+        File repository = HgUtils.getRootFile(context);
+        HgRevision revLeft = revisionLeft;
+        HgRevision revRight = revisionRight;
         try {
-            Map<File, FileInformation> statuses = HgCommand.getStatus(repository, Arrays.asList(roots), revisionLeft.getRevisionNumber(), revisionRight.getRevisionNumber());
-            statuses.keySet().retainAll(HgUtils.flattenFiles(roots, statuses.keySet()));
-            List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
-            for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
-                FileInformation fi = e.getValue();
-                if (displayUnversionedFiles || (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) == 0) {
-                    File file = e.getKey();
-                    Setup setup = new Setup(file, revisionLeft, revisionRight, fi, false);
-                    setup.setNode(new DiffNode(setup, new HgFileNode(file)));
-                    newSetups.add(setup);
+            if (revisionLeft == HgRevision.BASE || revisionRight == HgRevision.BASE) {
+                // optimalization, let's not run the command when the revisions are the same
+                HgRevision parent = HgCommand.getParent(repository, null, null);
+                if (revLeft == HgRevision.BASE) {
+                    revLeft = parent;
+                }
+                if (revRight == HgRevision.BASE) {
+                    revRight = parent;
                 }
             }
-            Collections.sort(newSetups, new SetupsComparator());
-            return newSetups.toArray(new Setup[newSetups.size()]);
+            // optimalization, let's not run the command when the revisions are the same
+            if (!revLeft.getChangesetId().equals(revRight.getChangesetId())) {
+                Map<File, FileInformation> statuses = HgCommand.getStatus(repository, new ArrayList<File>(context.getRootFiles()),
+                        revisionLeft.getChangesetId(), revisionRight.getChangesetId(), false);
+                statuses.keySet().retainAll(HgUtils.flattenFiles(context.getRootFiles().toArray(
+                        new File[context.getRootFiles().size()]), statuses.keySet()));
+                List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
+                for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
+                    File file = e.getKey();
+                    FileInformation fi = e.getValue();
+                    if (isVisible(file, fi)) {
+                        Setup setup = new Setup(file, revisionLeft, revisionRight, fi, false);
+                        setup.setNode(new DiffNode(setup, new HgFileNode(file)));
+                        newSetups.add(setup);
+                    }
+                }
+                Collections.sort(newSetups, new SetupsComparator());
+                return newSetups.toArray(new Setup[newSetups.size()]);
+            }
         } catch (HgException.HgCommandCanceledException ex) {
         } catch (HgException ex) {
             Mercurial.LOG.log(Level.INFO, null, ex);
         }
         return new Setup[0];
+    }
+    
+    private boolean isVisible (File file, FileInformation fi) {
+        boolean allowed = (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) == 0;
+        if (!allowed && displayUnversionedFiles) {
+            // check it's not ignored
+            FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+            allowed = (cache.getStatus(file).getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0;
+        }
+        return allowed;
+    }
+
+    private void refreshSelectionCombos () {
+        if (!fixedRevisions && HgUtils.getRepositoryRoots(context).size() == 1) {
+            cmbDiffTreeFirst.setEnabled(false);
+            cmbDiffTreeSecond.setEnabled(false);
+            refreshComboTask.schedule(100);
+        }
+    }
+
+    private void initSelectionCombos () {
+        if (fixedRevisions) {
+            treeSelectionPanel.setVisible(false);
+        } else {
+            cmbDiffTreeFirst.setRenderer(new HgRevisionCellRenderer());
+            cmbDiffTreeFirst.setModel(new DefaultComboBoxModel(new HgRevision[] { revisionRight }));
+            cmbDiffTreeFirst.addActionListener(this);
+            cmbDiffTreeSecond.setRenderer(new HgRevisionCellRenderer());
+            cmbDiffTreeSecond.setModel(new DefaultComboBoxModel(new HgRevision[] { revisionLeft }));
+            cmbDiffTreeSecond.addActionListener(this);
+        }
+    }
+    
+    private class RefreshComboTask implements Runnable {
+
+        @Override
+        public void run () {
+            File repository = HgUtils.getRootFile(context);
+            final List<Object> modelRight = new ArrayList<Object>(10);
+            final List<Object> modelLeft = new ArrayList<Object>(10);
+            modelLeft.add(revisionOriginalLeft);
+            if (revisionOriginalLeft != HgRevision.BASE) {
+                modelLeft.add(HgRevision.BASE);
+            }
+            modelRight.add(revisionOriginalRight);            
+            if (revisionOriginalRight != HgRevision.CURRENT) {
+                modelRight.add(HgRevision.CURRENT);
+            }
+            if (revisionOriginalRight != HgRevision.BASE) {
+                modelRight.add(HgRevision.BASE);
+            }
+            try {
+                HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(repository, true, OutputLogger.getLogger(null));
+                Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
+                for (Map.Entry<String, Collection<HgLogMessage>> e : branchHeads.entrySet()) {
+                    for (HgLogMessage msg : e.getValue()) {
+                        modelLeft.add(msg);
+                        modelRight.add(msg);
+                    }
+                }
+            } catch (HgException.HgCommandCanceledException ex) {
+            } catch (HgException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    modelLeft.add(REVISION_SELECT_SEP);
+                    modelLeft.add(REVISION_SELECT);
+                    modelLeft.add(REVISION_SELECT_SEP);
+                    modelRight.add(REVISION_SELECT_SEP);
+                    modelRight.add(REVISION_SELECT);
+                    modelRight.add(REVISION_SELECT_SEP);
+                    cmbDiffTreeFirst.setModel(new DefaultComboBoxModel(modelRight.toArray(new Object[modelRight.size()])));
+                    cmbDiffTreeSecond.setModel(new DefaultComboBoxModel(modelLeft.toArray(new Object[modelLeft.size()])));
+                    cmbDiffTreeFirst.setEnabled(true);
+                    cmbDiffTreeSecond.setEnabled(true);
+                }
+            });
+        }
+    }
+
+    @NbBundle.Messages({
+        "MSG_Revision_Select_Tooltip=Select a revision from the picker"
+    })
+    private static class HgRevisionCellRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            String tooltip = null;
+            if (value instanceof HgRevision) {
+                HgRevision rev = (HgRevision) value;
+                value = rev.toString();
+            } else if (value instanceof HgLogMessage) {
+                HgLogMessage message = (HgLogMessage) value;
+                StringBuilder sb = new StringBuilder().append(message.getRevisionNumber());
+                StringBuilder labels = new StringBuilder();
+                for (String branch : message.getBranches()) {
+                    labels.append(branch).append(' ');
+                }
+                for (String tag : message.getTags()) {
+                    labels.append(tag).append(' ');
+                    break; // just one tag
+                }
+                sb.append(" (").append(labels).append(labels.length() == 0 ? "" : "- ").append(message.getCSetShortID().substring(0, 7)).append(")"); //NOI18N
+                String shortMsg = message.getShortMessage();
+                
+                if (!shortMsg.isEmpty()) {
+                    sb.append(" - ");
+                    if (sb.length() + shortMsg.length() > 30) {
+                        tooltip = shortMsg;
+                        shortMsg = shortMsg.substring(0, Math.max(30 - sb.length(), 10)) + "..."; //NOI18N
+                    }
+                    sb.append(shortMsg); //NOI18N
+                }
+                value = sb.toString();
+            } else if (value instanceof String) {
+                value = "<html><i>" + value + "</i></html>"; //NOI18N
+                tooltip = Bundle.MSG_Revision_Select_Tooltip();
+            }
+            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (comp instanceof JComponent) {
+                ((JComponent) comp).setToolTipText(tooltip);
+            }
+            return comp;
+        }
+
     }
 
     private class DiffPrepareTask implements Runnable, Cancellable {
@@ -956,13 +1181,17 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         controlsToolBar = new javax.swing.JToolBar();
         jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
         nextButton = new javax.swing.JButton();
         prevButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         refreshButton = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         commitButton = new javax.swing.JButton();
+        treeSelectionPanel = new javax.swing.JPanel();
+        cmbDiffTreeFirst = new javax.swing.JComboBox();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        cmbDiffTreeSecond = new javax.swing.JComboBox();
         splitPane = new javax.swing.JSplitPane();
 
         controlsToolBar.setFloatable(false);
@@ -1000,21 +1229,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         );
 
         controlsToolBar.add(jPanel4);
-
-        jPanel1.setMaximumSize(new java.awt.Dimension(80, 32767));
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 80, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 21, Short.MAX_VALUE)
-        );
-
-        controlsToolBar.add(jPanel1);
 
         nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/diff-next.png"))); // NOI18N
         nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Next_Tooltip")); // NOI18N
@@ -1079,6 +1293,44 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         commitButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         controlsToolBar.add(commitButton);
 
+        cmbDiffTreeFirst.setEnabled(false);
+
+        jLabel1.setLabelFor(cmbDiffTreeFirst);
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.jLabel1.text")); // NOI18N
+        jLabel1.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.jLabel1.TTtext")); // NOI18N
+
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.jLabel2.text")); // NOI18N
+        jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.jLabel2.TTtext")); // NOI18N
+
+        cmbDiffTreeSecond.setEnabled(false);
+
+        javax.swing.GroupLayout treeSelectionPanelLayout = new javax.swing.GroupLayout(treeSelectionPanel);
+        treeSelectionPanel.setLayout(treeSelectionPanelLayout);
+        treeSelectionPanelLayout.setHorizontalGroup(
+            treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(treeSelectionPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cmbDiffTreeFirst, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cmbDiffTreeSecond, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0))
+        );
+        treeSelectionPanelLayout.setVerticalGroup(
+            treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(treeSelectionPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(cmbDiffTreeFirst, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(cmbDiffTreeSecond, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0))
+        );
+
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -1086,6 +1338,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(controlsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(treeSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
             .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -1093,7 +1348,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             .addGroup(layout.createSequentialGroup()
                 .addComponent(controlsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
+                .addComponent(treeSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1103,9 +1360,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox cmbDiffTreeFirst;
+    private javax.swing.JComboBox cmbDiffTreeSecond;
     private javax.swing.JButton commitButton;
     private javax.swing.JToolBar controlsToolBar;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -1114,31 +1374,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private javax.swing.JButton prevButton;
     private javax.swing.JButton refreshButton;
     private javax.swing.JSplitPane splitPane;
+    private javax.swing.JPanel treeSelectionPanel;
     // End of variables declaration//GEN-END:variables
     
-    /** Interprets property blob. */
-    static final class Property {
-        final byte[] value;
-
-        Property(Object value) {
-            this.value = (byte[]) value;
-        }
-
-        String getMIME() {            
-            return "text/plain"; // NOI18N
-        }
-
-        Reader toReader() {
-            if (HgUtils.isBinary(value)) {
-                return new StringReader(NbBundle.getMessage(MultiDiffPanel.class, "LBL_Diff_NoBinaryDiff"));  // hexa-flexa txt? // NOI18N
-            } else {
-                try {
-                    return new InputStreamReader(new ByteArrayInputStream(value), "utf8");  // NOI18N
-                } catch (UnsupportedEncodingException ex) {
-                    Mercurial.LOG.log(Level.SEVERE, "UnsupportedEncodingException {0}", ex);
-                    return new StringReader("[ERROR: " + ex.getLocalizedMessage() + "]"); // NOI18N
-                }
-            }
-        }
-    }
 }

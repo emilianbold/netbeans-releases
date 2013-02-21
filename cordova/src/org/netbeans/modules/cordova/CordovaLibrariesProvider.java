@@ -81,7 +81,7 @@ public class CordovaLibrariesProvider implements LibraryProvider<LibraryImplemen
             lib.setName("Cordova"); // NOI18N
             lib.setDisplayName("Cordova"); // NOI18N
             Map<String, String> p = new HashMap<String, String>();
-            final String version = CordovaPlatform.getDefault().getVersion();
+            final String version = CordovaPlatform.getDefault().getVersion().toString();
             p.put("version", version);//NOI18N
             p.put("name", "Cordova"); //NOI18N
             p.put("displayname", "Cordova"); //NOI18N

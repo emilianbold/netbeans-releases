@@ -58,6 +58,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -96,10 +97,21 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     private static final String msgModified = NbBundle.getMessage(QueryTableCellRenderer.class, "MSG_IssueStatusModified");   // NOI18N
     private static final String msgObsolete = NbBundle.getMessage(QueryTableCellRenderer.class, "MSG_IssueStatusObsolete");   // NOI18N
 
-    private static final Color unevenLineColor              = new Color(0xf3f6fd);
+    private static Color evenLineColor                      = null;
+    private static Color unevenLineColor                    = null;
     private static final Color newHighlightColor            = new Color(0x00b400);
     private static final Color modifiedHighlightColor       = new Color(0x0000ff);
     private static final Color obsoleteHighlightColor       = new Color(0x999999);
+
+    static {
+        evenLineColor = UIManager.getColor( "nb.bugtracking.table.background" ); //NOI18N
+        if( null == evenLineColor )
+            evenLineColor = Color.white;
+
+        unevenLineColor = UIManager.getColor( "nb.bugtracking.table.background.alternate" ); //NOI18N
+        if( null == unevenLineColor )
+            unevenLineColor = new Color(0xf3f6fd);
+    }
 
     public QueryTableCellRenderer(Query query, IssueTable issueTable) {
         this.query = APIAccessor.IMPL.getImpl(query);
@@ -378,7 +390,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     }
 
     private static Color getUnselectedBackground(int row) {
-        return row % 2 != 0 ? unevenLineColor : Color.WHITE;
+        return row % 2 != 0 ? unevenLineColor : evenLineColor;
     }
 
     public static void setRowColors(TableCellStyle style, JComponent l) {

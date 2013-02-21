@@ -345,19 +345,16 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         final String finalName = proj.getBuild().getFinalName();
         final String buildDir = proj.getBuild().getDirectory();
 
-        final File file;
-        if (finalName != null) {
-            file = FileUtil.normalizeFile(new File(buildDir, finalName));
-        } else {
-            // Not sure how, but it might happen - see issue #222839
-            file = FileUtil.normalizeFile(new File(buildDir));
-        }
+        if (finalName != null && buildDir != null) {
+            File file = FileUtil.normalizeFile(new File(buildDir, finalName));
+            FileObject fo = FileUtil.toFileObject(file);
 
-        final FileObject fo = FileUtil.toFileObject(file);
-        if (fo != null) {
-            fo.refresh();
+            if (fo != null) {
+                fo.refresh();
+            }
+            return FileUtil.toFileObject(file);
         }
-        return FileUtil.toFileObject(file);
+        return null;
     }
 
     /**
