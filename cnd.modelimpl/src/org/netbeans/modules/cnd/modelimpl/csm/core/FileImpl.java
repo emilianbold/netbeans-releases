@@ -1661,7 +1661,7 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    public final State getState() {
+    /*package*/final State getState() {
         synchronized (changeStateLock) {
             return state;
         }
