@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript2.extjs.model;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.StringTokenizer;
-import javax.lang.model.element.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsFunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -98,40 +97,21 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
                         parent = jsObject;
                     }
                     else {
-                        JsObject jsObject = oldParent.getProperty(name);
                         JsObject definedObject = (JsObject) arg2.getValue();
                         if(definedObject.getModifiers().remove(org.netbeans.modules.csl.api.Modifier.PRIVATE)) {
                             definedObject.getModifiers().add(org.netbeans.modules.csl.api.Modifier.PUBLIC);
                         }
-                        if (jsObject == null) {
-                            OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());    
-                            jsObject = factory.newObject(parent, name, offsetRange, true);
-                            jsObject.addAssignment(factory.newType(definedObject.getFullyQualifiedName(), offset, false), offset);
-//                            jsObject = factory.newReference(parent, name, offsetRange, definedObject, true);
-                            parent.addProperty(name, jsObject);
-                            for (Occurrence occurrence : jsObject.getOccurrences()) {
-                                jsObject.addOccurrence(occurrence.getOffsetRange());
-                            }
-                            jsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
-                            //                                if (arg2.getValue() instanceof JsObject) {
-                            //                                    JsObject argument = (JsObject)arg2.getValue();
-                            //                                    for(JsObject property : argument.getProperties().values()) {
-                            //                                        ((JsObjectImpl)property).setParent(jsObject);
-                            //                                        jsObject.addProperty(property.getName(), property);
-                            //                                    }
-                            //                                }
+
+                        OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
+                        JsObject jsObject = factory.newObject(parent, name, offsetRange, true);
+                        jsObject.addAssignment(factory.newType(definedObject.getFullyQualifiedName(), offset, false), offset);
+
+                        parent.addProperty(name, jsObject);
+                        for (Occurrence occurrence : jsObject.getOccurrences()) {
+                            jsObject.addOccurrence(occurrence.getOffsetRange());
                         }
-                        else {
-                            OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                            JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
-                            newJsObject.addAssignment(factory.newType(definedObject.getFullyQualifiedName(), offset, false), offset);
-//                            JsObject newJsObject = factory.newReference(parent, name, offsetRange, definedObject, true);
-                            parent.addProperty(name, newJsObject);
-                            for (Occurrence occurrence : jsObject.getOccurrences()) {
-                                newJsObject.addOccurrence(occurrence.getOffsetRange());
-                            }
-                            newJsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
-                        }
+                        jsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
+
                     }
                     offset += name.length() + 1;
                 }
