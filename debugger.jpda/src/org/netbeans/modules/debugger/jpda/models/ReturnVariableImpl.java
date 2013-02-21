@@ -56,7 +56,6 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -66,7 +65,7 @@ public class ReturnVariableImpl extends AbstractObjectVariable implements Return
     
     private String methodName;
     
-    /** Creates a new instance of ClassVariableImpl */
+    /** Creates a new instance of ReturnVariableImpl */
     public ReturnVariableImpl(
         JPDADebuggerImpl debugger,
         Value returnValue,
@@ -82,24 +81,33 @@ public class ReturnVariableImpl extends AbstractObjectVariable implements Return
     }
     
     private static String getStringValue(Value v) {
-        if (v == null) return "null";
-        if (v instanceof VoidValue) return "void";
-        if (v instanceof PrimitiveValue) return v.toString();
-        else try {
-            return "#" + ObjectReferenceWrapper.uniqueID((ObjectReference) v);
-        } catch (InternalExceptionWrapper ex) {
-            return "#"+ex.getLocalizedMessage();
-        } catch (VMDisconnectedExceptionWrapper ex) {
-            return "#0";
-        } catch (ObjectCollectedExceptionWrapper ex) {
-            return "#0";
+        if (v == null) {
+            return "null";
         }
+        if (v instanceof VoidValue) {
+            return "void";
+        }
+        if (v instanceof PrimitiveValue) {
+            return v.toString();
+        } else {
+            try {
+                return "#" + ObjectReferenceWrapper.uniqueID((ObjectReference) v);
+            } catch (InternalExceptionWrapper ex) {
+                return "#"+ex.getLocalizedMessage();
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return "#0";
+            } catch (ObjectCollectedExceptionWrapper ex) {
+                return "#0";
+            }
+       }
     }
     
+    @Override
     public String methodName() {
         return methodName;
     }
 
+    @Override
     public ReturnVariableImpl clone() {
         return new ReturnVariableImpl(
                 getDebugger(),
@@ -108,6 +116,7 @@ public class ReturnVariableImpl extends AbstractObjectVariable implements Return
                 methodName);
     }
     
+    @Override
     public String toString () {
         return "ReturnVariable " + getValue();
     }
