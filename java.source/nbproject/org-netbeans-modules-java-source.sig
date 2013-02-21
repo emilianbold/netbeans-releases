@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 0.104.2
+#Version 0.110.1
 
 CLSS public abstract interface com.sun.source.tree.TreeVisitor<%0 extends java.lang.Object, %1 extends java.lang.Object>
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitAnnotation(com.sun.source.tree.AnnotationTree,{com.sun.source.tree.TreeVisitor%1})
@@ -133,6 +133,7 @@ meth public abstract int compareTo({java.lang.Comparable%0})
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
@@ -153,6 +154,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -175,11 +177,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -192,7 +197,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -511,7 +517,9 @@ meth public int getBlankLinesAfterFields()
 meth public int getBlankLinesAfterImports()
 meth public int getBlankLinesAfterMethods()
 meth public int getBlankLinesAfterPackage()
+meth public int getBlankLinesBeforeAnonymousClassClosingBrace()
 meth public int getBlankLinesBeforeClass()
+meth public int getBlankLinesBeforeClassClosingBrace()
 meth public int getBlankLinesBeforeFields()
 meth public int getBlankLinesBeforeImports()
 meth public int getBlankLinesBeforeMethods()
@@ -822,7 +830,7 @@ meth public java.util.List<? extends com.sun.source.tree.MethodTree> createOverr
 meth public static org.netbeans.api.java.source.GeneratorUtilities get(org.netbeans.api.java.source.WorkingCopy)
 meth public void copyComments(com.sun.source.tree.Tree,com.sun.source.tree.Tree,boolean)
 supr java.lang.Object
-hfds copy
+hfds CLASS_NAME,DEFAULT_RETURN_TYPE_VALUE,GENERATED_METHOD_BODY,METHOD_NAME,METHOD_RETURN_TYPE,OVERRIDDEN_METHOD_BODY,SCRIPT_ENGINE_ATTR,SIMPLE_CLASS_NAME,STRING_OUTPUT_MODE_ATTR,SUPER_METHOD_CALL,copy,manager
 hcls ClassMemberComparator,ImportsComparator
 
 CLSS public abstract org.netbeans.api.java.source.JavaParserResultTask<%0 extends org.netbeans.modules.parsing.spi.Parser$Result>
@@ -938,7 +946,7 @@ meth public static org.netbeans.api.java.source.ModificationResult runModificati
  anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public void commit() throws java.io.IOException
 supr java.lang.Object
-hfds committed,diffs,sources,tag2Span
+hfds LOG,committed,creator,diffs,lastCommitted,sources,tag2Span
 hcls CreateChange,FilteringReader,FilteringWriter
 
 CLSS public static org.netbeans.api.java.source.ModificationResult$Difference
@@ -1025,6 +1033,7 @@ meth public static java.util.Collection<org.netbeans.api.java.source.ElementHand
 meth public static java.util.List<? extends javax.annotation.processing.Completion> getAttributeValueCompletions(org.netbeans.api.java.source.CompilationInfo,javax.lang.model.element.Element,javax.lang.model.element.AnnotationMirror,javax.lang.model.element.ExecutableElement,java.lang.String)
 meth public static java.util.Set<com.sun.source.util.TreePath> computeDuplicates(org.netbeans.api.java.source.CompilationInfo,com.sun.source.util.TreePath,com.sun.source.util.TreePath,java.util.concurrent.atomic.AtomicBoolean)
 meth public static java.util.Set<java.net.URL> getDependentRoots(java.net.URL)
+meth public static java.util.Set<java.net.URL> getDependentRoots(java.net.URL,boolean)
 meth public static javax.lang.model.element.TypeElement getEnclosingTypeElement(javax.lang.model.element.Element)
  anno 0 java.lang.Deprecated()
 meth public static javax.lang.model.element.TypeElement getOutermostEnclosingTypeElement(javax.lang.model.element.Element)
@@ -1147,6 +1156,7 @@ meth public com.sun.source.tree.MethodTree Method(com.sun.source.tree.ModifiersT
 meth public com.sun.source.tree.MethodTree Method(com.sun.source.tree.ModifiersTree,java.lang.CharSequence,com.sun.source.tree.Tree,java.util.List<? extends com.sun.source.tree.TypeParameterTree>,java.util.List<? extends com.sun.source.tree.VariableTree>,java.util.List<? extends com.sun.source.tree.ExpressionTree>,com.sun.source.tree.BlockTree,com.sun.source.tree.ExpressionTree,boolean)
 meth public com.sun.source.tree.MethodTree Method(com.sun.source.tree.ModifiersTree,java.lang.CharSequence,com.sun.source.tree.Tree,java.util.List<? extends com.sun.source.tree.TypeParameterTree>,java.util.List<? extends com.sun.source.tree.VariableTree>,java.util.List<? extends com.sun.source.tree.ExpressionTree>,java.lang.String,com.sun.source.tree.ExpressionTree)
 meth public com.sun.source.tree.MethodTree Method(javax.lang.model.element.ExecutableElement,com.sun.source.tree.BlockTree)
+ anno 0 java.lang.Deprecated()
 meth public com.sun.source.tree.MethodTree addMethodParameter(com.sun.source.tree.MethodTree,com.sun.source.tree.VariableTree)
 meth public com.sun.source.tree.MethodTree addMethodThrows(com.sun.source.tree.MethodTree,com.sun.source.tree.ExpressionTree)
 meth public com.sun.source.tree.MethodTree addMethodTypeParameter(com.sun.source.tree.MethodTree,com.sun.source.tree.TypeParameterTree)

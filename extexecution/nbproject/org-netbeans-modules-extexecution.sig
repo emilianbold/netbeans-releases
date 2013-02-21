@@ -1,10 +1,14 @@
 #Signature file v4.1
-#Version 1.31.1
+#Version 1.36.1
 
 CLSS public abstract interface java.io.Closeable
+intf java.lang.AutoCloseable
 meth public abstract void close() throws java.io.IOException
 
 CLSS public abstract interface java.io.Serializable
+
+CLSS public abstract interface java.lang.AutoCloseable
+meth public abstract void close() throws java.lang.Exception
 
 CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
@@ -386,8 +390,8 @@ meth public static org.netbeans.api.extexecution.print.LineConvertor filePattern
 meth public static org.netbeans.api.extexecution.print.LineConvertor httpUrl()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds LOGGER
-hcls FilePatternConvertor,HttpUrlConvertor,ProxyLineConvertor,UrlOutputListener
+hfds DEFAULT_FILE_HANDLER,DEFAULT_HTTP_HANDLER,LOGGER
+hcls FilePatternConvertor,HttpUrlConvertor,ProxyLineConvertor
 
 CLSS public abstract interface static org.netbeans.api.extexecution.print.LineConvertors$FileLocator
  outer org.netbeans.api.extexecution.print.LineConvertors
@@ -443,6 +447,20 @@ CLSS public abstract interface org.netbeans.spi.extexecution.destroy.ProcessDest
 meth public abstract void destroy(java.lang.Process,java.util.Map<java.lang.String,java.lang.String>)
 
 CLSS abstract interface org.netbeans.spi.extexecution.destroy.package-info
+
+CLSS public abstract interface org.netbeans.spi.extexecution.open.FileOpenHandler
+meth public abstract void open(org.openide.filesystems.FileObject,int)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public abstract interface org.netbeans.spi.extexecution.open.HttpOpenHandler
+meth public abstract void open(java.net.URL)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public abstract interface org.netbeans.spi.extexecution.open.OptionOpenHandler
+meth public abstract void open(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS abstract interface org.netbeans.spi.extexecution.open.package-info
 
 CLSS abstract interface org.netbeans.spi.extexecution.package-info
 

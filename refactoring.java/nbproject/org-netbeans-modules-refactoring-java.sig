@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.37.5
+#Version 1.41.1
 
 CLSS public abstract interface com.sun.source.tree.TreeVisitor<%0 extends java.lang.Object, %1 extends java.lang.Object>
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitAnnotation(com.sun.source.tree.AnnotationTree,{com.sun.source.tree.TreeVisitor%1})
@@ -140,6 +140,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -162,11 +163,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -179,7 +183,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface org.netbeans.api.java.source.CancellableTask<%0 extends java.lang.Object>
 intf org.netbeans.api.java.source.Task<{org.netbeans.api.java.source.CancellableTask%0}>
@@ -213,7 +218,7 @@ meth public final void cancelRequest()
 meth public final void removeProgressListener(org.netbeans.modules.refactoring.api.ProgressListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds PLUGIN_STEPS,cancel,currentState,gbHandlers,plugins,pluginsWithProgress,progressListener,progressSupport,refactoringSource,scope
+hfds PLUGIN_STEPS,cancel,currentState,filtersDescription,gbHandlers,plugins,pluginsWithProgress,progressListener,progressSupport,refactoringSource,scope
 hcls ProgressL
 
 CLSS public final org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring
@@ -415,6 +420,7 @@ CLSS public final org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils
 meth public !varargs static org.netbeans.api.java.source.ClasspathInfo getClasspathInfoFor(org.openide.filesystems.FileObject[])
 meth public static <%0 extends javax.lang.model.element.Element> java.util.List<org.netbeans.api.java.source.ElementHandle<{%%0}>> elementsToHandles(java.lang.Iterable<? extends {%%0}>)
 meth public static <%0 extends javax.lang.model.element.Element> java.util.List<{%%0}> handlesToElements(java.lang.Iterable<org.netbeans.api.java.source.ElementHandle<{%%0}>>,org.netbeans.api.java.source.CompilationInfo)
+meth public static boolean isFromLibrary(org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>,org.netbeans.api.java.source.ClasspathInfo)
 meth public static boolean isOnSourceClasspath(org.openide.filesystems.FileObject)
 meth public static boolean isRefactorable(org.openide.filesystems.FileObject)
 meth public static com.sun.source.util.TreePath findEnclosingClass(org.netbeans.api.java.source.CompilationInfo,com.sun.source.util.TreePath,boolean,boolean,boolean,boolean,boolean)
@@ -627,6 +633,28 @@ meth public void cancel()
 meth public void run(org.netbeans.api.java.source.WorkingCopy) throws java.io.IOException
 supr java.lang.Object
 hfds treePathHandle,visitor
+
+CLSS public final !enum org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters
+fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters COMMENT
+fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters IMPORT
+fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters TESTFILE
+innr public final static !enum ReadWrite
+meth public java.lang.String getKey()
+meth public static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters valueOf(java.lang.String)
+meth public static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters[] values()
+supr java.lang.Enum<org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters>
+hfds key
+
+CLSS public final static !enum org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters$ReadWrite
+ outer org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters
+fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters$ReadWrite READ
+fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters$ReadWrite READ_WRITE
+fld public final static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters$ReadWrite WRITE
+meth public java.lang.String getKey()
+meth public static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters$ReadWrite valueOf(java.lang.String)
+meth public static org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters$ReadWrite[] values()
+supr java.lang.Enum<org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters$ReadWrite>
+hfds key
 
 CLSS public org.netbeans.modules.refactoring.java.spi.RefactoringVisitor
 cons public init()

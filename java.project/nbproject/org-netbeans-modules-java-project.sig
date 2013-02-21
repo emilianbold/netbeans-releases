@@ -1,9 +1,10 @@
 #Signature file v4.1
-#Version 1.46.1
+#Version 1.50.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
@@ -170,22 +171,45 @@ hfds PLATFORM_ANT_NAME,PREFERRED_PLATFORM
 
 CLSS public org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport
 innr public abstract interface static LibraryDefiner
+innr public abstract interface static PlatformUpdatedCallBack
+meth public !varargs static org.netbeans.spi.project.ui.ProjectProblemsProvider createPlatformVersionProblemProvider(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator,org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport$PlatformUpdatedCallBack,java.lang.String,java.lang.String,java.lang.String[])
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
+ anno 6 org.netbeans.api.annotations.common.NonNull()
 meth public static boolean isBroken(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.lang.String[],java.lang.String[])
+ anno 0 java.lang.Deprecated()
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider createReferenceProblemsProvider(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String[],java.lang.String[])
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
 meth public static void showAlert()
+ anno 0 java.lang.Deprecated()
 meth public static void showAlert(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String[],java.lang.String[])
+ anno 0 java.lang.Deprecated()
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
  anno 3 org.netbeans.api.annotations.common.NonNull()
  anno 4 org.netbeans.api.annotations.common.NonNull()
  anno 5 org.netbeans.api.annotations.common.NonNull()
 meth public static void showCustomizer(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.lang.String[],java.lang.String[])
+ anno 0 java.lang.Deprecated()
 supr java.lang.Object
-hfds BROKEN_ALERT_TIMEOUT,RP,context,rpTask,suppressBrokenRefAlert
+hcls ProjectDecorator
 
 CLSS public abstract interface static org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport$LibraryDefiner
  outer org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport
 meth public abstract java.util.concurrent.Callable<org.netbeans.api.project.libraries.Library> missingLibrary(java.lang.String)
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
+
+CLSS public abstract interface static org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport$PlatformUpdatedCallBack
+ outer org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport
+meth public abstract void platformPropertyUpdated(org.netbeans.api.java.platform.JavaPlatform)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public final org.netbeans.spi.java.project.support.ui.EditJarSupport
 cons public init()

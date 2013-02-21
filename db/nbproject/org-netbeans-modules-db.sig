@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.48.2
+#Version 1.51.1
 
 CLSS public java.beans.FeatureDescriptor
 cons public init()
@@ -10,6 +10,7 @@ meth public java.lang.Object getValue(java.lang.String)
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getName()
 meth public java.lang.String getShortDescription()
+meth public java.lang.String toString()
 meth public java.util.Enumeration<java.lang.String> attributeNames()
 meth public void setDisplayName(java.lang.String)
 meth public void setExpert(boolean)
@@ -19,11 +20,12 @@ meth public void setPreferred(boolean)
 meth public void setShortDescription(java.lang.String)
 meth public void setValue(java.lang.String,java.lang.Object)
 supr java.lang.Object
-hfds classRef,displayName,expert,hidden,name,preferred,shortDescription,table
+hfds TRANSIENT,classRef,displayName,expert,hidden,name,preferred,shortDescription,table
 
 CLSS public abstract interface java.io.Serializable
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -46,11 +48,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -63,7 +68,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.util.EventListener
 
@@ -261,6 +267,7 @@ meth public boolean canCopy()
 meth public boolean canCut()
 meth public boolean canDestroy()
 meth public boolean canRename()
+meth public java.awt.datatransfer.Transferable clipboardCopy() throws java.io.IOException
 meth public java.lang.Object getPropertyValue(java.lang.String)
 meth public java.util.Collection<? extends org.openide.nodes.Node> getChildNodes()
 meth public java.util.Collection<? extends org.openide.nodes.Node> getChildNodesSync()
@@ -517,7 +524,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

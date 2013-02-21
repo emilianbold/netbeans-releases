@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.28.1
+#Version 1.32.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -9,6 +9,7 @@ meth public abstract int compareTo({java.lang.Comparable%0})
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
@@ -67,6 +68,19 @@ CLSS public abstract interface !annotation java.lang.annotation.Target
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
+
+CLSS public java.util.EventObject
+cons public init(java.lang.Object)
+fld protected java.lang.Object source
+intf java.io.Serializable
+meth public java.lang.Object getSource()
+meth public java.lang.String toString()
+supr java.lang.Object
+hfds serialVersionUID
+
+CLSS public javax.swing.event.ChangeEvent
+cons public init(java.lang.Object)
+supr java.util.EventObject
 
 CLSS public abstract interface org.netbeans.api.fileinfo.NonRecursiveFolder
 meth public abstract org.openide.filesystems.FileObject getFolder()
@@ -135,7 +149,7 @@ meth public final static org.netbeans.api.queries.VisibilityQuery getDefault()
 meth public void addChangeListener(javax.swing.event.ChangeListener)
 meth public void removeChangeListener(javax.swing.event.ChangeListener)
 supr java.lang.Object
-hfds INSTANCE,cachedVqiInstances,changeSupport,resultListener,vqiListener,vqiResult
+hfds INSTANCE,cachedVqiInstances,listeners,resultListener,vqiListener,vqiResult
 hcls ResultListener,VqiChangedListener
 
 CLSS public abstract interface org.netbeans.spi.queries.CollocationQueryImplementation
@@ -162,6 +176,12 @@ meth public abstract int getSharability(java.io.File)
 
 CLSS public abstract interface org.netbeans.spi.queries.SharabilityQueryImplementation2
 meth public abstract org.netbeans.api.queries.SharabilityQuery$Sharability getSharability(java.net.URI)
+
+CLSS public final org.netbeans.spi.queries.VisibilityQueryChangeEvent
+cons public init(java.lang.Object,org.openide.filesystems.FileObject[])
+meth public org.openide.filesystems.FileObject[] getFileObjects()
+supr javax.swing.event.ChangeEvent
+hfds fileObjects
 
 CLSS public abstract interface org.netbeans.spi.queries.VisibilityQueryImplementation
 meth public abstract boolean isVisible(org.openide.filesystems.FileObject)

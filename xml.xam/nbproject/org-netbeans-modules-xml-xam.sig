@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.18.1
+#Version 1.22.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -24,6 +24,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -46,11 +47,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -63,7 +67,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.util.EventListener
 
@@ -437,7 +442,7 @@ CLSS public abstract interface org.netbeans.modules.xml.xam.Referenceable
 CLSS public abstract org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent<%0 extends org.netbeans.modules.xml.xam.dom.DocumentComponent<{org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent%0}>>
 cons public init(org.netbeans.modules.xml.xam.dom.AbstractDocumentModel,org.w3c.dom.Element)
 innr public static PrefixAttribute
-intf org.netbeans.modules.xml.xam.dom.DocumentComponent<{org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent%0}>
+intf org.netbeans.modules.xml.xam.dom.DocumentComponent2<{org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent%0}>
 intf org.netbeans.modules.xml.xam.dom.DocumentModelAccess$NodeUpdater
 meth protected <%0 extends org.w3c.dom.Node> void updateReference(org.w3c.dom.Element,java.util.List<{%%0}>)
 meth protected abstract java.lang.Object getAttributeValueOf(org.netbeans.modules.xml.xam.dom.Attribute,java.lang.String)
@@ -483,6 +488,7 @@ meth public <%0 extends org.w3c.dom.Node> void updateReference(java.util.List<{%
 meth public boolean isInDocumentModel()
 meth public boolean referencesSameNode(org.w3c.dom.Node)
 meth public int findAttributePosition(java.lang.String)
+meth public int findEndPosition()
 meth public int findPosition()
 meth public java.lang.String getAnyAttribute(javax.xml.namespace.QName)
 meth public java.lang.String getAttribute(org.netbeans.modules.xml.xam.dom.Attribute)
@@ -621,6 +627,10 @@ meth public abstract org.w3c.dom.Element getPeer()
 meth public abstract void setAttribute(java.lang.String,org.netbeans.modules.xml.xam.dom.Attribute,java.lang.Object)
 meth public abstract {org.netbeans.modules.xml.xam.dom.DocumentComponent%0} findChildComponent(org.w3c.dom.Element)
 
+CLSS public abstract interface org.netbeans.modules.xml.xam.dom.DocumentComponent2<%0 extends org.netbeans.modules.xml.xam.dom.DocumentComponent>
+intf org.netbeans.modules.xml.xam.dom.DocumentComponent<{org.netbeans.modules.xml.xam.dom.DocumentComponent2%0}>
+meth public abstract int findEndPosition()
+
 CLSS public abstract interface org.netbeans.modules.xml.xam.dom.DocumentModel<%0 extends org.netbeans.modules.xml.xam.dom.DocumentComponent<{org.netbeans.modules.xml.xam.dom.DocumentModel%0}>>
 intf org.netbeans.modules.xml.xam.Model<{org.netbeans.modules.xml.xam.dom.DocumentModel%0}>
 meth public abstract boolean areSameNodes(org.w3c.dom.Node,org.w3c.dom.Node)
@@ -679,6 +689,11 @@ CLSS public abstract interface static org.netbeans.modules.xml.xam.dom.DocumentM
  outer org.netbeans.modules.xml.xam.dom.DocumentModelAccess
 meth public abstract <%0 extends org.w3c.dom.Node> void updateReference(java.util.List<{%%0}>)
 meth public abstract void updateReference(org.w3c.dom.Element)
+
+CLSS public abstract org.netbeans.modules.xml.xam.dom.DocumentModelAccess2
+cons public init()
+meth public abstract int findEndPosition(org.w3c.dom.Node)
+supr org.netbeans.modules.xml.xam.dom.DocumentModelAccess
 
 CLSS public abstract interface org.netbeans.modules.xml.xam.dom.ElementIdentity
 meth public abstract boolean compareElement(org.w3c.dom.Element,org.w3c.dom.Element,org.w3c.dom.Document,org.w3c.dom.Document)
@@ -913,7 +928,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

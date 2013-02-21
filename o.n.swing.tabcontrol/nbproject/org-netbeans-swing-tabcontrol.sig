@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.36.1
+#Version 1.42.1
 
 CLSS public abstract java.awt.AWTEvent
 cons public init(java.awt.Event)
@@ -33,7 +33,7 @@ meth public java.lang.String paramString()
 meth public java.lang.String toString()
 meth public void setSource(java.lang.Object)
 supr java.util.EventObject
-hfds INPUT_METHODS_ENABLED_MASK,acc,bdata,focusManagerIsDispatching,inputEvent_CanAccessSystemClipboard_Field,isPosted,isSystemGenerated,serialVersionUID
+hfds INPUT_METHODS_ENABLED_MASK,acc,bdata,focusManagerIsDispatching,inputEvent_CanAccessSystemClipboard_Field,isPosted,isSystemGenerated,log,serialVersionUID
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -273,6 +273,7 @@ meth public void resize(int,int)
  anno 0 java.lang.Deprecated()
 meth public void resize(java.awt.Dimension)
  anno 0 java.lang.Deprecated()
+meth public void revalidate()
 meth public void setBackground(java.awt.Color)
 meth public void setBounds(int,int,int,int)
 meth public void setBounds(java.awt.Rectangle)
@@ -306,8 +307,8 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,acc,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,acc,accessibleContext,actionListenerK,adjustmentListenerK,appContext,autoFocusTransferOnDisposal,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dropTarget,enabled,eventCache,eventLog,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,ProxyCapabilities,SingleBufferStrategy
 
 CLSS protected abstract java.awt.Component$AccessibleAWTComponent
  outer java.awt.Component
@@ -374,6 +375,7 @@ meth public boolean isAncestorOf(java.awt.Component)
 meth public boolean isFocusCycleRoot()
 meth public boolean isFocusCycleRoot(java.awt.Container)
 meth public boolean isFocusTraversalPolicySet()
+meth public boolean isValidateRoot()
 meth public final boolean isFocusTraversalPolicyProvider()
 meth public final void setFocusTraversalPolicyProvider(boolean)
 meth public float getAlignmentX()
@@ -438,12 +440,11 @@ meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTK
 meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
 meth public void setFont(java.awt.Font)
 meth public void setLayout(java.awt.LayoutManager)
-meth public void transferFocusBackward()
 meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,descendUnconditionallyWhenValidating,descendantsCount,dispatcher,eventLog,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,isJavaAwtSmartInvalidate,layoutMgr,listeningBoundsChildren,listeningChildren,log,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS protected java.awt.Container$AccessibleAWTContainer
@@ -613,6 +614,7 @@ meth public abstract int compareTo({java.lang.Comparable%0})
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
@@ -770,7 +772,7 @@ meth public void setAccessibleDescription(java.lang.String)
 meth public void setAccessibleName(java.lang.String)
 meth public void setAccessibleParent(javax.accessibility.Accessible)
 supr java.lang.Object
-hfds accessibleChangeSupport,relationSet
+hfds accessibleChangeSupport,nativeAXResource,relationSet
 
 CLSS public abstract interface javax.accessibility.AccessibleExtendedComponent
 intf javax.accessibility.AccessibleComponent
@@ -957,6 +959,7 @@ meth public abstract void setEnabled(boolean)
 CLSS public javax.swing.JButton
 cons public init()
 cons public init(java.lang.String)
+ anno 0 java.beans.ConstructorProperties(java.lang.String[] value=["text"])
 cons public init(java.lang.String,javax.swing.Icon)
 cons public init(javax.swing.Action)
 cons public init(javax.swing.Icon)
@@ -985,6 +988,7 @@ fld public final static int WHEN_IN_FOCUSED_WINDOW = 2
 fld public final static java.lang.String TOOL_TIP_TEXT_KEY = "ToolTipText"
 innr public abstract AccessibleJComponent
 intf java.io.Serializable
+meth protected boolean isPaintingOrigin()
 meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
 meth protected boolean requestFocusInWindow(boolean)
 meth protected java.awt.Graphics getComponentGraphics(java.awt.Graphics)
@@ -1128,7 +1132,7 @@ meth public void unregisterKeyboardAction(javax.swing.KeyStroke)
 meth public void update(java.awt.Graphics)
 meth public void updateUI()
 supr java.awt.Container
-hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_NOTIFIER_KEY,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_KEY,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,TRANSFER_HANDLER_KEY,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
+hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,REVALIDATE_RUNNABLE_SCHEDULED,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
 hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
 
 CLSS public abstract javax.swing.JComponent$AccessibleJComponent
@@ -1804,6 +1808,7 @@ meth public final void makeTabVisible(int)
 meth public final void removeActionListener(java.awt.event.ActionListener)
 meth public final void requestAttention(int)
 meth public final void setActive(boolean)
+meth public final void setAttentionHighlight(int,boolean)
 meth public final void setShowCloseButton(boolean)
 meth public final void updateUI()
 meth public int tabForCoordinate(java.awt.Point)
@@ -1850,6 +1855,7 @@ meth protected abstract void requestAttention(int)
 meth protected final boolean shouldPerformAction(java.lang.String,int,java.awt.event.MouseEvent)
 meth protected final boolean shouldPerformAction(org.netbeans.swing.tabcontrol.event.TabActionEvent)
 meth protected java.awt.Font getTxtFont()
+meth protected void setAttentionHighlight(int,boolean)
 meth public abstract int dropIndexOfPoint(java.awt.Point)
 meth public abstract int tabForCoordinate(java.awt.Point)
 meth public abstract java.awt.Polygon getExactTabIndication(int)
@@ -1925,6 +1931,8 @@ meth public final void cancelRequestAttention(org.netbeans.swing.tabcontrol.TabD
 meth public final void removeActionListener(java.awt.event.ActionListener)
 meth public final void requestAttention(int)
 meth public final void setActive(boolean)
+meth public final void setAttentionHighlight(int,boolean)
+meth public final void setAttentionHighlight(org.netbeans.swing.tabcontrol.TabData,boolean)
 meth public final void setComponentConverter(org.netbeans.swing.tabcontrol.ComponentConverter)
 meth public final void setContentPolicy(int)
 meth public final void setShowCloseButton(boolean)
@@ -1961,6 +1969,7 @@ meth protected abstract void cancelRequestAttention(int)
 meth protected abstract void requestAttention(int)
 meth protected boolean uichange()
 meth protected final boolean shouldPerformAction(java.lang.String,int,java.awt.event.MouseEvent)
+meth protected void setAttentionHighlight(int,boolean)
 meth public abstract boolean isShowCloseButton()
 meth public abstract int dropIndexOfPoint(java.awt.Point)
 meth public abstract int tabForCoordinate(java.awt.Point)
@@ -2031,6 +2040,7 @@ meth public abstract void setTopComponents(org.openide.windows.TopComponent[],or
 meth public abstract void setTransparent(boolean)
 meth public boolean isBusy(org.openide.windows.TopComponent)
 meth public void makeBusy(org.openide.windows.TopComponent,boolean)
+meth public void setAttentionHighlight(org.openide.windows.TopComponent,boolean)
 supr java.lang.Object
 
 CLSS public abstract interface static org.netbeans.swing.tabcontrol.customtabs.Tabbed$Accessor
@@ -2118,6 +2128,7 @@ meth protected final boolean isAttention()
 meth protected final boolean isBusy()
 meth protected final boolean isClipLeft()
 meth protected final boolean isClipRight()
+meth protected final boolean isHighlight()
 meth protected final boolean isLeftmost()
 meth protected final boolean isNextTabArmed()
 meth protected final boolean isNextTabSelected()
@@ -2230,6 +2241,7 @@ meth protected abstract void paintTabBackground(java.awt.Graphics,int,int,int,in
 meth protected abstract void paintTabBorder(java.awt.Graphics,int,int,int,int,int)
 meth protected abstract void paintTabContent(java.awt.Graphics,int,java.lang.String,int,int,int,int)
 meth protected boolean isAttention(int)
+meth protected boolean isHighlight(int)
 meth protected final boolean isActive()
 meth protected final boolean isFocused(int)
 meth protected final boolean isSelected(int)
@@ -2247,6 +2259,7 @@ meth protected void cancelRequestAttention(int)
 meth protected void installControlButtons()
 meth protected void paintDisplayerBackground(java.awt.Graphics,javax.swing.JComponent)
 meth protected void requestAttention(int)
+meth protected void setAttentionHighlight(int,boolean)
 meth public final org.netbeans.swing.tabcontrol.plaf.TabLayoutModel getLayoutModel()
 meth public int dropIndexOfPoint(java.awt.Point)
 meth public int tabForCoordinate(java.awt.Point)
@@ -2437,6 +2450,7 @@ meth protected final java.awt.Point getLastKnownMouseLocation()
 meth protected final void cancelRequestAttention(int)
 meth protected final void getTabsVisibleArea(java.awt.Rectangle)
 meth protected final void requestAttention(int)
+meth protected final void setAttentionHighlight(int,boolean)
 meth protected int createRepaintPolicy()
 meth protected int getFirstVisibleTab()
 meth protected int getLastVisibleTab()
@@ -2618,6 +2632,7 @@ meth protected void installContentDisplayer()
 meth protected void installListeners()
 meth protected void installTabDisplayer()
 meth protected void requestAttention(int)
+meth protected void setAttentionHighlight(int,boolean)
 meth protected void uninstall()
 meth protected void uninstallDisplayers()
 meth protected void uninstallListeners()
@@ -2967,6 +2982,7 @@ fld public final static int CHANGE_TAB_TO_TAB = 1
 fld public final static int CLIP_LEFT = 2
 fld public final static int CLIP_RIGHT = 1
 fld public final static int CLOSE_BUTTON_ARMED = 512
+fld public final static int HIGHLIGHT = 131072
 fld public final static int LEFTMOST = 128
 fld public final static int MOUSE_IN_TABS_AREA = 4096
 fld public final static int MOUSE_PRESSED_IN_CLOSE_BUTTON = 8192
@@ -3000,12 +3016,14 @@ meth public final int setMousePressedInCloseButton(int)
 meth public final int setPressed(int)
 meth public final int setSelected(int)
 meth public final void addAlarmTab(int)
+meth public final void addHighlightTab(int)
 meth public final void removeAlarmTab(int)
+meth public final void removeHighlightTab(int)
 meth public int getState(int)
 meth public java.lang.String toString()
 meth public void clearTransientStates()
 supr java.lang.Object
-hfds active,alarmTabs,alarmTimer,attentionToggle,closeButtonContainsMouseIndex,containsMouseIndex,curr,lastAffected,lastChange,lastChangeType,mouseInTabsArea,mousePressedInCloseButtonIndex,pressedIndex,prev,selectedIndex
+hfds active,alarmTabs,alarmTimer,attentionToggle,closeButtonContainsMouseIndex,containsMouseIndex,curr,highlightTabs,lastAffected,lastChange,lastChangeType,mouseInTabsArea,mousePressedInCloseButtonIndex,pressedIndex,prev,selectedIndex
 
 CLSS public org.netbeans.swing.tabcontrol.plaf.ToolbarTabDisplayerUI
 cons public init(org.netbeans.swing.tabcontrol.TabDisplayer)
@@ -3084,7 +3102,6 @@ meth public javax.swing.Icon getButtonIcon(int,int)
 meth public static javax.swing.plaf.ComponentUI createUI(javax.swing.JComponent)
 meth public void paintBackground(java.awt.Graphics)
 supr org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI
-hfds buttonIconPaths,scratch5
 
 CLSS public org.netbeans.swing.tabcontrol.plaf.WinVistaSlidingButtonUI
 cons public init()
@@ -3103,8 +3120,6 @@ meth public static javax.swing.plaf.ComponentUI createUI(javax.swing.JComponent)
 meth public void installUI(javax.swing.JComponent)
 meth public void postTabAction(org.netbeans.swing.tabcontrol.event.TabActionEvent)
 supr org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI
-hfds BUMP_X_PAD,BUMP_Y_PAD_BOTTOM,BUMP_Y_PAD_UPPER,ICON_X_PAD,TXT_X_PAD,TXT_Y_PAD,borderC,borderInnerC,buttonIconPaths,colorsReady,focusFillBrightLowerC,focusFillDarkLowerC,focusFillUpperC,mouseOverFillBrightLowerC,mouseOverFillBrightUpperC,mouseOverFillDarkLowerC,mouseOverFillDarkUpperC,prefSize,selBorderC,selFillC,tempRect,txtC,unselFillBrightLowerC,unselFillBrightUpperC,unselFillDarkLowerC,unselFillDarkUpperC
-hcls OwnController
 
 CLSS public final org.netbeans.swing.tabcontrol.plaf.WinXPEditorTabDisplayerUI
 cons public init(org.netbeans.swing.tabcontrol.TabDisplayer)
@@ -3145,6 +3160,32 @@ meth public void postTabAction(org.netbeans.swing.tabcontrol.event.TabActionEven
 supr org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI
 hfds BUMP_X_PAD,BUMP_Y_PAD_BOTTOM,BUMP_Y_PAD_UPPER,HIGHLIGHTED_RAISE,ICON_X_PAD,TXT_X_PAD,TXT_Y_PAD,bgFillC,borderC,bottomBorderC,buttonIconPaths,colorsReady,focusFillBrightC,focusFillDarkC,prefSize,selBorderC,selFillC,tempRect,txtC,unselFillBrightC,unselFillDarkC
 hcls OwnController
+
+CLSS public final org.netbeans.swing.tabcontrol.plaf.Windows8EditorTabDisplayerUI
+cons public init(org.netbeans.swing.tabcontrol.TabDisplayer)
+meth protected java.awt.Rectangle getTabRectForRepaint(int,java.awt.Rectangle)
+meth protected org.netbeans.swing.tabcontrol.plaf.TabCellRenderer createDefaultRenderer()
+meth protected void paintAfterTabs(java.awt.Graphics)
+meth public java.awt.Dimension getPreferredSize(javax.swing.JComponent)
+meth public javax.swing.Icon getButtonIcon(int,int)
+meth public static javax.swing.plaf.ComponentUI createUI(javax.swing.JComponent)
+meth public void paintBackground(java.awt.Graphics)
+supr org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI
+hfds buttonIconPaths
+
+CLSS public final org.netbeans.swing.tabcontrol.plaf.Windows8ViewTabDisplayerUI
+meth protected java.awt.Font getTxtFont()
+meth protected org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI$Controller createController()
+meth protected void paintTabBackground(java.awt.Graphics,int,int,int,int,int)
+meth protected void paintTabBorder(java.awt.Graphics,int,int,int,int,int)
+meth protected void paintTabContent(java.awt.Graphics,int,java.lang.String,int,int,int,int)
+meth public java.awt.Dimension getPreferredSize(javax.swing.JComponent)
+meth public javax.swing.Icon getButtonIcon(int,int)
+meth public static javax.swing.plaf.ComponentUI createUI(javax.swing.JComponent)
+meth public void installUI(javax.swing.JComponent)
+meth public void postTabAction(org.netbeans.swing.tabcontrol.event.TabActionEvent)
+supr org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI
+hfds attentionFillLowerC,attentionFillUpperC,buttonIconPaths,colorsReady,focusFillLowerC,focusFillUpperC,mouseOverFillLowerC,mouseOverFillUpperC,selFillC,unselFillLowerC,unselFillUpperC
 
 CLSS public org.netbeans.swing.tabcontrol.plaf.WindowsSlidingButtonUI
 cons protected init()
