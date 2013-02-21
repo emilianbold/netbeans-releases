@@ -2,13 +2,9 @@
 #Version 1.36.1
 
 CLSS public abstract interface java.io.Closeable
-intf java.lang.AutoCloseable
 meth public abstract void close() throws java.io.IOException
 
 CLSS public abstract interface java.io.Serializable
-
-CLSS public abstract interface java.lang.AutoCloseable
-meth public abstract void close() throws java.lang.Exception
 
 CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})

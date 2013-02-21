@@ -24,7 +24,6 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Exception
-cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -47,14 +46,11 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
-cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
-meth public final java.lang.Throwable[] getSuppressed()
-meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -67,8 +63,7 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
-hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
+hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
 
 CLSS public abstract interface java.util.EventListener
 

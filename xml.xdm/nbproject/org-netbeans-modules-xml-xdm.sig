@@ -64,7 +64,6 @@ meth public java.lang.Object[] toArray()
 meth public java.lang.String toString()
 meth public void clear()
 supr java.lang.Object
-hfds MAX_ARRAY_SIZE
 
 CLSS public abstract java.util.AbstractMap<%0 extends java.lang.Object, %1 extends java.lang.Object>
 cons protected init()
@@ -144,8 +143,8 @@ meth public {java.util.HashMap%1} get(java.lang.Object)
 meth public {java.util.HashMap%1} put({java.util.HashMap%0},{java.util.HashMap%1})
 meth public {java.util.HashMap%1} remove(java.lang.Object)
 supr java.util.AbstractMap<{java.util.HashMap%0},{java.util.HashMap%1}>
-hfds ALTERNATIVE_HASHING_THRESHOLD_DEFAULT,DEFAULT_INITIAL_CAPACITY,DEFAULT_LOAD_FACTOR,MAXIMUM_CAPACITY,entrySet,hashSeed,loadFactor,modCount,serialVersionUID,size,table,threshold,useAltHashing
-hcls Entry,EntryIterator,EntrySet,HashIterator,Holder,KeyIterator,KeySet,ValueIterator,Values
+hfds DEFAULT_INITIAL_CAPACITY,DEFAULT_LOAD_FACTOR,MAXIMUM_CAPACITY,entrySet,loadFactor,modCount,serialVersionUID,size,table,threshold
+hcls Entry,EntryIterator,EntrySet,HashIterator,KeyIterator,KeySet,ValueIterator,Values
 
 CLSS public java.util.HashSet<%0 extends java.lang.Object>
 cons public init()

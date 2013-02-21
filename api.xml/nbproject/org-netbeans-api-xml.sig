@@ -10,7 +10,6 @@ meth public java.lang.Object getValue(java.lang.String)
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getName()
 meth public java.lang.String getShortDescription()
-meth public java.lang.String toString()
 meth public java.util.Enumeration<java.lang.String> attributeNames()
 meth public void setDisplayName(java.lang.String)
 meth public void setExpert(boolean)
@@ -20,7 +19,7 @@ meth public void setPreferred(boolean)
 meth public void setShortDescription(java.lang.String)
 meth public void setValue(java.lang.String,java.lang.Object)
 supr java.lang.Object
-hfds TRANSIENT,classRef,displayName,expert,hidden,name,preferred,shortDescription,table
+hfds classRef,displayName,expert,hidden,name,preferred,shortDescription,table
 
 CLSS public java.lang.Object
 cons public init()

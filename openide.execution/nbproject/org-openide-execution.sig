@@ -1,14 +1,7 @@
 #Signature file v4.1
 #Version 1.30.1
 
-CLSS public abstract interface java.io.Closeable
-intf java.lang.AutoCloseable
-meth public abstract void close() throws java.io.IOException
-
 CLSS public abstract interface java.io.Serializable
-
-CLSS public abstract interface java.lang.AutoCloseable
-meth public abstract void close() throws java.lang.Exception
 
 CLSS public abstract java.lang.ClassLoader
 cons protected init()
@@ -24,14 +17,12 @@ meth protected final void resolveClass(java.lang.Class<?>)
 meth protected final void setSigners(java.lang.Class<?>,java.lang.Object[])
 meth protected java.lang.Class<?> findClass(java.lang.String) throws java.lang.ClassNotFoundException
 meth protected java.lang.Class<?> loadClass(java.lang.String,boolean) throws java.lang.ClassNotFoundException
-meth protected java.lang.Object getClassLoadingLock(java.lang.String)
 meth protected java.lang.Package definePackage(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.net.URL)
 meth protected java.lang.Package getPackage(java.lang.String)
 meth protected java.lang.Package[] getPackages()
 meth protected java.lang.String findLibrary(java.lang.String)
 meth protected java.net.URL findResource(java.lang.String)
 meth protected java.util.Enumeration<java.net.URL> findResources(java.lang.String) throws java.io.IOException
-meth protected static boolean registerAsParallelCapable()
 meth public final java.lang.ClassLoader getParent()
 meth public java.io.InputStream getResourceAsStream(java.lang.String)
 meth public java.lang.Class<?> loadClass(java.lang.String) throws java.lang.ClassNotFoundException
@@ -46,13 +37,12 @@ meth public void setClassAssertionStatus(java.lang.String,boolean)
 meth public void setDefaultAssertionStatus(boolean)
 meth public void setPackageAssertionStatus(java.lang.String,boolean)
 supr java.lang.Object
-hfds assertionLock,classAssertionStatus,classes,defaultAssertionStatus,defaultDomain,domains,loadedLibraryNames,nativeLibraries,nativeLibraryContext,nocerts,package2certs,packageAssertionStatus,packages,parallelLockMap,parent,scl,sclSet,sys_paths,systemNativeLibraries,usr_paths
-hcls NativeLibrary,ParallelLoaders
+hfds classAssertionStatus,classes,defaultAssertionStatus,defaultDomain,domains,loadedLibraryNames,nativeLibraries,nativeLibraryContext,nocerts,package2certs,packageAssertionStatus,packages,parent,scl,sclSet,sys_paths,systemNativeLibraries,usr_paths
+hcls NativeLibrary
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
@@ -102,20 +92,17 @@ CLSS public java.net.URLClassLoader
 cons public init(java.net.URL[])
 cons public init(java.net.URL[],java.lang.ClassLoader)
 cons public init(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)
-intf java.io.Closeable
 meth protected java.lang.Class<?> findClass(java.lang.String) throws java.lang.ClassNotFoundException
 meth protected java.lang.Package definePackage(java.lang.String,java.util.jar.Manifest,java.net.URL)
 meth protected java.security.PermissionCollection getPermissions(java.security.CodeSource)
 meth protected void addURL(java.net.URL)
-meth public java.io.InputStream getResourceAsStream(java.lang.String)
 meth public java.net.URL findResource(java.lang.String)
 meth public java.net.URL[] getURLs()
 meth public java.util.Enumeration<java.net.URL> findResources(java.lang.String) throws java.io.IOException
 meth public static java.net.URLClassLoader newInstance(java.net.URL[])
 meth public static java.net.URLClassLoader newInstance(java.net.URL[],java.lang.ClassLoader)
-meth public void close() throws java.io.IOException
 supr java.security.SecureClassLoader
-hfds acc,closeables,ucp
+hfds acc,defineClassNoVerifyMethod,ucp
 
 CLSS public java.security.SecureClassLoader
 cons protected init()
@@ -124,7 +111,7 @@ meth protected final java.lang.Class<?> defineClass(java.lang.String,byte[],int,
 meth protected final java.lang.Class<?> defineClass(java.lang.String,java.nio.ByteBuffer,java.security.CodeSource)
 meth protected java.security.PermissionCollection getPermissions(java.security.CodeSource)
 supr java.lang.ClassLoader
-hfds debug,initialized,pdcache
+hfds debug,defineClassCondMethod,initialized,pdcache
 
 CLSS public abstract org.openide.ServiceType
  anno 0 java.lang.Deprecated()
