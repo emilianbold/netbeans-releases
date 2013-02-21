@@ -742,7 +742,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      */
     @Override
     public GlassFishAdminInterface getAdminInterface() {
-        return GlassFishAdminInterface.HTTP;
+//        if (version.ordinal() < GlassFishVersion.GF_4.ordinal())
+            return GlassFishAdminInterface.HTTP;
+//        else
+//            return GlassFishAdminInterface.REST;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1223,7 +1226,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             tabbedPane.add(page);
         }
         
-        return tabbedPane != null ? tabbedPane : commonCustomizer;
+        return tabbedPane;
     }
 
     @Override
