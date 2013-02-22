@@ -86,9 +86,4 @@ public class MobilitySetup extends PerformanceTestCase2 {
             Exceptions.printStackTrace(ex);
         }
     }
-    
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }
-
 }

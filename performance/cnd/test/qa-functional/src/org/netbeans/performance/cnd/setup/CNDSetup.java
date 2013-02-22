@@ -69,11 +69,6 @@ public class CNDSetup extends PerformanceTestCase2 {
         }
     }
 
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }
-
-
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
     }

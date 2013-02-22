@@ -236,11 +236,6 @@ public class CommonUtilities {
         maximizeWholeNetbeansWindow();
     }
     
-    public static void closeTaskWindow() {
-        TopComponentOperator tco = new TopComponentOperator("Tasks");
-        tco.close();
-    }
-    
     public static void installPlugin(String name) {
 
        PluginsOperator po = PluginsOperator.invoke();
