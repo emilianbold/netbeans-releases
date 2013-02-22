@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
@@ -192,7 +193,7 @@ public final class Model {
             }
             sb.append(" : "); // NOI18N
             if (path.contains(entry.getValue())) {
-                sb.append("Cycle to ").append(entry.getValue().getFullyQualifiedName()); // NOI18N
+                sb.append("Cycle to ").append(ModelUtils.createFQN(entry.getValue())); // NOI18N
             } else {
                 dumpModel(printer, entry.getValue(), sb, identBuilder.toString(), path);
             }
