@@ -86,6 +86,7 @@ import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
 import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
+import com.sun.source.tree.ExpressionTree;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
@@ -1980,7 +1981,24 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public Void visitReference(ReferenceTree node, Void p) {
-        print(node.getSignature());
+        //TODO: should use formatting settings:
+        if (node.getClassReference() != null) {
+            print(node.getClassReference().toString());
+        }
+        if (node.getMemberName() != null) {
+            print("#");
+            print(node.getMemberName().toString());
+        }
+        if (node.getMethodParameters() != null) {
+            print("(");
+            boolean first = false;
+            for (ExpressionTree param : node.getMethodParameters()) {
+                if (!first) print(", ");
+                print(param.toString());
+                first = false;
+            }
+            print(")");
+        }
         return null;
     }
 
