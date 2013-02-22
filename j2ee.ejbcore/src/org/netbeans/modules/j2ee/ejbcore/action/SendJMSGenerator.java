@@ -310,7 +310,7 @@ public final class SendJMSGenerator {
                 "javax.jms.JMSConnectionFactory", //NOI18N
                 fieldName,
                 fieldType,
-                Collections.singletonMap("value", destinationName),  //NOI18N
+                Collections.singletonMap("", destinationName),  //NOI18N
                 InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
                 );
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
