@@ -100,7 +100,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     }
                 } else {
                     Collection<? extends IndexResult> items = jsIndex.query(
-                            JsIndex.FIELD_FQ_NAME, ModelUtils.createFQN(object), QuerySupport.Kind.EXACT,
+                            JsIndex.FIELD_FQ_NAME, object.getFullyQualifiedName(), QuerySupport.Kind.EXACT,
                             JsIndex.TERMS_BASIC_INFO);
                     indexResults.addAll(items);
                     DeclarationLocation location = processIndexResult(indexResults);
