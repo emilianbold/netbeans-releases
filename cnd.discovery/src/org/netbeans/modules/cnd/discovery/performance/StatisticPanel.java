@@ -55,6 +55,9 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.discovery.performance.AnalyzeStat.AgregatedStat;
+import static org.netbeans.modules.cnd.discovery.performance.PerformanceIssueDetector.NANO_TO_SEC;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
@@ -77,6 +80,8 @@ public class StatisticPanel extends JPanel {
         slowFolders.setEditorKit(new HTMLEditorKit());
         unusedFolders.setBackground(getBackground());
         unusedFolders.setEditorKit(new HTMLEditorKit());
+        infiniteParsing.setBackground(getBackground());
+        infiniteParsing.setEditorKit(new HTMLEditorKit());
         activeInstance = PerformanceIssueDetector.getActiveInstance();
         update = RP.post(new Runnable() {
             @Override
@@ -102,8 +107,9 @@ public class StatisticPanel extends JPanel {
     }
 
     @Messages({
-        "Details.slowest.unused.folders=<table><tbody><tr><th>Slowest still unused folder</th><th>Items</th><th>Time (s)</th></tr>",
-        "Details.slowest.reading.folders=<table><tbody><tr><th>Slowest reading folder</th><th>Lines</th><th>Time (s)</th></tr>",
+        "Details.slowest.unused.folders=<table><tbody><tr><th>Slowest still unused folder</th><th>Items</th><th>Time,s</th></tr>",
+        "Details.slowest.reading.folders=<table><tbody><tr><th>Slowest reading folder</th><th>Lines</th><th>Time,s</th></tr>",
+        "Details.slowest.parsing.files=<table><tbody><tr><th>Possible infinite parsing files</th><th>Time (s)</th></tr>",
     })
     private void countStatistic() {
         if (closed.get()) {
@@ -154,10 +160,12 @@ public class StatisticPanel extends JPanel {
             }
             {
                 long count = 0;
+                long files = 0;
                 long time = 0;
                 long cpu = 0;
                 for (Map.Entry<String, AnalyzeStat.AgregatedStat> entry : statistic.entrySet()) {
                     count += entry.getValue().parseLines;
+                    files += entry.getValue().parseNumber;
                     time += entry.getValue().parseTime;
                     cpu += entry.getValue().parseCPU;
                 }
@@ -168,6 +176,7 @@ public class StatisticPanel extends JPanel {
                     parsingSpeed.setText(PerformanceIssueDetector.format(speed));
                     getLimit(parsingSpeedPanel,PerformanceIssueDetector.PARSING_SPEED_LIMIT, PerformanceIssueDetector.PARSING_SPEED_LIMIT*10, (int)speed);
                     parsingLines.setText(PerformanceIssueDetector.format(count));
+                    parsingNumber.setText(PerformanceIssueDetector.format(files));
                     parsingWallTime.setText(PerformanceIssueDetector.format(time/PerformanceIssueDetector.NANO_TO_MILLI));
                     parsingCpuTime.setText(PerformanceIssueDetector.format(cpu/PerformanceIssueDetector.NANO_TO_MILLI));
                     parsingRatio.setText(PerformanceIssueDetector.format(cpu*100/time));
@@ -225,7 +234,23 @@ public class StatisticPanel extends JPanel {
                 if (!slowFolders.getText().equals(buf.toString())) {
                     slowFolders.setText(buf.toString());
                 }
-                
+                buf.setLength(0);
+                for(Map.Entry<FileObject, PerformanceLogger.PerformanceEvent> entry : activeInstance.getParseTimeout().entrySet()) {
+                    if (buf.length()==0) {
+                        buf.append(Bundle.Details_slowest_parsing_files());
+                    }
+                    buf.append("<tr><td>"); //NOI18N
+                    buf.append(entry.getKey().getPath());
+                    buf.append("</td><td>"); //NOI18N
+                    buf.append(PerformanceIssueDetector.format((System.nanoTime() - entry.getValue().getStartTime())/PerformanceIssueDetector.NANO_TO_SEC));
+                    buf.append("</td><td>"); //NOI18N
+                }
+                if (buf.length()>0) {
+                    buf.append("</tbody></table>"); //NOI18N
+                }
+                if (!infiniteParsing.getText().equals(buf.toString())) {
+                    infiniteParsing.setText(buf.toString());
+                }
             }
         }
         update.schedule(2000);
@@ -360,6 +385,8 @@ public class StatisticPanel extends JPanel {
         parsingSpeed = new javax.swing.JTextField();
         parsingLinesLabel = new javax.swing.JLabel();
         parsingLines = new javax.swing.JTextField();
+        parsingNumberLabel = new javax.swing.JLabel();
+        parsingNumber = new javax.swing.JTextField();
         parsingWallTimeLabel = new javax.swing.JLabel();
         parsingWallTime = new javax.swing.JTextField();
         parsingCpuTimeLabel = new javax.swing.JLabel();
@@ -380,6 +407,9 @@ public class StatisticPanel extends JPanel {
         readSlowPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         slowFolders = new javax.swing.JTextPane();
+        parsingPanel = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        infiniteParsing = new javax.swing.JTextPane();
 
         setMinimumSize(new java.awt.Dimension(500, 350));
         setPreferredSize(new java.awt.Dimension(700, 550));
@@ -635,10 +665,27 @@ public class StatisticPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(parsingLines, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(parsingWallTimeLabel, org.openide.util.NbBundle.getMessage(StatisticPanel.class, "StatisticPanel.parsingWallTimeLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(parsingNumberLabel, org.openide.util.NbBundle.getMessage(StatisticPanel.class, "StatisticPanel.parsingNumberLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 15;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        add(parsingNumberLabel, gridBagConstraints);
+
+        parsingNumber.setEditable(false);
+        parsingNumber.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        add(parsingNumber, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(parsingWallTimeLabel, org.openide.util.NbBundle.getMessage(StatisticPanel.class, "StatisticPanel.parsingWallTimeLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 16;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(parsingWallTimeLabel, gridBagConstraints);
@@ -647,7 +694,7 @@ public class StatisticPanel extends JPanel {
         parsingWallTime.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridy = 16;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         gridBagConstraints.weightx = 1.0;
@@ -657,7 +704,7 @@ public class StatisticPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(parsingCpuTimeLabel, org.openide.util.NbBundle.getMessage(StatisticPanel.class, "StatisticPanel.parsingCpuTimeLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 16;
+        gridBagConstraints.gridy = 17;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(parsingCpuTimeLabel, gridBagConstraints);
@@ -666,7 +713,7 @@ public class StatisticPanel extends JPanel {
         parsingCpuTime.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 16;
+        gridBagConstraints.gridy = 17;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         gridBagConstraints.weightx = 1.0;
@@ -676,7 +723,7 @@ public class StatisticPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(parsingRatioLabel, org.openide.util.NbBundle.getMessage(StatisticPanel.class, "StatisticPanel.parsingRatioLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 17;
+        gridBagConstraints.gridy = 18;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(parsingRatioLabel, gridBagConstraints);
@@ -685,7 +732,7 @@ public class StatisticPanel extends JPanel {
         parsingRatio.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 17;
+        gridBagConstraints.gridy = 18;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         gridBagConstraints.weightx = 1.0;
@@ -715,7 +762,7 @@ public class StatisticPanel extends JPanel {
         add(jSeparator3, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 18;
+        gridBagConstraints.gridy = 19;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -764,7 +811,7 @@ public class StatisticPanel extends JPanel {
         parsingRatioPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 17;
+        gridBagConstraints.gridy = 18;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
@@ -788,6 +835,7 @@ public class StatisticPanel extends JPanel {
 
         readSlowPanel.setLayout(new java.awt.BorderLayout());
 
+        slowFolders.setEditable(false);
         jScrollPane2.setViewportView(slowFolders);
 
         readSlowPanel.add(jScrollPane2, java.awt.BorderLayout.CENTER);
@@ -799,8 +847,24 @@ public class StatisticPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(readSlowPanel, gridBagConstraints);
+
+        parsingPanel.setLayout(new java.awt.BorderLayout());
+
+        infiniteParsing.setEditable(false);
+        jScrollPane3.setViewportView(infiniteParsing);
+
+        parsingPanel.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        add(parsingPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextPane infiniteParsing;
     private javax.swing.JTextField itemCpuTime;
     private javax.swing.JLabel itemCpuTimeLabel;
     private javax.swing.JLabel itemLabel;
@@ -817,6 +881,7 @@ public class StatisticPanel extends JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
@@ -825,6 +890,9 @@ public class StatisticPanel extends JPanel {
     private javax.swing.JLabel parsingLabel;
     private javax.swing.JTextField parsingLines;
     private javax.swing.JLabel parsingLinesLabel;
+    private javax.swing.JTextField parsingNumber;
+    private javax.swing.JLabel parsingNumberLabel;
+    private javax.swing.JPanel parsingPanel;
     private javax.swing.JTextField parsingRatio;
     private javax.swing.JLabel parsingRatioLabel;
     private javax.swing.JPanel parsingRatioPanel;

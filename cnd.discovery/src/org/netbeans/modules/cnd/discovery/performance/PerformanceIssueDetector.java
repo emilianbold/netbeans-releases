@@ -392,7 +392,6 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long user = event.getUserTime();
         lock.writeLock().lock();
         try {
-            parseTimeOut.remove(fo);
             ParseEntry entry = parsePerformance.get(dirName);
             if (entry == null) {
                 entry = new ParseEntry();
@@ -514,6 +513,18 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         lock.readLock().lock();
         try {
             return gatherStat();
+        } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
+            return null;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    Map<FileObject,PerformanceLogger.PerformanceEvent> getParseTimeout() {
+        lock.readLock().lock();
+        try {
+             return new HashMap<FileObject,PerformanceLogger.PerformanceEvent>(parseTimeOut);
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
             return null;
