@@ -133,66 +133,81 @@ public class Css3ParserScssTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-//
-//    public void testFunction() {
-//        String source =
-//                "#header {\n"
-//                + "  color: (@base-color * 3);\n"
-//                + "  border-left: @the-border;\n"
-//                + "  border-right: (@the-border * 2);\n"
-//                + "}\n";
-//
-//        CssParserResult result = TestUtil.parse(source);
-//
-////        NodeUtil.dumpTree(result.getParseTree());
-//        assertResultOK(result);
-//    }
-//
-//    public void testFunction2() {
-//        String source =
-//                "#footer {\n"
-//                + "  border-color: desaturate(@red, 10%);\n"
-//                + "  color: (@base-color + #003300);\n"
-//                + "}";
-//        ;
-//
-//        CssParserResult result = TestUtil.parse(source);
-//
-////        NodeUtil.dumpTree(result.getParseTree());
-//        assertResultOK(result);
-//    }
-//
-//    public void testMixinDeclaration() {
-//        String source =
-//                ".rounded-corners (@radius: 5px) {\n"
-//                + "  -webkit-border-radius: @radius;\n"
-//                + "  -moz-border-radius: @radius;\n"
-//                + "  -ms-border-radius: @radius;\n"
-//                + "  -o-border-radius: @radius;\n"
-//                + "  border-radius: @radius;\n"
-//                + "}";
-//        ;
-//
-//        CssParserResult result = TestUtil.parse(source);
-//
-////        NodeUtil.dumpTree(result.getParseTree());
-//        assertResultOK(result);
-//    }
-//
-//    public void testMixinDeclaration2() {
-//        String source =
-//                ".box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000) {\n"
-//                + "  box-shadow: @arguments;\n"
-//                + "  -moz-box-shadow: @arguments;\n"
-//                + "  -webkit-box-shadow: @arguments;\n"
-//                + "}";
-//        ;
-//
-//        CssParserResult result = TestUtil.parse(source);
-//
-////        NodeUtil.dumpTree(result.getParseTree());
-//        assertResultOK(result);
-//    }
+
+    public void testFunction() {
+        String source =
+                "#header {\n"
+                + "  color: ($base-color * 3);\n"
+                + "  border-left: $the-border;\n"
+                + "  border-right: ($the-border * 2);\n"
+                + "}\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testFunction2() {
+        String source =
+                "#footer {\n"
+                + "  border-color: desaturate($red, 10%);\n"
+                + "  color: ($base-color + #003300);\n"
+                + "}";
+        ;
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testMixinDeclaration() {
+        String source =
+                "@mixin rounded-corners ($radius: 5px) {\n"
+                + "  -webkit-border-radius: $radius;\n"
+                + "  -moz-border-radius: $radius;\n"
+                + "  -ms-border-radius: $radius;\n"
+                + "  -o-border-radius: $radius;\n"
+                + "  border-radius: $radius;\n"
+                + "}";
+        ;
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testMixinDeclaration2() {
+        String source =
+                "@mixin box-shadow ($x: 0, $y: 0, $blur: 1px, $color: #000) {\n"
+                + "  box-shadow: $arguments;\n"
+                + "  -moz-box-shadow: $arguments;\n"
+                + "  -webkit-box-shadow: $arguments;\n"
+                + "}";
+        ;
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+    
+    public void testMixinDeclarationWithoutParams() {
+        String source =
+                "@mixin box-shadow {\n"
+                + "  box-shadow: $arguments;\n"
+                + "  -moz-box-shadow: $arguments;\n"
+                + "  -webkit-box-shadow: $arguments;\n"
+                + "}";
+        ;
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
 //
 //    public void testMixinDeclarationAdvancedArguments() {
 //        String source =
@@ -257,42 +272,31 @@ public class Css3ParserScssTest extends CssTestBase {
 //        assertResultOK(result);
 //    }
 //
-//    public void testMixinNesting() {
-//        String source =
-//                ".class {\n"
-//                + "  .mixin(@switch, #888);\n"
-//                + "}";
-//
-//        CssParserResult result = TestUtil.parse(source);
-//
-//        NodeUtil.dumpTree(result.getParseTree());
-//        assertResultOK(result);
-//    }
-//
-//    public void testMixinNesting2() {
-//        String source =
-//                ".class {\n"
-//                + "  .mixin(@switch, #888);\n"
-//                + "}";
-//
-//        CssParserResult result = TestUtil.parse(source);
-//
-////        NodeUtil.dumpTree(result.getParseTree());
-//        assertResultOK(result);
-//    }
-//
-//    public void testMixinNesting3() {
-//        String source =
-//                "#menu a {\n"
-//                + "  color: #111;\n"
-//                + "  .bordered;\n"
-//                + "}";
-//
-//        CssParserResult result = TestUtil.parse(source);
-//
-//        NodeUtil.dumpTree(result.getParseTree());
-//        assertResultOK(result);
-//    }
+    public void testMixinCall() {
+        String source =
+                ".class {\n"
+                + "  @include mixin($switch, #888);\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testMixinCall2() {
+        String source =
+                "#menu a {\n"
+                + "  color: #111;\n"
+                + "  @include bordered;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+    
 //
 //    public void testFunctions() {
 //        String source = ".class {\n"
