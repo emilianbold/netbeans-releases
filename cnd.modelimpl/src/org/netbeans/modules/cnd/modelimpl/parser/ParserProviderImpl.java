@@ -443,6 +443,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     case COMPOUND_STATEMENT:
                         parser.compound_statement(false);
                         break;                        
+                    case FUNCTION_DEFINITION_AFTER_DECLARATOR:
+                        parser.function_definition_after_declarator(true, true);
+                        break;                        
                 }
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
