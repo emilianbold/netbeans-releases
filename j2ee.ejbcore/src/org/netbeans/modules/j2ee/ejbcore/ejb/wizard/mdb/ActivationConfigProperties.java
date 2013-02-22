@@ -80,6 +80,7 @@ public class ActivationConfigProperties {
         ACP_32.add(new ActivationConfigProperty(MESSAGE_SELECTOR, String.class, EjbVersion.EJB_3_2));
         ACP_32.add(new ActivationConfigProperty(SUBSCRIPTION_DURABILITY, SubscriptionDurability.class, EjbVersion.EJB_3_2));
         ACP_32.add(new ActivationConfigProperty(SUBSCRIPTION_NAME, String.class, EjbVersion.EJB_3_2));
+        ACP_32.add(new ActivationConfigProperty(SUBSCRIPTION_SCOPE, String.class, EjbVersion.EJB_3_2));
     }
 
     protected static List<ActivationConfigProperty> getActivationConfigProperties(EjbVersion forVersion) {
