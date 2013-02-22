@@ -213,6 +213,10 @@ public final class MessageGenerator {
                 values.add(tm.Assignment(nameQualIdent, tm.Literal(properties.get("destinationLookup")))); //NOI18N
                 ExpressionTree classnameQualIdent = tm.QualIdent("className"); //NOI18N
                 values.add(tm.Assignment(classnameQualIdent, tm.Literal(properties.get("destinationType")))); //NOI18N
+                ExpressionTree resourceAdapterQualIdent = tm.QualIdent("resourceAdapter"); //NOI18N
+                values.add(tm.Assignment(resourceAdapterQualIdent, tm.Literal("jmsra"))); //NOI18N
+                ExpressionTree destinationNameQualIdent = tm.QualIdent("destinationName"); //NOI18N
+                values.add(tm.Assignment(destinationNameQualIdent, tm.Literal(getPhysicalName(properties.get("destinationLookup"))))); //NOI18N
 
                 List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
                 annotations.add(0, tm.Annotation(tm.QualIdent(el), values));
@@ -220,6 +224,15 @@ public final class MessageGenerator {
                 parameter.rewrite(modifiers, nueMods);
             }
         }).commit();
+    }
+
+    private static String getPhysicalName(String jndiName) {
+        int lastSlashIndex = jndiName.lastIndexOf("/"); //NOI18N
+        if (lastSlashIndex == -1) {
+            return jndiName;
+        } else {
+            return jndiName.substring(lastSlashIndex + 1);
+        }
     }
     
     @SuppressWarnings("deprecation") //NOI18N
