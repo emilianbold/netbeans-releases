@@ -1847,10 +1847,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                 switch (ts.token().id()) {
                     case ARROW:
                         localResult(env);
+                        addValueKeywords(env);
                         break;
                     case COMMA:
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
-                        addPrimitiveTypeKeywords(env);
+                        if (let.getParameters().isEmpty()
+                                || env.getController().getTrees().getSourcePositions().getStartPosition(path.getCompilationUnit(), let.getParameters().get(0).getType()) >= 0) {
+                            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                            addPrimitiveTypeKeywords(env);
+                            addKeyword(env, FINAL_KEYWORD, SPACE, false);
+                        }
                         break;
                 }
             }
@@ -2474,6 +2479,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 addValueKeywords(env);
                             break;
                         case VARIABLE:
+                            addValueKeywords(env);
+                            break;
+                        case LAMBDA_EXPRESSION:
                             addValueKeywords(env);
                             break;
                         default:
@@ -4308,6 +4316,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 type = controller.getTrees().getTypeMirror(new TreePath(methodOrLambdaPath, retTree));
                             }
                             return type != null ? Collections.singleton(type) : null;
+                        } else {
+                            type = controller.getTrees().getTypeMirror(methodOrLambdaPath);
+                            if (type != null && type.getKind() == TypeKind.DECLARED) {
+                                ExecutableType descType = controller.getTypeUtilities().getDescriptorType((DeclaredType)type);
+                                if (descType != null) {
+                                    return Collections.singleton(descType.getReturnType());
+                                }
+                            }
                         }
                         break;
                     case THROW:
@@ -4571,7 +4587,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case LAMBDA_EXPRESSION:
                         LambdaExpressionTree let = (LambdaExpressionTree)tree;
                         int pos = (int)env.getSourcePositions().getStartPosition(env.getRoot(), let.getBody());
-                        if (offset <= pos && findLastNonWhitespaceToken(env, tree, offset).token().id() != JavaTokenId.ARROW)
+                        if (offset <= pos && findLastNonWhitespaceToken(env, tree, offset).token().id() != JavaTokenId.ARROW
+                                || lastTree != null && lastTree.getKind() == Tree.Kind.BLOCK)
                             break;
                         type = controller.getTrees().getTypeMirror(path);
                         if (type != null && type.getKind() == TypeKind.DECLARED) {
