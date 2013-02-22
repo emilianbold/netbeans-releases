@@ -379,13 +379,16 @@ public final class SendJMSGenerator {
 
         String body;
         List<String> throwsClause = new ArrayList<String>();
+        String parameterType = Object.class.getName();
         switch (injectionStrategy) {
             case INJ_EE7_CDI:
                 body = getSendJMSCodeForJMSContext(connectionFactoryFieldName, destinationFieldName);
+                parameterType = String.class.getName();
                 break;
 
             case INJ_EE7_SOURCES:
                 body = getSendJMSCodeForCreatedJMSContext(connectionFactoryFieldName, destinationFieldName);
+                parameterType = String.class.getName();
                 break;
 
             case INJ_COMMON:
@@ -409,7 +412,7 @@ public final class SendJMSGenerator {
                 "sendJMSMessageTo" + destBuff, //NOI18N
                 "void", //NOI18N
                 body,
-                Collections.singletonList(MethodModel.Variable.create(Object.class.getName(), "messageData")), //NOI18N
+                Collections.singletonList(MethodModel.Variable.create(parameterType, "messageData")), //NOI18N
                 throwsClause,
                 Collections.singleton(Modifier.PRIVATE)
                 );
@@ -489,7 +492,7 @@ public final class SendJMSGenerator {
     private String getSendJMSCodeForJMSContext(String contextFieldName,
             String destinationFieldName){
         return MessageFormat.format(
-                "{0}.createProducer().send({1}, messageData.toString());", //NOI18N
+                "{0}.createProducer().send({1}, messageData);", //NOI18N
                 contextFieldName, destinationFieldName);
     }
 
@@ -501,7 +504,7 @@ public final class SendJMSGenerator {
             String destinationFieldName){
         return MessageFormat.format(
                 "try (javax.jms.JMSContext context = {0}.createContext()) '{'\n" +                //NOI18N
-                "context.createProducer().send({1}, messageData.toString());\n" +    //NOI18N
+                "context.createProducer().send({1}, messageData);\n" +    //NOI18N
                 "'}'\n",                                                                 //NOI18N
                 connectionFactoryFieldName, destinationFieldName);
     }
