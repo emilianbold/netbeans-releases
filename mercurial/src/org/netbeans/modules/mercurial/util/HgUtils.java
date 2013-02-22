@@ -106,6 +106,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgException.HgCommandCanceledException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
@@ -115,10 +116,13 @@ import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.text.Line;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -340,6 +344,17 @@ public class HgUtils {
      */
     public static boolean isNullOrEmpty(String str) {
         return (str == null) || (str.trim().length() == 0);
+    }
+
+    public static boolean isRebasing (File repositoryRoot) {
+        WorkingCopyInfo info = WorkingCopyInfo.getInstance(repositoryRoot);
+        info.refresh();
+        HgLogMessage[] parents = info.getWorkingCopyParents();
+        if (parents.length > 1) {
+            // two parents, possible abort, rebase or simply inside a merge
+            return new File(getHgFolderForRoot(repositoryRoot), "rebasestate").exists(); //NOI18N
+        }
+        return false;
     }
     
     private static void resetIgnorePatterns(File file) {
@@ -1825,6 +1840,14 @@ itor tabs #66700).
         }
         return branchHeadsMap;
     }
+    
+    public static VCSContext buildVCSContext (File[] roots) {
+        List<Node> nodes = new ArrayList<Node>(roots.length);
+        for (File root : roots) {
+            nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(root)));
+        }
+        return VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
+    }
 
     public static <T> T runWithoutIndexing (Callable<T> callable, List<File> files) throws HgException {
         return runWithoutIndexing(callable, files.toArray(new File[files.size()]));
@@ -1851,6 +1874,8 @@ itor tabs #66700).
                 }
             }
         } catch (HgException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
             Mercurial.LOG.log(Level.INFO, "Cannot run block without indexing", ex); //NOI18N

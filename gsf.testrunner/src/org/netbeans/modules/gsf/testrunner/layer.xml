@@ -49,5 +49,8 @@
         <file name="DS-U.shadow">
             <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gsf-testrunner-TestCreatorAction.instance"/>
         </file>
+        <file name="AS-R.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-gsf-testrunner-api-ResultWindowOpenAction.instance"/>
+        </file>
     </folder>
 </filesystem>

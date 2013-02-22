@@ -135,11 +135,10 @@ public abstract class OptionsCategory {
      * @return 32x32 icon
      */
     public Icon getIcon () {
-        Image image = ImageUtilities.loadImage (getIconBase () + ".png");
-        if (image != null) return new ImageIcon (image);
-        image = ImageUtilities.loadImage (getIconBase () + ".gif");
-        if (image == null) return null;
-        return new ImageIcon (image);
+        Icon res = ImageUtilities.loadImageIcon (getIconBase () + ".png", true);
+        if (res == null)
+            res = ImageUtilities.loadImageIcon( getIconBase () + ".gif", true);
+        return res;
         }
 
     /**

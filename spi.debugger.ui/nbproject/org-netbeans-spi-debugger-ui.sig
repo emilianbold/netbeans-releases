@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.32.1
+#Version 2.37.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -137,8 +137,39 @@ meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds NO_COOKIE,NO_EDITOR,NO_FILE,NO_FILE_CHANGE,ccrp,context,currentEditorCookie,currentFile,currentFileChangeListener,currentFileChangeListenerWeak,currentOpenedPane,currentURL,editorLookupListener,lastFiredMIMEType,lastMIMETypeEvents,logger,lookupCoalescedChange,mostRecentEditorCookieRef,mostRecentFileChangeListener,mostRecentFileChangeListenerWeak,mostRecentFileRef,mostRecentOpenedPaneRef,pcs,pcsByMIMEType,refreshProcessor,resEditorCookie,resFileObject,tcListener
-hcls AddRemoveFileListenerInEQThread,CoalescedChange,EditorLookupListener,EventFirer,FileRenameListener
+hfds NO_FILE,NO_FILE_CHANGE,NO_TEXT_COMPONENT,ccrp,context,currentFile,currentFileChangeListener,currentFileChangeListenerWeak,currentTextComponent,currentURL,erListener,lastFiredMIMEType,lastMIMETypeEvents,logger,lookupCoalescedChange,mostRecentFileChangeListener,mostRecentFileChangeListenerWeak,mostRecentFileRef,pcs,pcsByMIMEType,refreshProcessor,resFileObject
+hcls AddRemoveFileListenerInEQThread,CoalescedChange,EditorLookupListener,EditorRegistryListener,EventFirer,FileRenameListener
+
+CLSS public abstract interface org.netbeans.spi.debugger.ui.EngineComponentsProvider
+innr public abstract interface static ComponentProvider
+innr public final static ComponentInfo
+innr public static TopComponentProvider
+meth public abstract java.util.List<org.netbeans.spi.debugger.ui.EngineComponentsProvider$ComponentInfo> getComponents()
+meth public abstract void willCloseNotify(java.util.List<org.netbeans.spi.debugger.ui.EngineComponentsProvider$ComponentInfo>)
+
+CLSS public final static org.netbeans.spi.debugger.ui.EngineComponentsProvider$ComponentInfo
+ outer org.netbeans.spi.debugger.ui.EngineComponentsProvider
+meth public boolean isMinimized()
+meth public boolean isOpened()
+meth public java.awt.Component getComponent()
+meth public java.lang.String toString()
+meth public static org.netbeans.spi.debugger.ui.EngineComponentsProvider$ComponentInfo create(java.lang.String)
+meth public static org.netbeans.spi.debugger.ui.EngineComponentsProvider$ComponentInfo create(java.lang.String,boolean)
+meth public static org.netbeans.spi.debugger.ui.EngineComponentsProvider$ComponentInfo create(java.lang.String,boolean,boolean)
+supr java.lang.Object
+hfds minimized,opened,provider
+
+CLSS public abstract interface static org.netbeans.spi.debugger.ui.EngineComponentsProvider$ComponentProvider
+ outer org.netbeans.spi.debugger.ui.EngineComponentsProvider
+meth public abstract java.awt.Component getComponent()
+
+CLSS public static org.netbeans.spi.debugger.ui.EngineComponentsProvider$TopComponentProvider
+ outer org.netbeans.spi.debugger.ui.EngineComponentsProvider
+intf org.netbeans.spi.debugger.ui.EngineComponentsProvider$ComponentProvider
+meth public java.awt.Component getComponent()
+meth public java.lang.String toString()
+supr java.lang.Object
+hfds tcId
 
 CLSS public org.netbeans.spi.debugger.ui.MethodChooser
 cons public init(java.lang.String,org.netbeans.spi.debugger.ui.MethodChooser$Segment[],int)
@@ -167,6 +198,28 @@ meth public int getEndOffset()
 meth public int getStartOffset()
 supr java.lang.Object
 hfds endOffset,startOffset
+
+CLSS public org.netbeans.spi.debugger.ui.ViewFactory
+meth public javax.swing.JComponent createViewComponent(java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+meth public org.netbeans.spi.debugger.ui.ViewLifecycle createViewLifecycle(java.lang.String,java.lang.String)
+meth public org.openide.windows.TopComponent createViewTC(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+meth public static org.netbeans.spi.debugger.ui.ViewFactory getDefault()
+supr java.lang.Object
+hfds vf
+
+CLSS public final org.netbeans.spi.debugger.ui.ViewLifecycle
+innr public abstract interface static ModelUpdateListener
+meth public org.netbeans.spi.viewmodel.Models$CompoundModel getModel()
+meth public void addModelUpdateListener(org.netbeans.spi.debugger.ui.ViewLifecycle$ModelUpdateListener)
+meth public void destroy()
+meth public void removeModelUpdateListener(org.netbeans.spi.debugger.ui.ViewLifecycle$ModelUpdateListener)
+supr java.lang.Object
+hfds cmul,vml
+hcls CompoundModelUpdateListener
+
+CLSS public abstract interface static org.netbeans.spi.debugger.ui.ViewLifecycle$ModelUpdateListener
+ outer org.netbeans.spi.debugger.ui.ViewLifecycle
+meth public abstract void modelUpdated(org.netbeans.spi.viewmodel.Models$CompoundModel,org.netbeans.api.debugger.DebuggerEngine)
 
 CLSS public abstract org.openide.text.Annotation
 cons public init()

@@ -53,6 +53,7 @@ import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,6 +76,10 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.util.DatabaseExplorerInternalUIs;
 import org.netbeans.modules.db.util.JdbcUrl;
+import org.netbeans.modules.db.util.PropertyEditorPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -93,6 +98,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     private Set<String> knownConnectionNames = new HashSet<String>();
     private static final Logger LOGGER = Logger.getLogger(NewConnectionPanel.class.getName());
     private final ConnectionPanel wp;
+    private Properties connectionProperties = new Properties();
 
     private void initFieldMap() {
         // These should be in the order of display on the form, so that we correctly
@@ -211,6 +217,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         setUrlField();
         updateFieldsFromUrl();
         setUpFields();
+        connectionProperties = connection.getConnectionProperties();
 
         DocumentListener docListener = new DocumentListener() {
 
@@ -312,6 +319,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         passwordCheckBox = new javax.swing.JCheckBox();
         directUrlLabel = new javax.swing.JLabel();
         bTestConnection = new javax.swing.JButton();
+        bConnectionProperties = new javax.swing.JButton();
 
         FormListener formListener = new FormListener();
 
@@ -392,6 +400,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         org.openide.awt.Mnemonics.setLocalizedText(bTestConnection, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.bTestConnection")); // NOI18N
         bTestConnection.addActionListener(formListener);
 
+        org.openide.awt.Mnemonics.setLocalizedText(bConnectionProperties, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.bConnectionProperties")); // NOI18N
+        bConnectionProperties.addActionListener(formListener);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -399,7 +410,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(directUrlLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(hostLabel)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -416,26 +428,31 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                                 .addComponent(userLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGap(8, 8, 8)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(userField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                            .addComponent(sidField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                            .addComponent(serviceField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                            .addComponent(tnsField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                            .addComponent(dsnField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                            .addComponent(serverNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                            .addComponent(instanceField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(hostField, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
+                                .addComponent(bConnectionProperties)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(bTestConnection)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 100, Short.MAX_VALUE))
+                            .addComponent(userField, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(sidField)
+                            .addComponent(serviceField)
+                            .addComponent(tnsField)
+                            .addComponent(dsnField)
+                            .addComponent(serverNameField)
+                            .addComponent(instanceField)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(hostField)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(portLabel)
                                 .addGap(2, 2, 2)
                                 .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(databaseField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                            .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                            .addComponent(bTestConnection)
+                            .addComponent(databaseField, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(passwordField)
+                            .addComponent(urlField, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(templateComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
                             .addComponent(passwordCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(urlField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                            .addComponent(templateComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 383, Short.MAX_VALUE)))
-                    .addComponent(directUrlLabel, javax.swing.GroupLayout.Alignment.LEADING))
+                                .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -492,7 +509,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(passwordCheckBox)
                 .addGap(26, 26, 26)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(bTestConnection)
+                    .addComponent(bConnectionProperties))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(urlField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -519,6 +538,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             else if (evt.getSource() == bTestConnection) {
                 NewConnectionPanel.this.bTestConnectionActionPerformed(evt);
             }
+            else if (evt.getSource() == bConnectionProperties) {
+                NewConnectionPanel.this.bConnectionPropertiesActionPerformed(evt);
+        }
         }
 
         public void focusGained(java.awt.event.FocusEvent evt) {
@@ -590,7 +612,22 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     private void bTestConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bTestConnectionActionPerformed
         tryConnection();
     }//GEN-LAST:event_bTestConnectionActionPerformed
+
+    private void bConnectionPropertiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bConnectionPropertiesActionPerformed
+        PropertyEditorPanel pep = new PropertyEditorPanel(connectionProperties, true);
+        DialogDescriptor dd = new DialogDescriptor(
+                pep,
+                NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.dlgConnectionProperties"),
+                true,
+                null);
+        Object result = DialogDisplayer.getDefault().notify(dd);
+        if(result == NotifyDescriptor.OK_OPTION) {
+            connectionProperties = pep.getValue();
+        }
+    }//GEN-LAST:event_bConnectionPropertiesActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton bConnectionProperties;
     private javax.swing.JButton bTestConnection;
     private javax.swing.JTextField databaseField;
     private javax.swing.JLabel databaseLabel;
@@ -632,10 +669,10 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         }
 
         connection.setDatabase(urlField.getText());
-
         connection.setUser(userField.getText());
         connection.setPassword(getPassword());
         connection.setRememberPassword(passwordCheckBox.isSelected());
+        connection.setConnectionProperties(connectionProperties);
     }
 
     private void resize() {
@@ -816,6 +853,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         passwordCheckBox.setEnabled(enable);
         urlField.setEnabled(enable);
         bTestConnection.setEnabled(enable);
+        bConnectionProperties.setEnabled(enable);
 
         for (Entry<String, UrlField> entry : urlFields.entrySet()) {
             entry.getValue().getField().setEnabled(enable);

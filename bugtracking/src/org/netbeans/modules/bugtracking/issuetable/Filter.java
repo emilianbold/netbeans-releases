@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class Filter {
 
-    private static Map<QueryImpl, Map<Class, Filter>> queryToFilter = new WeakHashMap<QueryImpl, Map<Class, Filter>>();
+    private static final Map<QueryImpl, Map<Class, Filter>> queryToFilter = new WeakHashMap<QueryImpl, Map<Class, Filter>>();
 
     public abstract String getDisplayName();
     public abstract boolean accept(IssueNode issue);

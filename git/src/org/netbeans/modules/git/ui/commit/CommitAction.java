@@ -123,7 +123,7 @@ public class CommitAction extends SingleRepositoryAction {
                         ? GitCommitPanelMerged.create(roots, repository, user, mergeCommitMessage)
                         : GitCommitPanel.create(roots, repository, user, isFromGitView(context));
                 VCSCommitTable<GitFileNode> table = panel.getCommitTable();
-                boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
+                boolean ok = panel.open(context, new HelpCtx("org.netbeans.modules.git.ui.commit.CommitAction")); //NOI18N
 
                 if (ok) {
                     final List<GitFileNode> commitFiles = table.getCommitFiles();
@@ -384,7 +384,8 @@ public class CommitAction extends SingleRepositoryAction {
             if (retval == NotifyDescriptor.YES_OPTION) {
                 GitUtils.openInVersioningView(conflicts.keySet(), repository, GitUtils.NULL_PROGRESS_MONITOR);
             }
-        } else if (GitBranch.NO_BRANCH == info.getActiveBranch().getName()) {
+        } else if (GitBranch.NO_BRANCH_INSTANCE != info.getActiveBranch() 
+                && GitBranch.NO_BRANCH == info.getActiveBranch().getName()) {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(Bundle.MSG_CommitAction_detachedHeadState_warning(repository.getName()),
                     Bundle.LBL_CommitAction_detachedHeadState_title(),
                     NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.37.3
+#Version 7.44.1
 
 CLSS public java.awt.Canvas
 cons public init()
@@ -906,6 +906,100 @@ meth public void setState(boolean)
 supr javax.swing.JMenuItem
 hfds uiClassID
 
+CLSS public javax.swing.JComboBox
+cons public init()
+cons public init(java.lang.Object[])
+cons public init(java.util.Vector<?>)
+cons public init(javax.swing.ComboBoxModel)
+fld protected boolean isEditable
+fld protected boolean lightWeightPopupEnabled
+fld protected int maximumRowCount
+fld protected java.lang.Object selectedItemReminder
+fld protected java.lang.String actionCommand
+fld protected javax.swing.ComboBoxEditor editor
+fld protected javax.swing.ComboBoxModel dataModel
+fld protected javax.swing.JComboBox$KeySelectionManager keySelectionManager
+fld protected javax.swing.ListCellRenderer renderer
+innr protected AccessibleJComboBox
+innr public abstract interface static KeySelectionManager
+intf java.awt.ItemSelectable
+intf java.awt.event.ActionListener
+intf javax.accessibility.Accessible
+intf javax.swing.event.ListDataListener
+meth protected java.beans.PropertyChangeListener createActionPropertyChangeListener(javax.swing.Action)
+meth protected java.lang.String paramString()
+meth protected javax.swing.JComboBox$KeySelectionManager createDefaultKeySelectionManager()
+meth protected void actionPropertyChanged(javax.swing.Action,java.lang.String)
+meth protected void configurePropertiesFromAction(javax.swing.Action)
+meth protected void fireActionEvent()
+meth protected void fireItemStateChanged(java.awt.event.ItemEvent)
+meth protected void installAncestorListener()
+meth protected void selectedItemChanged()
+meth public boolean isEditable()
+meth public boolean isLightWeightPopupEnabled()
+meth public boolean isPopupVisible()
+meth public boolean selectWithKeyChar(char)
+meth public int getItemCount()
+meth public int getMaximumRowCount()
+meth public int getSelectedIndex()
+meth public java.awt.event.ActionListener[] getActionListeners()
+meth public java.awt.event.ItemListener[] getItemListeners()
+meth public java.lang.Object getItemAt(int)
+meth public java.lang.Object getPrototypeDisplayValue()
+meth public java.lang.Object getSelectedItem()
+meth public java.lang.Object[] getSelectedObjects()
+meth public java.lang.String getActionCommand()
+meth public java.lang.String getUIClassID()
+meth public javax.accessibility.AccessibleContext getAccessibleContext()
+meth public javax.swing.Action getAction()
+meth public javax.swing.ComboBoxEditor getEditor()
+meth public javax.swing.ComboBoxModel getModel()
+meth public javax.swing.JComboBox$KeySelectionManager getKeySelectionManager()
+meth public javax.swing.ListCellRenderer getRenderer()
+meth public javax.swing.event.PopupMenuListener[] getPopupMenuListeners()
+meth public javax.swing.plaf.ComboBoxUI getUI()
+meth public void actionPerformed(java.awt.event.ActionEvent)
+meth public void addActionListener(java.awt.event.ActionListener)
+meth public void addItem(java.lang.Object)
+meth public void addItemListener(java.awt.event.ItemListener)
+meth public void addPopupMenuListener(javax.swing.event.PopupMenuListener)
+meth public void configureEditor(javax.swing.ComboBoxEditor,java.lang.Object)
+meth public void contentsChanged(javax.swing.event.ListDataEvent)
+meth public void firePopupMenuCanceled()
+meth public void firePopupMenuWillBecomeInvisible()
+meth public void firePopupMenuWillBecomeVisible()
+meth public void hidePopup()
+meth public void insertItemAt(java.lang.Object,int)
+meth public void intervalAdded(javax.swing.event.ListDataEvent)
+meth public void intervalRemoved(javax.swing.event.ListDataEvent)
+meth public void processKeyEvent(java.awt.event.KeyEvent)
+meth public void removeActionListener(java.awt.event.ActionListener)
+meth public void removeAllItems()
+meth public void removeItem(java.lang.Object)
+meth public void removeItemAt(int)
+meth public void removeItemListener(java.awt.event.ItemListener)
+meth public void removePopupMenuListener(javax.swing.event.PopupMenuListener)
+meth public void setAction(javax.swing.Action)
+meth public void setActionCommand(java.lang.String)
+meth public void setEditable(boolean)
+meth public void setEditor(javax.swing.ComboBoxEditor)
+meth public void setEnabled(boolean)
+meth public void setKeySelectionManager(javax.swing.JComboBox$KeySelectionManager)
+meth public void setLightWeightPopupEnabled(boolean)
+meth public void setMaximumRowCount(int)
+meth public void setModel(javax.swing.ComboBoxModel)
+meth public void setPopupVisible(boolean)
+meth public void setPrototypeDisplayValue(java.lang.Object)
+meth public void setRenderer(javax.swing.ListCellRenderer)
+meth public void setSelectedIndex(int)
+meth public void setSelectedItem(java.lang.Object)
+meth public void setUI(javax.swing.plaf.ComboBoxUI)
+meth public void showPopup()
+meth public void updateUI()
+supr javax.swing.JComponent
+hfds action,actionPropertyChangeListener,firingActionEvent,prototypeDisplayValue,selectingItem,uiClassID
+hcls ComboBoxActionPropertyChangeListener,DefaultKeySelectionManager
+
 CLSS public abstract javax.swing.JComponent
 cons public init()
 fld protected javax.accessibility.AccessibleContext accessibleContext
@@ -1485,6 +1579,12 @@ fld public final static int TRAILING = 11
 fld public final static int VERTICAL = 1
 fld public final static int WEST = 7
 
+CLSS public abstract interface javax.swing.event.ListDataListener
+intf java.util.EventListener
+meth public abstract void contentsChanged(javax.swing.event.ListDataEvent)
+meth public abstract void intervalAdded(javax.swing.event.ListDataEvent)
+meth public abstract void intervalRemoved(javax.swing.event.ListDataEvent)
+
 CLSS public abstract interface javax.swing.event.UndoableEditListener
 intf java.util.EventListener
 meth public abstract void undoableEditHappened(javax.swing.event.UndoableEditEvent)
@@ -1811,7 +1911,7 @@ meth public void setOptions(java.lang.Object[])
 meth public void setTitleFormat(java.text.MessageFormat)
 meth public void setValue(java.lang.Object)
 supr org.openide.DialogDescriptor
-hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,addedWindowListener,autoWizardStyle,backgroundValidationTask,baseListener,bundle,cancelButton,changeStateInProgress,contentBackColor,contentData,contentForegroundColor,contentSelectedIndex,currentPanelWasChangedWhileStoreSettings,data,err,escapeActionListener,finishButton,finishOption,handle,helpURL,image,imageAlignment,init,isWizardWideHelpSet,logged,newObjects,nextButton,previousButton,propListener,properties,titleFormat,validationRuns,waitingComponent,weakCancelButtonListener,weakChangeListener,weakFinishButtonListener,weakNextButtonListener,weakPreviousButtonListener,weakPropertyChangeListener,wizardPanel
+hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,addedWindowListener,autoWizardStyle,backgroundValidationTask,baseListener,bundle,cancelButton,changeStateInProgress,contentBackColor,contentData,contentForegroundColor,contentSelectedIndex,currentPanelWasChangedWhileStoreSettings,data,err,escapeActionListener,finishButton,finishOption,handle,helpURL,image,imageAlignment,init,initialized,isWizardWideHelpSet,logged,newObjects,nextButton,previousButton,propListener,properties,titleFormat,validationRuns,waitingComponent,weakCancelButtonListener,weakChangeListener,weakFinishButtonListener,weakNextButtonListener,weakPreviousButtonListener,weakPropertyChangeListener,wizardPanel
 hcls BoundedHtmlBrowser,EmptyPanel,FinishAction,FixedHeightLabel,FixedHeightPane,ImagedPanel,Listener,PropL,SettingsAndIterator,WizardPanel,WrappedCellRenderer
 
 CLSS public abstract interface static org.openide.WizardDescriptor$Iterator<%0 extends java.lang.Object>
@@ -2423,6 +2523,15 @@ meth public static javax.swing.JButton createCloseButton()
 supr java.lang.Object
 hfds bigCloseTabImage,bigCloseTabMouseOverImage,bigCloseTabPressedImage,closeTabImage,closeTabMouseOverImage,closeTabPressedImage
 
+CLSS public final org.openide.awt.ColorComboBox
+cons public init()
+cons public init(java.awt.Color[],java.lang.String[],boolean)
+meth public java.awt.Color getSelectedColor()
+meth public void setModel(java.awt.Color[],java.lang.String[])
+meth public void setSelectedColor(java.awt.Color)
+supr javax.swing.JComboBox
+hfds allowCustomColors,lastSelection
+
 CLSS public final org.openide.awt.DropDownButtonFactory
 fld public final static java.lang.String PROP_DROP_DOWN_MENU = "dropDownMenu"
 meth public static javax.swing.JButton createDropDownButton(javax.swing.Icon,javax.swing.JPopupMenu)
@@ -2449,6 +2558,7 @@ CLSS public org.openide.awt.HtmlBrowser
 cons public init()
 cons public init(boolean,boolean)
 cons public init(org.openide.awt.HtmlBrowser$Factory,boolean,boolean)
+cons public init(org.openide.awt.HtmlBrowser$Factory,boolean,boolean,java.awt.Component)
 fld public final static int DEFAULT_HEIGHT = 600
 fld public final static int DEFAULT_WIDTH = 400
 innr public abstract interface static Factory
@@ -2474,7 +2584,7 @@ meth public void setToolbarVisible(boolean)
 meth public void setURL(java.lang.String)
 meth public void setURL(java.net.URL)
 supr javax.swing.JPanel
-hfds bBack,bForward,bReload,bStop,browserComponent,browserFactory,browserImpl,browserListener,everythinkIListenInCheckBoxIsUnimportant,head,homePage,lStatusLine,rp,serialVersionUID,statusLineVisible,toolbarVisible,txtLocation
+hfds bBack,bForward,bReload,bStop,browserComponent,browserFactory,browserImpl,browserListener,extraToolbar,head,homePage,ignoreChangeInLocationField,lStatusLine,rp,serialVersionUID,statusLineVisible,toolbarVisible,txtLocation
 hcls AccessibleHtmlBrowser,BrowserListener,TrivialURLDisplayer
 
 CLSS public abstract interface static org.openide.awt.HtmlBrowser$Factory
@@ -2485,8 +2595,10 @@ CLSS public abstract static org.openide.awt.HtmlBrowser$Impl
  outer org.openide.awt.HtmlBrowser
 cons public init()
 fld public final static java.lang.String PROP_BACKWARD = "backward"
+fld public final static java.lang.String PROP_BROWSER_WAS_CLOSED = "browser.was.closed"
 fld public final static java.lang.String PROP_FORWARD = "forward"
 fld public final static java.lang.String PROP_HISTORY = "history"
+fld public final static java.lang.String PROP_LOADING = "loading"
 fld public final static java.lang.String PROP_STATUS_MESSAGE = "statusMessage"
 fld public final static java.lang.String PROP_TITLE = "title"
 fld public final static java.lang.String PROP_URL = "url"
@@ -2506,6 +2618,7 @@ meth public abstract void setURL(java.net.URL)
 meth public abstract void showHistory()
 meth public abstract void stopLoading()
 meth public java.lang.String getLocation()
+meth public org.openide.util.Lookup getLookup()
 meth public void dispose()
 meth public void setLocation(java.lang.String)
 supr java.lang.Object
@@ -2680,6 +2793,8 @@ supr java.lang.Enum<org.openide.awt.NotificationDisplayer$Priority>
 
 CLSS public org.openide.awt.QuickSearch
 innr public abstract interface static Callback
+meth protected void maybeShowPopup(java.awt.event.MouseEvent,java.awt.Component)
+meth public boolean isAlwaysShown()
 meth public boolean isEnabled()
 meth public static java.lang.String findMaxPrefix(java.lang.String,java.lang.String,boolean)
 meth public static org.openide.awt.QuickSearch attach(javax.swing.JComponent,java.lang.Object,org.openide.awt.QuickSearch$Callback)
@@ -2688,9 +2803,10 @@ meth public static org.openide.awt.QuickSearch attach(javax.swing.JComponent,jav
 meth public static org.openide.awt.QuickSearch attach(javax.swing.JComponent,java.lang.Object,org.openide.awt.QuickSearch$Callback,javax.swing.JMenu)
 meth public void detach()
 meth public void processKeyEvent(java.awt.event.KeyEvent)
+meth public void setAlwaysShown(boolean)
 meth public void setEnabled(boolean)
 supr java.lang.Object
-hfds CLIENT_PROPERTY_KEY,ICON_FIND,ICON_FIND_WITH_MENU,animationTimer,asynchronous,callback,component,constraints,enabled,popupMenu,quickSearchKeyAdapter,rp,searchFieldListener,searchPanel,searchTextField
+hfds CLIENT_PROPERTY_KEY,ICON_FIND,ICON_FIND_WITH_MENU,alwaysShown,animationTimer,asynchronous,callback,component,constraints,enabled,popupMenu,quickSearchKeyAdapter,rp,searchFieldListener,searchPanel,searchTextField
 hcls AnimationTimer,LazyFire,QS_FIRE,SearchFieldListener,SearchPanel,SearchTextField
 
 CLSS public abstract interface static org.openide.awt.QuickSearch$Callback
@@ -2890,9 +3006,12 @@ CLSS public abstract interface org.openide.awt.StatusLineElementProvider
 meth public abstract java.awt.Component getStatusLineElement()
 
 CLSS public org.openide.awt.TabbedPaneFactory
+cons public init()
 fld public final static java.lang.String NO_CLOSE_BUTTON = "noCloseButton"
 fld public final static java.lang.String PROP_CLOSE = "close"
+meth public javax.swing.JTabbedPane createTabbedPane()
 meth public static javax.swing.JTabbedPane createCloseButtonTabbedPane()
+meth public static org.openide.awt.TabbedPaneFactory getDefault()
 supr java.lang.Object
 
 CLSS public org.openide.awt.Toolbar
@@ -2924,7 +3043,7 @@ meth public void setDnDListener(org.openide.awt.Toolbar$DnDListener)
  anno 0 java.lang.Deprecated()
 meth public void setUI(javax.swing.plaf.ToolBarUI)
 meth public void setVisible(boolean)
-supr javax.swing.JToolBar
+supr org.openide.awt.ToolbarWithOverflow
 hfds LOG,backingFolder,displayName,emptyInsets,isMetalLaF,label,processor,serialVersionUID
 hcls DefaultIconButton,Folder
 
@@ -2993,6 +3112,22 @@ cons public init(javax.swing.Icon)
 cons public init(javax.swing.Icon,boolean)
 supr javax.swing.JToggleButton
 hfds serialVersionUID
+
+CLSS public org.openide.awt.ToolbarWithOverflow
+cons public init()
+cons public init(int)
+cons public init(java.lang.String)
+cons public init(java.lang.String,int)
+meth public boolean isDisplayOverflowOnHover()
+meth public java.awt.Dimension getPreferredSize()
+meth public void addNotify()
+meth public void removeAll()
+meth public void removeNotify()
+meth public void setDisplayOverflowOnHover(boolean)
+meth public void setOrientation(int)
+meth public void validate()
+supr javax.swing.JToolBar
+hfds PROP_DRAGGER,PROP_JDEV_DISABLE_OVERFLOW,PROP_PREF_ICON_SIZE,awtEventListener,componentAdapter,displayOverflowOnHover,overflowButton,overflowToolbar,popup,toolbarArrowHorizontal,toolbarArrowVertical
 
 CLSS public abstract interface org.openide.awt.UndoRedo
 fld public final static org.openide.awt.UndoRedo NONE
@@ -3481,6 +3616,7 @@ meth public org.openide.loaders.DataObject getOriginal()
 meth public org.openide.loaders.DataObject[] getChildren()
 meth public org.openide.util.HelpCtx getHelpCtx()
 meth public org.openide.util.Lookup getLookup()
+meth public static org.openide.filesystems.FileObject findOriginal(org.openide.filesystems.FileObject) throws java.io.IOException
 meth public static org.openide.loaders.DataShadow create(org.openide.loaders.DataFolder,java.lang.String,org.openide.loaders.DataObject) throws java.io.IOException
 meth public static org.openide.loaders.DataShadow create(org.openide.loaders.DataFolder,java.lang.String,org.openide.loaders.DataObject,java.lang.String) throws java.io.IOException
 meth public static org.openide.loaders.DataShadow create(org.openide.loaders.DataFolder,org.openide.loaders.DataObject) throws java.io.IOException
@@ -3915,7 +4051,7 @@ meth public void setTemplate(org.openide.loaders.DataObject)
 meth public void setTemplatesFolder(org.openide.loaders.DataFolder)
 meth public void setTitleFormat(java.text.MessageFormat)
 supr org.openide.WizardDescriptor
-hfds CUSTOM_DESCRIPTION,CUSTOM_ITERATOR,EA_DESCRIPTION,EA_DESC_RESOURCE,EA_ITERATOR,LOG,PREF_DIM,iterator,lastComp,newObjects,pcl,progressHandle,showTargetChooser,targetChooser,targetDataFolder,targetIterator,targetName,template,templateChooser,templatesFolder,titleFormatSet
+hfds CUSTOM_DESCRIPTION,CUSTOM_ITERATOR,EA_DESCRIPTION,EA_DESC_RESOURCE,EA_ITERATOR,LOG,PREF_DIM,isInstantiating,iterator,lastComp,newObjects,pcl,progressHandle,showTargetChooser,targetChooser,targetDataFolder,targetIterator,targetName,template,templateChooser,templatesFolder,titleFormatSet
 hcls DefaultIterator,InstantiatingIteratorBridge
 
 CLSS public abstract interface static org.openide.loaders.TemplateWizard$Iterator
@@ -4106,7 +4242,6 @@ meth protected final void enableDelegation(int)
 meth protected java.beans.PropertyChangeListener createPropertyChangeListener()
 meth protected org.openide.nodes.Node getOriginal()
 meth protected org.openide.nodes.NodeListener createNodeListener()
-meth protected void finalize()
 meth public <%0 extends org.openide.nodes.Node$Cookie> {%%0} getCookie(java.lang.Class<{%%0}>)
 meth public boolean canCopy()
 meth public boolean canCut()
@@ -4458,7 +4593,7 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,docFilter,documentReloading,documentStatus,inUserQuestionExceptionHandler,isStrongSet,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,undoRedo,warnedClasses
+hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_NOTIFY_MODIFIED,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,docFilter,documentReloading,documentStatus,inUserQuestionExceptionHandler,isStrongSet,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,undoRedo,warnedClasses
 hcls DelegateIOExc,DocFilter,Listener,PlainEditorKit,StrongRef
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Env
@@ -5000,7 +5135,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
@@ -5286,6 +5421,7 @@ meth public final void makeBusy(boolean)
 meth public final void openAtTabPosition(int)
 meth public final void requestAttention(boolean)
 meth public final void setActivatedNodes(org.openide.nodes.Node[])
+meth public final void setAttentionHighlight(boolean)
 meth public final void setCloseOperation(int)
  anno 0 java.lang.Deprecated()
 meth public int getPersistenceType()

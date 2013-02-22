@@ -44,6 +44,7 @@ package org.netbeans.modules.bugzilla.issue;
 import java.io.File;
 import java.util.ResourceBundle;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -57,6 +58,7 @@ public class AttachmentPanel extends javax.swing.JPanel {
 
     public AttachmentPanel() {
         initComponents();
+        setBackground( UIUtils.getSectionPanelBackground() );
         initFileTypeCombo();
     }
 

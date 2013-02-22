@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.28.1
+#Version 1.32.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -53,6 +53,8 @@ meth public static <%0 extends java.lang.Object> java.util.concurrent.Future<{%%
 meth public static <%0 extends java.lang.Object> {%%0} showProgressDialogAndRun(org.netbeans.api.progress.ProgressRunnable<{%%0}>,java.lang.String,boolean)
 meth public static void runOffEventDispatchThread(java.lang.Runnable,java.lang.String,java.util.concurrent.atomic.AtomicBoolean,boolean)
 meth public static void runOffEventDispatchThread(java.lang.Runnable,java.lang.String,java.util.concurrent.atomic.AtomicBoolean,boolean,int,int)
+meth public static void runOffEventThreadWithCustomDialogContent(java.lang.Runnable,java.lang.String,javax.swing.JPanel,int,int)
+meth public static void runOffEventThreadWithProgressDialog(java.lang.Runnable,java.lang.String,org.netbeans.api.progress.ProgressHandle,boolean,int,int)
 meth public static void showProgressDialogAndRun(java.lang.Runnable,java.lang.String)
 meth public static void showProgressDialogAndRun(java.lang.Runnable,org.netbeans.api.progress.ProgressHandle,boolean)
 supr java.lang.Object
@@ -190,6 +192,7 @@ meth public abstract void showPopup()
 
 CLSS public abstract interface org.netbeans.modules.progress.spi.RunOffEDTProvider
 innr public abstract interface static Progress
+innr public abstract interface static Progress2
 meth public abstract void runOffEventDispatchThread(java.lang.Runnable,java.lang.String,java.util.concurrent.atomic.AtomicBoolean,boolean,int,int)
 
 CLSS public abstract interface static org.netbeans.modules.progress.spi.RunOffEDTProvider$Progress
@@ -198,6 +201,12 @@ intf org.netbeans.modules.progress.spi.RunOffEDTProvider
 meth public abstract <%0 extends java.lang.Object> java.util.concurrent.Future<{%%0}> showProgressDialogAndRunLater(org.netbeans.api.progress.ProgressRunnable<{%%0}>,org.netbeans.api.progress.ProgressHandle,boolean)
 meth public abstract <%0 extends java.lang.Object> {%%0} showProgressDialogAndRun(org.netbeans.api.progress.ProgressRunnable<{%%0}>,java.lang.String,boolean)
 meth public abstract void showProgressDialogAndRun(java.lang.Runnable,org.netbeans.api.progress.ProgressHandle,boolean)
+
+CLSS public abstract interface static org.netbeans.modules.progress.spi.RunOffEDTProvider$Progress2
+ outer org.netbeans.modules.progress.spi.RunOffEDTProvider
+intf org.netbeans.modules.progress.spi.RunOffEDTProvider$Progress
+meth public abstract void runOffEventThreadWithCustomDialogContent(java.lang.Runnable,java.lang.String,javax.swing.JPanel,int,int)
+meth public abstract void runOffEventThreadWithProgressDialog(java.lang.Runnable,java.lang.String,org.netbeans.api.progress.ProgressHandle,boolean,int,int)
 
 CLSS public final org.netbeans.modules.progress.spi.TaskModel
 cons public init()

@@ -48,7 +48,6 @@ java.api.common,\
 java.freeform,\
 java.j2seplatform,\
 java.j2seproject,\
-java.platform,\
 java.project,\
 javahelp,\
 keyring.impl,\

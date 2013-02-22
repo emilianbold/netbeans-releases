@@ -96,6 +96,7 @@ import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.SingleThreadWatcher;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
@@ -178,6 +179,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
     private int                 cachedFramesTo = -1;
     private final Object        cachedFramesLock = new Object();
     private JPDABreakpoint      currentBreakpoint;
+    private JPDABreakpointEvent breakpointEvent;
     private String              threadName;
     private final Object        lockerThreadsLock = new Object();
     //private Map<JPDAThread, Variable> lockerThreads;
@@ -376,12 +378,17 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
     public synchronized JPDABreakpoint getCurrentBreakpoint() {
         return currentBreakpoint;
     }
+    
+    public synchronized JPDABreakpointEvent getCurrentBreakpointEvent() {
+        return breakpointEvent;
+    }
 
-    public void setCurrentBreakpoint(JPDABreakpoint currentBreakpoint) {
+    public void setCurrentBreakpoint(JPDABreakpoint currentBreakpoint, JPDABreakpointEvent breakpointEvent) {
         JPDABreakpoint oldBreakpoint;
         synchronized (this) {
             oldBreakpoint = this.currentBreakpoint;
             this.currentBreakpoint = currentBreakpoint;
+            this.breakpointEvent = breakpointEvent;
         }
         pch.firePropertyChange(PROP_BREAKPOINT, oldBreakpoint, currentBreakpoint);
     }
@@ -940,7 +947,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         waitUntilMethodInvokeDone();
         setReturnVariable(null); // Clear the return var on resume
         setCurrentOperation(null);
-        currentBreakpoint = null;
+        synchronized (this) {
+            currentBreakpoint = null;
+            breakpointEvent = null;
+        }
         if (!doKeepLastOperations) {
             clearLastOperations();
         }

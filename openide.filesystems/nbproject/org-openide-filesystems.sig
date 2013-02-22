@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.62.1
+#Version 8.5.1
 
 CLSS public java.io.IOException
 cons public init()
@@ -276,8 +276,10 @@ meth public java.io.File showOpenDialog()
 meth public java.io.File showSaveDialog()
 meth public java.io.File[] showMultiOpenDialog()
 meth public javax.swing.JFileChooser createFileChooser()
+meth public org.openide.filesystems.FileChooserBuilder addDefaultFileFilters()
 meth public org.openide.filesystems.FileChooserBuilder addFileFilter(javax.swing.filechooser.FileFilter)
 meth public org.openide.filesystems.FileChooserBuilder forceUseOfDefaultWorkingDirectory(boolean)
+meth public org.openide.filesystems.FileChooserBuilder setAcceptAllFileFilterUsed(boolean)
 meth public org.openide.filesystems.FileChooserBuilder setAccessibleDescription(java.lang.String)
 meth public org.openide.filesystems.FileChooserBuilder setApproveText(java.lang.String)
 meth public org.openide.filesystems.FileChooserBuilder setBadgeProvider(org.openide.filesystems.FileChooserBuilder$BadgeProvider)
@@ -290,7 +292,7 @@ meth public org.openide.filesystems.FileChooserBuilder setFilesOnly(boolean)
 meth public org.openide.filesystems.FileChooserBuilder setSelectionApprover(org.openide.filesystems.FileChooserBuilder$SelectionApprover)
 meth public org.openide.filesystems.FileChooserBuilder setTitle(java.lang.String)
 supr java.lang.Object
-hfds DONT_STORE_DIRECTORIES,PREVENT_SYMLINK_TRAVERSAL,aDescription,approveText,approver,badger,controlButtonsShown,dirKey,dirsOnly,failoverDir,fileHiding,filesOnly,filter,filters,force,title
+hfds DONT_STORE_DIRECTORIES,PREVENT_SYMLINK_TRAVERSAL,aDescription,approveText,approver,badger,controlButtonsShown,dirKey,dirsOnly,failoverDir,fileHiding,filesOnly,filter,filters,force,title,useAcceptAllFileFilter
 hcls BadgeIconProvider,CustomFileView,IconProvider,MergedIcon,SavedDirFileChooser
 
 CLSS public abstract interface static org.openide.filesystems.FileChooserBuilder$BadgeProvider
@@ -331,6 +333,7 @@ CLSS public abstract org.openide.filesystems.FileObject
 cons public init()
 fld public final static java.lang.String DEFAULT_LINE_SEPARATOR_ATTR = "default-line-separator"
 intf java.io.Serializable
+intf org.openide.util.Lookup$Provider
 meth protected void fireFileAttributeChangedEvent(java.util.Enumeration<org.openide.filesystems.FileChangeListener>,org.openide.filesystems.FileAttributeEvent)
 meth protected void fireFileChangedEvent(java.util.Enumeration<org.openide.filesystems.FileChangeListener>,org.openide.filesystems.FileEvent)
 meth protected void fireFileDataCreatedEvent(java.util.Enumeration<org.openide.filesystems.FileChangeListener>,org.openide.filesystems.FileEvent)
@@ -401,12 +404,13 @@ meth public org.openide.filesystems.FileObject copy(org.openide.filesystems.File
 meth public org.openide.filesystems.FileObject createData(java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject getFileObject(java.lang.String)
 meth public org.openide.filesystems.FileObject move(org.openide.filesystems.FileLock,org.openide.filesystems.FileObject,java.lang.String,java.lang.String) throws java.io.IOException
+meth public org.openide.util.Lookup getLookup()
 meth public void addRecursiveListener(org.openide.filesystems.FileChangeListener)
 meth public void refresh()
 meth public void refresh(boolean)
 meth public void removeRecursiveListener(org.openide.filesystems.FileChangeListener)
 supr java.lang.Object
-hfds REMOVE_WRITABLES_ATTR,serialVersionUID
+hfds REMOVE_WRITABLES_ATTR,lkp,serialVersionUID
 hcls ED,OnlyFolders,PriorityFileChangeListener
 
 CLSS public org.openide.filesystems.FileRenameEvent
@@ -646,8 +650,8 @@ meth public static void removeRecursiveListener(org.openide.filesystems.FileChan
 meth public static void setMIMEType(java.lang.String,java.lang.String)
 meth public static void setOrder(java.util.List<org.openide.filesystems.FileObject>) throws java.io.IOException
 supr java.lang.Object
-hfds LOG,REFRESH_RP,ZIP_HEADER_1,ZIP_HEADER_2,archiveFileCache,diskFileSystem,holders,normalizedRef,refreshTask,transientAttributes
-hcls Holder,NonCanonicalizingFile,NonCanonicalizingFileSystemView
+hfds LOG,REFRESH_RP,ZIP_HEADER_1,ZIP_HEADER_2,archiveFileCache,diskFileSystem,normalizedRef,refreshTask,transientAttributes
+hcls NonCanonicalizingFile,NonCanonicalizingFileSystemView
 
 CLSS public org.openide.filesystems.JarFileSystem
 cons public init()
@@ -792,6 +796,7 @@ CLSS public abstract interface static !annotation org.openide.filesystems.MIMERe
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault int position()
+meth public abstract !hasdefault java.lang.String[] showInFileChooser()
 meth public abstract java.lang.String displayName()
 meth public abstract java.lang.String mimeType()
 meth public abstract java.lang.String[] extension()
@@ -814,6 +819,7 @@ CLSS public abstract interface static !annotation org.openide.filesystems.MIMERe
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault int position()
+meth public abstract !hasdefault java.lang.String[] showInFileChooser()
 meth public abstract java.lang.String displayName()
 meth public abstract java.lang.String resource()
 
@@ -1069,4 +1075,25 @@ supr java.lang.Exception
 hfds erroneousAnnotation,erroneousAnnotationValue,erroneousElement
 
 CLSS abstract interface org.openide.filesystems.annotations.package-info
+
+CLSS public abstract org.openide.util.Lookup
+cons public init()
+fld public final static org.openide.util.Lookup EMPTY
+innr public abstract interface static Provider
+innr public abstract static Item
+innr public abstract static Result
+innr public final static Template
+meth public <%0 extends java.lang.Object> java.util.Collection<? extends {%%0}> lookupAll(java.lang.Class<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Item<{%%0}> lookupItem(org.openide.util.Lookup$Template<{%%0}>)
+meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookupResult(java.lang.Class<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> lookup(org.openide.util.Lookup$Template<{%%0}>)
+meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
+meth public static org.openide.util.Lookup getDefault()
+supr java.lang.Object
+hfds LOG,defaultLookup
+hcls DefLookup,Empty
+
+CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
+meth public abstract org.openide.util.Lookup getLookup()
 

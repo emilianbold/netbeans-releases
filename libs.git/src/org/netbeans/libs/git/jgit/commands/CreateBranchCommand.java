@@ -42,13 +42,16 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.io.IOException;
 import java.util.Map;
 import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.DelegatingGitProgressMonitor;
@@ -86,6 +89,10 @@ public class CreateBranchCommand extends GitCommand {
         cmd.setStartPoint(revision);
         try {
             cmd.call();
+        } catch (RefNotFoundException ex) {
+            if (!createBranchInEmptyRepository(repository)) {
+                throw new GitException(ex);
+            }
         } catch (GitAPIException ex) {
             throw new GitException(ex);
         }
@@ -102,5 +109,30 @@ public class CreateBranchCommand extends GitCommand {
     
     public GitBranch getBranch () {
         return branch;
+    }
+
+    private boolean createBranchInEmptyRepository (Repository repository) throws GitException {
+        // is this an empty repository after a fresh clone of an empty repository?
+        if (revision.startsWith(Constants.R_REMOTES)) {
+            try {
+                if (Utils.parseObjectId(repository, Constants.HEAD) == null) {
+                    StoredConfig config = repository.getConfig();
+                    String[] elements = revision.split("/", 4);
+                    String remoteName = elements[2];
+                    String remoteBranchName = elements[3];
+                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, branchName,
+                            ConfigConstants.CONFIG_KEY_REMOTE, remoteName);
+                    config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, branchName,
+                            ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + remoteBranchName);
+                    config.save();
+                    return true;
+                }
+            } catch (IOException ex) {
+                throw new GitException(ex);
+            } catch (GitException ex) {
+                throw ex;
+            }
+        }
+        return false;
     }
 }

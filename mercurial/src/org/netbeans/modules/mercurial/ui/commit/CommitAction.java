@@ -155,8 +155,29 @@ public class CommitAction extends ContextAction {
         commit(contentTitle, context);
     }
 
-    public static void commit (String contentTitle, final VCSContext ctx) {
-        commit(contentTitle, ctx, null);
+    @NbBundle.Messages({
+        "# {0} - repository name", "MSG_CommitAction.interruptedRebase.error=Repository {0} is in the middle of an interrupted rebase.\n"
+            + "Finish the rebase before committing changes."
+    })
+    public static void commit (final String contentTitle, final VCSContext ctx) {
+        Utils.post(new Runnable() {
+            @Override
+            public void run () {
+                File root = HgUtils.getRootFile(ctx);
+                if (HgUtils.isRebasing(root)) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            Bundle.MSG_CommitAction_interruptedRebase_error(root.getName()),
+                            NotifyDescriptor.ERROR_MESSAGE));
+                    return;
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        commit(contentTitle, ctx, null);
+                    }
+                });
+            }
+        });
     }
     
     private static void commit (String contentTitle, final VCSContext ctx, final String branchName) {

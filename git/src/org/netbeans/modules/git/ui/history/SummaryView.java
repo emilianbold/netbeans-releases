@@ -237,11 +237,10 @@ class SummaryView extends AbstractSummaryView {
             for (RepositoryRevision.Event event : revision.getEvents()) {
                 evts.add(new GitLogEvent(master, event));
             }
-            List<Event> oldEvents = new ArrayList<Event>(events);
             List<Event> newEvents = new ArrayList<Event>(evts);
             events = evts;
             dummyEvents.clear();
-            eventsChanged(oldEvents, newEvents);
+            eventsChanged(null, newEvents);
         }
 
         @Override

@@ -147,7 +147,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     }
     
     public void testSaveOnPropertyChange() throws Exception {
-        DatabaseConnection dbconn = new DatabaseConnection("a", "b", "c", "d", "e", null);
+        DatabaseConnection dbconn = new DatabaseConnection("a", "b", "c", "d", "e", (String) null);
         FileObject fo = DatabaseConnectionConvertor.create(dbconn).getPrimaryFile();
         
         class FCL extends FileChangeAdapter {

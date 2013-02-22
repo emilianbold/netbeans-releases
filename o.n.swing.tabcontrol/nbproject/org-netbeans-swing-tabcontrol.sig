@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.36.1
+#Version 1.42.1
 
 CLSS public abstract java.awt.AWTEvent
 cons public init(java.awt.Event)
@@ -1804,6 +1804,7 @@ meth public final void makeTabVisible(int)
 meth public final void removeActionListener(java.awt.event.ActionListener)
 meth public final void requestAttention(int)
 meth public final void setActive(boolean)
+meth public final void setAttentionHighlight(int,boolean)
 meth public final void setShowCloseButton(boolean)
 meth public final void updateUI()
 meth public int tabForCoordinate(java.awt.Point)
@@ -1850,6 +1851,7 @@ meth protected abstract void requestAttention(int)
 meth protected final boolean shouldPerformAction(java.lang.String,int,java.awt.event.MouseEvent)
 meth protected final boolean shouldPerformAction(org.netbeans.swing.tabcontrol.event.TabActionEvent)
 meth protected java.awt.Font getTxtFont()
+meth protected void setAttentionHighlight(int,boolean)
 meth public abstract int dropIndexOfPoint(java.awt.Point)
 meth public abstract int tabForCoordinate(java.awt.Point)
 meth public abstract java.awt.Polygon getExactTabIndication(int)
@@ -1925,6 +1927,8 @@ meth public final void cancelRequestAttention(org.netbeans.swing.tabcontrol.TabD
 meth public final void removeActionListener(java.awt.event.ActionListener)
 meth public final void requestAttention(int)
 meth public final void setActive(boolean)
+meth public final void setAttentionHighlight(int,boolean)
+meth public final void setAttentionHighlight(org.netbeans.swing.tabcontrol.TabData,boolean)
 meth public final void setComponentConverter(org.netbeans.swing.tabcontrol.ComponentConverter)
 meth public final void setContentPolicy(int)
 meth public final void setShowCloseButton(boolean)
@@ -1961,6 +1965,7 @@ meth protected abstract void cancelRequestAttention(int)
 meth protected abstract void requestAttention(int)
 meth protected boolean uichange()
 meth protected final boolean shouldPerformAction(java.lang.String,int,java.awt.event.MouseEvent)
+meth protected void setAttentionHighlight(int,boolean)
 meth public abstract boolean isShowCloseButton()
 meth public abstract int dropIndexOfPoint(java.awt.Point)
 meth public abstract int tabForCoordinate(java.awt.Point)
@@ -2031,6 +2036,7 @@ meth public abstract void setTopComponents(org.openide.windows.TopComponent[],or
 meth public abstract void setTransparent(boolean)
 meth public boolean isBusy(org.openide.windows.TopComponent)
 meth public void makeBusy(org.openide.windows.TopComponent,boolean)
+meth public void setAttentionHighlight(org.openide.windows.TopComponent,boolean)
 supr java.lang.Object
 
 CLSS public abstract interface static org.netbeans.swing.tabcontrol.customtabs.Tabbed$Accessor
@@ -2118,6 +2124,7 @@ meth protected final boolean isAttention()
 meth protected final boolean isBusy()
 meth protected final boolean isClipLeft()
 meth protected final boolean isClipRight()
+meth protected final boolean isHighlight()
 meth protected final boolean isLeftmost()
 meth protected final boolean isNextTabArmed()
 meth protected final boolean isNextTabSelected()
@@ -2230,6 +2237,7 @@ meth protected abstract void paintTabBackground(java.awt.Graphics,int,int,int,in
 meth protected abstract void paintTabBorder(java.awt.Graphics,int,int,int,int,int)
 meth protected abstract void paintTabContent(java.awt.Graphics,int,java.lang.String,int,int,int,int)
 meth protected boolean isAttention(int)
+meth protected boolean isHighlight(int)
 meth protected final boolean isActive()
 meth protected final boolean isFocused(int)
 meth protected final boolean isSelected(int)
@@ -2247,6 +2255,7 @@ meth protected void cancelRequestAttention(int)
 meth protected void installControlButtons()
 meth protected void paintDisplayerBackground(java.awt.Graphics,javax.swing.JComponent)
 meth protected void requestAttention(int)
+meth protected void setAttentionHighlight(int,boolean)
 meth public final org.netbeans.swing.tabcontrol.plaf.TabLayoutModel getLayoutModel()
 meth public int dropIndexOfPoint(java.awt.Point)
 meth public int tabForCoordinate(java.awt.Point)
@@ -2437,6 +2446,7 @@ meth protected final java.awt.Point getLastKnownMouseLocation()
 meth protected final void cancelRequestAttention(int)
 meth protected final void getTabsVisibleArea(java.awt.Rectangle)
 meth protected final void requestAttention(int)
+meth protected final void setAttentionHighlight(int,boolean)
 meth protected int createRepaintPolicy()
 meth protected int getFirstVisibleTab()
 meth protected int getLastVisibleTab()
@@ -2618,6 +2628,7 @@ meth protected void installContentDisplayer()
 meth protected void installListeners()
 meth protected void installTabDisplayer()
 meth protected void requestAttention(int)
+meth protected void setAttentionHighlight(int,boolean)
 meth protected void uninstall()
 meth protected void uninstallDisplayers()
 meth protected void uninstallListeners()
@@ -2967,6 +2978,7 @@ fld public final static int CHANGE_TAB_TO_TAB = 1
 fld public final static int CLIP_LEFT = 2
 fld public final static int CLIP_RIGHT = 1
 fld public final static int CLOSE_BUTTON_ARMED = 512
+fld public final static int HIGHLIGHT = 131072
 fld public final static int LEFTMOST = 128
 fld public final static int MOUSE_IN_TABS_AREA = 4096
 fld public final static int MOUSE_PRESSED_IN_CLOSE_BUTTON = 8192
@@ -3000,12 +3012,14 @@ meth public final int setMousePressedInCloseButton(int)
 meth public final int setPressed(int)
 meth public final int setSelected(int)
 meth public final void addAlarmTab(int)
+meth public final void addHighlightTab(int)
 meth public final void removeAlarmTab(int)
+meth public final void removeHighlightTab(int)
 meth public int getState(int)
 meth public java.lang.String toString()
 meth public void clearTransientStates()
 supr java.lang.Object
-hfds active,alarmTabs,alarmTimer,attentionToggle,closeButtonContainsMouseIndex,containsMouseIndex,curr,lastAffected,lastChange,lastChangeType,mouseInTabsArea,mousePressedInCloseButtonIndex,pressedIndex,prev,selectedIndex
+hfds active,alarmTabs,alarmTimer,attentionToggle,closeButtonContainsMouseIndex,containsMouseIndex,curr,highlightTabs,lastAffected,lastChange,lastChangeType,mouseInTabsArea,mousePressedInCloseButtonIndex,pressedIndex,prev,selectedIndex
 
 CLSS public org.netbeans.swing.tabcontrol.plaf.ToolbarTabDisplayerUI
 cons public init(org.netbeans.swing.tabcontrol.TabDisplayer)
@@ -3084,7 +3098,6 @@ meth public javax.swing.Icon getButtonIcon(int,int)
 meth public static javax.swing.plaf.ComponentUI createUI(javax.swing.JComponent)
 meth public void paintBackground(java.awt.Graphics)
 supr org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI
-hfds buttonIconPaths,scratch5
 
 CLSS public org.netbeans.swing.tabcontrol.plaf.WinVistaSlidingButtonUI
 cons public init()
@@ -3103,8 +3116,6 @@ meth public static javax.swing.plaf.ComponentUI createUI(javax.swing.JComponent)
 meth public void installUI(javax.swing.JComponent)
 meth public void postTabAction(org.netbeans.swing.tabcontrol.event.TabActionEvent)
 supr org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI
-hfds BUMP_X_PAD,BUMP_Y_PAD_BOTTOM,BUMP_Y_PAD_UPPER,ICON_X_PAD,TXT_X_PAD,TXT_Y_PAD,borderC,borderInnerC,buttonIconPaths,colorsReady,focusFillBrightLowerC,focusFillDarkLowerC,focusFillUpperC,mouseOverFillBrightLowerC,mouseOverFillBrightUpperC,mouseOverFillDarkLowerC,mouseOverFillDarkUpperC,prefSize,selBorderC,selFillC,tempRect,txtC,unselFillBrightLowerC,unselFillBrightUpperC,unselFillDarkLowerC,unselFillDarkUpperC
-hcls OwnController
 
 CLSS public final org.netbeans.swing.tabcontrol.plaf.WinXPEditorTabDisplayerUI
 cons public init(org.netbeans.swing.tabcontrol.TabDisplayer)
@@ -3145,6 +3156,32 @@ meth public void postTabAction(org.netbeans.swing.tabcontrol.event.TabActionEven
 supr org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI
 hfds BUMP_X_PAD,BUMP_Y_PAD_BOTTOM,BUMP_Y_PAD_UPPER,HIGHLIGHTED_RAISE,ICON_X_PAD,TXT_X_PAD,TXT_Y_PAD,bgFillC,borderC,bottomBorderC,buttonIconPaths,colorsReady,focusFillBrightC,focusFillDarkC,prefSize,selBorderC,selFillC,tempRect,txtC,unselFillBrightC,unselFillDarkC
 hcls OwnController
+
+CLSS public final org.netbeans.swing.tabcontrol.plaf.Windows8EditorTabDisplayerUI
+cons public init(org.netbeans.swing.tabcontrol.TabDisplayer)
+meth protected java.awt.Rectangle getTabRectForRepaint(int,java.awt.Rectangle)
+meth protected org.netbeans.swing.tabcontrol.plaf.TabCellRenderer createDefaultRenderer()
+meth protected void paintAfterTabs(java.awt.Graphics)
+meth public java.awt.Dimension getPreferredSize(javax.swing.JComponent)
+meth public javax.swing.Icon getButtonIcon(int,int)
+meth public static javax.swing.plaf.ComponentUI createUI(javax.swing.JComponent)
+meth public void paintBackground(java.awt.Graphics)
+supr org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI
+hfds buttonIconPaths
+
+CLSS public final org.netbeans.swing.tabcontrol.plaf.Windows8ViewTabDisplayerUI
+meth protected java.awt.Font getTxtFont()
+meth protected org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI$Controller createController()
+meth protected void paintTabBackground(java.awt.Graphics,int,int,int,int,int)
+meth protected void paintTabBorder(java.awt.Graphics,int,int,int,int,int)
+meth protected void paintTabContent(java.awt.Graphics,int,java.lang.String,int,int,int,int)
+meth public java.awt.Dimension getPreferredSize(javax.swing.JComponent)
+meth public javax.swing.Icon getButtonIcon(int,int)
+meth public static javax.swing.plaf.ComponentUI createUI(javax.swing.JComponent)
+meth public void installUI(javax.swing.JComponent)
+meth public void postTabAction(org.netbeans.swing.tabcontrol.event.TabActionEvent)
+supr org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI
+hfds attentionFillLowerC,attentionFillUpperC,buttonIconPaths,colorsReady,focusFillLowerC,focusFillUpperC,mouseOverFillLowerC,mouseOverFillUpperC,selFillC,unselFillLowerC,unselFillUpperC
 
 CLSS public org.netbeans.swing.tabcontrol.plaf.WindowsSlidingButtonUI
 cons protected init()

@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.util.Properties;
 import javax.swing.Action;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
@@ -64,8 +65,10 @@ import org.netbeans.modules.db.explorer.action.ConnectAction;
 import org.netbeans.modules.db.explorer.metadata.MetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
+import org.netbeans.modules.db.util.PropertiesEditor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -81,6 +84,8 @@ public class ConnectionNode extends BaseNode {
     
     private static final String CONNECTEDICONBASE = "org/netbeans/modules/db/resources/connection.gif"; // NOI18N
     private static final String DISCONNECTEDICONBASE = "org/netbeans/modules/db/resources/connectionDisconnected.gif"; // NOI18N
+    private static final String CONNECTIONPROPERTIES = "ConnectionProperties"; //NOI18N
+    private static final String CONNECTIONPROPERTIESDESC = "ConnectionPropertiesDescription"; //NOI18N
     private static final String FOLDER = "Connection"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ConnectionNode.class.getName());
     
@@ -160,6 +165,8 @@ public class ConnectionNode extends BaseNode {
         } else if (nps.getName().equals(DISPLAYNAME)) {
             setDisplayName(val.toString());
             refreshNode = false;
+        } else if (nps.getName().equals(CONNECTIONPROPERTIES)) {
+            connection.setConnectionProperties((Properties) val);
         }
 
         super.setPropertyValue(nps, val);
@@ -181,6 +188,10 @@ public class ConnectionNode extends BaseNode {
             addProperty(USER, USERDESC, String.class, !connected, connection.getUser());
             addProperty(REMEMBERPW, REMEMBERPWDESC,
                     Boolean.class, !connected, connection.rememberPassword());
+            addProperty(CONNECTIONPROPERTIES, CONNECTIONPROPERTIESDESC, Properties.class, !connected, connection.getConnectionProperties());
+            Property<?> ps = getSheet().get(Sheet.PROPERTIES).get(CONNECTIONPROPERTIES);
+            ps.setValue("canEditAsText", Boolean.FALSE);                //NOI18N
+            ps.setValue(NodePropertySupport.CUSTOM_EDITOR, PropertiesEditor.class);
 
             if (connected) {
                 Specification spec = connection.getConnector().getDatabaseSpecification();
