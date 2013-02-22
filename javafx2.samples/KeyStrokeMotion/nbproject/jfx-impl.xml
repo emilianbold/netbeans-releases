@@ -1819,10 +1819,21 @@
                         return prop != null && 
                            (prop.toLowerCase()=="true" || prop.toLowerCase()=="yes" || prop.toLowerCase()=="on");
                     }                    
+                    function contains(array, prop) {
+                        for ( i=0; i < array.length; i++) {
+                            var s1 = new String(array[i]);
+                            var s2 = new String(prop);
+                            if( s1.equalsIgnoreCase(s2) ) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
                     var S = java.io.File.separator;
                     var JFXPAR = "javafx.param";
                     var JFXPARN = "name";
                     var JFXPARV = "value";
+                    var JFXPARH = "hidden";
                     var JFXCALLB = "javafx.jscallback";
                     var JFXLAZY = "download.mode.lazy.jar";
                     var withpreloader = project.getProperty("app-with-preloader");
@@ -1930,12 +1941,26 @@
                         app.setPreloaderClass(preloaderclass);
                     }
                     // fx:param, fx:argument
+                    var searchHides = project.getProperties().keys();
+                    var hides = new Array();
+                    while(searchHides.hasMoreElements()) {
+                        // collect all hidden property names
+                        var pns = searchHides.nextElement();
+                        if(pns.substr(0,JFXPAR.length) == JFXPAR && pns.indexOf(JFXPARN) == (pns.length()-JFXPARN.length)) {
+                            var propns = project.getProperty(pns);
+                            var phs = pns.substr(0,pns.indexOf(JFXPARN)) + JFXPARH;
+                            var proph = project.getProperty(phs);
+                            if(isTrue(proph)) {
+                                hides.push(propns);
+                            }
+                         }
+                    }
                     var keys = project.getProperties().keys();
                     while(keys.hasMoreElements()) {
                         var pn = keys.nextElement();
                         if(pn.substr(0,JFXPAR.length) == JFXPAR && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
                             var propn = project.getProperty(pn);
-                            if(propn != null && propn.length() > 0) {
+                            if(propn != null && propn.length() > 0 && !contains(hides, propn)) {
                                 var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
                                 var propv = project.getProperty(pv);
                                 if(propv != null && propv.length() > 0) {

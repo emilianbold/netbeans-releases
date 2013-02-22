@@ -1088,7 +1088,7 @@ private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         configs.setActiveParamsTransparent(props);
         String paramString = configs.getActiveParamsTransparentAsString(false);
         textFieldParams.setText(paramString);
-        setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsAsString(false)));
+        setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsTransparentAsString(false)));
     }
     panel.unregisterListeners();
     dialog.dispose();
@@ -1292,7 +1292,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 }
                 String paramString = configs.getParamsTransparentAsString(activeConfig, false);
                 textFieldParams.setText(paramString);
-                setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsAsString(false)));
+                setEmphasizedFont(labelParams, !JFXProjectProperties.isEqualText(paramString, configs.getDefaultParamsTransparentAsString(false)));
 
 //                setEmphasizedFont(checkBoxPreloader, preloaderConfigDiffersFromDefault(activeConfig));
 //                setEmphasizedFont(labelPreloaderClass, !JFXProjectProperties.isEqualText(
