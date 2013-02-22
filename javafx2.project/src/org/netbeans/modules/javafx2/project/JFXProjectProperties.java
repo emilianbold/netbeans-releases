@@ -144,9 +144,9 @@ public final class JFXProjectProperties {
     
     // FX config properties (Run panel), replicated from ProjectProperties
     public static final String MAIN_CLASS = "javafx.main.class"; // NOI18N
-    public static final String APPLICATION_ARGS = JFXProjectConfigurations.APPLICATION_ARGS;
-    public static final String APP_PARAM_PREFIX = JFXProjectConfigurations.APP_PARAM_PREFIX;
-    public static final String APP_PARAM_SUFFIXES[] = JFXProjectConfigurations.APP_PARAM_SUFFIXES;
+    //public static final String APPLICATION_ARGS = JFXProjectConfigurations.APPLICATION_ARGS;
+    //public static final String APP_PARAM_PREFIX = JFXProjectConfigurations.APP_PARAM_PREFIX;
+    //public static final String APP_PARAM_SUFFIXES[] = JFXProjectConfigurations.APP_PARAM_SUFFIXES;
     public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS;
     public static final String FALLBACK_CLASS = "javafx.fallback.class"; // NOI18N
     public static final String SIGNED_JAR = "dist.signed.jar"; // NOI18N
@@ -664,7 +664,7 @@ public final class JFXProjectProperties {
         private String columnNames[];
         
         public PropertiesTableModel(List<Map<String,String>> props, String sfxs[], String clmns[]) {
-            if (sfxs.length != clmns.length) {
+            if (sfxs.length < clmns.length) {
                 throw new IllegalArgumentException();
             }
             properties = props;
