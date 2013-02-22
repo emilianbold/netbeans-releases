@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,74 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.discovery.performance;
 
-package org.netbeans.modules.maven.problems;
-
-import java.awt.event.ActionEvent;
-import java.util.Arrays;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.TestChecker;
-import org.netbeans.modules.maven.api.execute.RunConfig.ReactorStyle;
-import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.execute.BeanRunConfig;
-import static org.netbeans.modules.maven.problems.Bundle.*;
-import org.openide.filesystems.FileUtil;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.actions.NodeAction;
 
 /**
- * Corrective action to run some target which can download plugins or parent POMs.
- * At worst it will show the same problem in the Output Window, so the user is more likely
- * to believe that there really is a problem with their project, not NetBeans.
+ *
+ * @author Alexander Simon
  */
-@Messages({"ACT_validate=Priming Build",
-            "ACT_start_validate=Priming build was started."})
-public class SanityBuildAction extends AbstractAction {
+@Messages({
+    "statistic.action.name.text=Project Performance Statistic",
+    "statistic.title.text=Project Performance Statistic"
+})
+public class PerformanceStatisticAction extends NodeAction {
 
-    private final NbMavenProjectImpl nbproject;
+    private final boolean visibleAction;
 
-    public SanityBuildAction(NbMavenProjectImpl nbproject) {
-        super(ACT_validate());
-        putValue(ProblemReporterImpl.ACT_START_MESSAGE, ACT_start_validate());
-        this.nbproject = nbproject;
+    public PerformanceStatisticAction() {
+        visibleAction = Boolean.getBoolean("test.xref.action"); // NOI18N
     }
 
-    public @Override void actionPerformed(ActionEvent e) {
-        BeanRunConfig config = new BeanRunConfig();
-        config.setExecutionDirectory(FileUtil.toFile(nbproject.getProjectDirectory()));
-        config.setGoals(Arrays.asList("--fail-at-end", "install")); // NOI18N
-        config.setReactorStyle(ReactorStyle.ALSO_MAKE);
-        config.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //priming doesn't need test execution, just compilation
-        config.setProject(nbproject);
-        String label = build_label(nbproject.getProjectDirectory().getNameExt());
-        config.setExecutionName(label);
-        config.setTaskDisplayName(label);
-        RunUtils.run(config);
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        JPanel panel = new StatisticPanel();
+        DialogDescriptor descr = new DialogDescriptor(panel, Bundle.statistic_title_text(), true,
+                new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
+        DialogDisplayer.getDefault().notify(descr);
     }
 
+    @Override
+    public JMenuItem getMenuPresenter() {
+        JMenuItem out = super.getMenuPresenter();
+        out.setVisible(visibleAction);
+        return out;
+    }
+
+    @Override
+    public JMenuItem getPopupPresenter() {
+        JMenuItem out = super.getPopupPresenter();
+        out.setVisible(visibleAction);
+        return out;
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (!visibleAction) {
+            return false;
+        }
+        return PerformanceIssueDetector.getActiveInstance() != null;
+    }
+
+    @Override
+    public String getName() {
+        return Bundle.statistic_action_name_text();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
 }
