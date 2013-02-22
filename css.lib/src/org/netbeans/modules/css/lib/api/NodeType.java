@@ -358,8 +358,9 @@ public enum NodeType {
     /**
      * ".box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000)"
      */
-    less_mixin_declaration,
+    cp_mixin_declaration,
     
+    cp_mixin_call,
     /**
      * .box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
      */
@@ -378,7 +379,6 @@ public enum NodeType {
     
     less_rule,
     
-    less_mixin_call,
     less_mixin_call_args;
     
     
