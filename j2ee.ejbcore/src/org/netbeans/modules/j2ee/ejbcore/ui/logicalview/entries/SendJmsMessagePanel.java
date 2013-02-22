@@ -51,6 +51,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Set;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.*;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
@@ -58,9 +60,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.JmsDestinationDefinition;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -154,7 +158,20 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
      */
     public MessageDestination getDestination() {
         if (projectDestinationsRadio.isSelected()) {
-            return (MessageDestination) projectDestinationsCombo.getSelectedItem();
+            if (projectDestinationsCombo.getSelectedItem() == null
+                    || ((String) projectDestinationsCombo.getSelectedItem()).isEmpty()) {
+                return null;
+            } else {
+                final String selectedDestination = (String) projectDestinationsCombo.getSelectedItem();
+                for (MessageDestination messageDestination : moduleDestinations) {
+                    if (messageDestination.getName().equals(selectedDestination)) {
+                        // predefined project's message destinations
+                        return messageDestination;
+                    }
+                }
+                // message destination is unknown
+                return new JmsDestinationDefinition(selectedDestination, Type.QUEUE, false);
+            }
         } else if (serverDestinationsRadio.isSelected()) {
             return (MessageDestination) serverDestinationsCombo.getSelectedItem();
         }
@@ -383,7 +400,11 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
             return null;
         }
     }
-    
+
+    private static ComboBoxModel getProjectDestinationComboModel() {
+        return new ProjectDestinationComboModel();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -413,6 +434,9 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
 
         destinationGroup.add(serverDestinationsRadio);
         org.openide.awt.Mnemonics.setLocalizedText(serverDestinationsRadio, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_ServerDestinations")); // NOI18N
+
+        projectDestinationsCombo.setEditable(true);
+        projectDestinationsCombo.setModel(getProjectDestinationComboModel());
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_Add")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -531,5 +555,19 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     private javax.swing.JRadioButton serverDestinationsRadio;
     private javax.swing.JPanel serviceLocatorPanel;
     // End of variables declaration//GEN-END:variables
-    
+
+    @SuppressWarnings("serial") // not used to be serialized
+    public static class ProjectDestinationComboModel extends DefaultComboBoxModel {
+
+        @Override
+        public Object getSelectedItem() {
+            Object selectedItem = super.getSelectedItem();
+            if (selectedItem instanceof MessageDestination) {
+                return ((MessageDestination) selectedItem).getName();
+            } else {
+                return selectedItem;
+            }
+        }
+
+    }
 }
