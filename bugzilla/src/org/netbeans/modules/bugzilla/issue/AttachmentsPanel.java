@@ -81,7 +81,6 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public class AttachmentsPanel extends JPanel {
-    private static final Color BG_COLOR = new Color(220, 220, 220);
     private boolean hadNoAttachments = true;
     private List<AttachmentPanel> newAttachments;
     private JLabel noneLabel;
@@ -356,7 +355,7 @@ public class AttachmentsPanel extends JPanel {
     private JPanel createHighlightPanel() {
         JPanel panel = new JPanel();
         // PENDING what color (e.g. what key from UIDefaults) should I use?
-        panel.setBackground(BG_COLOR);
+        panel.setBackground(UIUtils.getSectionPanelBackground());
         add(panel);
         return panel;
     }
@@ -443,7 +442,7 @@ public class AttachmentsPanel extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             AttachmentPanel attachment = new AttachmentPanel();
-            attachment.setBackground(BG_COLOR);
+            attachment.setBackground(UIUtils.getSectionPanelBackground());
             horizontalGroup.addComponent(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
             verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
             verticalGroup.addComponent(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);

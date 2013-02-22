@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.2.1
+#Version 1.8.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -42,6 +42,17 @@ meth public static java.util.regex.Pattern makeFileNamePattern(org.netbeans.api.
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 
+CLSS public final org.netbeans.api.search.ReplacePattern
+meth public boolean equals(java.lang.Object)
+meth public boolean isPreserveCase()
+meth public int hashCode()
+meth public java.lang.String getReplaceExpression()
+meth public org.netbeans.api.search.ReplacePattern changePreserveCase(boolean)
+meth public org.netbeans.api.search.ReplacePattern changeReplaceExpression(java.lang.String)
+meth public static org.netbeans.api.search.ReplacePattern create(java.lang.String,boolean)
+supr java.lang.Object
+hfds preserveCase,replaceExpression
+
 CLSS public final org.netbeans.api.search.SearchControl
 meth public static void openFindDialog(org.netbeans.api.search.SearchPattern,org.netbeans.api.search.SearchScopeOptions,java.lang.Boolean,java.lang.String)
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
@@ -65,17 +76,23 @@ supr java.lang.Object
 
 CLSS public final org.netbeans.api.search.SearchHistory
 fld public final static java.lang.String ADD_TO_HISTORY = "add-to-history"
+fld public final static java.lang.String ADD_TO_REPLACE = "add-to-replace"
 fld public final static java.lang.String LAST_SELECTED = "last-selected"
+ anno 0 java.lang.Deprecated()
+meth public java.util.List<org.netbeans.api.search.ReplacePattern> getReplacePatterns()
 meth public java.util.List<org.netbeans.api.search.SearchPattern> getSearchPatterns()
 meth public org.netbeans.api.search.SearchPattern getLastSelected()
+ anno 0 java.lang.Deprecated()
 meth public static org.netbeans.api.search.SearchHistory getDefault()
 meth public void add(org.netbeans.api.search.SearchPattern)
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void addReplace(org.netbeans.api.search.ReplacePattern)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void setLastSelected(org.netbeans.api.search.SearchPattern)
+ anno 0 java.lang.Deprecated()
 meth public void storeFileNamePattern(java.lang.String)
 supr java.lang.Object
-hfds INSTANCE,MAX_SEARCH_PATTERNS_ITEMS,PREFS_NODE,PROP_SEARCH_PATTERN_PREFIX,pcs,prefs,searchPatternsList
+hfds INSTANCE,MAX_PATTERN_LENGTH,MAX_SEARCH_PATTERNS_ITEMS,PREFS_NODE,PROP_REPLACE_PATTERN_PREFIX,PROP_SEARCH_PATTERN_PREFIX,pcs,prefs,replacePatternsList,searchPatternsList
 
 CLSS public final org.netbeans.api.search.SearchPattern
 meth public boolean equals(java.lang.Object)
@@ -93,15 +110,20 @@ supr java.lang.Object
 hfds matchCase,regExp,searchExpression,wholeWords
 
 CLSS public final org.netbeans.api.search.SearchRoot
+cons public init(java.net.URI,java.util.List<org.netbeans.api.search.provider.SearchFilter>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
 cons public init(org.openide.filesystems.FileObject,java.util.List<org.netbeans.api.search.provider.SearchFilter>)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
+meth public java.net.URI getUri()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.List<org.netbeans.api.search.provider.SearchFilter> getFilters()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.openide.filesystems.FileObject getFileObject()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds EMPTY_FILTER_LIST,filters,rootFile
+hfds EMPTY_FILTER_LIST,LOG,filters,rootFile,rootUri
 
 CLSS public org.netbeans.api.search.SearchScopeOptions
 meth public boolean isRegexp()
@@ -132,6 +154,7 @@ hcls DefaultSearchOptions
 
 CLSS public abstract org.netbeans.api.search.provider.FileNameMatcher
 meth public abstract boolean pathMatches(java.io.File)
+meth public abstract boolean pathMatches(java.net.URI)
 meth public abstract boolean pathMatches(org.openide.filesystems.FileObject)
 meth public static org.netbeans.api.search.provider.FileNameMatcher create(org.netbeans.api.search.SearchScopeOptions)
 supr java.lang.Object
@@ -141,7 +164,12 @@ hcls ExtensionMatcher,RegexpPatternMatcher,SimplePatternMatcher,TakeAllMatcher
 CLSS public abstract org.netbeans.api.search.provider.SearchFilter
 cons public init()
 innr public final static !enum FolderResult
+meth public abstract boolean searchFile(java.net.URI)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public abstract boolean searchFile(org.openide.filesystems.FileObject)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract org.netbeans.api.search.provider.SearchFilter$FolderResult traverseFolder(java.net.URI)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public abstract org.netbeans.api.search.provider.SearchFilter$FolderResult traverseFolder(org.openide.filesystems.FileObject)
  anno 0 org.netbeans.api.annotations.common.NonNull()
@@ -159,6 +187,11 @@ supr java.lang.Enum<org.netbeans.api.search.provider.SearchFilter$FolderResult>
 
 CLSS public abstract org.netbeans.api.search.provider.SearchInfo
 cons public init()
+meth protected abstract java.util.Iterator<java.net.URI> createUrisToSearchIterator(org.netbeans.api.search.SearchScopeOptions,org.netbeans.api.search.provider.SearchListener,java.util.concurrent.atomic.AtomicBoolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth protected abstract java.util.Iterator<org.openide.filesystems.FileObject> createFilesToSearchIterator(org.netbeans.api.search.SearchScopeOptions,org.netbeans.api.search.provider.SearchListener,java.util.concurrent.atomic.AtomicBoolean)
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
@@ -167,6 +200,11 @@ meth protected abstract java.util.Iterator<org.openide.filesystems.FileObject> c
 meth public abstract boolean canSearch()
 meth public abstract java.util.List<org.netbeans.api.search.SearchRoot> getSearchRoots()
  anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public final java.lang.Iterable<java.net.URI> getUrisToSearch(org.netbeans.api.search.SearchScopeOptions,org.netbeans.api.search.provider.SearchListener,java.util.concurrent.atomic.AtomicBoolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public final java.lang.Iterable<org.openide.filesystems.FileObject> getFilesToSearch(org.netbeans.api.search.SearchScopeOptions,org.netbeans.api.search.provider.SearchListener,java.util.concurrent.atomic.AtomicBoolean)
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
@@ -216,6 +254,10 @@ meth public void fileContentMatchingProgress(java.lang.String,long)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void fileContentMatchingStarted(java.lang.String)
  anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void fileSkipped(java.net.URI,org.netbeans.spi.search.SearchFilterDefinition,java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
 meth public void fileSkipped(org.openide.filesystems.FileObject,org.netbeans.spi.search.SearchFilterDefinition,java.lang.String)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
@@ -346,7 +388,13 @@ meth public abstract boolean searchFile(org.openide.filesystems.FileObject)
 meth public abstract org.netbeans.spi.search.SearchFilterDefinition$FolderResult traverseFolder(org.openide.filesystems.FileObject)
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public boolean searchFile(java.net.URI)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public org.netbeans.spi.search.SearchFilterDefinition$FolderResult traverseFolder(java.net.URI)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
+hfds LOG
 
 CLSS public final static !enum org.netbeans.spi.search.SearchFilterDefinition$FolderResult
  outer org.netbeans.spi.search.SearchFilterDefinition
@@ -367,6 +415,11 @@ meth public abstract java.util.Iterator<org.openide.filesystems.FileObject> file
  anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public abstract java.util.List<org.netbeans.api.search.SearchRoot> getSearchRoots()
  anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.util.Iterator<java.net.URI> urisToSearch(org.netbeans.api.search.SearchScopeOptions,org.netbeans.api.search.provider.SearchListener,java.util.concurrent.atomic.AtomicBoolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 
 CLSS public final org.netbeans.spi.search.SearchInfoDefinitionFactory
@@ -517,6 +570,7 @@ meth public static <%0 extends java.lang.Object> org.netbeans.spi.search.provide
  anno 2 org.netbeans.api.annotations.common.NonNull()
  anno 3 org.netbeans.api.annotations.common.NullAllowed()
  anno 4 org.netbeans.api.annotations.common.NonNull()
+meth public void closed()
 meth public void searchFinished()
 meth public void searchStarted()
 meth public void setInfoNode(org.openide.nodes.Node)

@@ -54,21 +54,18 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 
 
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -118,16 +115,18 @@ PropertyChangeListener {
         // close old tabs
         if (DebuggerManager.getDebuggerManager ().getSessions ().length == 1) {
             Iterator<IOManager> i = managers.iterator ();
-            while (i.hasNext ())
+            while (i.hasNext ()) {
                 i.next().close();
+            }
             managers = new HashSet<IOManager>();
         }
         
         // open new tab
         String title = contextProvider.lookupFirst(null, String.class);
-        if (title == null)
-            title = NbBundle.getBundle (IOManager.class).getString 
-                ("CTL_DebuggerConsole_Title");
+        if (title == null) {
+            title = NbBundle.getMessage 
+                (IOManager.class, "CTL_DebuggerConsole_Title");
+        }
         ioManager = new IOManager (title);
         managers.add (ioManager);
         try {
@@ -142,6 +141,7 @@ PropertyChangeListener {
         );
     }
 
+    @Override
     protected synchronized void destroy () {
         debugger.removePropertyChangeListener (
             JPDADebugger.PROP_STATE,
@@ -153,16 +153,20 @@ PropertyChangeListener {
         ioManager = null;
     }
 
+    @Override
     public String[] getProperties () {
         return new String[] {ActionsManagerListener.PROP_ACTION_PERFORMED};
     }
 
+    @Override
     public void propertyChange (java.beans.PropertyChangeEvent evt) {
         final JPDAThread t;
         int debuggerState;
         IOManager ioManager;
         synchronized (this) {
-            if (debugger == null) return ;
+            if (debugger == null) {
+                return ;
+            }
             t = debugger.getCurrentThread ();
             debuggerState = debugger.getState();
             ioManager = this.ioManager;
@@ -209,7 +213,7 @@ PropertyChangeListener {
             } else
             if (cookie instanceof ListeningDICookie) {
                 ListeningDICookie c = (ListeningDICookie) cookie;
-                if (c.getSharedMemoryName () != null)
+                if (c.getSharedMemoryName () != null) {
                     print (
                         "CTL_Listening_shmem",
 //                        where,
@@ -218,7 +222,7 @@ PropertyChangeListener {
                         },
                         null
                     );
-                else
+                } else {
                     print (
                         "CTL_Listening_socket",
 //                        where,
@@ -227,6 +231,7 @@ PropertyChangeListener {
                         },
                         null
                     );
+                }
             } else
             if (cookie instanceof LaunchingDICookie) {
                 LaunchingDICookie c = (LaunchingDICookie) cookie;
@@ -260,26 +265,29 @@ PropertyChangeListener {
             } catch (DebuggerStartException ex) {
                 e = ex.getTargetException ();
             }
-            if (e == null)
+            if (e == null) {
                 print ("CTL_Debugger_finished", null, null);
-            else {
+            } else {
                 String message = e.getMessage ();
-                if (e instanceof ConnectException)
-                    message = NbBundle.getBundle (DebuggerOutput.class).
-                        getString ("CTL_Connection_refused");
-                if (e instanceof UnknownHostException)
-                    message = NbBundle.getBundle (DebuggerOutput.class).
-                        getString ("CTL_Unknown_host");
+                if (e instanceof ConnectException) {
+                    message = NbBundle.getMessage
+                            (DebuggerOutput.class, "CTL_Connection_refused");
+                }
+                if (e instanceof UnknownHostException) {
+                    message = NbBundle.getMessage
+                            (DebuggerOutput.class, "CTL_Unknown_host");
+                }
                 if (message != null) {
                     ioManager.println (
                         message,
                         null
                     );
-                } else
+                } else {
                     ioManager.println (
                         e.toString (),
                         null
                     );
+                }
                 //e.printStackTrace ();
             }
             ioManager.closeStream ();
@@ -350,7 +358,7 @@ PropertyChangeListener {
                 ((BeanContextChild) t).addPropertyChangeListener(PROP_OPERATIONS_SET, operationsUpdateListener);
                 if (op != null) {
                     printOperation(t, op, sourceName, methodName, lineNumber, line, important);
-                } else if (lineNumber > 0)
+                } else if (lineNumber > 0) {
                     print (
                         "CTL_Thread_stopped",
                       //  IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
@@ -363,7 +371,7 @@ PropertyChangeListener {
                         line,
                         important
                     );
-                else if (sourceName.length() > 0 && methodName.length() > 0)
+                } else if (sourceName.length() > 0 && methodName.length() > 0) {
                     print (
                         "CTL_Thread_stopped_no_line",
                     //    IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
@@ -375,15 +383,16 @@ PropertyChangeListener {
                         line,
                         important
                     );
-                else
+                } else {
                     print (
                         "CTL_Thread_stopped_no_line_no_source",
                         new String[] { threadName },
                         line,
                         important
                     );
+                }
             } catch (AbsentInformationException ex) {
-                if (lineNumber > 0)
+                if (lineNumber > 0) {
                     print (
                         "CTL_Thread_stopped_no_info",
                      //   IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
@@ -396,7 +405,7 @@ PropertyChangeListener {
                         null,
                         true
                     );
-                else
+                } else {
                     print (
                         "CTL_Thread_stopped_no_info_no_line",
                         //IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
@@ -408,6 +417,7 @@ PropertyChangeListener {
                         null,
                         true
                     );
+                }
             }
         }
     }
@@ -448,19 +458,22 @@ PropertyChangeListener {
     }
 
     public void actionPerformed (Object action, boolean success) {
-        if (!success) return;
+        if (!success) {
+            return;
+        }
         //print ("CTL_Debugger_running", where, null, null);
-        if (action == ActionsManager.ACTION_CONTINUE)
+        if (action == ActionsManager.ACTION_CONTINUE) {
             print ("CTL_Continue", null, null);
-        else
-        if (action == ActionsManager.ACTION_STEP_INTO)
+        } else
+        if (action == ActionsManager.ACTION_STEP_INTO) {
             print ("CTL_Step_Into", null, null);
-        else
-        if (action == ActionsManager.ACTION_STEP_OUT)
+        } else
+        if (action == ActionsManager.ACTION_STEP_OUT) {
             print ("CTL_Step_Out", null, null);
-        else
-        if (action == ActionsManager.ACTION_STEP_OVER)
+        } else
+        if (action == ActionsManager.ACTION_STEP_OVER) {
             print ("CTL_Step_Over", null, null);
+        }
     }
 
     public IOManager getIOManager() {
@@ -498,7 +511,9 @@ PropertyChangeListener {
         IOManager ioManager;
         synchronized (this) {
             ioManager = this.ioManager;
-            if (ioManager == null) return ;
+            if (ioManager == null) {
+                return ;
+            }
         }
         ioManager.println (
             text,

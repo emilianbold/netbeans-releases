@@ -54,6 +54,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -84,6 +85,7 @@ public class HgLogMessage {
     private final HashMap<File, HgRevision> ancestors = new HashMap<File, HgRevision>();
     private final String[] branches;
     private final String[] tags;
+    private static final String MARK_ACTIVE_HEAD = "*"; //NOI18N
 
     private void updatePaths(List<String> pathsStrings, String path, char status) {
         paths.add(new HgLogMessageChangedPath(path, null, status));
@@ -342,6 +344,27 @@ public class HgLogMessage {
         paths.addAll(Arrays.asList(newPaths));
     }
 
+    public String toAnnotatedString (String wcparentCSetId) {
+        StringBuilder sb = new StringBuilder().append(getRevisionNumber());
+        if (wcparentCSetId.equals(getCSetShortID())) {
+            sb.append(MARK_ACTIVE_HEAD);
+        }
+        StringBuilder labels = new StringBuilder();
+        for (String branch : getBranches()) {
+            labels.append(branch).append(' ');
+        }
+        for (String tag : getTags()) {
+            labels.append(tag).append(' ');
+            break; // just one tag
+        }
+        sb.append(" (").append(labels).append(labels.length() == 0 ? "" : "- ") //NOI18N
+                .append(getCSetShortID().substring(0, 7)).append(")"); //NOI18N
+        if (!getShortMessage().isEmpty()) {
+            sb.append(" - ").append(getShortMessage()); //NOI18N
+        }
+        return sb.toString();
+    }
+
     private static String getFirstLine (String desc) {
         String firstLine = ""; //NOI18N
         if (desc != null) {
@@ -350,13 +373,32 @@ public class HgLogMessage {
         return firstLine;
     }
     
+    @NbBundle.Messages({
+        "MSG_HgRevision.name.BASE=Working Directory Parent",
+        "MSG_HgRevision.name.LOCAL=Local Changes"
+    })
     public static class HgRevision {
         private final String changesetId;
         private final String revisionNumber;
         
-        public static final HgRevision EMPTY = new HgRevision("-1", "-1"); //NOI18N
-        public static final HgRevision BASE = new HgRevision("BASE", "BASE"); //NOI18N
-        public static final HgRevision CURRENT = new HgRevision("LOCAL", "LOCAL"); //NOI18N
+        public static final HgRevision EMPTY = new HgRevision("-1", "-1") { //NOI18N
+            @Override
+            public String toString () {
+                return getChangesetId();
+            }
+        };
+        public static final HgRevision BASE = new HgRevision(".", "BASE") { //NOI18N
+            @Override
+            public String toString () {
+                return Bundle.MSG_HgRevision_name_BASE();
+            }
+        };
+        public static final HgRevision CURRENT = new HgRevision("LOCAL", "LOCAL") { //NOI18N
+            @Override
+            public String toString () {
+                return Bundle.MSG_HgRevision_name_LOCAL();
+            }
+        };
 
         public HgRevision(String changesetId, String revisionNumber) {
             this.changesetId = changesetId;
@@ -369,6 +411,11 @@ public class HgLogMessage {
 
         public String getRevisionNumber() {
             return revisionNumber;
+        }
+
+        @Override
+        public String toString () {
+            return revisionNumber + " - " + changesetId; //NOI18N
         }
     }
 }

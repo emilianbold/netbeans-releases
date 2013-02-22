@@ -166,11 +166,6 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
             setValid(false, new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_EMPTY_NAME_ERROR"), true));
             return true;
         }
-        String branch = panel.getBranch();
-        if (branch == null || branch.trim().isEmpty()) {
-            setValid(false, new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_EMPTY_BRANCH_ERROR"), true));
-            return true;
-        }
         String remoteName = panel.getRemoteName();
         if (remoteName == null || remoteName.trim().isEmpty()) {
             setValid(false, new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_EMPTY_REMOTE_ERROR"), true));
@@ -184,7 +179,14 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
         if(branches == null) {
             return;
         }
-        DefaultComboBoxModel model = new DefaultComboBoxModel(branches.toArray(new GitBranch[branches.size()]));
+        DefaultComboBoxModel model;
+        if (branches.isEmpty()) {
+            model = new DefaultComboBoxModel(new GitBranch[] { null });
+            panel.branchesComboBox.setEnabled(false);
+        } else {
+            model = new DefaultComboBoxModel(branches.toArray(new GitBranch[branches.size()]));
+            panel.branchesComboBox.setEnabled(true);
+        }
         panel.branchesComboBox.setModel(model);
         GitBranch activeBranch = null;
         for (GitBranch branch : branches) {
@@ -236,12 +238,17 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
         }
     }
     
+    @NbBundle.Messages({
+        "CTL_CloneDestinationStep.branch.noBranch=No Branch"
+    })
     private class BranchRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList jlist, Object o, int i, boolean bln, boolean bln1) {
             if(o instanceof GitBranch) {
                 GitBranch b = (GitBranch) o;
                 return super.getListCellRendererComponent(jlist, b.getName() + (b.isActive() ? "*" : ""), i, bln, bln1);
+            } else if (o == null) {
+                o = Bundle.CTL_CloneDestinationStep_branch_noBranch();
             }
             return super.getListCellRendererComponent(jlist, o, i, bln, bln1);
         }

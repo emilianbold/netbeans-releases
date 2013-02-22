@@ -99,7 +99,7 @@ public class JDBCView extends ViewImplementation {
 
     protected JDBCColumn createJDBCColumn(ResultSet rs) throws SQLException {
         int ordinalPosition = rs.getInt("ORDINAL_POSITION");
-        return new JDBCColumn(this.getView(), ordinalPosition, JDBCValue.createTableColumnValue(rs));
+        return new JDBCColumn(this.getView(), ordinalPosition, JDBCValue.createTableColumnValue(rs, this.getView()));
     }
 
     protected void createColumns() {

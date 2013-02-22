@@ -49,6 +49,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable.IssueTableProvider;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
@@ -60,7 +61,7 @@ import org.openide.windows.TopComponent;
 class FindInQuerySupport {
     private IssueTableProvider tableProvider;
     private QueryImpl query;
-    private FindInQueryBar bar;
+    private final FindInQueryBar bar;
 
     private FindInQuerySupport(TopComponent tc) {
         bar = new FindInQueryBar(this);
@@ -83,11 +84,17 @@ class FindInQuerySupport {
     }
 
     void reset() {
-        getIssueTable().resetFilterBySummary();
+        IssueTable issueTable = getIssueTable();
+        if(issueTable != null) {
+            issueTable.resetFilterBySummary();
+        }
     }
 
     protected void updatePattern() {        
-        getIssueTable().setFilterBySummary(bar.getText(), bar.getRegularExpression(), bar.getWholeWords(), bar.getMatchCase());
+        IssueTable issueTable = getIssueTable();
+        if(issueTable != null) {
+            issueTable.setFilterBySummary(bar.getText(), bar.getRegularExpression(), bar.getWholeWords(), bar.getMatchCase());
+        }
     }
 
     protected void cancel() {
@@ -96,7 +103,10 @@ class FindInQuerySupport {
     }
 
     protected void switchHighlight(boolean on) {
-        getIssueTable().switchFilterBySummaryHighlight(on);
+        IssueTable issueTable = getIssueTable();
+        if(issueTable != null) {
+            issueTable.switchFilterBySummaryHighlight(on);
+        }
     }
 
     private class FindAction extends AbstractAction {
@@ -116,7 +126,11 @@ class FindInQuerySupport {
     }
 
     private IssueTable getIssueTable() {
-        return query.getIssueTable();
+        QueryController controller = query.getController();
+        if((controller instanceof IssueTableProvider)) {
+            return ((IssueTableProvider)controller).getIssueTable();
+        } 
+        return null;
     }
 
 }

@@ -113,7 +113,7 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         
         notAvailLbl.setHorizontalAlignment(SwingConstants.CENTER);
         notAvailLbl.setEnabled(false);
-        Color usualWindowBkg = UIManager.getColor("window"); //NOI18N
+        Color usualWindowBkg = UIManager.getColor("Tree.background"); //NOI18N
         notAvailLbl.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
         // to ensure our background color will have effect
         notAvailLbl.setOpaque(true);

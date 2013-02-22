@@ -76,6 +76,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -429,8 +430,8 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
 
     }
 
-    protected class MavenItem implements BuildExecutionSupport.Item {
-
+    protected class MavenItem implements BuildExecutionSupport.ActionItem {
+        
         @Override public String getDisplayName() {
             return config.getTaskDisplayName();
         }
@@ -447,6 +448,47 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             AbstractMavenExecutor.this.cancel();
         }
 
+        @Override
+        public String getAction() {
+            return config.getActionName() != null ? config.getActionName() : "xxx-custom";
+        }
+
+        @Override
+        public FileObject getProjectDirectory() {
+            return config.getProject() != null ? config.getProject().getProjectDirectory() : null;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 41 * hash + getAction().hashCode();
+            hash = 41 * hash + getProjectDirectory().hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final MavenItem other = (MavenItem) obj;
+            if (!this.getAction().equals(other.getAction())) {
+                return false;
+            }
+            if (this.getProjectDirectory() != other.getProjectDirectory() && (this.getProjectDirectory() == null || !this.getProjectDirectory().equals(other.getProjectDirectory()))) {
+                return false;
+            }
+            return true;
+        }
+
+        
+
+        
+        
+        
     }
 
 }

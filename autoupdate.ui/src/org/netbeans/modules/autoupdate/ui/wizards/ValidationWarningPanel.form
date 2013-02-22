@@ -23,7 +23,7 @@
           <Group type="102" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="spPlugins" alignment="0" pref="398" max="32767" attributes="0"/>
+                  <Component id="spPlugins" alignment="0" max="32767" attributes="0"/>
                   <Component id="taHead" alignment="0" max="32767" attributes="2"/>
                   <Component id="taWarning" alignment="1" max="32767" attributes="2"/>
               </Group>
