@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.discovery.performance;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
@@ -56,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.discovery.performance.AnalyzeStat.AgregatedStat;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -101,6 +101,10 @@ public class StatisticPanel extends JPanel {
         });
     }
 
+    @Messages({
+        "Details.slowest.unused.folders=<table><tbody><tr><th>Slowest still unused folder</th><th>Items</th><th>Time (s)</th></tr>",
+        "Details.slowest.reading.folders=<table><tbody><tr><th>Slowest reading folder</th><th>Lines</th><th>Time (s)</th></tr>",
+    })
     private void countStatistic() {
         if (closed.get()) {
             return;
@@ -176,7 +180,7 @@ public class StatisticPanel extends JPanel {
                 int i = 0;
                 for (Map.Entry<String, AgregatedStat> entry : AnalyzeStat.getBigUnused(statistic)) {
                     if (buf.length()==0) {
-                        buf.append("<table><tbody><tr><th>Slowest still unused folder</th><th>Items</th><th>Time</th></tr>"); //NOI18N
+                        buf.append(Bundle.Details_slowest_unused_folders());
                     }
                     buf.append("<tr><td>"); //NOI18N
                     buf.append(entry.getKey());
@@ -201,7 +205,7 @@ public class StatisticPanel extends JPanel {
                 buf.setLength(0);
                 for (Map.Entry<String, AgregatedStat> entry : AnalyzeStat.getSlowReading(statistic)) {
                     if (buf.length()==0) {
-                        buf.append("<table><tbody><tr><th>Slowest reading folder</th><th>Lines</th><th>Time</th></tr>"); //NOI18N
+                        buf.append(Bundle.Details_slowest_reading_folders());
                     }
                     buf.append("<tr><td>"); //NOI18N
                     buf.append(entry.getKey());
@@ -237,8 +241,6 @@ public class StatisticPanel extends JPanel {
     }
 
     private static final class MyPanel extends JPanel {
-        private static final int MY_WIDTH = 200;
-        private static final int MY_HEIGHT= 20;
         private static final int NORMAL_COLOR = 192;
         private static final int BRIGHT_COLOR = 224;
         private final int low;
@@ -256,14 +258,14 @@ public class StatisticPanel extends JPanel {
         }
 
         @Override
-        public Dimension getPreferredSize() {
-            return new Dimension(MY_WIDTH, MY_HEIGHT);
-        }
-
-        @Override
         public void paint(Graphics g) {
+            int MY_HEIGHT = getHeight();
+            int MY_WIDTH = getWidth();
             Graphics2D graphics = (Graphics2D)g;
             graphics.drawRect(0, 0, MY_WIDTH, MY_HEIGHT);
+            if (MY_WIDTH < 100 || MY_HEIGHT < 20) {
+                return;
+            }
             double m1 = Math.log(low);
             double m2 = Math.log(normal);
             double m3;
@@ -272,19 +274,21 @@ public class StatisticPanel extends JPanel {
             } else {
                 m3 = Math.log(fact);
             }
+            
             double min = Math.min(Math.min(m1, m2),m3);
             double max = Math.max(Math.max(m1, m2),m3);
-            double point = 150/(max - min);
-            int m1x = (int)(25 + (m1 - min) * point);
-            int m2x = (int)(25 + (m2 - min) * point);
-            int m3x = (int)(25 + (m3 - min) * point);
+            int borders = MY_WIDTH/4;
+            double point = (MY_WIDTH - borders)/(max - min);
+            int m1x = (int)(borders/2 + (m1 - min) * point);
+            int m2x = (int)(borders/2 + (m2 - min) * point);
+            int m3x = (int)(borders/2 + (m3 - min) * point);
             Color def = graphics.getColor();
             
             float[] fractions = new float[]{0f, 1f};  
             Color[] colors = new Color[]{new Color(BRIGHT_COLOR, 0, 0), new Color(NORMAL_COLOR, 0, 0)};  
             LinearGradientPaint gradient = new LinearGradientPaint(1, 1, m1x-1, 1, fractions, colors);  
             graphics.setPaint(gradient);
-            graphics.fillRect(1, 1, m1x-1, MY_HEIGHT-1);
+            graphics.fillRect(1, 1, m1x-1, MY_HEIGHT-2);
 
             fractions = new float[]{0f, 0.3f, 0.5f, 0.7f, 1f};
             colors = new Color[]{new Color(NORMAL_COLOR, 0, 0),
@@ -294,27 +298,28 @@ public class StatisticPanel extends JPanel {
                                  new Color(0, NORMAL_COLOR, 0)};  
             gradient = new LinearGradientPaint(m1x+1, 1, m2x-1 ,1, fractions, colors);  
             graphics.setPaint(gradient);
-            graphics.fillRect(m1x+1, 1, m2x-m1x-1 ,MY_HEIGHT-1);
+            graphics.fillRect(m1x+1, 1, m2x-m1x-1 ,MY_HEIGHT-2);
 
             fractions = new float[]{0f, 1f};
             colors = new Color[]{new Color(0, NORMAL_COLOR, 0), new Color(0, BRIGHT_COLOR, 0)};  
             gradient = new LinearGradientPaint(m2x+1, 1, MY_WIDTH-1 ,1, fractions, colors);  
             graphics.setPaint(gradient);
-            graphics.fillRect(m2x+1, 1, MY_WIDTH-m2x-1 ,MY_HEIGHT-1);
+            graphics.fillRect(m2x+1, 1, MY_WIDTH-m2x-1 ,MY_HEIGHT-2);
 
             graphics.setColor(Color.blue);
             graphics.fillOval(m3x-MY_HEIGHT/4, MY_HEIGHT/4, MY_HEIGHT/2, MY_HEIGHT/2);
             graphics.setColor(def);
 
-            graphics.drawLine(m1x, MY_HEIGHT-1, m1x, 1);
-            String what = ""+low;
+            graphics.drawLine(m1x, MY_HEIGHT-2, m1x, 1);
+            String what = ""+low; //NOI18N
             int shift = graphics.getFontMetrics().getStringBounds(what, g).getBounds().width/2;
             graphics.drawString(what, m1x-shift, MY_HEIGHT -5);
             
-            graphics.drawLine(m2x, MY_HEIGHT-1, m2x, 1);
-            what = ""+normal;
+            graphics.drawLine(m2x, MY_HEIGHT-2, m2x, 1);
+            what = ""+normal; //NOI18N
             shift = graphics.getFontMetrics().getStringBounds(what, g).getBounds().width/2;
             graphics.drawString(what, m2x-shift, MY_HEIGHT -5);
+            graphics.draw3DRect(0, 0, MY_WIDTH-1, MY_HEIGHT-1, false);
 
         }
     }
@@ -692,18 +697,21 @@ public class StatisticPanel extends JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jSeparator1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jSeparator2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jSeparator3, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -723,6 +731,7 @@ public class StatisticPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(itemSpeedPanel, gridBagConstraints);
 
         readSpeedPanel.setMinimumSize(new java.awt.Dimension(202, 22));
@@ -734,6 +743,7 @@ public class StatisticPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(readSpeedPanel, gridBagConstraints);
 
         parsingSpeedPanel.setMinimumSize(new java.awt.Dimension(202, 22));
@@ -745,6 +755,7 @@ public class StatisticPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(parsingSpeedPanel, gridBagConstraints);
 
         parsingRatioPanel.setInheritsPopupMenu(true);
@@ -757,6 +768,7 @@ public class StatisticPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(parsingRatioPanel, gridBagConstraints);
 
         itemsSlowPanel.setLayout(new java.awt.BorderLayout());
@@ -771,6 +783,7 @@ public class StatisticPanel extends JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(itemsSlowPanel, gridBagConstraints);
 
         readSlowPanel.setLayout(new java.awt.BorderLayout());
@@ -784,6 +797,7 @@ public class StatisticPanel extends JPanel {
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(readSlowPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

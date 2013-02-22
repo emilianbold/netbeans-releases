@@ -70,11 +70,10 @@ public class PerformanceStatisticAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         JPanel panel = new StatisticPanel();
-        DialogDescriptor descr = new DialogDescriptor(panel, Bundle.statistic_title_text());
-        NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(descr));
-//        if (descr.getValue() != NotifyDescriptor.OK_OPTION) {
-//            return;
-//        }
+        DialogDescriptor descr = new DialogDescriptor(panel, Bundle.statistic_title_text(), true,
+                new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
+        DialogDisplayer.getDefault().notify(descr);
     }
 
     @Override
