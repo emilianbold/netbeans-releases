@@ -66,6 +66,7 @@ import java.util.SortedMap;
 import java.util.StringTokenizer;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -383,17 +384,18 @@ public class ModelUtils {
                 }
             } 
             if (parent != null && (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD)) {
-                if (parent.getParent().getJSKind() == JsElement.Kind.FILE) {
-                    result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), 0, true)); //NOI18N
-                } else {
+                if (parent.getParent().getJSKind() != JsElement.Kind.FILE) {
                     JsObject grandParent = parent.getParent();
                     if ( grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
-                        result.add(new TypeUsageImpl(ModelUtils.createFQN(grandParent), type.getOffset(), true));
-                    } else {
-                        result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
-                    }
+                        parent = grandParent;
+                    } 
                 }
-            } else if (parent != null) {
+            }
+            // if the parent is priviliged the this refers the constructor => find the constructor
+            while (parent != null && parent.getParent() != null && parent.getModifiers().contains(Modifier.PROTECTED)) {
+                parent = parent.getParent();
+            }
+            if (parent != null) {
                 result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
             }
         } else if (type.getType().startsWith("@this.")) {
