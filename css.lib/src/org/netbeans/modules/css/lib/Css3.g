@@ -125,6 +125,14 @@ package org.netbeans.modules.css.lib;
         return false;
     }
     
+    protected boolean isScssSource() {
+        return false;
+    }
+    
+    private boolean isCssPreprocessorSource() {
+        return isLessSource() || isScssSource();
+    }
+    
 /**
      * Use the current stacked followset to work out the valid tokens that
      * can follow on from the current point in the parse, then recover by
@@ -393,7 +401,7 @@ bodyItem
         | counterStyle
         | fontFace
         | vendorAtRule
-        | {isLessSource()}? less_variable_declaration
+        | {isCssPreprocessorSource()}? cp_variable_declaration
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -522,12 +530,12 @@ unaryOperator
     ;  
     
 property
-    : (IDENT | GEN | {isLessSource()}? less_variable) ws?
+    : (IDENT | GEN | {isCssPreprocessorSource()}? cp_variable) ws?
     ;
     
 rule 
     :   ( 
-            ( {isLessSource()}? less_mixin_declaration )
+            ( {isCssPreprocessorSource()}? less_mixin_declaration )
             | 
             ( selectorsGroup )
         )
@@ -550,7 +558,7 @@ declarations
 		|
 		(~(LBRACE|SEMI|RBRACE)+ SEMI)=>declaration SEMI ws?
                 |
-                {isLessSource()}? less_mixin_call ws?
+                {isCssPreprocessorSource()}? less_mixin_call ws?
             )*
             (( ~(RBRACE)+ RBRACE)=>declaration)?
     ;
@@ -740,7 +748,7 @@ propertyValue
 //    color : black;
 //}
 //
-        ( {isLessSource()}? less_expression )
+        ( {isCssPreprocessorSource()}? cp_expression )
 	;
 
 //an expression wich doesn't contain less expression operators
@@ -805,7 +813,7 @@ term
     | URI
     | hexColor
     | function
-    | {isLessSource()}? less_variable
+    | {isCssPreprocessorSource()}? cp_variable
     )
     ws?
     ;
@@ -858,41 +866,44 @@ ws
 //*** LESS SYNTAX ***
 //Some additional modifications to the standard syntax rules has also been done.
 //ENTRY POINT FROM CSS GRAMMAR
-less_variable_declaration
-    : less_variable ws? COLON ws? less_expression SEMI
+cp_variable_declaration
+    : cp_variable ws? COLON ws? cp_expression SEMI
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
-less_variable
-    : AT_IDENT | MEDIA_SYM //TODO add all meaningful at-rules here
+cp_variable
+    : 
+        {isLessSource()}? ( AT_IDENT | MEDIA_SYM )//TODO add all meaningful at-rules here
+        |
+        {isScssSource()}? ( SASS_VAR )
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR
-less_expression
-    :    less_additionExp
+cp_expression
+    :    cp_additionExp
     ;
 
-less_additionExp
-    :    less_multiplyExp 
-         ( PLUS ws? less_multiplyExp
-         | MINUS ws? less_multiplyExp
+cp_additionExp
+    :    cp_multiplyExp 
+         ( PLUS ws? cp_multiplyExp
+         | MINUS ws? cp_multiplyExp
          )* 
     ;
 
-less_multiplyExp
-    :    less_atomExp
-         ( STAR ws? less_atomExp 
-         | SOLIDUS ws? less_atomExp
+cp_multiplyExp
+    :    cp_atomExp
+         ( STAR ws? cp_atomExp 
+         | SOLIDUS ws? cp_atomExp
          )* 
     ;
 
-less_atomExp
+cp_atomExp
     :    term ((term)=>term)* //multiple terms separated just by whitespace
-    |    LPAREN ws? less_additionExp RPAREN ws?
+    |    LPAREN ws? cp_additionExp RPAREN ws?
     ;
 
 //term w/o unary operators
-less_term
+cp_term
     : 
         (
         ( 
@@ -914,7 +925,7 @@ less_term
     | URI
     | hexColor
     | function
-    | less_variable
+    | cp_variable
     )
     ws?
     ;
@@ -971,7 +982,7 @@ less_args_list
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
 less_arg
     :
-    less_variable ( COLON ws? less_expression )?
+    cp_variable ( COLON ws? cp_expression )?
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {
@@ -990,7 +1001,7 @@ less_condition
         (
             less_function_in_condition ws?
             |
-            ( less_variable (ws? less_condition_operator ws? less_expression)?)  
+            ( cp_variable (ws? less_condition_operator ws? cp_expression)?)  
         )        
     RPAREN
     ;
@@ -998,7 +1009,7 @@ less_condition
 //.mixin (@a, @b: 0) when ("isnumber(@b)") { ... }
 less_function_in_condition
     :
-    less_fn_name ws? LPAREN ws? less_variable ws? RPAREN
+    less_fn_name ws? LPAREN ws? cp_variable ws? RPAREN
     ;
 
 //.mixin (@a, @b: 0) when ("isnumber"(@b)) { ... }
@@ -1406,6 +1417,7 @@ WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 //this generic at rule must be after the last of the specific at rule tokens
 AT_IDENT	    : '@' NMCHAR+;	
 
+SASS_VAR            : '$' NMCHAR+;
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units
 //          as well as '%' it is a precentage. Whitespace cannot be between

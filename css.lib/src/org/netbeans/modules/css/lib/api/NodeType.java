@@ -320,17 +320,17 @@ public enum NodeType {
      */
     ws,
     
-    //*** LESS syntax ***
+    //*** LESS/SCSS syntax ***
     
     /**
      * color: "@color";
      */
-    less_variable,
+    cp_variable,
     
     /**
      * "@color: #4D926F;"
      */
-    less_variable_declaration,
+    cp_variable_declaration,
     
     /**
      * color: "(@base-color * 3);"
@@ -342,7 +342,13 @@ public enum NodeType {
      * 
      * color: ("@base-color * 3");
      */
-    less_expression,
+    cp_expression,
+    
+    cp_additionExp,
+    cp_multiplyExp,
+    cp_atomExp,
+    
+    cp_term,
     
     /**
      * Less functions operators.
@@ -373,13 +379,9 @@ public enum NodeType {
     less_rule,
     
     less_mixin_call,
-    less_mixin_call_args,
+    less_mixin_call_args;
     
-    less_additionExp,
-    less_multiplyExp,
-    less_atomExp,
     
-    less_term;
     
     
     
