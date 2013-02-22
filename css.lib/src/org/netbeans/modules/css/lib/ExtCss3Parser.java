@@ -60,13 +60,16 @@ public class ExtCss3Parser extends Css3Parser {
 
     //less css unit tests sets this
     static boolean isLessSource_unit_tests = false;
+    static boolean isScssSource_unit_tests = false;
     
     private boolean isLessSource = isLessSource_unit_tests;
+    private boolean isScssSource = isScssSource_unit_tests;
     
     public ExtCss3Parser(TokenStream input, NbParseTreeBuilder dbg, FileObject fileObject) {
         super(input, dbg);        
         if(fileObject != null) {
             this.isLessSource = fileObject.getMIMEType().equals("text/less");
+            this.isScssSource = fileObject.getMIMEType().equals("text/scss");
         }
     }
 
@@ -81,6 +84,11 @@ public class ExtCss3Parser extends Css3Parser {
     @Override
     protected boolean isLessSource() {
         return isLessSource;
+    }
+
+    @Override
+    protected boolean isScssSource() {
+        return isScssSource;
     }
     
     @Override
