@@ -166,6 +166,9 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             } else {
                 JsObject current = modelBuilder.getCurrentDeclarationFunction();
+                while(current instanceof JsFunction && current.getParent() != null && current.getModifiers().contains(Modifier.PROTECTED)) {
+                    current = current.getParent();
+                }
                 JsObject property = current.getProperty(accessNode.getProperty().getName());
                 if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                         || current.getParent().getJSKind() == JsElement.Kind.OBJECT
