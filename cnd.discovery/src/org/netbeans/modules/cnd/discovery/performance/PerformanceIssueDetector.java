@@ -487,7 +487,26 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             lock.readLock().unlock();
         }
         if (gatherStat != null) {
-            new AnalyzeStat(gatherStat).process();
+            AnalyzeStat.upEmptyFolder(gatherStat);
+            for (Map.Entry<String, AgregatedStat> entry : AnalyzeStat.getBigUnused(gatherStat)) {
+                PerformanceIssueDetector.LOG.log(Level.INFO, "Unused folder {0} contains {1} items and consumes {2}s.", // NOI18N
+                        new Object[]{entry.getKey(),
+                                     PerformanceIssueDetector.format(entry.getValue().itemNumber),
+                                     PerformanceIssueDetector.format(entry.getValue().itemTime/PerformanceIssueDetector.NANO_TO_SEC)});
+            }
+            AnalyzeStat.groupByReadingSpeed(gatherStat);
+            AnalyzeStat.dumpAll(gatherStat);
+            int i = 0;
+            for (Map.Entry<String, AgregatedStat> entry : AnalyzeStat.getSlowReading(gatherStat)) {
+                 PerformanceIssueDetector.LOG.log(Level.INFO, "Slow reading files in the folder {0}. Reading {1} lines consumes {2}s.", // NOI18N
+                         new Object[]{entry.getKey(),
+                                      PerformanceIssueDetector.format(entry.getValue().readLines),
+                                      PerformanceIssueDetector.format(entry.getValue().readTime/PerformanceIssueDetector.NANO_TO_SEC)});
+                 i++;
+                 if (i > 5) {
+                     break;
+                 }
+            }
         }
     }
 

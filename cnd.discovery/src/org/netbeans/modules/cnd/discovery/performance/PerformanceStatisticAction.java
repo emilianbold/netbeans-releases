@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.discovery.performance;
 
-import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import org.openide.DialogDescriptor;
@@ -61,15 +60,11 @@ import org.openide.util.actions.NodeAction;
     "statistic.title.text=Project Performance Statistic"
 })
 public class PerformanceStatisticAction extends NodeAction {
-    protected final static boolean TEST_XREF = Boolean.getBoolean("test.xref.action"); // NOI18N
 
-    private boolean running;
-    private JMenuItem presenter;
-    private boolean inited = false;
-    private final boolean enabledAction;    
+    private final boolean visibleAction;
 
     public PerformanceStatisticAction() {
-        enabledAction = TEST_XREF;
+        visibleAction = Boolean.getBoolean("test.xref.action"); // NOI18N
     }
 
     @Override
@@ -77,41 +72,31 @@ public class PerformanceStatisticAction extends NodeAction {
         JPanel panel = new StatisticPanel();
         DialogDescriptor descr = new DialogDescriptor(panel, Bundle.statistic_title_text());
         NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(descr));
-        if (descr.getValue() != NotifyDescriptor.OK_OPTION) {
-            return;
-        }            
+//        if (descr.getValue() != NotifyDescriptor.OK_OPTION) {
+//            return;
+//        }
     }
+
     @Override
     public JMenuItem getMenuPresenter() {
-        return getPresenter();
+        JMenuItem out = super.getMenuPresenter();
+        out.setVisible(visibleAction);
+        return out;
     }
 
     @Override
     public JMenuItem getPopupPresenter() {
-        return getPresenter();
-    }
-
-    private JMenuItem getPresenter() {
-        if (!inited) {
-            presenter = new JMenuItem();
-            org.openide.awt.Actions.connect(presenter, (Action) this, true);
-            inited = true;
-        }
-        if (enabledAction) {
-            presenter.setVisible(PerformanceIssueDetector.getActiveInstance()  != null);
-        } else {
-            presenter.setVisible(false);
-        }
-
-        return presenter;
+        JMenuItem out = super.getPopupPresenter();
+        out.setVisible(visibleAction);
+        return out;
     }
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        if (!enabledAction) {
+        if (!visibleAction) {
             return false;
         }
-        return PerformanceIssueDetector.getActiveInstance()  != null;
+        return PerformanceIssueDetector.getActiveInstance() != null;
     }
 
     @Override
