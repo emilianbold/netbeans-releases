@@ -330,7 +330,7 @@ namespaces
 	;
 
 namespace
-  : NAMESPACE_SYM ws? (namespacePrefixName ws?)? resourceIdentifier ws? ';'
+  : NAMESPACE_SYM ws? (namespacePrefixName ws?)? resourceIdentifier ws? SEMI
   ;
 
 namespacePrefixName
@@ -382,7 +382,7 @@ mediaType
  ;
  
 mediaExpression
-    : '(' ws? mediaFeature ws? ( ':' ws? expression )? ')' ws?
+    : LPAREN ws? mediaFeature ws? ( COLON ws? expression )? RPAREN ws?
     ;
  
 mediaFeature
@@ -535,7 +535,7 @@ property
     
 rule 
     :   ( 
-            ( {isCssPreprocessorSource()}? less_mixin_declaration )
+            ( {isCssPreprocessorSource()}? cp_mixin_declaration )
             | 
             ( selectorsGroup )
         )
@@ -558,49 +558,9 @@ declarations
 		|
 		(~(LBRACE|SEMI|RBRACE)+ SEMI)=>declaration SEMI ws?
                 |
-                {isCssPreprocessorSource()}? less_mixin_call ws?
+                {isCssPreprocessorSource()}? cp_mixin_call ws?
             )*
             (( ~(RBRACE)+ RBRACE)=>declaration)?
-    ;
-    
-//test 
-//    :
-//         ( 
-//            (
-//                t1
-//                | 
-//                t2 SEMI
-//            )            
-//            ws?
-//        )*
-//        
-//        t2
-//    ;
-//    
-//t1 : ir STAR;
-//t2: ir STAR GEN;
-//    
-//ir	:	IDENT COMMA;
-
-rulePredicate
-    options { k = 1; }
-    :
-//    ( ~ (LBRACE ))+ LBRACE
-    ( ~(LBRACE | SEMI | RBRACE ))+ LBRACE
-    ;
-    
-declarationPredicate
-    options { k = 1; }
-    :
-//    ( ~SEMI )+ SEMI
-    ( ~(LBRACE | SEMI | RBRACE ) )+ SEMI
-    ;
-    
-lastDeclarationPredicate
-    options { k = 1; }
-    :
-//    ( ~RBRACE )+ RBRACE
-    ( ~(LBRACE | SEMI | RBRACE ) )+ RBRACE
     ;
     
 selectorsGroup
@@ -626,7 +586,7 @@ simpleSelectorSequence
         
 //predicate
 esPred
-    : '#' | HASH | DOT | LBRACKET | COLON | DCOLON
+    : HASH_SYMBOL | HASH | DOT | LBRACKET | COLON | DCOLON
     ;        
        
 typeSelector 
@@ -651,7 +611,7 @@ elementSubsequent
     
 //Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
 cssId
-    : HASH | ( '#' NAME )
+    : HASH | ( HASH_SYMBOL NAME )
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -668,7 +628,7 @@ cssClass
     
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
-    : ( IDENT | GEN | LESS_AND) | '*'
+    : ( IDENT | GEN | LESS_AND) | STAR
     ;
 
 slAttribute
@@ -716,7 +676,7 @@ pseudo
                 ( 
                     ( IDENT | GEN )
                     ( // Function
-                        ws? LPAREN ws? ( expression | '*' )? RPAREN
+                        ws? LPAREN ws? ( expression | STAR )? RPAREN
                     )?
                 )
                 |
@@ -930,19 +890,6 @@ cp_term
     ws?
     ;
 
-//less_expression
-//    : term ( (less_expression_operator ws?)? term)*    
-//    ;
-//    
-//less_expression_operator
-//    : (
-//        SOLIDUS 
-////        | COMMA
-//        | STAR 
-////        | PLUS //are covered by term's unary operator
-////        | MINUS
-//      )
-//    ;
 
 //parametric mixins: 
 //    .border-radius (@radius) 
@@ -950,16 +897,27 @@ cp_term
 //
 //normal mixin has common css syntax: .mixin so cannot be distinguished from a css class
 //ENTRY POINT FROM CSS GRAMMAR
-less_mixin_declaration
+cp_mixin_declaration
     :
-    cssClass ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
+    ( 
+        {isLessSource()}? cssClass ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
+        |
+        {isScssSource()}? SASS_MIXIN ws IDENT ws? (LPAREN less_args_list? RPAREN ws?)?
+    )
+
     ;
 
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
 //ENTRY POINT FROM CSS GRAMMAR
-less_mixin_call
+cp_mixin_call
     :
-    cssClass (ws? LPAREN less_mixin_call_args? RPAREN)? (ws? SEMI)?
+    (
+        {isLessSource()}? cssClass 
+        |
+        {isScssSource()}? SASS_INCLUDE ws IDENT
+    )
+
+    (ws? LPAREN less_mixin_call_args? RPAREN)? (ws? SEMI)?
     ;
     
 less_mixin_call_args
@@ -974,9 +932,9 @@ less_args_list
     : 
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    ( less_arg ( ( COMMA | SEMI ) ws? less_arg)* ( ( COMMA | SEMI ) ws? ('...' | '@rest...'))?)
+    ( less_arg ( ( COMMA | SEMI ) ws? less_arg)* ( ( COMMA | SEMI ) ws? (LESS_DOTS | LESS_REST))?)
     | 
-    ('...' | '@rest...')
+    (LESS_DOTS | LESS_REST)
     ;
     
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
@@ -1351,6 +1309,8 @@ GREATER_OR_EQ   : '>='      ;
 LESS_OR_EQ      : '=<'      ;
 LESS_WHEN       : 'WHEN'    ;
 LESS_AND        : '&'     ;
+LESS_DOTS       : '...';
+LESS_REST       : '@rest...';
 
 // -----------------
 // Literal strings. Delimited by either ' or "
@@ -1382,7 +1342,8 @@ IDENT           : '-'? NMSTART NMCHAR*  ;
 // -------------
 // Reference.   Reference to an element in the body we are styling, such as <XXXX id="reference">
 //
-HASH            : '#' NAME              ;
+HASH_SYMBOL     : '#';
+HASH            : HASH_SYMBOL NAME;
 
 IMPORTANT_SYM   : '!' (WS|COMMENT)* 'IMPORTANT'   ;
 
@@ -1415,8 +1376,9 @@ MOZ_DOCUMENT_SYM      : '@-MOZ-DOCUMENT';
 WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 
 //this generic at rule must be after the last of the specific at rule tokens
+SASS_MIXIN          : '@MIXIN';
+SASS_INCLUDE        : '@INCLUDE';
 AT_IDENT	    : '@' NMCHAR+;	
-
 SASS_VAR            : '$' NMCHAR+;
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units

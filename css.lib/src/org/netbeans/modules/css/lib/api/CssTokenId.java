@@ -203,16 +203,16 @@ public enum CssTokenId implements TokenId {
     CONTAINS(Css3Lexer.CONTAINS, OPERATORS),
     
     FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, AT_RULE_SYMBOL),
-    HASH_CHAR_ONLY(Css3Lexer.T__123, OTHERS),
+    HASH_SYMBOL(Css3Lexer.HASH_SYMBOL, OTHERS),
     
     /**
      * '...' in less_args_list rule
      */
-    LESS_VARARG(Css3Lexer.T__124, OTHERS),
+    LESS_VARARG(Css3Lexer.LESS_DOTS, OTHERS),
     /**
      * '@rest...' in less_args_list rule
      */
-    LESS_REST(Css3Lexer.T__125, OTHERS),
+    LESS_REST(Css3Lexer.LESS_REST, OTHERS),
     
     /**
      * WHEN keyword in guarded mixin
@@ -240,7 +240,10 @@ public enum CssTokenId implements TokenId {
     LESS(Css3Lexer.LESS, OPERATORS),
     LESS_OR_EQ(Css3Lexer.LESS_OR_EQ, OPERATORS),
     
-    SASS_VAR(Css3Lexer.SASS_VAR, IDENTIFIERS);
+    LESS_DOTS(Css3Lexer.LESS_DOTS, IDENTIFIERS),
+    SASS_VAR(Css3Lexer.SASS_VAR, IDENTIFIERS),
+    SASS_MIXIN(Css3Lexer.SASS_MIXIN, AT_RULE_SYMBOL),
+    SASS_INCLUDE(Css3Lexer.SASS_INCLUDE, AT_RULE_SYMBOL);
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
     static {
