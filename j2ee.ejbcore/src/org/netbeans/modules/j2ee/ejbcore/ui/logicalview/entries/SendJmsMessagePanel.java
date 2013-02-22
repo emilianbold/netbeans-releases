@@ -55,6 +55,7 @@ import javax.swing.event.*;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -258,7 +259,8 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     }
     
     private void setupProjectDestinationsOption() {
-        if (J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType())) {
+        EjbJar ejbJar = EjbJar.getEjbJar(project.getProjectDirectory());
+        if (Util.isAtLeastJavaEE5(ejbJar.getJ2eeProfile())) {
             projectDestinationsRadio.setEnabled(true);
             setupAddButton();
             projectDestinationsRadio.setSelected(true);
