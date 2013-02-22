@@ -91,6 +91,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 
@@ -3165,8 +3166,8 @@ public final class TreeMaker {
         return delegate.Return(description);
     }
 
-    public ReferenceTree Reference(String signature) {
-        return delegate.Reference(signature);
+    public ReferenceTree Reference(@NullAllowed ExpressionTree qualExpr, @NullAllowed CharSequence member, @NullAllowed List<ExpressionTree> paramTypes) {
+        return delegate.Reference(qualExpr, member, paramTypes);
     }
 
     public SeeTree See(List<? extends DocTree> reference) {

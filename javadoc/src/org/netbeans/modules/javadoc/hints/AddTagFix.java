@@ -139,7 +139,7 @@ abstract class AddTagFix extends JavaFix {
         return new AddTagFix(dtph, MISSING_THROWS_HINT(fqn), throwIndex) {
             @Override
             protected DocTree getNewTag(TreeMaker make) {
-                return make.Throws(make.Reference(fqn), Collections.EMPTY_LIST);
+                return make.Throws(make.Reference(make.Identifier(fqn), null, null), Collections.EMPTY_LIST);
             }
         };
     }

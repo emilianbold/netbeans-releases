@@ -1820,7 +1820,15 @@ public class TreeFactory {
         return docMake.at(NOPOS).LinkPlain((DCReference)ref, lbl.toList());
     }
 
-    public ReferenceTree Reference(String signature) {
-        return docMake.at(NOPOS).Reference(null, null, new ListBuffer<JCExpression>().toList());
+    public ReferenceTree Reference(ExpressionTree qualExpr, CharSequence member, List<ExpressionTree> paramTypes) {
+        com.sun.tools.javac.util.List<JCExpression> paramTypesList = null;
+        if (paramTypes != null) {
+            ListBuffer<JCExpression> lbl = new ListBuffer<JCExpression>();
+            for (ExpressionTree t : paramTypes) {
+                lbl.append((JCExpression) t);
+            }
+            paramTypesList = lbl.toList();
+        }
+        return docMake.at(NOPOS).Reference((JCExpression) qualExpr, member != null ? (Name) names.fromString(member.toString()) : null, paramTypesList);
     }
 }
