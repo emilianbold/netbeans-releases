@@ -228,12 +228,16 @@ public final class ActionToGoalUtils {
                 names.add(map.getActionName());
             }
         }
-                // check the global actions defined, include only if not the same name as project-specific one.
-                for (NetbeansActionMapping map : Lookup.getDefault().lookup(NbGlobalActionGoalProvider.class).getCustomMappings()) {
-                    if (!names.contains(map.getActionName())) {
-                        toRet.add(map);
-                    }
-                }
+        String prjPack = project.getProjectWatcher().getPackagingType();
+        // check the global actions defined, include only if not the same name as project-specific one.
+        for (NetbeansActionMapping map : Lookup.getDefault().lookup(NbGlobalActionGoalProvider.class).getCustomMappings()) {
+            if (!names.contains(map.getActionName())
+                    && (map.getPackagings().isEmpty()
+                    || map.getPackagings().contains(prjPack.trim())
+                    || map.getPackagings().contains("*") /* back compat only - all packagings is empty */)) { 
+                toRet.add(map);
+            }
+        }
         return toRet.toArray(new NetbeansActionMapping[toRet.size()]);
     }
 
