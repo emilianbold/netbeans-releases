@@ -596,7 +596,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                         builderContext.push((MethodDDBuilder)memberBuilder);
                         ParserProviderImpl.Antlr3CXXParser parser = new ParserProviderImpl.Antlr3CXXParser(params);
                         parser.init(null, ((MethodDDBuilder)memberBuilder).getBodyTokenStream(), wrapper);
-                        parser.parse(CsmParserProvider.CsmParser.ConstructionKind.COMPOUND_STATEMENT);
+                        parser.parse(CsmParserProvider.CsmParser.ConstructionKind.FUNCTION_DEFINITION_AFTER_DECLARATOR);
                         builderContext.pop();
                     }
                 }
@@ -2399,8 +2399,8 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override
     public void skip_balanced_curlies(Token token) {
-        if (builderContext.top(1) instanceof MethodDDBuilder) {
-            MethodDDBuilder builder = (MethodDDBuilder) builderContext.top(1);
+        if (builderContext.top() instanceof MethodDDBuilder) {
+            MethodDDBuilder builder = (MethodDDBuilder) builderContext.top();
             builder.addBodyToken(token);
         }
     }    

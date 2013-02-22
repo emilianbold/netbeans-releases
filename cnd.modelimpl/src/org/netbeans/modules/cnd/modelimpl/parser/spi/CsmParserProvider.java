@@ -84,7 +84,8 @@ public abstract class CsmParserProvider {
             ENUM_BODY,
             TRY_BLOCK,
             COMPOUND_STATEMENT,
-            NAMESPACE_DEFINITION_BODY
+            NAMESPACE_DEFINITION_BODY,
+            FUNCTION_DEFINITION_AFTER_DECLARATOR
         }
         void init(CsmObject object, TokenStream ts, CsmParseCallback callback);
         CsmParserResult parse(ConstructionKind kind);
