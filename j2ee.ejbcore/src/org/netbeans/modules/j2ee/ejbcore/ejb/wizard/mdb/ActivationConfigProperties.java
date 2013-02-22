@@ -62,7 +62,6 @@ public class ActivationConfigProperties {
     public static final String CONNECTION_FACTORY_LOOKUP = "connectionFactoryLookup";//NOI18N
     public static final String DESTINATION_LOOKUP = "destinationLookup";            //NOI18N
     public static final String SUBSCRIPTION_NAME = "scriptionName";                 //NOI18N
-    public static final String SHARE_SUBSCRIPTION = "shareSubscripions";            //NOI18N
 
     static {
         // since EJB3.0
@@ -80,7 +79,6 @@ public class ActivationConfigProperties {
         ACP_32.add(new ActivationConfigProperty(MESSAGE_SELECTOR, String.class, EjbVersion.EJB_3_2));
         ACP_32.add(new ActivationConfigProperty(SUBSCRIPTION_DURABILITY, SubscriptionDurability.class, EjbVersion.EJB_3_2));
         ACP_32.add(new ActivationConfigProperty(SUBSCRIPTION_NAME, String.class, EjbVersion.EJB_3_2));
-        ACP_32.add(new ActivationConfigProperty(SHARE_SUBSCRIPTION, String.class, EjbVersion.EJB_3_2));
     }
 
     protected static List<ActivationConfigProperty> getActivationConfigProperties(EjbVersion forVersion) {

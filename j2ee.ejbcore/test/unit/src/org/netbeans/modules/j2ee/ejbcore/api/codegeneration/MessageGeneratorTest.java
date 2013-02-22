@@ -234,7 +234,6 @@ public class MessageGeneratorTest extends TestBase {
         panel.setProperty(org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.ACKNOWLEDGE_MODE, org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.AcknowledgeMode.DUPS_OK_ACKNOWLEDGE);
         panel.setProperty(org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.CONNECTION_FACTORY_LOOKUP, "factoryLookup");
         panel.setProperty(org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.MESSAGE_SELECTOR, "selector");
-        panel.setProperty(org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.SHARE_SUBSCRIPTION, "true");
         properties = panel.getProperties();
         generator = new MessageGenerator("TestMDBTopic", packageFileObject, messageDestination, true, properties, true);
         generator.generate();
