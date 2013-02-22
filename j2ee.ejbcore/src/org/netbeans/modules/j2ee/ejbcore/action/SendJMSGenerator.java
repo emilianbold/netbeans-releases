@@ -191,7 +191,8 @@ public final class SendJMSGenerator {
         createJMSProducer(fileObject, className, factoryName, connectionFactoryFieldName, destinationName,
                 destinationFieldName, sendMethodName, slStrategy, injectionStrategy);
 
-        if (messageDestination != null) {
+        if (messageDestination != null
+                && injectionStrategy != InjectionStrategy.INJ_EE7_CDI && injectionStrategy != InjectionStrategy.INJ_EE7_SOURCES ) {
             try {
                 if (j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.WAR)) {
                     //in the current implementation, reference name is the same as the destination name...
