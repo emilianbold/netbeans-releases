@@ -57,6 +57,7 @@ import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.TestChecker;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -151,11 +152,11 @@ public class BatchProblemNotifier {
     }
 
     @Messages({
-        "dialog_title=Run Priming Build",
+//        "dialog_title=Run Priming Build",
         "# {0} - directory name of reactor", "build_label=Priming {0}"
     })
     private static void showUI(File reactor, Set<String> projects) {
-        RunGoalsPanel pnl = new RunGoalsPanel();
+//        RunGoalsPanel pnl = new RunGoalsPanel();
         BeanRunConfig cfg = new BeanRunConfig();
         String label = build_label(reactor.getName());
         cfg.setExecutionName(label);
@@ -187,14 +188,14 @@ public class BatchProblemNotifier {
         // validate, test-compile, dependency:go-offline also possible
         cfg.setGoals(Arrays.asList("--fail-at-end", "--also-make", "--projects", pl.toString(), "install"));
         cfg.setUpdateSnapshots(true);
-        cfg.setProperty("skipTests", "true");
-        pnl.readConfig(cfg);
-        DialogDescriptor dd = new DialogDescriptor(pnl, dialog_title());
-        if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
-            LOG.log(Level.FINE, "running build for {0}", reactor);
-            pnl.applyValues(cfg);
+        cfg.setProperty(TestChecker.PROP_SKIP_TEST, "true");
+//        pnl.readConfig(cfg);
+//        DialogDescriptor dd = new DialogDescriptor(pnl, dialog_title());
+//        if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
+//            LOG.log(Level.FINE, "running build for {0}", reactor);
+//            pnl.applyValues(cfg);
             RunUtils.run(cfg);
-        }
+//        }
     }
 
     private static class Reactor implements ActionListener {
