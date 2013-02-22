@@ -237,7 +237,6 @@ public class CommonUtilities {
     }
     
     public static void closeTaskWindow() {
-        waitProjectTasksFinished();
         TopComponentOperator tco = new TopComponentOperator("Tasks");
         tco.close();
     }
@@ -874,22 +873,6 @@ public class CommonUtilities {
         }
       
         return asNode;
-    }
-    
-
-    public static void waitProjectTasksFinished() {
-        String status=MainWindowOperator.getDefault().getStatusText();
-        boolean tasks=true;
-        
-        for (int i=0;i<50;i++) {
-            tasks=true;
-            while(tasks) {
-                if (status.equals("Indexing")||status.equals("Compiling")||status.equals("Collecting")||status.equals("Scanning")||status.equals("Opening"))
-                {System.err.println("+++>"+status);}
-                else {tasks=false;}
-            }
-          new QueueTool().waitEmpty(100);  
-        }    
     }
     
     /**

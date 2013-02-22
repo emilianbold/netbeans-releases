@@ -249,7 +249,6 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
      */
     @Override
     public void setUp() {
-        CommonUtilities.waitProjectTasksFinished();
         data = new java.util.ArrayList<NbPerformanceTest.PerformanceData>();
     }
 
