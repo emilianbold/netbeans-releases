@@ -43,6 +43,7 @@ package org.netbeans.modules.java.hints.providers.spi;
 
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.hints.Context;
@@ -71,12 +72,20 @@ public abstract class PositionRefresherHelper<V extends DocumentVersion> {
         }
     }
 
-    /**XXX*/ public boolean upToDateCheck(Context context, Document doc) {
+    protected @CheckForNull V getUpToDateDocumentVersion(Context context, Document doc) {
         V oldVersion = (V) doc.getProperty(documentKey);
 
-        if (oldVersion == null) return false;
+        if (oldVersion == null) return null;
 
-        if (((DocumentVersion) oldVersion).version != DocumentUtilities.getDocumentVersion(doc)) return false;
+        if (((DocumentVersion) oldVersion).version != DocumentUtilities.getDocumentVersion(doc)) return null;
+        
+        return oldVersion;
+    }
+    
+    /**XXX*/ public boolean upToDateCheck(Context context, Document doc) {
+        V oldVersion = getUpToDateDocumentVersion(context, doc);
+
+        if (oldVersion == null) return false;
 
         return isUpToDate(context, doc, oldVersion);
     }
