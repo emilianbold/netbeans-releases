@@ -1821,6 +1821,6 @@ public class TreeFactory {
     }
 
     public ReferenceTree Reference(String signature) {
-        return docMake.at(NOPOS).Reference(signature, null, null, new ListBuffer<JCExpression>().toList());
+        return docMake.at(NOPOS).Reference(null, null, new ListBuffer<JCExpression>().toList());
     }
 }
