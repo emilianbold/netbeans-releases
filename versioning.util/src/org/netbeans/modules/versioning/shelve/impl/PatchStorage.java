@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.NbPreferences;
 
@@ -128,7 +129,9 @@ public final class PatchStorage {
                 if (removePatchFile) {
                     Patch patch = Patch.unpack(savedPatch);
                     if (patch != null) {
-                        patch.getPatchFile().delete();
+                        File f = patch.getPatchFile();
+                        f.delete();
+                        FileUtil.refreshFor(f);
                     }
                 }
             }

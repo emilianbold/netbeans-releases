@@ -55,6 +55,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import org.netbeans.modules.welcome.content.Constants;
 
 /**
@@ -84,18 +85,22 @@ public class StartPageContent extends JPanel implements Constants {
 
     @Override
     protected void paintComponent(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-        int width = getWidth();
-        int height = getHeight();
-        int gradientStop = height / 2;
-        int bottomStart = gradientStop + gradientStop/2;
+        if( UIManager.getBoolean( "nb.startpage.defaultbackground" ) ) { //NOI18N
+            super.paintComponent( g );
+        } else {
+            Graphics2D g2d = (Graphics2D) g;
+            int width = getWidth();
+            int height = getHeight();
+            int gradientStop = height / 2;
+            int bottomStart = gradientStop + gradientStop/2;
 
-        g2d.setPaint(new GradientPaint(0, 0, COLOR_TOP_START, 0, gradientStop, COLOR_TOP_END));
-        g2d.fillRect(0, 0, width, gradientStop);
-        g2d.setPaint( COLOR_TOP_END );
-        g2d.fillRect( 0, gradientStop, width, bottomStart );
+            g2d.setPaint(new GradientPaint(0, 0, COLOR_TOP_START, 0, gradientStop, COLOR_TOP_END));
+            g2d.fillRect(0, 0, width, gradientStop);
+            g2d.setPaint( COLOR_TOP_END );
+            g2d.fillRect( 0, gradientStop, width, bottomStart );
 
-        g2d.setPaint(new GradientPaint(0, bottomStart, COLOR_BOTTOM_START, 0, height, COLOR_BOTTOM_END));
-        g2d.fillRect(0, bottomStart, width, height);
+            g2d.setPaint(new GradientPaint(0, bottomStart, COLOR_BOTTOM_START, 0, height, COLOR_BOTTOM_END));
+            g2d.fillRect(0, bottomStart, width, height);
+        }
     }
 }

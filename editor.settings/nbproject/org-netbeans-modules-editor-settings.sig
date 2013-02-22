@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.41.1
+#Version 1.46.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -106,6 +106,8 @@ hcls UnmodifiableArrayList
 
 CLSS public final org.netbeans.api.editor.settings.SimpleValueNames
 fld public final static java.lang.String ALT_HYPERLINK_ACTIVATION_MODIFIERS = "alt-hyperlink-activation-modifiers"
+fld public final static java.lang.String BRACE_FIRST_TOOLTIP = "editor-brace-first-tooltip"
+fld public final static java.lang.String BRACE_SHOW_OUTLINE = "editor-brace-outline"
 fld public final static java.lang.String CARET_BLINK_RATE = "caret-blink-rate"
 fld public final static java.lang.String CARET_COLOR_INSERT_MODE = "caret-color-insert-mode"
  anno 0 java.lang.Deprecated()
@@ -146,7 +148,9 @@ fld public final static java.lang.String LINE_HEIGHT_CORRECTION = "line-height-c
 fld public final static java.lang.String LINE_NUMBER_VISIBLE = "line-number-visible"
 fld public final static java.lang.String MARGIN = "margin"
 fld public final static java.lang.String NON_PRINTABLE_CHARACTERS_VISIBLE = "non-printable-characters-visible"
+fld public final static java.lang.String ON_SAVE_REFORMAT = "on-save-reformat"
 fld public final static java.lang.String ON_SAVE_REMOVE_TRAILING_WHITESPACE = "on-save-remove-trailing-whitespace"
+fld public final static java.lang.String ON_SAVE_USE_GLOBAL_SETTINGS = "on-save-use-global-settings"
 fld public final static java.lang.String POPUP_MENU_ENABLED = "popup-menu-enabled"
 fld public final static java.lang.String SCROLL_FIND_INSETS = "scroll-find-insets"
 fld public final static java.lang.String SCROLL_JUMP_INSETS = "scroll-jump-insets"

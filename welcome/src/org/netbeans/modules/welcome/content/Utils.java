@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  * @author S. Aubrecht
  */
 public class Utils {
-    
+
     /** Creates a new instance of Utils */
     private Utils() {
     }
@@ -142,7 +142,92 @@ public class Utils {
             return Color.BLACK;
         }
     }
-    
+
+    public static Color getLinkColor() {
+        Color res = UIManager.getColor("nb.html.link.foreground"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.LINK_COLOR );
+        return res;
+    }
+
+    public static Color getFocusedLinkColor() {
+        Color res = UIManager.getColor("nb.html.link.foreground.focus"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.LINK_IN_FOCUS_COLOR );
+        return res;
+    }
+
+    public static Color getVisitedLinkColor() {
+        Color res = UIManager.getColor("nb.html.link.foreground.visited"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.VISITED_LINK_COLOR );
+        return res;
+    }
+
+    public static Color getBottomBarColor() {
+        Color res = UIManager.getColor("nb.startpage.bottombar.background"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_BOTTOM_BAR );
+        return res;
+    }
+
+    public static Color getTopBarColor() {
+        Color res = UIManager.getColor("nb.startpage.topbar.background"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_TAB_BACKGROUND );
+        return res;
+    }
+
+    public static Color getBorderColor() {
+        Color res = UIManager.getColor("nb.startpage.border.color"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_BORDER );
+        return res;
+    }
+
+    public static Color getTabBorder1Color() {
+        Color res = UIManager.getColor("nb.startpage.tab.border1.color"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_TAB_BORDER1 );
+        return res;
+    }
+
+    public static Color getTabBorder2Color() {
+        Color res = UIManager.getColor("nb.startpage.tab.border2.color"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_TAB_BORDER2 );
+        return res;
+    }
+
+    public static Color getRssHeaderColor() {
+        Color res = UIManager.getColor("nb.startpage.rss.header.color"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_HEADER );
+        return res;
+    }
+
+    public static Color getRssDetailsColor() {
+        Color res = UIManager.getColor("nb.startpage.rss.details.color"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_RSS_DETAILS );
+        return res;
+    }
+
+    public static Color getRssDateColor() {
+        Color res = UIManager.getColor("nb.startpage.rss.date.color"); //NOI18N
+        if( null == res )
+            res = getColor( Constants.COLOR_RSS_DATE );
+        return res;
+    }
+
+    public static boolean isDefaultButtons() {
+        return UIManager.getBoolean( "nb.startpage.defaultbuttonborder" ); //NOI18N
+    }
+
+    public static boolean isSimpleTabs() {
+        return UIManager.getBoolean( "nb.startpage.simpletabs" ); //NOI18N
+    }
+
     public static File getCacheStore() throws IOException {
         return Places.getCacheSubdirectory("welcome"); // NOI18N
     }

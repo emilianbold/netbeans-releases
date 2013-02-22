@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.33.2
+#Version 1.39.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -137,6 +137,7 @@ cons public init(org.netbeans.api.autoupdate.OperationException$ERROR_TYPE,java.
 cons public init(org.netbeans.api.autoupdate.OperationException$ERROR_TYPE,java.lang.String)
 innr public final static !enum ERROR_TYPE
 meth public java.lang.String getLocalizedMessage()
+meth public java.lang.String toString()
 meth public org.netbeans.api.autoupdate.OperationException$ERROR_TYPE getErrorType()
 supr java.lang.Exception
 hfds error,msg
@@ -224,6 +225,7 @@ meth public org.netbeans.api.autoupdate.UpdateElement getBackup()
 meth public org.netbeans.api.autoupdate.UpdateElement getInstalled()
 meth public org.netbeans.api.autoupdate.UpdateElement getInstalledLocalization()
 meth public org.netbeans.api.autoupdate.UpdateManager$TYPE getType()
+meth public org.netbeans.api.autoupdate.UpdateUnit getVisibleAncestor()
 supr java.lang.Object
 hfds impl
 

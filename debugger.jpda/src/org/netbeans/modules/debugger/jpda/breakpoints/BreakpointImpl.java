@@ -45,13 +45,17 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.event.Event;
+import com.sun.jdi.event.ExceptionEvent;
+import com.sun.jdi.event.ModificationWatchpointEvent;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
@@ -89,16 +93,22 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.PrimitiveValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.WatchpointEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
+import org.netbeans.modules.debugger.jpda.models.ExceptionVariableImpl;
+import org.netbeans.modules.debugger.jpda.models.FieldReadVariableImpl;
+import org.netbeans.modules.debugger.jpda.models.FieldToBeVariableImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.modules.debugger.jpda.util.ConditionedExecutor;
@@ -477,7 +487,12 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         
         Variable variable = processedReturnVariable.remove(event);
         if (variable == null) {
-            variable = debugger.getVariable(value);
+            try {
+                variable = createBreakpointVariable(event, value, referenceType);
+            } catch (InternalExceptionWrapper ex) {
+            } catch (VMDisconnectedExceptionWrapper ex) {
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            }
         }
         JPDABreakpointEvent e;
         Throwable cEx = conditionException.remove(event);
@@ -529,11 +544,38 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 }
             }
             if (!resume) {
-                getDebugger().getThread(threadReference).setCurrentBreakpoint(breakpoint);
+                getDebugger().getThread(threadReference).setCurrentBreakpoint(breakpoint, e);
             }
         }
         //S ystem.out.println("BreakpointImpl.perform end");
         return resume; 
+    }
+    
+    private Variable createBreakpointVariable(Event event, Value value, ReferenceType referenceType)
+                                              throws InternalExceptionWrapper,
+                                                     VMDisconnectedExceptionWrapper,
+                                                     ObjectCollectedExceptionWrapper {
+        Variable var;
+        if (event instanceof ExceptionEvent && value instanceof ObjectReference) {
+            String exceptionClassName;
+            exceptionClassName = ReferenceTypeWrapper.name(ObjectReferenceWrapper.referenceType((ObjectReference) value));
+            var = new ExceptionVariableImpl(debugger, value, null, exceptionClassName);
+        } else if (event instanceof AccessWatchpointEvent) {
+            AccessWatchpointEvent aevent = (AccessWatchpointEvent) event;
+            Field field = WatchpointEventWrapper.field(aevent);
+            ObjectReference or = WatchpointEventWrapper.object(aevent);
+            org.netbeans.api.debugger.jpda.Field fieldVar = AbstractObjectVariable.getField(debugger, field, or, null);
+            var = new FieldReadVariableImpl(debugger, value, null, fieldVar);
+        } else if (event instanceof ModificationWatchpointEvent) {
+            ModificationWatchpointEvent mevent = (ModificationWatchpointEvent) event;
+            Field field = WatchpointEventWrapper.field(mevent);
+            ObjectReference or = WatchpointEventWrapper.object(mevent);
+            org.netbeans.api.debugger.jpda.Field fieldVar = AbstractObjectVariable.getField(debugger, field, or, null);
+            var = new FieldToBeVariableImpl(debugger, value, null, fieldVar);
+        } else {
+            var = debugger.getVariable(value);
+        }
+        return var;
     }
     
     private void enableDisableDependentBreakpoints() {

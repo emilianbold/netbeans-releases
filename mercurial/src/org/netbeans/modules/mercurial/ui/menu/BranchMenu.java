@@ -55,6 +55,7 @@ import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.ui.branch.CloseBranchAction;
 import org.netbeans.modules.mercurial.ui.branch.CreateBranchAction;
 import org.netbeans.modules.mercurial.ui.branch.SwitchToBranchAction;
+import org.netbeans.modules.mercurial.ui.rebase.RebaseAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -64,6 +65,7 @@ import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
+import static org.netbeans.modules.mercurial.ui.menu.Bundle.*;
 
 /**
  * Container menu for branch actions.
@@ -85,6 +87,9 @@ public class BranchMenu extends DynamicMenu implements Presenter.Menu {
     }
 
     @Override
+    @NbBundle.Messages({
+        "CTL_PopupMenuItem_Rebase=Rebase..."
+    })
     protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
         JMenuItem item;
@@ -104,6 +109,14 @@ public class BranchMenu extends DynamicMenu implements Presenter.Menu {
 
             item = new JMenuItem();
             action = (Action) SystemAction.get(CloseBranchAction.class);
+            Actions.connect(item, action, false);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            menu.add(item);
+
+            menu.add(new JSeparator());
+            
+            item = new JMenuItem();
+            action = SystemAction.get(RebaseAction.class);
             Actions.connect(item, action, false);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             menu.add(item);
@@ -135,6 +148,9 @@ public class BranchMenu extends DynamicMenu implements Presenter.Menu {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "CTL_PopupMenuItem_CreateBranch"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CloseBranchAction.class), NbBundle.getMessage(CloseBranchAction.class, "CTL_PopupMenuItem_CloseBranch"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            menu.add(new JSeparator());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RebaseAction.class), CTL_PopupMenuItem_Rebase(), lkp));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;

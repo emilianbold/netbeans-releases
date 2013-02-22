@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.maven.api;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Various constants used across the integration, Maven property names with a meaning in the IDE,
  * plugin groupIds, artifactIds etc.
@@ -139,4 +142,42 @@ public interface Constants {
      */
     public static final String HINT_CHECKSTYLE_FORMATTING = "netbeans.checkstyle.format"; //NOI18N
 
+    
+    /**
+     * list of phase names in default lifecycle
+     */
+    public static final List<String> DEFAULT_PHASES = Arrays.asList(new String[] {
+        "validate",
+        "initialize",       
+        "generate-sources",       
+        "process-sources",       
+        "generate-resources",       
+        "process-resources",       
+        "compile",       
+        "process-classes",       
+        "generate-test-sources",       
+        "process-test-sources",       
+        "generate-test-resources",       
+        "process-test-resources",       
+        "test-compile",       
+        "process-test-classes",       
+        "test",       
+        "prepare-package",       
+        "package",       
+        "pre-integration-test",   
+        "integration-test",
+        "post-integration-test",
+        "verify",
+        "install",
+        "deploy"
+    });
+    
+    /**
+     * list of phase names in clean lifecycle
+     */
+     public static final List<String> CLEAN_PHASES = Arrays.asList(new String[] {
+         "pre-clean",
+         "clean",
+         "post-clean"
+     });
 }

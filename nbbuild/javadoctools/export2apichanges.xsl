@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -119,8 +119,9 @@ made subject to such option by the copyright holder.
                 <a href="http://bits.netbeans.org/7.1/javadoc/apichanges.html">release 7.1</a>,
                 <a href="http://bits.netbeans.org/7.1.1/javadoc/apichanges.html">release 7.1.1</a>,
                 <a href="http://bits.netbeans.org/7.1.2/javadoc/apichanges.html">release 7.1.2</a>,
-                <a href="http://bits.netbeans.org/7.2/javadoc/apichanges.html">release 7.2</a>, and
-                <a href="http://bits.netbeans.org/7.2.1/javadoc/apichanges.html">release 7.2.1</a>.
+                <a href="http://bits.netbeans.org/7.2/javadoc/apichanges.html">release 7.2</a>,
+                <a href="http://bits.netbeans.org/7.2.1/javadoc/apichanges.html">release 7.2.1</a>,
+                <a href="http://bits.netbeans.org/7.3/javadoc/apichanges.html">release 7.3</a>.
             <xsl:call-template name="do-the-table" />
             </body>
             </html>

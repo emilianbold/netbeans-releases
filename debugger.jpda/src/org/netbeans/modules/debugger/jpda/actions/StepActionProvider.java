@@ -331,14 +331,7 @@ implements Executor {
         mb.setThreadFilters(getDebuggerImpl(), new JPDAThread[] { jtr });
         lastMethodExitBreakpointListener = new MethodExitBreakpointListener(mb);
         mb.addJPDABreakpointListener(lastMethodExitBreakpointListener);
-        // TODO: mb.setSession(debugger);
-        try {
-            java.lang.reflect.Method setSessionMethod = JPDABreakpoint.class.getDeclaredMethod("setSession", JPDADebugger.class);
-            setSessionMethod.setAccessible(true);
-            setSessionMethod.invoke(mb, debugger);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        mb.setSession(debugger);
         DebuggerManager.getDebuggerManager().addBreakpoint(mb);
     }
     

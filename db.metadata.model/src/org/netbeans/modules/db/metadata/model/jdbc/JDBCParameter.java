@@ -45,7 +45,7 @@ package org.netbeans.modules.db.metadata.model.jdbc;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.api.Nullable;
 import org.netbeans.modules.db.metadata.model.api.Parameter.Direction;
-import org.netbeans.modules.db.metadata.model.api.Procedure;
+import org.netbeans.modules.db.metadata.model.api.MetadataElement;
 import org.netbeans.modules.db.metadata.model.api.SQLType;
 import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
 
@@ -56,13 +56,13 @@ import org.netbeans.modules.db.metadata.model.spi.ParameterImplementation;
 public class JDBCParameter extends ParameterImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCParameter.class.getName());
-    private final JDBCProcedure jdbcProcedure;
+    private final MetadataElement parent;
     private final Direction direction;
     private final int ordinalPosition;
     private final JDBCValue value;
 
-    public JDBCParameter(JDBCProcedure jdbcProcedure, JDBCValue value, Direction direction, int ordinalPosition) {
-        this.jdbcProcedure = jdbcProcedure;
+    public JDBCParameter(MetadataElement parent, JDBCValue value, Direction direction, int ordinalPosition) {
+        this.parent = parent;
         this.direction = direction;
         this.value = value;
         this.ordinalPosition = ordinalPosition;
@@ -74,8 +74,8 @@ public class JDBCParameter extends ParameterImplementation {
     }
 
     @Override
-    public Procedure getParent() {
-        return jdbcProcedure.getProcedure();
+    public MetadataElement getParent() {
+        return parent;
     }
 
     @Override

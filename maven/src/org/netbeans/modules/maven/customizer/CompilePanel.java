@@ -77,6 +77,7 @@ import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -84,7 +85,7 @@ import org.openide.util.WeakListeners;
  *
  * @author mkleint
  */
-public class CompilePanel extends javax.swing.JPanel {
+public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider {
     private static final String[] LABELS = new String[] {
         NbBundle.getMessage(CompilePanel.class, "COS_ALL"),
         NbBundle.getMessage(CompilePanel.class, "COS_APP"),
@@ -638,5 +639,9 @@ public class CompilePanel extends javax.swing.JPanel {
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
         }
     } // end of PlatformsRenderer
-
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return CustomizerProviderImpl.HELP_CTX;
+    }
 }

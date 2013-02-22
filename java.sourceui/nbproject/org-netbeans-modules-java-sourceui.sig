@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.27.1
+#Version 1.30.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -75,6 +75,7 @@ CLSS public org.netbeans.api.java.source.ui.ElementJavadoc
 meth public final static org.netbeans.api.java.source.ui.ElementJavadoc create(org.netbeans.api.java.source.CompilationInfo,javax.lang.model.element.Element)
 meth public final static org.netbeans.api.java.source.ui.ElementJavadoc create(org.netbeans.api.java.source.CompilationInfo,javax.lang.model.element.Element,java.util.concurrent.Callable<java.lang.Boolean>)
 meth public java.lang.String getText()
+meth public java.lang.String toString()
 meth public java.net.URL getURL()
 meth public java.util.concurrent.Future<java.lang.String> getTextAsync()
 meth public javax.swing.Action getGotoSourceAction()

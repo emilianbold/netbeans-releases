@@ -46,6 +46,7 @@ package org.apache.tools.ant.module.run;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
@@ -62,7 +63,7 @@ import org.openide.util.RequestProcessor;
  * Records the last Ant target(s) that was executed.
  * @author Jesse Glick
  */
-public class LastTargetExecuted implements BuildExecutionSupport.Item {
+public class LastTargetExecuted implements BuildExecutionSupport.ActionItem {
     
     private LastTargetExecuted() {}
     
@@ -151,5 +152,46 @@ public class LastTargetExecuted implements BuildExecutionSupport.Item {
             AntBridge.getInterface().stop(thread);
         }
     }
+
+    @Override
+    public String getAction() {
+       String p = properties != null ? properties.get("nb.internal.action.name") : null;
+       return  p != null ? p : "xxx-custom";
+    }
+
+    @Override
+    public FileObject getProjectDirectory() {
+        return FileUtil.toFileObject(buildScript.getParentFile());
+    }
+
+    
+    //equals + hashcode handle duplicates in history list
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 71 * hash + (this.buildScript != null ? this.buildScript.hashCode() : 0);
+        hash = 71 * hash + Arrays.deepHashCode(this.targets);
+        hash = 71 * hash + getAction().hashCode();
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final LastTargetExecuted other = (LastTargetExecuted) obj;
+        if (this.buildScript != other.buildScript && (this.buildScript == null || !this.buildScript.equals(other.buildScript))) {
+            return false;
+        }
+        if (!Arrays.deepEquals(this.targets, other.targets)) {
+            return false;
+        }
+        return getAction().equals(other.getAction());
+    }
+    
     
 }

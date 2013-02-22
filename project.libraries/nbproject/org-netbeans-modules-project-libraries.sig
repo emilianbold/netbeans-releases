@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.36.1
+#Version 1.41.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -201,6 +201,10 @@ meth public abstract void setDisplayName(java.lang.String)
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
 
 CLSS public final org.netbeans.spi.project.libraries.support.LibrariesSupport
+meth public !varargs static org.netbeans.spi.project.libraries.LibraryImplementation3 createLibraryImplementation3(java.lang.String,java.lang.String[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public static java.lang.String convertURIToFilePath(java.net.URI)
 meth public static java.net.URI convertFilePathToURI(java.lang.String)
  anno 1 org.netbeans.api.annotations.common.NonNull()
@@ -227,7 +231,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

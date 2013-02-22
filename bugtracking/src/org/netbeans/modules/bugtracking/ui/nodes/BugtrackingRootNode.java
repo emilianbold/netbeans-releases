@@ -48,7 +48,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -139,7 +138,7 @@ public class BugtrackingRootNode extends AbstractNode {
 
         @Override
         protected Node createNodeForKey(RepositoryImpl key) {
-            return key.getNode();
+            return new RepositoryNode(key);
         }
 
         @Override

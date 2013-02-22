@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.14.1
+#Version 3.17.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -293,6 +293,7 @@ meth protected void startTest()
 meth public !varargs void closeOpenedProjects(java.lang.Object[])
 meth public !varargs void openDataProjects(java.lang.String[]) throws java.io.IOException
 meth public !varargs void openProjects(java.lang.String[]) throws java.io.IOException
+meth public static org.netbeans.junit.NbModuleSuite$Configuration emptyConfiguration()
 meth public static void closeAllModal()
 meth public void closeOpenedProjects()
 meth public void fail(java.lang.Throwable)
@@ -1706,6 +1707,7 @@ meth public static java.awt.Component findComponent(java.awt.Container,org.netbe
 meth public static java.awt.Component findComponent(java.awt.Container,org.netbeans.jemmy.ComponentChooser,int)
 meth public static java.awt.Component waitComponent(java.awt.Container,org.netbeans.jemmy.ComponentChooser)
 meth public static java.awt.Component waitComponent(java.awt.Container,org.netbeans.jemmy.ComponentChooser,int)
+meth public static java.awt.Component[] findComponents(java.awt.Container,org.netbeans.jemmy.ComponentChooser)
 meth public void activateWindow()
 meth public void add(java.awt.PopupMenu)
 meth public void addComponentListener(java.awt.event.ComponentListener)
@@ -1800,6 +1802,7 @@ meth public void transferFocus()
 meth public void typeKey(char)
 meth public void typeKey(char,int)
 meth public void typeKey(int,char,int)
+meth public void typedKey(char,int)
 meth public void update(java.awt.Graphics)
 meth public void validate()
 meth public void waitComponentEnabled() throws java.lang.InterruptedException
@@ -1862,7 +1865,7 @@ meth public void setLayout(java.awt.LayoutManager)
 meth public void setOutput(org.netbeans.jemmy.TestOut)
 meth public void setTimeouts(org.netbeans.jemmy.Timeouts)
 supr org.netbeans.jemmy.operators.ComponentOperator
-hfds POINT_RECT_SIZE,WAIT_SUBCOMPONENT_TIMEOUT,output,searcher,timeouts
+hfds WAIT_SUBCOMPONENT_TIMEOUT,output,searcher,timeouts
 
 CLSS public org.netbeans.jemmy.operators.DialogOperator
 cons public init()
@@ -2681,8 +2684,8 @@ meth protected char runMapping(org.netbeans.jemmy.operators.Operator$MapCharacte
 meth protected double runMapping(org.netbeans.jemmy.operators.Operator$MapDoubleAction)
 meth protected float runMapping(org.netbeans.jemmy.operators.Operator$MapFloatAction)
 meth protected int runMapping(org.netbeans.jemmy.operators.Operator$MapIntegerAction)
-meth protected java.lang.Object produceTimeRestricted(org.netbeans.jemmy.Action,java.lang.Object,long)
-meth protected java.lang.Object produceTimeRestricted(org.netbeans.jemmy.Action,long)
+meth protected java.lang.Object produceTimeRestricted(org.netbeans.jemmy.Action,java.lang.Object,java.lang.String)
+meth protected java.lang.Object produceTimeRestricted(org.netbeans.jemmy.Action,java.lang.String)
 meth protected java.lang.Object runMapping(org.netbeans.jemmy.operators.Operator$MapAction)
 meth protected java.lang.String[] addToDump(java.util.Hashtable,java.lang.String,java.lang.Object[])
 meth protected java.lang.String[] addToDump(java.util.Hashtable,java.lang.String,java.lang.Object[][])
@@ -2743,7 +2746,7 @@ meth public void setTimeouts(org.netbeans.jemmy.Timeouts)
 meth public void setVisualizer(org.netbeans.jemmy.operators.Operator$ComponentVisualizer)
 meth public void waitState(org.netbeans.jemmy.ComponentChooser)
 supr java.lang.Object
-hfds codeDefiner,comparator,map,model,operatorPkgs,output,parser,properties,queueTool,timeouts,verification,visualizer
+hfds comparator,map,operatorPkgs,output,parser,properties,queueTool,timeouts,verification,visualizer
 hcls NullOperator
 
 CLSS public org.netbeans.jemmy.operators.WindowOperator
@@ -2788,6 +2791,8 @@ meth public void dispose()
 meth public void move(int,int)
 meth public void pack()
 meth public void removeWindowListener(java.awt.event.WindowListener)
+meth public void requestClose()
+meth public void requestCloseAndThenHide()
 meth public void resize(int,int)
 meth public void setOutput(org.netbeans.jemmy.TestOut)
 meth public void toBack()
@@ -2850,6 +2855,6 @@ meth public void run(junit.framework.TestResult)
 meth public void runBare() throws java.lang.Throwable
 meth public void setFilter(org.netbeans.junit.Filter)
 supr junit.framework.TestCase
-hfds filter,lastTestMethod,logStreamTable,radix,systemOutPSWrapper,time,usedPaths,vmDeadline,workDirPath
+hfds DEFAULT_TIME_OUT_CALLED,filter,lastTestMethod,logStreamTable,radix,systemOutPSWrapper,time,usedPaths,vmDeadline,workDirPath
 hcls WFOS
 

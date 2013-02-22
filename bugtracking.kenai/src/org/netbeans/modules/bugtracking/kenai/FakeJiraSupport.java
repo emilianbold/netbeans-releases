@@ -50,12 +50,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.jira.JiraUpdater;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
@@ -217,8 +216,8 @@ class FakeJiraSupport {
         public void removePropertyChangeListener(PropertyChangeListener l) {}
 
         public void actionPerformed(ActionEvent e) {
-            if(JiraUpdater.notifyJiraDownload(projectUrl)) {
-                JiraUpdater.getInstance().downloadAndInstall();
+            if(KenaiUtil.notifyJiraDownload(projectUrl)) {
+                KenaiUtil.downloadAndInstallJira();
             }
         }
         public List<QueryResultHandle> getQueryResults() {
@@ -261,8 +260,8 @@ class FakeJiraSupport {
             return NbBundle.getMessage(FakeJiraQueryHandle.class, "LBL_NotAvailableTooltip");   // NOI18N
         }
         public void actionPerformed(ActionEvent e) {
-            if(JiraUpdater.notifyJiraDownload(projectUrl)) {
-                JiraUpdater.getInstance().downloadAndInstall();
+            if(KenaiUtil.notifyJiraDownload(projectUrl)) {
+                KenaiUtil.downloadAndInstallJira();
             }
         }
         @Override
@@ -281,8 +280,8 @@ class FakeJiraSupport {
     private ActionListener getJiraListener(final String urlString) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(JiraUpdater.notifyJiraDownload(urlString)) {
-                    JiraUpdater.getInstance().downloadAndInstall();
+                if(KenaiUtil.notifyJiraDownload(urlString)) {
+                    KenaiUtil.downloadAndInstallJira();
                 }
             }
         };

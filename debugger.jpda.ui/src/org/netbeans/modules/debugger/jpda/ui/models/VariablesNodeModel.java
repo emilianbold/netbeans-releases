@@ -50,8 +50,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Vector;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ReturnVariable;
@@ -65,6 +63,9 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.models.ExceptionVariableImpl;
+import org.netbeans.modules.debugger.jpda.models.FieldReadVariableImpl;
+import org.netbeans.modules.debugger.jpda.models.FieldToBeVariableImpl;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
@@ -129,20 +130,27 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     }
     
     
+    @Override
     public String getDisplayName (Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT)
-            return NbBundle.getBundle (VariablesNodeModel.class).getString 
-                ("CTL_LocalsModel_Column_Name_Name");
-        if (o instanceof Field)
+        if (o == TreeModel.ROOT) {
+            return NbBundle.getMessage 
+                (VariablesNodeModel.class, "CTL_LocalsModel_Column_Name_Name");
+        }
+        if (o instanceof Field) {
             return ((Field) o).getName ();
-        if (o instanceof LocalVariable)
+        }
+        if (o instanceof LocalVariable) {
             return ((LocalVariable) o).getName ();
-        if (o instanceof Super)
+        }
+        if (o instanceof Super) {
             return "super"; // NOI18N
-        if (o instanceof This)
+        }
+        if (o instanceof This) {
             return "this"; // NOI18N
-        if (o == "NoInfo") // NOI18N
+        }
+        if (o == "NoInfo") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info");
+        }
         if (o == "No current thread") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
         }
@@ -154,6 +162,19 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         }
         if (o instanceof ReturnVariable) {
             return "return "+((ReturnVariable) o).methodName()+"()";
+        }
+        if (o instanceof ExceptionVariableImpl) {
+            ExceptionVariableImpl ev = (ExceptionVariableImpl) o;
+            //return "Thrown exception "+ev.getExceptionClassName();
+            return NbBundle.getMessage(VariablesNodeModel.class, "ThrownExceptionVar", ev.getExceptionClassName());
+        }
+        if (o instanceof FieldReadVariableImpl) {
+            FieldReadVariableImpl frv = (FieldReadVariableImpl) o;
+            return NbBundle.getMessage(VariablesNodeModel.class, "FieldValueReadVar", frv.getFieldVariable().getName());
+        }
+        if (o instanceof FieldToBeVariableImpl) {
+            FieldToBeVariableImpl ftbv = (FieldToBeVariableImpl) o;
+            return NbBundle.getMessage(VariablesNodeModel.class, "FieldValueToBeVar", ftbv.getFieldVariable().getName());
         }
         if (o instanceof Operation) {
             Operation op = (Operation) o;
@@ -204,11 +225,14 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     
     private final Map shortDescriptionMap = new HashMap();
     
+    @Override
     public String getShortDescription (final Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT)
-            return NbBundle.getBundle(VariablesNodeModel.class).getString("CTL_LocalsModel_Column_Name_Desc");
-        if (o == "NoInfo") // NOI18N
+        if (o == TreeModel.ROOT) {
+            return NbBundle.getMessage(VariablesNodeModel.class, "CTL_LocalsModel_Column_Name_Desc");
+        }
+        if (o == "NoInfo") {// NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info_descr");
+        }
         if (o == "No current thread") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
         }
@@ -229,6 +253,18 @@ public class VariablesNodeModel implements ExtendedNodeModel {
             } else {
                 return NbBundle.getMessage(VariablesNodeModel.class, "beforeOperation_descr", op.getMethodName());
             }
+        }
+        if (o instanceof ExceptionVariableImpl) {
+            ExceptionVariableImpl ev = (ExceptionVariableImpl) o;
+            return NbBundle.getMessage(VariablesNodeModel.class, "ThrownExceptionVar_descr", ev.getExceptionClassName());
+        }
+        if (o instanceof FieldReadVariableImpl) {
+            FieldReadVariableImpl frv = (FieldReadVariableImpl) o;
+            return NbBundle.getMessage(VariablesNodeModel.class, "FieldValueReadVar_descr", frv.getFieldVariable().getName());
+        }
+        if (o instanceof FieldToBeVariableImpl) {
+            FieldToBeVariableImpl ftbv = (FieldToBeVariableImpl) o;
+            return NbBundle.getMessage(VariablesNodeModel.class, "FieldValueToBeVar_descr", ftbv.getFieldVariable().getName());
         }
         if (o == "lastOperations") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "MSG_LastOperations_descr");
@@ -260,6 +296,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         testKnown(o);
         // Called from AWT - we need to postpone the work...
         evaluationRP.post(new Runnable() {
+            @Override
             public void run() {
                 Object shortDescription = getShortDescriptionSynch(o);
                 if (shortDescription != null && !"".equals(shortDescription)) {
@@ -279,55 +316,61 @@ public class VariablesNodeModel implements ExtendedNodeModel {
             if (o instanceof ObjectVariable) {
                 String type = ((ObjectVariable) o).getType ();
                 String declaredType = ((Field) o).getDeclaredType ();
-                if (type.equals (declaredType))
+                if (type.equals (declaredType)) {
                     try {
                         return "(" + type + ") " + 
                             getLimitedToString((ObjectVariable) o);
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
-                else
+                } else {
                     try {
                         return "(" + declaredType + ") " + "(" + type + ") " + 
                             getLimitedToString((ObjectVariable) o);
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
-            } else
+                }
+            } else {
                 return "(" + ((Field) o).getDeclaredType () + ") " + 
                     ((Field) o).getValue ();
+            }
         }
         if (o instanceof LocalVariable) {
             if (o instanceof ObjectVariable) {
                 String type = ((ObjectVariable) o).getType ();
                 String declaredType = ((LocalVariable) o).getDeclaredType ();
-                if (type.equals (declaredType))
+                if (type.equals (declaredType)) {
                     try {
                         return "(" + type + ") " + 
                             getLimitedToString((ObjectVariable) o);
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
-                else
+                } else {
                     try {
                         return "(" + declaredType + ") " + "(" + type + ") " + 
                             getLimitedToString((ObjectVariable) o);
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
-            } else
+                }
+            } else {
                 return "(" + ((LocalVariable) o).getDeclaredType () + ") " + 
                     ((LocalVariable) o).getValue ();
+            }
         }
-        if (o instanceof Super)
+        if (o instanceof Super) {
             return ((Super) o).getType ();
-        if (o instanceof This)
+        }
+        if (o instanceof This) {
             try {
                 return "(" + ((This) o).getType () + ") " + 
                     getLimitedToString((This) o);
             } catch (InvalidExpressionException ex) {
                 return ex.getLocalizedMessage ();
             }
+        }
         return null;
         //throw new UnknownTypeException (o);
     }
@@ -350,75 +393,98 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     }
     
     protected void testKnown(Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT) return ;
-        if (o instanceof Field) return ;
-        if (o instanceof LocalVariable) return ;
-        if (o instanceof Super) return ;
-        if (o instanceof This) return ;
+        if (o == TreeModel.ROOT ||
+            o instanceof Field ||
+            o instanceof LocalVariable ||
+            o instanceof Super ||
+            o instanceof This) {
+            
+            return ;
+        }
         String str = o.toString();
-        if (str.startsWith("SubArray")) return ; // NOI18N
-        if (o == "NoInfo") return ; // NOI18N
-        if (o == "No current thread") return ; // NOI18N
-        if (o == "lastOperations") return ; // NOI18N
-        if (o instanceof String && ((String) o).startsWith("operationArguments ")) return ; // NOI18N
-        if (o == "NativeMethodException") return ; // NOI18N
-        if (o == "noDebugInfoWarning") return ; // NOI18N
-        if (o instanceof JPDAClassType) return ;
-        if (o instanceof ClassVariable) return ;
-        if (o instanceof ReturnVariable) return ;
-        if (o instanceof Operation) return ;
+        if (str.startsWith("SubArray") ||   // NOI18N
+            o == "NoInfo" ||                // NOI18N
+            o == "No current thread" ||     // NOI18N
+            o == "lastOperations" ||        // NOI18N
+            o instanceof String && ((String) o).startsWith("operationArguments ") || // NOI18N
+            o == "NativeMethodException" || // NOI18N
+            o == "noDebugInfoWarning" ||    // NOI18N
+            o instanceof JPDAClassType ||
+            o instanceof ClassVariable ||
+            o instanceof ReturnVariable ||
+            o instanceof ExceptionVariableImpl ||
+            o instanceof FieldReadVariableImpl ||
+            o instanceof FieldToBeVariableImpl ||
+            o instanceof Operation) {
+            
+            return ;
+        }
         throw new UnknownTypeException (o);
     }
     
+    @Override
     public String getIconBase (Object o) throws UnknownTypeException {
         throw new UnsupportedOperationException("Not supported.");
     }
 
+    @Override
     public boolean canRename(Object node) throws UnknownTypeException {
         return false;
     }
 
+    @Override
     public boolean canCopy(Object node) throws UnknownTypeException {
         return false;
     }
 
+    @Override
     public boolean canCut(Object node) throws UnknownTypeException {
         return false;
     }
 
+    @Override
     public Transferable clipboardCopy(Object node) throws IOException,
                                                           UnknownTypeException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public Transferable clipboardCut(Object node) throws IOException,
                                                          UnknownTypeException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
         return null;
     }
 
+    @Override
     public void setName(Object node, String name) throws UnknownTypeException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
-        if (node == TreeModel.ROOT)
+        if (node == TreeModel.ROOT) {
             return FIELD;
-        if (node instanceof Field) {
-            if (((Field) node).isStatic ())
-                return STATIC_FIELD;
-            else
-                return FIELD;
         }
-        if (node instanceof LocalVariable)
+        if (node instanceof Field) {
+            if (((Field) node).isStatic ()) {
+                return STATIC_FIELD;
+            } else {
+                return FIELD;
+            }
+        }
+        if (node instanceof LocalVariable) {
             return LOCAL;
-        if (node instanceof Super)
+        }
+        if (node instanceof Super) {
             return SUPER;
-        if (node instanceof This)
+        }
+        if (node instanceof This) {
             return FIELD;
+        }
         if (node instanceof JPDAClassType) {
             return STATIC;
         }
@@ -428,31 +494,41 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (node instanceof Operation) {
             return EXPR_ARGUMENTS;
         }
-        if (node instanceof ReturnVariable || node == "lastOperations") {
+        if (node instanceof ReturnVariable || node == "lastOperations") {       // NOI18N
             return RETURN;
         }
-        if (node == "noDebugInfoWarning") {
+        if (node instanceof ExceptionVariableImpl) {
+            return RETURN;
+        }
+        if (node instanceof FieldReadVariableImpl || node instanceof FieldToBeVariableImpl) {
+            return FIELD;
+        }
+        if (node == "noDebugInfoWarning") {                                     // NOI18N
             return NO_DEBUG_INFO;
         }
         if (node instanceof String && ((String) node).startsWith("operationArguments ")) { // NOI18N
             return EXPR_ARGUMENTS;
         }
-        if (node.toString().startsWith("SubArray")) // NOI18N
+        if (node.toString().startsWith("SubArray")) {                           // NOI18N
             return LOCAL;
-        if (node == "NoInfo" || node == "No current thread" || node == "NativeMethodException") // NOI18N
+        }
+        if (node == "NoInfo" || node == "No current thread" || node == "NativeMethodException") {// NOI18N
             return null;
+        }
         if (node instanceof Variable) {
             return LOCAL;
         }
         throw new UnknownTypeException (node);
     }
     
+    @Override
     public void addModelListener (ModelListener l) {
         synchronized (modelListeners) {
             modelListeners.add(l);
         }
     }
 
+    @Override
     public void removeModelListener (ModelListener l) {
         synchronized (modelListeners) {
             modelListeners.remove(l);
