@@ -62,6 +62,7 @@ public class ActivationConfigProperties {
     public static final String CONNECTION_FACTORY_LOOKUP = "connectionFactoryLookup";//NOI18N
     public static final String DESTINATION_LOOKUP = "destinationLookup";            //NOI18N
     public static final String SUBSCRIPTION_NAME = "scriptionName";                 //NOI18N
+    public static final String SUBSCRIPTION_SCOPE = "subscriptionScope";            //NOI18N
 
     static {
         // since EJB3.0

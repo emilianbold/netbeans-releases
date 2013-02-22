@@ -252,6 +252,7 @@ public class MdbPropertiesPanelVisual extends javax.swing.JPanel {
         setProperty(ActivationConfigProperties.MESSAGE_SELECTOR, "");
         setProperty(ActivationConfigProperties.SUBSCRIPTION_DURABILITY, SubscriptionDurability.NON_DURABLE);
         setProperty(ActivationConfigProperties.SUBSCRIPTION_NAME, "");
+        setProperty(ActivationConfigProperties.SUBSCRIPTION_SCOPE, "");
     }
 
     @SuppressWarnings("serial") // not used to be serialized
