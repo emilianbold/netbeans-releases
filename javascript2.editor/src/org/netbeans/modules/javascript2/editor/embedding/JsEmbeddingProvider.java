@@ -426,6 +426,22 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                         continue;
                     }
                     extractJavaScriptFromHtml(snapshot, ts, state, embeddings);
+                } else if (token.id().name().equals("T_TWIG")) { // NOI18N
+                    if (state.in_inlined_javascript || state.in_javascript) {
+                        //find end of the twig
+                        boolean hasNext = false;
+                        while (token.id().name().equals("T_TWIG")) { // NOI18N
+                            hasNext = tokenSequence.moveNext();
+                            if (!hasNext) {
+                                break;
+                            }
+                            token = tokenSequence.token();
+                        }
+                        if (hasNext) {
+                            tokenSequence.movePrevious();
+                        }
+                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
+                    }
                 }
             }
 
