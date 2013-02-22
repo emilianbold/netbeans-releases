@@ -53,15 +53,16 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
  */
 public class JsFunctionReference extends JsObjectReference implements JsFunction {
     
-    private final JsFunctionImpl original;
+    private final JsFunction original;
     
-    public JsFunctionReference(JsObject parent, Identifier declarationName, JsFunctionImpl original, boolean isDeclared) {
+    public JsFunctionReference(JsObject parent, Identifier declarationName,
+            JsFunction original, boolean isDeclared) {
         super(parent, declarationName, original, isDeclared);
         this.original = original;
     }
 
     @Override
-    public JsFunctionImpl getOriginal() {
+    public JsFunction getOriginal() {
         return this.original;
     }
     

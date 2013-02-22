@@ -553,7 +553,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             addObjectPropertiesToCC(resolved, request, addedProperties);
             if (!resolved.isDeclared()) {
                 // if the object is not defined here, look to the index as well
-                addObjectPropertiesFromIndex(ModelUtils.createFQN(resolved), jsIndex, request, addedProperties);
+                addObjectPropertiesFromIndex(resolved.getFullyQualifiedName(), jsIndex, request, addedProperties);
             }
         }
 
@@ -697,7 +697,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
         
-        String fqn = ModelUtils.createFQN(jsObject);
+        String fqn = jsObject.getFullyQualifiedName();
         
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         Collection<IndexedElement> indexedProperties = JsIndex.get(fo).getProperties(fqn);
@@ -788,8 +788,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
         for (JsObject property : jsObject.getProperties().values()) {
             String propertyName = property.getName();
-            if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
-                    && !property.getModifiers().contains(Modifier.PRIVATE)
+            boolean isAnonymous  = property.isAnonymous();
+            if (!(property instanceof JsFunction && isAnonymous)
+                    && (!property.getModifiers().contains(Modifier.PRIVATE) || isAnonymous)
                     && (!filter || startsWith(propertyName, request.prefix))
                     && !property.getJSKind().isPropertyGetterSetter()) {
                 JsElement element = addedProperties.get(propertyName);
