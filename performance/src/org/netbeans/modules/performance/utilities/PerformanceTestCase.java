@@ -313,11 +313,6 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
         log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
 
-        // filter default button on Vista - see issue 100961
-        if("Windows Vista".equalsIgnoreCase(System.getProperty("os.name",""))){
-            repaintManager().addRegionFilter(LoggingRepaintManager.VISTA_FILTER);
-        }
-        
         String performanceDataName = setPerformanceName();
 
         tr.startNewEventList(performanceDataName);
