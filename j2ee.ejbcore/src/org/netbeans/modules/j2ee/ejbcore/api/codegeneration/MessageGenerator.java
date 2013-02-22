@@ -54,12 +54,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
@@ -74,6 +76,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.netbeans.modules.javaee.resources.api.JndiResourcesDefinition;
 import org.openide.filesystems.FileObject;
@@ -107,11 +110,11 @@ public final class MessageGenerator {
     
     private final Map<String, Object> templateParameters;
 
-    public static MessageGenerator create(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties) {
-        return new MessageGenerator(wizardTargetName, pkg, messageDestination, isSimplified, properties, false);
+    public static MessageGenerator create(Profile profile, String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties) {
+        return new MessageGenerator(profile, wizardTargetName, pkg, messageDestination, isSimplified, properties, false);
     }
     
-    protected MessageGenerator(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties, boolean isTest) {
+    protected MessageGenerator(Profile profile, String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties, boolean isTest) {
         this.pkg = pkg;
         this.messageDestination = messageDestination;
         this.isSimplified = isSimplified;
@@ -128,6 +131,7 @@ public final class MessageGenerator {
         this.templateParameters.put("package", packageName);
         this.templateParameters.put("messageDestinationName", messageDestination.getName());
         this.templateParameters.put("activationConfigProperties", transformProperties(properties));
+        this.templateParameters.put("useMappedName", useMappedName(profile, properties));
         if (isTest) {
             // set date, time and user to values used in goldenfiles
             this.templateParameters.put("date", "{date}");
@@ -293,6 +297,14 @@ public final class MessageGenerator {
     
     private void generateEJB30Xml() throws IOException {
         throw new UnsupportedOperationException("Method not implemented yet.");
+    }
+
+    private static boolean useMappedName(Profile profile, Map<String, String> acProperties) {
+        if (Util.isAtLeastJavaEE7Web(profile)) {
+            String destinationLookup = acProperties.get(ActivationConfigProperties.DESTINATION_LOOKUP);
+            return destinationLookup == null || destinationLookup.isEmpty();
+        }
+        return true;
     }
 
     public static final class KeyValuePair {
