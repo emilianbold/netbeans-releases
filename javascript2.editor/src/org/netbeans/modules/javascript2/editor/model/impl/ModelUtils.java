@@ -587,15 +587,14 @@ public class ModelUtils {
                             } else {
                                 // just property
                                 Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
-                                if (lastTypeAssignment.isEmpty()) {
-                                    // no assignments for the local object, we need to process the object later.
-                                    lastResolvedObjects.add(lObject);
-                                } else {
+                                // we need to process the object later anyway. To get learning cc, see issue #224453
+                                lastResolvedObjects.add(lObject);
+                                if (!lastTypeAssignment.isEmpty()) {
                                     // go through the assignments and find the last object / type in the assignment chain
                                     // it solve assignements like a = b; b = c; c = d;. the result for a should be d.
                                     resolveAssignments(model, lObject, offset, lastResolvedObjects, lastResolvedTypes);
-                                    break;
-                                }
+                                    break;  
+                                } 
                             }
                             
                         }

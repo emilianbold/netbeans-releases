@@ -793,7 +793,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     && (!filter || startsWith(propertyName, request.prefix))
                     && !property.getJSKind().isPropertyGetterSetter()) {
                 JsElement element = addedProperties.get(propertyName);
-                if (element == null || (!element.isDeclared() && jsObject.isDeclared())) {
+                if (element == null || (!element.isDeclared() && (jsObject.isDeclared() || "prototype".equals(jsObject.getName())))) {
                     addedProperties.put(propertyName, property);
                 }
             }
