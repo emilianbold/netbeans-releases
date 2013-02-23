@@ -1015,7 +1015,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 value = rev.toString();
             } else if (value instanceof HgLogMessage) {
                 HgLogMessage message = (HgLogMessage) value;
-                StringBuilder sb = new StringBuilder().append(message.getRevisionNumber());
+                StringBuilder sb = new StringBuilder(60).append(message.getRevisionNumber());
                 StringBuilder labels = new StringBuilder();
                 for (String branch : message.getBranches()) {
                     labels.append(branch).append(' ');
@@ -1028,12 +1028,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 String shortMsg = message.getShortMessage();
                 
                 if (!shortMsg.isEmpty()) {
-                    sb.append(" - ");
-                    if (sb.length() + shortMsg.length() > 30) {
+                    sb.append(" - ").append(shortMsg);
+                    if (sb.length() > 50) {
                         tooltip = shortMsg;
-                        shortMsg = shortMsg.substring(0, Math.max(30 - sb.length(), 10)) + "..."; //NOI18N
+                        sb.setLength(47);
+                        sb.append("..."); //NOI18N
                     }
-                    sb.append(shortMsg); //NOI18N
                 }
                 value = sb.toString();
             } else if (value instanceof String) {
