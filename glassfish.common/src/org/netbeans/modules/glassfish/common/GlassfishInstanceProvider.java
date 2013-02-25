@@ -85,7 +85,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     public static final String PRELUDE_DEPLOYER_FRAGMENT = "deployer:gfv3"; // NOI18N
     static private String EE6_INSTANCES_PATH = "/GlassFishEE6/Instances"; // NOI18N
     static private String EE6WC_INSTANCES_PATH = "/GlassFishEE6WC/Instances"; // NOI18N
-    static private String PRELUDE_INSTANCES_PATH = "/GlassFish/Instances"; // NOI18N
 
     static public String PRELUDE_DEFAULT_NAME = "GlassFish_v3_Prelude"; //NOI18N
     static public String EE6WC_DEFAULT_NAME = "GlassFish_Server_3.1"; // NOI18N
@@ -734,16 +733,4 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
        return cf;
     }
 
-    String getDisplayName(String deployerUri) {
-        if (null == displayName) {
-            return deployerUri.contains(EE6WC_DEPLOYER_FRAGMENT) ?
-                org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
-                    "STR_V31_SERVER_NAME", new Object[]{}) : // NOI18N
-                org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
-                    "STR_V3_SERVER_NAME", new Object[]{}); // NOI18N
-                    
-        } else {
-            return displayName;
-        }
-    }
 }
