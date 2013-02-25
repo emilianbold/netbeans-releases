@@ -73,10 +73,14 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeListener {
-    
+
+    /** Name of default JMS connection factory which must be provided by every JavaEE7 complied server. */
+    private static final String DEFAULT_JMS_CONNECTION_FACTORY = "java:comp/DefaultJMSConnectionFactory"; //NOI18N
+
     public static final String IS_VALID = SendJmsMessagePanel.class.getName() + ".IS_VALID";
 
     private final Project project;
+    private final EjbJar ejbJar;
     private final J2eeModuleProvider provider;
     private final Set<MessageDestination> moduleDestinations;
     private final Set<MessageDestination> serverDestinations;
@@ -96,6 +100,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
         this.provider = provider;
         this.moduleDestinations = moduleDestinations;
         this.serverDestinations = serverDestinations;
+        this.ejbJar = EjbJar.getEjbJar(project.getProjectDirectory());
         // get MDBs with listening on model updates
         this.mdbs = SendJMSMessageUiSupport.getMdbs(new ChangeListener() {
             @Override
@@ -106,7 +111,6 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
                 verifyAndFire();
             }
         });
-
         changeSupport.addChangeListener(this);
         scanningLabel.setVisible(SourceUtils.isScanInProgress());
 
@@ -309,10 +313,16 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     
     private void handleConnectionFactory() {
         MessageDestination messageDestination = getDestination();
-        if (messageDestination != null) {
-            connectionFactoryTextField.setText(messageDestination.getName() + "Factory"); // NOI18N
+        if (Util.isAtLeastJavaEE7Web(ejbJar.getJ2eeProfile())) {
+            // JavaEE7 specification - section EE.5.21.1
+            // set the factory by default - message destination can be custom
+            connectionFactoryTextField.setText(DEFAULT_JMS_CONNECTION_FACTORY);
         } else {
-            connectionFactoryTextField.setText(null);
+            if (messageDestination != null) {
+                connectionFactoryTextField.setText(messageDestination.getName() + "Factory"); // NOI18N
+            } else {
+                connectionFactoryTextField.setText(null);
+            }
         }
     }
     
