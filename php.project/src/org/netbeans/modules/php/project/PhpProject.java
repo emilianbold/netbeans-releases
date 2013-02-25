@@ -1101,6 +1101,8 @@ public final class PhpProject implements Project {
         private final PhpProject project;
 
         private volatile String projectRootUrl;
+        private volatile String browserId;
+        private volatile Boolean browserReloadOnSave = null;
 
         // @GuardedBy("this")
         private BrowserSupport browserSupport = null;
@@ -1121,7 +1123,7 @@ public final class PhpProject implements Project {
 
         @Override
         public URL toServer(int projectContext, FileObject projectFile) {
-            init();
+            initProjectUrl();
             if (projectRootUrl == null) {
                 return null;
             }
@@ -1142,7 +1144,7 @@ public final class PhpProject implements Project {
 
         @Override
         public FileObject fromServer(int projectContext, URL serverURL) {
-            init();
+            initProjectUrl();
             if (projectRootUrl == null) {
                 return null;
             }
@@ -1181,7 +1183,7 @@ public final class PhpProject implements Project {
             }
         }
 
-        private void init() {
+        private void initProjectUrl() {
             if (projectRootUrl == null) {
                 projectRootUrl = getProjectRootUrl();
             }
@@ -1200,12 +1202,16 @@ public final class PhpProject implements Project {
         }
 
         public boolean canReload() {
+            initBrowser();
             // #226389
             if (DebugStarterFactory.getInstance().isAlreadyRunning()) {
                 return false;
             }
-            String selectedBrowser = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
-            return WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
+            if (!WebBrowserSupport.isIntegratedBrowser(browserId)) {
+                return false;
+            }
+            // #226256
+            return browserReloadOnSave;
         }
 
         public void reload() {
@@ -1218,11 +1224,28 @@ public final class PhpProject implements Project {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (PhpProjectProperties.URL.equals(evt.getPropertyName())) {
+            String propertyName = evt.getPropertyName();
+            if (PhpProjectProperties.URL.equals(propertyName)) {
                 projectRootUrl = null;
-            } else if (PhpProjectProperties.BROWSER_ID.equals(evt.getPropertyName())) {
+            } else if (PhpProjectProperties.BROWSER_ID.equals(propertyName)
+                    || PhpProjectProperties.BROWSER_RELOAD_ON_SAVE.equals(propertyName)) {
+                resetBrowser();
                 resetBrowserSupport();
             }
+        }
+
+        private void initBrowser() {
+            if (browserId == null) {
+                browserId = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
+            }
+            if (browserReloadOnSave == null) {
+                browserReloadOnSave = ProjectPropertiesSupport.getBrowserReloadOnSave(project);
+            }
+        }
+
+        private void resetBrowser() {
+            browserId = null;
+            browserReloadOnSave = null;
         }
 
         private synchronized void resetBrowserSupport() {
@@ -1238,13 +1261,12 @@ public final class PhpProject implements Project {
                 return browserSupport;
             }
             browserSupportInitialized = true;
-            String selectedBrowser = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
-            WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
+            WebBrowser browser = WebBrowserSupport.getBrowser(browserId);
             if (browser == null) {
                 browserSupport = null;
                 return null;
             }
-            boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
+            boolean integrated = WebBrowserSupport.isIntegratedBrowser(browserId);
             browserSupport = BrowserSupport.create(browser, !integrated);
             return browserSupport;
         }
