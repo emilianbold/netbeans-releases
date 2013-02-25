@@ -146,7 +146,7 @@ public class RebaseAction extends ContextAction {
                     try {
                         final HgLogMessage workingCopyParent = workingCopyParents[0];
                         final String currentBranch = HgCommand.getBranch(root);
-                        HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                        HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, false, OutputLogger.getLogger(null));
                         final Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
                         if (isCanceled()) {
                             return;
@@ -177,7 +177,7 @@ public class RebaseAction extends ContextAction {
         if (!hooks.isEmpty()) {
             try {
                 if (destRev == null) {
-                    HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                    HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, false, OutputLogger.getLogger(null));
                     final Collection<HgLogMessage> branchHeads = HgUtils.sortByBranch(heads).get(HgCommand.getBranch(root));
                     if (branchHeads != null && !branchHeads.isEmpty()) {
                         HgLogMessage tipmostHead = branchHeads.iterator().next();

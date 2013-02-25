@@ -972,7 +972,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 modelRight.add(HgRevision.BASE);
             }
             try {
-                HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(repository, true, OutputLogger.getLogger(null));
+                HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(repository, false, OutputLogger.getLogger(null));
                 Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
                 for (Map.Entry<String, Collection<HgLogMessage>> e : branchHeads.entrySet()) {
                     for (HgLogMessage msg : e.getValue()) {
