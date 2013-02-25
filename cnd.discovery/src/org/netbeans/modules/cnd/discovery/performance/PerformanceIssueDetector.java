@@ -96,7 +96,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     static final long NANO_TO_SEC = 1000*1000*1000;
     static final long NANO_TO_MILLI = 1000*1000;
     static final int CREATION_SPEED_LIMIT = 100;
-    static final int CREATION_SPEED_LIMIT_NORMAL = CREATION_SPEED_LIMIT*10;
+    static final int CREATION_SPEED_LIMIT_NORMAL = CREATION_SPEED_LIMIT*5;
     static final int READING_SPEED_LIMIT = 100;
     static final int READING_SPEED_LIMIT_NORMAL = READING_SPEED_LIMIT*10;
     static final int PARSING_SPEED_LIMIT = 1000;
