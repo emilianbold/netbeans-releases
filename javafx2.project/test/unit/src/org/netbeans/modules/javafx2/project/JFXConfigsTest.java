@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.ide.FXProjectSupport;
@@ -474,4 +476,35 @@ public class JFXConfigsTest extends NbTestCase {
         CONFIGS.eraseDefaultParamTransparent("par1");
         assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par2 value=val222 name=par3 {nondef_test_config_1} name=par4 {nondef_test_config_2} name=par1 name=par4 hidden=true"));
     }
+
+    public void testCustomManifestEntries() throws Exception {
+        assertNotNull(CONFIGS);
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.manifestEntriesToString(),"MultiProperty: empty"));
+        assertEquals(CONFIGS.getNoOfDefaultManifestEntries(), 0);
+        assertEquals(CONFIGS.getNoOfActiveManifestEntries(), 0);
+        // ensure CONFIGS is in required state before transparency testing
+        CONFIGS.eraseDefaultManifestEntriesTransparent();
+        CONFIGS.eraseConfig(NONDEF1);
+        CONFIGS.eraseConfig(NONDEF2);
+        // add parameters to default config
+        CONFIGS.addDefaultManifestEntryTransparent("entry1"); // nameless = argument
+        CONFIGS.addDefaultManifestEntryTransparent("entry2", "val2"); // named
+        CONFIGS.addDefaultManifestEntryTransparent("entry3", "val3");
+        assertTrue(CONFIGS.hasDefaultManifestEntryTransparent("entry1"));
+        assertFalse(CONFIGS.hasDefaultManifestEntryValueTransparent("entry1"));
+        assertTrue(CONFIGS.hasDefaultManifestEntryTransparent("entry2"));
+        assertTrue(CONFIGS.hasDefaultManifestEntryValueTransparent("entry2"));
+        assertTrue(CONFIGS.hasDefaultManifestEntryTransparent("entry2", "val2"));
+        assertEquals(CONFIGS.getNoOfDefaultManifestEntries(), 3);
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getDefaultManifestEntriesTransparentAsString(), "entry1, entry2: val2, entry3: val3"));
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getManifestEntriesTransparentAsString(DEFAULT), "entry1, entry2: val2, entry3: val3"));
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.manifestEntriesToString(),"MultiProperty: {null} name=entry1 name=entry2 value=val2 name=entry3 value=val3"));
+        CONFIGS.eraseDefaultManifestEntryTransparent("dummy");
+        assertEquals(CONFIGS.getNoOfDefaultManifestEntries(), 3);
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getDefaultManifestEntriesTransparentAsString(), "entry1, entry2: val2, entry3: val3"));
+        CONFIGS.eraseDefaultManifestEntryTransparent("entry2");
+        assertEquals(CONFIGS.getNoOfDefaultManifestEntries(), 2);
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getDefaultManifestEntriesTransparentAsString(), "entry1, entry3: val3"));
+    }
+    
 }
