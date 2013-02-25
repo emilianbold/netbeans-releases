@@ -142,10 +142,8 @@ public class PrepareIDEForMobilityComplexMeasurementsTest extends JellyTestCase 
             String projectsLocation = CommonUtilities.getProjectsDir();
          //   Object prj = ProjectSupport.openProject(projectsLocation + "MobileApplicationSwitchConfiguration");
          //   assertNotNull(prj);
-            CommonUtilities.waitProjectTasksFinished();
          //   prj = ProjectSupport.openProject(projectsLocation + "MobileApplicationVisualMIDlet");
          //   assertNotNull(prj);
-            CommonUtilities.waitProjectTasksFinished();
         }catch(Exception exc){
             test_failed = true;
             fail(exc);
