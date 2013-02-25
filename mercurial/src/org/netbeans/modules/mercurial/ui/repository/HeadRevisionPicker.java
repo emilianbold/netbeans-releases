@@ -149,7 +149,7 @@ public final class HeadRevisionPicker implements PropertyChangeListener {
             protected HgLogMessage[] getMessageInfo(File repository, Set<File> setRoots, int fetchRevisionLimit, OutputLogger logger) {
                 HgLogMessage[] messages;
                 try {
-                    messages = HgCommand.getHeadRevisionsInfo(repository, true, logger);
+                    messages = HgCommand.getHeadRevisionsInfo(repository, false, logger);
                 } catch (HgException ex) {
                     Logger.getLogger(HeadRevisionPicker.class.getName()).log(Level.INFO, null, ex);
                     messages = new HgLogMessage[0];

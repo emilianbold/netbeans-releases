@@ -510,7 +510,7 @@ public class PullAction extends ContextAction {
                     HgUtils.logHgLog(parent, logger);
                 }
             } finally {
-                HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, false, OutputLogger.getLogger(null));
                 Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
                 if (!branchHeads.isEmpty()) {
                     MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads && !supp.isCanceled());
