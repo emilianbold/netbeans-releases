@@ -383,9 +383,9 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                                 wasInTpl = true;
                                 if (CharSequenceUtilities.indexOf(innerToken.text(), "literal") > -1) { //NOI18N
                                     wasInLiteral = true;
-                                } else if (innerToken.id().name().equals(T_SMARTY)) {
+                                } else if (innerToken.id().name().equals(T_SMARTY) && wasInLiteral) {
                                     wasInLiteral = false;
-                                    break;
+                                    embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
                                 }
                             } else {
                                 break;
