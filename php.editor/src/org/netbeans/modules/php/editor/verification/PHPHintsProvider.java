@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
@@ -245,7 +246,9 @@ public class PHPHintsProvider implements HintsProvider {
         public void adjust(Rule rule) {
             if (rule instanceof CustomisableRule) {
                 CustomisableRule icm = (CustomisableRule) rule;
-                icm.setPreferences(hintManager.getPreferences(icm));
+                Preferences preferences = hintManager.getPreferences(icm);
+                assert preferences != null : rule;
+                icm.setPreferences(preferences);
             }
         }
 
