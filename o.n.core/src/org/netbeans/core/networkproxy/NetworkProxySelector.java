@@ -43,6 +43,7 @@ package org.netbeans.core.networkproxy;
 
 import java.util.prefs.Preferences;
 import org.netbeans.core.ProxySettings;
+import org.netbeans.core.networkproxy.gnome.GnomeNetworkProxy;
 import org.netbeans.core.networkproxy.windows.WindowsNetworkProxy;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -116,7 +117,7 @@ public class NetworkProxySelector {
             } else if (Utilities.isMac()) {
                 return null;
             } else if (Utilities.isUnix()){
-                return null;
+                return new GnomeNetworkProxy();
             } else {
                 return null;
             }

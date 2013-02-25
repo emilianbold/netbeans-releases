@@ -41,6 +41,9 @@
  */
 package org.netbeans.core.networkproxy;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author lfischme
@@ -48,15 +51,14 @@ package org.netbeans.core.networkproxy;
 public class NetworkProxySettings {
 
     public static enum ProxyMode {
-
         DIRECT,
         AUTO,
         MANUAL
     }
     
+    private final static Logger LOGGER = Logger.getLogger(NetworkProxySelector.class.getName());
     private final static String COLON = ":"; //NOI18N
     private final static String EMPTY_STRING = ""; //NOI18N
-    
     private final ProxyMode proxyMode;
     private final String httpProxyHost;
     private final String httpProxyPort;
@@ -69,49 +71,65 @@ public class NetworkProxySettings {
 
     public NetworkProxySettings() {
         this.proxyMode = ProxyMode.DIRECT;
+        this.pacFileUrl = null;
         this.httpProxyHost = null;
         this.httpProxyPort = null;
         this.httpsProxyHost = null;
         this.httpsProxyPort = null;
         this.socksProxyHost = null;
         this.socksProxyPort = null;
-        this.pacFileUrl = null;
         this.noProxyHosts = new String[0];
     }
 
     public NetworkProxySettings(String httpProxy, String httpsProxy, String socksProxy, String[] noProxyHosts) {
         this.proxyMode = ProxyMode.MANUAL;
+        this.pacFileUrl = null;
         this.httpProxyHost = getHost(httpProxy);
         this.httpProxyPort = getPort(httpProxy);
         this.httpsProxyHost = getHost(httpsProxy);
         this.httpsProxyPort = getPort(httpsProxy);
         this.socksProxyHost = getHost(socksProxy);
         this.socksProxyPort = getPort(socksProxy);
-        this.pacFileUrl = null;
-        this.noProxyHosts = noProxyHosts;
+        this.noProxyHosts = checkArray(noProxyHosts);
     }
 
-    public NetworkProxySettings(String httpProxyHost, String httpProxyPort, String httpsProxyHost, String httpsProxyPort, String socksProxyHost, String socksProxyPort, String[] noProxyHosts) {
+    public NetworkProxySettings(String httpProxyHost, String httpProxyPort, String[] noProxyHosts) {
         this.proxyMode = ProxyMode.MANUAL;
-        this.httpProxyHost = httpProxyHost;
-        this.httpProxyPort = httpProxyPort;
-        this.httpsProxyHost = httpsProxyHost;
-        this.httpsProxyPort = httpsProxyPort;
-        this.socksProxyHost = socksProxyHost;
-        this.socksProxyPort = socksProxyPort;
         this.pacFileUrl = null;
-        this.noProxyHosts = noProxyHosts;
+        String httpProxyHostChecked = checkNull(httpProxyHost);
+        String httpProxyPortChecked = checkNumber(httpProxyPort);
+        this.httpProxyHost = httpProxyHostChecked;
+        this.httpProxyPort = httpProxyPortChecked;
+        this.httpsProxyHost = httpProxyHostChecked;
+        this.httpsProxyPort = httpProxyPortChecked;
+        this.socksProxyHost = httpProxyHostChecked;
+        this.socksProxyPort = httpProxyPortChecked;
+        this.noProxyHosts = checkArray(noProxyHosts);
+    }
+
+    public NetworkProxySettings(String httpProxyHost, String httpProxyPort,
+            String httpsProxyHost, String httpsProxyPort,
+            String socksProxyHost, String socksProxyPort, String[] noProxyHosts) {
+        this.proxyMode = ProxyMode.MANUAL;
+        this.pacFileUrl = null;
+        this.httpProxyHost = checkNull(httpProxyHost);
+        this.httpProxyPort = checkNumber(httpProxyPort);
+        this.httpsProxyHost = checkNull(httpsProxyHost);
+        this.httpsProxyPort = checkNumber(httpsProxyPort);
+        this.socksProxyHost = checkNull(socksProxyHost);
+        this.socksProxyPort = checkNumber(socksProxyPort);
+        this.noProxyHosts = checkArray(noProxyHosts);
     }
 
     public NetworkProxySettings(String pacFileUrl) {
         this.proxyMode = ProxyMode.AUTO;
+        this.pacFileUrl = checkNull(pacFileUrl);
         this.httpProxyHost = null;
         this.httpProxyPort = null;
         this.httpsProxyHost = null;
         this.httpsProxyPort = null;
         this.socksProxyHost = null;
         this.socksProxyPort = null;
-        this.pacFileUrl = pacFileUrl;
         this.noProxyHosts = new String[0];
     }
 
@@ -129,6 +147,27 @@ public class NetworkProxySettings {
         } else {
             return string.substring(string.lastIndexOf(COLON) + 1);
         }
+    }
+
+    private String checkNull(String string) {
+        return string == null ? EMPTY_STRING : string;
+    }
+
+    private String checkNumber(String string) {
+        if (string != null) {
+            try {
+                Integer.parseInt(string);
+                return string;
+            } catch (NumberFormatException nfe) {
+                LOGGER.log(Level.SEVERE, "Cannot parse number {0}", string); //NOI18N
+            }
+        }
+
+        return EMPTY_STRING;
+    }
+
+    private String[] checkArray(String[] array) {
+        return array == null ? new String[0] : array;
     }
 
     public ProxyMode getProxyMode() {
