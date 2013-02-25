@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.UnsufficientValueException;
@@ -194,12 +195,15 @@ public class Property extends BaseMessageChildElement {
             if (session != null) {
                 SessionId sessionId = session.lookupFirst(null, SessionId.class);
                 if (sessionId != null) {
-                    String projectEncoding = SessionManager.getInstance().getSession(sessionId).getOptions().getProjectEncoding();
-                    try {
-                        return new String(getValue(), projectEncoding);
-                    } catch (UnsupportedEncodingException ex) {
-                        Exceptions.printStackTrace(ex);
-                        return "";
+                    DebugSession debugSession = SessionManager.getInstance().getSession(sessionId);
+                    if (debugSession != null) {
+                        String projectEncoding = debugSession.getOptions().getProjectEncoding();
+                        try {
+                            return new String(getValue(), projectEncoding);
+                        } catch (UnsupportedEncodingException ex) {
+                            Exceptions.printStackTrace(ex);
+                            return "";
+                        }
                     }
                 }
             }

@@ -335,6 +335,9 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
     protected static final class TplTranslator implements Translator {
 
+        private static final String T_HTML = "T_HTML"; //NOI18N
+        private static final String T_SMARTY = "T_SMARTY"; //NOI18N
+
         @Override
         public List<Embedding> translate(Snapshot snapshot) {
             TokenHierarchy<?> th = snapshot.getTokenHierarchy();
@@ -355,7 +358,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             while (tokenSequence.moveNext()) {
                 Token<? extends TokenId> token = tokenSequence.token();
 
-                if (token.id().name().equals("T_HTML")) { // NOI18N
+                if (token.id().name().equals(T_HTML)) {
                     TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
                     if (ts == null) {
                         continue;
@@ -376,10 +379,13 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                             } else if (CharSequenceUtilities.textEquals("rdelim", innerToken.text())) { //NOI18N
                                 wasInLiteral = true;
                                 embeddings.add(snapshot.create("}", JsTokenId.JAVASCRIPT_MIME_TYPE));   //NOI18N
-                            } else if (!innerToken.id().name().equals("T_HTML")) { //NOI18N
+                            } else if (!innerToken.id().name().equals(T_HTML)) {
                                 wasInTpl = true;
                                 if (CharSequenceUtilities.indexOf(innerToken.text(), "literal") > -1) { //NOI18N
                                     wasInLiteral = true;
+                                } else if (innerToken.id().name().equals(T_SMARTY) && wasInLiteral) {
+                                    wasInLiteral = false;
+                                    embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
                                 }
                             } else {
                                 break;

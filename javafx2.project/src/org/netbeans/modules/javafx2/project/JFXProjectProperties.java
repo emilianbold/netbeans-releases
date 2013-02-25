@@ -660,14 +660,16 @@ public final class JFXProjectProperties {
     public static class PropertiesTableModel extends AbstractTableModel {
         
         private List<Map<String,String>> properties;
+        private List<Map<String,String>> defaultProperties;
         private String propSuffixes[];
         private String columnNames[];
         
-        public PropertiesTableModel(List<Map<String,String>> props, String sfxs[], String clmns[]) {
+        public PropertiesTableModel(List<Map<String,String>> props, List<Map<String,String>> defaultProps, String sfxs[], String clmns[]) {
             if (sfxs.length < clmns.length) {
                 throw new IllegalArgumentException();
             }
             properties = props;
+            defaultProperties = defaultProps;
             propSuffixes = sfxs;
             columnNames = clmns;
         }
@@ -686,6 +688,10 @@ public final class JFXProjectProperties {
                 }
             }
             return true;
+        }
+        
+        public boolean hasDefaultProperties() {
+            return defaultProperties != null;
         }
         
         public boolean isRowEmpty(int index) {
@@ -741,6 +747,57 @@ public final class JFXProjectProperties {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             return properties.get(rowIndex).get(propSuffixes[columnIndex]);
+        }
+        
+        /**
+         * restore defaults if defaultProperties exist, otherwise clean
+         */
+        public void reset() {
+            if(defaultProperties != null) {
+                properties.clear();
+                properties.addAll(defaultProperties);
+            } else {
+                properties.clear();
+            }
+            fireTableDataChanged();
+        }
+        
+        /**
+         * Indicates whether it makes sense to enable the Default/Clean
+         * button, i.e., whether current table contents differ from the default
+         * @return true is a call to reset() would modify data
+         */
+        public boolean isResettable() {
+            if(hasDefaultProperties()) {
+                return !areEqual(properties, defaultProperties);
+            }
+            return !properties.isEmpty();
+        }
+        
+        private boolean areEqual(List<Map<String,String>> list1, List<Map<String,String>> list2) {
+            String s1 = getAsString(list1);
+            String s2 = getAsString(list2);
+            if(isEqualText(s1, s2)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private String getAsString(List<Map<String,String>> list) {
+            if(list != null) {
+                List<String> l = new LinkedList<String>();
+                for(Map<String, String> entry : list) {
+                    StringBuilder sb = new StringBuilder();
+                    for(int i = 0; i < columnNames.length; i++) {
+                        sb.append(propSuffixes[i]);
+                        sb.append(entry.get(propSuffixes[i]));
+                    }
+                    l.add(sb.toString());
+                }
+                Collections.sort(l);
+                return l.toString();
+            }
+            return null;
         }
         
         public void addRow() {
