@@ -734,16 +734,4 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
        return cf;
     }
 
-    String getDisplayName(String deployerUri) {
-        if (null == displayName) {
-            return deployerUri.contains(EE6WC_DEPLOYER_FRAGMENT) ?
-                org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
-                    "STR_V31_SERVER_NAME", new Object[]{}) : // NOI18N
-                org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
-                    "STR_V3_SERVER_NAME", new Object[]{}); // NOI18N
-                    
-        } else {
-            return displayName;
-        }
-    }
 }
