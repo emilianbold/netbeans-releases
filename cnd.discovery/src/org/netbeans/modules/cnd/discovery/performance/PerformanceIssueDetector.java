@@ -85,6 +85,9 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     private final Set<Project> projects = new HashSet<Project>();
     private final Map<String,ReadEntry> readPerformance = new HashMap<String,ReadEntry>();
     private final Map<String,CreateEntry> createPerformance = new HashMap<String,CreateEntry>();
+    private final Map<FileObject,PerformanceLogger.PerformanceEvent> createFOTimeOut = new HashMap<FileObject,PerformanceLogger.PerformanceEvent>();
+    private final Map<File,PerformanceLogger.PerformanceEvent> createFileTimeOut = new HashMap<File,PerformanceLogger.PerformanceEvent>();
+    private final Map<String,PerformanceLogger.PerformanceEvent> createItemTimeOut = new HashMap<String,PerformanceLogger.PerformanceEvent>();
     private final Map<String,ParseEntry> parsePerformance = new HashMap<String,ParseEntry>();
     private final Map<FileObject,PerformanceLogger.PerformanceEvent> parseTimeOut = new HashMap<FileObject,PerformanceLogger.PerformanceEvent>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -93,9 +96,13 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     static final long NANO_TO_SEC = 1000*1000*1000;
     static final long NANO_TO_MILLI = 1000*1000;
     static final int CREATION_SPEED_LIMIT = 100;
+    static final int CREATION_SPEED_LIMIT_NORMAL = CREATION_SPEED_LIMIT*10;
     static final int READING_SPEED_LIMIT = 100;
+    static final int READING_SPEED_LIMIT_NORMAL = READING_SPEED_LIMIT*10;
     static final int PARSING_SPEED_LIMIT = 1000;
+    static final int PARSING_SPEED_LIMIT_NORMAL = PARSING_SPEED_LIMIT*10;
     static final int PARSING_RATIO_LIMIT = 5;
+    static final int PARSING_RATIO_LIMIT_NORMAL = 2;
     private boolean slowItemCreation = false;
     private boolean slowFileRead = false;
     private boolean slowParsed = false;
@@ -142,8 +149,11 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
                 CsmListeners.getDefault().removeProgressListener(this);
                 lock.writeLock().lock();
                 try {
-                    readPerformance.clear();
                     createPerformance.clear();
+                    createFOTimeOut.clear();
+                    createFileTimeOut.clear();
+                    createItemTimeOut.clear();
+                    readPerformance.clear();
                     parsePerformance.clear();
                     parseTimeOut.clear();
                     slowItemCreation = false;
@@ -194,8 +204,13 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         String dirName = fo.getPath();
         long time = event.getTime();
         if (event.getAttrs().length == 0) {
-            //TODO: process timeout
             LOG.log(timeOutLevel, "Timeout {0}s of directory list {1}", new Object[]{time/NANO_TO_SEC, dirName}); //NOI18N
+            lock.writeLock().lock();
+            try {
+                createFOTimeOut.put(fo, event);
+            } finally {
+                lock.writeLock().unlock();
+            }
             return;
         }
         if (isNotNormalized(dirName)) {
@@ -206,6 +221,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long user = event.getUserTime();
         lock.writeLock().lock();
         try {
+            createFOTimeOut.remove(fo);
             CreateEntry entry = createPerformance.get(dirName);
             if (entry == null) {
                 entry = new CreateEntry();
@@ -225,8 +241,12 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         String dirName = fo.getPath();
         long time = event.getTime();
         if (event.getAttrs().length == 0) {
-            //TODO: process timeout
             LOG.log(timeOutLevel, "Timeout {0}s of directory list {1}", new Object[]{time/NANO_TO_SEC, dirName}); //NOI18N
+            try {
+                createFileTimeOut.put(fo, event);
+            } finally {
+                lock.writeLock().unlock();
+            }
             return;
         }
         if (isNotNormalized(dirName)) {
@@ -237,6 +257,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long user = event.getUserTime();
         lock.writeLock().lock();
         try {
+            createFileTimeOut.remove(fo);
             CreateEntry entry = createPerformance.get(dirName);
             if (entry == null) {
                 entry = new CreateEntry();
@@ -261,25 +282,30 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
         long time = event.getTime();
         if (event.getAttrs().length == 0) {
-            //TODO: process timeout
             LOG.log(timeOutLevel, "Timeout {0}s of create project item {1}", new Object[]{time/NANO_TO_SEC, path}); //NOI18N
-            return;
-        }
-        String dirName;
-        if (event.getSource() instanceof FileObject) {
-            dirName = CndPathUtilitities.getDirName(path);
-        } else {
-            Item item = (Item) event.getAttrs()[0];
-            dirName = CndPathUtilitities.getDirName(item.getAbsolutePath());
-        }
-        if (isNotNormalized(dirName)) {
-            // Ignore not normalized paths
+            try {
+                createItemTimeOut.put(path, event);
+            } finally {
+                lock.writeLock().unlock();
+            }
             return;
         }
         long cpu = event.getCpuTime();
         long user = event.getUserTime();
         lock.writeLock().lock();
         try {
+            createItemTimeOut.remove(path);
+            String dirName;
+            if (event.getSource() instanceof FileObject) {
+                dirName = CndPathUtilitities.getDirName(path);
+            } else {
+                Item item = (Item) event.getAttrs()[0];
+                dirName = CndPathUtilitities.getDirName(item.getAbsolutePath());
+            }
+            if (isNotNormalized(dirName)) {
+                // Ignore not normalized paths
+                return;
+            }
             CreateEntry entry = createPerformance.get(dirName);
             if (entry == null) {
                 entry = new CreateEntry();
@@ -300,6 +326,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         String path = item.getAbsPath();
         if (event.getAttrs().length == 0) {
             //TODO: process timeout
+            
             LOG.log(timeOutLevel, "Timeout {0}s of find file object {1}", new Object[]{time/NANO_TO_SEC, path}); //NOI18N
             return;
         }
@@ -392,6 +419,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long user = event.getUserTime();
         lock.writeLock().lock();
         try {
+            parseTimeOut.remove(fo);
             ParseEntry entry = parsePerformance.get(dirName);
             if (entry == null) {
                 entry = new ParseEntry();
@@ -474,6 +502,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         lock.readLock().lock();
         try {
             analyzeCreateItems();
+            analyzeInfiniteCreateFile();
             analyzeReadFile();
             analyzeParseFile();
             analyzeInfiniteParseFile();
@@ -612,6 +641,57 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
         LOG.log(level, "Average item creatoin speed is {0} item/s Created {1} items Time {2} ms CPU {3} ms User {4} ms", //NOI18N
                 new Object[]{format(creationSpeed), format(itemCount), format(time/NANO_TO_MILLI), format(cpu/NANO_TO_MILLI), format(user/NANO_TO_MILLI)});
+    }
+    
+    @Messages({
+         "# {0} - time"
+        ,"# {1} - item"
+        ,"Details.infinite.item.creation=The IDE spent more than {0} seconds to create project item {1}.\n"
+    })
+    private void analyzeInfiniteCreateFile() {
+        int INFINITE_CREATE_ITEM_TIMOUT = 30;
+        StringBuilder buf = new StringBuilder();
+        Iterator<Map.Entry<FileObject, PerformanceLogger.PerformanceEvent>> iterator = createFOTimeOut.entrySet().iterator();
+        while(iterator.hasNext()) {
+            Map.Entry<FileObject, PerformanceLogger.PerformanceEvent> entry = iterator.next();
+            FileObject fo = entry.getKey();
+            PerformanceLogger.PerformanceEvent event = entry.getValue();
+            long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
+            if (delta > INFINITE_CREATE_ITEM_TIMOUT) {
+                iterator.remove();
+                buf.append(Bundle.Details_infinite_item_creation(format(delta), fo.getPath()));
+            }
+        }
+        Iterator<Map.Entry<File, PerformanceLogger.PerformanceEvent>> iterator2 = createFileTimeOut.entrySet().iterator();
+        while(iterator2.hasNext()) {
+            Map.Entry<File, PerformanceLogger.PerformanceEvent> entry = iterator2.next();
+            File fo = entry.getKey();
+            PerformanceLogger.PerformanceEvent event = entry.getValue();
+            long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
+            if (delta > INFINITE_CREATE_ITEM_TIMOUT) {
+                iterator2.remove();
+                buf.append(Bundle.Details_infinite_item_creation(format(delta), fo.getPath()));
+            }
+        }
+        Iterator<Map.Entry<String, PerformanceLogger.PerformanceEvent>> iterator3 = createItemTimeOut.entrySet().iterator();
+        while(iterator3.hasNext()) {
+            Map.Entry<String, PerformanceLogger.PerformanceEvent> entry = iterator3.next();
+            String fo = entry.getKey();
+            PerformanceLogger.PerformanceEvent event = entry.getValue();
+            long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
+            if (delta > INFINITE_CREATE_ITEM_TIMOUT) {
+                iterator2.remove();
+                buf.append(Bundle.Details_infinite_item_creation(format(delta), fo));
+            }
+        }
+        if (buf.length() > 0) {
+            if (!alreadyNotified()) {
+                slowItemCreation = true;
+                if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
+                    notifyProblem(NotifyProjectProblem.CREATE_PROBLEM, buf.toString());
+                }
+            }
+        }
     }
     
     @Messages({

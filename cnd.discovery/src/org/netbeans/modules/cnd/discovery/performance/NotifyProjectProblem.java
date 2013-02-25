@@ -62,7 +62,7 @@ import org.openide.util.NbBundle.Messages;
     ,"NotifyProjectProblem.action.text=details"
     ,"NotifyProjectProblem.open.message.text=Slow File System"
     ,"# {0} - details"
-    ,"NotifyProjectProblem.open.explanation.text=The IDE has detected slowness while opening the project.<br>\n"
+    ,"NotifyProjectProblem.open.explanation.text=The IDE has detected slowness while opening/creating the project.<br>\n"
                                                +"Details:<br>\n"
                                                +"{0}"
     ,"NotifyProjectProblem.read.message.text=Slow File System"

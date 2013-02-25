@@ -131,7 +131,7 @@ public class StatisticPanel extends JPanel {
                 if (time > 0) {
                     long speed = (count * PerformanceIssueDetector.NANO_TO_SEC) / time;
                     itemSpeed.setText(PerformanceIssueDetector.format(speed));
-                    getLimit(itemSpeedPanel, PerformanceIssueDetector.CREATION_SPEED_LIMIT, PerformanceIssueDetector.CREATION_SPEED_LIMIT*10, (int)speed);
+                    getLimit(itemSpeedPanel, PerformanceIssueDetector.CREATION_SPEED_LIMIT, PerformanceIssueDetector.CREATION_SPEED_LIMIT_NORMAL, (int)speed);
                     itemNumber.setText(PerformanceIssueDetector.format(count));
                     itemWallTime.setText(PerformanceIssueDetector.format(time/PerformanceIssueDetector.NANO_TO_MILLI));
                     itemCpuTime.setText(PerformanceIssueDetector.format(cpu/PerformanceIssueDetector.NANO_TO_MILLI));
@@ -150,7 +150,7 @@ public class StatisticPanel extends JPanel {
                 if (time > 0) {
                     long speed = (count * PerformanceIssueDetector.NANO_TO_SEC) / time / 1024;
                     readSpeed.setText(PerformanceIssueDetector.format(speed));
-                    getLimit(readSpeedPanel, PerformanceIssueDetector.READING_SPEED_LIMIT, PerformanceIssueDetector.READING_SPEED_LIMIT*10, (int)speed);
+                    getLimit(readSpeedPanel, PerformanceIssueDetector.READING_SPEED_LIMIT, PerformanceIssueDetector.READING_SPEED_LIMIT_NORMAL, (int)speed);
                     readNumber.setText(PerformanceIssueDetector.format(count / 1024));
                     readWallTime.setText(PerformanceIssueDetector.format(time/PerformanceIssueDetector.NANO_TO_MILLI));
                     readCpuTime.setText(PerformanceIssueDetector.format(cpu/PerformanceIssueDetector.NANO_TO_MILLI));
@@ -173,13 +173,13 @@ public class StatisticPanel extends JPanel {
                     //PerformanceIssueDetector.PARSING_RATIO_LIMIT = 5;
                     long speed = (count * PerformanceIssueDetector.NANO_TO_SEC) / time;
                     parsingSpeed.setText(PerformanceIssueDetector.format(speed));
-                    getLimit(parsingSpeedPanel,PerformanceIssueDetector.PARSING_SPEED_LIMIT, PerformanceIssueDetector.PARSING_SPEED_LIMIT*10, (int)speed);
+                    getLimit(parsingSpeedPanel,PerformanceIssueDetector.PARSING_SPEED_LIMIT, PerformanceIssueDetector.PARSING_SPEED_LIMIT_NORMAL, (int)speed);
                     parsingLines.setText(PerformanceIssueDetector.format(count));
                     parsingNumber.setText(PerformanceIssueDetector.format(files));
                     parsingWallTime.setText(PerformanceIssueDetector.format(time/PerformanceIssueDetector.NANO_TO_MILLI));
                     parsingCpuTime.setText(PerformanceIssueDetector.format(cpu/PerformanceIssueDetector.NANO_TO_MILLI));
                     parsingRatio.setText(PerformanceIssueDetector.format(cpu*100/time));
-                    getLimit(parsingRatioPanel, 100/PerformanceIssueDetector.PARSING_RATIO_LIMIT, 100/2, (int)(cpu*100/time));
+                    getLimit(parsingRatioPanel, 100/PerformanceIssueDetector.PARSING_RATIO_LIMIT, 100/PerformanceIssueDetector.PARSING_RATIO_LIMIT_NORMAL, (int)(cpu*100/time));
                 }
             }
             {

@@ -43,9 +43,9 @@ package org.netbeans.modules.cnd.discovery.performance;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
@@ -95,7 +95,7 @@ public class PerformanceStatisticAction extends NodeAction {
         if (!visibleAction) {
             return false;
         }
-        return PerformanceIssueDetector.getActiveInstance() != null;
+        return PerformanceLogger.isProfilingEnabled() && PerformanceIssueDetector.getActiveInstance() != null;
     }
 
     @Override
