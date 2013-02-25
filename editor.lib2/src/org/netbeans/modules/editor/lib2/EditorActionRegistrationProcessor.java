@@ -294,6 +294,14 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         // Accelerator filled with MULTI_ACCELERATOR_LIST_KEY property by infrastructure
 //        file.methodvalue(Action.ACCELERATOR_KEY, EditorActionUtilities.class.getName(), "getAccelerator");
 
+        boolean noIconInMenu = annotation.noIconInMenu();
+        if (noIconInMenu) {
+            actionFile.boolvalue(AbstractEditorAction.NO_ICON_IN_MENU, noIconInMenu);
+        }
+        boolean noKeyBinding = annotation.noKeyBinding();
+        if (noKeyBinding) {
+            actionFile.boolvalue(AbstractEditorAction.NO_KEY_BINDING, noKeyBinding);
+        }
 
         // Resolve weight attribute that allows to override existing action
         int weight = annotation.weight();

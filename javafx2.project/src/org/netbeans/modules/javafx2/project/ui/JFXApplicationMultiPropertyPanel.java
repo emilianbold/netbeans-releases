@@ -80,6 +80,24 @@ public class JFXApplicationMultiPropertyPanel extends javax.swing.JPanel impleme
         updateDefaultButtonLabel();
         updateDefaultButtonState();
     }
+    
+    public void setTableTitle(String label) {
+        if(label == null) {
+            labelTable.setText(""); // NOI18N
+            labelTable.setVisible(false);
+        } else {
+            labelTable.setText(label);
+        }
+    }
+    
+    public void setRemark(String remark) {
+        if(remark == null) {
+            labelRemark.setText(""); //NOI18N
+            labelRemark.setVisible(false);
+        } else {
+            labelRemark.setText(remark);
+        }
+    }
 
     void setDialogDescriptor(DialogDescriptor desc) {
         this.desc = desc;

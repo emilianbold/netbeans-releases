@@ -70,11 +70,9 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -94,7 +92,6 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
-import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -217,8 +214,7 @@ public class CommonUtilities {
      * Close All Documents.
      */
     public static void closeAllDocuments(){
-	if ( new Action("Window|Close All Documents",null).isEnabled() )
-	        new CloseAllDocumentsAction().perform();
+        EditorOperator.closeDiscardAll();
     }
     
     /**
@@ -238,12 +234,6 @@ public class CommonUtilities {
 //                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction") + "|" +
 //                "Memory");
         maximizeWholeNetbeansWindow();
-    }
-    
-    public static void closeTaskWindow() {
-        waitProjectTasksFinished();
-        TopComponentOperator tco = new TopComponentOperator("Tasks");
-        tco.close();
     }
     
     public static void installPlugin(String name) {
@@ -878,22 +868,6 @@ public class CommonUtilities {
         }
       
         return asNode;
-    }
-    
-
-    public static void waitProjectTasksFinished() {
-        String status=MainWindowOperator.getDefault().getStatusText();
-        boolean tasks=true;
-        
-        for (int i=0;i<50;i++) {
-            tasks=true;
-            while(tasks) {
-                if (status.equals("Indexing")||status.equals("Compiling")||status.equals("Collecting")||status.equals("Scanning")||status.equals("Opening"))
-                {System.err.println("+++>"+status);}
-                else {tasks=false;}
-            }
-          new QueueTool().waitEmpty(100);  
-        }    
     }
     
     /**
