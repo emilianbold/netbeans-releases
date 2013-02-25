@@ -51,9 +51,10 @@ import org.netbeans.modules.php.phpunit.create.TestCreator;
 import org.netbeans.modules.php.phpunit.locate.PhpUnitTestLocator;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.phpunit.run.TestRunner;
-import org.netbeans.modules.php.phpunit.run.TestSessionImpl;
+import org.netbeans.modules.php.phpunit.run.TestSessionVo;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
@@ -123,15 +124,14 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
     }
 
     @Override
-    public TestSession runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
-        TestSessionImpl testSession = new TestRunner(phpModule).runTests(runInfo);
-        if (testSession == null) {
-            return null;
-        }
+    public void runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
+        new TestRunner(phpModule).runTests(runInfo, testSession);
         if (runInfo.isCoverageEnabled()) {
-            testSession.setCoverage(new CoverageProvider().getCoverage());
+            Coverage coverage = new CoverageProvider().getCoverage();
+            if (coverage != null) {
+                testSession.setCoverage(coverage);
+            }
         }
-        return testSession;
     }
 
     @Override

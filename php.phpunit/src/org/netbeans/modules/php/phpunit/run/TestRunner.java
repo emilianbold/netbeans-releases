@@ -50,12 +50,15 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
+import org.netbeans.modules.php.spi.testing.locate.Locations;
+import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
+import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.modules.php.spi.testing.run.TestSuite;
 
 public final class TestRunner {
 
@@ -69,21 +72,21 @@ public final class TestRunner {
         this.phpModule = phpModule;
     }
 
-    @CheckForNull
-    public TestSessionImpl runTests(TestRunInfo runInfo) throws TestRunException {
+    public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
         PhpUnit phpUnit = PhpUnit.getForPhpModule(phpModule, true);
         if (phpUnit == null) {
-            return null;
+            throw new TestRunException();
         }
         Integer result = phpUnit.runTests(phpModule, runInfo);
         if (result == null) { // do NOT check 0 since phpunit returns 1 if any test fails
             // some error
-            return null;
+            throw new TestRunException();
         }
-        return createTestSession(PhpUnit.XML_LOG);
+        TestSessionVo sessionVo = createTestSession(PhpUnit.XML_LOG);
+        map(sessionVo, testSession);
     }
 
-    private TestSessionImpl createTestSession(File xmlLog) throws TestRunException {
+    private TestSessionVo createTestSession(File xmlLog) throws TestRunException {
         Reader reader;
         try {
             // #163633 - php unit always uses utf-8 for its xml logs
@@ -95,7 +98,7 @@ public final class TestRunner {
             processPhpUnitError(ex);
             return null;
         }
-        TestSessionImpl session = new TestSessionImpl(getCustomTestSuite());
+        TestSessionVo session = new TestSessionVo(getCustomTestSuite());
         boolean parsed = PhpUnitLogParser.parse(reader, session);
         if (!parsed) {
             processPhpUnitError(null);
@@ -116,6 +119,43 @@ public final class TestRunner {
         LOGGER.info(String.format("File %s not found or cannot be parsed. If there are no errors in PHPUnit output (verify in Output window), "
                 + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.XML_LOG));
         throw new TestRunException(cause);
+    }
+
+    //~ Mappers
+
+    private void map(TestSessionVo sessionVo, TestSession testSession) {
+        testSession.setOutputLineHandler(sessionVo.getOutputLineHandler());
+        String initMessage = sessionVo.getInitMessage();
+        if (initMessage != null) {
+            testSession.printMessage(initMessage, false);
+        }
+        for (TestSuiteVo suiteVo : sessionVo.getTestSuites()) {
+            TestSuite testSuite = testSession.addTestSuite(suiteVo.getName(), suiteVo.getLocation());
+            for (TestCaseVo caseVo : suiteVo.getTestCases()) {
+                TestCase testCase = testSuite.addTestCase(caseVo.getName(), caseVo.getType());
+                testCase.setClassName(caseVo.getClassName());
+                Locations.Line location = caseVo.getLocation();
+                if (location != null) {
+                    testCase.setLocation(location);
+                }
+                testCase.setStatus(caseVo.getStatus());
+                boolean error = caseVo.isError();
+                if (error
+                        || caseVo.isFailure()) {
+                    String[] stackTrace = caseVo.getStackTrace();
+                    assert stackTrace.length > 1 : "Stack trace lebgth: " + stackTrace.length;
+                    String[] tmp = new String[stackTrace.length - 1];
+                    System.arraycopy(stackTrace, 1, tmp, 0, stackTrace.length - 1);
+                    testCase.setFailureInfo(stackTrace[0], tmp, error, caseVo.getDiff());
+                }
+                testCase.setTime(caseVo.getTime());
+            }
+            testSuite.finish(suiteVo.getTime());
+        }
+        String finishMessage = sessionVo.getFinishMessage();
+        if (finishMessage != null) {
+            testSession.printMessage(finishMessage, false);
+        }
     }
 
 }

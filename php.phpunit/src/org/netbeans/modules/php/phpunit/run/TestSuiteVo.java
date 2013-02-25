@@ -44,20 +44,18 @@ package org.netbeans.modules.php.phpunit.run;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.php.spi.testing.run.TestCase;
-import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public final class TestSuiteImpl implements TestSuite {
+public final class TestSuiteVo {
 
-    private final List<TestCase> testCases = new ArrayList<TestCase>();
+    private final List<TestCaseVo> testCases = new ArrayList<TestCaseVo>();
     private final String name;
     private final String file;
     private final long time;
 
 
-    public TestSuiteImpl(String name, String file, long time) {
+    public TestSuiteVo(String name, String file, long time) {
         assert name != null;
         assert file != null;
         this.name = name;
@@ -65,11 +63,10 @@ public final class TestSuiteImpl implements TestSuite {
         this.time = time;
     }
 
-    void addTestCase(TestCase testCase) {
+    void addTestCase(TestCaseVo testCase) {
         testCases.add(testCase);
     }
 
-    @Override
     public String getName() {
         return name;
     }
@@ -78,7 +75,6 @@ public final class TestSuiteImpl implements TestSuite {
         return file;
     }
 
-    @Override
     public FileObject getLocation() {
         if (file == null) {
             return null;
@@ -90,13 +86,11 @@ public final class TestSuiteImpl implements TestSuite {
         return FileUtil.toFileObject(f);
     }
 
-    @Override
-    public List<TestCase> getTestCases() {
+    public List<TestCaseVo> getTestCases() {
         checkTestCases();
         return testCases;
     }
 
-    @Override
     public long getTime() {
         return time;
     }
@@ -105,12 +99,12 @@ public final class TestSuiteImpl implements TestSuite {
         if (!testCases.isEmpty()) {
             return;
         }
-        testCases.add(TestCaseImpl.skippedTestCase());
+        testCases.add(TestCaseVo.skippedTestCase());
     }
 
     @Override
     public String toString() {
-        return String.format("TestSuiteImpl{name: %s, file: %s, time: %d, cases: %d}", name, file, time, testCases.size());
+        return String.format("TestSuiteVo{name: %s, file: %s, time: %d, cases: %d}", name, file, time, testCases.size()); // NOI18N
     }
 
 }
