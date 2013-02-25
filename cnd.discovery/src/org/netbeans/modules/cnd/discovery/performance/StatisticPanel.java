@@ -55,7 +55,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.discovery.performance.AnalyzeStat.AgregatedStat;
-import static org.netbeans.modules.cnd.discovery.performance.PerformanceIssueDetector.NANO_TO_SEC;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
@@ -109,7 +108,7 @@ public class StatisticPanel extends JPanel {
     @Messages({
         "Details.slowest.unused.folders=<table><tbody><tr><th>Slowest still unused folder</th><th>Items</th><th>Time,s</th></tr>",
         "Details.slowest.reading.folders=<table><tbody><tr><th>Slowest reading folder</th><th>Lines</th><th>Time,s</th></tr>",
-        "Details.slowest.parsing.files=<table><tbody><tr><th>Possible infinite parsing files</th><th>Time (s)</th></tr>",
+        "Details.slowest.parsing.files=<table><tbody><tr><th>Possible infinite parsing files</th><th>Time (s)</th></tr>"
     })
     private void countStatistic() {
         if (closed.get()) {
