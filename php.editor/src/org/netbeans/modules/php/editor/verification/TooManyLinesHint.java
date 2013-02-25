@@ -97,6 +97,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
 
         @Override
         public void setPreferences(Preferences preferences) {
+            assert preferences != null;
             this.preferences = preferences;
         }
 
