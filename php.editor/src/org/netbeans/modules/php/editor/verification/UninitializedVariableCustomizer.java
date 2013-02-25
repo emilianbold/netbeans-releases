@@ -79,10 +79,10 @@ public class UninitializedVariableCustomizer extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
+        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(UninitializedVariableCustomizer.class, "UninitializedVariableCustomizer.jLabel1.text")); // NOI18N
 
-        jLabel2.setFont(new java.awt.Font("Ubuntu", 2, 15)); // NOI18N
+        jLabel2.setFont(jLabel2.getFont().deriveFont((jLabel2.getFont().getStyle() | java.awt.Font.ITALIC)));
         jLabel2.setText(org.openide.util.NbBundle.getMessage(UninitializedVariableCustomizer.class, "UninitializedVariableCustomizer.jLabel2.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
