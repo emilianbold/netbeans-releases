@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
+import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
 import java.text.MessageFormat;
 import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.ir.Node;
@@ -61,6 +63,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
+import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -103,9 +106,24 @@ public final class Model {
             }
             long startResolve = System.currentTimeMillis();
             resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
+
+            ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory(visitor);
+            long startCallingME = System.currentTimeMillis();
+            Map<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> calls = visitor.getCallsForProcessing();
+            if (calls != null && !calls.isEmpty()) {
+                for (Map.Entry<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> entry : calls.entrySet()) {
+                    Collection<ModelVisitor.FunctionCall> fncCalls = entry.getValue();
+                    if (fncCalls != null && !fncCalls.isEmpty()) {
+                        for (ModelVisitor.FunctionCall call : fncCalls) {
+                            entry.getKey().intercept(call.getName(),
+                                    visitor.getGlobalObject(), elementFactory, call.getArguments());
+                        }
+                    }
+                }
+            }
             long end = System.currentTimeMillis();
             if(LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms", new Object[]{(end - start), (end - startResolve)}));
+                LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms. Extending model took {2}", new Object[]{(end - start), (startCallingME - startResolve), (end - startCallingME)}));
             }
         }
         return visitor;
@@ -193,7 +211,7 @@ public final class Model {
             }
             sb.append(" : "); // NOI18N
             if (path.contains(entry.getValue())) {
-                sb.append("Cycle to ").append(ModelUtils.createFQN(entry.getValue())); // NOI18N
+                sb.append("Cycle to ").append(entry.getValue().getFullyQualifiedName()); // NOI18N
             } else {
                 dumpModel(printer, entry.getValue(), sb, identBuilder.toString(), path);
             }
