@@ -1579,10 +1579,22 @@
                         return prop != null && 
                            (prop.toLowerCase()=="true" || prop.toLowerCase()=="yes" || prop.toLowerCase()=="on");
                     }                    
+                    function contains(array, prop) {
+                        for ( i=0; i < array.length; i++) {
+                            var s1 = new String(array[i]);
+                            var s2 = new String(prop);
+                            if( s1.equalsIgnoreCase(s2) ) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
                     var S = java.io.File.separator;
                     var JFXPAR = "javafx.param";
+                    var JFXMAN = "javafx.manifest.entry";
                     var JFXPARN = "name";
                     var JFXPARV = "value";
+                    var JFXPARH = "hidden";
                     var JFXLAZY = "download.mode.lazy.jar";
                     var withpreloader = project.getProperty("app-with-preloader");
                     var fx_ant_api_1_1 = project.getProperty("have-fx-ant-api-1.1");
@@ -1635,12 +1647,26 @@
                         app.setPreloaderClass(preloaderclass);
                     }
                     // fx:param, fx:argument
+                    var searchHides = project.getProperties().keys();
+                    var hides = new Array();
+                    while(searchHides.hasMoreElements()) {
+                        // collect all hidden property names
+                        var pns = searchHides.nextElement();
+                        if(pns.substr(0,JFXPAR.length) == JFXPAR && pns.indexOf(JFXPARN) == (pns.length()-JFXPARN.length)) {
+                            var propns = project.getProperty(pns);
+                            var phs = pns.substr(0,pns.indexOf(JFXPARN)) + JFXPARH;
+                            var proph = project.getProperty(phs);
+                            if(isTrue(proph)) {
+                                hides.push(propns);
+                            }
+                         }
+                    }
                     var keys = project.getProperties().keys();
                     while(keys.hasMoreElements()) {
                         var pn = keys.nextElement();
                         if(pn.substr(0,JFXPAR.length) == JFXPAR && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
                             var propn = project.getProperty(pn);
-                            if(propn != null && propn.length() > 0) {
+                            if(propn != null && propn.trim().length() > 0 && !contains(hides, propn)) {
                                 var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
                                 var propv = project.getProperty(pv);
                                 if(propv != null && propv.length() > 0) {
@@ -1651,6 +1677,8 @@
                                     if(isTrue(fx_ant_api_1_1)) {
                                         var arg = app.createArgument();
                                         arg.addText(propn);
+                                    } else {
+                                        println("Warning: Unnamed parameters not supported by this version of JavaFX SDK deployment Ant tasks. Upgrade JavaFX to 2.0.2 or higher.");
                                     }
                                 }
                             }
@@ -1729,6 +1757,42 @@
                     a3.setName("Implementation-Version");
                     a3.setValue("1.0");
                     man.addConfiguredAttribute(a3);
+                    // custom manifest entries
+                    var searchManifestHides = project.getProperties().keys();
+                    var manifestHides = new Array();
+                    while(searchManifestHides.hasMoreElements()) {
+                        // collect all hidden property names
+                        var pns = searchManifestHides.nextElement();
+                        if(pns.substr(0,JFXMAN.length) == JFXMAN && pns.indexOf(JFXPARN) == (pns.length()-JFXPARN.length)) {
+                            var propns = project.getProperty(pns);
+                            var phs = pns.substr(0,pns.indexOf(JFXPARN)) + JFXPARH;
+                            var proph = project.getProperty(phs);
+                            if(isTrue(proph)) {
+                                manifestHides.push(propns);
+                            }
+                         }
+                    }
+                    var manifestKeys = project.getProperties().keys();
+                    while(manifestKeys.hasMoreElements()) {
+                        var pn = manifestKeys.nextElement();
+                        if(pn.substr(0,JFXMAN.length) == JFXMAN && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
+                            var propn = project.getProperty(pn);
+                            if(propn != null && propn.trim().length() > 0 && !contains(manifestHides, propn)) {
+                                var tmp = new String(propn.trim());
+                                var propnr = tmp.replace(/\s/g, "-");
+                                var entry = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                                entry.setName(propnr);
+                                var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
+                                var propv = project.getProperty(pv);
+                                if(propv != null && propv.length() > 0) {
+                                    entry.setValue(propv);
+                                } else {
+                                    entry.setValue("");
+                                }
+                                man.addConfiguredAttribute(entry);
+                            }
+                        }
+                    }
                     
                     jar.perform();
                 ]]>
@@ -1960,7 +2024,7 @@
                         var pn = keys.nextElement();
                         if(pn.substr(0,JFXPAR.length) == JFXPAR && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
                             var propn = project.getProperty(pn);
-                            if(propn != null && propn.length() > 0 && !contains(hides, propn)) {
+                            if(propn != null && propn.trim().length() > 0 && !contains(hides, propn)) {
                                 var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
                                 var propv = project.getProperty(pv);
                                 if(propv != null && propv.length() > 0) {

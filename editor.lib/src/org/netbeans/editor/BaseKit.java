@@ -2163,13 +2163,13 @@ public class BaseKit extends DefaultEditorKit {
     }
 
 
-    @EditorActionRegistration(name = beepAction)
+    @EditorActionRegistration(name = beepAction, noKeyBinding = true)
     public static class BeepAction extends LocalBaseAction {
 
         static final long serialVersionUID =-4474054576633223968L;
 
         public BeepAction() {
-            putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
+//            putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {

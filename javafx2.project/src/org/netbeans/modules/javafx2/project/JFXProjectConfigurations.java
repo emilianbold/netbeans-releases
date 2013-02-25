@@ -75,11 +75,16 @@ public class JFXProjectConfigurations {
     
     public static final String APP_PARAM_PREFIX = "javafx.param."; // NOI18N
     public static final String APP_PARAM_SUFFIXES[] = new String[] { "name", "value", "hidden" }; // NOI18N
-    public static final String APP_PARAM_HIDDEN_TRUE = "true"; // NOI18N
     public static final String APP_PARAM_CONNECT_SIGN = "="; // NOI18N
+
+    public static final String APP_MANIFEST_PREFIX = "javafx.manifest.entry."; // NOI18N
+    public static final String APP_MANIFEST_SUFFIXES[] = new String[] { "name", "value", "hidden" }; // NOI18N
+    public static final String APP_MANIFEST_CONNECT_SIGN = ": "; // NOI18N
+
     private static final String MULTI_PROPERTY_STRING = "MultiProperty"; //NOI18N
     private static final String MULTI_PROPERTY_EMPTY = "empty"; // NOI18N
-
+    public static final String APP_MULTIPROP_HIDDEN_TRUE = "true"; // NOI18N
+    
     // folders and files
     public static final String PROJECT_CONFIGS_DIR = "nbproject/configs"; // NOI18N
     public static final String PROJECT_PRIVATE_CONFIGS_DIR = "nbproject/private/configs"; // NOI18N
@@ -99,6 +104,7 @@ public class JFXProjectConfigurations {
 
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
     private MultiProperty appParams;
+    private MultiProperty appManifestEntries;
             
     private Set<String> ERASED_CONFIGS;
     private BoundedPropertyGroups groups = new BoundedPropertyGroups();
@@ -188,6 +194,7 @@ public class JFXProjectConfigurations {
         RUN_CONFIGS = new TreeMap<String,Map<String,String>>(getComparator());
         ERASED_CONFIGS = null;
         appParams = new MultiProperty(APP_PARAM_PREFIX, APP_PARAM_SUFFIXES, APP_PARAM_CONNECT_SIGN);
+        appManifestEntries = new MultiProperty(APP_MANIFEST_PREFIX, APP_MANIFEST_SUFFIXES, APP_MANIFEST_CONNECT_SIGN);
     }
 
     private boolean configNameWrong(String config) {
@@ -915,6 +922,353 @@ public class JFXProjectConfigurations {
         return appParams.getActiveEntriesAsString(commandLine);
     }
 
+
+    //==========================================================
+    // public proxies to access custom manifest entries. May not cover
+    // the whole of Multiproperty; add missing if needed
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public boolean hasManifestEntryTransparent(String config, @NonNull String name) {
+        return appManifestEntries.hasEntryTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasDefaultManifestEntryTransparent(@NonNull String name) {
+        return appManifestEntries.hasDefaultEntryTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasActiveManifestEntryTransparent(@NonNull String name) {
+        return appManifestEntries.hasActiveEntryTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @param value
+     * @return 
+     */
+    public boolean hasManifestEntryTransparent(String config, @NonNull String name, @NonNull String value) {
+        return appManifestEntries.hasEntryTransparent(config, name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @param value
+     * @return 
+     */
+    public boolean hasDefaultManifestEntryTransparent(@NonNull String name, @NonNull String value) {
+        return appManifestEntries.hasDefaultEntryTransparent(name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @param value
+     * @return 
+     */
+    public boolean hasActiveManifestEntryTransparent(@NonNull String name, @NonNull String value) {
+        return appManifestEntries.hasActiveEntryTransparent(name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public boolean hasManifestEntryValueTransparent(String config, @NonNull String name) {
+        return appManifestEntries.hasEntryValueTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasDefaultManifestEntryValueTransparent(@NonNull String name) {
+        return appManifestEntries.hasDefaultEntryValueTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public boolean hasActiveManifestEntryValueTransparent(@NonNull String name) {
+        return appManifestEntries.hasActiveEntryValueTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public Map<String, String> getManifestEntryTransparent(String config, @NonNull String name) {
+        return appManifestEntries.getEntryTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public Map<String, String> getDefaultManifestEntryTransparent(@NonNull String name) {
+        return appManifestEntries.getDefaultEntryTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public Map<String, String> getActiveManifestEntryTransparent(@NonNull String name) {
+        return appManifestEntries.getActiveEntryTransparent(name);
+    }
+        
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @return 
+     */
+    public String getManifestEntryValueTransparent(String config, @NonNull String name) {
+        return appManifestEntries.getEntryValueTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public String getDefaultManifestEntryValueTransparent(@NonNull String name) {
+        return appManifestEntries.getDefaultEntryValueTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param name
+     * @return 
+     */
+    public String getActiveManifestEntryValueTransparent(@NonNull String name) {
+        return appManifestEntries.getActiveEntryValueTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @return 
+     */
+    public List<Map<String,String/*|null*/>> getManifestEntriesTransparent(String config) {
+        return appManifestEntries.getEntriesTransparent(config);
+    }
+    
+    /**
+     * Proxy
+     * @return 
+     */
+    public List<Map<String,String/*|null*/>> getDefaultManifestEntriesTransparent() {
+        return appManifestEntries.getDefaultEntriesTransparent();
+    }
+    
+    /**
+     * Proxy
+     * @return 
+     */
+    public List<Map<String,String/*|null*/>> getActiveManifestEntriesTransparent() {
+        return appManifestEntries.getActiveEntriesTransparent();
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name 
+     */
+    public void addManifestEntryTransparent(String config, @NonNull String name){
+        appManifestEntries.addEntryTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void addDefaultManifestEntryTransparent(@NonNull String name) {
+        appManifestEntries.addDefaultEntryTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void addActiveManifestEntryTransparent(@NonNull String name) {
+        appManifestEntries.addActiveEntryTransparent(name);
+    }
+    
+    /**
+     * Proxy
+     * @param config
+     * @param name
+     * @param value 
+     */
+    public void addManifestEntryTransparent(String config, @NonNull String name, @NonNull String value) {
+        appManifestEntries.addEntryTransparent(config, name, value);
+    }
+    
+    /**
+     * Proxy
+     * @param name
+     * @param value 
+     */
+    public void addDefaultManifestEntryTransparent(@NonNull String name, @NonNull String value) {
+        appManifestEntries.addDefaultEntryTransparent(name, value);
+    }
+
+    /**
+     * Proxy
+     * @param name
+     * @param value 
+     */
+    public void addActiveManifestEntryTransparent(@NonNull String name, @NonNull String value) {
+        appManifestEntries.addActiveEntryTransparent(name, value);
+    }
+
+    /**
+     * Proxy
+     * @param config
+     * @param params 
+     */
+    public void setManifestEntriesTransparent(String config, List<Map<String,String/*|null*/>>/*|null*/ params) {
+        appManifestEntries.setEntriesTransparent(config, params);
+    }
+
+    /**
+     * Proxy
+     * @param params 
+     */
+    public void setDefaultManifestEntriesTransparent(List<Map<String,String/*|null*/>>/*|null*/ params) {
+        appManifestEntries.setDefaultEntriesTransparent(params);
+    }
+
+    /**
+     * Proxy
+     * @param params 
+     */
+    public void setActiveManifestEntriesTransparent(List<Map<String,String/*|null*/>>/*|null*/ params) {
+        appManifestEntries.setActiveEntriesTransparent(params);
+    }
+
+    /**
+     * Proxy
+     * @param config
+     * @param name 
+     */
+    public void eraseManifestEntryTransparent(String config, @NonNull String name) {
+        appManifestEntries.eraseEntryTransparent(config, name);
+    }
+    
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void eraseDefaultManifestEntryTransparent(@NonNull String name) {
+        appManifestEntries.eraseDefaultEntryTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param name 
+     */
+    public void eraseActiveManifestEntryTransparent(@NonNull String name) {
+        appManifestEntries.eraseActiveEntryTransparent(name);
+    }
+
+    /**
+     * Proxy
+     * @param config 
+     */
+    public void eraseManifestEntriesTransparent(String config) {
+        appManifestEntries.eraseEntriesTransparent(config);
+    }
+    
+    /**
+     * Proxy
+     */
+    public void eraseDefaultManifestEntriesTransparent() {
+        appManifestEntries.eraseDefaultEntriesTransparent();
+    }
+
+    /**
+     * Proxy
+     */
+    public void eraseActiveManifestEntriesTransparent() {
+        appManifestEntries.eraseActiveEntriesTransparent();
+    }
+
+    /**
+     * Proxy
+     * @param config
+     * @return 
+     */
+    public String getManifestEntriesTransparentAsString(String config) {
+        return appManifestEntries.getEntriesTransparentAsString(config, false);
+    }
+    
+    /**
+     * Proxy
+     * @return 
+     */
+    public String getDefaultManifestEntriesTransparentAsString() {
+        return appManifestEntries.getDefaultEntriesTransparentAsString(false);
+    }
+
+    /**
+     * Proxy
+     * @return 
+     */
+    public String getActiveManifestEntriesTransparentAsString() {
+        return appManifestEntries.getActiveEntriesTransparentAsString(false);
+    }
+
+    //----------------------------------------------------------
+    // primarily for testing purposes
+
+    public boolean hasActiveManifestEntry(@NonNull String name) {
+        return appManifestEntries.hasActiveEntry(name);
+    }
+    
+    public String manifestEntriesToString() {
+        return appManifestEntries.toString();
+    }
+    
+    public int getNoOfManifestEntries(String config) {
+        return appManifestEntries.getNoOfEntries(config);
+    }
+    
+    public int getNoOfDefaultManifestEntries() {
+        return appManifestEntries.getNoOfDefaultEntries();
+    }
+    
+    public int getNoOfActiveManifestEntries() {
+        return appManifestEntries.getNoOfActiveEntries();
+    }
+
+
     //==========================================================
 
     /**
@@ -952,6 +1306,7 @@ public class JFXProjectConfigurations {
             }
         }
         appParams.extractDefaultEntries(ep);
+        appManifestEntries.extractDefaultEntries(ep);
     }
 
     private void addDefaultsIfMissing() {
@@ -981,6 +1336,7 @@ public class JFXProjectConfigurations {
                 }
                 addToConfig(kid.getName(), cep);
                 appParams.extractEntries(cep, kid.getName());
+                appManifestEntries.extractEntries(cep, kid.getName());
             }
         }
     }
@@ -1055,7 +1411,9 @@ public class JFXProjectConfigurations {
             updateProperty(name, value, projectProperties, privateProperties, isBoundedToNonemptyProperty(null, name));
         }
         List<String> paramNamesUsed = new ArrayList<String>();
+        List<String> manifestEntryNamesUsed = new ArrayList<String>();
         appParams.updateDefaultEntryProperties(projectProperties, privateProperties, paramNamesUsed);
+        appManifestEntries.updateDefaultEntryProperties(projectProperties, privateProperties, manifestEntryNamesUsed);
         storeDefaultParamsAsCommandLine(privateProperties);
 
         for (Map.Entry<String,Map<String,String>> entry : RUN_CONFIGS.entrySet()) {
@@ -1095,7 +1453,8 @@ public class JFXProjectConfigurations {
                     config, sharedCfgProps);
             privatePropsChanged |= cleanPropertiesIfEmpty(CLEAN_EMPTY_PRIVATE_PROPERTIES.toArray(new String[0]), 
                     config, privateCfgProps);
-            privatePropsChanged |= appParams.updateEntryProperties(config, sharedCfgProps, privateCfgProps, paramNamesUsed);  
+            privatePropsChanged |= appParams.updateEntryProperties(config, sharedCfgProps, privateCfgProps, paramNamesUsed);
+            privatePropsChanged |= appManifestEntries.updateEntryProperties(config, sharedCfgProps, privateCfgProps, manifestEntryNamesUsed);
             privatePropsChanged |= storeParamsAsCommandLine(config, privateCfgProps);
 
             JFXProjectUtils.saveToFile(projectDir, sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
@@ -1306,7 +1665,7 @@ public class JFXProjectConfigurations {
         
         private void hideEntry(@NonNull Map<String,String> entry) {
             assert entry != null;
-            entry.put(suffixes[2], APP_PARAM_HIDDEN_TRUE); // NOI18N
+            entry.put(suffixes[2], APP_MULTIPROP_HIDDEN_TRUE); // NOI18N
         }
         
         private void unhideEntry(@NonNull Map<String,String> entry) {
@@ -1755,6 +2114,33 @@ public class JFXProjectConfigurations {
             return sb.toString();
         }
 
+        public int getNoOfEntries(String config) {
+            assert !configNameWrong(config);
+            return getNoOfEntries(getEntriesTransparent(config));
+        }
+
+        public int getNoOfDefaultEntries() {
+            return getNoOfEntries(getDefaultEntriesTransparent());
+        }
+
+        public int getNoOfActiveEntries() {
+            return getNoOfEntries(getActiveEntriesTransparent());
+        }
+
+        private int getNoOfEntries(List<Map<String,String/*|null*/>> props)
+        {
+            int sum = 0;
+            if(props != null) {
+                for(Map<String,String> m : props) {
+                    String name = getEntryName(m);
+                    if(name != null && name.length() > 0 && !isEntryHidden(m)) {
+                        sum++;
+                    }
+                }
+            }
+            return sum;
+        }
+        
         //----------------------------------------------------------
 
         private Map<String, String> createEntry(@NonNull String name) {
@@ -1934,11 +2320,13 @@ public class JFXProjectConfigurations {
             if(config == null) {
                 List<Map<String,String>> newDefault = new ArrayList<Map<String, String>>();
                 Set<String> toClean = new HashSet<String>();
-                for(Map<String,String> entry : APP_MULTIPROPS.get(null)) {
-                    if(isEntryHidden(entry)) {
-                        newDefault.add(entry);
-                    } else {
-                        toClean.add(getEntryName(entry));
+                if(APP_MULTIPROPS.get(null) != null) {
+                    for(Map<String,String> entry : APP_MULTIPROPS.get(null)) {
+                        if(isEntryHidden(entry)) {
+                            newDefault.add(entry);
+                        } else {
+                            toClean.add(getEntryName(entry));
+                        }
                     }
                 }
                 APP_MULTIPROPS.put(null, newDefault);
@@ -2305,7 +2693,7 @@ public class JFXProjectConfigurations {
                                 }
                                 String propHid = getEntryHiddenProperty(prop);
                                 if(isEntryHidden(entry)) {
-                                    ep.setProperty(propHid, APP_PARAM_HIDDEN_TRUE);
+                                    ep.setProperty(propHid, APP_MULTIPROP_HIDDEN_TRUE);
                                 } else {
                                     ep.remove(propHid);
                                 }
@@ -2393,7 +2781,7 @@ public class JFXProjectConfigurations {
                     ep.put(newPropValue, value);
                 }
                 if(isEntryHidden(entry)) {
-                    ep.put(newPropHidden, APP_PARAM_HIDDEN_TRUE);
+                    ep.put(newPropHidden, APP_MULTIPROP_HIDDEN_TRUE);
                 }
             }
         }

@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="EditorActionRegistration.noKeyBinding.noIconInMenu">
+            <summary>Added EditorActionRegistration.noKeyBinding and EditorActionRegistration.noIconInMenu</summary>
+            <version major="1" minor="75"/>
+            <date day="17" month="2" year="2013"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added EditorActionRegistration.noKeyBinding and EditorActionRegistration.noIconInMenu fields
+                    into EditorActionRegistration annotation.
+                </p>
+            </description>
+            <issue number="226220"/>
+        </change>
+
         <change id="NavigationHistoryClassAdded">
             <summary>NavigationHistory class added</summary>
             <version major="1" minor="74"/>
@@ -123,7 +138,7 @@ is the proper place.
         </change>
 
         <change id="TypedTextInterceptor.getReplacedText">
-            <summary>method getReplacedText added</summary>
+            <summary>OnSaveTask interface added</summary>
             <version major="1" minor="73"/>
             <date day="30" month="1" year="2013"/>
             <author login="mkristofic"/>

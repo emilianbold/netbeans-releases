@@ -281,8 +281,15 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
         {
             Icon icon = null;
             if (isMenuItem()) {
+                if (cAction != null && Boolean.TRUE.equals(cAction.getValue(AbstractEditorAction.NO_ICON_IN_MENU))) {
+                    return;
+                }
                 if (cAction != null) {
                     icon = EditorActionUtilities.getSmallIcon(cAction);
+                }
+
+                if (icon == null && Boolean.TRUE.equals(action.getValue(AbstractEditorAction.NO_ICON_IN_MENU))) {
+                    return;
                 }
                 if (icon == null) {
                     icon = EditorActionUtilities.getSmallIcon(action);
