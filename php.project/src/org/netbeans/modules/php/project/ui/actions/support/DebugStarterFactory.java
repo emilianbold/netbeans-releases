@@ -52,15 +52,15 @@ import org.openide.util.Union2;
  * @author Radek Matous
  *
  */
-public final class XDebugStarterFactory {
+public final class DebugStarterFactory {
     private static Union2<DebugStarter, Boolean> INSTANCE;
 
-    private XDebugStarterFactory() {
+    private DebugStarterFactory() {
     }
 
     public static DebugStarter getInstance() {
         boolean init;
-        synchronized (XDebugStarterFactory.class) {
+        synchronized (DebugStarterFactory.class) {
             init = (INSTANCE == null);
         }
         if (init) {

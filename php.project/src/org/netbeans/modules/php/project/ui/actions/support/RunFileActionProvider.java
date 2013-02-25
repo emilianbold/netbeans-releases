@@ -86,7 +86,7 @@ public class RunFileActionProvider implements ActionProvider {
             }
         }
         if (ActionProvider.COMMAND_DEBUG_SINGLE.equals(command)
-                && XDebugStarterFactory.getInstance() == null) {
+                && DebugStarterFactory.getInstance() == null) {
             return false;
         }
         return true;

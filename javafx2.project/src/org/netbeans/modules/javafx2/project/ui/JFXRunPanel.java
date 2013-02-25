@@ -1075,8 +1075,10 @@ private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
 private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonParamsActionPerformed
     List<Map<String, String>> props = configs.getActiveParamsTransparent();
-    JFXProjectProperties.PropertiesTableModel appParametersTableModel = new JFXProjectProperties.PropertiesTableModel(props, JFXProjectConfigurations.APP_PARAM_SUFFIXES, appParamsColumnNames);
-    JFXApplicationParametersPanel panel = new JFXApplicationParametersPanel(appParametersTableModel);
+    List<Map<String, String>> defProps = configs.getDefaultParamsTransparent();
+    JFXProjectProperties.PropertiesTableModel appParametersTableModel = 
+            new JFXProjectProperties.PropertiesTableModel(props, configs.getActive() == null ? null : defProps, JFXProjectConfigurations.APP_PARAM_SUFFIXES, appParamsColumnNames);
+    JFXApplicationMultiPropertyPanel panel = new JFXApplicationMultiPropertyPanel(appParametersTableModel);
     DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JFXRunPanel.class, "TITLE_ApplicationParameters"), true, null);
     panel.registerListeners();
     panel.setDialogDescriptor(dialogDesc);
