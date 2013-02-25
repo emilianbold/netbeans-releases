@@ -314,7 +314,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     }
 
     /**
-     * Determines the versioning system that manages given file.
+     * Determines the versioning system that manages the given file.
      * Owner of a file:
      * - annotates its label in explorers, editor tab, etc.
      * - provides menu actions for it
@@ -331,7 +331,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     }
     
     /**
-     * Determines the versioning system that manages given file.
+     * Determines the versioning system that manages the given file.
      * Owner of a file:
      * - annotates its label in explorers, editor tab, etc.
      * - provides menu actions for it
