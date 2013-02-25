@@ -89,6 +89,10 @@ public class TooManyLinesHintTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new TraitLinesHintStub(10), "testTraitsLines.php");
     }
 
+    public void testIssue226425() throws Exception {
+        checkHintsInStartEndFile(new FunctionLinesHintStub(5), "testIssue226425.php");
+    }
+
     private static final class FunctionLinesHintStub extends FunctionLinesHint {
         private final int maxAllowedLines;
 
