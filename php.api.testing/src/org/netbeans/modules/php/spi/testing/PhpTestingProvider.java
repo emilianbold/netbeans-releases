@@ -116,11 +116,12 @@ public interface PhpTestingProvider {
      * This method is always called in a background thread.
      * @param phpModule the PHP module; never {@code null}
      * @param runInfo info about the test run; never {@code null}
-     * @return test session or {@code null} if the session cannot be obtained
+     * @param testSession  test session to be updated with the test results
      * @throws TestRunException if any error occurs during the test run, e.g. some resource is not available
+     * @since 0.2
      */
     @CheckForNull
-    TestSession runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo) throws TestRunException;
+    void runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException;
 
     /**
      * Gets test locator for this provider.
