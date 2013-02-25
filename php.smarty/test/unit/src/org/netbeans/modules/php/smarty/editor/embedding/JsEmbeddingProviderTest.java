@@ -87,4 +87,8 @@ public class JsEmbeddingProviderTest extends JsEmbeddingTestBase {
         checkTranslation("testfiles/embedding/tpl/testTplEmbeddingTranslator02.tpl", "text/x-tpl");
     }
 
+    public void testTplEmbeddingTranslator03() throws Exception {
+        checkTranslation("testfiles/embedding/tpl/testTplEmbeddingTranslator03.tpl", "text/x-tpl");
+    }
+
 }

@@ -8,7 +8,7 @@
         }
         _smarty_console =
                 window.open("", title.value, "width=680,height=600,resizable,scrollbars=yes");
-        _smarty_console.document.write('__UNKNOWN____UNKNOWN__');
+        _smarty_console.document.write('__UNKNOWN__');
         _smarty_console.document.close();
         // ]]>
     
