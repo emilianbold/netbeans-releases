@@ -89,7 +89,7 @@ import org.netbeans.modules.php.project.internalserver.InternalWebServer;
 import org.netbeans.modules.php.project.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
-import org.netbeans.modules.php.project.ui.actions.support.XDebugStarterFactory;
+import org.netbeans.modules.php.project.ui.actions.support.DebugStarterFactory;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
@@ -1201,7 +1201,7 @@ public final class PhpProject implements Project {
 
         public boolean canReload() {
             // #226389
-            if (XDebugStarterFactory.getInstance().isAlreadyRunning()) {
+            if (DebugStarterFactory.getInstance().isAlreadyRunning()) {
                 return false;
             }
             String selectedBrowser = project.getEvaluator().getProperty(PhpProjectProperties.BROWSER_ID);
