@@ -110,17 +110,15 @@ public class PHPHintsProvider implements HintsProvider {
             unhandled.addAll(errors);
         }
         Map<?, List<? extends ErrorRule>> allErrors = manager.getErrors();
-        if (allErrors != null) {
-            List<? extends ErrorRule> unhandledErrors = allErrors.get(ErrorType.UNHANDLED_ERRORS);
-            if (unhandledErrors != null) {
-                RulesRunner<Error> rulesRunner = new RulesRunnerImpl<Error>(manager, initializeContext(context), unhandled);
-                rulesRunner.run(unhandledErrors, RuleAdjuster.NONE);
-            }
-            List<? extends ErrorRule> hintErrors = allErrors.get(ErrorType.HINT_ERRORS);
-            if (hintErrors != null) {
-                RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(manager, initializeContext(context), hints);
-                rulesRunner.run(hintErrors, RuleAdjuster.NONE);
-            }
+        List<? extends ErrorRule> unhandledErrors = allErrors.get(ErrorType.UNHANDLED_ERRORS);
+        if (unhandledErrors != null) {
+            RulesRunner<Error> rulesRunner = new RulesRunnerImpl<Error>(manager, initializeContext(context), unhandled);
+            rulesRunner.run(unhandledErrors, RuleAdjuster.NONE);
+        }
+        List<? extends ErrorRule> hintErrors = allErrors.get(ErrorType.HINT_ERRORS);
+        if (hintErrors != null) {
+            RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(manager, initializeContext(context), hints);
+            rulesRunner.run(hintErrors, RuleAdjuster.NONE);
         }
     }
 
