@@ -86,7 +86,7 @@ public final class CndFileUtils {
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
     private static final FileChangeListener FSL = new FSListener();
     private static final FileSystem fileFileSystem;
-    public static final int FS_TIME_OUT = 15;
+    public static final int FS_TIME_OUT = 30;
     public static final String LS_FOLDER_UTILS_PERFORMANCE_EVENT = "LS_FOLDER_UTILS_PERFORMANCE_EVENT"; //NOI18N
     static {
         FileSystem afileFileSystem = null;

@@ -49,6 +49,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -95,7 +96,8 @@ public final class ActionToGoalUtils {
         }
         assert ACCESSOR != null;
     }
-    
+
+
     public static abstract class ContextAccessor {
 
         public abstract ExecutionContext createContext(InputOutput inputoutput, ProgressHandle handle);
@@ -214,6 +216,14 @@ public final class ActionToGoalUtils {
     }
 
     public static NetbeansActionMapping[] getActiveCustomMappings(NbMavenProjectImpl project) {
+        return getActiveCustomMappingsImpl(project, false);
+    }
+    
+    public static NetbeansActionMapping[] getActiveCustomMappingsForFile(NbMavenProjectImpl project) {
+        return getActiveCustomMappingsImpl(project, true);
+    }
+    
+    private static NetbeansActionMapping[] getActiveCustomMappingsImpl(NbMavenProjectImpl project, boolean forFiles) {
         M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
         List<NetbeansActionMapping> toRet = new ArrayList<NetbeansActionMapping>();
         List<String> names = new ArrayList<String>();
@@ -238,8 +248,21 @@ public final class ActionToGoalUtils {
                 toRet.add(map);
             }
         }
+        Iterator<NetbeansActionMapping> it = toRet.iterator();
+        while (it.hasNext()) {
+            NetbeansActionMapping map = it.next();
+            boolean hasFiles = false;
+            for (Map.Entry<String, String> ent : map.getProperties().entrySet()) {
+                hasFiles = ent.getValue().contains("${packageClassName}") || ent.getValue().contains("${className}") || ent.getValue().contains("${classNameWithExtension}");
+            }
+            if (forFiles != hasFiles) {
+                it.remove();
+            }
+            
+        }
         return toRet.toArray(new NetbeansActionMapping[toRet.size()]);
     }
+        
 
     public static NetbeansActionMapping getDefaultMapping(String action, Project project) {
         NetbeansActionMapping na = null;

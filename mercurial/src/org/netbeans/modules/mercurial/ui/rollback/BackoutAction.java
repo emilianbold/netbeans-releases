@@ -199,7 +199,7 @@ public class BackoutAction extends ContextAction {
                                     logger.outputInRed(NbBundle.getMessage(BackoutAction.class, "MSG_BACKOUT_MERGE_DO")); // NOI18N
                                     MergeAction.doMergeAction(root, null, logger);
                                 } else {
-                                    HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, true, OutputLogger.getLogger(null));
+                                    HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, false, OutputLogger.getLogger(null));
                                     Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
                                     if (!branchHeads.isEmpty()) {
                                         MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads);
