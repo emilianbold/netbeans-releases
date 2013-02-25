@@ -83,6 +83,8 @@ public class VariablesModel extends ViewModelSupport
     static final String GET_SHORT_DESCRIPTION = "getShortDescription";  // NOI18N
 
     static final String NULL                  = "null";                 // NOI18N
+    //@GuardedBy("this")
+    private DebugSession debugSession;
 
     public VariablesModel(final ContextProvider contextProvider) {
         myContextProvider = contextProvider;
@@ -446,16 +448,17 @@ public class VariablesModel extends ViewModelSupport
         fireChangeEvents(events);
     }
 
-    private DebugSession getSession(){
-        ContextProvider provider = getContextProvider();
-        if ( provider == null ){
-            return null;
+    private synchronized DebugSession getSession(){
+        if (debugSession == null) {
+            ContextProvider provider = getContextProvider();
+            if ( provider != null ){
+                SessionId id = (SessionId)provider.lookupFirst( null , SessionId.class );
+                if ( id != null ){
+                    debugSession = SessionManager.getInstance().getSession(id);
+                }
+            }
         }
-        SessionId id = (SessionId)provider.lookupFirst( null , SessionId.class );
-        if ( id == null ){
-            return null;
-        }
-        return SessionManager.getInstance().getSession(id);
+        return debugSession;
     }
 
     private ContextProvider getContextProvider() {
