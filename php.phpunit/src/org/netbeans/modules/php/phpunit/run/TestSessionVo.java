@@ -49,7 +49,6 @@ import org.netbeans.api.extexecution.input.LineProcessors;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
-import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.run.OutputLineHandler;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
@@ -61,7 +60,6 @@ public final class TestSessionVo {
 
     private long time = -1;
     private int tests = -1;
-    private Coverage coverage;
 
 
     public TestSessionVo(@NullAllowed String customSuitePath) {
