@@ -135,10 +135,10 @@ public final class DiscoveryManagerImpl {
                 if (isIncremental) {
                     map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
                 }
-                if (extension.canApply(map, project)) {
+                if (extension.canApply(map, project, null)) {
                     try {
                         postModelTask();
-                        extension.apply(map, project);
+                        extension.apply(map, project, null);
                     } catch (IOException ex) {
                         ex.printStackTrace(System.err);
                     }
@@ -154,10 +154,10 @@ public final class DiscoveryManagerImpl {
                 if (isIncremental) {
                     map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
                 }
-                if (extension.canApply(map, project)) {
+                if (extension.canApply(map, project, null)) {
                     try {
                         postModelTask();
-                        extension.apply(map, project);
+                        extension.apply(map, project, null);
                     } catch (IOException ex) {
                         ex.printStackTrace(System.err);
                     }

@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -183,7 +184,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     }
     
     @Override
-    public List<Configuration> analyze(ProjectProxy project, Progress progress) {
+    public List<Configuration> analyze(ProjectProxy project, Progress progress, Interrupter interrupter) {
         isStoped = false;
         MyConfiguration conf = new MyConfiguration(project, progress);
         List<Configuration> confs = new ArrayList<Configuration>();
@@ -286,7 +287,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     }
     
     @Override
-    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
+    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         return new ApplicableImpl(true, null, null, 40, false, null, null, null, null);
     }
     

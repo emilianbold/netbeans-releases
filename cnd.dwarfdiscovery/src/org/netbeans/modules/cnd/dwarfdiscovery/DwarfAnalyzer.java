@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.*;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
@@ -67,7 +68,7 @@ public class DwarfAnalyzer {
     public static void analyze(String[] files){
         DwarfProvider provider = new DwarfProvider() {
             @Override
-            public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
+            public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
                 return new ApplicableImpl(true, null, null, 1, false, null, null, null, null);
             }
         };
@@ -111,7 +112,7 @@ public class DwarfAnalyzer {
     }
     
     private static void dumpProject(DwarfProvider provider, ProjectProxy project){
-        List<Configuration> confs = provider.analyze(project,null);
+        List<Configuration> confs = provider.analyze(project,null, null);
         for (Iterator<Configuration> it = confs.iterator(); it.hasNext();) {
             Configuration conf = it.next();
             List<ProjectProperties> langList = conf.getProjectConfiguration();

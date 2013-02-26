@@ -54,7 +54,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -74,6 +73,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
@@ -234,7 +234,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     }
 
     @Override
-    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
+    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
         if (set == null || set.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecLog.class, "NotFoundExecLog")));
@@ -256,20 +256,21 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     }
 
     private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage) {
-        ExecLogReader clrf = new ExecLogReader(objFileName, root, project);
-        List<SourceFileProperties> list = clrf.getResults(progress, isStoped, storage);
-        buildArtifacts.addAll(clrf.getArtifacts(progress, isStoped, storage));
+        ExecLogReader reader = new ExecLogReader(objFileName, root, project);
+        List<SourceFileProperties> list = reader.getResults(progress, getStopInterrupter(), storage);
+        buildArtifacts.addAll(reader.getArtifacts(progress, getStopInterrupter(), storage));
         return list;
     }
+    
     private Progress progress;
 
     @Override
-    public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
-        isStoped.set(false);
+    public List<Configuration> analyze(final ProjectProxy project, Progress progress, Interrupter interrupter) {
+        resetStopInterrupter(interrupter);
         List<Configuration> confs = new ArrayList<Configuration>();
         init(project);
         this.progress = progress;
-        if (!isStoped.get()) {
+        if (!getStopInterrupter().cancelled()) {
             Configuration conf = new Configuration() {
 
                 private List<SourceFileProperties> myFileProperties;
@@ -338,7 +339,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private final Set<String> FORTRAN_NAMES;
         private final Set<String> LIBREARIES_NAMES;
 
-        public ExecLogReader(String fileName, String root, ProjectProxy project) {
+        private ExecLogReader(String fileName, String root, ProjectProxy project) {
             if (root.length() > 0) {
                 this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
             } else {
@@ -391,7 +392,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         //        findme.o
         //
 
-        private void run(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+        private void run(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
             result = new ArrayList<SourceFileProperties>();
             buildArtifacts = new ArrayList<String>();
             File file = new File(fileName);
@@ -411,7 +412,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         String tool = null;
                         List<String> params = new ArrayList<String>();
                         while (true) {
-                            if (isStoped.get()) {
+                            if (isStoped.cancelled()) {
                                 break;
                             }
                             String line = in.readLine();
@@ -461,14 +462,14 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             }
         }
 
-        public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+        public List<SourceFileProperties> getResults(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
             if (result == null) {
                 run(progress, isStoped, storage);
             }
             return result;
         }
 
-        public List<String> getArtifacts(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+        public List<String> getArtifacts(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
             if (buildArtifacts == null) {
                 run(progress, isStoped, storage);
             }
