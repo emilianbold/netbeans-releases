@@ -40,65 +40,61 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.ui.menu;
 
-import java.io.File;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.openide.util.actions.Presenter;
 
 /**
  *
  * @author ondra
  */
-public class UpdateToAction extends UpdateAction {
-
-    public UpdateToAction () {
-        super(null);
-    }
+public abstract class DynamicMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
     
-    @Override
-    protected String getBaseName(Node[] nodes) {
-        return "CTL_MenuItem_UpdateTo"; //NOI18N
+    public DynamicMenu (String name) {
+        super(name);
     }
 
     @Override
-    protected SVNRevision getRevision(Context ctx) {
-        File[] roots = ctx.getRootFiles();
-        SVNRevision revision = null;
-        if(roots == null || roots.length == 0) return null;
-
-        File interestingFile = roots[0];
-
-        final SVNUrl rootUrl;
-        final SVNUrl url;
-
-        try {
-            rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
-            url = SvnUtils.getRepositoryUrl(interestingFile);
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
-            return null;
-        }
-        
-        final RepositoryFile repositoryFile = new RepositoryFile(rootUrl, url, SVNRevision.HEAD);
-
-        final UpdateTo updateTo = new UpdateTo(repositoryFile, Subversion.getInstance().getStatusCache().containsFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE, true));
-        if(updateTo.showDialog()) {
-            revision = updateTo.getSelectedRevision();
-        }
-        return revision;
+    public JMenuItem getMenuPresenter() {
+        JMenu menu = createMenu();
+        org.openide.awt.Mnemonics.setLocalizedText(menu, menu.getText());
+        enableMenu(menu);
+        return menu;
     }
 
     @Override
-    protected String iconResource () {
-        return null;
+    public JMenuItem getPopupPresenter() {
+        JMenu menu = createMenu();
+        org.openide.awt.Mnemonics.setLocalizedText(menu, menu.getText());
+        enableMenu(menu);
+        return menu;
+    }
+
+    @Override
+    public boolean isEnabled () {
+        return true;
+    }
+
+    @Override
+    public final void actionPerformed (ActionEvent ev) {
+        // no operation
+    }
+
+    protected abstract JMenu createMenu ();
+    
+    protected static void enableMenu (JMenu menu) {
+        boolean enabled = false;
+        for (int i = 0; i < menu.getItemCount(); ++i) {
+            JMenuItem item = menu.getItem(i);
+            if (item != null && item.isEnabled()) {
+                enabled = true;
+                break;
+            }
+        }
+        menu.setEnabled(enabled);
     }
 }
