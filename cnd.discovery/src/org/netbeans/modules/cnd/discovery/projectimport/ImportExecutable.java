@@ -299,9 +299,9 @@ public class ImportExecutable implements PropertyChangeListener {
                                     map.put(DiscoveryWizardDescriptor.ADDITIONAL_LIBRARIES, additionalDependencies);
                                 }
                             }
-                            if (extension.canApply(map, lastSelectedProject)) {
+                            if (extension.canApply(map, lastSelectedProject, null)) {
                                 try {
-                                    extension.apply(map, lastSelectedProject);
+                                    extension.apply(map, lastSelectedProject, null);
                                     discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                     DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, null);
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {

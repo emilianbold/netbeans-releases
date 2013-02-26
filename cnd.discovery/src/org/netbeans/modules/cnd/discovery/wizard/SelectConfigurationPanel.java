@@ -47,14 +47,7 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.AbstractListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -69,14 +62,8 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.Progress;
-import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
-import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
-import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.netbeans.modules.cnd.discovery.wizard.api.ConfigurationFactory;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
@@ -326,94 +313,6 @@ public final class SelectConfigurationPanel extends JPanel {
         }
     }
     
-    public static void buildModel(final DiscoveryDescriptor wizardDescriptor){
-        String rootFolder = wizardDescriptor.getRootFolder();
-        DiscoveryProvider provider = wizardDescriptor.getProvider();
-        String consolidation = wizardDescriptor.getLevel();
-        assert consolidation != null;
-        List<Configuration> configs = provider.analyze(new ProjectProxy() {
-            @Override
-            public boolean createSubProjects() {
-                return false;
-            }
-            @Override
-            public Project getProject() {
-                return wizardDescriptor.getProject();
-            }
-
-            @Override
-            public String getMakefile() {
-                return null;
-            }
-
-            @Override
-            public String getSourceRoot() {
-                return wizardDescriptor.getRootFolder();
-            }
-
-            @Override
-            public String getExecutable() {
-                return wizardDescriptor.getBuildResult();
-            }
-
-            @Override
-            public String getWorkingFolder() {
-                return null;
-            }
-
-            @Override
-            public boolean mergeProjectProperties() {
-                return wizardDescriptor.isIncrementalMode();
-            }
-        }, new MyProgress());
-        List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
-        List<String> includedFiles = new ArrayList<String>();
-        wizardDescriptor.setIncludedFiles(includedFiles);
-        Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
-        Set<String> dep = new HashSet<String>();
-        Set<String> buildArtifacts = new HashSet<String>();
-        for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
-            Configuration conf = it.next();
-            includedFiles.addAll(conf.getIncludedFiles());
-            List<ProjectProperties> langList = conf.getProjectConfiguration();
-            for (Iterator<ProjectProperties> it2 = langList.iterator(); it2.hasNext();) {
-                ProjectConfiguration project = ConfigurationFactory.makeRoot(it2.next(), rootFolder);
-                ConsolidationStrategy.consolidateModel(project, consolidation);
-                projectConfigurations.add(project);
-            }
-            for (SourceFileProperties source : conf.getSourcesConfiguration()) {
-                String compiler = source.getCompilerName();
-                if (compiler != null) {
-                    AtomicInteger count = compilers.get(compiler);
-                    if (count == null) {
-                        count = new AtomicInteger();
-                        compilers.put(compiler, count);
-                    }
-                    count.incrementAndGet();
-                }
-            }
-            if (conf.getDependencies() != null) {
-                dep.addAll(conf.getDependencies());
-            }
-            if (conf.getBuildArtifacts() != null) {
-                buildArtifacts.addAll(conf.getBuildArtifacts());
-            }
-        }
-        wizardDescriptor.setInvokeProvider(false);
-        wizardDescriptor.setDependencies(new ArrayList<String>(dep));
-        wizardDescriptor.setBuildArtifacts(new ArrayList<String>(buildArtifacts));
-        wizardDescriptor.setConfigurations(projectConfigurations);
-        int max = 0;
-        String top = "";
-        for(Map.Entry<String, AtomicInteger> entry : compilers.entrySet()){
-            if (entry.getValue().get() > max) {
-                max = entry.getValue().get();
-                top = entry.getKey();
-            }
-        }
-        wizardDescriptor.setCompilerName(top);
-    }
-    
     private void creteTreeModel(DiscoveryDescriptor wizardDescriptor){
         ConfigurationTreeModel model = new ConfigurationTreeModel();
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
@@ -492,7 +391,7 @@ public final class SelectConfigurationPanel extends JPanel {
         @Override
         public void run() {
             try {
-                buildModel(wizardDescriptor);
+                DiscoveryExtension.buildModel(wizardDescriptor, null);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

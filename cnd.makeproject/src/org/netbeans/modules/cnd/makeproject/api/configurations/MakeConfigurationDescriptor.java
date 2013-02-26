@@ -94,6 +94,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefile
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -386,7 +387,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (sourceFileFolders != null) {
             while (sourceFileFolders.hasNext()) {
                 SourceFolderInfo sourceFolderInfo = sourceFileFolders.next();
-                addFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFileObject(), null, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                addFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFileObject(), null, null, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
             }
         }
         setModified();
@@ -1635,7 +1636,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (toBeAdded.size() > 0) {
                 for (String root : toBeAdded) {
                     FileObject fo = RemoteFileUtil.getFileObject(baseDirFO, root);
-                    addFilesFromRoot(getLogicalFolders(), fo, null, true, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                    addFilesFromRoot(getLogicalFolders(), fo, null, null, true, Folder.Kind.SOURCE_DISK_FOLDER, null);
                 }
                 setModified();
             }
@@ -1791,8 +1792,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
-    public void addFilesFromRoot(Folder folder, FileObject dir, ProgressHandle handle,
-            boolean attachListeners, Folder.Kind folderKind, @NullAllowed FileObjectFilter fileFilter) {
+    public void addFilesFromRoot(Folder folder, FileObject dir, ProgressHandle handle, Interrupter interrupter,
+                boolean attachListeners, Folder.Kind folderKind, @NullAllowed FileObjectFilter fileFilter) {
         CndUtils.assertTrueInConsole(folder != null, "null folder"); //NOI18N
         CndUtils.assertTrueInConsole(dir != null, "null directory"); //NOI18N
         if (folder == null || dir == null || !dir.isValid()) {
@@ -1814,7 +1815,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             srcRoot = folder.addFolder(srcRoot, true);
         }
         assert srcRoot.getKind() == folderKind;
-        addFilesImpl(srcRoot, dir, handle, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
+        addFilesImpl(srcRoot, dir, handle, interrupter, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
@@ -1826,23 +1827,22 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public Folder addFilesFromRefreshedDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
-        return addFilesFromDirImpl(folder, dir, null, attachListeners, setModified, fileFilter, useOldSchemeBehavior);
+        return addFilesFromDirImpl(folder, dir, null, null, attachListeners, setModified, fileFilter, useOldSchemeBehavior);
     }
 
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {
-        return addFilesFromDirImpl(folder, dir, null, attachListeners, setModified, fileFilter, false);
+        return addFilesFromDirImpl(folder, dir, null, null, attachListeners, setModified, fileFilter, false);
     }
     
-    private Folder addFilesFromDirImpl(Folder folder, FileObject dir, ProgressHandle handle,
-            boolean attachListeners, boolean setModified, @NullAllowed
-            FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
+    private Folder addFilesFromDirImpl(Folder folder, FileObject dir, ProgressHandle handle, Interrupter interrupter,
+            boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
         Folder subFolder = folder.findFolderByName(dir.getNameExt());
         if (subFolder == null) {
             subFolder = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
         }
         subFolder = folder.addFolder(subFolder, setModified);
-        addFilesImpl(subFolder, dir, null, filesAdded, true, setModified, fileFilter, useOldSchemeBehavior);
+        addFilesImpl(subFolder, dir, handle, interrupter, filesAdded, true, setModified, fileFilter, useOldSchemeBehavior);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
@@ -1852,7 +1852,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return subFolder;
     }
 
-    private void addFilesImpl(final Folder aFolder, final FileObject aDir, final ProgressHandle handle, 
+    private void addFilesImpl(final Folder aFolder, final FileObject aDir, final ProgressHandle handle, Interrupter interrupter,
             final ArrayList<NativeFileItem> filesAdded, final boolean notify, final boolean setModified,
             @NullAllowed final FileObjectFilter fileFilter, final boolean useOldSchemeBehavior) {
         List<String> absTestRootsList = getAbsoluteTestRoots();
@@ -1874,6 +1874,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 if (handle != null) {
                     handle.progress("("+filesAdded.size()+") "+dir.getPath()); //NOI18N
                 }
+                if (interrupter != null && interrupter.cancelled()) {
+                    return;
+                }
                 PerformanceLogger.PerformaceAction lsPerformanceEvent = PerformanceLogger.getLogger().start(Folder.LS_FOLDER_PERFORMANCE_EVENT, dir);
                 FileObject[] files = null;
                 try {
@@ -1888,6 +1891,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
                 final boolean hideBinaryFiles = !MakeOptions.getInstance().getViewBinaryFiles();
                 for (FileObject file : files) {
+                    if (interrupter != null && interrupter.cancelled()) {
+                        return;
+                    }
                     if (!VisibilityQuery.getDefault().isVisible(file)) {
                         continue;
                     }
