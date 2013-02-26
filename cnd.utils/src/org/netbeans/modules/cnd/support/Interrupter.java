@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.highlight;
-
-import org.netbeans.modules.cnd.support.Interrupter;
-import org.openide.util.Cancellable;
+package org.netbeans.modules.cnd.support;
 
 /**
  *
- * @author AlexanderSimon
+ * @author Alexander Simon
  */
-public class InterrupterImpl implements Interrupter, Cancellable {
+public interface Interrupter {
 
-    private boolean canceled = false;
-
-    @Override
-    public boolean cancelled() {
-        return canceled;
-    }
-
-    @Override
-    public boolean cancel() {
-        canceled = true;
-        return true;
-    }
+    boolean cancelled();
+    
 }
