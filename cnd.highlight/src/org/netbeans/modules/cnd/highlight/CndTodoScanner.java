@@ -39,44 +39,60 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phpunit.ui.customizer;
+package org.netbeans.modules.cnd.highlight;
 
-import javax.swing.JComponent;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.phpunit.PhpUnitTestingProvider;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
+import java.util.Set;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.tasklist.impl.FileScanningWorker;
+import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
+import org.netbeans.spi.tasklist.PushTaskScanner;
+import org.netbeans.spi.tasklist.PushTaskScanner.Callback;
+import org.netbeans.spi.tasklist.TaskScanningScope;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Project customizer for PhpUnit.
+ *
+ * @author Egor Ushakov <gorrus@netbeans.org>
  */
-public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
-
-    @NbBundle.Messages("PhpUnitCustomizer.name=PHPUnit")
+@ServiceProvider(service=PushTaskScanner.class, path="TaskList/Scanners")
+public class CndTodoScanner extends PushTaskScanner {
+    private final RequestProcessor RP = new RequestProcessor("CND todo scanner", 1); //NOI18N
+    private final TaskManagerImpl taskManager = TaskManagerImpl.getInstance();
+    private final FileScanningWorker worker = new FileScanningWorker(taskManager.getTasks(), taskManager.getFilter());
+    
+    public CndTodoScanner() {
+        super(
+            NbBundle.getMessage(CndTodoScanner.class, "CndTodoTasks"), //NOI18N
+            NbBundle.getMessage(CndTodoScanner.class, "CndTodoTasksDesc"), //NOI18N
+            null);  //NOI18N
+        RP.submit(worker);
+    }
+    
     @Override
-    public Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                PhpUnitTestingProvider.getInstance().getCustomizerCategoryIdent(),
-                Bundle.PhpUnitCustomizer_name(),
-                null,
-                (ProjectCustomizer.Category[]) null);
-    }
+    public void setScope(TaskScanningScope scope, Callback callback) {
+        if (scope == null || callback == null) {
+            return;
+        }
+        
+        final Set<FileObject> files = new WeakSet<FileObject>();
+        for (FileObject file : scope.getLookup().lookupAll(FileObject.class)) {
+            files.add(file);
+        }
 
-    @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        PhpModule phpModule = PhpModule.lookupPhpModule(context);
-        return new CustomizerPhpUnit(category, phpModule);
+        for (Project p : scope.getLookup().lookupAll(Project.class)) {
+            NativeProject prj = p.getLookup().lookup(NativeProject.class);
+            if (prj != null) {
+                for (NativeFileItem nativeFileItem : prj.getAllFiles()) {
+                    files.add(nativeFileItem.getFileObject());
+                }
+            }
+        }
+        worker.scan(files.iterator(), taskManager.getFilter());
     }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 350
-    )
-    public static PhpUnitCustomizer createCustomizer() {
-        return new PhpUnitCustomizer();
-    }
-
 }
