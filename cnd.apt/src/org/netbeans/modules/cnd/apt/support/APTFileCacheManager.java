@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.State;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Parameters;
@@ -153,8 +154,8 @@ public final class APTFileCacheManager {
      *          Boolean.FALSE menas to create concurrent entry and remember it in cache
      * @return
      */
-    public APTFileCacheEntry getEntry(CharSequence file, APTPreprocHandler preprocHandler, Boolean createExclusiveIfAbsent) {
-        APTIncludeHandler.State key = getKey(preprocHandler);
+    public APTFileCacheEntry getEntry(CharSequence file, APTPreprocHandler.State ppState, Boolean createExclusiveIfAbsent) {
+        APTIncludeHandler.State key = getKey(ppState);
         ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(file, Boolean.FALSE);
         APTFileCacheEntry out = cache.get(key);
         if (createExclusiveIfAbsent != null) {
@@ -179,10 +180,10 @@ public final class APTFileCacheManager {
         return out;
     }
 
-    public void setAPTCacheEntry(CharSequence absPath, APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
+    public void setAPTCacheEntry(CharSequence absPath, APTPreprocHandler.State ppState, APTFileCacheEntry entry, boolean cleanOthers) {
         if (entry != null) {
             ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(absPath, cleanOthers ? Boolean.TRUE : Boolean.FALSE);
-            APTIncludeHandler.State key = getKey(preprocHandler);
+            APTIncludeHandler.State key = getKey(ppState);
             cache.put(key, APTFileCacheEntry.toSerial(entry));
         }
     }
@@ -210,7 +211,7 @@ public final class APTFileCacheManager {
         invalidateAll();
     }
 
-    private static State getKey(APTPreprocHandler preprocHandler) {
-        return preprocHandler.getIncludeHandler().getState();
+    private static State getKey(APTPreprocHandler.State ppState) {
+        return APTHandlersSupportImpl.extractIncludeState(ppState);
     }
 }
