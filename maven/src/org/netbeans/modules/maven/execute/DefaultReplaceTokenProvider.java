@@ -86,6 +86,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     static final String CLASSNAME = "className";//NOI18N
     static final String CLASSNAME_EXT = "classNameWithExtension";//NOI18N
     static final String PACK_CLASSNAME = "packageClassName";//NOI18N
+    static final String ABSOLUTE_PATH = "absolutePathName";
     public static final String METHOD_NAME = "nb.single.run.methodName"; //NOI18N
     private static final String VARIABLE_PREFIX = "var."; //NOI18N
     // as defined in org.netbeans.modules.project.ant.VariablesModel
@@ -119,6 +120,9 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             replaceMap.put(MavenCommandLineExecutor.ENV_PREFIX + entry.getKey(), entry.getValue());
         }
         
+        if (fos.length > 0) {
+            replaceMap.put(ABSOLUTE_PATH, FileUtil.toFile(fos[0]).getAbsolutePath());
+        }
         
         //read global variables defined in the IDE
         Map<String, String> vars = readVariables();
