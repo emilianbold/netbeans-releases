@@ -59,7 +59,7 @@ public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryPro
     @Override
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
-                PhpUnitTestingProvider.IDENTIFIER,
+                PhpUnitTestingProvider.getInstance().getCustomizerCategoryName(),
                 Bundle.PhpUnitCustomizer_name(),
                 null,
                 (ProjectCustomizer.Category[]) null);
