@@ -41,9 +41,10 @@
  */
 package org.netbeans.modules.php.spi.testing.run;
 
-import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
+import org.openide.filesystems.FileObject;
 
 /**
  * Interface for a test session.
@@ -51,40 +52,39 @@ import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 public interface TestSession {
 
     /**
-     * Get all test suites of this test session.
-     * @return all test suites, can be empty list but never {@code null}
+     * Add new test suite to this test session.
+     * @param name name of the test suite
+     * @param location location of the test suite, can be {@code null}
+     * @return new test suite
+     * @see TestSuite#finish(long)
+     * @since 0.2
      */
-    List<TestSuite> getTestSuites();
+    TestSuite addTestSuite(@NonNull String name, @NullAllowed FileObject location);
 
     /**
-     * Get line handler to use for printing while running tests.
-     * @return line handler to use for printing while running tests, can be {@code null}
+     * Set line handler to use for printing while running tests.
+     * <p>
+     * This method should be called before first test suite is {@link #addTestSuite(String, FileObject) added}.
+     * @param outputLineHandler line handler to use for printing while running tests
+     * @since 0.2
      */
-    @CheckForNull
-    OutputLineHandler getOutputLineHandler();
+    void setOutputLineHandler(@NonNull OutputLineHandler outputLineHandler);
 
     /**
-     * Get message that is print before tests start.
-     * @return message that is print before tests start, can be {@code null}
+     * Print message.
+     * @param message message that is print, can be empty but never {@code null}
+     * @param error {@code true} if the given message is an error message
+     * @since 0.2
      */
-    @CheckForNull
-    String getInitMessage();
+    void printMessage(@NonNull String message, boolean error);
 
     /**
-     * Get message that is print after tests finish.
-     * @return message that is print after tests finish, can be {@code null}
-     */
-    @CheckForNull
-    String getFinishMessage();
-
-    /**
-     * Get code coverage data if {@link org.netbeans.modules.php.spi.testing.PhpTestingProvider#isCoverageSupported(org.netbeans.modules.php.api.phpmodule.PhpModule) supported}
-     * by this testing provider, {@code null} otherwise.
-     * @return code coverage data if {@link org.netbeans.modules.php.spi.testing.PhpTestingProvider#isCoverageSupported(org.netbeans.modules.php.api.phpmodule.PhpModule) supported}
-     *         by this testing provider, {@code null} otherwise
+     * Set code coverage data, compulsory to call if
+     * {@link org.netbeans.modules.php.spi.testing.PhpTestingProvider#isCoverageSupported(org.netbeans.modules.php.api.phpmodule.PhpModule) supported} by this testing provider.
+     * @param coverage code coverage data, can be {@code null} if any error occured
      * @see org.netbeans.modules.php.spi.testing.PhpTestingProvider#isCoverageSupported(org.netbeans.modules.php.api.phpmodule.PhpModule)
+     * @since 0.2
      */
-    @CheckForNull
-    Coverage getCoverage();
+    void setCoverage(@NullAllowed Coverage coverage);
 
 }
