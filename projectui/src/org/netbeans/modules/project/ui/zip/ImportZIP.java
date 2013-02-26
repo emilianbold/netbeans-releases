@@ -150,6 +150,9 @@ public class ImportZIP extends JPanel {
                         return;
                     }
                     String n = entry.getName();
+                    if ("Thumbs.db".equals(n)) {
+                        continue; //#226620
+                    }
                     File f = new File(root, n);
                     if (n.endsWith("/")) {
                         if (!f.isDirectory()) {
