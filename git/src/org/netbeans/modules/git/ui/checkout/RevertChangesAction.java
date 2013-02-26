@@ -74,10 +74,15 @@ import org.openide.util.NbBundle;
 public class RevertChangesAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(RevertChangesAction.class.getName());
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/get_clean.png"; //NOI18N
+    
+    public RevertChangesAction () {
+        super(ICON_RESOURCE);
+    }
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/git/resources/icons/get_clean.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     @Override
