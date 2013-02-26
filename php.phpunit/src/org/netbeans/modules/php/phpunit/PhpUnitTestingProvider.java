@@ -89,7 +89,7 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
     }
 
     @Override
-    public String getCustomizerCategoryName() {
+    public String getCustomizerCategoryIdent() {
         return IDENTIFIER;
     }
 

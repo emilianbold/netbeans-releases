@@ -165,7 +165,7 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
         }
 
         @Override
-        public String getCustomizerCategoryName() {
+        public String getCustomizerCategoryIdent() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

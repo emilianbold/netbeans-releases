@@ -93,12 +93,13 @@ public interface PhpTestingProvider {
     boolean isInPhpModule(@NonNull PhpModule phpModule);
 
     /**
-     * If this provider has a customizer, returns its category name (non-localized). If not,
+     * If this provider has a customizer, returns its category identifier (non-localized). If not,
      * returns {@code null}.
-     * @return the non-localized customizer category name or {@code null}
+     * @return the non-localized customizer category identifier or {@code null}
+     * @since 0.2
      */
     @CheckForNull
-    String getCustomizerCategoryName();
+    String getCustomizerCategoryIdent();
 
     /**
      * Checks whether the given file is a test file.
