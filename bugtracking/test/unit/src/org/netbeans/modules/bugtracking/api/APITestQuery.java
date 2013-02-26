@@ -53,9 +53,18 @@ import org.netbeans.modules.bugtracking.spi.QueryController;
  */
 public class APITestQuery extends TestQuery {
 
+    public static final String FIRST_QUERY_NAME = "First Query";
+    public static final String SECOND_QUERY_NAME = "Second Query";
+    
+    private String name;
+
+    public APITestQuery(String name) {
+        this.name = name;
+    }
+    
     @Override
     public String getDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return name;
     }
 
     @Override
