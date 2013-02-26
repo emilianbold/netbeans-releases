@@ -90,11 +90,11 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="SpringFramework">
         <folder name="Templates">
-            <file name="applicationContext-3.0.xml" url="templates/applicationContext30.template">
+            <file name="applicationContext-3.1.xml" url="templates/applicationContext31.template">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
             </file>
-            <file name="dispatcher-servlet-3.0.xml" url="templates/dispatcher-servlet30.template">
+            <file name="dispatcher-servlet-3.1.xml" url="templates/dispatcher-servlet31.template">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
             </file>
