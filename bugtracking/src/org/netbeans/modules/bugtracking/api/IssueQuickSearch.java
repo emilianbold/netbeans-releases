@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking;
+package org.netbeans.modules.bugtracking.api;
 
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class APIAccessor {
+public final class IssueQuickSearch {
+    private final QuickSearchComboBar bar;
     
-    public static APIAccessor IMPL;
+    public IssueQuickSearch(JComponent caller) {
+        bar = new QuickSearchComboBar(caller);
+    }
     
-    static {
-        // invokes static initializer of Repository.class
-        // that will assign value to the IMPL field above
-        Class c = Repository.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }  
+    public void setRepository(Repository repository) {
+        bar.setRepository(repository);
+    }
+    
+    public JComponent getComponent() {
+        return bar;
+    }
+    
+    public Issue getIssue() {
+        return bar.getIssue();
+    }
 
-    /**
-     * WARNING! To be called only from RepositoryImpl
-     * 
-     * @param impl
-     * @return 
-     */
-    public abstract Repository createRepository(RepositoryImpl impl);
-    
-    public abstract Query createQuery(QueryImpl impl);
-    
-    public abstract Issue createIssue(IssueImpl impl);
-    
-    public abstract RepositoryImpl getImpl(Repository repository);
-    
-    public abstract QueryImpl getImpl(Query query);
-    
-    public abstract IssueImpl getImpl(Issue issue);
+    public void addChangeListener(ChangeListener listener) {
+        bar.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        bar.removeChangeListener(listener);
+    }
+
+    public void enableFields(boolean b) {
+        bar.enableFields(b);
+    }
 }
