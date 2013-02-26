@@ -93,9 +93,9 @@ public interface PhpTestingProvider {
     boolean isInPhpModule(@NonNull PhpModule phpModule);
 
     /**
-     * If this provider has a customizer, returns its category name. If not,
+     * If this provider has a customizer, returns its category name (non-localized). If not,
      * returns {@code null}.
-     * @return the customizer category name or {@code null}
+     * @return the non-localized customizer category name or {@code null}
      */
     @CheckForNull
     String getCustomizerCategoryName();
