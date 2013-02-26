@@ -48,39 +48,73 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
+import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.ui.diff.ExportBundleAction;
-import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
-import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
+import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.awt.Actions;
+import org.openide.util.Lookup;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
 /**
- * Container menu for export actions.
+ * Container menu for ignore/exclude actions.
  *
  * @author Ondra
  */
-public final class ExportMenu extends DynamicMenu {
+@NbBundle.Messages({
+    "CTL_MenuItem_IgnoreMenu=&Ignore",
+    "CTL_MenuItem_IgnoreMenu.popupName=Ignore"
+})
+public final class IgnoreMenu extends DynamicMenu implements Presenter.Popup {
 
-    public ExportMenu () {
-        super(NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu"));
+    private final Lookup lkp;
+    private final VCSContext ctx;
+
+    public IgnoreMenu (Lookup lkp, VCSContext ctx) {
+        super(Bundle.CTL_MenuItem_IgnoreMenu());
+        this.lkp = lkp;
+        this.ctx = ctx;
     }
-
+    
     @Override
     protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
-        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu")); // NOI18N
-        
-        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffAction.class), NbBundle.getMessage(ExportDiffAction.class, "CTL_MenuItem_ExportDiff"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        JMenuItem item;
+        if (lkp == null) {
+            org.openide.awt.Mnemonics.setLocalizedText(menu, Bundle.CTL_MenuItem_IgnoreMenu());
+            item = new JMenuItem();
+            Action action = SystemAction.get(IgnoreAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(ExcludeFromCommitAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+        } else {
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Ignore"), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffChangesAction.class), NbBundle.getMessage(ExportDiffChangesAction.class, "CTL_MenuItem_ExportDiffChanges"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        
-        item = menu.add(new SystemActionBridge(SystemAction.get(ExportBundleAction.class), NbBundle.getMessage(ExportBundleAction.class, "CTL_MenuItem_ExportBundle"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        
+            ExcludeFromCommitAction exclude = SystemAction.get(ExcludeFromCommitAction.class);
+            item = menu.add(SystemActionBridge.createAction(exclude, NbBundle.getMessage(MercurialAnnotator.class,
+                    exclude.getActionStatus(ctx) == ExcludeFromCommitAction.INCLUDING
+                            ? "CTL_PopupMenuItem_IncludeInCommit" //NOI18N
+                            : "CTL_PopupMenuItem_ExcludeFromCommit", ctx), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        }        
+        return menu;
+    }
+
+    @Override
+    public JMenuItem getPopupPresenter() {
+        JMenu menu = createMenu();
+        menu.setText(Bundle.CTL_MenuItem_IgnoreMenu_popupName());
+        enableMenu(menu);
         return menu;
     }
 }

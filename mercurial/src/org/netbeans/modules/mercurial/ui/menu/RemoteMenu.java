@@ -49,102 +49,145 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
-import org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction;
-import org.netbeans.modules.mercurial.ui.queues.QDiffAction;
-import org.netbeans.modules.mercurial.ui.queues.QFinishPatchesAction;
-import org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction;
-import org.netbeans.modules.mercurial.ui.queues.QPopAllAction;
-import org.netbeans.modules.mercurial.ui.queues.QPushAllPatchesAction;
-import org.netbeans.modules.mercurial.ui.queues.QRefreshPatchAction;
+import org.netbeans.modules.mercurial.ui.clone.CloneAction;
+import org.netbeans.modules.mercurial.ui.log.IncomingAction;
+import org.netbeans.modules.mercurial.ui.log.OutAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
+import org.netbeans.modules.mercurial.ui.pull.FetchAction;
+import org.netbeans.modules.mercurial.ui.pull.PullAction;
+import org.netbeans.modules.mercurial.ui.pull.PullCurrentBranchAction;
+import org.netbeans.modules.mercurial.ui.pull.PullOtherAction;
+import org.netbeans.modules.mercurial.ui.push.PushAction;
+import org.netbeans.modules.mercurial.ui.push.PushCurrentBranchAction;
+import org.netbeans.modules.mercurial.ui.push.PushOtherAction;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 /**
- * Container menu for mqueues actions.
+ * Container menu for remote repository actions.
  *
- * @author Ondra Vrabec
+ * @author Maros Sandor
  */
 @NbBundle.Messages({
-    "CTL_MenuItem_QueuesMenu=&Queues",
-    "CTL_MenuItem_QueuesMenu.popupName=Queues"
+    "CTL_MenuItem_RemoteMenu=&Remote",
+    "CTL_MenuItem_RemoteMenu.popupName=Remote"
 })
-public class QueuesMenu extends DynamicMenu implements Presenter.Popup {
+public class RemoteMenu extends DynamicMenu implements Presenter.Popup {
     private final Lookup lkp;
 
-    public QueuesMenu (Lookup lkp) {
-        super(Bundle.CTL_MenuItem_QueuesMenu());
+    public RemoteMenu (Lookup lkp) {
+        super(Bundle.CTL_MenuItem_RemoteMenu());
         this.lkp = lkp;
     }
 
     @Override
+    @NbBundle.Messages({
+        "CTL_PopupMenuItem_Clone=Clone",
+        "CTL_PopupMenuItem_Fetch=Fetch",
+        "CTL_PopupMenuItem_PushOther=Push...",
+        "CTL_PopupMenuItem_Push=Push to default",
+        "CTL_PopupMenuItem_PushBranch=Push current branch",
+        "CTL_PopupMenuItem_PullOther=Pull...",
+        "CTL_PopupMenuItem_Pull=Pull from default",
+        "CTL_PopupMenuItem_PullBranch=Pull to current branch",
+    })
     protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
         JMenuItem item;
         if (lkp == null) {
-            org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(QueuesMenu.class, "CTL_MenuItem_QueuesMenu")); // NOI18N
-            item = new JMenuItem();
-            Action action = SystemAction.get(QDiffAction.class);
-            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
-            Actions.connect(item, action, false);
-            menu.add(item);
+            org.openide.awt.Mnemonics.setLocalizedText(menu, Bundle.CTL_MenuItem_RemoteMenu());
             
+            Action action = Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance"); //NOI18N
+            if (action != null) {
+                item = new JMenuItem();
+                Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+                Actions.connect(item, action, false);
+                menu.add(item);
+            }
             item = new JMenuItem();
-            action = SystemAction.get(QGoToPatchAction.class);
-            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
-            Actions.connect(item, action, false);
-            menu.add(item);
-            
-            item = new JMenuItem();
-            action = SystemAction.get(QPopAllAction.class);
-            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
-            Actions.connect(item, action, false);
-            menu.add(item);
-            
-            item = new JMenuItem();
-            action = SystemAction.get(QPushAllPatchesAction.class);
+            action = SystemAction.get(CloneAction.class);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
             
             menu.add(new JSeparator());
-            
             item = new JMenuItem();
-            action = SystemAction.get(QCreatePatchAction.class);
+            action = SystemAction.get(FetchAction.class);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
             
+            menu.add(new JSeparator());
             item = new JMenuItem();
-            action = SystemAction.get(QRefreshPatchAction.class);
+            action = SystemAction.get(PullOtherAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            item = new JMenuItem();
+            action = SystemAction.get(PullAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            item = new JMenuItem();
+            action = SystemAction.get(PullCurrentBranchAction.class);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
             
+            menu.add(new JSeparator());
             item = new JMenuItem();
-            action = SystemAction.get(QFinishPatchesAction.class);
+            action = SystemAction.get(PushOtherAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            item = new JMenuItem();
+            action = SystemAction.get(PushAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            item = new JMenuItem();
+            action = SystemAction.get(PushCurrentBranchAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            
+            menu.add(new JSeparator());
+            item = new JMenuItem();
+            action = SystemAction.get(IncomingAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            item = new JMenuItem();
+            action = SystemAction.get(OutAction.class);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
         } else {
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QDiffAction.class), NbBundle.getMessage(QDiffAction.class, "CTL_PopupMenuItem_QDiff"), lkp)); //NOI18N
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(CloneAction.class), Bundle.CTL_PopupMenuItem_Clone(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QGoToPatchAction.class), NbBundle.getMessage(QGoToPatchAction.class, "CTL_PopupMenuItem_QGoToPatch"), lkp)); //NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QPopAllAction.class), NbBundle.getMessage(QPopAllAction.class, "CTL_PopupMenuItem_QPopAllPatches"), lkp)); //NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QPushAllPatchesAction.class), NbBundle.getMessage(QPushAllPatchesAction.class, "CTL_PopupMenuItem_QPushAllPatches"), lkp)); //NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            
             menu.add(new JSeparator());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QCreatePatchAction.class), NbBundle.getMessage(QCreatePatchAction.class, "CTL_PopupMenuItem_QCreatePatch"), lkp)); //NOI18N
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(FetchAction.class), Bundle.CTL_PopupMenuItem_Fetch(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QRefreshPatchAction.class), NbBundle.getMessage(QRefreshPatchAction.class, "CTL_PopupMenuItem_QRefreshPatch"), lkp)); //NOI18N
+            
+            menu.add(new JSeparator());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(PullOtherAction.class), Bundle.CTL_PopupMenuItem_PullOther(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QFinishPatchesAction.class), NbBundle.getMessage(QFinishPatchesAction.class, "CTL_PopupMenuItem_QFinishPatches"), lkp)); //NOI18N
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(PullAction.class), Bundle.CTL_PopupMenuItem_Pull(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(PullCurrentBranchAction.class), Bundle.CTL_PopupMenuItem_PullBranch(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            
+            menu.add(new JSeparator());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(PushOtherAction.class), Bundle.CTL_PopupMenuItem_PushOther(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(PushAction.class), Bundle.CTL_PopupMenuItem_Push(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(PushCurrentBranchAction.class), Bundle.CTL_PopupMenuItem_PushBranch(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;
@@ -153,7 +196,7 @@ public class QueuesMenu extends DynamicMenu implements Presenter.Popup {
     @Override
     public JMenuItem getPopupPresenter() {
         JMenu menu = createMenu();
-        menu.setText(Bundle.CTL_MenuItem_QueuesMenu_popupName());
+        menu.setText(Bundle.CTL_MenuItem_RemoteMenu_popupName());
         enableMenu(menu);
         return menu;
     }

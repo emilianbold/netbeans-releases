@@ -111,7 +111,12 @@ public class CommitAction extends ContextAction {
 
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage"; // NOI18N
     static final String KEY_CANCELED_MESSAGE = "commit"; //NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/commit.png"; //NOI18N
 
+    public CommitAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
@@ -129,7 +134,7 @@ public class CommitAction extends ContextAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/mercurial/resources/icons/commit.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     @Override
