@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ui.search;
+package org.netbeans.modules.bugtracking.ui.issue;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -74,7 +74,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Jan Stola
  */
-public class FindSupport {
+class FindSupport {
     private static final String FIND_NEXT_ACTION = "find-next"; // NOI18N
     private static final String FIND_PREVIOUS_ACTION = "find-previous"; // NOI18N
     private TopComponent tc;

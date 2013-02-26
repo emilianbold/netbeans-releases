@@ -52,6 +52,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.ui.checkout.SwitchBranchAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -59,6 +60,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -76,29 +78,36 @@ public class CreateBranchAction extends SingleRepositoryAction {
         createBranch(repository, info.getActiveBranch().getName().equals(GitBranch.NO_BRANCH) ? GitUtils.HEAD : info.getActiveBranch().getName());
     }
 
+    @NbBundle.Messages("LBL_CreateBranchAction.progressName=Create Branch")
     public void createBranch (final File repository, String preselectedRevision) {
         final CreateBranch createBranch = new CreateBranch(repository, preselectedRevision);
         if (createBranch.show()) {
-            GitProgressSupport supp = new GitProgressSupport() {
-                @Override
-                protected void perform () {
-                    try {
-                        GitClient client = getClient();
-                        String revision = createBranch.getRevision();
-                        LOG.log(Level.FINE, "Creating a branch: {0}", revision); //NOI18N
-                        GitBranch branch = client.createBranch(createBranch.getBranchName(), createBranch.getRevision(), getProgressMonitor());
-                        log(revision, branch);
-                    } catch (GitException ex) {
-                        GitClientExceptionHandler.notifyException(ex, true);
+            if (createBranch.isCheckoutSelected()) {
+                // create and switch to branch
+                SystemAction.get(SwitchBranchAction.class).checkoutRevision(repository, createBranch.getRevision(), 
+                        createBranch.getBranchName(), Bundle.LBL_CreateBranchAction_progressName());
+            } else {
+                GitProgressSupport supp = new GitProgressSupport() {
+                    @Override
+                    protected void perform () {
+                        try {
+                            GitClient client = getClient();
+                            String revision = createBranch.getRevision();
+                            LOG.log(Level.FINE, "Creating a branch: {0}", revision); //NOI18N
+                            GitBranch branch = client.createBranch(createBranch.getBranchName(), createBranch.getRevision(), getProgressMonitor());
+                            log(revision, branch);
+                        } catch (GitException ex) {
+                            GitClientExceptionHandler.notifyException(ex, true);
+                        }
                     }
-                }
 
-                private void log (String revision, GitBranch branch) {
-                    OutputLogger logger = getLogger();
-                    logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CreateBranchAction.branchCreated", new Object[] { branch.getName(), revision, branch.getId() })); //NOI18N
-                }
-            };
-            supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction.progressName")); //NOI18N
+                    private void log (String revision, GitBranch branch) {
+                        OutputLogger logger = getLogger();
+                        logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CreateBranchAction.branchCreated", new Object[] { branch.getName(), revision, branch.getId() })); //NOI18N
+                    }
+                };
+                supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_CreateBranchAction_progressName());
+            }
         }
     }
 

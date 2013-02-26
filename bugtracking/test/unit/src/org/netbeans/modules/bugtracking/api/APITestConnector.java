@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking;
+package org.netbeans.modules.bugtracking.api;
 
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-public abstract class APIAccessor {
-    
-    public static APIAccessor IMPL;
-    
-    static {
-        // invokes static initializer of Repository.class
-        // that will assign value to the IMPL field above
-        Class c = Repository.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }  
+@BugtrackingConnector.Registration (id=APITestConnector.ID_CONNECTOR,displayName=APITestConnector.ID_CONNECTOR,tooltip=APITestConnector.ID_CONNECTOR)    
+public class APITestConnector extends BugtrackingConnector {
 
-    /**
-     * WARNING! To be called only from RepositoryImpl
-     * 
-     * @param impl
-     * @return 
-     */
-    public abstract Repository createRepository(RepositoryImpl impl);
+    public static final String ID_CONNECTOR = "RepositoryTestConector";
     
-    public abstract Query createQuery(QueryImpl impl);
-    
-    public abstract Issue createIssue(IssueImpl impl);
-    
-    public abstract RepositoryImpl getImpl(Repository repository);
-    
-    public abstract QueryImpl getImpl(Query query);
-    
-    public abstract IssueImpl getImpl(Issue issue);
-}
+    public APITestConnector() { }
+
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
+    }
+
+    @Override
+    public Repository createRepository(RepositoryInfo info) {
+        return TestKit.getRepository(new APITestRepository(info)).getRepository();
+    }
+
+    @Override
+    public Repository createRepository() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+}        

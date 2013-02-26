@@ -75,6 +75,19 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="OptionsDisplayer.openModal">
+        <api name="OptionsAPI"/>
+        <summary>API to control whether the options window should be modal or not when opened</summary>
+        <version major="1" minor="33"/>
+        <date day="26" month="2" year="2013"/>
+        <author login="theofanis"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added API to control whether the options window should be modal or not when opened.
+        </description>
+        <class package="org.netbeans.api.options" name="OptionsDisplayer"/>
+        <issue number="207120"/>
+    </change>
     <change id="OptionsPanelController.handleSuccessfulSearch">
         <api name="OptionsAPI"/>
         <summary>API to handle successfull search in some panel in options window</summary>

@@ -846,6 +846,9 @@ public final class TextDetail implements Selectable {
         private static String getFullDesc(TextDetail det) {
             String filename = det.getDataObject().getPrimaryFile().getNameExt();
             String lineText = det.getLineText();
+            if (lineText != null && lineText.length() > 16384) { // causes OOME
+                lineText = lineText.substring(0, 16384) + ELLIPSIS;
+            }
             int line = det.getLine();
             int col = det.getColumn();
 
