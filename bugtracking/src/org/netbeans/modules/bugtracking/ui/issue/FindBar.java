@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.ui.search;
+package org.netbeans.modules.bugtracking.ui.issue;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
