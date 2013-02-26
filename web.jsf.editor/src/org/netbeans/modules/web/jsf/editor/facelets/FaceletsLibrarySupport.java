@@ -61,8 +61,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager;
 import org.netbeans.modules.web.jsf.editor.index.IndexedFile;
@@ -371,6 +373,17 @@ public class FaceletsLibrarySupport {
         Map<String, AbstractFaceletsLibrary> libsMap = new HashMap<String, AbstractFaceletsLibrary>();
         for (AbstractFaceletsLibrary lib : processor.compiler.libraries) {
             libsMap.put(lib.getNamespace(), lib);
+        }
+
+        //4. in case of JSF2.2 include pseudo-libraries (http://java.sun.com/jsf/passthrough, http://java.sun.com/jsf)
+        // right now, we have no idea whether such libraries will be included into the JSF bundle or not
+        List<URL> cp = new ArrayList<URL>();
+        for (ClassPath.Entry cpEntry : jsfSupport.getClassPath().entries()) {
+            cp.add(cpEntry.getURL());
+        }
+        JSFVersion jsfVersion = JSFVersion.forClasspath(cp);
+        if (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+            libsMap.putAll(DefaultFaceletLibraries.getJsf22FaceletPseudoLibraries(this));
         }
 
         return libsMap;

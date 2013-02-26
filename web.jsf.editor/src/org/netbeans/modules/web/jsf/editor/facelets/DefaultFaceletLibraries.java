@@ -42,19 +42,26 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary.NamedComponent;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.LibraryInfo;
+import org.netbeans.modules.web.jsfapi.api.LibraryType;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
 /**
  * Access to facelet library descriptors in bundled web.jsf20 library's javax.faces.jar
@@ -68,6 +75,7 @@ public class DefaultFaceletLibraries {
     public static DefaultFaceletLibraries INSTANCE;
     private Collection<FileObject> libraryDescriptorsFiles;
     private Map<String, FaceletsLibraryDescriptor> librariesDescriptors;
+    private static Map<String, AbstractFaceletsLibrary> jsf22FaceletPseudoLibraries;
 
     public static synchronized DefaultFaceletLibraries getInstance() {
         if (INSTANCE == null) {
@@ -142,5 +150,77 @@ public class DefaultFaceletLibraries {
         }
         return files;
     }
-    
+
+    protected synchronized static Map<String, AbstractFaceletsLibrary> getJsf22FaceletPseudoLibraries(FaceletsLibrarySupport support) {
+        if (jsf22FaceletPseudoLibraries == null) {
+            jsf22FaceletPseudoLibraries = new HashMap<String, AbstractFaceletsLibrary>(2);
+            jsf22FaceletPseudoLibraries.put("http://java.sun.com/jsf", new JsfFaceletPseudoLibrary(support, "http://java.sun.com/jsf", "jsf"));
+            jsf22FaceletPseudoLibraries.put("http://java.sun.com/jsf/passthrough", new JsfFaceletPseudoLibrary(support, "http://java.sun.com/jsf/passthrough", "p"));
+        }
+        return jsf22FaceletPseudoLibraries;
+    }
+
+    private static class JsfFaceletPseudoLibrary extends AbstractFaceletsLibrary {
+
+        private final String namespace;
+        private final String prefix;
+
+        public JsfFaceletPseudoLibrary(FaceletsLibrarySupport support, String namespace, String prefix) {
+            super(support);
+            this.namespace = namespace;
+            this.prefix = prefix;
+        }
+
+        @Override
+        public Map<String, ? extends NamedComponent> getComponentsMap() {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        public URL getLibraryDescriptorSource() {
+            try {
+                return new URL(getNamespace());
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+
+        @Override
+        public LibraryDescriptor getLibraryDescriptor() {
+            return new LibraryDescriptor() {
+
+                @Override
+                public String getPrefix() {
+                    return prefix;
+                }
+
+                @Override
+                public String getNamespace() {
+                    return namespace;
+                }
+
+                @Override
+                public Map<String, Tag> getTags() {
+                    return Collections.emptyMap();
+                }
+            };
+        }
+
+        @Override
+        public String getDefaultNamespace() {
+            return null;
+        }
+
+        @Override
+        public LibraryType getType() {
+            return LibraryType.CLASS;
+        }
+
+        @Override
+        public String getNamespace() {
+            return namespace;
+        }
+
+    }
 }
