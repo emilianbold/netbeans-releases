@@ -84,8 +84,13 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
         Map<String, String> proxyProperties = getGconfMap(GCONF_NODE_PROXY);
-        
+                        
         String proxyMode = proxyProperties.get(GCONF_KEY_MODE);
+        if (proxyMode == null) {
+            LOGGER.log(Level.SEVERE, "GConf proxy mode is null.");
+            return new NetworkProxySettings();
+        }        
+        
         if (proxyMode.equals(GCONF_VALUE_NONE)) {
             return new NetworkProxySettings();
         }
@@ -135,7 +140,7 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
             BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String line = reader.readLine();
             while (line != null) {
-                String key = getKey(line);
+                String key = getKey(line).toLowerCase();
                 String value = getValue(line);                
                 if (key != null && !key.isEmpty()) {
                     map.put(key, value);

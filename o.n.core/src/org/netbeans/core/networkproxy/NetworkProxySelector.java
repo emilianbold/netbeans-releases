@@ -43,7 +43,9 @@ package org.netbeans.core.networkproxy;
 
 import java.util.prefs.Preferences;
 import org.netbeans.core.ProxySettings;
+import org.netbeans.core.networkproxy.fallback.FallbackNetworkProxy;
 import org.netbeans.core.networkproxy.gnome.GnomeNetworkProxy;
+import org.netbeans.core.networkproxy.kde.KdeNetworkProxy;
 import org.netbeans.core.networkproxy.windows.WindowsNetworkProxy;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -57,7 +59,13 @@ public class NetworkProxySelector {
     private static NetworkProxyResolver networkProxyResolver = getNetworkProxyResolver();
     
     private final static String COMMA = ","; //NOI18N
-    
+    private final static String GNOME = "gnome"; //NOI18N
+    private final static String KDE = "kde"; //NOI18N
+    private final static String RUNNING_ENV_SYS_PROPERTY = "netbeans.running.environment"; //NOI18N
+
+    /**
+     * 
+     */
     public static void reloadNetworkProxy() {                
         NetworkProxySettings networkProxySettings = networkProxyResolver.getNetworkProxySettings();
                 
@@ -114,13 +122,26 @@ public class NetworkProxySelector {
         if (networkProxyResolver == null) {        
             if (Utilities.isWindows()) {
                 return new WindowsNetworkProxy();
-            } else if (Utilities.isMac()) {
-                return null;
-            } else if (Utilities.isUnix()){
-                return new GnomeNetworkProxy();
-            } else {
+            } 
+            
+            if (Utilities.isMac()) {
                 return null;
             }
+            
+            if (Utilities.isUnix()){
+                String env = System.getProperty(RUNNING_ENV_SYS_PROPERTY);
+                if (env != null) {
+                    if (env.toLowerCase().equals(GNOME)) {
+                        return new GnomeNetworkProxy();
+                    }
+                    
+                    if (env.toLowerCase().equals(KDE)) {
+                        return new KdeNetworkProxy();
+                    }
+                }
+            }
+            
+            return new FallbackNetworkProxy();
         } else {
             return networkProxyResolver;
         }        

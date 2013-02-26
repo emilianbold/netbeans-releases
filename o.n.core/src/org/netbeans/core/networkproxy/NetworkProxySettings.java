@@ -80,6 +80,21 @@ public class NetworkProxySettings {
         this.socksProxyPort = null;
         this.noProxyHosts = new String[0];
     }
+    
+    public NetworkProxySettings(String httpProxy, String[] noProxyHosts) {
+        String httpProxyHostChecked = getHost(httpProxy);
+        String httpProxyPortChecked = getPort(httpProxy);
+        
+        this.proxyMode = ProxyMode.MANUAL;
+        this.pacFileUrl = null;       
+        this.httpProxyHost = httpProxyHostChecked;
+        this.httpProxyPort = httpProxyPortChecked;
+        this.httpsProxyHost = httpProxyHostChecked;
+        this.httpsProxyPort = httpProxyPortChecked;
+        this.socksProxyHost = httpProxyHostChecked;
+        this.socksProxyPort = httpProxyPortChecked;
+        this.noProxyHosts = checkArray(noProxyHosts);
+    }
 
     public NetworkProxySettings(String httpProxy, String httpsProxy, String socksProxy, String[] noProxyHosts) {
         this.proxyMode = ProxyMode.MANUAL;
@@ -94,10 +109,11 @@ public class NetworkProxySettings {
     }
 
     public NetworkProxySettings(String httpProxyHost, String httpProxyPort, String[] noProxyHosts) {
-        this.proxyMode = ProxyMode.MANUAL;
-        this.pacFileUrl = null;
         String httpProxyHostChecked = checkNull(httpProxyHost);
         String httpProxyPortChecked = checkNumber(httpProxyPort);
+        
+        this.proxyMode = ProxyMode.MANUAL;
+        this.pacFileUrl = null;
         this.httpProxyHost = httpProxyHostChecked;
         this.httpProxyPort = httpProxyPortChecked;
         this.httpsProxyHost = httpProxyHostChecked;
