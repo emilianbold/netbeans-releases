@@ -93,12 +93,13 @@ public interface PhpTestingProvider {
     boolean isInPhpModule(@NonNull PhpModule phpModule);
 
     /**
-     * If this provider has a customizer, returns its category name. If not,
+     * If this provider has a customizer, returns its category identifier (non-localized). If not,
      * returns {@code null}.
-     * @return the customizer category name or {@code null}
+     * @return the non-localized customizer category identifier or {@code null}
+     * @since 0.2
      */
     @CheckForNull
-    String getCustomizerCategoryName();
+    String getCustomizerCategoryIdent();
 
     /**
      * Checks whether the given file is a test file.
@@ -109,18 +110,19 @@ public interface PhpTestingProvider {
     boolean isTestFile(@NonNull PhpModule phpModule, FileObject fileObj);
 
     /**
-     * Run tests for the given {@link TestRunInfo info} and return test session or {@code null} if the session cannot be
-     * obtained, e.g. if there is some error in the setup (in such case, open the setup panel and return {@code null}
-     * rather than throwin an {@link TestRunException exception}).
+     * Run tests, <b>synchronously</b>, for the given {@link TestRunInfo info} and use
+     * the given {@link TestSession test session} for providing results.
+     * <p>
+     * <b>This method must be blocking, in other words, it should not return before test run finish.</b>
      * <p>
      * This method is always called in a background thread.
      * @param phpModule the PHP module; never {@code null}
      * @param runInfo info about the test run; never {@code null}
-     * @return test session or {@code null} if the session cannot be obtained
+     * @param testSession  test session to be updated with the test results
      * @throws TestRunException if any error occurs during the test run, e.g. some resource is not available
+     * @since 0.2
      */
-    @CheckForNull
-    TestSession runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo) throws TestRunException;
+    void runTests(@NonNull PhpModule phpModule, @NonNull TestRunInfo runInfo, @NonNull TestSession testSession) throws TestRunException;
 
     /**
      * Gets test locator for this provider.

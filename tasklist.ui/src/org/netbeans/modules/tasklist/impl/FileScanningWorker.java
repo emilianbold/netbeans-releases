@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
  *
  * @author S. Aubrecht
  */
-class FileScanningWorker implements Runnable {
+public class FileScanningWorker implements Runnable {
     
     private TaskList taskList;
     private boolean isCancel = false;
@@ -168,43 +168,48 @@ class FileScanningWorker implements Runnable {
     public void run() {
         synchronized( SLEEP_LOCK ) {
             while( true ) {
+                try {
 
-                if( killed ) {
-                    return;
-                }
-                
-                Set<FileTaskScanner> scannersToNotify = null;
-                ScanItem item = new ScanItem();
-                ScanMonitor monitor = ScanMonitor.getDefault();
-                while( true ) {
-                    monitor.waitEnabled();
-                    synchronized( SCAN_LOCK ) {
-                        if( getNext( item ) ) {
-                            if( !scan( item ) ) {
+                    if( killed ) {
+                        return;
+                    }
+
+                    Set<FileTaskScanner> scannersToNotify = null;
+                    ScanItem item = new ScanItem();
+                    ScanMonitor monitor = ScanMonitor.getDefault();
+                    while( true ) {
+                        monitor.waitEnabled();
+                        synchronized( SCAN_LOCK ) {
+                            if( getNext( item ) ) {
+                                if( !scan( item ) ) {
+                                    isCancel = true;
+                                }
+                            } else {
                                 isCancel = true;
                             }
-                        } else {
-                            isCancel = true;
+                            if( isCancel ) {
+                                scannersToNotify = new HashSet<FileTaskScanner>( preparedScanners );
+                            }
                         }
+
                         if( isCancel ) {
-                            scannersToNotify = new HashSet<FileTaskScanner>( preparedScanners );
+                            break;
                         }
                     }
 
-                    if( isCancel ) {
-                        break;
-                    }
-                }
+                    cleanUp( scannersToNotify );
 
-                cleanUp( scannersToNotify );
-                
-                try {
-                    SLEEP_LOCK.wait();
-                } catch( InterruptedException e ) {
-                    //ignore
+                    try {
+                        SLEEP_LOCK.wait();
+                    } catch( InterruptedException e ) {
+                        //ignore
+                    }
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
+        
     }
     
     private void wakeup() {
@@ -253,7 +258,9 @@ class FileScanningWorker implements Runnable {
                     //don't let uncaught exceptions break the thread synchronization
                     Exceptions.printStackTrace( e );
                 }
+                if (newTasks != null) {
                     scannedTasks.addAll( newTasks );
+                }
 
             if( isCancel ) {
                 return false;

@@ -42,16 +42,15 @@
 
 package org.netbeans.modules.bugtracking.bridge.exportdiff;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 
@@ -60,7 +59,7 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport;
  * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.ExportDiffSupport.ExportDiffProvider.class)
-public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider implements DocumentListener, PropertyChangeListener {
+public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider implements DocumentListener, ChangeListener {
 
     private AttachPanel panel;
     private File[] files;
@@ -111,9 +110,8 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
     public void removeUpdate(DocumentEvent e)  { fireDataChanged(); }
     public void changedUpdate(DocumentEvent e) { fireDataChanged(); }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QuickSearchComboBar.EVT_ISSUE_CHANGED)) {
+    @Override
+    public void stateChanged(ChangeEvent e) {
             fireDataChanged();
-        }
     }
 }
