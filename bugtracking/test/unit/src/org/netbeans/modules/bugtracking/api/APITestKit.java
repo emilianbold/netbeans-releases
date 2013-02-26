@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
+import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -186,7 +187,7 @@ public class APITestKit {
 
         @Override
         public APITestIssue[] getIssues(APITestRepository r, String... ids) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.getIssues(ids);
         }
 
         @Override
@@ -201,7 +202,7 @@ public class APITestKit {
 
         @Override
         public Collection<APITestQuery> getQueries(APITestRepository r) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.getQueries();
         }
 
         @Override
