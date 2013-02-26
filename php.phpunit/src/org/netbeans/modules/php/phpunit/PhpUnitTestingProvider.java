@@ -51,7 +51,6 @@ import org.netbeans.modules.php.phpunit.create.TestCreator;
 import org.netbeans.modules.php.phpunit.locate.PhpUnitTestLocator;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.phpunit.run.TestRunner;
-import org.netbeans.modules.php.phpunit.run.TestSessionImpl;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
@@ -90,7 +89,7 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
     }
 
     @Override
-    public String getCustomizerCategoryName() {
+    public String getCustomizerCategoryIdent() {
         return IDENTIFIER;
     }
 
@@ -123,15 +122,11 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
     }
 
     @Override
-    public TestSession runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
-        TestSessionImpl testSession = new TestRunner(phpModule).runTests(runInfo);
-        if (testSession == null) {
-            return null;
-        }
+    public void runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
+        new TestRunner(phpModule).runTests(runInfo, testSession);
         if (runInfo.isCoverageEnabled()) {
             testSession.setCoverage(new CoverageProvider().getCoverage());
         }
-        return testSession;
     }
 
     @Override

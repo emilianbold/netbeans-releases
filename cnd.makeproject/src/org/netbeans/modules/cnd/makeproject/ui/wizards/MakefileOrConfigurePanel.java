@@ -559,8 +559,11 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     
     private void configureBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureBrowseButtonActionPerformed
         String seed;
+        String root = (String) controller.getWizardDescriptor().getProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER);
         if (makefileNameTextField.getText().length() > 0) {
             seed = makefileNameTextField.getText();
+        } else if (root != null && !root.isEmpty()) {
+            seed = root;
         } else if (FileChooser.getCurrentChooserFile() != null) {
             seed = FileChooser.getCurrentChooserFile().getPath();
         } else {
@@ -585,8 +588,11 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     
     private void makefileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_makefileBrowseButtonActionPerformed
         String seed;
+        String root = (String) controller.getWizardDescriptor().getProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER);
         if (makefileNameTextField.getText().length() > 0) {
             seed = makefileNameTextField.getText();
+        } else if (root != null && !root.isEmpty()) {
+            seed = root;
         } else if (FileChooser.getCurrentChooserFile() != null) {
             seed = FileChooser.getCurrentChooserFile().getPath();
         } else {

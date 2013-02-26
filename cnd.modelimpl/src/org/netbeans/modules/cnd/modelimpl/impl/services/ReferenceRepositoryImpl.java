@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.util.CharSequences;
 
 /**

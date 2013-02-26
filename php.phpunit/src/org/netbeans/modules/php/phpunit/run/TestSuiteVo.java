@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,74 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.highlight;
+package org.netbeans.modules.php.phpunit.run;
 
-import org.netbeans.modules.cnd.support.Interrupter;
-import org.openide.util.Cancellable;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- *
- * @author AlexanderSimon
- */
-public class InterrupterImpl implements Interrupter, Cancellable {
+public final class TestSuiteVo {
 
-    private boolean canceled = false;
+    private final List<TestCaseVo> testCases = new ArrayList<TestCaseVo>();
+    private final String name;
+    private final String file;
+    private final long time;
 
-    @Override
-    public boolean cancelled() {
-        return canceled;
+
+    public TestSuiteVo(String name, String file, long time) {
+        assert name != null;
+        assert file != null;
+        this.name = name;
+        this.file = file;
+        this.time = time;
+    }
+
+    void addTestCase(TestCaseVo testCase) {
+        testCases.add(testCase);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public FileObject getLocation() {
+        if (file == null) {
+            return null;
+        }
+        File f = new File(file);
+        if (!f.isFile()) {
+            return null;
+        }
+        return FileUtil.toFileObject(f);
+    }
+
+    public List<TestCaseVo> getTestCases() {
+        checkTestCases();
+        return testCases;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    private void checkTestCases() {
+        if (!testCases.isEmpty()) {
+            return;
+        }
+        testCases.add(TestCaseVo.skippedTestCase());
     }
 
     @Override
-    public boolean cancel() {
-        canceled = true;
-        return true;
+    public String toString() {
+        return String.format("TestSuiteVo{name: %s, file: %s, time: %d, cases: %d}", name, file, time, testCases.size()); // NOI18N
     }
+
 }

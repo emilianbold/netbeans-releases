@@ -39,78 +39,71 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phpunit.run;
+package org.netbeans.modules.php.project.ui.testrunner;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
-public final class TestSuiteImpl implements TestSuite {
+public class TestSuiteImpl implements TestSuite {
 
-    private final List<TestCase> testCases = new ArrayList<TestCase>();
-    private final String name;
-    private final String file;
-    private final long time;
+    private final TestSessionImpl testSession;
+    private final org.netbeans.modules.gsf.testrunner.api.TestSuite testSuite;
+    private final FileObject location;
+
+    private volatile boolean finished = false;
 
 
-    public TestSuiteImpl(String name, String file, long time) {
-        assert name != null;
-        assert file != null;
-        this.name = name;
-        this.file = file;
-        this.time = time;
-    }
-
-    void addTestCase(TestCase testCase) {
-        testCases.add(testCase);
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    public String getFile() {
-        return file;
+    TestSuiteImpl(TestSessionImpl testSession, org.netbeans.modules.gsf.testrunner.api.TestSuite testSuite, FileObject location) {
+        assert testSession != null;
+        assert testSuite != null;
+        this.testSession = testSession;
+        this.testSuite = testSuite;
+        this.location = location;
     }
 
     @Override
+    public TestCase addTestCase(String name, String type) {
+        checkFinished();
+        Parameters.notWhitespace("name", name); // NOI18N
+        Parameters.notWhitespace("type", type); // NOI18N
+        TestSession session = testSession.getTestSession();
+        Testcase testCase = new Testcase(name, type, session);
+        if (location != null) {
+            testCase.setLocation(FileUtil.toFile(location).getAbsolutePath());
+        }
+        session.addTestCase(testCase);
+        return new TestCaseImpl(this, testCase);
+    }
+
+    @Override
+    public void finish(long time) {
+        checkFinished();
+        finished = true;
+        TestSession session = testSession.getTestSession();
+        testSession.getManager().displayReport(session, session.getReport(time));
+    }
+
+    public TestSessionImpl getTestSession() {
+        return testSession;
+    }
+
+    public org.netbeans.modules.gsf.testrunner.api.TestSuite getTestSuite() {
+        return testSuite;
+    }
+
     public FileObject getLocation() {
-        if (file == null) {
-            return null;
+        return location;
+    }
+
+    private void checkFinished() {
+        if (finished) {
+            throw new IllegalStateException("Test suite " + testSuite.getName() + " is already finished");
         }
-        File f = new File(file);
-        if (!f.isFile()) {
-            return null;
-        }
-        return FileUtil.toFileObject(f);
-    }
-
-    @Override
-    public List<TestCase> getTestCases() {
-        checkTestCases();
-        return testCases;
-    }
-
-    @Override
-    public long getTime() {
-        return time;
-    }
-
-    private void checkTestCases() {
-        if (!testCases.isEmpty()) {
-            return;
-        }
-        testCases.add(TestCaseImpl.skippedTestCase());
-    }
-
-    @Override
-    public String toString() {
-        return String.format("TestSuiteImpl{name: %s, file: %s, time: %d, cases: %d}", name, file, time, testCases.size());
     }
 
 }

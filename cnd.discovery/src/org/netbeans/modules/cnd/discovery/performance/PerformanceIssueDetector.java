@@ -608,10 +608,10 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         ,"# {1} - items"
         ,"# {2} - speed"
         ,"# {3} - expected"
-        ,"Details.slow.item.creation=The IDE spent {0} seconds to create {1} project items.<br>\n"
+        ,"Details.slow.item.creation=Details:<br>\n"
+                                   +"The IDE spent {0} seconds to create {1} project items.<br>\n"
                                    +"The average creation speed is {2} items per second.<br>\n"
                                    +"IDE expects the average creation speed is more than {3} items per second.<br>\n"
-                                   +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeCreateItems() {
         long itemCount = 0;
@@ -632,11 +632,12 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         if (wallTime > 15 && itemCount > 100 && creationSpeed < CREATION_SPEED_LIMIT) {
             if (!alreadyNotified()) {
                 slowItemCreation = true;
-                final String details = Bundle.Details_slow_item_creation(format(wallTime), format(itemCount), format(creationSpeed), format(CREATION_SPEED_LIMIT));
+                String details = Bundle.Details_slow_item_creation(format(wallTime), format(itemCount), format(creationSpeed), format(CREATION_SPEED_LIMIT));
                 if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                     notifyProblem(NotifyProjectProblem.CREATE_PROBLEM, details);
                 }
-                LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
+                details = details.replace("<br>", "").replace("\n", " "); //NOI18N
+                LOG.log(Level.INFO, "Slow File System Detected. {0}", details); //NOI18N
             }
         }
         LOG.log(level, "Average item creatoin speed is {0} item/s Created {1} items Time {2} ms CPU {3} ms User {4} ms", //NOI18N
@@ -644,9 +645,15 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     }
     
     @Messages({
-         "# {0} - time"
-        ,"# {1} - item"
-        ,"Details.infinite.item.creation=The IDE spent more than {0} seconds to create project item {1}.\n"
+         "# {0} - table"
+        ,"Details.infinite.items.creation=Details. The access is nether finished or consumes too much time of files:<br>\n"
+                                     +"<table><tbody>\n"
+                                     +"<tr><th>File</th><th>Time, s</th></tr>\n"
+                                     +"{0}\n"
+                                     +"</tbody></table>\n"
+        ,"# {0} - file"
+        ,"# {1} - time"
+        ,"Details.infinite.item.creation=<tr><td>{0}</td><td>{1}</td></tr>\n"
     })
     private void analyzeInfiniteCreateFile() {
         int INFINITE_CREATE_ITEM_TIMOUT = 30;
@@ -659,7 +666,8 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
             if (delta > INFINITE_CREATE_ITEM_TIMOUT) {
                 iterator.remove();
-                buf.append(Bundle.Details_infinite_item_creation(format(delta), fo.getPath()));
+                buf.append(Bundle.Details_infinite_item_creation(fo.getPath(), format(delta)));
+                LOG.log(Level.INFO, "Too Long File Access Detected. Access to file {0} consumes more than {1}s.", new Object[]{fo.getPath(), format(delta)}); //NOI18N
             }
         }
         Iterator<Map.Entry<File, PerformanceLogger.PerformanceEvent>> iterator2 = createFileTimeOut.entrySet().iterator();
@@ -670,7 +678,8 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
             if (delta > INFINITE_CREATE_ITEM_TIMOUT) {
                 iterator2.remove();
-                buf.append(Bundle.Details_infinite_item_creation(format(delta), fo.getPath()));
+                buf.append(Bundle.Details_infinite_item_creation(fo.getPath(), format(delta)));
+                LOG.log(Level.INFO, "Too Long File Access Detected. Access to file {0} consumes more than {1}s.", new Object[]{fo.getPath(), format(delta)}); //NOI18N
             }
         }
         Iterator<Map.Entry<String, PerformanceLogger.PerformanceEvent>> iterator3 = createItemTimeOut.entrySet().iterator();
@@ -681,14 +690,15 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
             if (delta > INFINITE_CREATE_ITEM_TIMOUT) {
                 iterator2.remove();
-                buf.append(Bundle.Details_infinite_item_creation(format(delta), fo));
+                buf.append(Bundle.Details_infinite_item_creation(fo, format(delta)));
+                LOG.log(Level.INFO, "Too Long File Access Detected. Access to file {0} consumes more than {1}s.", new Object[]{fo, format(delta)}); //NOI18N
             }
         }
         if (buf.length() > 0) {
             if (!alreadyNotified()) {
                 slowItemCreation = true;
                 if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
-                    notifyProblem(NotifyProjectProblem.CREATE_PROBLEM, buf.toString());
+                    notifyProblem(NotifyProjectProblem.INFINITE_CREATE_PROBLEM, Bundle.Details_infinite_items_creation(buf.toString()));
                 }
             }
         }
@@ -699,10 +709,10 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         ,"# {1} - read"
         ,"# {2} - speed"
         ,"# {3} - expected"
-        ,"Details.slow.file.read=The IDE spent {0} seconds to read {1} Kb of project files.<br>\n"
+        ,"Details.slow.file.read=Details:<br>\n"
+                               +"The IDE spent {0} seconds to read {1} Kb of project files.<br>\n"
                                +"The average reading speed is {2} Kb per second.<br>\n"
                                +"IDE expects the average reading speed is more than {3} Kb per second.<br>\n"
-                               +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeReadFile() {
         long fileCount = 0;
@@ -727,11 +737,12 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         if (wallTime > 100 && fileCount > 100 && readSpeed < READING_SPEED_LIMIT) {
             if (!alreadyNotified()) {
                 slowFileRead = true;
-                final String details = Bundle.Details_slow_file_read(format(wallTime), format(read/1000), format(readSpeed), format(READING_SPEED_LIMIT));
+                String details = Bundle.Details_slow_file_read(format(wallTime), format(read/1000), format(readSpeed), format(READING_SPEED_LIMIT));
                 if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                     notifyProblem(NotifyProjectProblem.READ_PROBLEM, details);
                 }
-                LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
+                details = details.replace("<br>", "").replace("\n", " "); //NOI18N
+                LOG.log(Level.INFO, "Slow File System Detected. {0}", details); //NOI18N
             }
         }
         LOG.log(level, "Average file reading speed is {0} Kb/s Read {1} Kb Time {2} ms CPU {3} ms User {4} ms", //NOI18N
@@ -745,13 +756,13 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         ,"# {3} - cpu"
         ,"# {4} - ratio"
         ,"# {5} - expected"
-        ,"Details.slow.file.parse=The IDE spent {0} seconds to parse {1} lines of project files.<br>\n"
+        ,"Details.slow.file.parse=Details:<br>\n"
+                                +"The IDE spent {0} seconds to parse {1} lines of project files.<br>\n"
                                 +"The average parsing speed is {2} lines per second.<br>\n"
                                 +"In other hand IDE consumed {3} seconds of CPU time to parse these files.<br>\n"
                                 +"The ratio of wall time to CPU time is 1/{4}.<br>\n"
                                 +"It shows that IDE spent too much time waiting for resources.<br>\n"
                                 +"IDE expects the ratio is more than 1/{5}.<br>\n"
-                                +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeParseFile() {
         long fileCount = 0;
@@ -780,11 +791,12 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             if (wallTime > 100 && fileCount > 100 && parseSpeed < PARSING_SPEED_LIMIT && k > PARSING_RATIO_LIMIT) {
                 if (!alreadyNotified()) {
                     slowParsed = true;
-                    final String details = Bundle.Details_slow_file_parse(format(wallTime), format(lines), format(parseSpeed), format(cpuTime), format(k), format(PARSING_RATIO_LIMIT));
+                    String details = Bundle.Details_slow_file_parse(format(wallTime), format(lines), format(parseSpeed), format(cpuTime), format(k), format(PARSING_RATIO_LIMIT));
                     if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                         notifyProblem(NotifyProjectProblem.PARSE_PROBLEM, details);
                     }
-                   LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
+                    details = details.replace("<br>", "").replace("\n", " "); //NOI18N
+                LOG.log(Level.INFO, "Slow File System Detected. {0}", details); //NOI18N
                 }
             }
         }
@@ -794,13 +806,11 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
 
     @Messages({
          "# {0} - table"
-        ,"Details.infinite.files.parse=The parsing of the files:\n"
+        ,"Details.infinite.files.parse=Details. The parsing is nether finished or consumes too much time of files:<br>\n"
                                      +"<table><tbody>\n"
                                      +"<tr><th>File</th><th>Time, s</th></tr>\n"
                                      +"{0}\n"
                                      +"</tbody></table>\n"
-                                     +"are nether finished or consumes too much time.<br>\n"
-                                     +"Most probably this is caused by a bug in the IDE or too big files.\n"
         ,"# {0} - file"
         ,"# {1} - time"
         ,"Details.infinite.file.parse=<tr><td>{0}</td><td>{1}</td></tr>\n"
