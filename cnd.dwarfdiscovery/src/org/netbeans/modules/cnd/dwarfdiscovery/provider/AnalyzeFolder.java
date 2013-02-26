@@ -304,36 +304,8 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     }
     
     private Set<String> getObjectFiles(String root){
-        HashSet<String> set = new HashSet<String>();
-        gatherSubFolders(new File(root), set, new HashSet<String>());
         HashSet<String> map = new HashSet<String>();
-        for (Iterator<String> it = set.iterator(); it.hasNext();){
-            if (isStoped.get()) {
-                break;
-            }
-            File d = new File(it.next());
-            if (d.exists() && d.isDirectory() && d.canRead()){
-                File[] ff = d.listFiles();
-                if (ff != null) {
-                    for (int i = 0; i < ff.length; i++) {
-                        if (ff[i].isFile()) {
-                            String name = ff[i].getName();
-                            if (name.endsWith(".o") ||  // NOI18N
-                                name.endsWith(".so") ||  // NOI18N
-                                name.endsWith(".dylib") ||  // NOI18N
-                                name.endsWith(".a") ||  // NOI18N
-                                isExecutable(ff[i])){
-                                String path = ff[i].getAbsolutePath();
-                                if (Utilities.isWindows()) {
-                                    path = path.replace('\\', '/');
-                                }
-                                map.add(path);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        gatherSubFolders(new File(root), map, new HashSet<String>());
         return map;
     }
     
@@ -353,7 +325,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         return false;
     }
     
-    private void gatherSubFolders(File d, HashSet<String> set, HashSet<String> antiLoop){
+    private void gatherSubFolders(File d, HashSet<String> map, HashSet<String> antiLoop){
         if (isStoped.get()) {
             return;
         }
@@ -369,16 +341,24 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             }
             if (!antiLoop.contains(canPath)){
                 antiLoop.add(canPath);
-                String path = d.getAbsolutePath();
-                if (Utilities.isWindows()) {
-                    path = path.replace('\\', '/');
-                }
-                set.add(path);
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
                         if (ff[i].isDirectory()) {
-                            gatherSubFolders(ff[i], set, antiLoop);
+                            gatherSubFolders(ff[i], map, antiLoop);
+                        } else if (ff[i].isFile()) {
+                            String name = ff[i].getName();
+                            if (name.endsWith(".o") ||  // NOI18N
+                                name.endsWith(".so") ||  // NOI18N
+                                name.endsWith(".dylib") ||  // NOI18N
+                                name.endsWith(".a") ||  // NOI18N
+                                isExecutable(ff[i])){
+                                String path = ff[i].getAbsolutePath();
+                                if (Utilities.isWindows()) {
+                                    path = path.replace('\\', '/');
+                                }
+                                map.add(path);
+                            }
                         }
                     }
                 }
