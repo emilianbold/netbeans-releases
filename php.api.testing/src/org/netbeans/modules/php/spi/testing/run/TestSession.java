@@ -81,10 +81,10 @@ public interface TestSession {
     /**
      * Set code coverage data, compulsory to call if
      * {@link org.netbeans.modules.php.spi.testing.PhpTestingProvider#isCoverageSupported(org.netbeans.modules.php.api.phpmodule.PhpModule) supported} by this testing provider.
-     * @param coverage code coverage data, never {@code null}
+     * @param coverage code coverage data, can be {@code null} if any error occured
      * @see org.netbeans.modules.php.spi.testing.PhpTestingProvider#isCoverageSupported(org.netbeans.modules.php.api.phpmodule.PhpModule)
      * @since 0.2
      */
-    void setCoverage(@NonNull Coverage coverage);
+    void setCoverage(@NullAllowed Coverage coverage);
 
 }

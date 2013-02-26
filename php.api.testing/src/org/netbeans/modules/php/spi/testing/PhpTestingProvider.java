@@ -109,9 +109,10 @@ public interface PhpTestingProvider {
     boolean isTestFile(@NonNull PhpModule phpModule, FileObject fileObj);
 
     /**
-     * Run tests for the given {@link TestRunInfo info} and return test session or {@code null} if the session cannot be
-     * obtained, e.g. if there is some error in the setup (in such case, open the setup panel and return {@code null}
-     * rather than throwin an {@link TestRunException exception}).
+     * Run tests, <b>synchronously</b>, for the given {@link TestRunInfo info} and use
+     * the given {@link TestSession test session} for providing results.
+     * <p>
+     * <b>This method must be blocking, in other words, it should not return before test run finish.</b>
      * <p>
      * This method is always called in a background thread.
      * @param phpModule the PHP module; never {@code null}
@@ -120,8 +121,7 @@ public interface PhpTestingProvider {
      * @throws TestRunException if any error occurs during the test run, e.g. some resource is not available
      * @since 0.2
      */
-    @CheckForNull
-    void runTests(@NonNull PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException;
+    void runTests(@NonNull PhpModule phpModule, @NonNull TestRunInfo runInfo, @NonNull TestSession testSession) throws TestRunException;
 
     /**
      * Gets test locator for this provider.

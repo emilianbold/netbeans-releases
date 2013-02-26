@@ -56,6 +56,7 @@ public class TestSessionImpl implements TestSession {
     private final org.netbeans.modules.gsf.testrunner.api.TestSession testSession;
 
     private volatile Coverage coverage;
+    private boolean coverageSet = false;
 
 
     TestSessionImpl(Manager manager, org.netbeans.modules.gsf.testrunner.api.TestSession testSession) {
@@ -88,11 +89,14 @@ public class TestSessionImpl implements TestSession {
 
     @Override
     public void setCoverage(Coverage coverage) {
-        Parameters.notNull("coverage", coverage); // NOI18N
+        coverageSet = true;
         this.coverage = coverage;
     }
 
     public Coverage getCoverage() {
+        if (!coverageSet) {
+            throw new IllegalStateException("Code coverage was not set (forgot to call setCoverage(Coverage)?)");
+        }
         return coverage;
     }
 
@@ -106,7 +110,7 @@ public class TestSessionImpl implements TestSession {
 
     //~ Mappers
 
-    private org.netbeans.modules.gsf.testrunner.api.OutputLineHandler map(final org.netbeans.modules.php.spi.testing.run.OutputLineHandler outputLineHandler) {
+    private org.netbeans.modules.gsf.testrunner.api.OutputLineHandler map(final OutputLineHandler outputLineHandler) {
         return new org.netbeans.modules.gsf.testrunner.api.OutputLineHandler() {
             @Override
             public void handleLine(OutputWriter out, String text) {

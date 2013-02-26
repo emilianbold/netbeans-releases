@@ -50,6 +50,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
@@ -83,9 +84,12 @@ public final class TestRunner {
             throw new TestRunException();
         }
         TestSessionVo sessionVo = createTestSession(PhpUnit.XML_LOG);
-        map(sessionVo, testSession);
+        if (sessionVo != null) {
+            map(sessionVo, testSession);
+        }
     }
 
+    @CheckForNull
     private TestSessionVo createTestSession(File xmlLog) throws TestRunException {
         Reader reader;
         try {
@@ -128,6 +132,7 @@ public final class TestRunner {
         String initMessage = sessionVo.getInitMessage();
         if (initMessage != null) {
             testSession.printMessage(initMessage, false);
+            testSession.printMessage("", false); // NOI18N
         }
         for (TestSuiteVo suiteVo : sessionVo.getTestSuites()) {
             TestSuite testSuite = testSession.addTestSuite(suiteVo.getName(), suiteVo.getLocation());
