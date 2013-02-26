@@ -140,7 +140,7 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
         }
 
         @Override
-        public TestSession runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
+        public void runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

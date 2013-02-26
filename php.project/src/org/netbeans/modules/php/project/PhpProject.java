@@ -97,6 +97,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
@@ -1204,7 +1205,9 @@ public final class PhpProject implements Project {
         public boolean canReload() {
             initBrowser();
             // #226389
-            if (DebugStarterFactory.getInstance().isAlreadyRunning()) {
+            DebugStarter debugStarter = DebugStarterFactory.getInstance();
+            if (debugStarter != null
+                    && debugStarter.isAlreadyRunning()) {
                 return false;
             }
             if (!WebBrowserSupport.isIntegratedBrowser(browserId)) {

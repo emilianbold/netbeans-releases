@@ -39,44 +39,72 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phpunit.ui.customizer;
+package org.netbeans.modules.php.phpunit.run;
 
-import javax.swing.JComponent;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.phpunit.PhpUnitTestingProvider;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- * Project customizer for PhpUnit.
- */
-public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public final class TestSuiteVo {
 
-    @NbBundle.Messages("PhpUnitCustomizer.name=PHPUnit")
-    @Override
-    public Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                PhpUnitTestingProvider.getInstance().getCustomizerCategoryName(),
-                Bundle.PhpUnitCustomizer_name(),
-                null,
-                (ProjectCustomizer.Category[]) null);
+    private final List<TestCaseVo> testCases = new ArrayList<TestCaseVo>();
+    private final String name;
+    private final String file;
+    private final long time;
+
+
+    public TestSuiteVo(String name, String file, long time) {
+        assert name != null;
+        assert file != null;
+        this.name = name;
+        this.file = file;
+        this.time = time;
+    }
+
+    void addTestCase(TestCaseVo testCase) {
+        testCases.add(testCase);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public FileObject getLocation() {
+        if (file == null) {
+            return null;
+        }
+        File f = new File(file);
+        if (!f.isFile()) {
+            return null;
+        }
+        return FileUtil.toFileObject(f);
+    }
+
+    public List<TestCaseVo> getTestCases() {
+        checkTestCases();
+        return testCases;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    private void checkTestCases() {
+        if (!testCases.isEmpty()) {
+            return;
+        }
+        testCases.add(TestCaseVo.skippedTestCase());
     }
 
     @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        PhpModule phpModule = PhpModule.lookupPhpModule(context);
-        return new CustomizerPhpUnit(category, phpModule);
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 350
-    )
-    public static PhpUnitCustomizer createCustomizer() {
-        return new PhpUnitCustomizer();
+    public String toString() {
+        return String.format("TestSuiteVo{name: %s, file: %s, time: %d, cases: %d}", name, file, time, testCases.size()); // NOI18N
     }
 
 }
