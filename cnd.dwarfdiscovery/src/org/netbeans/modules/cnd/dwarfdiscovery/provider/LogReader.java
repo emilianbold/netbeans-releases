@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
@@ -1246,17 +1248,16 @@ public class LogReader {
     private Set<String> getSubfolders(){
         if (subFolders == null){
             subFolders = new HashSet<String>();
-            File f = new File(root);
-            gatherSubFolders(f, new HashSet<String>());
             findBase = new HashMap<String,List<String>>();
-            initSearchMap();
+            File f = new File(root);
+            gatherSubFolders(f, new LinkedList<String>());
         }
         return subFolders;
     }
     private HashSet<String> subFolders;
     private Map<String,List<String>> findBase;
 
-    private void gatherSubFolders(File d, HashSet<String> antiLoop){
+    private void gatherSubFolders(File d, LinkedList<String> antiLoop){
         if (d.exists() && d.isDirectory() && d.canRead()){
             if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
@@ -1268,28 +1269,17 @@ public class LogReader {
                 return;
             }
             if (!antiLoop.contains(canPath)){
-                antiLoop.add(canPath);
+                antiLoop.addLast(canPath);
                 subFolders.add(d.getAbsolutePath().replace('\\', '/'));
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
                         if (ff[i].isDirectory()) {
                             gatherSubFolders(ff[i], antiLoop);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void initSearchMap(){
-        for (String it : subFolders){
-            File d = new File(it);
-            if (d.exists() && d.isDirectory() && d.canRead()){
-                File[] ff = d.listFiles();
-                if (ff != null) {
-                    for (int i = 0; i < ff.length; i++) {
-                        if (ff[i].isFile()) {
+                        } else if (ff[i].isFile()) {
+                            if (CndFileVisibilityQuery.getDefault().isIgnored(ff[i].getName())) {
+                                continue;
+                            }
                             List<String> l = findBase.get(ff[i].getName());
                             if (l==null){
                                 l = new ArrayList<String>();
@@ -1299,8 +1289,8 @@ public class LogReader {
                         }
                     }
                 }
+                antiLoop.removeLast();
             }
         }
     }
-
 }
