@@ -69,6 +69,11 @@ import org.openide.nodes.Node;
  * @author Padraig O'Briain
  */
 public class RevertModificationsAction extends ContextAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/get_clean.png"; //NOI18N
+    
+    public RevertModificationsAction () {
+        super(ICON_RESOURCE);
+    }
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -101,7 +106,7 @@ public class RevertModificationsAction extends ContextAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/mercurial/resources/icons/get_clean.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     public static void revert(final VCSContext ctx) {

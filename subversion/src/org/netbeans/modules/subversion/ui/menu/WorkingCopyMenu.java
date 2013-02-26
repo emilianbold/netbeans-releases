@@ -42,14 +42,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.git.ui.menu;
+package org.netbeans.modules.subversion.ui.menu;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.git.Annotator;
-import org.netbeans.modules.git.ui.tag.CreateTagAction;
-import org.netbeans.modules.git.ui.tag.ManageTagsAction;
+import org.netbeans.modules.subversion.Annotator;
+import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
+import org.netbeans.modules.subversion.ui.wcadmin.CleanupAction;
+import org.netbeans.modules.subversion.ui.wcadmin.UpgradeAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
@@ -59,16 +60,22 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
- * Container menu for export actions.
+ * Container menu for working copy actions.
  *
- * @author Ondra
+ * @author Ondra Vrabec
  */
-public final class TagMenu extends DynamicMenu {
+public final class WorkingCopyMenu extends DynamicMenu {
     private final ActionDestination dest;
     private final Lookup lkp;
 
-    public TagMenu (ActionDestination dest, Lookup lkp) {
-        super(NbBundle.getMessage(TagMenu.class, dest.equals(ActionDestination.MainMenu) ? "CTL_MenuItem_TagMenu" : "CTL_MenuItem_TagMenu.popup")); //NOI18N
+    @NbBundle.Messages({
+        "CTL_MenuItem_WorkingCopyMenu=Workin&g Copy",
+        "CTL_MenuItem_WorkingCopyMenu.popup=Working Copy"
+    })
+    public WorkingCopyMenu (ActionDestination dest, Lookup lkp) {
+        super(dest.equals(ActionDestination.MainMenu) 
+                ? Bundle.CTL_MenuItem_WorkingCopyMenu()
+                : Bundle.CTL_MenuItem_WorkingCopyMenu_popup());
         this.dest = dest;
         this.lkp = lkp;
     }
@@ -79,22 +86,31 @@ public final class TagMenu extends DynamicMenu {
         JMenuItem item;
         if (dest.equals(ActionDestination.MainMenu)) {
             item = new JMenuItem();
-            Action action = (Action) SystemAction.get(CreateTagAction.class);
+            Action action = (Action) SystemAction.get(RelocateAction.class);
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
             
-            item = new JMenuItem();
-            action = (Action) SystemAction.get(ManageTagsAction.class);
+            action = (Action) SystemAction.get(CleanupAction.class);
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            item = new JMenuItem();
+            Actions.connect(item, action, false);
+            menu.add(item);
+            
+            action = (Action) SystemAction.get(UpgradeAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            item = new JMenuItem();
             Actions.connect(item, action, false);
             menu.add(item);
         } else {
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateTagAction.class), NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName"), lkp)); //NOI18N
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RelocateAction.class), NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_Relocate"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(ManageTagsAction.class), NbBundle.getMessage(ManageTagsAction.class, "LBL_ManageTagsAction_PopupName"), lkp)); //NOI18N
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(CleanupAction.class), NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_Cleanup"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(UpgradeAction.class), NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_Upgrade"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;
     }
+
 }

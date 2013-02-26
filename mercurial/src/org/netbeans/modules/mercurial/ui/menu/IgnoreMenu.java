@@ -48,87 +48,72 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
-import org.netbeans.modules.mercurial.ui.rollback.RollbackAction;
-import org.netbeans.modules.mercurial.ui.rollback.StripAction;
-import org.netbeans.modules.mercurial.ui.rollback.VerifyAction;
+import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Container menu for repository maintenance actions.
+ * Container menu for ignore/exclude actions.
  *
- * @author Ondra Vrabec
+ * @author Ondra
  */
 @NbBundle.Messages({
-    "CTL_MenuItem_RecoverMenu=Reco&ver",
-    "CTL_MenuItem_RecoverMenu.popupName=Recover"
+    "CTL_MenuItem_IgnoreMenu=&Ignore",
+    "CTL_MenuItem_IgnoreMenu.popupName=Ignore"
 })
-public class RecoverMenu extends DynamicMenu implements Presenter.Popup {
+public final class IgnoreMenu extends DynamicMenu implements Presenter.Popup {
 
     private final Lookup lkp;
-    
-    public RecoverMenu (Lookup lkp) {
-        super(Bundle.CTL_MenuItem_RecoverMenu());
-        this.lkp = lkp;
-    }
+    private final VCSContext ctx;
 
+    public IgnoreMenu (Lookup lkp, VCSContext ctx) {
+        super(Bundle.CTL_MenuItem_IgnoreMenu());
+        this.lkp = lkp;
+        this.ctx = ctx;
+    }
+    
     @Override
-    @NbBundle.Messages({
-        "CTL_PopupMenuItem_Strip=Strip...",
-        "CTL_PopupMenuItem_Backout=Backout...",
-        "CTL_PopupMenuItem_Rollback=Rollback...",
-        "CTL_PopupMenuItem_Verify=Verify..."
-    })
     protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
         JMenuItem item;
         if (lkp == null) {
-            org.openide.awt.Mnemonics.setLocalizedText(menu, Bundle.CTL_MenuItem_RecoverMenu());
-
+            org.openide.awt.Mnemonics.setLocalizedText(menu, Bundle.CTL_MenuItem_IgnoreMenu());
             item = new JMenuItem();
-            Action action = (Action) SystemAction.get(StripAction.class);
+            Action action = SystemAction.get(IgnoreAction.class);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
+            
             item = new JMenuItem();
-            action = (Action) SystemAction.get(BackoutAction.class);
-            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
-            Actions.connect(item, action, false);
-            menu.add(item);
-            item = new JMenuItem();
-            action = (Action) SystemAction.get(RollbackAction.class);
-            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
-            Actions.connect(item, action, false);
-            menu.add(item);
-            item = new JMenuItem();
-            action = (Action) SystemAction.get(VerifyAction.class);
+            action = (Action) SystemAction.get(ExcludeFromCommitAction.class);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
         } else {
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(StripAction.class), Bundle.CTL_PopupMenuItem_Strip(), lkp));
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Ignore"), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(BackoutAction.class), Bundle.CTL_PopupMenuItem_Backout(), lkp));
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RollbackAction.class), Bundle.CTL_PopupMenuItem_Rollback(), lkp));
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(VerifyAction.class), Bundle.CTL_PopupMenuItem_Verify(), lkp));
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        }
 
+            ExcludeFromCommitAction exclude = SystemAction.get(ExcludeFromCommitAction.class);
+            item = menu.add(SystemActionBridge.createAction(exclude, NbBundle.getMessage(MercurialAnnotator.class,
+                    exclude.getActionStatus(ctx) == ExcludeFromCommitAction.INCLUDING
+                            ? "CTL_PopupMenuItem_IncludeInCommit" //NOI18N
+                            : "CTL_PopupMenuItem_ExcludeFromCommit", ctx), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        }        
         return menu;
     }
 
     @Override
     public JMenuItem getPopupPresenter() {
         JMenu menu = createMenu();
-        menu.setText(Bundle.CTL_MenuItem_RecoverMenu_popupName());
+        menu.setText(Bundle.CTL_MenuItem_IgnoreMenu_popupName());
         enableMenu(menu);
         return menu;
     }

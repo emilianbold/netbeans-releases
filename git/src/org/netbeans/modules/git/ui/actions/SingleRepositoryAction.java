@@ -54,7 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -71,6 +70,14 @@ public abstract class SingleRepositoryAction extends GitAction {
     private static final Logger LOG = Logger.getLogger(SingleRepositoryAction.class.getName());
     private static final Set<File> loggedRepositories = new HashSet<File>();
 
+    protected SingleRepositoryAction () {
+        this(null);
+    }
+
+    protected SingleRepositoryAction (String iconResource) {
+        super(iconResource);
+    }
+    
     @Override
     protected final void performContextAction (final Node[] nodes) {
         Utils.postParallel(new Runnable () {

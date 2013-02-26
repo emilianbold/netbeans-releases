@@ -42,45 +42,70 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.mercurial.ui.menu;
+package org.netbeans.modules.versioning.system.cvss.ui.menu;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.mercurial.MercurialAnnotator;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.system.cvss.Annotator;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.ignore.IgnoreAction;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.ui.diff.ExportBundleAction;
-import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
-import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.awt.Actions;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 /**
- * Container menu for export actions.
+ * Container menu for ignore/exclude actions.
  *
- * @author Ondra
+ * @author Ondra Vrabec
  */
-public final class ExportMenu extends DynamicMenu {
+@NbBundle.Messages({
+    "CTL_MenuItem_IgnoreMenu=&Ignore",
+    "CTL_MenuItem_IgnoreMenu.popupName=Ignore"
+})
+public final class IgnoreMenu extends DynamicMenu {
 
-    public ExportMenu () {
-        super(NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu"));
+    private final Lookup lkp;
+    private final VCSContext ctx;
+    private final Node[] nodes;
+
+    public IgnoreMenu (Lookup lkp, Node[] nodes, VCSContext ctx) {
+        super(lkp == null ? Bundle.CTL_MenuItem_IgnoreMenu() : Bundle.CTL_MenuItem_IgnoreMenu_popupName());
+        this.lkp = lkp;
+        this.ctx = ctx;
+        this.nodes = nodes;
     }
-
+    
     @Override
     protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
-        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu")); // NOI18N
-        
-        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffAction.class), NbBundle.getMessage(ExportDiffAction.class, "CTL_MenuItem_ExportDiff"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-
-        item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffChangesAction.class), NbBundle.getMessage(ExportDiffChangesAction.class, "CTL_MenuItem_ExportDiffChanges"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        
-        item = menu.add(new SystemActionBridge(SystemAction.get(ExportBundleAction.class), NbBundle.getMessage(ExportBundleAction.class, "CTL_MenuItem_ExportBundle"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        
+        JMenuItem item;
+        if (lkp == null) {
+            item = new JMenuItem();
+            Action action = SystemAction.get(IgnoreAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            
+            item = new JMenuItem();
+            action = new ExcludeFromCommitAction(ctx);
+            Actions.connect(item, action, false);
+            menu.add(item);
+        } else {
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
+                    SystemAction.get(IgnoreAction.class).getActionStatus(nodes, true) == IgnoreAction.UNIGNORING
+                    ? NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_Unignore") //NOI18N
+                    : NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_Ignore"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            
+            item = menu.add(new ExcludeFromCommitAction(ctx));
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        }        
         return menu;
     }
 }

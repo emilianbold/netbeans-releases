@@ -46,7 +46,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.TestIssue;
@@ -71,6 +73,7 @@ public class APITestRepository extends TestRepository {
     
     private RepositoryInfo info;
     private APITestRepositoryController controller;
+    private List<APITestQuery> queries;
 
     public APITestRepository(RepositoryInfo info) {
         this.info = info;
@@ -100,7 +103,7 @@ public class APITestRepository extends TestRepository {
     }
 
     @Override
-    public TestIssue[] getIssues(String[] id) {
+    public APITestIssue[] getIssues(String[] id) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -128,8 +131,11 @@ public class APITestRepository extends TestRepository {
     }
 
     @Override
-    public Collection<TestQuery> getQueries() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Collection<APITestQuery> getQueries() {
+        if(queries == null) {
+            queries = Arrays.asList(new APITestQuery[] {new APITestQuery(APITestQuery.FIRST_QUERY_NAME), new APITestQuery(APITestQuery.SECOND_QUERY_NAME)});
+        }
+        return queries;
     }
     @Override
     public Collection<TestIssue> simpleSearch(String criteria) {

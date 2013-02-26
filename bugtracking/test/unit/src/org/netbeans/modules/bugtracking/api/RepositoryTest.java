@@ -57,8 +57,6 @@ import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
  * @author tomas
  */
 public class RepositoryTest extends NbTestCase {
-    private APITestRepository apiRepo;
-    private Repository repo;
 
     public RepositoryTest(String arg0) {
         super(arg0);
@@ -84,6 +82,12 @@ public class RepositoryTest extends NbTestCase {
         assertEquals(APITestRepository.URL, repo.getUrl());
         assertEquals(APITestRepository.ID, repo.getId());
         assertEquals(APITestRepository.ICON, repo.getIcon());
+    }
+    
+    public void testGetQueries() {
+        APITestRepository apiRepo = APITestKit.getAPIRepo();
+        Repository repo = APITestKit.getRepo();
+        assertEquals(apiRepo.getQueries().size(), repo.getQueries().size());
     }
     
     public void testQueryListChanged() {

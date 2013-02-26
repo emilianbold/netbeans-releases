@@ -48,7 +48,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.git.Annotator;
-import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
+import org.netbeans.modules.git.ui.reset.ResetAction;
 import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -67,8 +67,12 @@ public final class RevertMenu extends DynamicMenu {
     private final ActionDestination dest;
     private final Lookup lkp;
 
+    @NbBundle.Messages({
+        "CTL_MenuItem_RevertMenu=Re&vert/Recover",
+        "CTL_MenuItem_RevertMenu.popup=Revert/Recover"
+    })
     public RevertMenu (ActionDestination dest, Lookup lkp) {
-        super(NbBundle.getMessage(RevertMenu.class, dest.equals(ActionDestination.MainMenu) ? "CTL_MenuItem_RevertMenu" : "CTL_MenuItem_RevertMenu.popup")); //NOI18N
+        super(dest.equals(ActionDestination.MainMenu) ? Bundle.CTL_MenuItem_RevertMenu() : Bundle.CTL_MenuItem_RevertMenu_popup());
         this.dest = dest;
         this.lkp = lkp;
     }
@@ -79,20 +83,19 @@ public final class RevertMenu extends DynamicMenu {
         JMenuItem item;
         if (dest.equals(ActionDestination.MainMenu)) {
             item = new JMenuItem();
-            Action action = (Action) SystemAction.get(RevertChangesAction.class);
+            Action action = (Action) SystemAction.get(RevertCommitAction.class);
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
-
             item = new JMenuItem();
-            action = (Action) SystemAction.get(RevertCommitAction.class);
+            action = (Action) SystemAction.get(ResetAction.class);
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
         } else {
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertCommitAction.class), NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(ResetAction.class), NbBundle.getMessage(ResetAction.class, "LBL_ResetAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;

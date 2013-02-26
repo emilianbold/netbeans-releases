@@ -42,94 +42,66 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.mercurial.ui.menu;
+package org.netbeans.modules.versioning.system.cvss.ui.menu;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.mercurial.MercurialAnnotator;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
-import org.netbeans.modules.mercurial.ui.rollback.RollbackAction;
-import org.netbeans.modules.mercurial.ui.rollback.StripAction;
-import org.netbeans.modules.mercurial.ui.rollback.VerifyAction;
+import org.netbeans.modules.diff.PatchAction;
+import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
+import org.netbeans.modules.versioning.system.cvss.Annotator;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ExportDiffAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
-import org.openide.util.actions.Presenter;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Container menu for repository maintenance actions.
+ * Container menu for diff actions.
  *
- * @author Ondra Vrabec
+ * @author Ondra
  */
-@NbBundle.Messages({
-    "CTL_MenuItem_RecoverMenu=Reco&ver",
-    "CTL_MenuItem_RecoverMenu.popupName=Recover"
-})
-public class RecoverMenu extends DynamicMenu implements Presenter.Popup {
-
+public final class PatchesMenu extends DynamicMenu {
+    private final ActionDestination dest;
     private final Lookup lkp;
-    
-    public RecoverMenu (Lookup lkp) {
-        super(Bundle.CTL_MenuItem_RecoverMenu());
+
+    @NbBundle.Messages({
+        "CTL_MenuItem_ExportMenu=&Patches",
+        "CTL_MenuItem_ExportMenu.popup=Patches",
+        "CTL_PopupName.PatchAction=Apply Diff Patch..."
+    })
+    public PatchesMenu (ActionDestination dest, Lookup lkp) {
+        super(dest.equals(ActionDestination.MainMenu) 
+                ? Bundle.CTL_MenuItem_ExportMenu()
+                : Bundle.CTL_MenuItem_ExportMenu_popup());
+        this.dest = dest;
         this.lkp = lkp;
     }
 
     @Override
-    @NbBundle.Messages({
-        "CTL_PopupMenuItem_Strip=Strip...",
-        "CTL_PopupMenuItem_Backout=Backout...",
-        "CTL_PopupMenuItem_Rollback=Rollback...",
-        "CTL_PopupMenuItem_Verify=Verify..."
-    })
-    protected JMenu createMenu() {
+    protected JMenu createMenu () {
         JMenu menu = new JMenu(this);
         JMenuItem item;
-        if (lkp == null) {
-            org.openide.awt.Mnemonics.setLocalizedText(menu, Bundle.CTL_MenuItem_RecoverMenu());
-
+        if (dest.equals(ActionDestination.MainMenu)) {
             item = new JMenuItem();
-            Action action = (Action) SystemAction.get(StripAction.class);
-            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Action action = (Action) SystemAction.get(ExportDiffAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
+            
+            action = (Action) SystemAction.get(PatchAction.class);
             item = new JMenuItem();
-            action = (Action) SystemAction.get(BackoutAction.class);
-            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
-            Actions.connect(item, action, false);
-            menu.add(item);
-            item = new JMenuItem();
-            action = (Action) SystemAction.get(RollbackAction.class);
-            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
-            Actions.connect(item, action, false);
-            menu.add(item);
-            item = new JMenuItem();
-            action = (Action) SystemAction.get(VerifyAction.class);
-            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
         } else {
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(StripAction.class), Bundle.CTL_PopupMenuItem_Strip(), lkp));
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(ExportDiffAction.class), NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_ExportDiff"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(BackoutAction.class), Bundle.CTL_PopupMenuItem_Backout(), lkp));
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(PatchAction.class), Bundle.CTL_PopupName_PatchAction(), lkp));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RollbackAction.class), Bundle.CTL_PopupMenuItem_Rollback(), lkp));
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(VerifyAction.class), Bundle.CTL_PopupMenuItem_Verify(), lkp));
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        }
-
+        }        
         return menu;
     }
 
-    @Override
-    public JMenuItem getPopupPresenter() {
-        JMenu menu = createMenu();
-        menu.setText(Bundle.CTL_MenuItem_RecoverMenu_popupName());
-        enableMenu(menu);
-        return menu;
-    }
 }

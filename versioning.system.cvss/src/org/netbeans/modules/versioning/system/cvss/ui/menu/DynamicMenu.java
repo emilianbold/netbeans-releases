@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,62 +34,67 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
+package org.netbeans.modules.versioning.system.cvss.ui.menu;
 
-import org.openide.util.actions.SystemAction;
-import org.openide.util.NbBundle;
-import org.openide.awt.Actions;
-import org.openide.awt.DynamicMenuContent;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.versioning.system.cvss.Annotator;
-import org.netbeans.modules.versioning.util.Utils;
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.openide.util.actions.Presenter;
 
 /**
- * Container menu for branch actions.
  *
- * @author Maros Sandor
+ * @author ondra
  */
-public class BranchesMenu extends AbstractAction implements DynamicMenuContent {
-
-    public BranchesMenu() {
-        super(NbBundle.getMessage(BranchesMenu.class, "CTL_MenuItem_BranchesMenu"));
+public abstract class DynamicMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
+    
+    public DynamicMenu (String name) {
+        super(name);
     }
 
-    public JComponent[] getMenuPresenters() {
-        return new JComponent [] { createMenu() };
+    @Override
+    public JMenuItem getMenuPresenter() {
+        JMenu menu = createMenu();
+        org.openide.awt.Mnemonics.setLocalizedText(menu, menu.getText());
+        enableMenu(menu);
+        return menu;
     }
 
-    public JComponent[] synchMenuPresenters(JComponent[] items) {
-        return new JComponent [] { createMenu() };
+    @Override
+    public JMenuItem getPopupPresenter() {
+        JMenu menu = createMenu();
+        org.openide.awt.Mnemonics.setLocalizedText(menu, menu.getText());
+        enableMenu(menu);
+        return menu;
     }
 
-    public boolean isEnabled() {
+    @Override
+    public boolean isEnabled () {
         return true;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    @Override
+    public final void actionPerformed (ActionEvent ev) {
         // no operation
     }
 
-    private JMenu createMenu() {
-        JMenu menu = new JMenu(this);
-        Action action = SystemAction.get(BranchAction.class);
-        Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
-        menu.add(new Actions.MenuItem(action, true));
-        
-        action = SystemAction.get(SwitchBranchAction.class);
-        Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
-        menu.add(new Actions.MenuItem(action, true));
-        
-        action = SystemAction.get(MergeBranchAction.class);
-        Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
-        menu.add(new Actions.MenuItem(action, true));
-        
-        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(BranchesMenu.class, "CTL_MenuItem_BranchesMenu"));
-        return menu;
+    protected abstract JMenu createMenu ();
+    
+    protected static void enableMenu (JMenu menu) {
+        boolean enabled = false;
+        for (int i = 0; i < menu.getItemCount(); ++i) {
+            JMenuItem item = menu.getItem(i);
+            if (item != null && item.isEnabled()) {
+                enabled = true;
+                break;
+            }
+        }
+        menu.setEnabled(enabled);
     }
 }

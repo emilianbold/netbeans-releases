@@ -63,12 +63,19 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Ondra
  */
-public final class ExportMenu extends DynamicMenu {
+public final class PatchesMenu extends DynamicMenu {
     private final ActionDestination dest;
     private final Lookup lkp;
 
-    public ExportMenu (ActionDestination dest, Lookup lkp) {
-        super(NbBundle.getMessage(ExportMenu.class, dest.equals(ActionDestination.MainMenu) ? "CTL_MenuItem_ExportMenu" : "CTL_MenuItem_ExportMenu.popup")); //NOI18N
+    @NbBundle.Messages({
+        "CTL_MenuItem_ExportMenu=&Patches",
+        "CTL_MenuItem_ExportMenu.popup=Patches",
+        "CTL_PopupName.PatchAction=Apply Diff Patch..."
+    })
+    public PatchesMenu (ActionDestination dest, Lookup lkp) {
+        super(dest.equals(ActionDestination.MainMenu) 
+                ? Bundle.CTL_MenuItem_ExportMenu()
+                : Bundle.CTL_MenuItem_ExportMenu_popup());
         this.dest = dest;
         this.lkp = lkp;
     }
@@ -77,6 +84,7 @@ public final class ExportMenu extends DynamicMenu {
     protected JMenu createMenu () {
         JMenu menu = new JMenu(this);
         JMenuItem item;
+        Action patchAction = getPatchAction();
         if (dest.equals(ActionDestination.MainMenu)) {
             item = new JMenuItem();
             Action action = (Action) SystemAction.get(ExportUncommittedChangesAction.class);
@@ -89,12 +97,29 @@ public final class ExportMenu extends DynamicMenu {
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
+            
+            if (patchAction != null) {
+                menu.addSeparator();
+                item = new JMenuItem();
+                Actions.connect(item, patchAction, false);
+                menu.add(item);
+            }
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(ExportUncommittedChangesAction.class), NbBundle.getMessage(ExportUncommittedChangesAction.class, "LBL_ExportUncommittedChangesAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(ExportCommitAction.class), NbBundle.getMessage(ExportCommitAction.class, "LBL_ExportCommitAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            
+            if (patchAction != null) {
+                menu.addSeparator();
+                item = menu.add(SystemActionBridge.createAction(patchAction, Bundle.CTL_PopupName_PatchAction(), lkp));
+                org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            }
         }        
         return menu;
+    }
+
+    private Action getPatchAction () {
+        return Actions.forID("Tools", "org.netbeans.modules.diff.PatchAction"); //NOI18N
     }
 }
