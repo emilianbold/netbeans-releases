@@ -46,17 +46,16 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.APIAccessor;
@@ -66,6 +65,7 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
+import org.openide.util.ChangeSupport;
 
 /**
  * Quick search toolbar component
@@ -76,12 +76,10 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
 
     private QuickSearchPopup displayer;
     private Color origForeground;
-    private JPanel caller;    
-    private PropertyChangeSupport changeSupport;
+    private JComponent caller;    
+    private ChangeSupport changeSupport;
 
-    public static final String EVT_ISSUE_CHANGED = "QuickSearchComboBar.issue.changed"; // NOI18N
-
-    public QuickSearchComboBar(JPanel caller) {
+    public QuickSearchComboBar(JComponent caller) {
         this.caller = caller;
         initComponents();
         command.setRenderer(new DefaultListCellRenderer() {
@@ -98,14 +96,12 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         displayer = new QuickSearchPopup(this);
     }
 
-    @Override
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-        getChangeSupport().removePropertyChangeListener(listener);
+    public synchronized void removeChangeListener(ChangeListener listener) {
+        getChangeSupport().removeChangeListener(listener);
     }
 
-    @Override
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-        getChangeSupport().addPropertyChangeListener(listener);
+    public synchronized void addChangeListener(ChangeListener listener) {
+        getChangeSupport().addChangeListener(listener);
     }
 
     public Issue getIssue() {
@@ -196,9 +192,9 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         }
     }
 
-    private PropertyChangeSupport getChangeSupport() {
+    private ChangeSupport getChangeSupport() {
         if(changeSupport == null) {
-            changeSupport = new PropertyChangeSupport(this);
+            changeSupport = new ChangeSupport(this);
         }
         return changeSupport;
     }
@@ -322,7 +318,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
                 ignoreCommandChanges = false;
             }
             if(oldIssue != null || issue != null) {
-                getChangeSupport().firePropertyChange(EVT_ISSUE_CHANGED, oldIssue, issue);
+                getChangeSupport().fireChange();
             }
         }
 

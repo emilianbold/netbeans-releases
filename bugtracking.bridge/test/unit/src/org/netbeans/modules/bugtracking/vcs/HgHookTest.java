@@ -57,7 +57,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.HookType;
@@ -276,7 +276,10 @@ public class HgHookTest extends NbTestCase {
     private void setIssue(Repository repository, HookPanel panel) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         Field f = panel.getClass().getDeclaredField("qs");
         f.setAccessible(true);
-        QuickSearchComboBar qs = (QuickSearchComboBar) f.get(panel);
+        IssueQuickSearch qis = (IssueQuickSearch) f.get(panel);
+        f = qis.getClass().getDeclaredField("bar");
+        f.setAccessible(true);
+        QuickSearchComboBar qs = (QuickSearchComboBar) f.get(qis);
         Method m = qs.getClass().getDeclaredMethod("setIssue", IssueImpl.class);
         m.setAccessible(true);
         HookIssue.getInstance().reset();
