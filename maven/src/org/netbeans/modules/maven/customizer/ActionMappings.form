@@ -22,40 +22,48 @@
                   <Component id="lblConfiguration" min="-2" max="-2" attributes="0"/>
                   <Component id="lblGoals" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="lblMappings" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblPackagings" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="lblProfiles" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="lblProperties" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnAddProps" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblProperties" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="txtGoals" alignment="0" max="32767" attributes="2"/>
-                  <Component id="txtProfiles" alignment="0" max="32767" attributes="2"/>
-                  <Component id="comConfiguration" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jScrollPane5" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="cbRecursively" min="-2" max="-2" attributes="1"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="cbBuildWithDeps" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="jScrollPane2" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="jScrollPane1" pref="268" max="32767" attributes="1"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="btnRemove" linkSize="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnAdd" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="txtGoals" alignment="0" max="32767" attributes="2"/>
+                          <Component id="txtProfiles" alignment="0" max="32767" attributes="2"/>
+                          <Component id="comConfiguration" alignment="0" max="32767" attributes="0"/>
+                          <Component id="txtPackagings" alignment="0" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="jScrollPane5" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="122" pref="122" max="-2" attributes="0"/>
-              <Component id="cbRecursively" min="-2" max="-2" attributes="1"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="cbBuildWithDeps" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="94" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace min="-2" pref="124" max="-2" attributes="0"/>
-              <Component id="jScrollPane1" max="32767" attributes="1"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="btnRemove" linkSize="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnAdd" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane2" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -86,23 +94,25 @@
                   <Component id="lblProfiles" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtProfiles" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="lblPackagings" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="txtPackagings" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Component id="lblProperties" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane5" max="32767" attributes="0"/>
-                  </Group>
+                  <Component id="jScrollPane5" pref="86" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="cbRecursively" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cbBuildWithDeps" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbRecursively" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jScrollPane2" min="-2" pref="140" max="-2" attributes="0"/>
@@ -298,5 +308,19 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JLabel" name="lblPackagings">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.lblPackagings.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtPackagings">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.txtPackagings.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
   </SubComponents>
 </Form>
