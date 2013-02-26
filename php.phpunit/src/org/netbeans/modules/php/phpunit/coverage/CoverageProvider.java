@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 
@@ -56,6 +57,7 @@ public class CoverageProvider {
     private static final Logger LOGGER = Logger.getLogger(CoverageProvider.class.getName());
 
 
+    @CheckForNull
     public Coverage getCoverage() {
         CoverageImpl coverage = new CoverageImpl();
         try {

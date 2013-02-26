@@ -49,7 +49,7 @@ import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public final class TestCaseImpl implements TestCase {
+public final class TestCaseVo {
 
     private static final String PHPUNIT_TYPE = "PhpUnit"; // NOI18N
     private static final String EXPECTED_SECTION_START = "--- Expected"; // NOI18N
@@ -64,10 +64,10 @@ public final class TestCaseImpl implements TestCase {
     private final int line;
     private final long time;
 
-    private Status status = Status.PASSED;
+    private TestCase.Status status = TestCase.Status.PASSED;
 
 
-    public TestCaseImpl(String name, String file, int line, long time) {
+    public TestCaseVo(String name, String file, int line, long time) {
         assert name != null;
         this.name = name;
         this.file = file;
@@ -75,25 +75,22 @@ public final class TestCaseImpl implements TestCase {
         this.time = time;
     }
 
-    @NbBundle.Messages("TestCaseImpl.tests.no=No valid test cases found.")
-    static TestCaseImpl skippedTestCase() {
+    @NbBundle.Messages("TestCaseVo.tests.no=No valid test cases found.")
+    static TestCaseVo skippedTestCase() {
         // suite with no testcases => create a fake with error message
-        TestCaseImpl testCase = new TestCaseImpl(Bundle.TestCaseImpl_tests_no(), null, -1, -1);
-        testCase.status = Status.SKIPPED;
+        TestCaseVo testCase = new TestCaseVo(Bundle.TestCaseVo_tests_no(), null, -1, -1);
+        testCase.status = TestCase.Status.SKIPPED;
         return testCase;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public String getType() {
         return PHPUNIT_TYPE;
     }
 
-    @Override
     public String getClassName() {
         return name;
     }
@@ -106,7 +103,6 @@ public final class TestCaseImpl implements TestCase {
         return line;
     }
 
-    @Override
     public Locations.Line getLocation() {
         if (file == null) {
             return null;
@@ -118,18 +114,15 @@ public final class TestCaseImpl implements TestCase {
         return new Locations.Line(FileUtil.toFileObject(f), line);
     }
 
-    @Override
     public long getTime() {
         return time;
     }
 
-    @Override
     public String[] getStackTrace() {
         return stacktrace.toArray(new String[stacktrace.size()]);
     }
 
-    @Override
-    public Diff getDiff() {
+    public TestCase.Diff getDiff() {
         StringBuilder expected = new StringBuilder(100);
         StringBuilder actual = new StringBuilder(100);
         boolean diffStarted = false;
@@ -158,7 +151,7 @@ public final class TestCaseImpl implements TestCase {
                 break;
             }
         }
-        return new Diff(expected.toString(), actual.toString());
+        return new TestCase.Diff(expected.toString(), actual.toString());
     }
 
     private void addSpace(StringBuilder sb) {
@@ -172,32 +165,30 @@ public final class TestCaseImpl implements TestCase {
     }
 
     void setErrorStatus() {
-        assert status == Status.PASSED;
-        status = Status.ERROR;
+        assert status == TestCase.Status.PASSED;
+        status = TestCase.Status.ERROR;
     }
 
     public void setFailureStatus() {
-        assert status == Status.PASSED;
-        status = Status.FAILED;
+        assert status == TestCase.Status.PASSED;
+        status = TestCase.Status.FAILED;
     }
 
-    @Override
-    public Status getStatus() {
+    public TestCase.Status getStatus() {
         return status;
     }
 
-    @Override
     public boolean isError() {
-        return status.equals(Status.ERROR);
+        return status.equals(TestCase.Status.ERROR);
     }
 
     public boolean isFailure() {
-        return status.equals(Status.FAILED);
+        return status.equals(TestCase.Status.FAILED);
     }
 
     @Override
     public String toString() {
-        return String.format("TestCaseImpl{name: %s, file: %s, line: %d, time: %d, status: %s, stacktrace: %s}", name, file, line, time, status, stacktrace);
+        return String.format("TestCaseVo{name: %s, file: %s, line: %d, time: %d, status: %s, stacktrace: %s}", name, file, line, time, status, stacktrace); // NOI18N
     }
 
 }

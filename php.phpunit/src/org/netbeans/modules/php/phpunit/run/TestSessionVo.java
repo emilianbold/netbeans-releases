@@ -49,33 +49,28 @@ import org.netbeans.api.extexecution.input.LineProcessors;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
-import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.run.OutputLineHandler;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
-import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
-public final class TestSessionImpl implements TestSession {
+public final class TestSessionVo {
 
-    private final List<TestSuite> testSuites = new ArrayList<TestSuite>();
+    private final List<TestSuiteVo> testSuites = new ArrayList<TestSuiteVo>();
     private final String customSuitePath;
 
     private long time = -1;
     private int tests = -1;
-    private Coverage coverage;
 
 
-    public TestSessionImpl(@NullAllowed String customSuitePath) {
+    public TestSessionVo(@NullAllowed String customSuitePath) {
         this.customSuitePath = customSuitePath;
     }
 
-    public void addTestSuite(TestSuite testSuite) {
+    public void addTestSuite(TestSuiteVo testSuite) {
         testSuites.add(testSuite);
     }
 
-    @Override
-    public List<TestSuite> getTestSuites() {
+    public List<TestSuiteVo> getTestSuites() {
         return testSuites;
     }
 
@@ -97,39 +92,27 @@ public final class TestSessionImpl implements TestSession {
 
     @NbBundle.Messages({
         "# {0} - suite name",
-        "TestSessionImpl.msg.customSuite=Using custom test suite {0}."
+        "TestSessionVo.msg.customSuite=Using custom test suite {0}."
     })
-    @Override
     public String getInitMessage() {
         if (customSuitePath != null) {
-            return Bundle.TestSessionImpl_msg_customSuite(customSuitePath);
+            return Bundle.TestSessionVo_msg_customSuite(customSuitePath);
         }
         return null;
     }
 
-    @NbBundle.Messages("TestSessionImpl.msg.output=Full output can be found in Output window.")
-    @Override
+    @NbBundle.Messages("TestSessionVo.msg.output=Full output can be found in Output window.")
     public String getFinishMessage() {
-        return Bundle.TestSessionImpl_msg_output();
+        return Bundle.TestSessionVo_msg_output();
     }
 
     @Override
     public String toString() {
-        return String.format("TestSessionImpl{time: %d, tests: %d, suites: %d}", time, tests, testSuites.size());
+        return String.format("TestSessionVo{time: %d, tests: %d, suites: %d}", time, tests, testSuites.size());
     }
 
-    @Override
     public OutputLineHandler getOutputLineHandler() {
         return new PhpOutputLineHandler();
-    }
-
-    @Override
-    public Coverage getCoverage() {
-        return coverage;
-    }
-
-    public void setCoverage(Coverage coverage) {
-        this.coverage = coverage;
     }
 
     //~ Inner classes

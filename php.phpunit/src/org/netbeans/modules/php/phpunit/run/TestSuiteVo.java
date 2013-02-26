@@ -39,31 +39,72 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.spi.testing.run;
+package org.netbeans.modules.php.phpunit.run;
 
-import org.netbeans.api.annotations.common.NonNull;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- * Interface for a test suite.
- * <p>
- * Every test suite <b>must be</b> {@link #finish(long) finished}.
- */
-public interface TestSuite {
+public final class TestSuiteVo {
 
-    /**
-     * Add new test case to this test suite.
-     * @param name name of the test case
-     * @param type type of the test case
-     * @return new test case
-     * @since 0.2
-     */
-    TestCase addTestCase(@NonNull String name, @NonNull String type);
+    private final List<TestCaseVo> testCases = new ArrayList<TestCaseVo>();
+    private final String name;
+    private final String file;
+    private final long time;
 
-    /**
-     * Finish this test suite and set time of this suite run, in milliseconds.
-     * @param time time of this suite run, in milliseconds
-     * @since 0.2
-     */
-    void finish(long time);
+
+    public TestSuiteVo(String name, String file, long time) {
+        assert name != null;
+        assert file != null;
+        this.name = name;
+        this.file = file;
+        this.time = time;
+    }
+
+    void addTestCase(TestCaseVo testCase) {
+        testCases.add(testCase);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public FileObject getLocation() {
+        if (file == null) {
+            return null;
+        }
+        File f = new File(file);
+        if (!f.isFile()) {
+            return null;
+        }
+        return FileUtil.toFileObject(f);
+    }
+
+    public List<TestCaseVo> getTestCases() {
+        checkTestCases();
+        return testCases;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    private void checkTestCases() {
+        if (!testCases.isEmpty()) {
+            return;
+        }
+        testCases.add(TestCaseVo.skippedTestCase());
+    }
+
+    @Override
+    public String toString() {
+        return String.format("TestSuiteVo{name: %s, file: %s, time: %d, cases: %d}", name, file, time, testCases.size()); // NOI18N
+    }
 
 }
