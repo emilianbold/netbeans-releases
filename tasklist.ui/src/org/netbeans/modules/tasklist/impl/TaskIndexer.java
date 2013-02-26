@@ -157,14 +157,16 @@ public class TaskIndexer extends CustomIndexer {
                         taskList.update(scanner, fo, new ArrayList<Task>(tasks), filter);
                     if( !tasks.isEmpty() ) {
                         if( null == doc ) {
-                            doc = is.createDocument(idx);
-                            is.addDocument(doc);
-                            doc.addPair(KEY_SCANNER, ScannerDescriptor.getType(scanner), true, true);
+                            doc = is.createDocument(idx);                            
+                            doc.addPair(KEY_SCANNER, ScannerDescriptor.getType(scanner), true, true);                            
                         }
                         for( Task t : tasks ) {
                             doc.addPair(KEY_TASK, encode(t), false, true);
                         }
                     }
+                }
+                if (doc != null) {
+                    is.addDocument(doc);
                 }
                 // current editor file has been found, no need for further scanning and caching
                 if (currentFileFound) {
