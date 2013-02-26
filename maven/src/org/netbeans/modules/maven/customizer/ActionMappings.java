@@ -1174,6 +1174,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         menu.add(new FileVariableAction(area, "classNameWithExtension"));
         menu.add(new FileVariableAction(area, "webPagePath"));
         menu.add(new FileVariableAction(area, "classPathScope"));
+        menu.add(new FileVariableAction(area, "absolutePathName"));
             
         return menu;
     }
