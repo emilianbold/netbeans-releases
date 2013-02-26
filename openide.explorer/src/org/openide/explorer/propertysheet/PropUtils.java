@@ -226,6 +226,7 @@ final class PropUtils {
     private static Boolean useOptimizedCustomButtonPainting = null;
     static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     static final boolean isGtk = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    static final boolean isNimbus = "Nimbus".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     
     private static Graphics scratchGraphics = null;
 

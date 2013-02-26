@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.module.spi.*;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.web.common.api.Pair;
@@ -68,6 +69,31 @@ public class CssModuleSupport {
 
     public static Collection<? extends CssEditorModule> getModules() {
         return Lookup.getDefault().lookupAll(CssEditorModule.class);
+    }
+    
+    //TODO refine the logic OK/UNKNOWN/ERRONEOUS ???
+    public static SemanticAnalyzerResult analyzeDeclaration(Node declarationNode) {
+        SemanticAnalyzerResult result = SemanticAnalyzerResult.UNKNOWN;
+        for(CssEditorModule module : getModules()) {
+            SemanticAnalyzer semanticAnalyzer = module.getSemanticAnalyzer();
+            if(semanticAnalyzer != null) {
+                SemanticAnalyzerResult local = semanticAnalyzer.analyzeDeclaration(declarationNode);
+                assert local != null;
+                switch(local.getType()) {
+                    case VALID:
+                        //if at least one says VALID, then it is valid until someone else says ERRONEOUS
+                        result = local;
+                        break;
+                    case ERRONEOUS:
+                        //use first ERRONEOUS result 
+                        return local;
+                    case UNKNOWN:
+                        //unknown
+                        break;
+                }
+            }
+        }
+        return result;
     }
 
     public static Map<OffsetRange, Set<ColoringAttributes>> getSemanticHighlights(FeatureContext context, FeatureCancel cancel) {
@@ -222,6 +248,40 @@ public class CssModuleSupport {
 
         return all;
 
+    }
+    
+    /**
+     * @since 1.42
+     * @param context
+     * @return 
+     */
+    public static CssEditorModule getModuleForInstantRename(EditorFeatureContext context) {
+        Set<OffsetRange> all = new HashSet<OffsetRange>();
+        //first module allowing to instant rename the context will win and do the rename
+        for (CssEditorModule module : getModules()) {
+            if (module.isInstantRenameAllowed(context)) {
+                return module;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @since 1.42
+     * @param context
+     * @param module
+     * @return 
+     */
+    public static Set<OffsetRange> getInstantRenameRegions(EditorFeatureContext context, CssEditorModule module) {
+        Set<OffsetRange> all = new HashSet<OffsetRange>();
+        //first module allowing to instant rename the context will win and do the rename
+        assert module.isInstantRenameAllowed(context);
+
+        final NodeVisitor<Set<OffsetRange>> visitor = module.getInstantRenamerVisitor(context, all);
+        assert visitor != null;
+        
+        visitor.visitChildren(context.getParseTreeRoot());
+        return all;
     }
     
 //    //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 

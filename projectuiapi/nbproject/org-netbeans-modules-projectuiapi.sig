@@ -1,5 +1,27 @@
 #Signature file v4.1
-#Version 1.57.1
+#Version 1.65.1
+
+CLSS public abstract interface java.io.Serializable
+
+CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
+meth public abstract int compareTo({java.lang.Comparable%0})
+
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected init(java.lang.String,int)
+intf java.io.Serializable
+intf java.lang.Comparable<{java.lang.Enum%0}>
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds name,ordinal
 
 CLSS public java.lang.Object
 cons public init()
@@ -41,6 +63,17 @@ CLSS public abstract interface !annotation java.lang.annotation.Target
 intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
 
+CLSS public abstract interface java.util.EventListener
+
+CLSS public java.util.EventObject
+cons public init(java.lang.Object)
+fld protected java.lang.Object source
+intf java.io.Serializable
+meth public java.lang.Object getSource()
+meth public java.lang.String toString()
+supr java.lang.Object
+hfds serialVersionUID
+
 CLSS public final org.netbeans.api.project.ui.OpenProjects
 fld public final static java.lang.String PROPERTY_MAIN_PROJECT = "MainProject"
 fld public final static java.lang.String PROPERTY_OPEN_PROJECTS = "openProjects"
@@ -48,21 +81,66 @@ meth public boolean isProjectOpen(org.netbeans.api.project.Project)
 meth public java.util.concurrent.Future<org.netbeans.api.project.Project[]> openProjects()
 meth public org.netbeans.api.project.Project getMainProject()
 meth public org.netbeans.api.project.Project[] getOpenProjects()
+meth public org.netbeans.api.project.ui.ProjectGroup getActiveProjectGroup()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public static org.netbeans.api.project.ui.OpenProjects getDefault()
+meth public void addProjectGroupChangeListener(org.netbeans.api.project.ui.ProjectGroupChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void close(org.netbeans.api.project.Project[])
 meth public void open(org.netbeans.api.project.Project[],boolean)
 meth public void open(org.netbeans.api.project.Project[],boolean,boolean)
+meth public void removeProjectGroupChangeListener(org.netbeans.api.project.ui.ProjectGroupChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void setMainProject(org.netbeans.api.project.Project)
 supr java.lang.Object
 hfds INSTANCE,LOG,trampoline
 
+CLSS public final org.netbeans.api.project.ui.ProjectGroup
+meth public boolean equals(java.lang.Object)
+meth public int hashCode()
+meth public java.lang.String getName()
+meth public java.util.prefs.Preferences preferencesForPackage(java.lang.Class)
+supr java.lang.Object
+hfds name,prefs
+hcls AccessorImpl
+
+CLSS public final org.netbeans.api.project.ui.ProjectGroupChangeEvent
+cons public init(org.netbeans.api.project.ui.ProjectGroup,org.netbeans.api.project.ui.ProjectGroup)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+meth public org.netbeans.api.project.ui.ProjectGroup getNewGroup()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public org.netbeans.api.project.ui.ProjectGroup getOldGroup()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+supr java.util.EventObject
+hfds newGroup,oldGroup
+
+CLSS public abstract interface org.netbeans.api.project.ui.ProjectGroupChangeListener
+intf java.util.EventListener
+meth public abstract void projectGroupChanged(org.netbeans.api.project.ui.ProjectGroupChangeEvent)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void projectGroupChanging(org.netbeans.api.project.ui.ProjectGroupChangeEvent)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public org.netbeans.api.project.ui.ProjectProblems
+meth public static boolean isBroken(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static void showAlert(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static void showCustomizer(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+
 CLSS public abstract interface org.netbeans.spi.project.ui.CustomizerProvider
 meth public abstract void showCustomizer()
 
 CLSS public abstract interface org.netbeans.spi.project.ui.LogicalViewProvider
+intf org.netbeans.spi.project.ui.PathFinder
 meth public abstract org.openide.nodes.Node createLogicalView()
+
+CLSS public abstract interface org.netbeans.spi.project.ui.PathFinder
 meth public abstract org.openide.nodes.Node findPath(org.openide.nodes.Node,java.lang.Object)
 
 CLSS public abstract interface org.netbeans.spi.project.ui.PrivilegedTemplates
@@ -73,6 +151,81 @@ cons protected init()
 meth protected abstract void projectClosed()
 meth protected abstract void projectOpened()
 supr java.lang.Object
+
+CLSS public abstract interface org.netbeans.spi.project.ui.ProjectProblemResolver
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.util.concurrent.Future<org.netbeans.spi.project.ui.ProjectProblemsProvider$Result> resolve()
+
+CLSS public abstract interface org.netbeans.spi.project.ui.ProjectProblemsProvider
+fld public final static java.lang.String PROP_PROBLEMS = "problems"
+innr public final static !enum Severity
+innr public final static !enum Status
+innr public final static ProjectProblem
+innr public final static Result
+meth public abstract java.util.Collection<? extends org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem> getProblems()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public final static org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem
+ outer org.netbeans.spi.project.ui.ProjectProblemsProvider
+meth public boolean equals(java.lang.Object)
+meth public int hashCode()
+meth public java.lang.String getDescription()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.lang.String getDisplayName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.lang.String toString()
+meth public java.util.concurrent.Future<org.netbeans.spi.project.ui.ProjectProblemsProvider$Result> resolve()
+meth public org.netbeans.spi.project.ui.ProjectProblemsProvider$Severity getSeverity()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem createError(java.lang.String,java.lang.String,org.netbeans.spi.project.ui.ProjectProblemResolver)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem createWarning(java.lang.String,java.lang.String,org.netbeans.spi.project.ui.ProjectProblemResolver)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds description,displayName,resolver,severity
+
+CLSS public final static org.netbeans.spi.project.ui.ProjectProblemsProvider$Result
+ outer org.netbeans.spi.project.ui.ProjectProblemsProvider
+meth public boolean isResolved()
+meth public java.lang.String getMessage()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public org.netbeans.spi.project.ui.ProjectProblemsProvider$Status getStatus()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$Result create(org.netbeans.spi.project.ui.ProjectProblemsProvider$Status)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$Result create(org.netbeans.spi.project.ui.ProjectProblemsProvider$Status,java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds message,status
+
+CLSS public final static !enum org.netbeans.spi.project.ui.ProjectProblemsProvider$Severity
+ outer org.netbeans.spi.project.ui.ProjectProblemsProvider
+fld public final static org.netbeans.spi.project.ui.ProjectProblemsProvider$Severity ERROR
+fld public final static org.netbeans.spi.project.ui.ProjectProblemsProvider$Severity WARNING
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$Severity valueOf(java.lang.String)
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$Severity[] values()
+supr java.lang.Enum<org.netbeans.spi.project.ui.ProjectProblemsProvider$Severity>
+
+CLSS public final static !enum org.netbeans.spi.project.ui.ProjectProblemsProvider$Status
+ outer org.netbeans.spi.project.ui.ProjectProblemsProvider
+fld public final static org.netbeans.spi.project.ui.ProjectProblemsProvider$Status RESOLVED
+fld public final static org.netbeans.spi.project.ui.ProjectProblemsProvider$Status RESOLVED_WITH_WARNING
+fld public final static org.netbeans.spi.project.ui.ProjectProblemsProvider$Status UNRESOLVED
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$Status valueOf(java.lang.String)
+meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider$Status[] values()
+supr java.lang.Enum<org.netbeans.spi.project.ui.ProjectProblemsProvider$Status>
 
 CLSS public abstract interface org.netbeans.spi.project.ui.RecommendedTemplates
 meth public abstract java.lang.String[] getRecommendedTypes()
@@ -196,18 +349,20 @@ CLSS public final static org.netbeans.spi.project.ui.support.ProjectCustomizer$C
 meth public !varargs static org.netbeans.spi.project.ui.support.ProjectCustomizer$Category create(java.lang.String,java.lang.String,java.awt.Image,org.netbeans.spi.project.ui.support.ProjectCustomizer$Category[])
 meth public boolean isValid()
 meth public java.awt.Image getIcon()
+meth public java.awt.event.ActionListener getCloseListener()
 meth public java.awt.event.ActionListener getOkButtonListener()
 meth public java.awt.event.ActionListener getStoreListener()
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getErrorMessage()
 meth public java.lang.String getName()
 meth public org.netbeans.spi.project.ui.support.ProjectCustomizer$Category[] getSubcategories()
+meth public void setCloseListener(java.awt.event.ActionListener)
 meth public void setErrorMessage(java.lang.String)
 meth public void setOkButtonListener(java.awt.event.ActionListener)
 meth public void setStoreListener(java.awt.event.ActionListener)
 meth public void setValid(boolean)
 supr java.lang.Object
-hfds displayName,errorMessage,icon,name,okListener,storeListener,subcategories,valid
+hfds closeListener,displayName,errorMessage,icon,name,okListener,storeListener,subcategories,valid
 
 CLSS public abstract interface static org.netbeans.spi.project.ui.support.ProjectCustomizer$CategoryComponentProvider
  outer org.netbeans.spi.project.ui.support.ProjectCustomizer
@@ -237,6 +392,26 @@ CLSS public abstract interface static !annotation org.netbeans.spi.project.ui.su
 intf java.lang.annotation.Annotation
 meth public abstract org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider$Registration[] value()
 
+CLSS public final org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport
+cons public init(java.lang.Object)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+innr public abstract interface static ProblemsCollector
+meth public java.util.Collection<? extends org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem> getProblems(org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport$ProblemsCollector)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void fireProblemsChange()
+meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds changeId,problems,problemsLock,propertyChangeSupport
+
+CLSS public abstract interface static org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport$ProblemsCollector
+ outer org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport
+meth public abstract java.util.Collection<? extends org.netbeans.spi.project.ui.ProjectProblemsProvider$ProjectProblem> collectProblems()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+
 CLSS public org.netbeans.spi.project.ui.support.ProjectSensitiveActions
 meth public static javax.swing.Action projectCommandAction(java.lang.String,java.lang.String,javax.swing.Icon)
 meth public static javax.swing.Action projectSensitiveAction(org.netbeans.spi.project.ui.support.ProjectActionPerformer,java.lang.String,javax.swing.Icon)
@@ -245,9 +420,10 @@ supr java.lang.Object
 CLSS public final org.netbeans.spi.project.ui.support.UILookupMergerSupport
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.project.ui.PrivilegedTemplates> createPrivilegedTemplatesMerger()
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.project.ui.ProjectOpenedHook> createProjectOpenHookMerger(org.netbeans.spi.project.ui.ProjectOpenedHook)
+meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.project.ui.ProjectProblemsProvider> createProjectProblemsProviderMerger()
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.project.ui.RecommendedTemplates> createRecommendedTemplatesMerger()
 supr java.lang.Object
-hcls OpenHookImpl,OpenMerger,PrivilegedMerger,PrivilegedTemplatesImpl,RecommendedMerger,RecommendedTemplatesImpl
+hcls OpenHookImpl,OpenMerger,PrivilegedMerger,PrivilegedTemplatesImpl,ProjectProblemsProviderImpl,ProjectProblemsProviderMerger,RecommendedMerger,RecommendedTemplatesImpl
 
 CLSS public org.netbeans.spi.project.ui.templates.support.Templates
 innr public final static SimpleTargetChooserBuilder

@@ -44,6 +44,7 @@ package org.netbeans.modules.db.metadata.model.api;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle.Kind;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
@@ -74,11 +75,18 @@ public class MetadataElementHandleTest extends MetadataTestBase {
         stmt.executeUpdate("CREATE TABLE BAR (ID INT NOT NULL PRIMARY KEY, FOO_ID INT NOT NULL, FOREIGN KEY (FOO_ID) REFERENCES FOO)");
         stmt.executeUpdate("CREATE INDEX FOO_INDEX ON FOO(FOO)");
         stmt.executeUpdate("CREATE VIEW FOOVIEW AS SELECT * FROM FOO");
+        stmt.executeUpdate("CREATE PROCEDURE XY (IN S_MONTH INTEGER, IN S_DAYS VARCHAR(255)) "
+                + " DYNAMIC RESULT SETS 1 "
+                + " PARAMETER STYLE JAVA READS SQL  DATA LANGUAGE JAVA "
+                + " EXTERNAL NAME 'org.netbeans.modules.db.metadata.model.api.MetadataElementHandleTest.demoProcedure'");
+        stmt.executeUpdate("CREATE FUNCTION TO_DEGREES(RADIANS DOUBLE) RETURNS DOUBLE "
+                + "PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA "
+                + "EXTERNAL NAME 'java.lang.Math.toDegrees'");
         stmt.close();
         metadata = new JDBCMetadata(conn, "APP").getMetadata();
     }
 
-    public void testResolve() {
+    public void testResolve() throws SQLException {
         Catalog catalog = metadata.getDefaultCatalog();
         MetadataElementHandle<Catalog> catalogHandle = MetadataElementHandle.create(catalog);
             Catalog resolvedCatalog = catalogHandle.resolve(metadata);
@@ -119,6 +127,67 @@ public class MetadataElementHandleTest extends MetadataTestBase {
         MetadataElementHandle<View> viewHandle = MetadataElementHandle.create(view);
         View resolvedView = viewHandle.resolve(metadata);
         assertSame(view, resolvedView);
+
+        Function function = schema.getFunction("TO_DEGREES");
+        MetadataElementHandle<Function> procedureHandle = MetadataElementHandle.create(function);
+        Function resolvedFunction = procedureHandle.resolve(metadata);
+        assertSame(function, resolvedFunction);
+
+        assertTrue(function.getParameters().size() > 0);
+
+        for (Parameter param : function.getParameters()) {
+            MetadataElementHandle<Parameter> paramHandle = MetadataElementHandle.create(param);
+            Parameter resolvedParam = paramHandle.resolve(metadata);
+            assertSame(param, resolvedParam);
+        }
+
+        Value value = function.getReturnValue();
+        assertNotNull(value);
+        MetadataElementHandle<Value> valueHandle = MetadataElementHandle.create(value);
+        Value resolvedValue = valueHandle.resolve(metadata);
+        assertSame(value, resolvedValue);
+
+        Procedure procedure = schema.getProcedure("XY");
+        MetadataElementHandle<Procedure> functionHandle = MetadataElementHandle.create(procedure);
+        Procedure resolvedProcedure = functionHandle.resolve(metadata);
+        assertSame(procedure, resolvedProcedure);
+
+        assertTrue(procedure.getParameters().size() > 0);
+
+        for (Parameter param : procedure.getParameters()) {
+            MetadataElementHandle<Parameter> paramHandle = MetadataElementHandle.create(param);
+            Parameter resolvedParam = paramHandle.resolve(metadata);
+            assertSame(param, resolvedParam);
+        }
+
+        value = procedure.getReturnValue();
+        assertNull(value);
+
+        // Ensure conflicting names of functions and procudures don't spill over
+        // a MetadataElementHandle<Parameter> from a procedure must not be
+        // resolvable against a function with the same "path" (Function name =
+        // procedure name and same parameter name)
+        procedure = schema.getProcedure("XY");
+        MetadataElementHandle<Parameter> paramHandle = MetadataElementHandle.create(procedure.getParameters().iterator().next());
+        assertNotNull(paramHandle.resolve(metadata));
+
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate("DROP PROCEDURE XY");
+        stmt.executeUpdate("CREATE FUNCTION XY (S_MONTH INTEGER, S_DAYS VARCHAR(255)) RETURNS DOUBLE "
+                + " PARAMETER STYLE JAVA READS SQL  DATA LANGUAGE JAVA "
+                + " EXTERNAL NAME 'org.netbeans.modules.db.metadata.model.api.MetadataElementHandleTest.demoProcedure'");
+        stmt.close();
+
+        metadata.refresh();
+
+        schema = metadata.getDefaultSchema();
+
+        assertNotNull(schema.getFunction("XY"));
+
+        assertNull(schema.getProcedure("XY"));
+
+        assertNull(paramHandle.resolve(metadata));
+
 
         // Negative test - what happens if you create a handle for null
         try {

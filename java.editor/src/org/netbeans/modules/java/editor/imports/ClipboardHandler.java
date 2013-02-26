@@ -484,7 +484,7 @@ public class ClipboardHandler {
 
                     boolean finished = false;
 
-                    if (comp.getClientProperty(RUN_SYNCHRONOUSLY) != null) {
+                    if (comp.getClientProperty(RUN_SYNCHRONOUSLY) != null || autoImport) {
                         try {
                             js.runUserActionTask(w, true);
                             finished = true;
@@ -525,7 +525,7 @@ public class ClipboardHandler {
 
         @Override
         public boolean importData(JComponent comp, Transferable t) {
-            if (t.isDataFlavorSupported(IMPORT_FLAVOR) && comp instanceof JTextComponent && !insideToken((JTextComponent)comp, JavaTokenId.STRING_LITERAL)) {
+            if (t.isDataFlavorSupported(IMPORT_FLAVOR) && comp instanceof JTextComponent && !insideToken((JTextComponent)comp, JavaTokenId.STRING_LITERAL, JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT)) {
                 boolean result = false;
 
                 try {

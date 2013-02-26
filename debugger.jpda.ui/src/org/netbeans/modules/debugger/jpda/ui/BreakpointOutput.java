@@ -111,6 +111,7 @@ PropertyChangeListener {
     
     // LazyActionsManagerListener ..............................................
     
+    @Override
     protected void destroy () {
         DebuggerManager.getDebuggerManager ().removeDebuggerListener
             (DebuggerManager.PROP_BREAKPOINTS, this);
@@ -121,6 +122,7 @@ PropertyChangeListener {
         }
     }
 
+    @Override
     public String[] getProperties () {
         return new String[] { ActionsManagerListener.PROP_ACTION_PERFORMED };
     }
@@ -128,11 +130,16 @@ PropertyChangeListener {
     
     // JPDABreakpointListener ..................................................
 
+    @Override
     public void breakpointReached (JPDABreakpointEvent event) {
         synchronized (lock) {
-            if (event.getDebugger () != debugger) return;
+            if (event.getDebugger () != debugger) {
+                return;
+            }
         }
-        if (event.getConditionResult () == JPDABreakpointEvent.CONDITION_FALSE) return;
+        if (event.getConditionResult () == JPDABreakpointEvent.CONDITION_FALSE) {
+            return;
+        }
         JPDABreakpoint breakpoint = (JPDABreakpoint) event.getSource ();
         if (breakpoint.getSuspend() != JPDABreakpoint.SUSPEND_NONE) {
             getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
@@ -142,11 +149,15 @@ PropertyChangeListener {
     }
     
     public void substituteAndPrintText(String printText, JPDABreakpointEvent event) {
-        if (printText == null || printText.length  () == 0) return;
+        if (printText == null || printText.length  () == 0) {
+            return;
+        }
         synchronized (lock) {
             if (ioManager == null) {
                 lookupIOManager ();
-                if (ioManager == null) return;
+                if (ioManager == null) {
+                    return;
+                }
             }
         }
         printText = substitute(printText, event);
@@ -160,26 +171,37 @@ PropertyChangeListener {
     
     // DebuggerManagerListener .................................................
 
+    @Override
     public void breakpointAdded  (Breakpoint breakpoint) {
         hookBreakpoint (breakpoint);
     }
 
+    @Override
     public void breakpointRemoved (Breakpoint breakpoint) {
         unhookBreakpoint (breakpoint);
     }
     
+    @Override
     public Breakpoint[] initBreakpoints () {return new Breakpoint[0];}
+    @Override
     public void initWatches () {}
+    @Override
     public void watchAdded (Watch watch) {}
+    @Override
     public void watchRemoved (Watch watch) {}
+    @Override
     public void sessionAdded (Session session) {}
+    @Override
     public void sessionRemoved (Session session) {}
+    @Override
     public void engineAdded (DebuggerEngine engine) {}
+    @Override
     public void engineRemoved (DebuggerEngine engine) {}
 
     
     // PropertyChangeListener ..................................................
     
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         if (JPDABreakpoint.PROP_VALIDITY.equals(evt.getPropertyName())) {
             JPDABreakpoint bp = (JPDABreakpoint) evt.getSource();
@@ -216,7 +238,9 @@ PropertyChangeListener {
             synchronized (lock) {
                 if (ioManager == null) {
                     lookupIOManager ();
-                    if (ioManager == null) return;
+                    if (ioManager == null) {
+                        return;
+                    }
                 }
                 String printText = (msg != null) ?
                                    NbBundle.getMessage(BreakpointOutput.class, "MSG_InvalidBreakpointWithReason", bp.toString(), msg) :
@@ -240,7 +264,9 @@ PropertyChangeListener {
             synchronized (lock) {
                 if (ioManager == null) {
                     lookupIOManager ();
-                    if (ioManager == null) return;
+                    if (ioManager == null) {
+                        return;
+                    }
                 }
                 String msg = bp.getValidityMessage();
                 String printText;
@@ -280,15 +306,16 @@ PropertyChangeListener {
         JPDAThread t = event.getThread ();
         if (t != null) {
             printText = printText.replace(threadNamePattern, t.getName ());
-        }
-        else
+        } else {
             printText = printText.replace(threadNamePattern, "?");
+        }
         
         // 2) replace {className} by the name of current class
         if (event.getReferenceType () != null) {
             printText = printText.replace(classNamePattern, event.getReferenceType().name());
-        } else
+        } else {
             printText = printText.replace(classNamePattern, "?");
+        }
 
         // 3) replace {methodName} by the name of current method
         Session session = null;
@@ -303,7 +330,9 @@ PropertyChangeListener {
         String methodName;
         if (t != null) {
             methodName  = t.getMethodName ();
-            if ("".equals (methodName)) methodName = "?";
+            if ("".equals (methodName)) {
+                methodName = "?";
+            }
         } else {
             methodName = "?";
         }
@@ -315,12 +344,13 @@ PropertyChangeListener {
         
         // 4) replace {lineNumber} by the current line number
         int lineNumber = (t != null) ? t.getLineNumber (language) : -1;
-        if (lineNumber < 0)
+        if (lineNumber < 0) {
             printText = lineNumberPattern.matcher (printText).replaceAll 
                 ("?");
-        else
+        } else {
             printText = lineNumberPattern.matcher (printText).replaceAll 
                 (String.valueOf (lineNumber));
+        }
 
         if (event.getSource() instanceof ExceptionBreakpoint) {
             Variable exception = event.getVariable();
@@ -357,7 +387,9 @@ PropertyChangeListener {
         // 5) resolve all expressions {=expression}
         for (;;) {
             Matcher m = expressionPattern.matcher (printText);
-            if (!m.find ()) break;
+            if (!m.find ()) {
+                break;
+            }
             String expression = m.group (1);
             String value = "";
             try {
@@ -372,7 +404,9 @@ PropertyChangeListener {
                 if (t != null) {
                     try {
                         CallStackFrame[] topFramePtr = t.getCallStack(0, 1);
-                        if (topFramePtr.length > 0) csf = topFramePtr[0];
+                        if (topFramePtr.length > 0) {
+                            csf = topFramePtr[0];
+                        }
                     } catch (AbsentInformationException aiex) {}
                 }
                 try {
@@ -417,7 +451,9 @@ PropertyChangeListener {
         if (index >= 0) {
             index += condition.length();
             int l = printText.length();
-            while (index < l && printText.charAt(index) != '{') index++;
+            while (index < l && printText.charAt(index) != '{') {
+                index++;
+            }
             if (index < l) {
                 int index2 = findPair(printText, index+1, '{', '}');
                 if (index2 > 0) {
@@ -425,7 +461,9 @@ PropertyChangeListener {
                         return printText.substring(index + 1, index2).trim();
                     }
                     index = index2 + 1;
-                    while (index < l && printText.charAt(index) != '{') index++;
+                    while (index < l && printText.charAt(index) != '{') {
+                        index++;
+                    }
                     if (index < l) {
                         index2 = findPair(printText, index+1, '{', '}');
                         if (index2 > 0) {
@@ -443,13 +481,23 @@ PropertyChangeListener {
         int ci = 1; // Expecting that opening character was already
         while (index < l) {
             char c = printText.charAt(index);
-            if (c == co) ci++;
-            if (c == cc) ci--;
-            if (ci != 0) index++;
-            else break;
+            if (c == co) {
+                ci++;
+            }
+            if (c == cc) {
+                ci--;
+            }
+            if (ci != 0) {
+                index++;
+            } else {
+                break;
+            }
         }
-        if (index < l) return index;
-        else return -1;
+        if (index < l) {
+            return index;
+        } else {
+            return -1;
+        }
     }
 
     private void lookupIOManager () {

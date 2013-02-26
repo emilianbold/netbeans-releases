@@ -132,7 +132,7 @@ public class AddConstructor implements ErrorRule<Void> {
 
     @Override
     public String getDisplayName() {
-        return "";
+        return NbBundle.getMessage(AddConstructor.class, "DN_AddConstructor");
     }
 
     @Override

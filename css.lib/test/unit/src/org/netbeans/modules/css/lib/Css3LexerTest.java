@@ -198,6 +198,15 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken(null ,Css3Lexer.URI, lexer.nextToken());
     }
      
+     public void testSassVar() throws Exception {
+        String source = "$var ";
+     
+        Lexer lexer = createLexer(source);
+        
+        assertANTLRToken(null ,Css3Lexer.SASS_VAR, lexer.nextToken());
+        
+    }
+     
      /**
     * @param expectedImage - use null if you do not want to check the image
     */

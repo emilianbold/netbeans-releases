@@ -180,6 +180,10 @@ public final class ProjectPropertiesSupport {
         return WebBrowserSupport.getBrowser(browserId);
     }
 
+    public static boolean getBrowserReloadOnSave(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.BROWSER_RELOAD_ON_SAVE, true);
+    }
+
     public static String getWebRoot(PhpProject project) {
         return project.getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT);
     }

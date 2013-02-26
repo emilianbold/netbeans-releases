@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.37.1
+#Version 1.40.1
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -97,7 +97,7 @@ meth public void destroy()
 meth public void removeActionsManagerListener(java.lang.String,org.netbeans.api.debugger.ActionsManagerListener)
 meth public void removeActionsManagerListener(org.netbeans.api.debugger.ActionsManagerListener)
 supr java.lang.Object
-hfds actionListener,actionProviders,actionProvidersInitialized,actionProvidersLock,aps,destroy,doiingDo,lazyListeners,listener,listeners,listerersLoaded,lookup
+hfds actionListener,actionProviders,actionProvidersInitialized,actionProvidersLock,aps,destroy,doiingDo,lazyListeners,listener,listeners,listerersLoaded,logger,lookup,providersChangeListener
 hcls AsynchActionTask,MyActionListener
 
 CLSS public org.netbeans.api.debugger.ActionsManagerAdapter

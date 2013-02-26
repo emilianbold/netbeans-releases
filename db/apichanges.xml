@@ -110,6 +110,25 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>
+                Enable editting of connection properties for db connections
+            </summary>
+            <version major="1" minor="53"/>
+            <date day="13" month="2" year="2013"/>
+            <author login="matthias42"/>
+            <compatibility addition="yes"/>
+            <description>
+                Users can specify connection properties in the UI now.
+                The properties can be retrieved using new method
+                DatabaseConnection.getConnectionProperties(). There is also a
+                new factory method DatabaseConnection.create() that accepts an
+                object with additional connection properties.
+            </description>
+            <class package="org.netbeans.api.db.explorer" name="DatabaseConnection"/>
+            <issue number="197408"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Allow specify display name of the DatabaseConnection</summary>
             <version major="1" minor="42"/>
             <date day="22" month="11" year="2010"/>

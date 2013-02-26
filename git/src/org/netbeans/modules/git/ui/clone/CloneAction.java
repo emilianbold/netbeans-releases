@@ -166,10 +166,10 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
             final GitURI remoteUri = wiz.getRemoteURI();
             final File destination = wiz.getDestination();
             final String remoteName = wiz.getRemoteName();
-            List<? extends GitBranch> branches = wiz.getBranches();
+            List<String> branches = wiz.getBranchNames();
             final List<String> refSpecs = new ArrayList<String>(branches.size());
-            for (GitBranch branch : branches) {
-                refSpecs.add(GitUtils.getRefSpec(branch, remoteName));
+            for (String branchName : branches) {
+                refSpecs.add(GitUtils.getRefSpec(branchName, remoteName));
             }
             final GitBranch branch = wiz.getBranch();
             final boolean scan = wiz.scanForProjects();
@@ -192,8 +192,12 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
 
                                 client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs).toGitRemote(), getProgressMonitor());
                                 org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.toString()); //NOI18N
-                                client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
-                                client.checkoutRevision(branch.getName(), true, getProgressMonitor());
+                                if (branch == null) {
+                                    client.createBranch(GitUtils.MASTER, GitUtils.PREFIX_R_REMOTES + remoteName + "/" + GitUtils.MASTER, getProgressMonitor());
+                                } else {
+                                    client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
+                                    client.checkoutRevision(branch.getName(), true, getProgressMonitor());
+                                }
 
                                 Git.getInstance().getFileStatusCache().refreshAllRoots(destination);
                                 Git.getInstance().versionedFilesChanged();                       

@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
@@ -60,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
@@ -107,6 +106,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private CsmObject parserContainer;
         private AST ast;
         private ConstructionKind kind;
+        private long initTime;
+        private long parseTime;
+        private long renderTime;
+        private int numTokens;
         
         private Map<Integer, CsmObject> objects = null;
         private final CsmParserProvider.CsmParserParameters params;
@@ -123,6 +126,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         @Override
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
+            long start = System.currentTimeMillis();
             assert parser == null : "parser can not be reused " + parser;
             assert object != null;
             assert ts != null;
@@ -139,10 +143,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 objects = ((CppParserActionImpl)cppCallback).getObjectsMap();
             }
             parser = CPPParserEx.getInstance(file, ts, flags, cppCallback);
+            numTokens = parser.getTokenCount();
+            initTime = System.currentTimeMillis() - start;
         }
 
         @Override
         public CsmParserProvider.CsmParserResult parse(ConstructionKind kind) {
+            long start = System.currentTimeMillis();
             try {
                 this.kind = kind;
                 switch (kind) {
@@ -178,11 +185,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 ex.printStackTrace(System.err);
             }
             ast = parser.getAST();
+            parseTime = System.currentTimeMillis() - start;
             return this;
         }
 
         @Override
         public void render(Object... context) {
+            long start = System.currentTimeMillis();
             switch (kind) {
                 case TRY_BLOCK:
                 case COMPOUND_STATEMENT:
@@ -194,10 +203,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 case TRANSLATION_UNIT:
                     if (ast != null) {
                         CsmParserProvider.CsmParserParameters descr = (CsmParserProvider.CsmParserParameters) context[0];
-                        FileContent parseFileContent = null;
-                        if (descr instanceof FileImpl.ParseDescriptor) {
-                            parseFileContent = ((FileImpl.ParseDescriptor)descr).getFileContent();
-                        }
+                        FileContent parseFileContent = CsmCorePackageAccessor.get().getFileContent(descr);
                         new AstRenderer(file, parseFileContent, objects).render(ast);
                     }            
                     break;
@@ -240,6 +246,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     assert false : "unexpected parse kind " + kind;
             }
             file.incParseCount();
+            renderTime = System.currentTimeMillis() - start;
+            dumpParseStatistics();
         }
         
         @Override
@@ -254,8 +262,15 @@ public final class ParserProviderImpl extends CsmParserProvider {
             System.err.print(file.getAbsolutePath());
             System.err.print(' ');
             AstUtil.toStream(ast, System.err);
-            System.err.println("\n");        }
-        
+            System.err.println("\n");
+        }
+
+        private void dumpParseStatistics() {
+            if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
+                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms\n", file.getAbsolutePath(), numTokens, initTime, parseTime, renderTime);
+            }
+        }
+                
         @Override
         public Object getAST() {
             return ast;
@@ -278,7 +293,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private FortranParser.program_return ret;
         private ConstructionKind kind;
         private final CsmParserProvider.CsmParserParameters params;
-
+        private long initTime;
+        private long parseTime;
+        private long renderTime;
+        
         Antrl3FortranParser(CsmParserProvider.CsmParserParameters params) {
             this.file = (FileImpl) params.getMainFile();
             this.params = params;
@@ -286,15 +304,18 @@ public final class ParserProviderImpl extends CsmParserProvider {
         
         @Override
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
+            long start = System.currentTimeMillis();
             int form = APTLanguageSupport.FLAVOR_FORTRAN_FIXED.equals(file.getFileLanguageFlavor()) ? 
                     FortranParserEx.FIXED_FORM : 
                     FortranParserEx.FREE_FORM;
             
             parser = new FortranParserEx(ts, form);
+            initTime = System.currentTimeMillis() - start;
         }
 
         @Override
         public CsmParserResult parse(ConstructionKind kind) {
+            long start = System.currentTimeMillis();
             try {
                 this.kind = kind;
                 switch (kind) {
@@ -308,20 +329,24 @@ public final class ParserProviderImpl extends CsmParserProvider {
             } catch (Exception ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
             }
+            parseTime = System.currentTimeMillis() - start;
             return this;
         }
 
         @Override
         public void render(Object... context) {
+            long start = System.currentTimeMillis();
             switch (kind) {
                 case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
-                    new DataRenderer((FileImpl.ParseDescriptor)context[0]).render(parser.parsedObjects);
+                    new DataRenderer((CsmParserProvider.CsmParserParameters)context[0]).render(parser.parsedObjects);
                     break;
                 default:
                     assert false : "unexpected render kind " + kind;
             }
             file.incParseCount();
+            renderTime = System.currentTimeMillis() - start;
+            dumpParseStatistics();
         }
 
         @Override
@@ -345,7 +370,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
             System.err.println(tree);
             System.err.println(tree.getChildren());
         }
-
+        
+        private void dumpParseStatistics() {
+            if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
+                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms\n", file.getAbsolutePath(), -1, initTime, parseTime, renderTime);
+            }
+        }
+        
         @Override
         public void setErrorDelegate(ParserErrorDelegate delegate) {
         }
@@ -364,6 +395,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private ConstructionKind kind;
         
         private Map<Integer, CsmObject> objects = null;
+        private long initTime;
+        private long parseTime;
+        private int numTokens;
         
         Antlr3CXXParser(CsmParserProvider.CsmParserParameters params) {
             this.params = params;
@@ -372,6 +406,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         @Override
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
+            long start = System.currentTimeMillis();
             assert parser == null : "parser can not be reused " + parser;
             assert ts != null;
             CXXParserActionEx cppCallback = (CXXParserActionEx)callback;
@@ -391,10 +426,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
             parser = new CXXParserEx(tokens, cppCallback);
             ((CXXParserActionImpl)cppCallback).setParser(parser);
             tokens.setParser(parser);
+            this.numTokens = tb.size();
+            initTime = System.currentTimeMillis() - start;
         }
 
         @Override
         public CsmParserProvider.CsmParserResult parse(ConstructionKind kind) {
+            long start = System.currentTimeMillis();
             try {
                 this.kind = kind;
                 switch (kind) {
@@ -405,16 +443,21 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     case COMPOUND_STATEMENT:
                         parser.compound_statement(false);
                         break;                        
+                    case FUNCTION_DEFINITION_AFTER_DECLARATOR:
+                        parser.function_definition_after_declarator(true, true);
+                        break;                        
                 }
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
                 ex.printStackTrace(System.err);
             }
+            parseTime = System.currentTimeMillis() - start;
             return this;
         }
 
         @Override
         public void render(Object... context) {
+            dumpParseStatistics();
         }
         
         @Override
@@ -424,6 +467,12 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         @Override
         public void dumpAST() {
+        }
+        
+        private void dumpParseStatistics() {
+            if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
+                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, No Rendering\n", file.getAbsolutePath(), numTokens, initTime, parseTime);
+            }
         }
         
         @Override

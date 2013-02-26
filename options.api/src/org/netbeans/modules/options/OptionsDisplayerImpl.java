@@ -45,7 +45,6 @@
 
 package org.netbeans.modules.options;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.FlowLayout;
@@ -66,17 +65,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.options.OptionsPanel.OptionsQSCallback;
 import org.netbeans.modules.options.classic.OptionsAction;
 import org.netbeans.modules.options.export.OptionsChooserPanel;
 import org.netbeans.spi.options.OptionsPanelController;
-
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.awt.Mnemonics;
-import org.openide.awt.QuickSearch;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -91,6 +87,8 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
@@ -108,12 +106,16 @@ public class OptionsDisplayerImpl {
     static final LookupListener lookupListener = new LookupListenerImpl();
     /** OK button. */
     private JButton bOK;
+    /** APPLY button. */
+    private JButton bAPPLY;
     /** Advanced Options button. */
     private JButton bClassic;
     /** Export Options button */
     private JButton btnExport;
     /** Import Options button */
     private JButton btnImport;
+    private static final RequestProcessor RP = new RequestProcessor(OptionsDisplayerImpl.class.getName(), 1, true);
+    private static final int DELAY = 500;
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
@@ -169,6 +171,9 @@ public class OptionsDisplayerImpl {
             optionsPanel = categoryID == null ? new OptionsPanel () : new OptionsPanel(categoryID);            
             bOK = (JButton) loc(new JButton(), "CTL_OK");//NOI18N
             bOK.getAccessibleContext().setAccessibleDescription(loc("ACS_OKButton"));//NOI18N
+            bAPPLY = (JButton) loc(new JButton(), "CTL_APPLY");//NOI18N
+            bAPPLY.getAccessibleContext().setAccessibleDescription(loc("ACS_APPLYButton"));//NOI18N
+	    bAPPLY.setEnabled(false);
             bClassic = (JButton) loc(new JButton(), "CTL_Classic");//NOI18N
             bClassic.getAccessibleContext().setAccessibleDescription(loc("ACS_ClassicButton"));//NOI18N
             btnExport = (JButton) loc(new JButton(), "CTL_Export");//NOI18N
@@ -177,9 +182,10 @@ public class OptionsDisplayerImpl {
             btnImport.getAccessibleContext().setAccessibleDescription(loc("ACS_Import"));//NOI18N
             updateButtons();
             boolean isMac = Utilities.isMac();
-            Object[] options = new Object[2];            
+            Object[] options = new Object[3];
             options[0] = isMac ? DialogDescriptor.CANCEL_OPTION : bOK;
-            options[1] = isMac ? bOK : DialogDescriptor.CANCEL_OPTION;
+            options[1] = bAPPLY;
+            options[2] = isMac ? bOK : DialogDescriptor.CANCEL_OPTION;
             descriptor = new DialogDescriptor(optionsPanel,title,modal,options,DialogDescriptor.OK_OPTION,DialogDescriptor.DEFAULT_ALIGN, null, null, false);
             
             // by-passing EqualFlowLayout manager in NbPresenter
@@ -191,7 +197,8 @@ public class OptionsDisplayerImpl {
             
             descriptor.setAdditionalOptions(new Object[] {additionalOptionspanel});
             descriptor.setHelpCtx(optionsPanel.getHelpCtx());
-            OptionsPanelListener listener = new OptionsPanelListener(descriptor, optionsPanel, bOK);
+            OptionsPanelListener listener = new OptionsPanelListener(descriptor, optionsPanel, bOK, bAPPLY);
+	    descriptor.setClosingOptions(new Object[] { DialogDescriptor.CANCEL_OPTION, bOK });
             descriptor.setButtonListener(listener);
             optionsPanel.addPropertyChangeListener(listener);
             synchronized(lookupListener) {
@@ -221,6 +228,24 @@ public class OptionsDisplayerImpl {
         log.fine("setting Options Dialog visible");
         tmpDialog.setVisible (true);
         dialog = tmpDialog;
+	setUpApplyChecker(optionsPanel);
+    }
+
+    private void setUpApplyChecker(final OptionsPanel optsPanel) {
+	final RequestProcessor.Task applyChecker = RP.post(new Runnable() {
+	    @Override
+	    public void run() {
+		bAPPLY.setEnabled(optsPanel.isChanged());
+	    }
+	});
+	applyChecker.addTaskListener(new TaskListener() {
+	    @Override
+	    public void taskFinished(Task task) {
+		if (dialog != null) {
+		    applyChecker.schedule(DELAY);
+		}
+	    }
+	});
     }
     
     private void setUpButtonListeners(OptionsPanel optionsPanel) {
@@ -375,16 +400,19 @@ public class OptionsDisplayerImpl {
         private DialogDescriptor    descriptor;
         private OptionsPanel        optionsPanel;
         private JButton             bOK;
+        private JButton             bAPPLY;
         
         
         OptionsPanelListener (
             DialogDescriptor    descriptor, 
             OptionsPanel        optionsPanel,
-            JButton             bOK
+            JButton             bOK,
+            JButton             bAPPLY
         ) {
             this.descriptor = descriptor;
             this.optionsPanel = optionsPanel;
             this.bOK = bOK;
+            this.bAPPLY = bAPPLY;
         }
         
         public void propertyChange (PropertyChangeEvent ev) {
@@ -392,6 +420,7 @@ public class OptionsDisplayerImpl {
                 descriptor.setHelpCtx (optionsPanel.getHelpCtx ());
             } else if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_VALID)) {                  //NOI18N            
                 bOK.setEnabled (optionsPanel.dataValid ());
+		bAPPLY.setEnabled (optionsPanel.dataValid());
             }
         }
         
@@ -407,6 +436,10 @@ public class OptionsDisplayerImpl {
                 dialog = null;
                 optionsPanel.save ();
                 d.dispose ();
+            } else if (e.getSource () == bAPPLY) {
+                log.fine("Options Dialog - Apply pressed."); //NOI18N
+                optionsPanel.save (true);
+                bAPPLY.setEnabled(false);
             } else
             if (e.getSource () == DialogDescriptor.CANCEL_OPTION ||
                 e.getSource () == DialogDescriptor.CLOSED_OPTION
@@ -416,6 +449,7 @@ public class OptionsDisplayerImpl {
                 dialog = null;
                 optionsPanel.cancel ();
                 bOK.setEnabled(true);
+                bAPPLY.setEnabled(false);
                 d.dispose ();                
             }
         }
@@ -438,6 +472,7 @@ public class OptionsDisplayerImpl {
             log.fine("Options Dialog - windowClosing "); //NOI18N
             optionsPanel.cancel ();
             bOK.setEnabled(true);
+            bAPPLY.setEnabled(false);
             if (this.originalDialog == dialog) {
                 dialog = null;            
             }

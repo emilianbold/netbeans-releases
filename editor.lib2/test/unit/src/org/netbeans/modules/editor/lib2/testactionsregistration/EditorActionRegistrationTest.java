@@ -50,6 +50,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
+import org.netbeans.modules.editor.lib2.actions.SearchableEditorKit;
+import org.netbeans.spi.editor.AbstractEditorAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.AnnotationProcessorTestUtils;
@@ -65,6 +68,7 @@ public class EditorActionRegistrationTest extends NbTestCase {
     private static final String NAME2 = "editor-test-action2";
     private static final String NAME3 = "editor-test-action3";
     private static final String NAME4 = "editor-test-action4";
+    private static final String NAME_NO_ICON_AND_KEY_BINDING = "editor-test-action-no-icon-and-kb";
 
     private static final String bundleHash = "org.netbeans.modules.editor.lib2.testactionsregistration.Bundle#";
 
@@ -93,6 +97,17 @@ public class EditorActionRegistrationTest extends NbTestCase {
         assertEquals("Short Desc3", fo.getAttribute(Action.SHORT_DESCRIPTION));
         assertEquals("Menu Text3", fo.getAttribute("menuText"));
         assertEquals("Popup Text3", fo.getAttribute("popupText"));
+    }
+
+    public void testRegistrationNoIconAndKeyBinding() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("/Editors/Actions/" + NAME_NO_ICON_AND_KEY_BINDING + ".instance");
+        assertNotNull(fo);
+        assertTrue((Boolean) fo.getAttribute(AbstractEditorAction.NO_ICON_IN_MENU));
+        assertTrue((Boolean) fo.getAttribute(AbstractEditorAction.NO_KEY_BINDING));
+        SearchableEditorKit globalActionsKit = EditorActionUtilities.getGlobalActionsKit();
+        AbstractEditorAction a = (AbstractEditorAction) globalActionsKit.getAction(NAME_NO_ICON_AND_KEY_BINDING);
+        assertTrue((Boolean) a.getValue(AbstractEditorAction.NO_ICON_IN_MENU));
+        assertTrue((Boolean) a.getValue(AbstractEditorAction.NO_KEY_BINDING));
     }
 
     public void testNonPublicClass() throws Exception {
@@ -170,6 +185,16 @@ public class EditorActionRegistrationTest extends NbTestCase {
             shortDescription = ""
     )
     public static EditorTestAction createAction4() {
+        return new EditorTestAction();
+    }
+
+    @EditorActionRegistration(
+            name = NAME_NO_ICON_AND_KEY_BINDING,
+            shortDescription = "",
+            noIconInMenu = true,
+            noKeyBinding = true
+    )
+    public static EditorTestAction createActionNoIconAndKeyBinding() {
         return new EditorTestAction();
     }
 

@@ -1152,7 +1152,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         } else {
             // put directly into parser queue if needed
             if (lwm == null || !lwm.fill(fileAndHandler.fileImpl)){
-                ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                boolean addToQueue = true;
+                if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                    addToQueue = fileAndHandler.fileImpl.isSourceFile();
+                }
+                if (addToQueue) {
+                    ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                }
             }
         }
         return fileAndHandler.fileImpl;
@@ -3413,7 +3419,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out;
     }
 
-    public final APTFile getAPTLight(CsmFile csmFile) throws IOException {
+    final APTFile getAPTLight(CsmFile csmFile) throws IOException {
         FileImpl fileImpl = (FileImpl) csmFile;
         APTFile aptLight = fileImpl.getFileAPT(false);
         if (aptLight != null && APTUtils.LOG.isLoggable(Level.FINE)) {
@@ -3426,7 +3432,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return aptLight;
     }
 
-    public final GraphContainer getGraph() {
+    final GraphContainer getGraph() {
         return getGraphStorage();
     }
     

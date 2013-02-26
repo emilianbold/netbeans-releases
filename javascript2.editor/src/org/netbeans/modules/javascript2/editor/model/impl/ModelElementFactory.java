@@ -72,6 +72,9 @@ class ModelElementFactory {
         JsObjectImpl inObject = modelBuilder.getCurrentObject();
         JsObject globalObject = modelBuilder.getGlobal();
         JsObject parentObject = isAnnonymous ? globalObject : inObject;
+        while(parentObject.getParent() != null && parentObject.getModifiers().contains(Modifier.PROTECTED)) {
+            parentObject = parentObject.getParent();
+        }
         int start = Token.descPosition(functionNode.getFirstToken());
         int end = Token.descPosition(functionNode.getLastToken()) + Token.descLength(functionNode.getLastToken());
         List<Identifier> parameters = new ArrayList(functionNode.getParameters().size());

@@ -947,12 +947,21 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         ObjectReference or, 
         String parentID
     ) {
+        return getField(getDebugger(), f, or, parentID);
+    }
+    
+    public static org.netbeans.api.debugger.jpda.Field getField (
+        JPDADebuggerImpl debugger,
+        com.sun.jdi.Field f, 
+        ObjectReference or, 
+        String parentID
+    ) {
         if (f.signature().length() == 1) {
             // Must be a primitive type or the void type
-            return new FieldVariable(getDebugger(), f, parentID, or);
+            return new FieldVariable(debugger, f, parentID, or);
         } else {
             return new ObjectFieldVariable (
-                getDebugger(),
+                debugger,
                 f,
                 parentID,
                 JPDADebuggerImpl.getGenericSignature(f),

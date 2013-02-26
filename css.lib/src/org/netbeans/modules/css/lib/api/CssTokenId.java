@@ -203,14 +203,47 @@ public enum CssTokenId implements TokenId {
     CONTAINS(Css3Lexer.CONTAINS, OPERATORS),
     
     FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, AT_RULE_SYMBOL),
-    HASH_CHAR_ONLY(Css3Lexer.T__117, OTHERS),
+    HASH_SYMBOL(Css3Lexer.HASH_SYMBOL, OTHERS),
+    
+    /**
+     * '...' in less_args_list rule
+     */
+    LESS_VARARG(Css3Lexer.LESS_DOTS, OTHERS),
+    /**
+     * '@rest...' in less_args_list rule
+     */
+    LESS_REST(Css3Lexer.LESS_REST, OTHERS),
+    
+    /**
+     * WHEN keyword in guarded mixin
+     * .mixin (@a) "when" (@a > 10), (@a < -10) { ... }
+     */
+    LESS_WHEN(Css3Lexer.LESS_WHEN, OTHERS),
+    
+    /**
+     * & operator in rules:
+     * 
+     * .parent & {
+     *       color: black;
+     * }
+     */
+    LESS_AND(Css3Lexer.LESS_AND, OTHERS),
     
     MOZ_DOCUMENT_SYM(Css3Lexer.MOZ_DOCUMENT_SYM, AT_RULE_SYMBOL),
     MOZ_DOMAIN(Css3Lexer.MOZ_DOMAIN, URIS),
     MOZ_URL_PREFIX(Css3Lexer.MOZ_URL_PREFIX, URIS),
     MOZ_REGEXP(Css3Lexer.MOZ_REGEXP, STRINGS),
     
-    GENERIC_AT_RULE(Css3Lexer.GENERIC_AT_RULE, AT_RULE_SYMBOL);
+    AT_IDENT(Css3Lexer.AT_IDENT, AT_RULE_SYMBOL),
+    
+    GREATER_OR_EQ(Css3Lexer.GREATER_OR_EQ, OPERATORS),
+    LESS(Css3Lexer.LESS, OPERATORS),
+    LESS_OR_EQ(Css3Lexer.LESS_OR_EQ, OPERATORS),
+    
+    LESS_DOTS(Css3Lexer.LESS_DOTS, IDENTIFIERS),
+    SASS_VAR(Css3Lexer.SASS_VAR, IDENTIFIERS),
+    SASS_MIXIN(Css3Lexer.SASS_MIXIN, AT_RULE_SYMBOL),
+    SASS_INCLUDE(Css3Lexer.SASS_INCLUDE, AT_RULE_SYMBOL);
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
     static {

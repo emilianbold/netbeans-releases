@@ -97,6 +97,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
 
         @Override
         public void setPreferences(Preferences preferences) {
+            assert preferences != null;
             this.preferences = preferences;
         }
 
@@ -137,7 +138,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
                 "FunctionLinesHintText=Method Length is {0} Lines ({1} allowed)"
             })
             private void checkBlock(Block block, OffsetRange warningRange) {
-                int countLines = countLines(block);
+                int countLines = block == null ? 0 : countLines(block);
                 if (countLines > maxAllowedLines) {
                     addHint(Bundle.FunctionLinesHintText(countLines, maxAllowedLines), warningRange);
                 }

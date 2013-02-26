@@ -73,14 +73,23 @@ public class ConvertAsJavaBeanPlatformTest extends NbTestCase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.emptyConfiguration().addTest(ConvertAsJavaBeanPlatformTest.class).gui(false).suite();
+        return NbModuleSuite.
+                emptyConfiguration().
+                addTest(ConvertAsJavaBeanPlatformTest.class).
+                clusters("extide"). //NOI18N
+                gui(false).
+                suite();
     }
 
     public void testConvertAsBeanPlatform() throws Exception {
         JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-        final JavaPlatform[] initialState = jpm.getInstalledPlatforms();
+        final JavaPlatform[]
+                initialState = jpm.getInstalledPlatforms();
         final Set<String> expected = new TreeSet<String>();
         for (JavaPlatform p : initialState) {
+            if (p instanceof FallbackDefaultJavaPlatform) {
+                continue;
+            }
             expected.add(p.getDisplayName());
         }
         final TestPlatform platform = new TestPlatform();
