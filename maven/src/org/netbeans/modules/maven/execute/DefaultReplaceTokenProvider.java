@@ -90,7 +90,9 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     public static final String METHOD_NAME = "nb.single.run.methodName"; //NOI18N
     private static final String VARIABLE_PREFIX = "var."; //NOI18N
     // as defined in org.netbeans.modules.project.ant.VariablesModel
-
+    public static String[] fileBasedProperties = new String[] {
+        PACK_CLASSNAME, CLASSNAME, CLASSNAME_EXT, ABSOLUTE_PATH
+    };
     public DefaultReplaceTokenProvider(Project prj) {
         project = prj;
     }
