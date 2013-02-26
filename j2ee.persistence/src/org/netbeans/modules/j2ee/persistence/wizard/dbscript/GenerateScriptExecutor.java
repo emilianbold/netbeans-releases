@@ -39,7 +39,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.persistence.action;
+package org.netbeans.modules.j2ee.persistence.wizard.dbscript;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -49,6 +49,8 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,7 +58,7 @@ import org.openide.util.NbBundle;
  */
 public class GenerateScriptExecutor {
 
-    public void execute(Project project, File file, PersistenceEnvironment pe, PersistenceUnit pu, List<String> problems) {
+    public void execute(Project project, FileObject file, PersistenceEnvironment pe, PersistenceUnit pu, List<String> problems) {
         try {
 
             Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");//NOI18N
@@ -67,18 +69,18 @@ public class GenerateScriptExecutor {
             map.put("javax.persistence.schema-generation-action", "create");
             map.put("javax.persistence.schema-generation-target", "scripts");
             try {
-                map.put("javax.persistence.ddl-create-script-target", new FileWriter(file));
+                map.put("javax.persistence.ddl-create-script-target", new FileWriter(FileUtil.toFile(file)));
             } catch (IOException ex) {
-                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_File", file.getAbsolutePath()));
+                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_File", file.getPath()));
             }
             //
             p.generateSchema(pu.getName(), map);
         } catch (ClassNotFoundException ex) {
-                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getAbsolutePath()));
+                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getPath()));
         } catch (IllegalAccessException ex) {
-                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getAbsolutePath()));
+                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getPath()));
         } catch (InstantiationException ex) {
-                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getAbsolutePath()));
+                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getPath()));
         }
 
     }
