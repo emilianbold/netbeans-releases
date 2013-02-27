@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,6 +62,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
@@ -187,7 +187,8 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     }
     
     @Override
-    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
+    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
+        resetStopInterrupter(interrupter);
         String root = (String)getProperty(FOLDER_KEY).getValue();
         if (root == null || root.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NoBaseFolder")));
@@ -211,11 +212,11 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     }
     
     @Override
-    public List<Configuration> analyze(final ProjectProxy project, final Progress progress) {
-        isStoped.set(false);
+    public List<Configuration> analyze(final ProjectProxy project, final Progress progress, final Interrupter interrupter) {
+        resetStopInterrupter(interrupter);
         List<Configuration> confs = new ArrayList<Configuration>();
         init(project);
-        if (!isStoped.get()){
+        if (!getStopInterrupter().cancelled()){
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
@@ -264,7 +265,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                     if (myIncludedFiles == null) {
                         Set<String> set = new HashSet<String>();
                         for(SourceFileProperties source : getSourcesConfiguration()){
-                            if (isStoped.get()) {
+                            if (getStopInterrupter().cancelled()) {
                                 break;
                             }
                             set.addAll( ((DwarfSource)source).getIncludedFiles() );
@@ -275,7 +276,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                         }
                         Set<String> unique = new HashSet<String>();
                         for(String path : set){
-                            if (isStoped.get()) {
+                            if (getStopInterrupter().cancelled()) {
                                 break;
                             }
                             if (progress != null) {
@@ -326,7 +327,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     }
     
     private void gatherSubFolders(File d, HashSet<String> map, HashSet<String> antiLoop){
-        if (isStoped.get()) {
+        if (getStopInterrupter().cancelled()) {
             return;
         }
         if (d.exists() && d.isDirectory() && d.canRead()){
@@ -344,6 +345,9 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
+                        if (getStopInterrupter().cancelled()) {
+                            break;
+                        }
                         if (ff[i].isDirectory()) {
                             gatherSubFolders(ff[i], map, antiLoop);
                         } else if (ff[i].isFile()) {
