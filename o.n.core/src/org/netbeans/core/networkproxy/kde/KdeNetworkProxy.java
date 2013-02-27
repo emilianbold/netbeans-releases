@@ -41,6 +41,8 @@
  */
 package org.netbeans.core.networkproxy.kde;
 
+import java.io.File;
+import java.util.Map;
 import org.netbeans.core.networkproxy.NetworkProxyResolver;
 import org.netbeans.core.networkproxy.NetworkProxySettings;
 
@@ -49,10 +51,32 @@ import org.netbeans.core.networkproxy.NetworkProxySettings;
  * @author lfischme
  */
 public class KdeNetworkProxy implements NetworkProxyResolver{
+    
+    private final static String HOME = "HOME";
+    private final String KIOSLAVERC_PATH;
 
+    public KdeNetworkProxy() {
+        KIOSLAVERC_PATH = getKioslavercPath();
+    }
+        
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
-        return new NetworkProxySettings();
+        return new NetworkProxySettings(false);
     }
     
+    private Map<String, String> getKioslavercMap() {
+        
+        
+        return null;
+    }
+    
+    private String getKioslavercPath() {
+        String homePath = System.getenv(HOME);
+        
+        if (homePath != null) {
+            return homePath + File.separator + ".kde/share/config/kioslaverc";            
+        } else {
+            return "";
+        }
+    }
 }

@@ -54,11 +54,12 @@ public class NetworkProxySettings {
         DIRECT,
         AUTO,
         MANUAL
-    }
+    }        
     
     private final static Logger LOGGER = Logger.getLogger(NetworkProxySelector.class.getName());
     private final static String COLON = ":"; //NOI18N
     private final static String EMPTY_STRING = ""; //NOI18N
+    private final boolean resolved;
     private final ProxyMode proxyMode;
     private final String httpProxyHost;
     private final String httpProxyPort;
@@ -70,6 +71,7 @@ public class NetworkProxySettings {
     private final String[] noProxyHosts;
 
     public NetworkProxySettings() {
+        this.resolved = true;
         this.proxyMode = ProxyMode.DIRECT;
         this.pacFileUrl = null;
         this.httpProxyHost = null;
@@ -85,6 +87,7 @@ public class NetworkProxySettings {
         String httpProxyHostChecked = getHost(httpProxy);
         String httpProxyPortChecked = getPort(httpProxy);
         
+        this.resolved = true;
         this.proxyMode = ProxyMode.MANUAL;
         this.pacFileUrl = null;       
         this.httpProxyHost = httpProxyHostChecked;
@@ -97,6 +100,7 @@ public class NetworkProxySettings {
     }
 
     public NetworkProxySettings(String httpProxy, String httpsProxy, String socksProxy, String[] noProxyHosts) {
+        this.resolved = true;
         this.proxyMode = ProxyMode.MANUAL;
         this.pacFileUrl = null;
         this.httpProxyHost = getHost(httpProxy);
@@ -112,6 +116,7 @@ public class NetworkProxySettings {
         String httpProxyHostChecked = checkNull(httpProxyHost);
         String httpProxyPortChecked = checkNumber(httpProxyPort);
         
+        this.resolved = true;
         this.proxyMode = ProxyMode.MANUAL;
         this.pacFileUrl = null;
         this.httpProxyHost = httpProxyHostChecked;
@@ -126,6 +131,7 @@ public class NetworkProxySettings {
     public NetworkProxySettings(String httpProxyHost, String httpProxyPort,
             String httpsProxyHost, String httpsProxyPort,
             String socksProxyHost, String socksProxyPort, String[] noProxyHosts) {
+        this.resolved = true;
         this.proxyMode = ProxyMode.MANUAL;
         this.pacFileUrl = null;
         this.httpProxyHost = checkNull(httpProxyHost);
@@ -138,6 +144,7 @@ public class NetworkProxySettings {
     }
 
     public NetworkProxySettings(String pacFileUrl) {
+        this.resolved = true;
         this.proxyMode = ProxyMode.AUTO;
         this.pacFileUrl = checkNull(pacFileUrl);
         this.httpProxyHost = null;
@@ -148,6 +155,21 @@ public class NetworkProxySettings {
         this.socksProxyPort = null;
         this.noProxyHosts = new String[0];
     }
+
+    public NetworkProxySettings(boolean resolved) {
+        this.resolved = resolved;
+        this.proxyMode = ProxyMode.DIRECT;
+        this.pacFileUrl = null;
+        this.httpProxyHost = null;
+        this.httpProxyPort = null;
+        this.httpsProxyHost = null;
+        this.httpsProxyPort = null;
+        this.socksProxyHost = null;
+        this.socksProxyPort = null;
+        this.noProxyHosts = new String[0];
+    }
+    
+    
 
     private String getHost(String string) {
         if (string == null) {
@@ -184,6 +206,10 @@ public class NetworkProxySettings {
 
     private String[] checkArray(String[] array) {
         return array == null ? new String[0] : array;
+    }
+
+    public boolean isResolved() {
+        return resolved;
     }
 
     public ProxyMode getProxyMode() {

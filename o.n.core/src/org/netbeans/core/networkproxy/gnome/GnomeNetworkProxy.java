@@ -88,7 +88,7 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
         String proxyMode = proxyProperties.get(GCONF_KEY_MODE);
         if (proxyMode == null) {
             LOGGER.log(Level.SEVERE, "GConf proxy mode is null.");
-            return new NetworkProxySettings();
+            return new NetworkProxySettings(false);
         }        
         
         if (proxyMode.equals(GCONF_VALUE_NONE)) {
@@ -126,7 +126,7 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
             }
         }
         
-        return new NetworkProxySettings();
+        return new NetworkProxySettings(false);
     }    
     
     private static Map<String, String> getGconfMap(String gconfNode) {

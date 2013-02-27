@@ -57,6 +57,7 @@ import org.openide.util.Utilities;
 public class NetworkProxySelector {
     
     private static NetworkProxyResolver networkProxyResolver = getNetworkProxyResolver();
+    private static NetworkProxyResolver fallbackNetworkProxyResolver = getFallbackProxyResolver();
     
     private final static String COMMA = ","; //NOI18N
     private final static String GNOME = "gnome"; //NOI18N
@@ -68,6 +69,13 @@ public class NetworkProxySelector {
      */
     public static void reloadNetworkProxy() {                
         NetworkProxySettings networkProxySettings = networkProxyResolver.getNetworkProxySettings();
+        
+        if (!networkProxySettings.isResolved()) {
+            NetworkProxySettings fallbackNetworkProxySettings = fallbackNetworkProxyResolver.getNetworkProxySettings();
+            if (fallbackNetworkProxySettings.isResolved()) {
+                networkProxySettings = fallbackNetworkProxySettings;
+            }
+        }
                 
         switch (networkProxySettings.getProxyMode()) {
             case AUTO:
@@ -145,5 +153,13 @@ public class NetworkProxySelector {
         } else {
             return networkProxyResolver;
         }        
+    }
+    
+    private static NetworkProxyResolver getFallbackProxyResolver() {
+        if (fallbackNetworkProxyResolver == null) {
+            return new FallbackNetworkProxy();
+        } else {
+            return fallbackNetworkProxyResolver;
+        }
     }
 }

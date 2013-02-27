@@ -69,7 +69,7 @@ public class FallbackNetworkProxy implements NetworkProxyResolver{
             return new NetworkProxySettings(httpProxy, new String[0]);
         }        
         
-        return new NetworkProxySettings();
+        return new NetworkProxySettings(false);
     }
     
 }

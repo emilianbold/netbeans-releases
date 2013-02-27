@@ -133,6 +133,6 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
             LOG.log(Level.SEVERE, "Windows system proxy resolver cannot retrieve proxy settings from Windows API!"); //NOI18N
         }
 
-        return new NetworkProxySettings();
+        return new NetworkProxySettings(false);
     }
 }

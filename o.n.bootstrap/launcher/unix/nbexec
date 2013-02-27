@@ -362,17 +362,11 @@ install_new_updater() {
     fi
 }
 
-if [ `uname` = Darwin ] ; then
-#    detect_macosx_proxy
+if [ "$KDE_FULL_SESSION" = "true" ] ; then
+    jargs="-Dnetbeans.running.environment=kde $jargs"        
 else
-    if [ "$KDE_FULL_SESSION" = "true" ] ; then
-#        detect_kde_proxy
-        jargs="-Dnetbeans.running.environment=kde $jargs"        
-    else
-        if [ ! -z "$GNOME_DESKTOP_SESSION_ID" ] ; then
-#            detect_gnome_proxy
-            jargs="-Dnetbeans.running.environment=kde $jargs" 
-        fi
+    if [ ! -z "$GNOME_DESKTOP_SESSION_ID" ] ; then
+        jargs="-Dnetbeans.running.environment=gnome $jargs" 
     fi
 fi
 
