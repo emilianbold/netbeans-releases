@@ -71,6 +71,27 @@ public class CssTestBase extends CslTestBase {
     public CssTestBase(String testName) {
         super(testName);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(); 
+        CssParserResult.IN_UNIT_TESTS = true;
+    }
+    
+    protected void setPlainSource() {
+        ExtCss3Parser.isScssSource_unit_tests = false;
+        ExtCss3Parser.isLessSource_unit_tests = false;
+    }
+    
+    protected void setScssSource() {
+        ExtCss3Parser.isScssSource_unit_tests = true;
+        ExtCss3Parser.isLessSource_unit_tests = false;
+    }
+    
+    protected void setLessSource() {
+        ExtCss3Parser.isScssSource_unit_tests = false;
+        ExtCss3Parser.isLessSource_unit_tests = true;
+    }
     
     protected Collection<GrammarResolver.Feature> getEnabledGrammarResolverFeatures() {
         return Collections.emptyList();
