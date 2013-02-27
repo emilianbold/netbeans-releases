@@ -1121,6 +1121,10 @@ public class CssCompletion implements CodeCompletionHandler {
                 propertySearch.visitChildren(declaratioNode);
 
                 Node property = result[0];
+                if(property == null) {
+                    //the property part may be replaced by the scss interpolation expression
+                    return ;
+                }
 
                 String propertyName = property.image().toString();
                 PropertyDefinition propertyDefinition = Properties.getPropertyDefinition(propertyName);

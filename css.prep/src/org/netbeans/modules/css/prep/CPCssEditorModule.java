@@ -41,14 +41,19 @@
  */
 package org.netbeans.modules.css.prep;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
@@ -57,6 +62,7 @@ import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -64,8 +70,9 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Less Css Editor Module implementation.
- * 
- * TODO fix the instant rename and the mark occurrences - they are pretty naive - not scoped at all :-)
+ *
+ * TODO fix the instant rename and the mark occurrences - they are pretty naive
+ * - not scoped at all :-)
  *
  * @author marekfukala
  */
@@ -73,12 +80,43 @@ import org.openide.util.lookup.ServiceProvider;
 public class CPCssEditorModule extends CssEditorModule {
 
     private final SemanticAnalyzer semanticAnalyzer = new CPSemanticAnalyzer();
-    
     private static Map<NodeType, ColoringAttributes> COLORINGS;
-            
+
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
         return semanticAnalyzer;
+    }
+
+    @Override
+    public List<CompletionProposal> getCompletionProposals(final CompletionContext context) {
+        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        Node activeNode = context.getActiveNode();
+        boolean isError = activeNode.type() == NodeType.error;
+        if (isError) {
+            activeNode = activeNode.parent();
+        }
+        CPModel model = CPModel.getModel(context.getParserResult());
+
+//        NodeUtil.dumpTree(context.getParseTreeRoot());
+        
+        switch (activeNode.type()) {
+            case cp_variable:
+                //already in the prefix
+                proposals.addAll(getVariableCompletionProposals(context, model));
+                break;
+            case propertyValue:
+                //just $ or @ prefix
+                if(context.getPrefix().length() == 1 && context.getPrefix().charAt(0) == model.getPreprocessorType().getVarPrefix()) {
+                    proposals.addAll(getVariableCompletionProposals(context, model));
+                }
+
+        }
+        return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
+    }
+
+    private static List<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
+        
+        return Utilities.createRAWCompletionProposals(model.getVarNames(), ElementKind.VARIABLE, context.getAnchorOffset());
     }
 
     @Override
@@ -101,9 +139,9 @@ public class CPCssEditorModule extends CssEditorModule {
             }
         };
     }
-    
+
     private static Map<NodeType, ColoringAttributes> getColorings() {
-        if(COLORINGS == null) {
+        if (COLORINGS == null) {
             COLORINGS = new EnumMap<NodeType, ColoringAttributes>(NodeType.class);
             COLORINGS.put(NodeType.cp_variable, ColoringAttributes.LOCAL_VARIABLE);
             COLORINGS.put(NodeType.cp_mixin_name, ColoringAttributes.PRIVATE);
@@ -120,14 +158,12 @@ public class CPCssEditorModule extends CssEditorModule {
     public boolean isInstantRenameAllowed(EditorFeatureContext context) {
         TokenSequence<CssTokenId> tokenSequence = context.getTokenSequence();
         int diff = tokenSequence.move(context.getCaretOffset());
-        if(diff > 0 && tokenSequence.moveNext() || diff == 0 && tokenSequence.movePrevious()) {
+        if (diff > 0 && tokenSequence.moveNext() || diff == 0 && tokenSequence.movePrevious()) {
             Token<CssTokenId> token = tokenSequence.token();
-            return  token.id() == CssTokenId.AT_IDENT //less 
-                    ||
-                    token.id() == CssTokenId.SASS_VAR //sass
-                    ||
-                    token.id() == CssTokenId.IDENT; //sass/less mixin name
-                    
+            return token.id() == CssTokenId.AT_IDENT //less 
+                    || token.id() == CssTokenId.SASS_VAR //sass
+                    || token.id() == CssTokenId.IDENT; //sass/less mixin name
+
         }
         return false;
     }
@@ -136,7 +172,7 @@ public class CPCssEditorModule extends CssEditorModule {
     public <T extends Set<OffsetRange>> NodeVisitor<T> getInstantRenamerVisitor(EditorFeatureContext context, T result) {
         TokenSequence<CssTokenId> tokenSequence = context.getTokenSequence();
         int diff = tokenSequence.move(context.getCaretOffset());
-        if(diff > 0 && tokenSequence.moveNext() || diff == 0 && tokenSequence.movePrevious()) {
+        if (diff > 0 && tokenSequence.moveNext() || diff == 0 && tokenSequence.movePrevious()) {
             Token<CssTokenId> token = tokenSequence.token();
             final CharSequence elementName = token.text();
             return new NodeVisitor<T>(result) {
@@ -158,6 +194,6 @@ public class CPCssEditorModule extends CssEditorModule {
         }
         return null;
     }
-    
-    
+
+   
 }
