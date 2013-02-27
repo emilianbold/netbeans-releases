@@ -44,6 +44,8 @@ package org.netbeans.modules.maven.nodes;
 
 import java.awt.Component;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -417,12 +419,16 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         if (longLiving && isDependencyProjectAvailable()) {
             acts.add(OpenProjectAction.SINGLETON);
         }
+        boolean local = isLocal();
         if (isAddedToCP()) {
             InstallLocalArtifactAction act = new InstallLocalArtifactAction();
             acts.add(act);
-            if (!isLocal()) {
+            if (!local) {
                 act.setEnabled(true);
             }
+        }
+        if (local) {
+            acts.add(new CopyLocationAction());
         }
 
 //        acts.add(new EditAction());
@@ -1010,6 +1016,19 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 InstallPanel.runInstallGoal(project, fil, art);
             }
         }
+    }
+
+    private class CopyLocationAction extends AbstractAction {
+
+        @Messages("CopyLocationAction.name=Copy Location")
+        CopyLocationAction() {
+            super(CopyLocationAction_name());
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(art.getFile().getAbsolutePath()), null);
+        }
+
     }
 
     @Messages("BTN_Add_javadoc=Add local Javadoc")
