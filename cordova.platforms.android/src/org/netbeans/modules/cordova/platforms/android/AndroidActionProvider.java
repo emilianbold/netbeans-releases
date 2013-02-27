@@ -86,12 +86,13 @@ public class AndroidActionProvider implements ActionProvider {
         return new String[]{
                     COMMAND_BUILD,
                     COMMAND_CLEAN,
-                    COMMAND_RUN
+                    COMMAND_RUN,
+                    COMMAND_RUN_SINGLE
                 };
     }
 
     @Override
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+    public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
         String checkAndroid = checkAndroid();
         if (checkAndroid!=null) {
@@ -113,7 +114,7 @@ public class AndroidActionProvider implements ActionProvider {
             build.perform(build.BUILD_ANDROID,p);
         } else if (COMMAND_CLEAN.equals(command)) {
             build.perform(build.CLEAN_ANDROID, p);
-        } else if (COMMAND_RUN.equals(command)) {
+        } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
             ProgressUtils.runOffEventDispatchThread(new Runnable() {
                 @Override
                 public void run() {
@@ -138,7 +139,7 @@ public class AndroidActionProvider implements ActionProvider {
                     } else {
                         PropertyProvider config = (PropertyProvider) p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
                         final Device device = config.getDevice();
-                        device.openUrl(build.getUrl(p));
+                        device.openUrl(build.getUrl(p, context));
                         if (Browser.CHROME.getName().equals(config.getProperty(Device.BROWSER_PROP))) {
                             try {
                                 Thread.sleep(5000);

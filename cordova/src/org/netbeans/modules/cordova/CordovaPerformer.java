@@ -74,6 +74,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -210,17 +211,23 @@ public class CordovaPerformer implements BuildPerformer {
     }
 
     @Override
-    public String getUrl(Project p) {
+    public String getUrl(Project p, Lookup context) {
         if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
             WebServer.getWebserver().start(p, ClientProjectUtilities.getSiteRoot(p), ClientProjectUtilities.getWebContextRoot(p));
         } else {
             WebServer.getWebserver().stop(p);
         }
 
-        FileObject fileObject = org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p);
+        DataObject dObject = context.lookup(DataObject.class);
+        FileObject fileObject = dObject==null?ClientProjectUtilities.getStartFile(p):dObject.getPrimaryFile();
         //TODO: hack to workaround #221791
         return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
     }
+    
+    private String getUrl(Project p) {
+        return getUrl(p, Lookup.EMPTY);
+    }
+
 
     @Override
     public boolean isPhoneGapBuild(Project p) {
@@ -264,4 +271,5 @@ public class CordovaPerformer implements BuildPerformer {
         javascriptDebuggerFactory = null;
         PageInspector.getDefault().inspectPage(Lookup.EMPTY);
     }
+
 }
