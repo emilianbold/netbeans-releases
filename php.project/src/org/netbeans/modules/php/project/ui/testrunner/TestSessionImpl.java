@@ -94,10 +94,11 @@ public class TestSessionImpl implements TestSession {
     }
 
     public Coverage getCoverage() {
-        if (!coverageSet) {
-            throw new IllegalStateException("Code coverage was not set (forgot to call setCoverage(Coverage)?)");
-        }
         return coverage;
+    }
+
+    public boolean isCoverageSet() {
+        return coverageSet;
     }
 
     public Manager getManager() {

@@ -64,6 +64,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -95,8 +96,8 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
+import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
-import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
@@ -121,6 +122,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.remote.api.RfsListener;
 import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -142,7 +144,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -195,6 +196,8 @@ public class ImportProject implements PropertyChangeListener {
     private FileObject configureFileObject;
     private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
     private final CountDownLatch waitSources = new CountDownLatch(1);
+    private final AtomicInteger openState = new AtomicInteger(0);
+    private Interrupter interrupter;
 
     public ImportProject(WizardDescriptor wizard) {
         pathMode = MakeProjectOptions.getPathMode();
@@ -376,31 +379,48 @@ public class ImportProject implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
-            if (evt.getNewValue() instanceof Project[]) {
-                Project[] projects = (Project[])evt.getNewValue();
-                if (projects.length == 0) {
-                    return;
-                }
-                OpenProjects.getDefault().removePropertyChangeListener(this);
-                RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        doWork();
+        if (openState.get() == 0) {
+            if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+                if (evt.getNewValue() instanceof Project[]) {
+                    Project[] projects = (Project[])evt.getNewValue();
+                    if (projects.length == 0) {
+                        return;
                     }
-                });
+                    interrupter = new Interrupter() {
+
+                        @Override
+                        public boolean cancelled() {
+                            return !isProjectOpened();
+                        }
+                    };
+                    openState.incrementAndGet();
+                    RP.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            doWork();
+                        }
+                    });
+                }
+            }
+        } else if (openState.get() == 1) {
+            if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+                if (evt.getNewValue() instanceof Project[]) {
+                    Project[] projects = (Project[])evt.getNewValue();
+                    for(Project p : projects) {
+                        if (p == makeProject) {
+                            return;
+                        }
+                    }
+                    openState.incrementAndGet();
+                    OpenProjects.getDefault().removePropertyChangeListener(this);
+                }
             }
         }
     }
 
     boolean isProjectOpened() {
-        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-            if (p == makeProject) {
-                return true;
-            }
-        }
-        return false;
+        return openState.get() == 1;
     }
 
     private void doWork() {
@@ -421,7 +441,7 @@ public class ImportProject implements PropertyChangeListener {
                             handle.start();
                             while(sources.hasNext()) {
                                 SourceFolderInfo next = sources.next();
-                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, interrupter, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
                             }
                             handle.finish();
                             waitSources.countDown();
@@ -1042,7 +1062,7 @@ public class ImportProject implements PropertyChangeListener {
         // Discovery require a fully completed project
         // Make sure that descriptor was stored and readed
         ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        provider.getConfigurationDescriptor(true);
+        provider.getConfigurationDescriptor();
         try {
             waitSources.await();
         } catch (InterruptedException ex) {
@@ -1056,6 +1076,10 @@ public class ImportProject implements PropertyChangeListener {
                 return;
             }
             waitConfigurationDescriptor();
+            if (!isProjectOpened()) {
+                isFinished = true;
+                return;
+            }
             boolean done = false;
             boolean exeLogDone = false;
             boolean makeLogDone = false;
@@ -1335,13 +1359,13 @@ public class ImportProject implements PropertyChangeListener {
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, execLog.getAbsolutePath());
             map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-            if (extension.canApply(map, makeProject)) {
+            if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by exec log file {0}", execLog.getAbsolutePath()); // NOI18N
                 }
                 try {
                     done = true;
-                    extension.apply(map, makeProject);
+                    extension.apply(map, makeProject, interrupter);
                     setBuildResults((List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS));
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
@@ -1388,7 +1412,7 @@ public class ImportProject implements PropertyChangeListener {
             final Map<String, Object> map = new HashMap<String, Object>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-            if (extension.canApply(map, makeProject)) {
+            if (extension.canApply(map, makeProject, interrupter)) {
                 DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
                 if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
                     if (TRACE) {
@@ -1401,7 +1425,7 @@ public class ImportProject implements PropertyChangeListener {
                 }
                 try {
                     done = true;
-                    extension.apply(map, makeProject);
+                    extension.apply(map, makeProject, interrupter);
                     if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
                         importResult.put(Step.DiscoveryLog, State.Successful);
                     } else {
@@ -1426,13 +1450,13 @@ public class ImportProject implements PropertyChangeListener {
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
             map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-            if (extension.canApply(map, makeProject)) {
+            if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by log file {0}", makeLog.getAbsolutePath()); // NOI18N
                 }
                 try {
                     done = true;
-                    extension.apply(map, makeProject);
+                    extension.apply(map, makeProject, interrupter);
                     setBuildResults((List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS));
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
@@ -1454,7 +1478,7 @@ public class ImportProject implements PropertyChangeListener {
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
             map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-            if (extension.canApply(map, makeProject)) {
+            if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start fix macros by log file {0}", makeLog.getAbsolutePath()); // NOI18N
                 }
@@ -1477,12 +1501,12 @@ public class ImportProject implements PropertyChangeListener {
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
             map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-            if (extension.canApply(map, makeProject)) {
+            if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by object files"); // NOI18N
                 }
                 try {
-                    extension.apply(map, makeProject);
+                    extension.apply(map, makeProject, interrupter);
                     importResult.put(Step.DiscoveryDwarf, State.Successful);
                     does = true;
                 } catch (IOException ex) {
@@ -1511,7 +1535,7 @@ public class ImportProject implements PropertyChangeListener {
         map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(makeProject);
-        SelectConfigurationPanel.buildModel(descriptor);
+        DiscoveryExtension.buildModel(descriptor, interrupter);
         try {
             DiscoveryProjectGeneratorImpl generator = new DiscoveryProjectGeneratorImpl(descriptor);
             generator.makeProject();

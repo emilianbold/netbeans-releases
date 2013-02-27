@@ -41,19 +41,25 @@
  */
 package org.netbeans.modules.cnd.highlight;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.tasklist.impl.FileScanningWorker;
-import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
+import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner.Callback;
+import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -63,15 +69,57 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=PushTaskScanner.class, path="TaskList/Scanners")
 public class CndTodoScanner extends PushTaskScanner {
     private final RequestProcessor RP = new RequestProcessor("CND todo scanner", 1); //NOI18N
-    private final TaskManagerImpl taskManager = TaskManagerImpl.getInstance();
-    private final FileScanningWorker worker = new FileScanningWorker(taskManager.getTasks(), taskManager.getFilter());
-    
+    private final RequestProcessor.Task scanTask;
+    private final FileTaskScanner todoScanner;
+    private final AtomicReference<ScanJob> jobRef = new AtomicReference<ScanJob>();
+        
     public CndTodoScanner() {
         super(
             NbBundle.getMessage(CndTodoScanner.class, "CndTodoTasks"), //NOI18N
             NbBundle.getMessage(CndTodoScanner.class, "CndTodoTasksDesc"), //NOI18N
             null);  //NOI18N
-        RP.submit(worker);
+        todoScanner = getTodoScanner();
+        scanTask = RP.create(new Runnable() { //NOI18N
+            @Override
+            public void run() {
+                final ScanJob job = jobRef.getAndSet(null);
+                if (job == null) {
+                    return;
+                }
+                for (FileObject fileObject : job.files) {
+                    if (jobRef.get() != null) {
+                        return;
+                    }
+                    List<? extends Task> newTasks = todoScanner.scan(fileObject);
+                    if (newTasks != null) {
+                        job.callback.setTasks(fileObject, newTasks);
+                    }
+                }
+            }
+        });
+    }
+    
+    private class ScanJob {
+        private final Set<FileObject> files;
+        private final Callback callback;
+
+        public ScanJob(Set<FileObject> files, Callback callback) {
+            this.files = files;
+            this.callback = callback;
+        }
+    }
+    
+    private FileTaskScanner getTodoScanner() {
+        // workaround for implementation dependecy to tasklist.todo
+        Lookup lkp = Lookups.forPath("TaskList/Scanners"); //NOI18N
+        Collection<? extends FileTaskScanner> scanners = lkp.lookupAll(FileTaskScanner.class);
+        for (FileTaskScanner fileTaskScanner : scanners) {
+            if (fileTaskScanner.getClass().getName().equals("org.netbeans.modules.tasklist.todo.TodoTaskScanner")) { //NOI18N
+                return fileTaskScanner;
+            }
+        }
+        assert false : "TodoTaskScanner not found";
+        return null;
     }
     
     @Override
@@ -80,9 +128,12 @@ public class CndTodoScanner extends PushTaskScanner {
             return;
         }
         
-        final Set<FileObject> files = new WeakSet<FileObject>();
+        Set<FileObject> files = new WeakSet<FileObject>();
         for (FileObject file : scope.getLookup().lookupAll(FileObject.class)) {
-            files.add(file);
+            Project prj = FileOwnerQuery.getOwner(file);
+            if (prj.getLookup().lookup(NativeProject.class) != null) {
+                files.add(file);
+            }
         }
 
         for (Project p : scope.getLookup().lookupAll(Project.class)) {
@@ -93,6 +144,7 @@ public class CndTodoScanner extends PushTaskScanner {
                 }
             }
         }
-        worker.scan(files.iterator(), taskManager.getFilter());
+        jobRef.set(new ScanJob(files, callback));
+        scanTask.schedule(0);
     }
 }

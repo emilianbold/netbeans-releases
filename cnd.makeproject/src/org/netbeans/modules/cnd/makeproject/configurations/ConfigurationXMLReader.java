@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.DialogDisplayer;
@@ -98,7 +99,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     /*
      * was: readFromDisk
      */
-    public MakeConfigurationDescriptor read(final String relativeOffset) throws IOException {
+    public MakeConfigurationDescriptor read(final String relativeOffset, final Interrupter interrupter) throws IOException {
         final String tag;
         final FileObject xml;
         // Try first new style file
@@ -134,7 +135,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                             ex.printStackTrace(System.err);
                         }
                     }
-                    if (_read(relativeOffset, tag, xml, configurationDescriptor) == null) {
+                    if (_read(relativeOffset, interrupter, tag, xml, configurationDescriptor) == null) {
                         // TODO configurationDescriptor is broken
                         configurationDescriptor.setState(State.BROKEN);
                         return;
@@ -153,7 +154,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         return configurationDescriptor;
     }
 
-    private ConfigurationDescriptor _read(String relativeOffset,
+    private ConfigurationDescriptor _read(String relativeOffset, Interrupter interrupter,
             String tag, FileObject xml, final MakeConfigurationDescriptor configurationDescriptor) throws IOException {
 
         boolean success;
@@ -163,7 +164,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         InputStream inputStream = null;
         try {
             inputStream = xml.getInputStream();
-            success = read(inputStream, xml.getPath());
+            success = read(inputStream, xml.getPath(), interrupter);
             if (getMasterComment() != null && project instanceof MakeProject) {
                 ((MakeProject) project).setConfigurationXMLComment(getMasterComment());
             }
@@ -193,7 +194,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             inputStream = null;
             try {
                 inputStream = xml.getInputStream();
-                success = read(inputStream, projectDirectory.getName());
+                success = read(inputStream, projectDirectory.getName(), interrupter);
             } finally {
                 deregisterXMLDecoder(auxDecoder);
                 if (inputStream != null) {
@@ -235,7 +236,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() < CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
             schemeWithExcludedItems = true;
         }
-        prepareFoldersTask(configurationDescriptor, schemeWithExcludedItems);
+        prepareFoldersTask(configurationDescriptor, schemeWithExcludedItems, interrupter);
         configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
@@ -292,7 +293,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     }
 
     // Attach listeners to all disk folders
-    private void prepareFoldersTask(final MakeConfigurationDescriptor configurationDescriptor, final boolean oldSchemeWasRestored) {
+    private void prepareFoldersTask(final MakeConfigurationDescriptor configurationDescriptor, final boolean oldSchemeWasRestored, final Interrupter interrupter) {
         Task task = REQUEST_PROCESSOR.create(new Runnable() {
             // retstore in only scheme only once, then switch to new scheme
             private volatile boolean restoreInOldScheme = oldSchemeWasRestored;
@@ -312,12 +313,12 @@ public class ConfigurationXMLReader extends XMLDocReader {
                             if (restoreInOldScheme) {
                                 LOGGER.log(Level.FINE, "Restore based on old scheme {0}", f);
                                 restoreInOldScheme = false;
-                                f.refreshDiskFolderAfterRestoringOldScheme();
+                                f.refreshDiskFolderAfterRestoringOldScheme(interrupter);
                             } else {
                                 LOGGER.log(Level.FINE, "Restore based on new scheme {0}", f);
-                                f.refreshDiskFolder();
+                                f.refreshDiskFolder(interrupter);
                             }
-                            f.attachListeners();
+                            f.attachListeners(interrupter);
                         }
                     }
                     //configurationDescriptor.setModified(currentState);

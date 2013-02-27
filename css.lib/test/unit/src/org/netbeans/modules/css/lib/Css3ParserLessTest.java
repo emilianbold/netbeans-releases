@@ -389,7 +389,7 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testMixinCallWithoutParams() {
-        String source = "#shape1{ .Round }";
+        String source = "#shape1{ .Round; }";
 
         CssParserResult result = TestUtil.parse(source);
 

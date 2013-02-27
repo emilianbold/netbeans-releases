@@ -45,12 +45,14 @@
 package org.netbeans.modules.cnd.discovery.api;
 
 import java.util.List;
+import org.netbeans.modules.cnd.support.Interrupter;
+import org.openide.util.Cancellable;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface DiscoveryProvider {
+public interface DiscoveryProvider extends Cancellable {
 
     /**
      * Returns provider ID
@@ -93,15 +95,16 @@ public interface DiscoveryProvider {
      * 0 provider is not sure about results at all
      * 100 provider is sure about results
      */
-    DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project);
+    DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter);
 
     /**
      * Analyze project and returns list of configuration
      */
-    public List<Configuration> analyze(ProjectProxy project,Progress progress);
+    public List<Configuration> analyze(ProjectProxy project, Progress progress, Interrupter interrupter);
     
     /**
      * Stop analyzing.
      */
-    void stop();
+    @Override
+    boolean cancel();
 }
