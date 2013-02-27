@@ -41,107 +41,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.core.multitabs.prefs;
 
-package org.netbeans.core.windows.options;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import org.netbeans.core.WindowSystem;
+import org.netbeans.core.windows.options.WinSysOptionsPanelController;
+import org.netbeans.core.windows.options.WinSysPanel;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 
+/**
+ * 
+ * @author S. Aubrecht
+ */
 @OptionsPanelController.SubRegistration(
-    displayName="#AdvancedOption_DisplayName_WinSys",
-    id="Windows",
-    keywords="#KW_WindowOptions",
-    keywordsCategory="Advanced/Windows"
-//    toolTip="#AdvancedOption_Tooltip_WinSys"
-)
-public class WinSysOptionsPanelController extends OptionsPanelController {
+location = "Advanced",
+displayName = "#AdvancedOption_DisplayName_MultiTabs",
+keywords = "#AdvancedOption_Keywords_MultiTabs",
+keywordsCategory = "Advanced/MultiTabs" )
+@org.openide.util.NbBundle.Messages( { "AdvancedOption_DisplayName_MultiTabs=Windows", "AdvancedOption_Keywords_MultiTabs=Multitabs, Editor, TabControl" } )
+public final class MultiTabsOptionsPanelController extends WinSysOptionsPanelController {
 
-    private WinSysPanel panel;
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
-
-    @Override
-    public void update() {
-        getPanel().load();
-        changed = false;
-    }
-
-    @Override
-    public void applyChanges() {
-        boolean refreshWinsys = getPanel().store();
-        changed = false;
-        if( refreshWinsys ) {
-            WindowSystem  ws = Lookup.getDefault().lookup( WindowSystem.class );
-            ws.hide();
-            ws.show();
-        }
-    }
-
-    @Override
-    public void cancel() {
-        // need not do anything special, if no changes have been persisted yet
-    }
-
-    @Override
-    public boolean isValid() {
-        return getPanel().valid();
-    }
-
-    @Override
-    public boolean isChanged() {
-        return changed;
-    }
+    private MultiTabsPanel panel;
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx( "org.netbeans.core.windows.options.WinSysOptionsPanelController" ); //NOI18N
+        return new HelpCtx( MultiTabsOptionsPanelController.class );
     }
 
     @Override
-    public JComponent getComponent(Lookup masterLookup) {
-        return getPanel();
+    protected void changed() {
+        super.changed();
     }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(l);
-    }
-
     protected WinSysPanel getPanel() {
         if (panel == null) {
-            panel = new WinSysPanel(this);
+            panel = new MultiTabsPanel(this);
         }
         return panel;
-    }
-
-    @Override
-    protected void setCurrentSubcategory( String subpath ) {
-        if( "LaF".equals( subpath ) ) { //NOI18N
-            SwingUtilities.invokeLater( new Runnable() {
-                @Override
-                public void run() {
-                    getPanel().selectDarkLookAndFeel();
-                }
-            });
-        }
-    }
-
-    protected void changed() {
-        if (!changed) {
-            changed = true;
-            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-        }
-        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 }
