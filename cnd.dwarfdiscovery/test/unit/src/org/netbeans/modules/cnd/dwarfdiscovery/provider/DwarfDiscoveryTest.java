@@ -353,7 +353,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
             public boolean mergeProjectProperties() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-        });
+        }, null);
         String compilerName = canAnalyze.getCompilerName();
         String sourceRoot = canAnalyze.getSourceRoot();
         Position mainFunctionPosition = canAnalyze.getMainFunction();
@@ -418,7 +418,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
             public boolean mergeProjectProperties() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-        }, null);
+        }, null, null);
         assertEquals(1, analyze.size());
         Configuration conf = analyze.get(0);
         assertEquals(sources.length, conf.getSourcesConfiguration().size());

@@ -197,7 +197,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         boolean applicable = true;
         if (simpleMode.isSelected()) {
             if (simpleModeApplicable.get() == 0) {
-                if (new DiscoveryExtension().isApplicable(wizardDescriptor, false).isApplicable()) {
+                if (new DiscoveryExtension().isApplicable(wizardDescriptor, null, false).isApplicable()) {
                     simpleModeApplicable.set(1);
                 } else {
                     simpleModeApplicable.set(-1);

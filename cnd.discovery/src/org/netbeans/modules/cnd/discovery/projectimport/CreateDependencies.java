@@ -260,7 +260,7 @@ public class CreateDependencies implements PropertyChangeListener {
 
     private void addReqProject(Project lastSelectedProject) {
         ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor();
         mainConfigurationDescriptor.getActiveConfiguration().getRequiredProjectsConfiguration().add(
                 new ProjectItem(new MakeArtifact(configurationDescriptor, configurationDescriptor.getActiveConfiguration())));
     }
@@ -275,13 +275,13 @@ public class CreateDependencies implements PropertyChangeListener {
                 progress.start();
                 try {
                     ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                    MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+                    MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor();
                     Applicable applicable = extension.isApplicable(map, lastSelectedProject, false);
                     if (applicable.isApplicable()) {
                         ImportExecutable.resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
-                        if (extension.canApply(map, lastSelectedProject)) {
+                        if (extension.canApply(map, lastSelectedProject, null)) {
                             try {
-                                extension.apply(map, lastSelectedProject);
+                                extension.apply(map, lastSelectedProject, null);
                                 DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, null);
                             } catch (IOException ex) {
                                 ex.printStackTrace(System.err);
