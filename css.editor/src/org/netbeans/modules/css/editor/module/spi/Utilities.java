@@ -237,4 +237,20 @@ public class Utilities {
         return Css3Utils.isVendorSpecificPropertyValue(file, value);
     }
     
+    /**
+     * @since 1.46
+     * @param proposals
+     * @param prefix
+     * @param ignoreCase
+     * @return 
+     */
+    public static List<CompletionProposal> filterCompletionProposals(List<CompletionProposal> proposals, CharSequence prefix, boolean ignoreCase) {
+        List<CompletionProposal> filtered = new ArrayList<CompletionProposal>();
+        for(CompletionProposal proposal : proposals) {
+            if(LexerUtils.startsWith(proposal.getInsertPrefix(), prefix, ignoreCase, false)) {
+                filtered.add(proposal);
+            }
+        }
+        return filtered;
+    }
 }
