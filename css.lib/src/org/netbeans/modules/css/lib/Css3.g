@@ -927,28 +927,29 @@ cp_term
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_declaration
     :
-    ( 
-        {isLessSource()}? cssClass ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
-        |
-        {isScssSource()}? SASS_MIXIN ws IDENT ws? (LPAREN less_args_list? RPAREN ws?)?
-    )
-
+    {isLessSource()}? DOT cp_mixin_name ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
+    |
+    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN less_args_list? RPAREN ws?)?
     ;
 
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_call
-    :
+    :    
     (
-        {isLessSource()}? cssClass 
+        {isLessSource()}? DOT cp_mixin_name
         |
-        {isScssSource()}? SASS_INCLUDE ws IDENT
+        {isScssSource()}? SASS_INCLUDE ws cp_mixin_name
     )
-
-    (ws? LPAREN less_mixin_call_args? RPAREN)? ws? SEMI
+    (ws? LPAREN cp_mixin_call_args? RPAREN)? ws? SEMI
+    ;
+        
+cp_mixin_name
+    :
+    IDENT
     ;
     
-less_mixin_call_args
+cp_mixin_call_args
     : 
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
