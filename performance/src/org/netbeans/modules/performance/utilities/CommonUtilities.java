@@ -56,7 +56,6 @@ import java.util.zip.*;
 import java.util.Date;
 import java.util.Locale;
 import java.text.SimpleDateFormat;
-import javax.swing.tree.TreePath;
 
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.jellytools.Bundle;
@@ -89,7 +88,6 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.openide.filesystems.FileObject;
@@ -115,9 +113,6 @@ public class CommonUtilities {
     private static Element testResultsTag, testTag, perfDataTag, testSuiteTag=null;
     private static String projectsDir; // <nbextra>/data/
     private static String tempDir; // <nbjunit.workdir>/tmpdir/
-    private static final String serverItem = "Tomcat 6.0";
-    private static final String serverItem2 = "Tomcat";
-    private static final String serverItem3 = "Apache Tomcat";
     
     static {
         SOURCE_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
@@ -634,7 +629,7 @@ public class CommonUtilities {
     }*/
     
     /**
-     * Adds GlassFish V2 using path from com.sun.aas.installRoot property
+     * Adds GlassFish server using path from com.sun.aas.installRoot property
      */
     public static void addApplicationServer() {
         
@@ -646,101 +641,29 @@ public class CommonUtilities {
 
         String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
         String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
-        //String glassFishV3ListItem = Bundle.getStringTrimmed("org.netbeans.modules.glassfish.common.nodes.Bundle", "TXT_GlassfishInstanceNode");
         String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
         String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
 
-        RuntimeTabOperator rto = RuntimeTabOperator.invoke();        
-        JTreeOperator runtimeTree = rto.tree();
-        runtimeTree.setComparator(new Operator.DefaultStringComparator(true, true));
-        
-        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 6000);
-        
-        TreePath path = runtimeTree.findPath("Servers");
-        runtimeTree.selectPath(path);
-        
-        try {
-            //log("Let's check whether GlassFish V2 is already added");
-            runtimeTree.findPath("Servers|GlassFish Server 3");
-        } catch (TimeoutExpiredException tee) {
-            //log("There is no GlassFish V2 node so we'll add it");
-            
-            new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
-
+        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
+        Node serversNode = new Node(rto.getRootNode(), "Servers");
+        // Let's check whether GlassFish is already added
+        if (!serversNode.isChildPresent("GlassFish")) {
+            // There is no GlassFish node so we'll add it
+            serversNode.performPopupActionNoBlock(addServerMenuItem);
             NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
-
-            new JListOperator(addServerInstanceDialog, 1).selectItem("GlassFish Server 3");
-
-            new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
-
-            new JTextFieldOperator(addServerInstanceDialog).enterText(appServerPath);
-
-            new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
+            new JListOperator(addServerInstanceDialog, 1).selectItem("GlassFish Server");
+            new JButtonOperator(addServerInstanceDialog, nextButtonCaption).push();
+            new JTextFieldOperator(addServerInstanceDialog).setText(appServerPath);
+            new JButtonOperator(addServerInstanceDialog, finishButtonCaption).push();
         }
-        
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
     }
 
     public static Node getTomcatServerNode(){
-        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
-
-        TreePath path = null;
-
-        JTreeOperator runtimeTree = rto.tree();
-        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 6000);
-        try {
-            path = runtimeTree.findPath("Servers");
-            runtimeTree.selectPath(path);
-            path = runtimeTree.findPath("Servers|"+serverItem); // NOI18N
-            runtimeTree.selectPath(path);
-        } catch (Exception e1) {
-            try {
-                path = runtimeTree.findPath("Servers|"+serverItem2); // NOI18N
-                runtimeTree.selectPath(path);
-            } catch (Exception e2) {
-                try {
-                    path = runtimeTree.findPath("Servers|"+serverItem3); // NOI18N
-                    runtimeTree.selectPath(path);
-                } catch (Exception e3) {
-                    e1.printStackTrace(System.err);
-                    e2.printStackTrace(System.err);                    
-                    throw new Error("Cannot find Tomcat Server Node", e3);
-                }
-            }
-        }
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
-
-        return new Node(runtimeTree,path);
+        return new Node(RuntimeTabOperator.invoke().getRootNode(), "Servers|Tomcat");
     }
 
     public static Node getApplicationServerNode(){
-        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
-        
-        TreePath path = null;
-        
-        // create exactly (full match) and case sensitively comparing comparator
-//        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
-//        StringComparator previousComparator = rto.tree().getComparator();
-//        rto.setComparator(comparator);
-        JTreeOperator runtimeTree = rto.tree();
-        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 6000);
-        try {
-            log("Looking path = Servers");
-            path = runtimeTree.findPath("Servers");
-            runtimeTree.selectPath(path);
-            log("Looking path = Servers|GlassFish Server 3");
-            path = runtimeTree.findPath("Servers|GlassFish Server 3"); // NOI18N
-            runtimeTree.selectPath(path);
-        } catch (Exception exc) {
-            exc.printStackTrace(System.err);
-            throw new Error("Cannot find Application Server Node", exc);
-        }
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
-//        rto.setComparator(previousComparator);
-        return new Node(runtimeTree,path);
+        return new Node(RuntimeTabOperator.invoke().getRootNode(), "Servers|GlassFish");
     }
     
     
@@ -781,54 +704,18 @@ public class CommonUtilities {
         String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
         String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
 
-        RuntimeTabOperator rto = RuntimeTabOperator.invoke();        
-        JTreeOperator runtimeTree = rto.tree();
-        runtimeTree.setComparator(new Operator.DefaultStringComparator(true, true));
-        
-        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 6000);
-        
-        TreePath path = runtimeTree.findPath("Servers");
-        runtimeTree.selectPath(path);
-        
-        try {
-            runtimeTree.findPath("Servers|"+serverItem);
-        } catch (TimeoutExpiredException tee) {
-            try {
-                runtimeTree.findPath("Servers|"+serverItem2);
-            } catch (TimeoutExpiredException tee2) {
-                try {
-                    runtimeTree.findPath("Servers|"+serverItem3);
-                } catch (TimeoutExpiredException tee3) {                    
-                }
-            }
+        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
+        Node serversNode = new Node(rto.getRootNode(), "Servers");
+        // Let's check whether GlassFish is already added
+        if (!serversNode.isChildPresent("Tomcat")) {
+            serversNode.performPopupActionNoBlock(addServerMenuItem);
+            NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
+            new JListOperator(addServerInstanceDialog, 1).selectItem("Tomcat");
+            new JButtonOperator(addServerInstanceDialog, nextButtonCaption).push();
+            new JTextFieldOperator(addServerInstanceDialog, 1).setText(appServerPath);
+            new JCheckBoxOperator(addServerInstanceDialog,1).changeSelection(false);
+            new JButtonOperator(addServerInstanceDialog, finishButtonCaption).push();
         }
-        new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
-        NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
-        try {
-            new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
-        } catch (Exception e) {
-            try {
-                new JListOperator(addServerInstanceDialog,1).selectItem(serverItem2);
-            } catch (Exception e2) {
-                try {
-                    new JListOperator(addServerInstanceDialog,1).selectItem(serverItem3);
-                } catch (Exception e3) {
-                    System.err.println(e3.toString());
-                }
-            }            
-        }            
-        new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
-        JTextFieldOperator tfo=new JTextFieldOperator(addServerInstanceDialog,1);
-        tfo.getFocus();
-        tfo.enterText(appServerPath);
-        new JCheckBoxOperator(addServerInstanceDialog,1).changeSelection(false);
-        new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
-
-        
-        
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
-
     }
 
     private static Node performTomcatServerAction(String action) {
