@@ -380,7 +380,8 @@ public enum NodeType {
     
     less_rule,
     
-    less_mixin_call_args,
+    cp_mixin_call_args,
+    cp_mixin_name,
     
     scss_interpolation_expression,
     
