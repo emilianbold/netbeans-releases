@@ -2,7 +2,7 @@
 <#assign licenseFirst = "<!--">
 <#assign licensePrefix = "">
 <#assign licenseLast = "-->">
-<#include "../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
     <name>${NAME}</name>
