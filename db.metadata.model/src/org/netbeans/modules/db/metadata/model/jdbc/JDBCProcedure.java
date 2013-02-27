@@ -127,16 +127,16 @@ public class JDBCProcedure extends ProcedureImplementation {
     }
 
     protected JDBCColumn createJDBCColumn(int position, ResultSet rs) throws SQLException {
-        return new JDBCColumn(this.getProcedure(), position, JDBCValue.createProcedureValue(rs));
+        return new JDBCColumn(this.getProcedure(), position, JDBCValue.createProcedureValue(rs, this.getProcedure()));
     }
 
     protected JDBCParameter createJDBCParameter(int position, ResultSet rs) throws SQLException {
-        Direction direction = JDBCUtils.getDirection(rs.getShort("COLUMN_TYPE"));
-        return new JDBCParameter(this, JDBCValue.createProcedureValue(rs), direction, position);
+        Direction direction = JDBCUtils.getProcedureDirection(rs.getShort("COLUMN_TYPE")); //NOI18N
+        return new JDBCParameter(this.getProcedure(), JDBCValue.createProcedureValue(rs, this.getProcedure()), direction, position);
     }
 
     protected JDBCValue createJDBCValue(ResultSet rs) throws SQLException {
-        return JDBCValue.createProcedureValue(rs);
+        return JDBCValue.createProcedureValue(rs, this.getProcedure());
     }
 
     protected void createProcedureInfo() {

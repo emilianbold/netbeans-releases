@@ -103,7 +103,7 @@ public final class OptionsDisplayer {
     }
     
     /**
-     * Open the options dialog with no guarantee which category is pre-selected.
+     * Open the options dialog (in non-modal mode) with no guarantee which category is pre-selected.
      * @return true if optins dialog was sucesfully opened with some pre-selected
      * category. If no category is registered at all then false will be returned and
      * options dialog won't be opened.
@@ -134,7 +134,7 @@ public final class OptionsDisplayer {
     }
     
     /**
-     * Open the options dialog with some panel preselected.
+     * Open the options dialog (in non-modal mode) with some panel preselected.
      * To open a top-level panel, pass its {@link TopLevelRegistration#id}.
      * To open a subpanel, pass its {@link SubRegistration#location} followed by {@code /}
      * followed by its {@link SubRegistration#id}.
@@ -180,6 +180,46 @@ public final class OptionsDisplayer {
         } finally {
             hideWaitCursor();
         }
+    }
+
+    /**
+     * Open the options dialog with no guarantee which category is pre-selected.
+     * @param isModal true if the options window should be in modal mode, false otherwise
+     * @return true if options dialog was successfully opened with some pre-selected
+     * category. If no category is registered at all then false will be returned and
+     * options dialog won't be opened.
+     * @since 1.33
+     */
+    public boolean open(boolean isModal) {
+	impl.setIsModal(isModal);
+	return open();
+    }
+
+    /**
+     * Open the options dialog with some panel preselected.
+     * To open a top-level panel, pass its {@link TopLevelRegistration#id}.
+     * To open a subpanel, pass its {@link SubRegistration#location} followed by {@code /}
+     * followed by its {@link SubRegistration#id}.
+     * To open a container panel without specifying a particular subpanel, pass its {@link ContainerRegistration#id}.
+     * To avoid typos and keep track of dependencies it is recommended to define compile-time
+     * constants for all these IDs, to be used both by the annotations and by calls to this method.
+     * @param path slash-separated path of category and perhaps subcategories to be selected
+     * @param isModal true if the options window should be in modal mode, false otherwise
+     * @return true if options dialog was successfully opened with required category.
+     * If this method is called when options dialog is already opened then this method
+     * will return immediately false without affecting currently selected category
+     * in opened options dialog.
+     * If category (i.e. the first item in the path) does not correspond to any
+     * of registered categories then false is returned and options dialog is not opened
+     * at all (e.g. in case that module providing such category is not installed or enabled).
+     * If subcategory doesn't exist, it opens with category selected and
+     * it returns true. It is up to particular <code>OptionsPanelController</code>
+     * to handle such situation.
+     * @since 1.33
+     */
+    public boolean open(String path, boolean isModal) {
+	impl.setIsModal(isModal);
+	return open(path);
     }
 
     private boolean openImpl(final String path) {

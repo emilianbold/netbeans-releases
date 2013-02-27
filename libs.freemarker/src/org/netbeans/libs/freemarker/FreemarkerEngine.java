@@ -40,6 +40,7 @@ import java.io.*;
 import java.util.Properties;
 import java.util.Set;
 import freemarker.template.*;
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -50,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /* Taken from A. Sundararajan and adopted by Jaroslav Tulach 
  * for NetBeans needs.

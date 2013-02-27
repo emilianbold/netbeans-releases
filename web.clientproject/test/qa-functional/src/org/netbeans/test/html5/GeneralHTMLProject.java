@@ -258,7 +258,33 @@ public class GeneralHTMLProject extends JellyTestCase {
     public void openProject(String projectName) throws IOException {
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects(projectName);
-        evt.waitNoEvent(3000);
+        waitScanFinished();
+    }
+
+    /**
+     * Waits for Remote Files node to appear in Projects tab
+     *
+     * @param projectName
+     */
+    public void waitForRemoteFiles(String projectName) {
+        final String project = projectName;
+        try {
+            Waiter waiter = new Waiter(new Waitable() {
+                @Override
+                public Object actionProduced(Object obj) {
+                    Node rootNode = new ProjectsTabOperator().getProjectRootNode(project);
+                    return rootNode.isChildPresent("Remote Files") ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return ("Wait for Remote Files node to appear");
+                }
+            });
+
+            waiter.waitAction(null);
+        } catch (InterruptedException e) {
+        }
     }
 
     /**
@@ -336,6 +362,30 @@ public class GeneralHTMLProject extends JellyTestCase {
         PageModel page = PageInspectorImpl.getDefault().getPage();
         List<? extends org.openide.nodes.Node> nodes = page.getNodesMatchingSelectedRule();
         return getElements(nodes);
+    }
+    
+    /**
+     * Opens given file and types space at the end of first line (on slow system this seems to help with parsing Remote files)
+     * @param pathAndFileName
+     * @param projectName
+     * @param fileName 
+     */
+    public void dummyEdit(String pathAndFileName, String projectName, String fileName){
+         
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        Node node = new Node(rootNode, "Site Root|" + pathAndFileName);
+        evt.waitNoEvent(500);
+
+        if (node.isLeaf()) {
+            node.select();
+            node.performPopupAction("Open");
+        }
+        
+        EditorOperator ep = new EditorOperator(fileName);
+        ep.setCaretPositionToEndOfLine(1);
+        type(ep, " ");
+        ep.save();
+        ep.close();
     }
 
     private HTMLElement[] getElements(List<? extends org.openide.nodes.Node> nodes) {

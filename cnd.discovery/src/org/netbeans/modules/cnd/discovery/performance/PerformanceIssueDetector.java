@@ -85,13 +85,24 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     private final Set<Project> projects = new HashSet<Project>();
     private final Map<String,ReadEntry> readPerformance = new HashMap<String,ReadEntry>();
     private final Map<String,CreateEntry> createPerformance = new HashMap<String,CreateEntry>();
+    private final Map<FileObject,PerformanceLogger.PerformanceEvent> createFOTimeOut = new HashMap<FileObject,PerformanceLogger.PerformanceEvent>();
+    private final Map<File,PerformanceLogger.PerformanceEvent> createFileTimeOut = new HashMap<File,PerformanceLogger.PerformanceEvent>();
+    private final Map<String,PerformanceLogger.PerformanceEvent> createItemTimeOut = new HashMap<String,PerformanceLogger.PerformanceEvent>();
     private final Map<String,ParseEntry> parsePerformance = new HashMap<String,ParseEntry>();
     private final Map<FileObject,PerformanceLogger.PerformanceEvent> parseTimeOut = new HashMap<FileObject,PerformanceLogger.PerformanceEvent>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final ScheduledFuture<?> periodicTask;
     private static final int SCHEDULE = 15; // period in seconds
     static final long NANO_TO_SEC = 1000*1000*1000;
-    private static final long NANO_TO_MILLI = 1000*1000;
+    static final long NANO_TO_MILLI = 1000*1000;
+    static final int CREATION_SPEED_LIMIT = 100;
+    static final int CREATION_SPEED_LIMIT_NORMAL = CREATION_SPEED_LIMIT*5;
+    static final int READING_SPEED_LIMIT = 100;
+    static final int READING_SPEED_LIMIT_NORMAL = READING_SPEED_LIMIT*10;
+    static final int PARSING_SPEED_LIMIT = 1000;
+    static final int PARSING_SPEED_LIMIT_NORMAL = PARSING_SPEED_LIMIT*10;
+    static final int PARSING_RATIO_LIMIT = 5;
+    static final int PARSING_RATIO_LIMIT_NORMAL = 2;
     private boolean slowItemCreation = false;
     private boolean slowFileRead = false;
     private boolean slowParsed = false;
@@ -102,6 +113,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     static final Logger LOG = Logger.getLogger(PerformanceIssueDetector.class.getName());
     static final Level level = Level.FINE;
     private static final Level timeOutLevel = Level.INFO;
+    private static PerformanceIssueDetector INSTANCE;
 
     public PerformanceIssueDetector() {
         if (PerformanceLogger.isProfilingEnabled()) {
@@ -114,6 +126,11 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         } else {
             periodicTask = null;
         }
+        INSTANCE = this;
+    }
+    
+    public static PerformanceIssueDetector getActiveInstance() {
+        return INSTANCE;
     }
     
     public void start(Project project) {
@@ -132,8 +149,11 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
                 CsmListeners.getDefault().removeProgressListener(this);
                 lock.writeLock().lock();
                 try {
-                    readPerformance.clear();
                     createPerformance.clear();
+                    createFOTimeOut.clear();
+                    createFileTimeOut.clear();
+                    createItemTimeOut.clear();
+                    readPerformance.clear();
                     parsePerformance.clear();
                     parseTimeOut.clear();
                     slowItemCreation = false;
@@ -184,8 +204,13 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         String dirName = fo.getPath();
         long time = event.getTime();
         if (event.getAttrs().length == 0) {
-            //TODO: process timeout
             LOG.log(timeOutLevel, "Timeout {0}s of directory list {1}", new Object[]{time/NANO_TO_SEC, dirName}); //NOI18N
+            lock.writeLock().lock();
+            try {
+                createFOTimeOut.put(fo, event);
+            } finally {
+                lock.writeLock().unlock();
+            }
             return;
         }
         if (isNotNormalized(dirName)) {
@@ -196,6 +221,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long user = event.getUserTime();
         lock.writeLock().lock();
         try {
+            createFOTimeOut.remove(fo);
             CreateEntry entry = createPerformance.get(dirName);
             if (entry == null) {
                 entry = new CreateEntry();
@@ -215,8 +241,12 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         String dirName = fo.getPath();
         long time = event.getTime();
         if (event.getAttrs().length == 0) {
-            //TODO: process timeout
             LOG.log(timeOutLevel, "Timeout {0}s of directory list {1}", new Object[]{time/NANO_TO_SEC, dirName}); //NOI18N
+            try {
+                createFileTimeOut.put(fo, event);
+            } finally {
+                lock.writeLock().unlock();
+            }
             return;
         }
         if (isNotNormalized(dirName)) {
@@ -227,6 +257,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long user = event.getUserTime();
         lock.writeLock().lock();
         try {
+            createFileTimeOut.remove(fo);
             CreateEntry entry = createPerformance.get(dirName);
             if (entry == null) {
                 entry = new CreateEntry();
@@ -251,25 +282,30 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
         long time = event.getTime();
         if (event.getAttrs().length == 0) {
-            //TODO: process timeout
             LOG.log(timeOutLevel, "Timeout {0}s of create project item {1}", new Object[]{time/NANO_TO_SEC, path}); //NOI18N
-            return;
-        }
-        String dirName;
-        if (event.getSource() instanceof FileObject) {
-            dirName = CndPathUtilitities.getDirName(path);
-        } else {
-            Item item = (Item) event.getAttrs()[0];
-            dirName = CndPathUtilitities.getDirName(item.getAbsolutePath());
-        }
-        if (isNotNormalized(dirName)) {
-            // Ignore not normalized paths
+            try {
+                createItemTimeOut.put(path, event);
+            } finally {
+                lock.writeLock().unlock();
+            }
             return;
         }
         long cpu = event.getCpuTime();
         long user = event.getUserTime();
         lock.writeLock().lock();
         try {
+            createItemTimeOut.remove(path);
+            String dirName;
+            if (event.getSource() instanceof FileObject) {
+                dirName = CndPathUtilitities.getDirName(path);
+            } else {
+                Item item = (Item) event.getAttrs()[0];
+                dirName = CndPathUtilitities.getDirName(item.getAbsolutePath());
+            }
+            if (isNotNormalized(dirName)) {
+                // Ignore not normalized paths
+                return;
+            }
             CreateEntry entry = createPerformance.get(dirName);
             if (entry == null) {
                 entry = new CreateEntry();
@@ -290,6 +326,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         String path = item.getAbsPath();
         if (event.getAttrs().length == 0) {
             //TODO: process timeout
+            
             LOG.log(timeOutLevel, "Timeout {0}s of find file object {1}", new Object[]{time/NANO_TO_SEC, path}); //NOI18N
             return;
         }
@@ -435,6 +472,10 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         return true;
     }
     
+    private boolean alreadyNotified() {
+        return slowFileRead || slowItemCreation || slowParsed;
+    }
+    
     private void notifyProblem(final int problem, final String details) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -461,6 +502,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         lock.readLock().lock();
         try {
             analyzeCreateItems();
+            analyzeInfiniteCreateFile();
             analyzeReadFile();
             analyzeParseFile();
             analyzeInfiniteParseFile();
@@ -473,10 +515,53 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             lock.readLock().unlock();
         }
         if (gatherStat != null) {
-            new AnalyzeStat(gatherStat).process();
+            AnalyzeStat.upEmptyFolder(gatherStat);
+            for (Map.Entry<String, AgregatedStat> entry : AnalyzeStat.getBigUnused(gatherStat)) {
+                PerformanceIssueDetector.LOG.log(Level.INFO, "Unused folder {0} contains {1} items and consumes {2}s.", // NOI18N
+                        new Object[]{entry.getKey(),
+                                     PerformanceIssueDetector.format(entry.getValue().itemNumber),
+                                     PerformanceIssueDetector.format(entry.getValue().itemTime/PerformanceIssueDetector.NANO_TO_SEC)});
+            }
+            AnalyzeStat.groupByReadingSpeed(gatherStat);
+            AnalyzeStat.dumpAll(gatherStat);
+            int i = 0;
+            for (Map.Entry<String, AgregatedStat> entry : AnalyzeStat.getSlowReading(gatherStat)) {
+                 PerformanceIssueDetector.LOG.log(Level.INFO, "Slow reading files in the folder {0}. Reading {1} lines consumes {2}s.", // NOI18N
+                         new Object[]{entry.getKey(),
+                                      PerformanceIssueDetector.format(entry.getValue().readLines),
+                                      PerformanceIssueDetector.format(entry.getValue().readTime/PerformanceIssueDetector.NANO_TO_SEC)});
+                 i++;
+                 if (i > 5) {
+                     break;
+                 }
+            }
         }
     }
 
+    TreeMap<String, AgregatedStat> getStatistic() {
+        lock.readLock().lock();
+        try {
+            return gatherStat();
+        } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
+            return null;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    Map<FileObject,PerformanceLogger.PerformanceEvent> getParseTimeout() {
+        lock.readLock().lock();
+        try {
+             return new HashMap<FileObject,PerformanceLogger.PerformanceEvent>(parseTimeOut);
+        } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
+            return null;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    
     private TreeMap<String, AgregatedStat> gatherStat() {
         TreeMap<String, AgregatedStat> map = new TreeMap<String, AgregatedStat>();
         for(Map.Entry<String,CreateEntry> entry : createPerformance.entrySet()) {
@@ -523,14 +608,12 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         ,"# {1} - items"
         ,"# {2} - speed"
         ,"# {3} - expected"
-        ,"Details.slow.item.creation=The IDE spent {0} seconds to create {1} project items.<br>\n"
+        ,"Details.slow.item.creation=Details:<br>\n"
+                                   +"The IDE spent {0} seconds to create {1} project items.<br>\n"
                                    +"The average creation speed is {2} items per second.<br>\n"
                                    +"IDE expects the average creation speed is more than {3} items per second.<br>\n"
-                                   +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeCreateItems() {
-        int CREATION_SPEED_LIMIT = 100;
-        int CREATION_SPEED_EXPECTED = 1000;
         long itemCount = 0;
         long time = 0;
         long cpu = 0;
@@ -547,13 +630,14 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long wallTime = time/NANO_TO_SEC;
         long creationSpeed = (itemCount*NANO_TO_SEC)/time;
         if (wallTime > 15 && itemCount > 100 && creationSpeed < CREATION_SPEED_LIMIT) {
-            if (!slowItemCreation) {
+            if (!alreadyNotified()) {
                 slowItemCreation = true;
-                final String details = Bundle.Details_slow_item_creation(format(wallTime), format(itemCount), format(creationSpeed), format(CREATION_SPEED_EXPECTED));
+                String details = Bundle.Details_slow_item_creation(format(wallTime), format(itemCount), format(creationSpeed), format(CREATION_SPEED_LIMIT));
                 if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                     notifyProblem(NotifyProjectProblem.CREATE_PROBLEM, details);
                 }
-                LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
+                details = details.replace("<br>", "").replace("\n", " "); //NOI18N
+                LOG.log(Level.INFO, "Slow File System Detected. {0}", details); //NOI18N
             }
         }
         LOG.log(level, "Average item creatoin speed is {0} item/s Created {1} items Time {2} ms CPU {3} ms User {4} ms", //NOI18N
@@ -561,18 +645,76 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     }
     
     @Messages({
+         "# {0} - table"
+        ,"Details.infinite.items.creation=Details. The access is nether finished or consumes too much time of files:<br>\n"
+                                     +"<table><tbody>\n"
+                                     +"<tr><th>File</th><th>Time, s</th></tr>\n"
+                                     +"{0}\n"
+                                     +"</tbody></table>\n"
+        ,"# {0} - file"
+        ,"# {1} - time"
+        ,"Details.infinite.item.creation=<tr><td>{0}</td><td>{1}</td></tr>\n"
+    })
+    private void analyzeInfiniteCreateFile() {
+        int INFINITE_CREATE_ITEM_TIMOUT = 30;
+        StringBuilder buf = new StringBuilder();
+        Iterator<Map.Entry<FileObject, PerformanceLogger.PerformanceEvent>> iterator = createFOTimeOut.entrySet().iterator();
+        while(iterator.hasNext()) {
+            Map.Entry<FileObject, PerformanceLogger.PerformanceEvent> entry = iterator.next();
+            FileObject fo = entry.getKey();
+            PerformanceLogger.PerformanceEvent event = entry.getValue();
+            long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
+            if (delta > INFINITE_CREATE_ITEM_TIMOUT) {
+                iterator.remove();
+                buf.append(Bundle.Details_infinite_item_creation(fo.getPath(), format(delta)));
+                LOG.log(Level.INFO, "Too Long File Access Detected. Access to file {0} consumes more than {1}s.", new Object[]{fo.getPath(), format(delta)}); //NOI18N
+            }
+        }
+        Iterator<Map.Entry<File, PerformanceLogger.PerformanceEvent>> iterator2 = createFileTimeOut.entrySet().iterator();
+        while(iterator2.hasNext()) {
+            Map.Entry<File, PerformanceLogger.PerformanceEvent> entry = iterator2.next();
+            File fo = entry.getKey();
+            PerformanceLogger.PerformanceEvent event = entry.getValue();
+            long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
+            if (delta > INFINITE_CREATE_ITEM_TIMOUT) {
+                iterator2.remove();
+                buf.append(Bundle.Details_infinite_item_creation(fo.getPath(), format(delta)));
+                LOG.log(Level.INFO, "Too Long File Access Detected. Access to file {0} consumes more than {1}s.", new Object[]{fo.getPath(), format(delta)}); //NOI18N
+            }
+        }
+        Iterator<Map.Entry<String, PerformanceLogger.PerformanceEvent>> iterator3 = createItemTimeOut.entrySet().iterator();
+        while(iterator3.hasNext()) {
+            Map.Entry<String, PerformanceLogger.PerformanceEvent> entry = iterator3.next();
+            String fo = entry.getKey();
+            PerformanceLogger.PerformanceEvent event = entry.getValue();
+            long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
+            if (delta > INFINITE_CREATE_ITEM_TIMOUT) {
+                iterator2.remove();
+                buf.append(Bundle.Details_infinite_item_creation(fo, format(delta)));
+                LOG.log(Level.INFO, "Too Long File Access Detected. Access to file {0} consumes more than {1}s.", new Object[]{fo, format(delta)}); //NOI18N
+            }
+        }
+        if (buf.length() > 0) {
+            if (!alreadyNotified()) {
+                slowItemCreation = true;
+                if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
+                    notifyProblem(NotifyProjectProblem.INFINITE_CREATE_PROBLEM, Bundle.Details_infinite_items_creation(buf.toString()));
+                }
+            }
+        }
+    }
+    
+    @Messages({
          "# {0} - time"
         ,"# {1} - read"
         ,"# {2} - speed"
         ,"# {3} - expected"
-        ,"Details.slow.file.read=The IDE spent {0} seconds to read {1} Kb of project files.<br>\n"
+        ,"Details.slow.file.read=Details:<br>\n"
+                               +"The IDE spent {0} seconds to read {1} Kb of project files.<br>\n"
                                +"The average reading speed is {2} Kb per second.<br>\n"
                                +"IDE expects the average reading speed is more than {3} Kb per second.<br>\n"
-                               +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeReadFile() {
-        int READING_SPEED_LIMIT = 100;
-        int READING_SPEED_EXPECTED = 1000;
         long fileCount = 0;
         long read = 0;
         long lines = 0;
@@ -593,13 +735,14 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long wallTime = time/NANO_TO_SEC;
         long readSpeed = (read*1000*1000)/time;
         if (wallTime > 100 && fileCount > 100 && readSpeed < READING_SPEED_LIMIT) {
-            if (!slowFileRead) {
+            if (!alreadyNotified()) {
                 slowFileRead = true;
-                final String details = Bundle.Details_slow_file_read(format(wallTime), format(read/1000), format(readSpeed), format(READING_SPEED_EXPECTED));
+                String details = Bundle.Details_slow_file_read(format(wallTime), format(read/1000), format(readSpeed), format(READING_SPEED_LIMIT));
                 if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                     notifyProblem(NotifyProjectProblem.READ_PROBLEM, details);
                 }
-                LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
+                details = details.replace("<br>", "").replace("\n", " "); //NOI18N
+                LOG.log(Level.INFO, "Slow File System Detected. {0}", details); //NOI18N
             }
         }
         LOG.log(level, "Average file reading speed is {0} Kb/s Read {1} Kb Time {2} ms CPU {3} ms User {4} ms", //NOI18N
@@ -613,16 +756,15 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         ,"# {3} - cpu"
         ,"# {4} - ratio"
         ,"# {5} - expected"
-        ,"Details.slow.file.parse=The IDE spent {0} seconds to parse {1} lines of project files.<br>\n"
+        ,"Details.slow.file.parse=Details:<br>\n"
+                                +"The IDE spent {0} seconds to parse {1} lines of project files.<br>\n"
                                 +"The average parsing speed is {2} lines per second.<br>\n"
                                 +"In other hand IDE consumed {3} seconds of CPU time to parse these files.<br>\n"
                                 +"The ratio of wall time to CPU time is 1/{4}.<br>\n"
-                                +"It shows that IDE spent too mach time waiting for resources.<br>\n"
+                                +"It shows that IDE spent too much time waiting for resources.<br>\n"
                                 +"IDE expects the ratio is more than 1/{5}.<br>\n"
-                                +"Most probably this is caused by poor overall file system performance.\n"
     })
     private void analyzeParseFile() {
-        int RATIO_LIMIT = 5;
         long fileCount = 0;
         long lines = 0;
         long time = 0;
@@ -646,14 +788,15 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long parseSpeed = lines/wallTime;
         if (cpuTime > 1) {
             long k = time/cpu;
-            if (wallTime > 100 && fileCount > 100 && parseSpeed < 1000 && k > 5) {
-                if (!slowParsed) {
+            if (wallTime > 100 && fileCount > 100 && parseSpeed < PARSING_SPEED_LIMIT && k > PARSING_RATIO_LIMIT) {
+                if (!alreadyNotified()) {
                     slowParsed = true;
-                    final String details = Bundle.Details_slow_file_parse(format(wallTime), format(lines), format(parseSpeed), format(cpuTime), format(k), format(RATIO_LIMIT));
+                    String details = Bundle.Details_slow_file_parse(format(wallTime), format(lines), format(parseSpeed), format(cpuTime), format(k), format(PARSING_RATIO_LIMIT));
                     if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone() && canNotify()) {
                         notifyProblem(NotifyProjectProblem.PARSE_PROBLEM, details);
                     }
-                   LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
+                    details = details.replace("<br>", "").replace("\n", " "); //NOI18N
+                LOG.log(Level.INFO, "Slow File System Detected. {0}", details); //NOI18N
                 }
             }
         }
@@ -663,13 +806,11 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
 
     @Messages({
          "# {0} - table"
-        ,"Details.infinite.files.parse=The parsing of the files:\n"
+        ,"Details.infinite.files.parse=Details. The parsing is nether finished or consumes too much time of files:<br>\n"
                                      +"<table><tbody>\n"
                                      +"<tr><th>File</th><th>Time, s</th></tr>\n"
                                      +"{0}\n"
                                      +"</tbody></table>\n"
-                                     +"are nether finished or consumes too much time.<br>\n"
-                                     +"Most probably this is caused by a bug in the IDE or too big files.\n"
         ,"# {0} - file"
         ,"# {1} - time"
         ,"Details.infinite.file.parse=<tr><td>{0}</td><td>{1}</td></tr>\n"
@@ -684,8 +825,17 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             long delta = (System.nanoTime() - event.getStartTime())/NANO_TO_SEC;
             if (delta > 100) {
                 iterator.remove();
-                buf.append(Bundle.Details_infinite_file_parse(fo.getPath(), format(delta)));
-                LOG.log(Level.INFO, "Too long file {0} parsing time {1}s. Probably parser has infinite loop or file is too big", new Object[]{fo.getPath(), format(delta)}); //NOI18N
+                long time = event.getTime();
+                long cpu = event.getCpuTime();
+                if (event.getAttrs().length == 0) {
+                    //TODO: process timeout
+                    if (time > cpu && cpu > 0) {
+                        if (time/cpu < 5) {
+                            buf.append(Bundle.Details_infinite_file_parse(fo.getPath(), format(delta)));
+                            LOG.log(Level.INFO, "Too long file {0} parsing time {1}s. Probably parser has infinite loop or file is too big", new Object[]{fo.getPath(), format(delta)}); //NOI18N
+                        }
+                    }
+                }
             }
         }
         if (buf.length() > 0) {

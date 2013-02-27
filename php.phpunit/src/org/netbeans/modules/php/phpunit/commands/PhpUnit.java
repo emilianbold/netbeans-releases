@@ -206,7 +206,7 @@ public final class PhpUnit {
             }
         } catch (InvalidPhpExecutableException ex) {
             if (showCustomizer) {
-                phpModule.openCustomizer(PhpUnitTestingProvider.getInstance().getCustomizerCategoryName());
+                phpModule.openCustomizer(PhpUnitTestingProvider.getInstance().getCustomizerCategoryIdent());
                 defaultPhpUnitExc = null;
             }
         }

@@ -318,5 +318,71 @@ public enum NodeType {
     /**
      * whitespace, new line or comment tokens
      */
-    ws;
+    ws,
+    
+    //*** LESS/SCSS syntax ***
+    
+    /**
+     * color: "@color";
+     */
+    cp_variable,
+    
+    /**
+     * "@color: #4D926F;"
+     */
+    cp_variable_declaration,
+    
+    /**
+     * color: "(@base-color * 3);"
+     */
+    less_function,
+    
+    /**
+     * Same as expression, but allows more operators.
+     * 
+     * color: ("@base-color * 3");
+     */
+    cp_expression,
+    
+    cp_additionExp,
+    cp_multiplyExp,
+    cp_atomExp,
+    
+    cp_term,
+    
+    /**
+     * Less functions operators.
+     */
+    less_expression_operator,
+    
+    /**
+     * ".box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000)"
+     */
+    cp_mixin_declaration,
+    
+    cp_mixin_call,
+    /**
+     * .box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
+     */
+    less_args_list,
+    
+    /**
+     * .box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
+     */
+    less_arg,
+    
+    less_mixin_guarded,
+    less_condition,
+    less_condition_operator,
+    less_function_in_condition,
+    less_fn_name,
+    
+    less_rule,
+    
+    less_mixin_call_args;
+    
+    
+    
+    
+    
 }

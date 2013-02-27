@@ -59,6 +59,7 @@ import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Top level main Versioning menu.
@@ -82,9 +83,9 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         return createMenu();
     }
     
+    @NbBundle.Messages("CTL_OtherVCS.menu=Other VCS")
     private JComponent[] createMenu() {
         List<JComponent> items = new ArrayList<JComponent>(20);
-
         if(!VersioningManager.isInitialized()) {
             items.add(NoVCSMenuItem.createInitializingMenu(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));
             items.add(Utils.createJSeparator());
@@ -95,36 +96,60 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             List<VersioningSystem> systems = Arrays.asList(VersioningManager.getInstance().getVersioningSystems());
             VersioningSystem [] vs = VersioningManager.getInstance().getOwners(ctx);
 
+            Collection<? extends Action> additionalItems = Lookups.forPath("Actions/Versioning/Additional").lookupAll(Action.class);
+            boolean ownerMenuDisplayed = false;
             if (vs.length == 1) {
                 if (vs[0].getVCSAnnotator() != null) {
                     List<JComponent> systemItems = actionsToItems(vs[0].getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
                     items.addAll(systemItems);
+                    ownerMenuDisplayed = true;
+                    items.add(Utils.createJSeparator());
+                }
+                for (Action a : additionalItems) {
+                    items.add(Utils.toMenuItem(a));
                 }
                 items.addAll(actionsToItems(appendAdditionalActions(ctx, vs[0], new Action[0])));
-                items.add(Utils.createJSeparator());
             } else if (vs.length > 1) {
                 JMenuItem dummy = new JMenuItem("<multiple systems>");
                 dummy.setEnabled(false);
                 items.add(dummy);
-                items.add(Utils.createJSeparator());
-            } 
+                for (Action a : additionalItems) {
+                    items.add(Utils.toMenuItem(a));
+                }
+            } else {
+                for (Action a : additionalItems) {
+                    items.add(Utils.toMenuItem(a));
+                }
+            }
+            items.add(Utils.createJSeparator());
 
             Collections.sort(systems, new ByDisplayNameComparator());
 
             VersioningSystem localHistory = null;
             boolean accepted = false;
+            List<JMenu> vcsSubmenus = new ArrayList<JMenu>(systems.size());
             for (final VersioningSystem system : systems) {
-                if(!system.accept(ctx)) {
+                if(!system.accept(ctx) || vs.length == 1 && vs[0] == system) { // skip already displayed VCS
                     continue;
                 }
-                accepted = true;
                 if (system.isLocalHistory()) {
                     localHistory = system;
                 } else if (!"".equals(system.getMenuLabel())) { //NOI18N
+                    accepted = true;
                     JMenu menu = createVersioningSystemMenu(system, true);
-                    items.add(menu);
+                    vcsSubmenus.add(menu);
                 }
             }
+            if (ownerMenuDisplayed) {
+                JMenu menu = new JMenu(Bundle.CTL_OtherVCS_menu());
+                for (JMenu submenu : vcsSubmenus) {
+                    menu.add(submenu);
+                }
+                vcsSubmenus.clear();
+                vcsSubmenus.add(menu);
+            }
+            items.addAll(vcsSubmenus);
+            accepted |= ownerMenuDisplayed;
             if(!accepted) {
                 items.add(NoVCSMenuItem.createNoVcsMenu(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));
                 return items.toArray(new JComponent[items.size()]);
@@ -265,8 +290,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                 if (VersioningConfig.getDefault().isDisconnected(system, root)) {
                     actions = new Action[] { new ConnectAction(system, root, null) };
                 } else {
-                    actions = actions == null ? new Action[2] : Arrays.copyOf(actions, actions.length + 2);
-                    actions[actions.length - 2] = null;
+                    actions = actions == null ? new Action[2] : Arrays.copyOf(actions, actions.length + 1);
                     actions[actions.length - 1] = new DisconnectAction(system, root);
                 }
             }

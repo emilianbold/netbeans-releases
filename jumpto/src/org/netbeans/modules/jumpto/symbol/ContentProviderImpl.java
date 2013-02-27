@@ -366,7 +366,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                                    Math.min( 255, fgColor.getBlue() + LIGHTER_COLOR_COMPONENT)
                                   );
                             
-            bgColor = list.getBackground();
+            bgColor = new Color( list.getBackground().getRGB() );
             bgColorDarker = new Color(
                                     Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
                                     Math.abs(bgColor.getGreen() - DARKER_COLOR_COMPONENT),

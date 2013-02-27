@@ -102,6 +102,10 @@ public class TokenBuffer {
         return tokens.get(p + i - 1);
     }
 
+    public final int size() {
+        return size;
+    }
+    
     /**Return an integer marker that can be used to rewind the buffer to
      * its current state.
      */

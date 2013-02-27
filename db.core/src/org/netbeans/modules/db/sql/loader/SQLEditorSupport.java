@@ -41,13 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.db.sql.loader;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -86,6 +86,8 @@ import org.openide.text.DataEditorSupport;
 import org.openide.util.*;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.IOContainer;
+import org.openide.xml.XMLUtil;
 
 /** 
  * Editor support for SQL data objects. There can be two "kinds" of SQL editors: one for normal
@@ -140,12 +142,13 @@ public class SQLEditorSupport extends DataEditorSupport
     
     @Override
     protected boolean notifyModified () {
-        if (!super.notifyModified()) 
+        if (!super.notifyModified()) {
             return false;
+        }
         
         if (!isConsole()) {
             // Add the save cookie to the data object
-            SQLDataObject obj = (SQLDataObject)getDataObject();
+            SQLDataObject obj = (SQLDataObject) getDataObject();
             if (obj.getLookup().lookup(SaveCookie.class) == null) {
                 obj.addCookie(saveCookie);
                 obj.setModified(true);
@@ -163,7 +166,8 @@ public class SQLEditorSupport extends DataEditorSupport
     
     @Override
     protected Pane createPane() {
-        Pane pane = (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(SQLDataLoader.SQL_MIME_TYPE, getDataObject());
+        Pane pane = (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(
+                SQLDataLoader.SQL_MIME_TYPE, getDataObject());
         return pane;
     }
     
@@ -173,11 +177,11 @@ public class SQLEditorSupport extends DataEditorSupport
     }
 
     @Override
-    protected void notifyUnmodified () {
+    protected void notifyUnmodified() {
         super.notifyUnmodified();
 
         // Remove the save cookie from the data object
-        SQLDataObject obj = (SQLDataObject)getDataObject();
+        SQLDataObject obj = (SQLDataObject) getDataObject();
         Cookie cookie = obj.getLookup().lookup(SaveCookie.class);
         if (cookie != null && cookie.equals(saveCookie)) {
             obj.removeCookie(saveCookie);
@@ -188,7 +192,22 @@ public class SQLEditorSupport extends DataEditorSupport
     @Override
     protected String messageToolTip() {
         if (isConsole()) {
+            DatabaseConnection dc = getDatabaseConnection();
+            if (dc != null) {
+                try {
+                    return String.format(
+                            "<html>%s<br>%s<br>JDBC-URL: %s</html>",
+                            XMLUtil.toAttributeValue(
+                            getDataObject().getPrimaryFile().getName()),
+                            XMLUtil.toAttributeValue(dc.getDisplayName()),
+                            XMLUtil.toAttributeValue(dc.getDatabaseURL()));
+                } catch (CharConversionException ex) {
+                    LOGGER.log(Level.WARNING, "", ex);
             return getDataObject().getPrimaryFile().getName();
+                }
+        } else {
+                return getDataObject().getPrimaryFile().getName();
+            }
         } else {
             return super.messageToolTip();
         }
@@ -196,11 +215,21 @@ public class SQLEditorSupport extends DataEditorSupport
     
     @Override
     protected String messageName() {
-        if (!isValid()) return ""; // NOI18N
-        
+        if (!isValid()) {
+            return ""; // NOI18N
+        }
         if (isConsole()) {
-            // just the name, no modified or r/o flags
-            return getDataObject().getName();
+            if (getDatabaseConnection() != null) {
+                String connectionName = getDatabaseConnection().getDisplayName();
+                if (connectionName.length() > 25) {
+                    connectionName = connectionName.substring(0, 25) + "\u2026";
+                }
+                return NbBundle.getMessage(SQLEditorSupport.class, "LBL_ConsoleWithConnection",
+                    getDataObject().getName(),
+                    connectionName);
+            }
+            return NbBundle.getMessage(SQLEditorSupport.class, "LBL_Console",
+                    getDataObject().getName());
         } else {
             return super.messageName();
         }
@@ -208,11 +237,12 @@ public class SQLEditorSupport extends DataEditorSupport
     
     @Override
     protected String messageHtmlName() {
-        if (!isValid()) return ""; // NOI18N
-        
+        if (!isValid()) {
+            return ""; // NOI18N
+        }
         if (isConsole()) {
             // just the name, no modified or r/o flags
-            String name = getDataObject().getName();
+            String name = messageName();
             if (name != null) {
                 if (!name.startsWith("<html>")) { // NOI18N
                     name = "<html>" + name; // NOI18N
@@ -250,7 +280,7 @@ public class SQLEditorSupport extends DataEditorSupport
     }
     
     boolean isConsole() {
-        return ((SQLDataObject)getDataObject()).isConsole();
+        return ((SQLDataObject) getDataObject()).isConsole();
     }
     
     boolean isValid() {
@@ -292,7 +322,9 @@ public class SQLEditorSupport extends DataEditorSupport
     @Override
     public synchronized void setDatabaseConnection(DatabaseConnection dbconn) {
         this.dbconn = dbconn;
-        sqlPropChangeSupport.firePropertyChange(SQLExecution.PROP_DATABASE_CONNECTION, null, null);
+        sqlPropChangeSupport.firePropertyChange(
+                SQLExecution.PROP_DATABASE_CONNECTION, null, null);
+        updateTitles();
     }
     
     @Override
@@ -318,13 +350,15 @@ public class SQLEditorSupport extends DataEditorSupport
     }
 
     @Override
-    public void saveAs( FileObject folder, String fileName ) throws IOException {
+    public void saveAs(FileObject folder, String fileName) throws IOException {
         String fn = FileUtil.getFileDisplayName(folder) + File.separator + fileName; 
         File existingFile = FileUtil.normalizeFile(new File(fn));
         if (existingFile.exists()) {
             NotifyDescriptor confirm = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplace", fileName),
-                    NbBundle.getMessage(SQLEditorSupport.class, "MSG_ConfirmReplaceFileTitle"),
+                    NbBundle.getMessage(SQLEditorSupport.class,
+                    "MSG_ConfirmReplace", fileName),
+                    NbBundle.getMessage(SQLEditorSupport.class,
+                    "MSG_ConfirmReplaceFileTitle"),
                     NotifyDescriptor.YES_NO_OPTION);
             DialogDisplayer.getDefault().notify(confirm);
             if (!confirm.getValue().equals(NotifyDescriptor.YES_OPTION)) {
@@ -366,7 +400,6 @@ public class SQLEditorSupport extends DataEditorSupport
                     task.removeTaskListener(this);
                     refresh();
                 }
-
             });
         }
     }
@@ -439,7 +472,7 @@ public class SQLEditorSupport extends DataEditorSupport
     
     private void refresh() {
         if (dbconn == null) {
-            return ;
+            return;
         }
         ConnectionManager.getDefault().refreshConnectionInExplorer(dbconn);
     }
@@ -538,7 +571,9 @@ public class SQLEditorSupport extends DataEditorSupport
                     return;
                 }
 
-                ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutingStatements"), this);
+                ProgressHandle handle = ProgressHandleFactory.createHandle(
+                        NbBundle.getMessage(SQLEditorSupport.class,
+                        "LBL_ExecutingStatements"), this);
                 handle.start();
                 try {
                     handle.switchToIndeterminate();
@@ -546,7 +581,8 @@ public class SQLEditorSupport extends DataEditorSupport
                     setStatusText(""); // NOI18N
 
                     if (LOG) {
-                        LOGGER.log(Level.FINE, "Closing the old execution result"); // NOI18N
+                        LOGGER.log(Level.FINE,
+                                "Closing the old execution result"); // NOI18N
                     }
                     int pageSize = -1;
                     if (parent.executionResults != null && parent.executionResults.size() > 0) {
@@ -561,7 +597,8 @@ public class SQLEditorSupport extends DataEditorSupport
                     parent.closeExecutionResult();
 
                     SQLExecutionLoggerImpl logger = parent.createLogger();
-                    SQLExecutionResults executionResults = SQLExecuteHelper.execute(sql, startOffset, endOffset, dbconn, logger, pageSize);
+                    SQLExecutionResults executionResults = SQLExecuteHelper.execute(
+                            sql, startOffset, endOffset, dbconn, logger, pageSize);
                     handleExecutionResults(executionResults, logger);
                 } finally {
                     handle.finish();
@@ -574,7 +611,8 @@ public class SQLEditorSupport extends DataEditorSupport
         private void handleExecutionResults(SQLExecutionResults executionResults, SQLExecutionLoggerImpl logger) {
             if (executionResults == null) {
                 // execution cancelled
-                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionCancelled"));
+                setStatusText(NbBundle.getMessage(SQLEditorSupport.class,
+                        "LBL_ExecutionCancelled"));
                 return;
             }
 
@@ -582,7 +620,8 @@ public class SQLEditorSupport extends DataEditorSupport
             
             if (executionResults.size() <= 0) {
                 // no results, but successfull
-                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfully"));
+                setStatusText(NbBundle.getMessage(SQLEditorSupport.class,
+                        "LBL_ExecutedSuccessfully"));
                 return;
             }
 
@@ -590,9 +629,11 @@ public class SQLEditorSupport extends DataEditorSupport
 
             if (executionResults.hasExceptions()) {
                 // there was at least one exception
-                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinishedWithErrors"));
+                setStatusText(NbBundle.getMessage(SQLEditorSupport.class,
+                        "LBL_ExecutionFinishedWithErrors"));
             } else {
-                setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfully"));
+                setStatusText(NbBundle.getMessage(SQLEditorSupport.class,
+                        "LBL_ExecutedSuccessfully"));
             }
         }
         
@@ -607,8 +648,9 @@ public class SQLEditorSupport extends DataEditorSupport
     }
 
     /** 
-     * Environment for this support. Ensures that getDataObject().setModified(true)
-     * is not called if this support's editor was opened as a console.
+     * Environment for this support. Ensures that
+     * getDataObject().setModified(true) is not called if this support's editor
+     * was opened as a console.
      */
     static final class Environment extends DataEditorSupport.Env {
 
@@ -629,7 +671,7 @@ public class SQLEditorSupport extends DataEditorSupport
 
         @Override
         protected FileLock takeLock() throws IOException {
-            MultiDataObject obj = (MultiDataObject)getDataObject();
+            MultiDataObject obj = (MultiDataObject) getDataObject();
             fileLock = obj.getPrimaryEntry().takeLock();
             return fileLock;
         }

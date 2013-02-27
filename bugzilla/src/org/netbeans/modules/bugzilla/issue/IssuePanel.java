@@ -153,7 +153,7 @@ import org.openide.windows.WindowManager;
  * @author Jan Stola
  */
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
-    private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
+    private static Color highlightColor = null;
     private static final RequestProcessor RP = new RequestProcessor("Bugzilla Issue Panel", 5, false); // NOI18N
     private static final String YYYY_MM_DD = NbBundle.getMessage(IssuePanel.class, "IssuePanel.deadlineField.text");
     private BugzillaIssue issue;
@@ -170,6 +170,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private String assignee = null;
     private UndoRedoSupport undoRedoSupport;
 
+    static {
+        highlightColor = UIManager.getColor( "nb.bugtracking.label.highlight" ); //NOI18N
+        if( null == highlightColor ) {
+            highlightColor = new Color(217, 255, 217);
+        }
+    }
     
     public IssuePanel() {
         initComponents();
@@ -242,7 +248,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
             field.setUI(new BasicTextFieldUI());
         }
-        field.setBackground(getBackground());
+        Color bkColor = getBackground();
+        if( null != bkColor )
+            bkColor = new Color( bkColor.getRGB() );
+        field.setBackground(bkColor);
         Caret caret = field.getCaret();
         if (caret instanceof DefaultCaret) {
             ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
@@ -963,7 +972,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         boolean highlight = !issue.getTaskData().isNew() && (issue.getFieldStatus(field) != BugzillaIssue.FIELD_STATUS_UPTODATE);
         label.setOpaque(highlight);
         if (highlight) {
-            label.setBackground(HIGHLIGHT_COLOR);
+            label.setBackground(highlightColor);
         }
     }
 

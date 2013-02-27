@@ -238,7 +238,9 @@ public abstract class DbgpMessage {
 
     private static void logDebugInfo( byte[] bytes ) {
         try {
-            Logger.getLogger( DbgpMessage.class.getName() ).log(Level.FINE, new String( bytes , ISO_CHARSET));
+            if (bytes != null) {
+                Logger.getLogger( DbgpMessage.class.getName() ).log(Level.FINE, new String( bytes , ISO_CHARSET));
+            }
         }
         catch (UnsupportedEncodingException e) {
             assert false;

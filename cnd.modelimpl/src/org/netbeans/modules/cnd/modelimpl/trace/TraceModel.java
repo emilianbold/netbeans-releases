@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -220,17 +221,26 @@ public class TraceModel extends TraceModelBase {
     private Map<String, Long> cacheTimes = new HashMap<String, Long>();
     private int lap = 0;
     private final Map<CsmFile, APTPreprocHandler> states = new ConcurrentHashMap<CsmFile, APTPreprocHandler>();
-    FileImpl.Hook hook = new FileImpl.Hook() {
+    public interface TestHook {
+
+        void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler);
+    }
+    
+    TestHook hook = new TestHook() {
 
         @Override
         public void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler) {
             states.put(file, preprocHandler);
         }
     };
+    
+    public interface ErrorListener {
+        void error(String text, int line, int column);
+    }
 
     public TraceModel(boolean cleanCache) {
         super(cleanCache);
-        FileImpl.setHook(hook);
+        CsmCorePackageAccessor.get().setFileImplTestHook(hook);
     }
 
     @Override
@@ -1170,7 +1180,7 @@ public class TraceModel extends TraceModelBase {
         if (dumpAst || showAstWindow) {
             tree = fileImpl.debugParse();
         }
-        errCount = fileImpl.getErrorCount();
+        errCount = CsmCorePackageAccessor.get().getErrorCount(fileImpl);
         if (dumpPPState) {
             int antiLoop = 0;
             while (antiLoop++ < 100 && !states.containsKey(fileImpl)) {
@@ -1284,6 +1294,10 @@ public class TraceModel extends TraceModelBase {
         frame.setVisible(true);
     }
 
+    public static void getFileErrors(FileImpl file, ErrorListener errorListener) {
+        CsmCorePackageAccessor.get().testFileImplErrors(file, errorListener);
+    }
+    
 //    private boolean isDummyUnresolved(CsmDeclaration decl) {
 //	return decl == null || decl instanceof Unresolved.UnresolvedClass;
 //    }

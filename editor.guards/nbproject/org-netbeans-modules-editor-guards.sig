@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.16.1
+#Version 1.20.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -15,7 +15,7 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
-CLSS public org.netbeans.api.editor.guards.GuardedSection
+CLSS public abstract org.netbeans.api.editor.guards.GuardedSection
 meth public boolean contains(javax.swing.text.Position,boolean)
 meth public boolean isValid()
 meth public java.lang.String getName()
@@ -27,7 +27,7 @@ meth public void deleteSection()
 meth public void removeSection()
 meth public void setName(java.lang.String) throws java.beans.PropertyVetoException
 supr java.lang.Object
-hfds impl
+hfds delegate,impl,offset
 
 CLSS public final org.netbeans.api.editor.guards.GuardedSectionManager
 meth public java.lang.Iterable<org.netbeans.api.editor.guards.GuardedSection> getGuardedSections()
@@ -69,6 +69,7 @@ meth public abstract java.io.Writer createGuardedWriter(java.io.OutputStream,jav
 
 CLSS public abstract org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider
 cons protected init(org.netbeans.spi.editor.guards.GuardedEditorSupport)
+cons protected init(org.netbeans.spi.editor.guards.GuardedEditorSupport,boolean)
 innr public final Result
 intf org.netbeans.spi.editor.guards.GuardedSectionsProvider
 meth public abstract char[] writeSections(java.util.List<org.netbeans.api.editor.guards.GuardedSection>,char[])
@@ -78,7 +79,7 @@ meth public final org.netbeans.api.editor.guards.InteriorSection createInteriorS
 meth public final org.netbeans.api.editor.guards.SimpleSection createSimpleSection(java.lang.String,int,int) throws javax.swing.text.BadLocationException
 meth public java.io.Writer createGuardedWriter(java.io.OutputStream,java.nio.charset.Charset)
 supr java.lang.Object
-hfds impl
+hfds impl,useReadersWritersOnSet
 
 CLSS public final org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider$Result
  outer org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider

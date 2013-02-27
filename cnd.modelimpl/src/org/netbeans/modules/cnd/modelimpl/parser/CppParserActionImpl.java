@@ -125,6 +125,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.SwitchStatementImpl.SwitchSta
 import org.netbeans.modules.cnd.modelimpl.csm.deep.UniversalStatement.UniversalStatementBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.parser.symtab.*;
 import org.openide.util.CharSequences;
 
@@ -144,6 +145,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     private final Deque<Pair> contexts;
     private CsmParserProvider.CsmParserParameters params;
     private CXXParserActionEx wrapper;
+    private CXXParserEx parser;
     
     private static final class Pair {
         final Map<Integer, CsmObject> objects = new HashMap<Integer, CsmObject>();
@@ -168,6 +170,17 @@ public class CppParserActionImpl implements CppParserActionEx {
 //        this.contexts.push(currentContext);
         this.globalSymTab = createGlobal();
         this.builderContext = new CppParserBuilderContext();
+    }
+
+    public void setParser(CXXParserEx parser) {
+        this.parser = parser;
+        parser.setErrorDelegate(new CsmParserProvider.ParserErrorDelegate() {
+
+            @Override
+            public void onError(ParserError e) {
+                currentContext.file.getParsingFileContent().addParsingError(e);
+            }
+        });
     }
     
     @Override
@@ -583,7 +596,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                         builderContext.push((MethodDDBuilder)memberBuilder);
                         ParserProviderImpl.Antlr3CXXParser parser = new ParserProviderImpl.Antlr3CXXParser(params);
                         parser.init(null, ((MethodDDBuilder)memberBuilder).getBodyTokenStream(), wrapper);
-                        parser.parse(CsmParserProvider.CsmParser.ConstructionKind.COMPOUND_STATEMENT);
+                        parser.parse(CsmParserProvider.CsmParser.ConstructionKind.FUNCTION_DEFINITION_AFTER_DECLARATOR);
                         builderContext.pop();
                     }
                 }
@@ -2386,8 +2399,8 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override
     public void skip_balanced_curlies(Token token) {
-        if (builderContext.top(1) instanceof MethodDDBuilder) {
-            MethodDDBuilder builder = (MethodDDBuilder) builderContext.top(1);
+        if (builderContext.top() instanceof MethodDDBuilder) {
+            MethodDDBuilder builder = (MethodDDBuilder) builderContext.top();
             builder.addBodyToken(token);
         }
     }    

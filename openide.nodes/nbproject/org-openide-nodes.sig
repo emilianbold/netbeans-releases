@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.28.1
+#Version 7.33.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -400,7 +400,7 @@ meth public void show()
  anno 0 java.lang.Deprecated()
 meth public void toBack()
 supr java.awt.Window
-hfds base,blockedWindows,isInDispose,isInHide,keepBlocking,modal,modalDialogs,modalFilter,modalityType,nameCounter,resizable,serialVersionUID,showAppContext,title,undecorated
+hfds base,blockedWindows,initialized,isInDispose,isInHide,keepBlocking,modal,modalDialogs,modalFilter,modalityType,nameCounter,resizable,serialVersionUID,showAppContext,title,undecorated
 hcls WakingRunnable
 
 CLSS public abstract interface java.awt.MenuContainer
@@ -494,7 +494,7 @@ meth public void show()
 meth public void toBack()
 meth public void toFront()
 supr java.awt.Container
-hfds OPENED,TRANSPARENT_BACKGROUND_COLOR,allWindows,alwaysOnTop,anchor,base,beforeFirstShow,beforeFirstWindowShown,focusMgr,focusableWindowState,icons,inputContext,inputContextLock,isInShow,isTrayIconWindow,locationByPlatform,locationByPlatformProp,log,modalBlocker,modalExclusionType,nameCounter,opacity,opaque,ownedWindowList,securityWarningAlignmentX,securityWarningAlignmentY,securityWarningHeight,securityWarningPointX,securityWarningPointY,securityWarningWidth,serialVersionUID,shape,showWithParent,state,syncLWRequests,systemSyncLWRequests,temporaryLostComponent,warningString,weakThis,windowFocusListener,windowListener,windowSerializedDataVersion,windowStateListener
+hfds OPENED,TRANSPARENT_BACKGROUND_COLOR,allWindows,alwaysOnTop,anchor,base,beforeFirstShow,beforeFirstWindowShown,disposing,focusMgr,focusableWindowState,icons,inputContext,inputContextLock,isInShow,isTrayIconWindow,locationByPlatform,locationByPlatformProp,log,modalBlocker,modalExclusionType,nameCounter,opacity,opaque,ownedWindowList,securityWarningAlignmentX,securityWarningAlignmentY,securityWarningHeight,securityWarningPointX,securityWarningPointY,securityWarningWidth,serialVersionUID,shape,showWithParent,state,syncLWRequests,systemSyncLWRequests,temporaryLostComponent,warningString,weakThis,windowFocusListener,windowListener,windowSerializedDataVersion,windowStateListener
 hcls WindowDisposerRecord
 
 CLSS public abstract interface java.awt.event.ActionListener
@@ -894,6 +894,11 @@ CLSS public abstract interface static org.openide.nodes.BeanChildren$Factory
  outer org.openide.nodes.BeanChildren
 meth public abstract org.openide.nodes.Node createNode(java.lang.Object) throws java.beans.IntrospectionException
 
+CLSS public abstract interface !annotation org.openide.nodes.BeanInfoSearchPath
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[PACKAGE])
+intf java.lang.annotation.Annotation
+
 CLSS public org.openide.nodes.BeanNode<%0 extends java.lang.Object>
 cons protected init({org.openide.nodes.BeanNode%0},org.openide.nodes.Children) throws java.beans.IntrospectionException
 cons protected init({org.openide.nodes.BeanNode%0},org.openide.nodes.Children,org.openide.util.Lookup) throws java.beans.IntrospectionException
@@ -1108,7 +1113,6 @@ meth protected final void enableDelegation(int)
 meth protected java.beans.PropertyChangeListener createPropertyChangeListener()
 meth protected org.openide.nodes.Node getOriginal()
 meth protected org.openide.nodes.NodeListener createNodeListener()
-meth protected void finalize()
 meth public <%0 extends org.openide.nodes.Node$Cookie> {%%0} getCookie(java.lang.Class<{%%0}>)
 meth public boolean canCopy()
 meth public boolean canCut()
@@ -1499,6 +1503,7 @@ meth public static org.openide.nodes.NodeListener weakNodeListener(org.openide.n
 meth public static org.openide.nodes.Node[] fromHandles(org.openide.nodes.Node$Handle[]) throws java.io.IOException
 meth public static org.openide.util.actions.SystemAction[] getDefaultActions()
  anno 0 java.lang.Deprecated()
+meth public static void registerPropertyEditors()
 meth public static void setDefaultActions(org.openide.util.actions.SystemAction[])
  anno 0 java.lang.Deprecated()
 supr java.lang.Object
@@ -1550,6 +1555,17 @@ hfds dndMimeType,nodePasteFlavor
 CLSS public abstract interface static org.openide.nodes.NodeTransfer$Paste
  outer org.openide.nodes.NodeTransfer
 meth public abstract org.openide.util.datatransfer.PasteType[] types(org.openide.nodes.Node)
+
+CLSS public abstract interface !annotation org.openide.nodes.PropertyEditorRegistration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.Class<?>[] targetType()
+
+CLSS public abstract interface !annotation org.openide.nodes.PropertyEditorSearchPath
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[PACKAGE])
+intf java.lang.annotation.Annotation
 
 CLSS public abstract org.openide.nodes.PropertySupport<%0 extends java.lang.Object>
 cons public init(java.lang.String,java.lang.Class<{org.openide.nodes.PropertySupport%0}>,java.lang.String,java.lang.String,boolean,boolean)
@@ -1679,7 +1695,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

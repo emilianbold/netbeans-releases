@@ -57,7 +57,7 @@ import org.netbeans.editor.BaseDocumentEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;

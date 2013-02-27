@@ -380,7 +380,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         if( item.dateTime != null) {
             JLabel label = new JLabel();
             label.setFont( RSS_DESCRIPTION_FONT );
-            label.setForeground( Utils.getColor(COLOR_RSS_DATE) );
+            label.setForeground( Utils.getRssDateColor() );
             label.setText( formatDateTime( item.dateTime ) );
             panel.add( label, new GridBagConstraints(2,row,1,1,0.0,0.0,
                     GridBagConstraints.EAST,GridBagConstraints.NONE,
@@ -388,7 +388,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         }
 
         WebLink linkButton = new WebLink( stripHtml(item.title), item.link,
-                Utils.getColor( COLOR_HEADER ), false );
+                Utils.getRssHeaderColor(), false );
         linkButton.getAccessibleContext().setAccessibleName( 
                 BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
         linkButton.getAccessibleContext().setAccessibleDescription( 
@@ -402,7 +402,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         if (item.description != null) {
             JLabel label = new JLabel("<html>" + trimHtml(item.description) );
             label.setFont( RSS_DESCRIPTION_FONT );
-            label.setForeground(Utils.getColor(COLOR_RSS_DETAILS));
+            label.setForeground(Utils.getRssDetailsColor());
             panel.add( label, new GridBagConstraints(0,row++,4,1,0.0,0.0,
                     GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,
                     new Insets(0,0,0,TEXT_INSETS_RIGHT),0,0 ) );

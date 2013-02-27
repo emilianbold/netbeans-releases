@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.26.1
+#Version 1.29.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -124,6 +124,6 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 

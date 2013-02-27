@@ -50,6 +50,9 @@ import javax.swing.JMenuItem;
 import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.SwitchBranchAction;
+import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
+import org.netbeans.modules.git.ui.tag.CreateTagAction;
+import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
@@ -67,8 +70,12 @@ public final class BranchMenu extends DynamicMenu {
     private final ActionDestination dest;
     private final Lookup lkp;
 
+    @NbBundle.Messages({
+        "CTL_MenuItem_BranchMenu=&Branch/Tag",
+        "CTL_MenuItem_BranchMenu.popup=Branch/Tag"
+    })
     public BranchMenu (ActionDestination dest, Lookup lkp) {
-        super(NbBundle.getMessage(BranchMenu.class, dest.equals(ActionDestination.MainMenu) ? "CTL_MenuItem_BranchMenu" : "CTL_MenuItem_BranchMenu.popup")); //NOI18N
+        super(dest.equals(ActionDestination.MainMenu) ? Bundle.CTL_MenuItem_BranchMenu() : Bundle.CTL_MenuItem_BranchMenu_popup());
         this.dest = dest;
         this.lkp = lkp;
     }
@@ -89,10 +96,39 @@ public final class BranchMenu extends DynamicMenu {
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
+            
+            menu.addSeparator();
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(CreateTagAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(ManageTagsAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            
+            menu.addSeparator();
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(MergeRevisionAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(SwitchBranchAction.class), NbBundle.getMessage(SwitchBranchAction.class, "LBL_SwitchBranchAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            
+            menu.addSeparator();
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateTagAction.class), NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(ManageTagsAction.class), NbBundle.getMessage(ManageTagsAction.class, "LBL_ManageTagsAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            
+            menu.addSeparator();
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(MergeRevisionAction.class), NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;
