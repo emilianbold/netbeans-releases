@@ -56,13 +56,12 @@ public class Css3ParserScssTest extends CssTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        CssParserResult.IN_UNIT_TESTS = true;
-        ExtCss3Parser.isScssSource_unit_tests = true;
+        setScssSource();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        ExtCss3Parser.isScssSource_unit_tests = false;
+        setPlainSource();
     }
 
     public void testAllANTLRRulesHaveNodeTypes() {

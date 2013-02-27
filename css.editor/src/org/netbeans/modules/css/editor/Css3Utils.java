@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.editor.csl.CssErrorFactory;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Browser;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -103,16 +104,6 @@ public final class Css3Utils {
         }
         
         return false;
-    }
-    
-    public static List<CompletionProposal> filterCompletionProposals(List<CompletionProposal> proposals, CharSequence prefix, boolean ignoreCase) {
-        List<CompletionProposal> filtered = new ArrayList<CompletionProposal>();
-        for(CompletionProposal proposal : proposals) {
-            if(LexerUtils.startsWith(proposal.getInsertPrefix(), prefix, ignoreCase, false)) {
-                filtered.add(proposal);
-            }
-        }
-        return filtered;
     }
     
 }
