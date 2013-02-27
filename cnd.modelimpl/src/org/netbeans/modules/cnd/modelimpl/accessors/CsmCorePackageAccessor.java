@@ -42,13 +42,10 @@
 package org.netbeans.modules.cnd.modelimpl.accessors;
 
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
@@ -94,9 +91,6 @@ public abstract class CsmCorePackageAccessor {
     public abstract APTFile getFileAPT(FileImpl file, boolean full);
     public abstract int getErrorCount(FileImpl fileImpl);
     public abstract FileContent getFileContent(CsmParserProvider.CsmParserParameters descr);
-
-    public abstract PreprocessorStatePair getCachedVisitedState(FileImpl csmFile, APTPreprocHandler.State newState);
-    public abstract void cacheVisitedState(FileImpl csmFile, APTPreprocHandler.State newState, APTPreprocHandler preprocHandler, FilePreprocessorConditionState pcState);
     
     // access for tests
     public abstract void setFileImplTestHook(TraceModel.TestHook hook);
@@ -115,21 +109,6 @@ public abstract class CsmCorePackageAccessor {
     ////////////////////////////////////////////////////////////////////////////
     //  end of access to ProjectBase methods
     ////////////////////////////////////////////////////////////////////////////
-
-    
-    ////////////////////////////////////////////////////////////////////////////
-    //  access to FilePreprocessorConditionState methods
-    ////////////////////////////////////////////////////////////////////////////
-    
-    public abstract FilePreprocessorConditionState createPCState(CharSequence file, int[] deadBlocks);
-    public abstract int[] getPCStateDeadBlocks(FilePreprocessorConditionState pcState);
-    
-    ////////////////////////////////////////////////////////////////////////////
-    //  end of access to FilePreprocessorConditionState methods
-    ////////////////////////////////////////////////////////////////////////////
-
-
-
 
 
 }

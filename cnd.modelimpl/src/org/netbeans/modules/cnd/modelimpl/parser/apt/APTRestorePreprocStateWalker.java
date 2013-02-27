@@ -116,7 +116,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                     if (aptLight != null) {
                         APTPreprocHandler preprocHandler = getPreprocHandler();
                         // only ask for cached entry
-                        APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler.getState(), null);
+                        APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, null);
                         APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile, cacheEntry);
                         walker.visit();
                         // we do not remember cache entry as serial because stopped before #include directive
@@ -132,7 +132,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 if (aptLight != null) {
                     APTPreprocHandler preprocHandler = getPreprocHandler();
                     // only ask for cached entry and visit with it #include directive
-                    APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler.getState(), null);
+                    APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, null);
                     APTWalker walker = new APTSelfWalker(aptLight, preprocHandler, cacheEntry);
                     walker.visit();
                     // does not remember walk info to safe memory

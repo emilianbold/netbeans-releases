@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -104,14 +105,16 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                         CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
                     }
                     try {
-                        APTPreprocHandler.State stateBefore = getPreprocHandler().getState();
-                        assert !stateBefore.isCleaned();
-                        included = includeAction(inclFileOwner, path, mode, aptInclude, postIncludeState);
-                        if (/*true?*/TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                            APTPreprocHandler.State stateBefore = getPreprocHandler().getState();
+                            assert !stateBefore.isCleaned();
+                            included = includeAction(inclFileOwner, path, mode, aptInclude, postIncludeState);
                             if (included != null) {
                                 putNodeProperty(aptInclude, APTPreprocHandler.State.class, stateBefore);
                                 putNodeProperty(aptInclude, CsmFile.class, included);
                             }
+                        } else {
+                            included = includeAction(inclFileOwner, path, mode, aptInclude, postIncludeState);
                         }
                     } catch (FileNotFoundException ex) {
                         APTUtils.LOG.log(Level.WARNING, "APTProjectFileBasedWalker: file {0} not found", new Object[]{path});// NOI18N
