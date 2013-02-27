@@ -42,7 +42,12 @@
 
 package org.netbeans.modules.java.editor.javadoc;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**
  *
@@ -71,6 +76,8 @@ public class JavadocCompletionQueryTest extends JavadocTestSupport {
                 "    void method(int p1, int p2) {\n" +
                 "    }\n" +
                 "}\n";
+        
+        performCompletionTest(code, "p1:", "p2:");
     }
     
     public void testParamNameCompletionForMethod2() throws Exception {
@@ -83,6 +90,8 @@ public class JavadocCompletionQueryTest extends JavadocTestSupport {
                 "    void method(int p1, int p2) {\n" +
                 "    }\n" +
                 "}\n";
+        
+        performCompletionTest(code, "p1:", "p2:");
     }
     
     public void testParamNameCompletionForMethod3() throws Exception {
@@ -96,6 +105,8 @@ public class JavadocCompletionQueryTest extends JavadocTestSupport {
                 "    void method(int p1, int p2) {\n" +
                 "    }\n" +
                 "}\n";
+        
+        performCompletionTest(code, "p1:", "p2:");
     }
     
     public void testParamNameCompletionForConstructor() throws Exception {
@@ -108,9 +119,12 @@ public class JavadocCompletionQueryTest extends JavadocTestSupport {
                 "    Clazz(int p1, int p2) {\n" +
                 "    }\n" +
                 "}\n";
+        
+        performCompletionTest(code, "p1:", "p2:");
     }
     
-    public void testParamNameCompletionForClass() throws Exception {
+    public void XtestParamNameCompletionForClass() throws Exception {
+        //XXX: ???
         String code =
                 "package p;\n" +
                 "/**\n" +
@@ -118,9 +132,217 @@ public class JavadocCompletionQueryTest extends JavadocTestSupport {
                 " */\n" +
                 "class Clazz<P1,P2> {\n" +
                 "}\n";
+        
+        performCompletionTest(code, "P1:", "P2:");
     }
     
-    private void prepareCompletionTest(String code) {
-        int index = code.indexOf('|');
+    public void testLink1() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * {@link |\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, null, "String", "Clazz");
+    }
+    
+    public void testLink2() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * {@link Str|\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, null, "String");
+    }
+    
+    public void testLink3() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * {@link String#|\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, null, "public final native Class getClass()");
+    }
+    
+    public void testLink4() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * {@link CharSequence#le|\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, "public abstract int length()");
+    }
+    
+    public void testSee1() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * @see |\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, null, "String", "Clazz");
+    }
+    
+    public void testSee2() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * @see Str|\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, null, "String");
+    }
+    
+    public void testSee3() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * @see String#|\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, null, "public final native Class getClass()");
+    }
+    
+    public void testSee4() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * @see CharSequence#le|\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, "public abstract int length()");
+    }
+    
+    public void testValue1() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * {@value |\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, null, "Math");
+    }
+    
+    public void testValue2() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * {@value Mat|\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, "Math");
+    }
+    
+    public void testValue3() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * {@value Math#|\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, null, "public static final double PI");
+    }
+    
+    public void testValue4() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * {@value Math#P|\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, "public static final double PI", /*XXX: should be here?*/"public static double pow(double d, double d1)");
+    }
+    
+    private static String stripHTML(String from) {
+        StringBuilder result = new StringBuilder();
+        boolean inHTMLTag = false;
+        
+        for (char c : from.toCharArray()) {
+            switch (c) {
+                case '<': inHTMLTag = true; break;
+                case '>': inHTMLTag = false; break;
+                default:
+                    if (!inHTMLTag) result.append(c);
+                    break;
+            }
+        }
+        
+        return result.toString();
+    }
+    
+    private void performCompletionTest(String code, String... golden) throws Exception {
+        int caret = code.indexOf('|');
+        prepareTest(code.replace("|", ""));
+        
+        List<CompletionItem> resultObj = JavadocCompletionQuery.runCompletionQuery(CompletionProvider.COMPLETION_QUERY_TYPE, doc, caret);
+        List<String> resultStrings = new ArrayList<String>(resultObj.size());
+        
+        for (CompletionItem ci : resultObj) {
+            if (ci instanceof JavadocCompletionItem) {
+                JavadocCompletionItem jci = (JavadocCompletionItem) ci;
+                resultStrings.add(stripHTML(jci.getLeftHtmlText() + ":" + (jci.getRightHtmlText() != null ? jci.getRightHtmlText() : "")));
+            } else {
+                resultStrings.add(stripHTML(ci.toString()));
+            }
+        }
+        List<String> goldenList = new ArrayList<String>(Arrays.asList(golden));
+        
+        if (goldenList.contains(null)) {
+            goldenList.remove(null);
+            assertTrue(resultStrings.toString(), resultStrings.containsAll(goldenList));
+        } else {
+            assertEquals(goldenList, resultStrings);
+        }
     }
 }
