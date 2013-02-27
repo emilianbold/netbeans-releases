@@ -77,7 +77,6 @@ public class HudsonInstanceNode extends AbstractNode {
     private static final String ICON_BASE = "org/netbeans/modules/hudson/ui/resources/instance.png"; // NOI18N
     
     private HudsonInstanceImpl instance;
-    private InstanceNodeChildren children;
     
     private boolean warn = false;
     private boolean run = false;
@@ -86,10 +85,8 @@ public class HudsonInstanceNode extends AbstractNode {
     private boolean version = false;
     
     public HudsonInstanceNode(final HudsonInstanceImpl instance) {
-        super(new Children.Array(), Lookups.singleton(instance));
+        super(new InstanceNodeChildren(instance), Lookups.singleton(instance));
         
-        children = new InstanceNodeChildren(instance);
-
         setName(instance.getUrl());
         setDisplayName(instance.getName());
         setShortDescription(instance.getUrl());
@@ -168,13 +165,6 @@ public class HudsonInstanceNode extends AbstractNode {
         forbidden = instance.isForbidden();
         version = Utilities.isSupportedVersion(instance.getVersion());
         
-        // Refresh children
-        if (!alive || !version) {
-            setChildren(new Children.Array());
-        } else if (getChildren().getNodesCount() == 0) {
-            setChildren(children);
-        }
-        
         // Fire changes if any
         fireDisplayNameChange(null, getHtmlDisplayName());
     }
@@ -207,9 +197,9 @@ public class HudsonInstanceNode extends AbstractNode {
     
     private static class InstanceNodeChildren extends Children.Keys<HudsonJob> implements HudsonChangeListener {
         
-        private final HudsonInstance instance;
+        private final HudsonInstanceImpl instance;
         
-        InstanceNodeChildren(HudsonInstance instance) {
+        InstanceNodeChildren(HudsonInstanceImpl instance) {
             this.instance = instance;
             instance.addHudsonChangeListener(this);
             instance.prefs().addPreferenceChangeListener(new PreferenceChangeListener() {
@@ -226,7 +216,12 @@ public class HudsonInstanceNode extends AbstractNode {
         @Override
         protected void addNotify() {
             super.addNotify();
-            refreshKeys();
+            if (!instance.isConnected()/* && seems undesirable: !instance.isForbidden()*/) {
+                setKeys(Collections.<HudsonJob>emptySet());
+                instance.synchronize(true);
+            } else {
+                refreshKeys();
+            }
         }
         
         @Override
@@ -257,7 +252,9 @@ public class HudsonInstanceNode extends AbstractNode {
             setKeys(jobs);
         }
         
-        @Override public void stateChanged() {}
+        @Override public void stateChanged() {
+            refreshKeys();
+        }
         
         @Override public void contentChanged() {
             refreshKeys();
