@@ -47,15 +47,16 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
  * @author Alexander Simon
  */
 public interface DiscoveryExtensionInterface extends IteratorExtension {
-    boolean canApply(Map<String,Object> map, Project project);
+    boolean canApply(Map<String,Object> map, Project project, Interrupter interrupter);
 
-    void apply(Map<String,Object> map, Project project) throws IOException;
+    void apply(Map<String,Object> map, Project project, Interrupter interrupter) throws IOException;
 
     interface Applicable {
         boolean isApplicable();
