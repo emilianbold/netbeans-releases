@@ -77,6 +77,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -123,13 +124,17 @@ public class LibraryDeclarationChecker extends HintsProvider {
         final Map<String, Attribute> namespace2Attribute = new HashMap<String, Attribute>();
         Node root = result.root();
         final CharSequence docText = getSourceText(snapshot.getSource());
-        
-        ElementVisitor namespacesCollector = new ElementVisitor() {
+        final String jsfNsPrefix = result.getNamespaces().get(DefaultFaceletLibraries.JSF_NS);
+        final String passthroughNsPrefix = result.getNamespaces().get(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS);
+        final boolean[] passthroughUsage = new boolean[1];
+        final boolean[] jsfUsage = new boolean[1];
 
+        // collects all prefixes with prefix xmlns (namespaces) and jsf (JSF2.2 prefix definable for any HTML element)
+        ElementVisitor prefixCollector = new ElementVisitor() {
             @Override
             public void visit(Element node) {
                 OpenTag openTag = (OpenTag)node;
-                //put all NS attributes to the namespace2Attribute map for #1.
+                //put all NS attributes to the namespace2Attribute map for #1 and check usage of jsf: prefixes.
                 Collection<Attribute> nsAttrs = openTag.attributes(new AttributeFilter() {
 
                     @Override
@@ -142,21 +147,28 @@ public class LibraryDeclarationChecker extends HintsProvider {
                             return false;
                         }
                         
-                        return LexerUtils.equals("xmlns", nsPrefix, true, true); //NOI18N
+                        return LexerUtils.equals("xmlns", nsPrefix, true, true) //NOI18N
+                                || jsfNsPrefix != null && LexerUtils.equals(jsfNsPrefix, nsPrefix, true, true);
                     }
                 });
                 
                 for (Attribute attr : nsAttrs) {
-                    namespace2Attribute.put(attr.unquotedValue().toString(), attr);
+                    if (LexerUtils.equals("xmlns", attr.namespacePrefix(), true, true)) { //NOI18N
+                        // collect namespaces
+                        namespace2Attribute.put(attr.unquotedValue().toString(), attr);
+                    } else {
+                        // mark jsf facelet library as used
+                        jsfUsage[0] = true;
+                    }
                 }
             }
 
         };
 
-        ElementUtils.visitChildren(root, namespacesCollector, ElementType.OPEN_TAG);
+        ElementUtils.visitChildren(root, prefixCollector, ElementType.OPEN_TAG);
         Node undeclaredComponentsTreeRoot = result.rootOfUndeclaredTagsParseTree();
         if(undeclaredComponentsTreeRoot != null) {
-            ElementUtils.visitChildren(undeclaredComponentsTreeRoot, namespacesCollector, ElementType.OPEN_TAG);
+            ElementUtils.visitChildren(undeclaredComponentsTreeRoot, prefixCollector, ElementType.OPEN_TAG);
 
             //check for undeclared tags
             ElementUtils.visitChildren(undeclaredComponentsTreeRoot, new ElementVisitor() {
@@ -202,7 +214,10 @@ public class LibraryDeclarationChecker extends HintsProvider {
         for (String namespace : declaredNamespaces) {
             AbstractFaceletsLibrary lib = libs.get(namespace);
             if (lib != null) {
-                declaredLibraries.add(lib);
+                // http://java.sun.com/jsf/passthrough usage needs to be resolved on base of all declared libraries
+                if (!DefaultFaceletLibraries.JSF_PASSTHROUGH_NS.equals(lib.getNamespace())) {
+                    declaredLibraries.add(lib);
+                }
             } else {
                 //1. report error - missing library for the declaration
                 Attribute attr = namespace2Attribute.get(namespace);
@@ -219,6 +234,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2. find for unused declarations
+        final boolean declaredPassthrough = declaredNamespaces.contains(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS);
         final Collection<OffsetRange> ranges = new ArrayList<OffsetRange>();
         for (AbstractFaceletsLibrary lib : declaredLibraries) {
             Node rootNode = result.root(lib.getNamespace());
@@ -230,25 +246,40 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 @Override
                 public void visit(Element node) {
                     usages[0]++;
+                    if (declaredPassthrough && !passthroughUsage[0]) {
+                        OpenTag ot = (OpenTag) node;
+                        for (Attribute attribute : ot.attributes(new AttributeFilter() {
+                            @Override
+                            public boolean accepts(Attribute attribute) {
+                                return CharSequenceUtilities.equals(attribute.namespacePrefix(), passthroughNsPrefix);
+                            }
+                        })) {
+                            passthroughUsage[0] = true;
+                        }
+                    }
                 }
             }, ElementType.OPEN_TAG);
 
             usages[0] += isFunctionLibraryPrefixUsedInEL(context, lib, docText) ? 1 : 0;
 
+            // http://java.sun.com/jsf namespace handling
+            usages[0] += DefaultFaceletLibraries.JSF_NS.equals(lib.getNamespace()) && jsfUsage[0] ? 1 : 0;
+
             if (usages[0] == 0) {
                 //unused declaration
-                Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
-                if (declAttr != null) {
-                    int from = declAttr.nameOffset();
-                    int to = declAttr.valueOffset() + declAttr.value().length();
-                    
-                    OffsetRange documentRange = JsfUtils.createOffsetRange(snapshot, docText, from, to);
-                    ranges.add(documentRange);
-                }
-
+                addUnusedLibrary(ranges, namespace2Attribute, lib, snapshot, docText);
             }
         }
-        
+
+        //2b. find for unused declaration of http://java.sun.com/jsf/passthrough
+        if (declaredPassthrough && !passthroughUsage[0]) {
+            addUnusedLibrary(ranges,
+                    namespace2Attribute,
+                    libs.get(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS),
+                    snapshot,
+                    docText);
+        }
+
         //generate remove all unused declarations
         for (OffsetRange range : ranges) {
             List<HintFix> fixes;
@@ -275,7 +306,19 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
     }
-    
+
+    private void addUnusedLibrary(Collection<OffsetRange> ranges, Map<String, Attribute> namespace2Attribute,
+            AbstractFaceletsLibrary lib, Snapshot snapshot, CharSequence docText) {
+        Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
+        if (declAttr != null) {
+            int from = declAttr.nameOffset();
+            int to = declAttr.valueOffset() + declAttr.value().length();
+
+            OffsetRange documentRange = JsfUtils.createOffsetRange(snapshot, docText, from, to);
+            ranges.add(documentRange);
+        }
+    }
+
     private static PositionRange createPositionRange(RuleContext context, OffsetRange offsetRange) throws BadLocationException {
         return new PositionRange(context, offsetRange.getStart(), offsetRange.getEnd());
     }
@@ -306,7 +349,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
     //find all embedded EL token sequences in the source code and check if the
     //prefix is used in any of them
-    private boolean isFunctionLibraryPrefixUsedInEL(RuleContext context, AbstractFaceletsLibrary lib, CharSequence sourceText) {
+    private static boolean isFunctionLibraryPrefixUsedInEL(RuleContext context, AbstractFaceletsLibrary lib, CharSequence sourceText) {
         String libraryPrefix = ((HtmlParserResult)context.parserResult).getNamespaces().get(lib.getNamespace());
 
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(sourceText, Language.find("text/xhtml"));

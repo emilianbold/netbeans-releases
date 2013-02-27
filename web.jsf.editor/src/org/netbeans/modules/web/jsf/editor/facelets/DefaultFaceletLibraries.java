@@ -77,6 +77,9 @@ public class DefaultFaceletLibraries {
     private Map<String, FaceletsLibraryDescriptor> librariesDescriptors;
     private static Map<String, AbstractFaceletsLibrary> jsf22FaceletPseudoLibraries;
 
+    public static final String JSF_NS = "http://java.sun.com/jsf"; //NOI18N
+    public static final String JSF_PASSTHROUGH_NS = "http://java.sun.com/jsf/passthrough"; //NOI18N
+
     public static synchronized DefaultFaceletLibraries getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new DefaultFaceletLibraries();
@@ -154,8 +157,8 @@ public class DefaultFaceletLibraries {
     protected synchronized static Map<String, AbstractFaceletsLibrary> getJsf22FaceletPseudoLibraries(FaceletsLibrarySupport support) {
         if (jsf22FaceletPseudoLibraries == null) {
             jsf22FaceletPseudoLibraries = new HashMap<String, AbstractFaceletsLibrary>(2);
-            jsf22FaceletPseudoLibraries.put("http://java.sun.com/jsf", new JsfFaceletPseudoLibrary(support, "http://java.sun.com/jsf", "jsf"));
-            jsf22FaceletPseudoLibraries.put("http://java.sun.com/jsf/passthrough", new JsfFaceletPseudoLibrary(support, "http://java.sun.com/jsf/passthrough", "p"));
+            jsf22FaceletPseudoLibraries.put(JSF_NS, new JsfFaceletPseudoLibrary(support, JSF_NS, "jsf"));
+            jsf22FaceletPseudoLibraries.put(JSF_PASSTHROUGH_NS, new JsfFaceletPseudoLibrary(support, JSF_PASSTHROUGH_NS, "p"));
         }
         return jsf22FaceletPseudoLibraries;
     }
