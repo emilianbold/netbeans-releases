@@ -121,28 +121,28 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
 
         org.openide.awt.Mnemonics.setLocalizedText(createConfigsLabel, org.openide.util.NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaCustomizerPanel.createConfigsLabel.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(createConfigsLabel)
-                    .add(createConfigs))
-                .add(0, 0, Short.MAX_VALUE))
-            .add(cordovaPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 752, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(createConfigsLabel)
+                    .addComponent(createConfigs))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(cordovaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 752, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(createConfigsLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(createConfigs)
-                .add(0, 0, 0)
-                .add(cordovaPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
-                .add(0, 0, 0))
+                .addComponent(createConfigsLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(createConfigs)
+                .addGap(0, 0, 0)
+                .addComponent(cordovaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -193,6 +193,9 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
      * Store listener
      */
     public void actionPerformed(ActionEvent e) {
+        if (cordovaPanel == null) {
+            return;
+        }
         Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
         preferences.put("phonegap", Boolean.toString(cordovaPanel.isPanelEnabled()));
         
