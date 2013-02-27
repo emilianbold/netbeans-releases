@@ -78,16 +78,15 @@ public class ProjectColorTabDecorator extends TabDecorator {
 
     static {
         backGroundColors = new ArrayList<Color>( 10 );
-        backGroundColors.add( new Color( 181, 255, 221 ) );
-        backGroundColors.add( new Color( 255, 181, 181 ) );
-        backGroundColors.add( new Color( 255, 242, 181 ) );
-        backGroundColors.add( new Color( 181, 224, 255 ) );
-        backGroundColors.add( new Color( 234, 255, 181 ) );
-        backGroundColors.add( new Color( 255, 210, 181 ) );
-        backGroundColors.add( new Color( 203, 255, 181 ) );
-        backGroundColors.add( new Color( 255, 181, 213 ) );
-        backGroundColors.add( new Color( 213, 255, 107 ) );
-        backGroundColors.add( new Color( 231, 181, 255 ) );
+        backGroundColors.add( new Color( 216, 255, 237 ) );
+        backGroundColors.add( new Color( 255, 221, 221 ) );
+        backGroundColors.add( new Color( 255, 247, 214 ) );
+        backGroundColors.add( new Color( 216, 239, 255 ) );
+        backGroundColors.add( new Color( 241, 255, 209 ) );
+        backGroundColors.add( new Color( 255, 225, 209 ) );
+        backGroundColors.add( new Color( 228, 255, 216 ) );
+        backGroundColors.add( new Color( 227, 255, 158 ) );
+        backGroundColors.add( new Color( 238, 209, 255 ) );
 
         ProjectSupport.getDefault().addPropertyChangeListener( new PropertyChangeListener() {
 
