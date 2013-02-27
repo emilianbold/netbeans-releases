@@ -83,8 +83,8 @@
     </Component>
     <Component class="javax.swing.JTextPane" name="tpDependingPlugins">
       <Properties>
-        <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
         <Property name="editable" type="boolean" value="false"/>
+        <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_AddingCodePre" type="java.lang.String" value="tpDependingPlugins.setText(tpDependingPluginsText);"/>

@@ -54,6 +54,8 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 import static org.junit.Assert.*;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * @author Alexey Vladykin
@@ -79,7 +81,7 @@ public class QmakeConfigurationTest extends CndBaseTestCase {
 
     private static QmakeConfiguration newQmakeConfiguration(int confType) {
         File dir = new File(System.getProperty("java.io.tmpdir"), "QmakeConfigurationTest");
-        MakeConfiguration conf = new MakeConfiguration(dir.getPath(), "Dummy", confType);
+        MakeConfiguration conf = MakeConfiguration.createConfiguration(new FSPath(CndFileUtils.getLocalFileSystem(), dir.getPath()), "Dummy", confType, null, null);
         //++ trace for #194772 -  QmakeConfigurationTest fails on Windows and Mac
         Platform platform = Platforms.getPlatform(conf.getDevelopmentHost().getBuildPlatform());
         System.out.println("Creating QmakeConfiguration for platform " + platform.getDisplayName());        

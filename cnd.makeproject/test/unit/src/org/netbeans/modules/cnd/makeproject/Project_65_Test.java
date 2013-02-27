@@ -90,7 +90,7 @@ public class Project_65_Test extends CndBaseTestCase {
         OpenProjectList.getDefault().open(makeProject);
         ConfigurationDescriptorProvider cdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         assertNotNull("Null ConfigurationDescriptorProvider", cdp);
-        cdp.getConfigurationDescriptor(true);
+        cdp.getConfigurationDescriptor();
         assertTrue("cdp.gotDescriptor returned false", cdp.gotDescriptor());
         Exception lastAssertion = CndUtils.getLastAssertion();
         if (lastAssertion != null) {

@@ -51,7 +51,9 @@ made subject to such option by the copyright holder.
                 <!-- #128873 - to show icon in toolbar (keep in sync with RunSQLAction.ICON_PATH) -->
                 <attr name="iconBase" stringvalue="org/netbeans/modules/db/sql/editor/resources/runsql.png"/>
             </file>
-            <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance"/>
+            <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance">
+                <attr name="iconBase" stringvalue="org/netbeans/modules/db/sql/editor/resources/runsql-partial.png"/>
+            </file>
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance">
                 <!-- #128873 - to show icon in toolbar (keep in sync with SQLHistoryAction.ICON_PATH) -->
                 <attr name="iconBase" stringvalue="org/netbeans/modules/db/sql/editor/resources/sql_history_16.png"/>
@@ -115,6 +117,10 @@ made subject to such option by the copyright holder.
                         <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
                             <attr name="position" intvalue="800"/>
+                        </file>
+                        <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance"/>
+                            <attr name="position" intvalue="850"/>
                         </file>
                         <file name="org-netbeans-modules-db-sql-editor-ui-actions-SelectInExplorerAction.instance">
                             <attr name="position" intvalue="900"/>

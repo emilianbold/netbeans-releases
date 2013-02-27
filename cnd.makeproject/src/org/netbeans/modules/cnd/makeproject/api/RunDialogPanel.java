@@ -880,8 +880,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     MakeConfiguration active = projectDescriptor.getActiveConfiguration();
                     ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
                     String baseDir = active.getBaseDir();
-                    MakeConfiguration conf = new MakeConfiguration(active.getBaseFSPath(), 
-                            getConfigurationName(projectDescriptor), MakeConfiguration.TYPE_MAKEFILE, // NOI18N
+                    MakeConfiguration conf = MakeConfiguration.createMakefileConfiguration(active.getBaseFSPath(), 
+                            getConfigurationName(projectDescriptor),
                         executionEnvironment.getHost());
                     // Working dir
                     String wd = fileSystem.findResource(getExecutablePath()).getParent().getPath();
@@ -997,7 +997,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         } else {
             hostID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
         }
-        MakeConfiguration conf = new MakeConfiguration(new FSPath(fileSystem, baseDir), "Default", MakeConfiguration.TYPE_MAKEFILE, hostID); // NOI18N
+        MakeConfiguration conf = MakeConfiguration.createMakefileConfiguration(new FSPath(fileSystem, baseDir), "Default", hostID); // NOI18N
         // Working dir
         String wd = fileSystem.findResource(getExecutablePath()).getParent().getPath();
         wd = CndPathUtilitities.toRelativePath(baseDir, wd);

@@ -238,12 +238,12 @@ public class IssueAccessorTest extends NbTestCase {
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            
         }
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            
         }
     }
 

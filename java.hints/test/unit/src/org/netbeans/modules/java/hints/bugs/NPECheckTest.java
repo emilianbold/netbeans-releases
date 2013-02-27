@@ -1015,6 +1015,27 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testTry226184() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private String str() throws Exception {\n" +
+                       "        return \"\";\n" +
+                       "    }\n" +
+                       "    public int process() {\n" +
+                       "        String builder = null;\n" +
+                       "        try {\n" +
+                       "            builder = str();\n" +
+                       "        } catch (Exception ex) {\n" +
+                       "            return 0;\n" +
+                       "        }\n" +
+                       "        return builder.length();\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     public void testFields1() throws Exception {
         HintTest.create()
                 .input("package test;\n" +

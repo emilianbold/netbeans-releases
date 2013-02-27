@@ -110,6 +110,7 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -439,8 +440,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         if (d != null)
             return d;
         
-        String userdir = System.getProperty("netbeans.user");
-        File cache = new File(userdir, "private-dictionary-" + locale.toString());
+        File cache = new File(Places.getUserDirectory(), "private-dictionary-" + locale.toString());
         
         locale2UsersLocalDictionary.put(locale, d = new DictionaryImpl(cache, locale));
         

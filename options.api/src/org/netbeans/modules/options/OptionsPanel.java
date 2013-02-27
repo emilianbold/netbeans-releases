@@ -102,6 +102,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.options.CategoryModel.Category;
 import org.netbeans.modules.options.advanced.AdvancedPanel;
@@ -145,11 +146,12 @@ public class OptionsPanel extends JPanel {
 
     private Map<String, CategoryButton> buttons = new LinkedHashMap<String, CategoryButton>();    
     private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");
-    private final boolean isNimbus = UIManager.getLookAndFeel ().getID ().equals ("Nimbus");
+    private static final boolean isNimbus = UIManager.getLookAndFeel ().getID ().equals ("Nimbus");
+    private static final boolean isMetal = UIManager.getLookAndFeel() instanceof MetalLookAndFeel;
     private final boolean isGTK = UIManager.getLookAndFeel ().getID ().equals ("GTK");
-    private Color selected = isMac ? new Color(221, 221, 221) : new Color (193, 210, 238);
+    private Color selected = isMac ? new Color(221, 221, 221) : getSelectionBackground();
     private Color selectedB = isMac ? new Color(183, 183, 183) : new Color (149, 106, 197);
-    private Color highlighted = isMac ? new Color(221, 221, 221) : new Color (224, 232, 246);
+    private Color highlighted = isMac ? new Color(221, 221, 221) : getHighlightBackground();
     private Color highlightedB = new Color (152, 180, 226);
     private Color iconViewBorder = new Color (127, 157, 185);
     private ControllerListener controllerListener = new ControllerListener ();
@@ -277,6 +279,13 @@ public class OptionsPanel extends JPanel {
     void update () {
         CategoryModel.getInstance().update(controllerListener, true);
     }
+
+    void save(boolean applyPressed) {
+	save();
+	if (applyPressed) {
+	    CategoryModel.getInstance().update(controllerListener, false);
+	}
+    }
     
     void save () {
         clearSearchField();
@@ -318,12 +327,12 @@ public class OptionsPanel extends JPanel {
 
         // icon view
         pCategories2 = new JPanel (new GridBagLayout());        
-        pCategories2.setBackground (Color.white);
+        pCategories2.setBackground (getTabPanelBackground());
         pCategories2.setBorder (null);
         addCategoryButtons();        
 
         quickSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        quickSearch.setBackground(Color.white);
+        quickSearch.setBackground(getTabPanelBackground());
         QuickSearch qs = QuickSearch.attach(quickSearch, null, new OptionsQSCallback());
         qs.setAlwaysShown(true);
         
@@ -359,7 +368,7 @@ public class OptionsPanel extends JPanel {
         
         pCategories = new JPanel (new BorderLayout ());
         pCategories.setBorder (BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray));        
-        pCategories.setBackground (Color.white);
+        pCategories.setBackground (getTabPanelBackground());
         pCategories.add ("Center", pCategories2);
         pCategories.add ("East", quickSearch);
         
@@ -432,6 +441,7 @@ public class OptionsPanel extends JPanel {
         int tabIndex = pane == null ? -1 : pane.indexOfTab(tabTitle);
 
         Set<String> keywords = new HashSet<String>();
+	keywords.add(location.toUpperCase());
 	Enumeration<String> attributes = keywordsFO.getAttributes();
 	while(attributes.hasMoreElements()) {
 	    String attribute = attributes.nextElement();
@@ -606,8 +616,10 @@ public class OptionsPanel extends JPanel {
         private void handleSearch(String searchText) {
             List<String> stWords = Arrays.asList(searchText.toUpperCase().split(" "));
             String exactCategory = null;
+	    String exactTabTitle = null;
             int exactTabIndex = -1;
             for (String id : CategoryModel.getInstance().getCategoryIDs()) {
+		exactTabIndex = -1;
                 ArrayList<String> entry = categoryid2words.get(id);
 		List<String> matchedKeywords;
                 if (entry != null) {
@@ -633,11 +645,19 @@ public class OptionsPanel extends JPanel {
                                         foundInTab = true;
                                         foundInNoTab = false;
                                         exactTabIndex = tabIndex;
-                                        setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+					if ((exactCategory == null && exactTabTitle == null) || (exactCategory != null && exactCategory.equals(id))) {
+					    setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+					}
                                     }
                                     if (foundInTab) {
+					for (String stWord : stWords) {
+					    if (pane.getTitleAt(tabIndex).toUpperCase().contains(stWord)) {
+						exactTabTitle = pane.getTitleAt(tabIndex);
+					    }
+					}
                                         pane.setEnabledAt(tabIndex, true);
-                                        if (exactTabIndex == tabIndex) {
+                                        if (exactTabIndex == tabIndex
+						&& (exactTabTitle == null || (exactTabTitle != null && pane.getTitleAt(tabIndex).equals(exactTabTitle)))) {
                                             pane.setSelectedIndex(tabIndex);
                                         }
 					matchedKeywords = getAllMatchedKeywords(tabWords, stWords);
@@ -649,7 +669,9 @@ public class OptionsPanel extends JPanel {
                                         }
                                     }
                                 } else {
-                                    setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+				    if ((exactCategory == null && exactTabTitle == null) || (exactCategory != null && exactCategory.equals(id))) {
+					setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+				    }
                                     if(tabsInfo.size() == 1) {
                                         foundInNoTab = false;
 					matchedKeywords = getAllMatchedKeywords(entry, stWords);
@@ -658,23 +680,25 @@ public class OptionsPanel extends JPanel {
                                 }
                             }
                             if(foundInNoTab) {
-                                handleNotFound(id, exactCategory);
+                                handleNotFound(id, exactCategory, exactTabTitle);
                             }
                         } else {
-                            setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+			    if ((exactCategory == null && exactTabTitle == null) || (exactCategory != null && exactCategory.equals(id))) {
+				setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+			    }
 			    matchedKeywords = getAllMatchedKeywords(entry, stWords);
 			    CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                         }
                     } else {
-                        handleNotFound(id, exactCategory);
+                        handleNotFound(id, exactCategory, exactTabTitle);
                     }
                 } else {
-                    handleNotFound(id, exactCategory);
+                    handleNotFound(id, exactCategory, exactTabTitle);
                 }
             }
         }
 
-        private void handleNotFound(String id, String exactCategory) {
+        private void handleNotFound(String id, String exactCategory, String exactTabTitle) {
             if (!disabledCategories.contains(id)) {
                 disabledCategories.add(id);
             }
@@ -689,7 +713,7 @@ public class OptionsPanel extends JPanel {
                 setCurrentCategory(null, null);
             } else {
                 for (String id3 : CategoryModel.getInstance().getCategoryIDs()) {
-                    if (buttons.get(id3).isEnabled() && exactCategory == null) {
+                    if (buttons.get(id3).isEnabled() && ((exactCategory != null && exactCategory.equals(id3)) || (exactCategory == null && exactTabTitle == null))) {
                         setCurrentCategory(CategoryModel.getInstance().getCategory(id3), null);
                         break;
                     }
@@ -888,6 +912,50 @@ public class OptionsPanel extends JPanel {
         return retval;
     }
 
+    private static Color getTabPanelBackground() {
+        if( isMetal || isNimbus ) {
+            Color res = UIManager.getColor( "Tree.background" ); //NOI18N
+            if( null == res )
+                res = Color.white;
+            return new Color( res.getRGB() );
+        }
+        return Color.white;
+    }
+
+    private static Color getTabPanelForeground() {
+        if( isMetal || isNimbus ) {
+            Color res = UIManager.getColor( "Tree.foreground" ); //NOI18N
+            if( null == res )
+                res = Color.black;
+            return new Color( res.getRGB() );
+        }
+        return Color.black;
+    }
+
+    private static Color getSelectionBackground() {
+        if( isMetal || isNimbus ) {
+            if( !Color.white.equals( getTabPanelBackground() ) ) {
+                Color res = UIManager.getColor( "Tree.selectionBackground" ); //NOI18N
+                if( null == res )
+                    res = Color.blue;
+                return new Color( res.getRGB() );
+            }
+        }
+        return new Color (193, 210, 238);
+    }
+
+    private static Color getHighlightBackground() {
+        if( isMetal || isNimbus ) {
+            if( !Color.white.equals( getTabPanelBackground() ) ) {
+                Color res = UIManager.getColor( "Tree.selectionBackground" ); //NOI18N
+                if( null == res )
+                    res = Color.blue;
+                return new Color( res.getRGB() );
+            }
+        }
+        return new Color (224, 232, 246);
+    }
+
     // innerclasses ............................................................
     
     private class SelectAction extends AbstractAction {
@@ -1000,7 +1068,7 @@ public class OptionsPanel extends JPanel {
             addMouseListener (this);
             setFocusable (false);
             setFocusTraversalKeysEnabled (false);
-            setForeground (Color.black);
+            setForeground (getTabPanelForeground());
             
             if (isMac) {
                 setFont(labelFontMac);
@@ -1016,7 +1084,7 @@ public class OptionsPanel extends JPanel {
             } else {
                 setBorder (new EmptyBorder (2, 4, 2, 4));
             }
-            setBackground (Color.white);
+            setBackground (getTabPanelBackground());
         }
         
         void setSelected () {
@@ -1028,7 +1096,7 @@ public class OptionsPanel extends JPanel {
             } else {
                 setBorder (new CompoundBorder (
                     new CompoundBorder (
-                        new LineBorder (Color.white),
+                        new LineBorder (getTabPanelBackground()),
                         new LineBorder (selectedB)
                     ),
                     new EmptyBorder (0, 2, 0, 2)
@@ -1041,7 +1109,7 @@ public class OptionsPanel extends JPanel {
             if (!isMac) {
                 setBorder(new CompoundBorder(
                         new CompoundBorder(
-                        new LineBorder(Color.white),
+                        new LineBorder(getTabPanelBackground()),
                         new LineBorder(highlightedB)
                         ),
                         new EmptyBorder(0, 2, 0, 2)
@@ -1109,6 +1177,8 @@ public class OptionsPanel extends JPanel {
     private static final Color COL_OVER_GRADIENT2 = new Color(163,184,203,128);
     private static final Color COL_OVER_GRADIENT3 = new Color(206,227,246,128);
 
+    private static final boolean isDefaultTabBackground = Color.white.equals( getTabPanelBackground() );
+
     private class NimbusCategoryButton extends CategoryButton {
 
         private short status = STATUS_NORMAL;
@@ -1126,7 +1196,7 @@ public class OptionsPanel extends JPanel {
 
         @Override
         protected void paintComponent(Graphics g) {
-            if( status == STATUS_SELECTED || status == STATUS_HIGHLIGHTED ) {
+            if( isDefaultTabBackground && (status == STATUS_SELECTED || status == STATUS_HIGHLIGHTED) ) {
                 Insets in = getInsets();
                 in.top -= BORDER_WIDTH;
                 in.left -= BORDER_WIDTH;

@@ -70,6 +70,7 @@ public class FindDialogMemoryTest extends NbTestCase {
     
     public void testFileNamePatternStorage() throws Exception {
         assertNotNull(memory.getFileNamePatterns());
+        memory.getFileNamePatterns().clear(); // clear default values
         assertTrue(memory.getFileNamePatterns().isEmpty());
 
         final String elem0 = "abc";

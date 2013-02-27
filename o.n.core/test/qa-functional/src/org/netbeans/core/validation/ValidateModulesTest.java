@@ -92,10 +92,10 @@ public class ValidateModulesTest extends NbTestCase {
         suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
                 clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
         suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
-                clusters("platform|harness|ide|websvccommon|java|profiler|nb").enableModules(".*").
+                clusters("platform|harness|ide|websvccommon|java|profiler|nb|extide").enableModules(".*").
                 honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
         suite.addTest(NbModuleSuite.createConfiguration(ValidateModulesTest.class).
-                clusters("platform|harness|ide").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
+                clusters("platform|harness|ide|extide").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false).suite());
         return suite;
     }
 
@@ -204,7 +204,7 @@ public class ValidateModulesTest extends NbTestCase {
             if ("true".equals(m.getAttribute("OpenIDE-Module-Deprecated"))) {
                 String cnb = m.getCodeNameBase();
                 if (cnb.equals("org.jdesktop.layout") || cnb.equals("org.netbeans.modules.editor.deprecated.pre65formatting") ||
-                    cnb.equals("org.netbeans.modules.java.hints.legacy.spi")) {
+                    cnb.equals("org.netbeans.modules.java.hints.legacy.spi") || cnb.equals("org.netbeans.modules.editor.structure")) {
                     // Will take a while to fix, don't report as error now.
                     continue;
                 }

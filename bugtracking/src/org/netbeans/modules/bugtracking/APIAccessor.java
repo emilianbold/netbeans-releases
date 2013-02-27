@@ -78,7 +78,7 @@ public abstract class APIAccessor {
     
     public abstract RepositoryImpl getImpl(Repository repository);
     
-    public abstract QueryImpl getImpl(Query repository);
+    public abstract QueryImpl getImpl(Query query);
     
-    public abstract IssueImpl getImpl(Issue repository);
+    public abstract IssueImpl getImpl(Issue issue);
 }

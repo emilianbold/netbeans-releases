@@ -109,16 +109,6 @@ public class FindInFilesOperator extends NbDialogOperator {
     }
 
     /**
-     * Returns operator for the "Regular Expression" check box.
-     * @return JCheckBoxOperator instance
-     */
-    public JCheckBoxOperator cbRegExpr() {
-        String text = Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle",
-                                              "BasicSearchForm.chkRegexp.text");
-        return new JCheckBoxOperator(this, text);
-    }
-
-    /**
      * Returns operator for the "Containing Text:" text field.
      * @return JTextFieldOperator instance
      */
@@ -150,7 +140,6 @@ public class FindInFilesOperator extends NbDialogOperator {
         btFind();
         btClose();
         btHelp();
-        cbRegExpr();
         cbWholeWords();
         cbCase();
         txtText();

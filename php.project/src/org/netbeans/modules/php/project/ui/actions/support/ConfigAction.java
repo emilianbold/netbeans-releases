@@ -127,7 +127,7 @@ public abstract class ConfigAction {
     }
 
     public boolean isDebugProjectEnabled() {
-        return XDebugStarterFactory.getInstance() != null;
+        return DebugStarterFactory.getInstance() != null;
     }
 
     public abstract boolean isProjectValid();

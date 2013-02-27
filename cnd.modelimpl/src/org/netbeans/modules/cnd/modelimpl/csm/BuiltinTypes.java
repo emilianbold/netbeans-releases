@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmPackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -67,7 +68,10 @@ import org.openide.util.CharSequences;
  * @author Vladimir Kvasihn
  */
 public class BuiltinTypes {
-
+    static {
+        CsmPackageAccessor.register(new AccessorImpl());
+    }
+    
     private BuiltinTypes() {
     }
 

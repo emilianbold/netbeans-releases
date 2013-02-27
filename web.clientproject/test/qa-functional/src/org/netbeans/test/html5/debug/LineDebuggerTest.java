@@ -189,7 +189,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         currentFile.setCaretPositionToEndOfLine(3);
         type(currentFile, "\nconsole.log(\"1js\");\nconsole.log(\"2js\");\nconsole.log(\"3js\");");
 
-        if (this.inEmbeddedBrowser) { // workaround for 226022
+        if (LineDebuggerTest.inEmbeddedBrowser) { // workaround for 226022
             (new EmbeddedBrowserOperator("Web Browser")).close();
             saveAndWait(currentFile, 1000);
             runFile(LineDebuggerTest.current_project, "debugMod.html");
@@ -205,7 +205,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         currentFile.deleteLine(4);
         currentFile.deleteLine(4);
 
-        if (this.inEmbeddedBrowser) {
+        if (LineDebuggerTest.inEmbeddedBrowser) {
             (new EmbeddedBrowserOperator("Web Browser")).close();
             saveAndWait(currentFile, 1000);
             runFile(LineDebuggerTest.current_project, "debugMod.html");
@@ -223,7 +223,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         currentFile.setCaretPositionToEndOfLine(3);
         type(currentFile, "\nconsole.log(\"1js\");\nconsole.log(\"2js\");\nconsole.log(\"3js\");");
 
-        if (this.inEmbeddedBrowser) {
+        if (LineDebuggerTest.inEmbeddedBrowser) {
             (new EmbeddedBrowserOperator("Web Browser")).close();
             saveAndWait(currentFile, 1000);
             runFile(LineDebuggerTest.current_project, "debugMod.html");
@@ -277,7 +277,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         new ContinueAction().performMenu();
         evt.waitNoEvent(1000);
         EditorOperator currentFile = EditorWindowOperator.getEditor();
-        if (this.inEmbeddedBrowser) { // workaround for 226022
+        if (LineDebuggerTest.inEmbeddedBrowser) { // workaround for 226022
             (new EmbeddedBrowserOperator("Web Browser")).close();
         }
         currentFile.select("console.log(\"start\");"); // NOI18N
@@ -300,6 +300,8 @@ public class LineDebuggerTest extends JavaScriptDebugger {
      */
     public void testBreakpointRemoteFile() throws Exception {
         startTest();
+        dummyEdit("debug.html", LineDebuggerTest.current_project, "debug.html"); // workaround for automated tests on slow machines
+        waitForRemoteFiles(LineDebuggerTest.current_project);
         openRemoteFile("common.js", LineDebuggerTest.current_project);
         openFile("debug.html", LineDebuggerTest.current_project);
         runFile(LineDebuggerTest.current_project, "debug.html");

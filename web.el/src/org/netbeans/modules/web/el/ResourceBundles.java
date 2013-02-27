@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.AstBracketSuffix;
+import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
@@ -79,7 +80,7 @@ public final class ResourceBundles {
      * Caches the bundles to avoid reading them again. Holds the bundles for
      * one FileObject at time.
      */
-    private static final Map<FileObject, ResourceBundles> CACHE = new WeakHashMap<FileObject, ResourceBundles>(1);
+    protected static final Map<FileObject, ResourceBundles> CACHE = new WeakHashMap<FileObject, ResourceBundles>(1);
 
     private final WebModule webModule;
     private final Project project;
@@ -102,6 +103,10 @@ public final class ResourceBundles {
     private ResourceBundles(WebModule webModule, Project project) {
         this.webModule = webModule;
         this.project = project;
+    }
+
+    public static ResourceBundles create(WebModule webModule, Project project) {
+        return new ResourceBundles(webModule, project);
     }
 
     public static ResourceBundles get(FileObject fileObject) {
@@ -150,7 +155,7 @@ public final class ResourceBundles {
      * {@code key}; {@code false} otherwise.
      */
     public boolean isValidKey(String bundle, String key) {
-        ResourceBundleInfo rbInfo = getBundlesMap().get(bundle);
+        ResourceBundleInfo rbInfo = getBundleForIdentifier(bundle);
         if (rbInfo == null) {
             // no matching bundle file
             return true;
@@ -158,7 +163,17 @@ public final class ResourceBundles {
         return rbInfo.getResourceBundle().containsKey(key);
     }
 
-    public List<Pair<AstIdentifier, AstString>> collectKeys(final Node root) {
+    private ResourceBundleInfo getBundleForIdentifier(String ident) {
+        // XXX - do it more efficiently
+        for (Map.Entry<String, ResourceBundleInfo> entry : getBundlesMap().entrySet()) {
+            if (ident.equals(entry.getValue().getVarName())) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    public List<Pair<AstIdentifier, Node>> collectKeys(final Node root) {
         return collectKeys(root, new ResolverContext());
     }
 
@@ -166,8 +181,8 @@ public final class ResourceBundles {
      * Collects references to resource bundle keys in the given {@code root}.
      * @return List of identifier/string pairs. Identifier = resource bundle base name - string = res bundle key.
      */
-    public List<Pair<AstIdentifier, AstString>> collectKeys(final Node root, ResolverContext context) {
-        final List<Pair<AstIdentifier, AstString>> result = new ArrayList<Pair<AstIdentifier, AstString>>();
+    public List<Pair<AstIdentifier, Node>> collectKeys(final Node root, ResolverContext context) {
+        final List<Pair<AstIdentifier, Node>> result = new ArrayList<Pair<AstIdentifier, Node>>();
         List<Node> path = new AstPath(root).rootToLeaf();
         for (int i = 0; i < path.size(); i++) {
             Node node = path.get(i);
@@ -176,9 +191,13 @@ public final class ResourceBundles {
                 if (i + 2 < path.size()) {
                     Node brackets = path.get(i + 1);
                     Node string = path.get(i + 2);
-                    if (brackets instanceof AstBracketSuffix
-                            && string instanceof AstString) {
-                        result.add(Pair.of((AstIdentifier) node, (AstString) string));
+                    if (brackets instanceof AstBracketSuffix && string instanceof AstString) {
+                        result.add(Pair.of((AstIdentifier) node, string));
+                    }
+                } else if (i + 1 < path.size()) {
+                    // check for bundle.key => AST for that is: identifier, dotSuffix
+                    if (path.get(i + 1) instanceof AstDotSuffix) {
+                        result.add(Pair.of((AstIdentifier) node, path.get(i + 1)));
                     }
                 }
             }
@@ -364,7 +383,7 @@ public final class ResourceBundles {
                         }
                         
                         java.util.ResourceBundle found = java.util.ResourceBundle.getBundle(bundleFile, Locale.getDefault(), classLoader);
-                        result.put(bundleFile, new ResourceBundleInfo(fileObject, found));
+                        result.put(bundleFile, new ResourceBundleInfo(fileObject, found, bundle.getVar()));
                         break; // found the bundle in source cp, skip searching compile cp
                     } catch (MissingResourceException exception) {
                         continue;
@@ -375,14 +394,16 @@ public final class ResourceBundles {
         }
         return result;
     }
-    
-    private static final class ResourceBundleInfo {
-        private FileObject file;
-        private java.util.ResourceBundle resourceBundle;
 
-        public ResourceBundleInfo(FileObject file, java.util.ResourceBundle resourceBundle) {
+    private static final class ResourceBundleInfo {
+        private final FileObject file;
+        private final java.util.ResourceBundle resourceBundle;
+        private final String varName;
+
+        public ResourceBundleInfo(FileObject file, java.util.ResourceBundle resourceBundle, String varName) {
             this.file = file;
             this.resourceBundle = resourceBundle;
+            this.varName = varName;
         }
 
         public FileObject getFile() {
@@ -392,6 +413,9 @@ public final class ResourceBundles {
         public java.util.ResourceBundle getResourceBundle() {
             return resourceBundle;
         }
-        
+
+        public String getVarName() {
+            return varName;
+        }
     }
 }

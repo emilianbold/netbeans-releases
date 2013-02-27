@@ -242,18 +242,18 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                     recentRoots.add(new RepositoryConnection("svn+ssh://"));    // NOI18N
                 }
 
-                ComboBoxModel rootsModel = new RepositoryModel(new Vector<RepositoryConnection>(recentRoots));
-                repositoryPanel.urlComboBox.setModel(rootsModel);
-                if (recentRoots.size() > 0) {
-                    repositoryPanel.urlComboBox.setSelectedIndex(0);
-                    onSelectedRepositoryChange();
-                    currentPanel.refresh(getSelectedRCIntern());
-                }
-                repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));
-
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        ComboBoxModel rootsModel = new RepositoryModel(new Vector<RepositoryConnection>(recentRoots));
+                        repositoryPanel.urlComboBox.setModel(rootsModel);
+                        if (recentRoots.size() > 0) {
+                            repositoryPanel.urlComboBox.setSelectedIndex(0);
+                            onSelectedRepositoryChange();
+                            currentPanel.refresh(getSelectedRCIntern());
+                        }
+                        repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));
+
                         if (repositoryPanel.urlComboBox.isEditable()) {
                             JTextComponent textEditor = getUrlComboEditor();
                             textEditor.selectAll();

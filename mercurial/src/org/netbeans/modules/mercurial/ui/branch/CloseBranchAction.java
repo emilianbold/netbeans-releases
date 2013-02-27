@@ -81,6 +81,10 @@ public class CloseBranchAction extends ContextAction {
         return "CTL_MenuItem_CloseBranch"; //NOI18N
     }
 
+    @NbBundle.Messages({
+        "# {0} - repository name", "MSG_CloseBranchAction.interruptedRebase.error=Repository {0} is in the middle of an interrupted rebase.\n"
+            + "Finish the rebase before closing this branch."
+    })
     @Override
     protected void performContextAction(Node[] nodes) {
         VCSContext ctx = HgUtils.getCurrentContext(nodes);
@@ -111,6 +115,10 @@ public class CloseBranchAction extends ContextAction {
                                 new Object[] { branchName, numberOfHeads }), NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notifyLater(nd);
                         return;
+                    } else if (HgUtils.isRebasing(root)) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                Bundle.MSG_CloseBranchAction_interruptedRebase_error(root.getName()),
+                                NotifyDescriptor.ERROR_MESSAGE));
                     } else if (!isCanceled()) {
                         final VCSContext ctx = VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed((Object[]) roots)) {
                             @Override

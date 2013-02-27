@@ -57,6 +57,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
 
@@ -136,10 +137,10 @@ class SiteDocsNode extends FilterNode {
             toReturn[1] = null;
             NetbeansActionMapping mapp = new NetbeansActionMapping();
             mapp.addGoal("site"); //NOI18N
-            toReturn[2] = impl.createCustomMavenAction(BTN_Generate_Site(), mapp, true);
+            toReturn[2] = impl.createCustomMavenAction(BTN_Generate_Site(), mapp, true, Lookup.EMPTY);
             mapp = new NetbeansActionMapping();
             mapp.addGoal("site:deploy"); //NOI18N
-            toReturn[3] = impl.createCustomMavenAction(BTN_Deploy_Site(), mapp, false);
+            toReturn[3] = impl.createCustomMavenAction(BTN_Deploy_Site(), mapp, false, Lookup.EMPTY);
             return toReturn;
         } else {
             return super.getActions(param);

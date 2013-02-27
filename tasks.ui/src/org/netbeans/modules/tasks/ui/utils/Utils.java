@@ -44,10 +44,11 @@ package org.netbeans.modules.tasks.ui.utils;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Issue.Status;
 import org.netbeans.modules.bugtracking.api.Repository;
@@ -224,7 +225,7 @@ public class Utils {
         quickSearchPanel.removeQuickSearchListener(quickSearchListener);
     }
 
-    private static class QuickSearchListener implements PropertyChangeListener {
+    private static class QuickSearchListener implements ChangeListener {
 
         private QuickSearchPanel quickSearchPanel;
         private JButton open;
@@ -233,13 +234,11 @@ public class Utils {
             this.quickSearchPanel = quickSearchPanel;
             this.open = open;
         }
-        
+
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(QuickSearchPanel.getTaskEvent())) {
-                Issue selectedTask = quickSearchPanel.getSelectedTask();
-                open.setEnabled(selectedTask != null);
-            }
+        public void stateChanged(ChangeEvent e) {
+            Issue selectedTask = quickSearchPanel.getSelectedTask();
+            open.setEnabled(selectedTask != null);
         }
     }
 }

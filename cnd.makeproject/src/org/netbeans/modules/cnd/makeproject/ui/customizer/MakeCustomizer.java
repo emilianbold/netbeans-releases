@@ -726,12 +726,14 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         public Configuration addAction() {
             String newName = ConfigurationSupport.getUniqueNewName(getConfs());
             int type = MakeConfiguration.TYPE_MAKEFILE;
+            String customizerId = null;
             String buildDir = null;
             if (getActive() != null) {
                 type = ((MakeConfiguration) getActive()).getConfigurationType().getValue();
+                customizerId = ((MakeConfiguration) getActive()).getCustomizerId();
                 buildDir = ((MakeConfiguration) getActive()).getMakefileConfiguration().getBuildCommandWorkingDirValue();
             }
-            Configuration newconf = projectDescriptor.defaultConf(newName, type);
+            Configuration newconf = projectDescriptor.defaultConf(newName, type, customizerId);
             if (buildDir != null) {
                 ((MakeConfiguration) newconf).getMakefileConfiguration().getBuildCommandWorkingDir().setValue(buildDir);
             }

@@ -61,6 +61,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
@@ -72,6 +73,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.Language;
@@ -96,6 +98,7 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.LifecycleManager;
 
 import org.openide.cookies.EditorCookie;
@@ -150,6 +153,8 @@ public class CompletionTestBase extends NbTestCase {
         super(testName);
     }
     
+    private final AtomicReference<String> sourceLevel = new AtomicReference<String>();
+    
     protected void setUp() throws Exception {
 // this call did not do anything
 //        GlobalSourcePathTestUtil.setUseLibraries (false);
@@ -181,7 +186,12 @@ public class CompletionTestBase extends NbTestCase {
                 return Lookups.fixed(new JavaKit(), new JavacParserFactory());
             }
         };
-        Lkp.initLookups(new Object[] {repository, loader, cpp, mdp});
+        SourceLevelQueryImplementation slq = new SourceLevelQueryImplementation() {
+            @Override public String getSourceLevel(FileObject javaFile) {
+                return sourceLevel.get();
+            }
+        };
+        Lkp.initLookups(new Object[] {repository, loader, cpp, mdp, slq});
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
@@ -240,10 +250,19 @@ public class CompletionTestBase extends NbTestCase {
     }
     
     protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName) throws Exception {
-        performTest(source, caretPos, textToInsert, goldenFileName, null, null);
+        performTest(source, caretPos, textToInsert, goldenFileName, null);
+    }
+    
+    protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName, String sourceLevel) throws Exception {
+        performTest(source, caretPos, textToInsert, goldenFileName, null, null, sourceLevel);
     }
     
     protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
+        performTest(source, caretPos, textToInsert, goldenFileName, toPerformItemRE, goldenFileName2, null);
+    }
+    
+    protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName, String toPerformItemRE, String goldenFileName2, String sourceLevel) throws Exception {
+        this.sourceLevel.set(sourceLevel);
         File testSource = new File(getWorkDir(), "test/Test.java");
         testSource.getParentFile().mkdirs();
         copyToWorkDir(new File(getDataDir(), "org/netbeans/modules/java/editor/completion/data/" + source + ".java"), testSource);

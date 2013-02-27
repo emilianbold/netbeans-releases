@@ -50,12 +50,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
@@ -243,7 +245,7 @@ public class LogReader {
         return null;
     }
 
-    private void run(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+    private void runImpl(Progress progress, CompileLineStorage storage) {
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
             DwarfSource.LOG.log(Level.FINE, "LogReader is run for {0}", fileName); //NOI18N
         }
@@ -277,7 +279,7 @@ public class LogReader {
                 int nFoundFiles = 0;
                 try {
                     while(true){
-                        if (isStoped.get()) {
+                        if (isStoped.cancelled()) {
                             break;
                         }
                         String line = in.readLine();
@@ -323,35 +325,34 @@ public class LogReader {
         }
     }
 
-    public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+    public List<SourceFileProperties> getResults(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
         if (result == null) {
-            // XXX
-            setWorkingDir(root);
-            run(progress, isStoped, storage);
-            if (subFolders != null) {
-                subFolders.clear();
-                subFolders = null;
-                findBase.clear();
-                findBase = null;
-            }
+            run(isStoped, progress, storage);
         }
         return result;
     }
-    public List<String> getArtifacts(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+    public List<String> getArtifacts(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
         if (buildArtifacts == null) {
-            // XXX
-            setWorkingDir(root);
-            run(progress, isStoped, storage);
-            if (subFolders != null) {
-                subFolders.clear();
-                subFolders = null;
-                findBase.clear();
-                findBase = null;
-            }
+            run(isStoped, progress, storage);
         }
         return buildArtifacts;
     }
-    
+
+    private Interrupter isStoped;
+    private void run(Interrupter isStoped, Progress progress, CompileLineStorage storage) {
+        this.isStoped = isStoped;
+        setWorkingDir(root);
+        runImpl(progress, storage);
+        if (subFolders != null) {
+            subFolders.clear();
+            subFolders = null;
+            findBase.clear();
+            findBase = null;
+        }
+        this.isStoped = null;
+    }
+
+
     private final ArrayList<List<String>> makeStack = new ArrayList<List<String>>();
 
     private int getMakeLevel(String line){
@@ -1246,18 +1247,20 @@ public class LogReader {
     private Set<String> getSubfolders(){
         if (subFolders == null){
             subFolders = new HashSet<String>();
-            File f = new File(root);
-            gatherSubFolders(f, new HashSet<String>());
             findBase = new HashMap<String,List<String>>();
-            initSearchMap();
+            File f = new File(root);
+            gatherSubFolders(f, new LinkedList<String>());
         }
         return subFolders;
     }
     private HashSet<String> subFolders;
     private Map<String,List<String>> findBase;
 
-    private void gatherSubFolders(File d, HashSet<String> antiLoop){
+    private void gatherSubFolders(File d, LinkedList<String> antiLoop){
         if (d.exists() && d.isDirectory() && d.canRead()){
+            if (isStoped.cancelled()) {
+                return;
+            }
             if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
@@ -1268,28 +1271,20 @@ public class LogReader {
                 return;
             }
             if (!antiLoop.contains(canPath)){
-                antiLoop.add(canPath);
+                antiLoop.addLast(canPath);
                 subFolders.add(d.getAbsolutePath().replace('\\', '/'));
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
+                        if (isStoped.cancelled()) {
+                            break;
+                        }
                         if (ff[i].isDirectory()) {
                             gatherSubFolders(ff[i], antiLoop);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void initSearchMap(){
-        for (String it : subFolders){
-            File d = new File(it);
-            if (d.exists() && d.isDirectory() && d.canRead()){
-                File[] ff = d.listFiles();
-                if (ff != null) {
-                    for (int i = 0; i < ff.length; i++) {
-                        if (ff[i].isFile()) {
+                        } else if (ff[i].isFile()) {
+                            if (CndFileVisibilityQuery.getDefault().isIgnored(ff[i].getName())) {
+                                continue;
+                            }
                             List<String> l = findBase.get(ff[i].getName());
                             if (l==null){
                                 l = new ArrayList<String>();
@@ -1299,8 +1294,8 @@ public class LogReader {
                         }
                     }
                 }
+                antiLoop.removeLast();
             }
         }
     }
-
 }

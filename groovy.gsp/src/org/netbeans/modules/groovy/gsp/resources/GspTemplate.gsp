@@ -5,7 +5,7 @@
 <#assign licenseFirst = "<!--">
 <#assign licensePrefix = "  ">
 <#assign licenseLast = "-->">
-<#include "../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 <#-- End of license section; GSP contents follow -->
 
 <%@ page contentType="text/html;charset=UTF-8" %>

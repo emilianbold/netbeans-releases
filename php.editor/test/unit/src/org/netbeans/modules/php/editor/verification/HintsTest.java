@@ -215,4 +215,8 @@ public class HintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new ErrorControlOperatorHint(), "testErrorControlOperatorHint.php");
     }
 
+    public void testIssue226494() throws Exception {
+        checkHintsInStartEndFile(new MethodRedeclarationHintError(), "testIssue226494.php");
+    }
+
 }

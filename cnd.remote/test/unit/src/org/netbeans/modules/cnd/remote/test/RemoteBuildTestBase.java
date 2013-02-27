@@ -216,7 +216,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         projectDir.delete();
         FileObject projectDirFO = instantiateSample(sampleName, projectDir);
         ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
-        MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
+        MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor();
         descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
         File makefile = new File(projectDir, "Makefile");
         FileObject makefileFileObject = CndFileUtils.toFileObject(makefile);
@@ -252,7 +252,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         // the code below is copypasted from  org.netbeans.modules.cnd.makeproject.ui.RemoteDevelopmentAction
         ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         assertNotNull("ConfigurationDescriptorProvider shouldn't be null", configurationDescriptorProvider);
-        MakeConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor(true);
+        MakeConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
         MakeConfiguration mconf = configurationDescriptor.getActiveConfiguration();
         // the below wiill throw NPE, the above woin't
         // MakeConfiguration mconf = project.getActiveConfiguration();

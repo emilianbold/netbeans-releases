@@ -45,7 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +78,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -99,7 +97,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private static final int SEARCH_DELAY_TIME_SHORT = 20; // >= 3 chars
     private static final Color DEFAULT_FG_COLOR = UIManager.getColor("textText"); //NOI18N
     private WeakReference<JTextComponent> actualTextComponent;
-    private List<PropertyChangeListener> actualComponentListeners = new LinkedList<PropertyChangeListener>();
+    private final List<PropertyChangeListener> actualComponentListeners = new LinkedList<PropertyChangeListener>();
     private FocusAdapter focusAdapterForComponent;
     private KeyListener keyListenerForComponent;
     private PropertyChangeListener propertyChangeListenerForComponent;
@@ -110,13 +108,13 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private boolean hadFocusOnIncSearchTextField = false;
     private final JButton findNextButton;
     private final JButton findPreviousButton;
-    private final JCheckBox matchCaseCheckBox;
-    private final JCheckBox wholeWordsCheckBox;
-    private final JCheckBox regexpCheckBox;
-    private final JCheckBox highlightCheckBox;
-    private final JCheckBox wrapAroundCheckBox;
+    private final JToggleButton matchCase;
+    private final JToggleButton wholeWords;
+    private final JToggleButton regexp;
+    private final JToggleButton highlight;
+    private final JToggleButton wrapAround;
     private final JButton closeButton;
-    private final SearchExpandMenu expandMenu;
+    private final JLabel matches;
     private SearchProperties searchProps = SearchPropertiesSupport.getSearchProperties();
     private boolean popupMenuWasCanceled = false;
     private Rectangle actualViewPort;
@@ -184,7 +182,8 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         leftSeparator.setOrientation(SwingConstants.VERTICAL);
         add(leftSeparator);
 
-        findPreviousButton = createFindButton("org/netbeans/modules/editor/search/resources/find_previous.png", "CTL_FindPrevious"); // NOI18N
+        findPreviousButton = SearchButton.createButton("org/netbeans/modules/editor/search/resources/find_previous.png", "CTL_FindPrevious"); // NOI18N
+        findPreviousButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); //NOI18N
         findPreviousButton.addActionListener(new ActionListener() {
 
             @Override
@@ -193,7 +192,8 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             }
         });
         add(findPreviousButton);
-        findNextButton = createFindButton("org/netbeans/modules/editor/search/resources/find_next.png", "CTL_FindNext"); // NOI18N
+        findNextButton = SearchButton.createButton("org/netbeans/modules/editor/search/resources/find_next.png", "CTL_FindNext"); // NOI18N
+        findPreviousButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); //NOI18N
         findNextButton.addActionListener(new ActionListener() {
 
             @Override
@@ -202,39 +202,103 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             }
         });
         add(findNextButton);
-
+        
         final JToolBar.Separator rightSeparator = new JToolBar.Separator();
         rightSeparator.setOrientation(SwingConstants.VERTICAL);
         add(rightSeparator);
 
-        matchCaseCheckBox = createCheckBox("CTL_MatchCase", EditorFindSupport.FIND_MATCH_CASE); // NOI18N
-        add(matchCaseCheckBox);
-        wholeWordsCheckBox = createCheckBox("CTL_WholeWords", EditorFindSupport.FIND_WHOLE_WORDS); // NOI18N
-        add(wholeWordsCheckBox);
-        regexpCheckBox = createRegExpCheckBox("CTL_Regexp", EditorFindSupport.FIND_REG_EXP); // NOI18N
-        add(regexpCheckBox);
-        highlightCheckBox = createCheckBox("CTL_Highlight", EditorFindSupport.FIND_HIGHLIGHT_SEARCH); // NOI18N
-        add(highlightCheckBox);
-        EditorFindSupport.getInstance().addPropertyChangeListener(WeakListeners.propertyChange(this, EditorFindSupport.getInstance()));
-        wrapAroundCheckBox = createCheckBox("CTL_WrapAround", EditorFindSupport.FIND_WRAP_SEARCH); // NOI18N
-        add(wrapAroundCheckBox);
+        matchCase = SearchButton.createToggleButton("org/netbeans/modules/editor/search/resources/matchCase.png"); //NOI18N
+        processToggleButton(matchCase, EditorFindSupport.FIND_MATCH_CASE);
+        matchCase.setToolTipText(NbBundle.getMessage(SearchBar.class, "TT_MatchCase")); //NOI18N
+        add(matchCase);
+
+        wholeWords = SearchButton.createToggleButton("org/netbeans/modules/editor/search/resources/wholeWord.png"); //NOI18N
+        processToggleButton(wholeWords, EditorFindSupport.FIND_WHOLE_WORDS);
+        wholeWords.setToolTipText(NbBundle.getMessage(SearchBar.class, "TT_WholeWords")); //NOI18N
+        add(wholeWords);
+
+        regexp = SearchButton.createToggleButton("org/netbeans/modules/editor/search/resources/regexp.png"); //NOI18N
+        processToggleButton(regexp, EditorFindSupport.FIND_REG_EXP);
+        regexp.setToolTipText(NbBundle.getMessage(SearchBar.class, "TT_Regexp")); //NOI18N
+        add(regexp);
+
+        highlight = SearchButton.createToggleButton("org/netbeans/modules/editor/search/resources/highlight.png"); //NOI18N
+        processToggleButton(highlight, EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
+        highlight.setToolTipText(NbBundle.getMessage(SearchBar.class, "TT_Highlight")); //NOI18N
+        add(highlight);
+
+        wrapAround = SearchButton.createToggleButton("org/netbeans/modules/editor/search/resources/wrapAround.png" ); //NOI18N
+        processToggleButton(wrapAround, EditorFindSupport.FIND_WRAP_SEARCH);
+        add(wrapAround);
+        wrapAround.setToolTipText(NbBundle.getMessage(SearchBar.class, "TT_WrapAround")); //NOI18N
+
         selectCheckBoxes();
+        addCheckBoxesActions(incSearchTextField);
+        EditorFindSupport.getInstance().addPropertyChangeListener(WeakListeners.propertyChange(this, EditorFindSupport.getInstance()));
+        
+        matches = new JLabel();
+        add(Box.createHorizontalGlue());
+        add(matches);
 
-        expandMenu = new SearchExpandMenu(matchCaseCheckBox.getHeight());
-        JButton expButton = expandMenu.getExpandButton();
-        expButton.setMnemonic(NbBundle.getMessage(SearchBar.class, "CTL_ExpandButton_Mnemonic").charAt(0)); // NOI18N
-        expButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_ExpandButton")); // NOI18N
-        add(expButton);
-
-        // padding at the end of the toolbar
-        add(expandMenu.getPadding());
+        add(Box.createHorizontalStrut(8)); //spacer in the ending of the toolbar
 
         closeButton = createCloseButton();
         add(closeButton);
-
-        makeBarExpandable(expandMenu);
+        
         setVisible(false);
         usageLogging();
+    }
+
+    void addCheckBoxesActions(JTextComponent incSearchTextField) {
+        String key = "matchcasekey";
+        incSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK), key);
+        incSearchTextField.getActionMap().put(key, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                matchCase.doClick();
+            }
+        } );
+
+        key = "wholewordkey";
+        incSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK), key);
+        incSearchTextField.getActionMap().put(key, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                wholeWords.setSelected(!wholeWords.isSelected());
+            }
+        } );
+
+        key = "regexpkey";
+        incSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_DOWN_MASK), key);
+        incSearchTextField.getActionMap().put(key, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                regexp.setSelected(!regexp.isSelected());
+            }
+        } );
+
+        key = "highlightkey";
+        incSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.ALT_DOWN_MASK), key);
+        incSearchTextField.getActionMap().put(key, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                highlight.setSelected(!highlight.isSelected());
+            }
+        } );
+
+        key = "wraparoundkey";
+        incSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.ALT_DOWN_MASK), key);
+        incSearchTextField.getActionMap().put(key, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                wrapAround.setSelected(!wrapAround.isSelected());
+            }
+        } );
     }
     
     private static class SearchHistoryUtility {
@@ -326,28 +390,16 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         logger.log(rec);
     }
 
-    private void makeBarExpandable(SearchExpandMenu expMenu) {
-        expMenu.addToInbar(matchCaseCheckBox);
-        expMenu.addToInbar(wholeWordsCheckBox);
-        expMenu.addToInbar(regexpCheckBox);
-        expMenu.addToInbar(highlightCheckBox);
-        expMenu.addToInbar(wrapAroundCheckBox);
-        expMenu.addAllToBarOrder(Arrays.asList(this.getComponents()));
-        remove(getExpandButton());
-        getExpandButton().setVisible(false);
-    }
-
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt == null || evt.getPropertyName() == null || evt.getPropertyName().equals(EditorFindSupport.FIND_HIGHLIGHT_SEARCH)) {
-            Boolean value = (Boolean) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
-            highlightCheckBox.setSelected(value == null ? false : value.booleanValue());
+        if (evt != null) {
+            selectCheckBoxes();
         }
     }
 
     void updateIncSearchComboBoxHistory(String incrementalSearchText) {
         EditorFindSupport.getInstance().addToHistory(new EditorFindSupport.SPW(incrementalSearchText,
-                wholeWordsCheckBox.isSelected(), matchCaseCheckBox.isSelected(), regexpCheckBox.isSelected()));
+                wholeWords.isSelected(), matchCase.isSelected(), regexp.isSelected()));
         incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
         // Add the text to the top of the list
         for (int i = incSearchComboBox.getItemCount() - 1; i >= 0; i--) {
@@ -544,33 +596,20 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         button.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_CloseIncrementalSearchSidebar")); // NOI18N
         return button;
     }
-
-    private JCheckBox createRegExpCheckBox(String resName, final String findConstant) {
-        final JCheckBox regExpCheckBox = new JCheckBox() {
-
-            @Override
-            public void setSelected(boolean b) {
-                super.setSelected(b);
-                wholeWordsCheckBox.setEnabled(!regexpCheckBox.isSelected());
-            }
-
-        };
-        regExpCheckBox.setOpaque(false);
-        Mnemonics.setLocalizedText(regExpCheckBox, NbBundle.getMessage(SearchBar.class, resName));
-        regExpCheckBox.addActionListener(new ActionListener() {
+    
+    void processToggleButton(JToggleButton button, final String findConstant) {
+        button.setOpaque(false);
+        button.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 switchFindSupportValue(findConstant);
-                wholeWordsCheckBox.setEnabled(!regexpCheckBox.isSelected());
                 incrementalSearch();
             }
         });
-        regExpCheckBox.setMargin(BUTTON_INSETS);
-        regExpCheckBox.setFocusable(false);
-        return regExpCheckBox;
     }
-    
+
+    // TODO: remove after replace icons
     JCheckBox createCheckBox(String resName, final String findConstant) {
         final JCheckBox checkBox = new JCheckBox();
         checkBox.setOpaque(false);
@@ -589,29 +628,19 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     }
 
     private void selectCheckBoxes() {
-        wholeWordsCheckBox.setSelected(getFindSupportValue(EditorFindSupport.FIND_WHOLE_WORDS));
-        wholeWordsCheckBox.setEnabled(!getRegExp());
-        matchCaseCheckBox.setSelected(getFindSupportValue(EditorFindSupport.FIND_MATCH_CASE));
-        regexpCheckBox.setSelected(getRegExp());
-        highlightCheckBox.setSelected(getFindSupportValue(EditorFindSupport.FIND_HIGHLIGHT_SEARCH));
-        wrapAroundCheckBox.setSelected(getFindSupportValue(EditorFindSupport.FIND_WRAP_SEARCH));
+        wholeWords.setSelected(getFindSupportValue(EditorFindSupport.FIND_WHOLE_WORDS));
+        wholeWords.setEnabled(!getRegExp());
+        matchCase.setSelected(getFindSupportValue(EditorFindSupport.FIND_MATCH_CASE));
+        regexp.setSelected(getRegExp());
+        highlight.setSelected(getFindSupportValue(EditorFindSupport.FIND_HIGHLIGHT_SEARCH));
+        wrapAround.setSelected(getFindSupportValue(EditorFindSupport.FIND_WRAP_SEARCH));
     }
-
-    private JButton createFindButton(final String imageIcon,final String resName) {
-        JButton button = new JButton(
-                ImageUtilities.loadImageIcon(imageIcon, false));
-        Mnemonics.setLocalizedText(button, NbBundle.getMessage(SearchBar.class, resName));
-        button.setMargin(BUTTON_INSETS);
-        button.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); //NOI18N
-        return button;
-    }
-
 
     // Treat Emacs profile specially in order to fix #191895
     private void emacsProfileFix(final JTextComponent incSearchTextField) {
         class JumpOutOfSearchAction extends AbstractAction {
 
-            private String actionName;
+            private final String actionName;
 
             public JumpOutOfSearchAction(String n) {
                 actionName = n;
@@ -670,12 +699,6 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             currentKeyMapProfile = DEFAULT_PROFILE;
         }
         return currentKeyMapProfile;
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        expandMenu.computeLayout(this);
-        return super.getPreferredSize();
     }
 
     @Override
@@ -804,7 +827,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         if (isClosingSearchType()) {
             caretPosition = getActualTextComponent().getCaretPosition();
         }
-        if (regexpCheckBox.isSelected()) {
+        if (regexp.isSelected()) {
             Pattern pattern;
             String patternErrorMsg = null;
             try {
@@ -873,12 +896,14 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     }
 
     private void changeHighlightCheckboxName(int num) {
-        if (num == 0) {
-            Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight"));
+        if (incSearchTextField.getText().isEmpty()) {
+            Mnemonics.setLocalizedText(matches, ""); //NOI18N
+        } else if (num == 0) {
+            Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "0_matches")); //NOI18N
         } else if (num == 1) {
-            Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight_1_results"));
+            Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "1_matches")); //NOI18N
         } else {
-            Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight_n_results", num));
+            Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "n_matches", num)); //NOI18N
         }
     }
 
@@ -1046,32 +1071,19 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
     public Map<String, Object> getSearchProperties() {
         searchProps.setProperty(EditorFindSupport.FIND_WHAT, incSearchTextField.getText());
-        searchProps.setProperty(EditorFindSupport.FIND_MATCH_CASE, matchCaseCheckBox.isSelected());
-        searchProps.setProperty(EditorFindSupport.FIND_WHOLE_WORDS, wholeWordsCheckBox.isSelected());
-        searchProps.setProperty(EditorFindSupport.FIND_REG_EXP, regexpCheckBox.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_MATCH_CASE, matchCase.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_WHOLE_WORDS, wholeWords.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_REG_EXP, regexp.isSelected());
         searchProps.setProperty(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.FALSE);
         searchProps.setProperty(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
-        searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, highlightCheckBox.isSelected());
-        searchProps.setProperty(EditorFindSupport.FIND_WRAP_SEARCH, wrapAroundCheckBox.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, highlight.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_WRAP_SEARCH, wrapAround.isSelected());
         return searchProps.getProperties();
     }
 
     public void setSearchProperties(SearchProperties searchProperties) {
         searchProps = searchProperties;
         selectCheckBoxes();
-    }
-
-    JCheckBox getMatchCaseCheckBox() {
-        return matchCaseCheckBox;
-    }
-
-    JCheckBox getRegexpCheckBox() {
-        return regexpCheckBox;
-    }
-
-
-    JComponent getExpandButton() {
-        return expandMenu.getExpandButton();
     }
 
     public boolean isPopupMenuWasCanceled() {
@@ -1101,7 +1113,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                     String findWhat = (String) selectedItem;
                     for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory()) {
                         if (findWhat.equals(spw.getSearchExpression())) {
-                            SearchBar.getInstance().getRegexpCheckBox().setSelected(spw.isRegExp());
+                            searchProps.setProperty(EditorFindSupport.FIND_REG_EXP, spw.isRegExp());
                             break;
                         }
                     }

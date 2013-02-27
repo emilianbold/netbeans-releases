@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ComponentType;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
@@ -104,7 +105,7 @@ public class ConfigurationDescriptorProvider {
     private final Object readLock = new Object();
 
     public MakeConfigurationDescriptor getConfigurationDescriptor() {
-        return getConfigurationDescriptor(true);
+        return getConfigurationDescriptor(true, null);
     }
 
     private boolean shouldBeLoaded() {
@@ -112,7 +113,7 @@ public class ConfigurationDescriptorProvider {
 
     }
 
-    public MakeConfigurationDescriptor getConfigurationDescriptor(boolean waitReading) {
+    private MakeConfigurationDescriptor getConfigurationDescriptor(boolean waitReading, Interrupter interrupter) {
         if (shouldBeLoaded()) {
             // attempt to read configuration descriptor
             // do this only once
@@ -137,7 +138,7 @@ public class ConfigurationDescriptorProvider {
                     //                        }
                     try {
                         SnapShot delta = startModifications();
-                        MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
+                        MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset, interrupter);
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
                                 new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)});
                         if (projectDescriptor == null) {
@@ -170,7 +171,7 @@ public class ConfigurationDescriptorProvider {
                     hasTried = true;
                 }
             }
-            }
+        }
         if (waitReading && projectDescriptor != null) {
             projectDescriptor.waitInitTask();
         }
@@ -403,10 +404,13 @@ public class ConfigurationDescriptorProvider {
         }
     }
 
-    public void opened() {
-        MakeConfigurationDescriptor descr = getConfigurationDescriptor(true);
+    public void opened(Interrupter interrupter) {
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor(true, interrupter);
         if (descr != null) {
-            descr.opened();
+            descr.opened(interrupter);
+        }
+        if (interrupter != null && interrupter.cancelled()) {
+            return;
         }
         attachConfigurationFilesListener();
     }

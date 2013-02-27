@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -90,7 +91,10 @@ import org.openide.util.RequestProcessor;
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.api.model.CsmModel.class)
 public class ModelImpl implements CsmModel, LowMemoryListener {
-
+    static {
+        CsmCorePackageAccessor.register(new AccessorImpl());
+    }
+    
     public ModelImpl() {
         startup();
     }
