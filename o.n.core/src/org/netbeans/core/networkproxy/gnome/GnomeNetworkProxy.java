@@ -98,7 +98,7 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
         if (proxyMode.equals(GCONF_VALUE_AUTO)) {
             String pacUrl = proxyProperties.get(GCONF_KEY_PAC_URL);
             if (pacUrl != null) {
-                return new NetworkProxySettings(pacUrl);
+                return new NetworkProxySettings(pacUrl);             
             } else {
                 return new NetworkProxySettings("");
             }
@@ -157,11 +157,11 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
     }
     
     private static String getKey(String line) {        
-        return line == null ? null : line.substring(0, line.indexOf(EQUALS)).trim();
+        return line.substring(0, line.indexOf(EQUALS)).trim();
     }
 
     private static String getValue(String line) {
-        return line == null ? null : line.substring(line.indexOf(EQUALS) + 1).trim();
+        return line.substring(line.indexOf(EQUALS) + 1).trim();
     }
     
     private static String[] getNoProxyHosts(String noProxyHostsString) {

@@ -58,6 +58,7 @@ public class NetworkProxySettings {
     
     private final static Logger LOGGER = Logger.getLogger(NetworkProxySelector.class.getName());
     private final static String COLON = ":"; //NOI18N
+    private final static String SLASH = "/"; //NOI18N
     private final static String EMPTY_STRING = ""; //NOI18N
     private final boolean resolved;
     private final ProxyMode proxyMode;
@@ -183,6 +184,9 @@ public class NetworkProxySettings {
         if (string == null) {
             return EMPTY_STRING;
         } else {
+            if (string.endsWith(SLASH)) {
+                string = string.substring(string.length() - 1, string.length());
+            }
             return string.substring(string.lastIndexOf(COLON) + 1);
         }
     }

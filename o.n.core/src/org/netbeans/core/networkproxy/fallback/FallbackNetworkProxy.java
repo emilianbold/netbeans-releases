@@ -65,6 +65,7 @@ public class FallbackNetworkProxy implements NetworkProxyResolver{
             // resolve http://<host>:<port>/
             // ftp_proxy=ftp://<host>:<port>/
             // socks_proxy=socks://<host>:<port>/
+            // no_proxy
             
             return new NetworkProxySettings(httpProxy, new String[0]);
         }        

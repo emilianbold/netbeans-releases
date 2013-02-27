@@ -41,7 +41,14 @@
  */
 package org.netbeans.core.networkproxy.kde;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.core.networkproxy.NetworkProxyResolver;
 import org.netbeans.core.networkproxy.NetworkProxySettings;
@@ -50,33 +57,127 @@ import org.netbeans.core.networkproxy.NetworkProxySettings;
  *
  * @author lfischme
  */
-public class KdeNetworkProxy implements NetworkProxyResolver{
-    
-    private final static String HOME = "HOME";
+public class KdeNetworkProxy implements NetworkProxyResolver {
+
+    private final static String EMPTY_STRING = ""; //NOI18N
+    private final static String SPACE = " "; //NOI18N
+    private final static String EQUALS = "="; //NOI18N
+    private final static String COLON = ":"; //NOI18N
+    private final static String COMMA = ","; //NOI18N
+    private final static String SQ_BRACKET_LEFT = "["; //NOI18N
+    private final static String HOME = "HOME"; //NOI18N
+    private final static String KIOSLAVERC_PROXY_SETTINGS_GROUP = "[Proxy Settings]"; //NOI18N
+    private final static String KIOSLAVERC_PROXY_TYPE = "ProxyType"; //NOI18N
+    private final static String KIOSLAVERC_PROXY_CONFIG_SCRIPT = "Proxy Config Script"; //NOI18N
+    private final static String KIOSLAVERC_HTTP_PROXY = "httpProxy"; //NOI18N
+    private final static String KIOSLAVERC_HTTPS_PROXY = "httpsProxy"; //NOI18N
+    private final static String KIOSLAVERC_SOCKS_PROXY = "socksProxy"; //NOI18N
+    private final static String KIOSLAVERC_NO_PROXY_FOR = "NoProxyFor"; //NOI18N
+    private final static String KIOSLAVERC_PROXY_TYPE_NONE = "0"; //NOI18N
+    private final static String KIOSLAVERC_PROXY_TYPE_MANUAL = "1"; //NOI18N
+    private final static String KIOSLAVERC_PROXY_TYPE_PAC = "2"; //NOI18N
+    private final static String KIOSLAVERC_PROXY_TYPE_AUTO = "3"; //NOI18N
+    private final static String KIOSLAVERC_PROXY_TYPE_SYSTEM = "4"; //NOI18N    
+    private final static String KIOSLAVERC_PATH_IN_HOME = ".kde/share/config/kioslaverc"; //NOI18N 
     private final String KIOSLAVERC_PATH;
 
     public KdeNetworkProxy() {
         KIOSLAVERC_PATH = getKioslavercPath();
     }
-        
+
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
+        Map<String, String> kioslavercMap = getKioslavercMap();
+
+        String proxyType = kioslavercMap.get(KIOSLAVERC_PROXY_TYPE);
+        if (proxyType == null) {
+            return new NetworkProxySettings(false);
+        }
+
+        if (proxyType.equals(KIOSLAVERC_PROXY_TYPE_NONE) || proxyType.equals(KIOSLAVERC_PROXY_TYPE_AUTO)) {
+            return new NetworkProxySettings();
+        }
+
+        if (proxyType.equals(KIOSLAVERC_PROXY_TYPE_PAC)) {
+            String pacFileUrl = kioslavercMap.get(KIOSLAVERC_PROXY_CONFIG_SCRIPT);
+            if (pacFileUrl != null) {
+                return new NetworkProxySettings(pacFileUrl);
+            } else {
+                return new NetworkProxySettings(false);
+            }
+        }
+
+        if (proxyType.equals(KIOSLAVERC_PROXY_TYPE_MANUAL) || proxyType.equals(KIOSLAVERC_PROXY_TYPE_SYSTEM)) {                                  
+            String httpProxy = kioslavercMap.get(KIOSLAVERC_HTTP_PROXY);
+            String httpsProxy = kioslavercMap.get(KIOSLAVERC_HTTPS_PROXY);
+            String socksProxy = kioslavercMap.get(KIOSLAVERC_SOCKS_PROXY);
+            String noProxyFor = kioslavercMap.get(KIOSLAVERC_NO_PROXY_FOR);
+            
+            if (proxyType.equals(KIOSLAVERC_PROXY_TYPE_MANUAL)) {
+                httpProxy = httpProxy == null ? EMPTY_STRING : httpProxy.trim().replaceAll(SPACE, COLON);
+                httpsProxy = httpsProxy == null ? EMPTY_STRING : httpsProxy.trim().replaceAll(SPACE, COLON);
+                socksProxy = socksProxy == null ? EMPTY_STRING : socksProxy.trim().replaceAll(SPACE, COLON);
+            }
+            
+            String[] noProxyHosts = getNoProxyHosts(noProxyFor);
+            
+            return new NetworkProxySettings(httpProxy, httpsProxy, socksProxy, noProxyHosts);
+        }
+
         return new NetworkProxySettings(false);
     }
-    
+
     private Map<String, String> getKioslavercMap() {
-        
-        
-        return null;
+        File kioslavercFile = new File(KIOSLAVERC_PATH);
+        Map<String, String> map = new HashMap<String, String>();
+
+        if (kioslavercFile.exists()) {
+            try {
+                FileInputStream fis = new FileInputStream(kioslavercFile);
+                DataInputStream dis = new DataInputStream(fis);
+                BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+                String line;
+                boolean inGroup = false;
+                while ((line = br.readLine()) != null) {
+                    if (inGroup) {
+                        if (line.contains(EQUALS)) {
+                            int indexOfEquals = line.indexOf(EQUALS);
+                            String key = line.substring(0, indexOfEquals);
+                            String value = line.substring(indexOfEquals + 1);
+                            map.put(key, value);
+                        } else if (line.startsWith(SQ_BRACKET_LEFT)) {
+                            break;
+                        }
+                    } else if (line.startsWith(KIOSLAVERC_PROXY_SETTINGS_GROUP)) {
+                        inGroup = true;
+                    }
+                }
+                dis.close();
+            } catch (FileNotFoundException ex) {
+                // TODO log
+            } catch (IOException ex) {
+                // TODO log
+            }
+        }
+
+        return map;
     }
-    
+
     private String getKioslavercPath() {
         String homePath = System.getenv(HOME);
-        
+
         if (homePath != null) {
-            return homePath + File.separator + ".kde/share/config/kioslaverc";            
+            return homePath + File.separator + KIOSLAVERC_PATH_IN_HOME;
         } else {
-            return "";
+            return EMPTY_STRING;
         }
+    }
+    
+    private static String[] getNoProxyHosts(String noProxyHostsString) {
+        if (noProxyHostsString != null && !noProxyHostsString.isEmpty()) {
+            return noProxyHostsString.split(COMMA);
+        }
+            
+        return new String[0];
     }
 }
