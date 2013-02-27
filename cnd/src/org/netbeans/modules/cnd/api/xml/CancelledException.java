@@ -50,6 +50,6 @@ import org.xml.sax.SAXException;
 public class CancelledException extends SAXException {
     
     CancelledException() {
-        super("Read cancelled");
+        super("Read cancelled"); //NOI18N
     }
 }
