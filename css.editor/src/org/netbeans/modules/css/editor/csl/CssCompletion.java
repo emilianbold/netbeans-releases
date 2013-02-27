@@ -901,7 +901,10 @@ public class CssCompletion implements CodeCompletionHandler {
         //2. in a garbage (may be for example a dash prefix in a ruleset
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
-            if (parent != null && (parent.type() == NodeType.rule || parent.type() == NodeType.declarations || parent.type() == NodeType.moz_document)) {
+            if (parent != null && (parent.type() == NodeType.rule 
+                    || parent.type() == NodeType.declarations 
+                    || parent.type() == NodeType.declaration //related to the declarations rule error recovery issue
+                    || parent.type() == NodeType.moz_document)) {
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
                 boolean bug204821 = false;

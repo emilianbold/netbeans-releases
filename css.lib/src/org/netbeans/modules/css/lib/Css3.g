@@ -554,19 +554,32 @@ rule
 declarations
     :
             (
-                (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
+                //the DECLARATION rule needs to be before the RULE rule as the 
+                //syn.predicate for the RULE rule also accepts the declaration,
+                //(is less specific).
+		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_interpolation_expression COLON )=>declaration SEMI ws?
 		|
-		(~(LBRACE|SEMI|RBRACE)+ SEMI)=>declaration SEMI ws?
+                (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
                 |
                 {isCssPreprocessorSource()}? cp_mixin_call ws?
+//                |
+//                (~(LBRACE|SEMI|RBRACE)+ SEMI)=>syncTo_SEMI ws?
             )*
             (( ~(RBRACE)+ RBRACE)=>declaration)?
     ;
     
 selectorsGroup
-    :	selector (COMMA ws? selector)*
+    :	
+        // looking for #{, lookeahead exited by { (rule beginning)
+        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> scss_interpolation_expression ws? 
+
+        //scss interpolation expression NOT followed by COLON (which means it represents 
+        //an interpolation expression in property name!
+//        (scss_interpolation_expression ~COLON)=> scss_interpolation_expression ws?
+	|
+        selector (COMMA ws? selector)*
     ;
-    
+        
 selector
     : simpleSelectorSequence (combinator simpleSelectorSequence)*
     ;
@@ -687,7 +700,13 @@ pseudo
 declaration
     : 
     //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
-    STAR? property COLON ws? propertyValue (prio ws?)?
+    STAR? 
+    ( 
+        ( ~(HASH_SYMBOL | COLON | SEMI | RBRACE)* HASH_SYMBOL LBRACE )=> scss_interpolation_expression // looking for #{, lookeahead exit at :, ; and }
+        |
+        property 
+    )
+    COLON ws? propertyValue (prio ws?)?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -733,6 +752,14 @@ syncTo_RBRACE
         syncToRBRACE(1); //initial nest == 1
     }
     	:	
+    	;    	
+
+syncTo_SEMI
+    @init {
+        syncToSet(BitSet.of(SEMI)); 
+    }
+    	:	
+            SEMI
     	;    	
 
 //synct to computed follow set in the rule
@@ -836,6 +863,7 @@ cp_variable
         {isLessSource()}? ( AT_IDENT | MEDIA_SYM )//TODO add all meaningful at-rules here
         |
         {isScssSource()}? ( SASS_VAR )
+//        SASS_VAR
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR
@@ -917,7 +945,7 @@ cp_mixin_call
         {isScssSource()}? SASS_INCLUDE ws IDENT
     )
 
-    (ws? LPAREN less_mixin_call_args? RPAREN)? (ws? SEMI)?
+    (ws? LPAREN less_mixin_call_args? RPAREN)? ws? SEMI
     ;
     
 less_mixin_call_args
@@ -979,6 +1007,33 @@ less_fn_name
 less_condition_operator
     :
     GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
+    ;
+
+//Allowed:
+//#I
+//I#
+//#
+//##
+//#I#
+//
+//Not allowed:
+//II
+
+
+//SCSS interpolation expression, e.g. #{$vert}
+scss_interpolation_expression
+    :
+        ( 
+            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var        
+            |
+            (IDENT | MINUS | DOT | HASH_SYMBOL) 
+        )+
+//        (IDENT | MINUS | DOT | HASH_SYMBOL)?    
+    ;
+    
+scss_interpolation_expression_var
+    :
+        HASH_SYMBOL LBRACE ws? cp_variable ws? RBRACE //XXX possibly allow cp_ecp_expression inside
     ;
 
 //*** END OF LESS SYNTAX ***
