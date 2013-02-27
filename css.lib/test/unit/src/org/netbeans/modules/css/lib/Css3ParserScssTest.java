@@ -281,7 +281,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
 
@@ -294,7 +294,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
 
@@ -453,14 +453,27 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
-    public void testInterpolationInSelector() {
+    public void testInterpolationInClassSelector() {
         String source =
                 ".rounded-#{$vert}-#{$horz} {\n"
                 + "}";
 
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+  
+    public void testInterpolationInIdSelector() {
+        String source =
+                ".navb#{$navbar}ar {\n" +
+                "  $navbar-width: 800px;"
+                + "}\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }
@@ -473,7 +486,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }

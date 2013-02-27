@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.prep;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
@@ -72,7 +73,9 @@ import org.openide.util.lookup.ServiceProvider;
 public class CPCssEditorModule extends CssEditorModule {
 
     private final SemanticAnalyzer semanticAnalyzer = new CPSemanticAnalyzer();
-
+    
+    private static Map<NodeType, ColoringAttributes> COLORINGS;
+            
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
         return semanticAnalyzer;
@@ -84,26 +87,33 @@ public class CPCssEditorModule extends CssEditorModule {
         return new NodeVisitor<T>(result) {
             @Override
             public boolean visit(Node node) {
-                switch (node.type()) {
-                    case cp_variable:                        
+                ColoringAttributes coloring = getColorings().get(node.type());
+                if (coloring != null) {
                     int dso = snapshot.getOriginalOffset(node.from());
                     int deo = snapshot.getOriginalOffset(node.to());
-                        if (dso >= 0 && deo >= 0) { //filter virtual nodes
+                    if (dso >= 0 && deo >= 0) { //filter virtual nodes
                         //check vendor speficic property
                         OffsetRange range = new OffsetRange(dso, deo);
-                        getResult().put(range, Collections.singleton(ColoringAttributes.LOCAL_VARIABLE));
-
+                        getResult().put(range, Collections.singleton(coloring));
                     }
-                        break;
                 }
                 return false;
             }
         };
     }
+    
+    private static Map<NodeType, ColoringAttributes> getColorings() {
+        if(COLORINGS == null) {
+            COLORINGS = new EnumMap<NodeType, ColoringAttributes>(NodeType.class);
+            COLORINGS.put(NodeType.cp_variable, ColoringAttributes.LOCAL_VARIABLE);
+            COLORINGS.put(NodeType.cp_mixin_name, ColoringAttributes.PRIVATE);
+        }
+        return COLORINGS;
+    }
 
     @Override
     public <T extends Set<OffsetRange>> NodeVisitor<T> getMarkOccurrencesNodeVisitor(EditorFeatureContext context, T result) {
-        return Utilities.createMarkOccurrencesNodeVisitor(context, result, NodeType.cp_variable);
+        return Utilities.createMarkOccurrencesNodeVisitor(context, result, NodeType.cp_variable, NodeType.cp_mixin_name);
     }
 
     @Override
@@ -112,7 +122,12 @@ public class CPCssEditorModule extends CssEditorModule {
         int diff = tokenSequence.move(context.getCaretOffset());
         if(diff > 0 && tokenSequence.moveNext() || diff == 0 && tokenSequence.movePrevious()) {
             Token<CssTokenId> token = tokenSequence.token();
-            return token.id() == CssTokenId.AT_IDENT;
+            return  token.id() == CssTokenId.AT_IDENT //less 
+                    ||
+                    token.id() == CssTokenId.SASS_VAR //sass
+                    ||
+                    token.id() == CssTokenId.IDENT; //sass/less mixin name
+                    
         }
         return false;
     }
@@ -123,13 +138,14 @@ public class CPCssEditorModule extends CssEditorModule {
         int diff = tokenSequence.move(context.getCaretOffset());
         if(diff > 0 && tokenSequence.moveNext() || diff == 0 && tokenSequence.movePrevious()) {
             Token<CssTokenId> token = tokenSequence.token();
-            final CharSequence varName = token.text();
+            final CharSequence elementName = token.text();
             return new NodeVisitor<T>(result) {
                 @Override
                 public boolean visit(Node node) {
                     switch (node.type()) {
+                        case cp_mixin_name:
                         case cp_variable:
-                            if (LexerUtils.equals(varName, node.image(), false, false)) {
+                            if (LexerUtils.equals(elementName, node.image(), false, false)) {
                                 OffsetRange range = new OffsetRange(node.from(), node.to());
                                 getResult().add(range);
                                 break;
