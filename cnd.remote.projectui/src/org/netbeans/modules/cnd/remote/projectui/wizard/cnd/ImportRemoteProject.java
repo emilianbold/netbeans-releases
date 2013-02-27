@@ -894,7 +894,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
         // Discovery require a fully completed project
         // Make sure that descriptor was stored and readed
         ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        provider.getConfigurationDescriptor(true);
+        provider.getConfigurationDescriptor();
         try {
             waitSources.await();
         } catch (InterruptedException ex) {

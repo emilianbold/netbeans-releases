@@ -278,7 +278,7 @@ public class ImportExecutable implements PropertyChangeListener {
                     Applicable applicable = null;
                     try {
                         ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+                        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor();
                         applicable = extension.isApplicable(map, lastSelectedProject, true);
                         if (applicable.isApplicable()) {
                             if (sourcesPath == null) {
@@ -393,7 +393,7 @@ public class ImportExecutable implements PropertyChangeListener {
         if (provider == null) {
             return;
         }
-        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor();
         if (configurationDescriptor == null) {
             return;
         }

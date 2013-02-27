@@ -1820,7 +1820,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            srcRoot.attachListeners();
+            srcRoot.attachListeners(interrupter);
         }
 
         addSourceRoot(dir.getPath());
@@ -1847,7 +1847,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            subFolder.attachListeners();
+            subFolder.attachListeners(interrupter);
         }
         return subFolder;
     }
