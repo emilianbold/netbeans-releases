@@ -54,8 +54,8 @@ import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.platforms.MobilePlatformsSetup;
 import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
+import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -181,7 +181,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         String phoneGapEnabled = preferences.get("phonegap", "false");
         cordovaPanel.setPanelEnabled(Boolean.parseBoolean(phoneGapEnabled));
         cordovaPanel.update();
-        String pkg = CordovaPerformer.getBuildProperties(project).getProperty("android.project.package");
+        String pkg = CordovaPerformer.getConfig(project).getId();
         if (pkg!=null) {
             cordovaPanel.setPackageName(pkg);
         }
@@ -196,12 +196,14 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
         preferences.put("phonegap", Boolean.toString(cordovaPanel.isPanelEnabled()));
         
-        EditableProperties props = CordovaPerformer.getBuildProperties(project);
+        try {
+            SourceConfig config = CordovaPerformer.getConfig(project);
+            config.setId(cordovaPanel.getPackageName());
+            config.save();
+        } catch (IOException iOException) {
+            Exceptions.printStackTrace(iOException);
+        }
         
-        props.put("android.project.package",cordovaPanel.getPackageName()); //NOI18N
-        props.put("android.project.package.folder", cordovaPanel.getPackageName().replace(".", "/"));//NOI18N
-        
-        CordovaPerformer.storeBuildProperties(project, props);
         
         if (cordovaPanel.isPanelEnabled()) {
             Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-android", project);
