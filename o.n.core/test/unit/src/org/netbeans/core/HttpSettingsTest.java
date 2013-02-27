@@ -301,7 +301,7 @@ public class HttpSettingsTest extends NbTestCase {
                 sync.wait ();
             }
         }
-        log ("AUTO_DETECT_PROXY: ProxySettings.SystemProxySettings.getNonProxyHosts (): " + ProxySettings.SystemProxySettings.getNonProxyHosts ());
+        log ("AUTO_DETECT_PROXY: ProxySettings.SystemProxySettings.getNonProxyHosts (): " + ProxySettings.getSystemNonProxyHosts());
         log ("AUTO_DETECT_PROXY: System.getProperty (\"http.nonProxyHosts\"): " + System.getProperty ("http.nonProxyHosts"));
         assertTrue ("ProxySettings contains OTHER_ORG if AUTO_DETECT_PROXY set.", System.getProperty ("http.nonProxyHosts").indexOf (OTHER_ORG) > 0);
                 
@@ -323,9 +323,9 @@ public class HttpSettingsTest extends NbTestCase {
                 sync.wait ();
             }
         }
-        assertTrue (NETBEANS_ORG + " is among Non-proxy hosts detect from OS.", ProxySettings.SystemProxySettings.getNonProxyHosts ().indexOf (NETBEANS_ORG) != -1);
-        assertFalse (NETBEANS_ORG + " is in Non-Proxy hosts only once.", ProxySettings.SystemProxySettings.getNonProxyHosts ().indexOf (NETBEANS_ORG) < ProxySettings.getNonProxyHosts ().lastIndexOf (NETBEANS_ORG));
-        assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.SystemProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
+        assertTrue (NETBEANS_ORG + " is among Non-proxy hosts detect from OS.", ProxySettings.getSystemNonProxyHosts().indexOf (NETBEANS_ORG) != -1);
+        assertFalse (NETBEANS_ORG + " is in Non-Proxy hosts only once.", ProxySettings.getSystemNonProxyHosts().indexOf (NETBEANS_ORG) < ProxySettings.getNonProxyHosts ().lastIndexOf (NETBEANS_ORG));
+        assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.getSystemNonProxyHosts(), System.getProperty ("http.nonProxyHosts"));
     }
     
     public void testReadNonProxySettingFromSystem () throws InterruptedException {
@@ -335,8 +335,8 @@ public class HttpSettingsTest extends NbTestCase {
                 sync.wait ();
             }
         }
-        assertTrue (OTHER_ORG + " is among Non-proxy hosts detect from OS.", ProxySettings.SystemProxySettings.getNonProxyHosts ().indexOf (OTHER_ORG) != -1);
-        assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.SystemProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
+        assertTrue (OTHER_ORG + " is among Non-proxy hosts detect from OS.", ProxySettings.getSystemNonProxyHosts().indexOf (OTHER_ORG) != -1);
+        assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.getSystemNonProxyHosts(), System.getProperty ("http.nonProxyHosts"));
     }
     
     public void testSillySetManualProxy () throws Exception {
@@ -363,8 +363,8 @@ public class HttpSettingsTest extends NbTestCase {
             }
         }
         assertEquals ("Proxy type AUTO_DETECT_PROXY.", ProxySettings.AUTO_DETECT_PROXY, ProxySettings.getProxyType ());
-        assertEquals ("Auto Detected Proxy Host from ProxySettings doesn't return SILLY_SYSTEM_PROXY_HOST anymore.", SYSTEM_PROXY_HOST, ProxySettings.SystemProxySettings.getHttpHost ());
-        assertEquals ("Auto Detected Proxy Port from ProxySettings doesn't return SILLY_SYSTEM_PROXY_PORT anymore.", SYSTEM_PROXY_PORT, ProxySettings.SystemProxySettings.getHttpPort ());
+        assertEquals ("Auto Detected Proxy Host from ProxySettings doesn't return SILLY_SYSTEM_PROXY_HOST anymore.", SYSTEM_PROXY_HOST, ProxySettings.getSystemHttpHost());
+        assertEquals ("Auto Detected Proxy Port from ProxySettings doesn't return SILLY_SYSTEM_PROXY_PORT anymore.", SYSTEM_PROXY_PORT, ProxySettings.getSystemHttpPort());
         assertEquals ("System Proxy Host: ", SYSTEM_PROXY_HOST, System.getProperty ("http.proxyHost"));
         assertEquals ("System Proxy Port: ", SYSTEM_PROXY_PORT, System.getProperty ("http.proxyPort"));
     }    

@@ -75,6 +75,51 @@ public class ProxySettings {
     public static final String DIRECT = "DIRECT";
     public static final String PAC = "PAC";
     
+    public static final String SYSTEM_PROXY_HTTP_HOST = "systemProxyHttpHost";
+    public static final String SYSTEM_PROXY_HTTP_PORT = "systemProxyHttpPort";
+    public static final String SYSTEM_PROXY_HTTPS_HOST = "systemProxyHttpsHost";
+    public static final String SYSTEM_PROXY_HTTPS_PORT = "systemProxyHttpsPort";
+    public static final String SYSTEM_PROXY_SOCKS_HOST = "systemProxySocksHost";
+    public static final String SYSTEM_PROXY_SOCKS_PORT = "systemProxySocksPort";
+    public static final String SYSTEM_NON_PROXY_HOSTS = "systemProxyNonProxyHosts";
+    public static final String SYSTEM_PAC = "systemPAC";
+    
+    
+    // TODO move to proper place
+    public static String getSystemHttpHost() {
+        return getPreferences().get(SYSTEM_PROXY_HTTP_HOST, "");
+    }
+    
+    public static String getSystemHttpPort() {
+        return getPreferences().get(SYSTEM_PROXY_HTTP_PORT, "");
+    }
+    
+    public static String getSystemHttpsHost() {
+        return getPreferences().get(SYSTEM_PROXY_HTTPS_HOST, "");
+    }
+    
+    public static String getSystemHttpsPort() {
+        return getPreferences().get(SYSTEM_PROXY_HTTPS_PORT, "");
+    }
+    
+    public static String getSystemSocksHost() {
+        return getPreferences().get(SYSTEM_PROXY_SOCKS_HOST, "");
+    }
+    
+    public static String getSystemSocksPort() {
+        return getPreferences().get(SYSTEM_PROXY_SOCKS_PORT, "");
+    }
+    
+    public static String getSystemNonProxyHosts() {
+        return getPreferences().get(SYSTEM_NON_PROXY_HOSTS, "");
+    }
+    
+    public static String getSystemPac() {
+        return getPreferences().get(SYSTEM_PAC, "");
+    }
+    
+    
+    
     private static String presetNonProxyHosts;
 
     /** No proxy is used to connect. */
@@ -187,6 +232,7 @@ public class ProxySettings {
         getPreferences ().removePreferenceChangeListener (l);
     }
 
+    /*
     static class SystemProxySettings extends ProxySettings {
         
         public static String getHttpHost () {
@@ -320,13 +366,14 @@ public class ProxySettings {
             return p;
         }
 
-    }
+    }*/
 
+    /*
     private static String getSystemNonProxyHosts () {
         String systemProxy = System.getProperty ("netbeans.system_http_non_proxy_hosts"); // NOI18N
 
         return systemProxy == null ? "" : systemProxy;
-    }
+    }*/
     
     private static String getPresetNonProxyHosts () {
         if (presetNonProxyHosts == null) {

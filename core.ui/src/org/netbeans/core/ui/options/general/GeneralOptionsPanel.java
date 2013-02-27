@@ -52,6 +52,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -63,6 +64,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.beaninfo.editors.HtmlBrowser;
 import org.netbeans.core.ProxySettings;
+import org.netbeans.core.networkproxy.NetworkProxySelector;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -71,6 +73,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Implementation of one panel in Options Dialog.
@@ -212,6 +215,9 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         lblUsageInfo = new javax.swing.JLabel();
         jUsageCheck = new javax.swing.JCheckBox();
         lUsage = new javax.swing.JLabel();
+        bReloadProxy = new javax.swing.JButton();
+        bTestConnection = new javax.swing.JButton();
+        lblTestResult = new javax.swing.JLabel();
 
         lWebBrowser.setLabelFor(cbWebBrowser);
         org.openide.awt.Mnemonics.setLocalizedText(lWebBrowser, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.lWebBrowser.text")); // NOI18N
@@ -314,6 +320,22 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         jPanel1.add(lUsage, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(bReloadProxy, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.bReloadProxy.text")); // NOI18N
+        bReloadProxy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bReloadProxyActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(bTestConnection, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.bTestConnection.text")); // NOI18N
+        bTestConnection.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bTestConnectionActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblTestResult, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.lblTestResult.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -332,24 +354,39 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                         .addComponent(lWebProxy)
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(rbNoProxy)
-                            .addComponent(rbUseSystemProxy)
-                            .addComponent(rbHTTPProxy)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(17, 17, 17)
+                                .addGap(90, 90, 90)
+                                .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 1313, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(bMoreProxy)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(rbHTTPProxy)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(lProxyHost)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(tfProxyHost, javax.swing.GroupLayout.DEFAULT_SIZE, 1055, Short.MAX_VALUE))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(rbNoProxy)
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addComponent(rbUseSystemProxy)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(bReloadProxy)))
+                                                .addGap(0, 0, Short.MAX_VALUE)))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 1279, Short.MAX_VALUE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(lProxyHost)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(tfProxyHost, javax.swing.GroupLayout.DEFAULT_SIZE, 1137, Short.MAX_VALUE)
-                                        .addGap(12, 12, 12)
                                         .addComponent(lProxyPort)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(tfProxyPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(tfProxyPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(bMoreProxy))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(bTestConnection)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(lblTestResult)
+                                        .addGap(0, 0, Short.MAX_VALUE)))
+                                .addContainerGap())))
                     .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 1495, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
@@ -370,21 +407,25 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(rbNoProxy)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rbUseSystemProxy)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(rbUseSystemProxy)
+                            .addComponent(bReloadProxy))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rbHTTPProxy))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(rbHTTPProxy)
+                            .addComponent(lProxyHost)
+                            .addComponent(tfProxyHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lProxyPort)
+                            .addComponent(tfProxyPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(bMoreProxy)))
                     .addComponent(lWebProxy))
+                .addGap(30, 30, 30)
+                .addComponent(errorLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lProxyHost)
-                    .addComponent(tfProxyPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tfProxyHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lProxyPort))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(bMoreProxy)
-                    .addComponent(errorLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(bTestConnection)
+                    .addComponent(lblTestResult))
+                .addGap(11, 11, 11)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -475,10 +516,23 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
 
     }//GEN-LAST:event_lblLearnMoreMousePressed
+
+    private void bReloadProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bReloadProxyActionPerformed
+        NetworkProxySelector.reloadNetworkProxy();
+        rbUseSystemProxy.setToolTipText(getUseSystemProxyToolTip());
+    }//GEN-LAST:event_bReloadProxyActionPerformed
+
+    private void bTestConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bTestConnectionActionPerformed
+        
+        
+        //lblTestResult.setText(a + " " + b + " " + c);
+    }//GEN-LAST:event_bTestConnectionActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bMoreProxy;
+    private javax.swing.JButton bReloadProxy;
+    private javax.swing.JButton bTestConnection;
     private javax.swing.JComboBox cbWebBrowser;
     private javax.swing.JButton editBrowserButton;
     private javax.swing.JLabel errorLabel;
@@ -492,6 +546,7 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JLabel lWebBrowser;
     private javax.swing.JLabel lWebProxy;
     private javax.swing.JLabel lblLearnMore;
+    private javax.swing.JLabel lblTestResult;
     private javax.swing.JLabel lblUsageInfo;
     private javax.swing.JRadioButton rbHTTPProxy;
     private javax.swing.JRadioButton rbNoProxy;
@@ -542,18 +597,17 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return NbBundle.getMessage (GeneralOptionsPanel.class, key, params);
     }
     
-    private String getUseSystemProxyToolTip () {
-        if (rbUseSystemProxy.isSelected ()) {
+    private String getUseSystemProxyToolTip() {
+        if (rbUseSystemProxy.isSelected()) {
             String toolTip;
-            String sHost = System.getProperty ("http.proxyHost"); // NOI18N
-            if (sHost == null || sHost.trim ().length () == 0) {
-                toolTip = loc ("GeneralOptionsPanel_rbUseSystemProxy_Direct"); // NOI18N
-            } else {
-                String sPort = System.getProperty ("http.proxyPort"); // NOI18N
-                toolTip = loc ("GeneralOptionsPanel_rbUseSystemProxy_Format", sHost, sPort);
-            }
+            String sHost = getProxyPreferences().get(ProxySettings.SYSTEM_PROXY_HTTP_HOST, ""); // NOI18N            
             if (GeneralOptionsModel.usePAC()) {
                 toolTip = getPacFile();
+            } else if (sHost == null || sHost.trim().length() == 0) {
+                toolTip = loc("GeneralOptionsPanel_rbUseSystemProxy_Direct"); // NOI18N
+            } else {
+                String sPort = getProxyPreferences().get(ProxySettings.SYSTEM_PROXY_HTTP_PORT, ""); // NOI18N
+                toolTip = loc("GeneralOptionsPanel_rbUseSystemProxy_Format", sHost, sPort);
             }
             return toolTip;
         } else {
@@ -710,8 +764,10 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     private static String getPacFile() {
-        String init = System.getProperty("netbeans.system_http_proxy"); // NOI18N
-        return init.substring(4).trim();
+        return getProxyPreferences().get(ProxySettings.SYSTEM_PAC, "");
     }
     
+    private static Preferences getProxyPreferences() {
+        return NbPreferences.forModule(ProxySettings.class);
+    }
 }
