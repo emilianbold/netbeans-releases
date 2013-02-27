@@ -49,8 +49,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.SingleSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.TabbedPaneUI;
-import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import org.netbeans.core.windows.view.ui.slides.SlideController;
 import org.netbeans.core.windows.view.ui.tabcontrol.tabbedpane.CloseableTabComponent;
 import org.netbeans.core.windows.view.ui.tabcontrol.tabbedpane.NBTabbedPane;
@@ -159,18 +157,7 @@ public class JTabbedPaneAdapter extends NBTabbedPane implements Tabbed.Accessor,
 
         @Override
         public Rectangle getTabsArea() {
-            Rectangle res = null;;
-            for( int i=0; i<getTabCount(); i++ ) {
-                Rectangle tabRect = getTabBounds( i );
-                if( null == res ) {
-                    res = tabRect;
-                } else {
-                    res = res.union( tabRect );
-                }
-            }
-            if( null == res )
-                res = new Rectangle();
-            return res;
+            return getBounds();
         }
 
         @Override
