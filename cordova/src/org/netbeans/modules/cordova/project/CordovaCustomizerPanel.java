@@ -193,6 +193,9 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
      * Store listener
      */
     public void actionPerformed(ActionEvent e) {
+        if (cordovaPanel == null) {
+            return;
+        }
         Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
         preferences.put("phonegap", Boolean.toString(cordovaPanel.isPanelEnabled()));
         
