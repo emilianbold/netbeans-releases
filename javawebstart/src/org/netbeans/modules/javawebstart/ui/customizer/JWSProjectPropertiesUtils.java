@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,6 +71,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -93,6 +95,9 @@ public final class JWSProjectPropertiesUtils {
 
     private static final String JWS_ANT_TASKS_LIB_NAME = "JWSAntTasks"; // NOI18N
     private static final String BUILD_TEMPLATE = "Templates/JWS/jnlp-impl.xml"; //NOI18N
+    private static final String CURRENT_EXTENSION = "jws";  //NOI18N
+    private static final String[] OLD_EXTENSIONS = new String[0];
+    private static final String JNLP_BUILD_IMPL_PATH = "nbproject/jnlp-impl.xml";   //NOI18N
 
     private static final Logger LOG = Logger.getLogger(JWSProjectPropertiesUtils.class.getName());
 
@@ -101,7 +106,80 @@ public final class JWSProjectPropertiesUtils {
     private JWSProjectPropertiesUtils() {
     }
 
-    public static void updateMasterFiles(JWSProjectProperties props, Project proj) {
+    public static String getCurrentExtensionName() {
+        return CURRENT_EXTENSION;
+    }
+
+    public static Iterable<? extends String> getOldExtensionNames() {
+        return Arrays.asList(OLD_EXTENSIONS);
+    }    
+
+    public static boolean copyJnlpImplTemplate(Project proj) throws IOException {
+        boolean res = false;
+        final FileObject projDir = proj.getProjectDirectory();
+        FileObject jnlpBuildFile = projDir.getFileObject(JNLP_BUILD_IMPL_PATH);
+        if (jnlpBuildFile != null && !isJnlpImplUpToDate(proj)) {
+            // try to close the file just in case the file is already opened in editor
+            DataObject dobj = DataObject.find(jnlpBuildFile);
+            CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
+            if (closeCookie != null) {
+                closeCookie.close();
+            }
+            final FileObject nbproject = projDir.getFileObject("nbproject");                    //NOI18N
+            final FileObject backupFile = nbproject.getFileObject("jnlp-impl_backup", "xml");   //NOI18N
+            if (backupFile != null) {
+                backupFile.delete();
+            }
+            FileUtil.moveFile(jnlpBuildFile, nbproject, "jnlp-impl_backup");                    //NOI18N
+            jnlpBuildFile = null;
+        }
+        if (jnlpBuildFile == null) {
+            FileObject templateFO = FileUtil.getConfigFile(BUILD_TEMPLATE);
+            if (templateFO != null) {
+                FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "jnlp-impl"); // NOI18N
+            }
+            res = true;
+        }
+        return res;
+    }
+
+    public static boolean isJnlpImplUpToDate(final Project prj) {
+        Parameters.notNull("prj", prj); //NOI18N
+        final FileObject jnlpImlpFO = prj.getProjectDirectory().getFileObject(JNLP_BUILD_IMPL_PATH);
+        if (jnlpImlpFO == null) {
+            return false;
+        }
+        try {
+            String _currentJnlpImplCRC = currentJnlpImplCRCCache;
+            if (_currentJnlpImplCRC == null) {
+                final FileObject template = FileUtil.getConfigFile(BUILD_TEMPLATE);
+                 currentJnlpImplCRCCache = _currentJnlpImplCRC = computeCrc32(template);
+            }
+            return _currentJnlpImplCRC.equals(computeCrc32(jnlpImlpFO));
+        } catch (IOException ex) {
+            LOG.log(
+                Level.INFO,
+                "Cannot read: " + JNLP_BUILD_IMPL_PATH, //NOI18N
+                ex);
+            return false;
+        }
+    }
+
+    public static boolean updateJnlpExtension(final Project project) throws IOException {
+        boolean changed = copyJnlpImplTemplate(project);
+        changed |= modifyBuildXml(project);
+        changed |= copyJWSAntTasksLibrary(project);
+        return changed;
+    }
+
+    static void updateJnlpExtensionAndSave(
+            final JWSProjectProperties props,
+            final Project project) {
+        updateMasterFiles(props, project);
+        savePropsAndUpdateMetaFiles(props, project);
+    }
+
+    private static void updateMasterFiles(JWSProjectProperties props, Project proj) {
         try {
             if (props.isJWSEnabled()) {
                 // test if the file already exists, if so do not generate, just set as active
@@ -257,7 +335,7 @@ public final class JWSProjectPropertiesUtils {
         }
     }
 
-    public static void savePropsAndUpdateMetaFiles(JWSProjectProperties props, Project proj) {        
+    private static void savePropsAndUpdateMetaFiles(JWSProjectProperties props, Project proj) {
         try {
             try {
                 props.store();
@@ -268,9 +346,12 @@ public final class JWSProjectPropertiesUtils {
                 proj.getLookup().lookup(ProjectConfigurationProvider.class);
             if (props.wasJWSActivated()) {
                 setActiveConfig(configProvider, NbBundle.getMessage(JWSCompositeCategoryProvider.class, "LBL_Category_WebStart")); // NOI18N
-                copyTemplate(proj);
-                modifyBuildXml(proj);
-                copyJWSAntTasksLibrary(proj);
+                copyJnlpImplTemplate(proj);
+                boolean needsSave = modifyBuildXml(proj);
+                needsSave |= copyJWSAntTasksLibrary(proj);
+                if (needsSave) {
+                    ProjectManager.getDefault().saveProject(proj);
+                }
             } else if (props.wasJWSDeactivated()){
                 setActiveConfig(configProvider, NbBundle.getMessage(JWSCompositeCategoryProvider.class, "LBL_Category_Default")); // NOI18N
             }
@@ -298,51 +379,15 @@ public final class JWSProjectPropertiesUtils {
                 }
             }
         }
-    }
+    }    
 
-    public static void copyTemplate(Project proj) throws IOException {
-        boolean isJnlpCurrent = true;
-        FileObject projDir = proj.getProjectDirectory();
-        FileObject jnlpBuildFile = projDir.getFileObject("nbproject/jnlp-impl.xml"); // NOI18N
-        if (jnlpBuildFile != null) {
-            final InputStream in = jnlpBuildFile.getInputStream();
-            if(in != null) {
-                try {
-                    isJnlpCurrent = isJnlpImplCurrentVer(computeCrc32( in ));
-                } finally {
-                    in.close();
-                }
-            }
-        }
-        if (!isJnlpCurrent) {
-            // try to close the file just in case the file is already opened in editor
-            DataObject dobj = DataObject.find(jnlpBuildFile);
-            CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
-            if (closeCookie != null) {
-                closeCookie.close();
-            }
-            final FileObject nbproject = projDir.getFileObject("nbproject");                    //NOI18N
-            final FileObject backupFile = nbproject.getFileObject("jnlp-impl_backup", "xml");   //NOI18N
-            if (backupFile != null) {
-                backupFile.delete();
-            }
-            FileUtil.moveFile(jnlpBuildFile, nbproject, "jnlp-impl_backup");                    //NOI18N
-            jnlpBuildFile = null;
-        }
-        if (jnlpBuildFile == null) {
-            FileObject templateFO = FileUtil.getConfigFile(BUILD_TEMPLATE);
-            if (templateFO != null) {
-                FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "jnlp-impl"); // NOI18N
-            }
-        }
-    }
-
-    private static void modifyBuildXml(Project proj) throws IOException {
+    private static boolean modifyBuildXml(Project proj) throws IOException {
+        boolean res = false;
         FileObject projDir = proj.getProjectDirectory();
         final FileObject buildXmlFO = getBuildXml(proj);
         if (buildXmlFO == null) {
             LOG.warning("The project build script does not exist, the project cannot be extended by JWS.");     //NOI18N
-            return;
+            return res;
         }
         Document xmlDoc = null;
         try {
@@ -350,16 +395,16 @@ public final class JWSProjectPropertiesUtils {
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
         }
-        FileObject jnlpBuildFile = projDir.getFileObject("nbproject/jnlp-impl.xml"); // NOI18N
+        FileObject jnlpBuildFile = projDir.getFileObject(JNLP_BUILD_IMPL_PATH);
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {
             assert jnlpBuildFile != null;
-            if (extender.getExtension("jws") == null) { // NOI18N
-                AntBuildExtender.Extension ext = extender.addExtension("jws", jnlpBuildFile); // NOI18N
+            if (extender.getExtension(CURRENT_EXTENSION) == null) { // NOI18N
+                AntBuildExtender.Extension ext = extender.addExtension(CURRENT_EXTENSION, jnlpBuildFile); // NOI18N
                 ext.addDependency("jar", "jnlp"); // NOI18N
                 ext.addDependency("-post-jar", "jnlp"); //NOI18N
-            }
-            ProjectManager.getDefault().saveProject(proj);
+                res = true;
+            }            
         } else {
             LOG.log(Level.INFO,
                     "Trying to include JWS build snippet in project type that doesn't support AntBuildExtender API contract."); // NOI18N
@@ -397,7 +442,7 @@ public final class JWSProjectPropertiesUtils {
         nl = docElem.getElementsByTagName("import"); // NOI18N
         for (int i = 0; i < nl.getLength(); i++) {
             Element e = (Element) nl.item(i);
-            if (e.getAttribute("file") != null && "nbproject/jnlp-impl.xml".equals(e.getAttribute("file"))) { // NOI18N
+            if (e.getAttribute("file") != null && JNLP_BUILD_IMPL_PATH.equals(e.getAttribute("file"))) { // NOI18N
                 e.getParentNode().removeChild(e);
                 changed = true;
                 break;
@@ -428,15 +473,17 @@ public final class JWSProjectPropertiesUtils {
                 throw (IOException) mex.getException();
             }
         }
+        return res;
     }
 
-    private static void copyJWSAntTasksLibrary(Project proj) throws IOException {
+    private static boolean copyJWSAntTasksLibrary(Project proj) throws IOException {
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {
             LibraryManager.getDefault();
             extender.addLibrary(LibraryManager.getDefault().getLibrary(JWS_ANT_TASKS_LIB_NAME));
-            ProjectManager.getDefault().saveProject(proj);
+            return true;
         }
+        return false;
     }
 
     private static FileObject getBuildXml(final Project prj) {
@@ -450,44 +497,32 @@ public final class JWSProjectPropertiesUtils {
         return prj.getProjectDirectory().getFileObject (buildScriptPath);
     }
 
-    static String computeCrc32(InputStream is) throws IOException {
-        Checksum crc = new CRC32();
-        int last = -1;
-        int curr;
-        while ((curr = is.read()) != -1) {
-            if (curr != '\n' && last == '\r') {
-                crc.update('\n');
+    private static String computeCrc32(final FileObject fo) throws IOException {
+        final Checksum crc = new CRC32();
+        final InputStream in = fo.getInputStream();
+        try {            
+            int last = -1;
+            int curr;
+            while ((curr = in.read()) != -1) {
+                if (curr != '\n' && last == '\r') { //NOI18N
+                    crc.update('\n');               //NOI18N
+                }
+                if (curr != '\r') {                 //NOI18N
+                    crc.update(curr);
+                }
+                last = curr;
             }
-            if (curr != '\r') {
-                crc.update(curr);
+            if (last == '\r') {                     //NOI18N
+                crc.update('\n');                   //NOI18N
             }
-            last = curr;
-        }
-        if (last == '\r') {
-            crc.update('\n');
+        } finally {
+            in.close();
         }
         int val = (int)crc.getValue();
         String hex = Integer.toHexString(val);
         while (hex.length() < 8) {
             hex = "0" + hex; // NOI18N
         }
-        return hex;
+        return hex;        
     }
-
-    static boolean isJnlpImplCurrentVer(String crc) throws IOException {
-        String _currentJnlpImplCRC = currentJnlpImplCRCCache;
-        if (_currentJnlpImplCRC == null) {
-            final FileObject template = FileUtil.getConfigFile(BUILD_TEMPLATE);
-            final InputStream in = template.getInputStream();
-            if(in != null) {
-                try {
-                    currentJnlpImplCRCCache = _currentJnlpImplCRC = computeCrc32(in);
-                } finally {
-                    in.close();
-                }
-            }
-        }
-        return _currentJnlpImplCRC.equals(crc);
-    }
-
 }
