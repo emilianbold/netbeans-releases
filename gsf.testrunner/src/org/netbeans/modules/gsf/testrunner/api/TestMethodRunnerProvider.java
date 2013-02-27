@@ -42,20 +42,23 @@
 package org.netbeans.modules.gsf.testrunner.api;
 
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.TaskListener;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -65,19 +68,28 @@ import org.openide.util.lookup.Lookups;
 public abstract class TestMethodRunnerProvider {
 
     private final String command = SingleMethod.COMMAND_RUN_SINGLE_METHOD;
+    private RequestProcessor.Task singleMethodTask;
+    private SingleMethod singleMethod;
 
     public abstract boolean canHandle(Node activatedNode);
 
     public abstract SingleMethod getTestMethod(Document doc, int caret);
 
+    @NbBundle.Messages({"Search_For_Test_Method=Searching for test method",
+	"No_Test_Method_Found=No test method found"})
     public final void runTestMethod(Node activatedNode) {
         final Node activeNode = activatedNode;
         final Document doc;
         final int caret;
 
-        EditorCookie ec = activeNode.getLookup().lookup(EditorCookie.class);
+        final EditorCookie ec = activeNode.getLookup().lookup(EditorCookie.class);
         if (ec != null) {
-            JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+            JEditorPane pane = Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
+		@Override
+		public JEditorPane run() {
+		    return NbDocument.findRecentEditorPane(ec);
+		}
+	    });
             if (pane != null) {
                 doc = pane.getDocument();
                 caret = pane.getCaret().getDot();
@@ -90,24 +102,40 @@ public abstract class TestMethodRunnerProvider {
             caret = -1;
         }
 
-        Mutex.EVENT.writeAccess(new Runnable() {
-            
-            @Override
-            public void run() {
-                SingleMethod sm = activeNode.getLookup().lookup(SingleMethod.class);
-                if (sm == null) {
-                    sm = getTestMethod(doc, caret);
-                }
-                if (sm != null) {
-                    ActionProvider ap = getActionProvider(sm.getFile());
-                    if (ap != null) {
-                        if (Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(sm))) {
-                            ap.invokeAction(command, Lookups.singleton(sm));
-                        }
-                    }
-                }
-            }
-        });
+	singleMethod = activeNode.getLookup().lookup(SingleMethod.class);
+	if (singleMethod == null) {
+	    RequestProcessor RP = new RequestProcessor("TestMethodRunnerProvider", 1, true);   // NOI18N
+	    singleMethodTask = RP.create(new Runnable() {
+		@Override
+		public void run() {
+		    singleMethod = getTestMethod(doc, caret);
+		}
+	    });
+	    final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.Search_For_Test_Method(), singleMethodTask);
+	    singleMethodTask.addTaskListener(new TaskListener() {
+		@Override
+		public void taskFinished(org.openide.util.Task task) {
+		    ph.finish();
+		    if (singleMethod == null) {
+			StatusDisplayer.getDefault().setStatusText(Bundle.No_Test_Method_Found());
+		    } else {
+			Mutex.EVENT.readAccess(new Runnable() {
+			    @Override
+			    public void run() {
+				ActionProvider ap = getActionProvider(singleMethod.getFile());
+				if (ap != null) {
+				    if (Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(singleMethod))) {
+					ap.invokeAction(command, Lookups.singleton(singleMethod));
+				    }
+				}
+			    }
+			});
+		    }
+		}
+	    });
+	    ph.start();
+	    singleMethodTask.schedule(0);
+	}
     }
 
     static ActionProvider getActionProvider(FileObject fileObject) {
