@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
@@ -364,6 +365,10 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         handle.set(handleObject);
             
             handle.get().start();
+
+            if (authentication) {
+                ConnectionBuilder.clearRejectedAuthentication();
+            }
             
                     synchThread.set(Thread.currentThread());
                     try {
