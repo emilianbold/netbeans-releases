@@ -194,9 +194,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         setModified();
     }
 
-    void opened() {
+    void opened(Interrupter interrupter) {
+        if (interrupter != null && interrupter.cancelled()) {
+            return;
+        }
         ToolsPanelSupport.addCompilerSetModifiedListener(this);
         for (Item item : getProjectItems()) {
+            if (interrupter != null && interrupter.cancelled()) {
+                return;
+            }
             item.onOpen();
         }        
         Task foldersTask = this.initFoldersTask;

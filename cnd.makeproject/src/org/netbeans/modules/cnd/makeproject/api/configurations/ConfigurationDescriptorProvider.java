@@ -171,7 +171,7 @@ public class ConfigurationDescriptorProvider {
                     hasTried = true;
                 }
             }
-            }
+        }
         if (waitReading && projectDescriptor != null) {
             projectDescriptor.waitInitTask();
         }
@@ -407,7 +407,10 @@ public class ConfigurationDescriptorProvider {
     public void opened(Interrupter interrupter) {
         MakeConfigurationDescriptor descr = getConfigurationDescriptor(true, interrupter);
         if (descr != null) {
-            descr.opened();
+            descr.opened(interrupter);
+        }
+        if (interrupter != null && interrupter.cancelled()) {
+            return;
         }
         attachConfigurationFilesListener();
     }

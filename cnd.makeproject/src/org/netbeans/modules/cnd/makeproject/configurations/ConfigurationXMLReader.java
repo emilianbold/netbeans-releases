@@ -164,7 +164,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         InputStream inputStream = null;
         try {
             inputStream = xml.getInputStream();
-            success = read(inputStream, xml.getPath());
+            success = read(inputStream, xml.getPath(), interrupter);
             if (getMasterComment() != null && project instanceof MakeProject) {
                 ((MakeProject) project).setConfigurationXMLComment(getMasterComment());
             }
@@ -194,7 +194,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             inputStream = null;
             try {
                 inputStream = xml.getInputStream();
-                success = read(inputStream, projectDirectory.getName());
+                success = read(inputStream, projectDirectory.getName(), interrupter);
             } finally {
                 deregisterXMLDecoder(auxDecoder);
                 if (inputStream != null) {
