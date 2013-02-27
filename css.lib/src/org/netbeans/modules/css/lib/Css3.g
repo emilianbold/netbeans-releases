@@ -1026,7 +1026,7 @@ scss_interpolation_expression
         ( 
             (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var        
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL) 
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH) 
         )+
 //        (IDENT | MINUS | DOT | HASH_SYMBOL)?    
     ;
