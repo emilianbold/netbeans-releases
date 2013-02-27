@@ -131,8 +131,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     }
     
     @Override
-    public void stop() {
+    public boolean cancel() {
         isStoped.set(true);
+        return true;
     }
 
     protected void resetStopInterrupter(Interrupter projectInterrupter) {

@@ -179,8 +179,9 @@ public class AnalyzeModel implements DiscoveryProvider {
     }
     
     @Override
-    public void stop() {
+    public boolean cancel() {
         isStoped = true;
+        return true;
     }
     
     @Override

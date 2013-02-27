@@ -46,12 +46,13 @@ package org.netbeans.modules.cnd.discovery.api;
 
 import java.util.List;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.openide.util.Cancellable;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface DiscoveryProvider {
+public interface DiscoveryProvider extends Cancellable {
 
     /**
      * Returns provider ID
@@ -104,5 +105,6 @@ public interface DiscoveryProvider {
     /**
      * Stop analyzing.
      */
-    void stop();
+    @Override
+    boolean cancel();
 }

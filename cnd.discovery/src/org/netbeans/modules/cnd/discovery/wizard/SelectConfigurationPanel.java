@@ -331,7 +331,7 @@ public final class SelectConfigurationPanel extends JPanel {
         if (provider != null && wasTerminated){
             //System.out.println("Stop analyzing");
             isStoped = true;
-            provider.stop();
+            provider.cancel();
         }
     }
     
