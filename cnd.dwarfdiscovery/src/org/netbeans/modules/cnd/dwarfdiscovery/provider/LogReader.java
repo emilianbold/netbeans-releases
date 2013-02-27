@@ -56,7 +56,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,6 +76,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
@@ -245,7 +245,7 @@ public class LogReader {
         return null;
     }
 
-    private void run(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+    private void runImpl(Progress progress, CompileLineStorage storage) {
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
             DwarfSource.LOG.log(Level.FINE, "LogReader is run for {0}", fileName); //NOI18N
         }
@@ -279,7 +279,7 @@ public class LogReader {
                 int nFoundFiles = 0;
                 try {
                     while(true){
-                        if (isStoped.get()) {
+                        if (isStoped.cancelled()) {
                             break;
                         }
                         String line = in.readLine();
@@ -325,35 +325,34 @@ public class LogReader {
         }
     }
 
-    public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+    public List<SourceFileProperties> getResults(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
         if (result == null) {
-            // XXX
-            setWorkingDir(root);
-            run(progress, isStoped, storage);
-            if (subFolders != null) {
-                subFolders.clear();
-                subFolders = null;
-                findBase.clear();
-                findBase = null;
-            }
+            run(isStoped, progress, storage);
         }
         return result;
     }
-    public List<String> getArtifacts(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+    public List<String> getArtifacts(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
         if (buildArtifacts == null) {
-            // XXX
-            setWorkingDir(root);
-            run(progress, isStoped, storage);
-            if (subFolders != null) {
-                subFolders.clear();
-                subFolders = null;
-                findBase.clear();
-                findBase = null;
-            }
+            run(isStoped, progress, storage);
         }
         return buildArtifacts;
     }
-    
+
+    private Interrupter isStoped;
+    private void run(Interrupter isStoped, Progress progress, CompileLineStorage storage) {
+        this.isStoped = isStoped;
+        setWorkingDir(root);
+        runImpl(progress, storage);
+        if (subFolders != null) {
+            subFolders.clear();
+            subFolders = null;
+            findBase.clear();
+            findBase = null;
+        }
+        this.isStoped = null;
+    }
+
+
     private final ArrayList<List<String>> makeStack = new ArrayList<List<String>>();
 
     private int getMakeLevel(String line){
@@ -1259,6 +1258,9 @@ public class LogReader {
 
     private void gatherSubFolders(File d, LinkedList<String> antiLoop){
         if (d.exists() && d.isDirectory() && d.canRead()){
+            if (isStoped.cancelled()) {
+                return;
+            }
             if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
@@ -1274,6 +1276,9 @@ public class LogReader {
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
+                        if (isStoped.cancelled()) {
+                            break;
+                        }
                         if (ff[i].isDirectory()) {
                             gatherSubFolders(ff[i], antiLoop);
                         } else if (ff[i].isFile()) {

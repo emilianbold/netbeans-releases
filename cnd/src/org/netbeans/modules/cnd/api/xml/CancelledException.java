@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.api.xml;
 
-package org.netbeans.modules.cnd.discovery.api;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.support.Interrupter;
+import org.xml.sax.SAXException;
 
 /**
  *
- * @author Alexander Simon
+ * @author alsimon
  */
-public interface DiscoveryExtensionInterface extends IteratorExtension {
-    boolean canApply(Map<String,Object> map, Project project, Interrupter interrupter);
-
-    void apply(Map<String,Object> map, Project project, Interrupter interrupter) throws IOException;
-
-    interface Applicable {
-        boolean isApplicable();
-
-        int getPriority();
-
-        String getCompilerName();
-
-        boolean isSunStudio();
-
-        List<String> getDependencies();
-
-        List<String> getSearchPaths();
-
-        String getSourceRoot();
-
-        Position getMainFunction();
-
-        List<String> getErrors();
-    }
-
-    interface Position {
-        String getFilePath();
-
-        int getLine();
+public class CancelledException extends SAXException {
+    
+    CancelledException() {
+        super("Read cancelled"); //NOI18N
     }
 }

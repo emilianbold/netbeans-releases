@@ -248,7 +248,7 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
                 } else if ("dwarf-folder".equals(provider.getID())){ // NOI18N
                     provider.getProperty("folder").setValue(wizardDescriptor.getRootFolder()); // NOI18N
                 }
-                int i = provider.canAnalyze(proxy).getPriority();
+                int i = provider.canAnalyze(proxy, null).getPriority();
                 if (i > assurance) {
                     def = provider;
                     assurance = i;
