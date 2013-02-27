@@ -56,6 +56,11 @@ public interface Constants {
      * Maven property that hints netbeans to use a given license template.
      */ 
     public static final String HINT_LICENSE = "netbeans.hint.license"; //NOI18N
+    
+    /**
+     * Maven property that hints netbeans to use a given license template file in project space, rather than the IDE's user space
+     */ 
+    public static final String HINT_LICENSE_PATH = "netbeans.hint.licensePath"; //NOI18N
 
     /**
      * Maven property that designates the jdk platform to use in the IDE on classpath for project.

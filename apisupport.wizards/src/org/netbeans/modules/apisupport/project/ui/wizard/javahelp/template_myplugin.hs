@@ -2,7 +2,7 @@
 <#assign licenseFirst = "<!--">
 <#assign licensePrefix = "">
 <#assign licenseLast = "-->">
-<#include "../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 <!DOCTYPE helpset PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN" "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
 <helpset version="2.0">
     <title>${DISPLAY_NAME} Help</title>
