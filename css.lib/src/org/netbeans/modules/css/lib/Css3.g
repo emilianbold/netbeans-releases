@@ -559,6 +559,8 @@ declarations
                 //(is less specific).
 		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_interpolation_expression COLON )=>declaration SEMI ws?
 		|
+		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ LBRACE | scss_interpolation_expression COLON )=>scss_nested_properties ws?
+		|
                 (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
                 |
                 {isCssPreprocessorSource()}? cp_mixin_call ws?
@@ -1035,6 +1037,29 @@ scss_interpolation_expression
 scss_interpolation_expression_var
     :
         HASH_SYMBOL LBRACE ws? cp_variable ws? RBRACE //XXX possibly allow cp_ecp_expression inside
+    ;
+    
+//SASS nested properties:
+//.funky {
+//  font: 2px/3px {
+//    family: fantasy;
+//    size: 30em;
+//    weight: bold;
+//  }
+//}
+//
+//or just:
+//
+//.funky {
+//  font: {
+//    family: fantasy;
+//    size: 30em;
+//    weight: bold;
+//  }
+//}
+scss_nested_properties
+    :
+    property COLON ws? propertyValue? LBRACE ws? syncToFollow declarations RBRACE
     ;
 
 //*** END OF LESS SYNTAX ***

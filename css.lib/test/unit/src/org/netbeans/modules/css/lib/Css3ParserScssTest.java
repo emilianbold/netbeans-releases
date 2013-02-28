@@ -463,11 +463,11 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-  
+
     public void testInterpolationInIdSelector() {
         String source =
-                ".navb#{$navbar}ar {\n" +
-                "  $navbar-width: 800px;"
+                ".navb#{$navbar}ar {\n"
+                + "  $navbar-width: 800px;"
                 + "}\n";
 
         CssParserResult result = TestUtil.parse(source);
@@ -476,11 +476,80 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testInterpolationInPropertyName() {
-        String source = 
-                  ".rounded {\n"
+        String source =
+                ".rounded {\n"
                 + "  border-#{$vert}-#{$horz}-radius: $radius;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testMixinsWithArgumentsComplex() {
+        String source =
+                "/* style.scss */\n"
+                + "\n"
+                + "@mixin rounded($vert, $horz, $radius: 10px) {\n"
+                + "  border-#{$vert}-#{$horz}-radius: $radius;\n"
+                + "  -moz-border-radius-#{$vert}#{$horz}: $radius;\n"
+                + "  -webkit-border-#{$vert}-#{$horz}-radius: $radius;\n"
+                + "}\n"
+                + "\n"
+                + "#navbar li { @include rounded(top, left); }\n"
+                + "#footer { @include rounded(top, left, 5px); }\n"
+                + "#sidebar { @include rounded(top, left, 8px); }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    //like normal css import, but the ref. file doesn't need to have an extension,
+    //there are also some rules regarding the naming convention, but these
+    //are covered by semantic analysis, not parsing
+    public void testImport() {
+        String source =
+                "@import \"rounded\";\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testNestedProperties() {
+        String source =
+                ".funky {\n"
+                + "  font: {\n"
+                + "    family: fantasy;\n"
+                + "    size: 30em;\n"
+                + "    weight: bold;\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+    
+    public void testNestedPropertiesWithValue() {
+        String source =
+                ".funky {\n"
+                + "  font: 2px/3px {\n"
+                + "    family: fantasy;\n"
+                + "    size: 30em;\n"
+                + "    weight: bold;\n"
+                + "  }\n"
                 + "}";
 
         CssParserResult result = TestUtil.parse(source);
