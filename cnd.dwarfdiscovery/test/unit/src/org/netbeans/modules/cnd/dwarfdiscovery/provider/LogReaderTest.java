@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +98,7 @@ public class LogReaderTest extends TestCase {
     
     public void testArtifatC() {
         testLanguageArtifact("c++", "gcc -x c++ -g3 -gdwarf-2 -o qq qq.cc");
+        //testLanguageArtifact("c++", "gcc -xc++ -g3 -gdwarf-2 -o qq qq.cc");
         testLanguageArtifact("c99", "cc -g3 -gdwarf-2 -xc99 -o qq qq.cc");
         testLanguageArtifact("c99", "gcc -g3 -gdwarf-2 -std=c99 -o qq qq.cc");
         testLanguageArtifact("c89", "gcc -g3 -gdwarf-2 -std=c89 -o qq qq.cc");
@@ -104,6 +106,7 @@ public class LogReaderTest extends TestCase {
 
     public void testArtifatCpp() {
         testLanguageArtifact("c", "g++ -x c -g3 -gdwarf-2 -o qq qq.cc");
+        //testLanguageArtifact("c", "g++ -xc -g3 -gdwarf-2 -o qq qq.cc");
         testLanguageArtifact("c++11", "g++ -g3 -std=c++0x -gdwarf-2 -o qq qq.cc");
         testLanguageArtifact("c++11", "g++ -g3 -std=c++11 -gdwarf-2 -o qq qq.cc");
         testLanguageArtifact("c++11", "g++ -g3 -std=gnu++0x -gdwarf-2 -o qq qq.cc");
@@ -125,9 +128,11 @@ public class LogReaderTest extends TestCase {
      * Test of scanCommandLine method, of class DwarfSource.
      */
     public void testProcessLine() {
-        String build   = "cc  -DAA=3   -DAA1='3' -DAA2=\"3\" -DBB=\\\"3\\\" \"-DBB1='3'\" '-DBB2=\"3\"'  -DBB3=\\\'3\\\' \"-DBB4=\\\"3\\\"\" -DBB5='\"3\"' -c qq.c";
-        String compile = "cc  -DAA='3' -DAA1='3' -DAA2='3' -DBB='\"3\"'  -DBB1=''3'' -DBB2='\"3\"' -DBB3=''3''  -DBB4='\"3\"'  -DBB5='\"3\"' -c qq.c";
-        String exec    = "cc  -DAA=3   -DAA1=3   -DAA2=3   -DBB=\"3\"    -DBB1='3'   -DBB2=\"3\"   -DBB3='3'    -DBB4=\"3\"    -DBB5=\"3\" -c qq.c";
+        
+        String build   = "cc  \"-DQUOTE(name, extension)=<name.extension>\"     -DAA=3      -DAA1='3'   -DAA2=\"3\" -DBB=\\\"3\\\" \"-DBB1='3'\"  '-DBB2=\"3\"'    -DBB3=\\\'3\\\' \"-DBB4=\\\"3\\\"\" -DBB5='\"3\"'   -c   qq.c";
+        String compile = "cc    -DQUOTE\\(name, extension\\)='<name.extension>' -DAA='3'    -DAA1='3'   -DAA2='3'   -DBB='\"3\"'     -DBB1=''3''   -DBB2='\"3\"'   -DBB3=''3''       -DBB4='\"3\"'     -DBB5='\"3\"'   -c   qq.c";
+        String[] exec  = new String[]{
+                         "cc","-DQUOTE(name, extension)=<name.extension>",      "-DAA=3",  "-DAA1=3",   "-DAA2=3", "-DBB=\"3\"",    "-DBB1='3'",  "-DBB2=\"3\"",  "-DBB3='3'",      "-DBB4=\"3\"",    "-DBB5=\"3\"",  "-c","qq.c"};
         String expResult =
                       "Source:qq.c\n"+
                       "Macros:\n"+
@@ -140,19 +145,111 @@ public class LogReaderTest extends TestCase {
                       "BB3='3'\n"+
                       "BB4=\"3\"\n"+
                       "BB5=\"3\"\n"+
+                      "QUOTE(name, extension)=<name.extension>\n"+
                       "Paths:";
         String result = processLine(build, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(build, expResult, result);
         result = processLine(compile, DiscoveryUtils.LogOrigin.DwarfCompileLine);
         assertDocumentText(compile, expResult, result);
         result = processLine(exec, DiscoveryUtils.LogOrigin.ExecLog);
-        assertDocumentText(exec, expResult, result);
+        StringBuilder buf = new StringBuilder();
+        for(int i = 0; i< exec.length; i++) {
+            if (i>0) {
+                buf.append(' ');
+            }
+            buf.append(exec[i]);
+        }
+        assertDocumentText(buf.toString(), expResult, result);
     }
    
     /**
      * Test of scanCommandLine method, of class DwarfSource.
      */
     public void testLinuxCommandLine() {
+        String line = "gcc -o m/d/i.o -c -DDEBUG -g -w -x c++ -DSCONS " +
+                    "-Dlinux -DLinux -pthread -pipe -Wall -Wextra -Wconversion -Wformat=2 " +
+                    "-Wcast-qual -fmessage-length=0 -Wno-long-long -Wno-format-nonliteral -DNDEBUG " +
+                    "-Dlinux -DRMS_40 -DP100 -DBUILD_ID=73937 -DIT_STD -D_TEMPLATES_ENABLE_ " +
+                    "-DQT_PORT -DQT_NO_DEBUG -DQT_SHARED -DQT_DLL -DQT_THREAD_SUPPORT -DQT3_SUPPORT " +
+                    "-DQT_NO_QOBJECT_CHECK -DIT_STD -DRDV=53 \"-DFELIB_HELPER_NS_BEGIN=namespace " +
+                    "K { namespace F {\" -DFELIB_HELPER_NS_END=}} -DACE_HAS_EXCEPTIONS " +
+                    "-fpermissive -Wno-non-virtual-dtor -Wno-reorder -Wno-deprecated -Wno-comment " +
+                    "-Wno-format -Wno-unused-variable -Wno-switch -Wno-pragmas -Wno-unknown-pragmas " +
+                    "-DPS_LINUX -DINTEL -DGCC -pthread -include /usr/include/c++/4.6/cstring " +
+                    "-include /usr/include/stdio.h -include /usr/include/stdlib.h -include " +
+                    "/usr/include/stdint.h -include /usr/include/c++/4.6/typeinfo -include " +
+                    "/usr/include/c++/4.6/memory -include /usr/include/c++/4.6/algorithm -include " +
+                    "/usr/include/c++/4.6/string -include /usr/include/c++/4.6/cstddef " +
+                    "-Imodules/DealCapture -I. -ILibs -IWA/Libs -IWSServers " +
+                    "-Ikplus-suite/generated-sources/cpp -Irtk -Irtk/lib -ILibs -ILibs/libKRISKML " +
+                    "-ILibs/libWSClients/libArtix -Ilocal/libs -Imodules -IWSCommon " +
+                    "-IWSCommon/XPathValidator -Iapi/open_trade/dyn_lib/include " +
+                    "-I3rdparties/x86Linux/sybase-ocs/include " +
+                    "-I3rdparties/x86Linux/tao/include/ACE_wrappers " +
+                    "m/d/i.c";
+          String expResult =
+                    "Source:m/d/i.c\n"+
+                    "Macros:\n" +
+                        "ACE_HAS_EXCEPTIONS\n" +
+                        "BUILD_ID=73937\n" +
+                        "DEBUG\n" +
+                        "FELIB_HELPER_NS_BEGIN=namespace K { namespace F {\n" +
+                        "FELIB_HELPER_NS_END=}}\n" +
+                        "GCC\n" +
+                        "INTEL\n" +
+                        "IT_STD\n" +
+                        "Linux\n" +
+                        "NDEBUG\n" +
+                        "P100\n" +
+                        "PS_LINUX\n" +
+                        "QT3_SUPPORT\n" +
+                        "QT_DLL\n" +
+                        "QT_NO_DEBUG\n" +
+                        "QT_NO_QOBJECT_CHECK\n" +
+                        "QT_PORT\n" +
+                        "QT_SHARED\n" +
+                        "QT_THREAD_SUPPORT\n" +
+                        "RDV=53\n" +
+                        "RMS_40\n" +
+                        "SCONS\n" +
+                        "_TEMPLATES_ENABLE_\n" +
+                        "linux\n"+
+                    "Paths:\n" +
+                        "/usr/include/c++/4.6/cstring\n" +
+                        "/usr/include/stdio.h\n" +
+                        "/usr/include/stdlib.h\n" +
+                        "/usr/include/stdint.h\n" +
+                        "/usr/include/c++/4.6/typeinfo\n" +
+                        "/usr/include/c++/4.6/memory\n" +
+                        "/usr/include/c++/4.6/algorithm\n" +
+                        "/usr/include/c++/4.6/string\n" +
+                        "/usr/include/c++/4.6/cstddef\n" +
+                        "modules/DealCapture\n" +
+                        ".\n" +
+                        "Libs\n" +
+                        "WA/Libs\n" +
+                        "WSServers\n" +
+                        "kplus-suite/generated-sources/cpp\n" +
+                        "rtk\n" +
+                        "rtk/lib\n" +
+                        "Libs\n" +
+                        "Libs/libKRISKML\n" +
+                        "Libs/libWSClients/libArtix\n" +
+                        "local/libs\n" +
+                        "modules\n" +
+                        "WSCommon\n" +
+                        "WSCommon/XPathValidator\n" +
+                        "api/open_trade/dyn_lib/include\n" +
+                        "3rdparties/x86Linux/sybase-ocs/include\n" +
+                        "3rdparties/x86Linux/tao/include/ACE_wrappers";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        assertDocumentText(line, expResult, result);
+    }
+    
+    /**
+     * Test of scanCommandLine method, of class DwarfSource.
+     */
+    public void testLinuxCommandLine2() {
         String line = "gcc -Wp,-MD,kernel/.bounds.s.d  -nostdinc -isystem /usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include -D__KERNEL__ " +
                       "-Iinclude  -I/export/home/av202691/NetBeansProjects/linux-2.6.28-gentoo-r5/arch/x86/include " +
                       "-include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs " +
@@ -825,6 +922,38 @@ public class LogReaderTest extends TestCase {
         assertEquals(LogReader.CompilerType.CPP, li.compilerType);
     }
 
+    private String processLine(String[] line, DiscoveryUtils.LogOrigin isScriptOutput) {
+        List<String> userIncludes = new ArrayList<String>();
+        Map<String, String> userMacros = new TreeMap<String, String>();
+        List<String> undefs = new ArrayList<String>();
+        List<String> languageArtifacts = new ArrayList<String>();
+        String what = DiscoveryUtils.gatherCompilerLine(Arrays.asList(line).iterator(), isScriptOutput, userIncludes, userMacros, undefs, null, languageArtifacts, null, false).get(0);
+        StringBuilder res = new StringBuilder();
+        res.append("Source:").append(what).append("\n");
+        res.append("Macros:");
+        for (Map.Entry<String, String> entry : userMacros.entrySet()) {
+            res.append("\n");
+            res.append(entry.getKey());
+            if (entry.getValue() != null) {
+                res.append("=");
+                res.append(entry.getValue());
+            }
+        }
+        if (!undefs.isEmpty()) {
+            res.append("\nUndefs:");
+            for (String undef : undefs) {
+                res.append("\n");
+                res.append(undef);
+            }
+        }
+        res.append("\nPaths:");
+        for (String path : userIncludes) {
+            res.append("\n");
+            res.append(path);
+        }
+        return res.toString();
+    }
+    
     private String processLine(String line, DiscoveryUtils.LogOrigin isScriptOutput) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new TreeMap<String, String>();
