@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import org.netbeans.api.lexer.Language;
@@ -70,6 +71,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.Named;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -167,7 +169,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
         ElementUtils.visitChildren(root, prefixCollector, ElementType.OPEN_TAG);
         Node undeclaredComponentsTreeRoot = result.rootOfUndeclaredTagsParseTree();
-        if(undeclaredComponentsTreeRoot != null) {
+        if (undeclaredComponentsTreeRoot != null) {
             ElementUtils.visitChildren(undeclaredComponentsTreeRoot, prefixCollector, ElementType.OPEN_TAG);
 
             //check for undeclared tags
@@ -175,37 +177,37 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
                 @Override
                 public void visit(Element node) {
-                    OpenTag openTag = (OpenTag)node;
-                    String namespacePrefix = openTag.namespacePrefix().toString();
-                    if (namespacePrefix != null) {
-                        //3. check for undeclared components
+                    OpenTag openTag = (OpenTag) node;
+                    Set<Named> undeclaredNodes = parseForUndeclaredElements(result, openTag);
 
-                        List<HintFix> fixes = new ArrayList<HintFix>();
-                        List<AbstractFaceletsLibrary> libs = getLibsByPrefix(context, namespacePrefix);
+                    //3. check for undeclared components
+                    List<HintFix> fixes = new ArrayList<HintFix>();
+                    Set<AbstractFaceletsLibrary> libs = getLibsByPrefixes(context, getUndeclaredNamespaces(undeclaredNodes));
+                    for (AbstractFaceletsLibrary lib : libs) {
+                        FixLibDeclaration fix = new FixLibDeclaration(context.doc, lib.getDefaultPrefix(), lib);
+                        fixes.add(fix);
+                    }
 
-                        for (AbstractFaceletsLibrary lib : libs){
-                            FixLibDeclaration fix = new FixLibDeclaration(context.doc, namespacePrefix, lib);
-                            fixes.add(fix);
-                        }
-
-                        //this itself means that the node is undeclared since
-                        //otherwise it wouldn't appear in the pure html parse tree
+                    //this itself means that the node is undeclared since
+                    //otherwise it wouldn't appear in the pure html parse tree
+                    for (Named undeclaredEntry : undeclaredNodes) {
                         hints.add(new Hint(ERROR_RULE_BADGING,
-                                NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT", openTag.name().toString()), //NOI18N
+                                NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT", undeclaredEntry.image()), //NOI18N
                                 context.parserResult.getSnapshot().getSource().getFileObject(),
-                                JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.from() + openTag.name().length() + 1 /* "<".length */),
-                                fixes, DEFAULT_ERROR_HINT_PRIORITY));
-                        
+                                JsfUtils.createOffsetRange(snapshot, docText, undeclaredEntry.from(), undeclaredEntry.from() + undeclaredEntry.name().length() + 1 /* "<".length */),
+                                new ArrayList<HintFix>(fixes), DEFAULT_ERROR_HINT_PRIORITY));
+
                         //put the hint to the close tag as well
                         CloseTag matchingCloseTag = openTag.matchingCloseTag();
-                        if(matchingCloseTag != null) {
+                        if(undeclaredEntry.equals(openTag) && matchingCloseTag != null) {
                             hints.add(new Hint(ERROR_RULE_BADGING,
                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT", openTag.name().toString()), //NOI18N
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                     JsfUtils.createOffsetRange(snapshot, docText, matchingCloseTag.from(), matchingCloseTag.to()),
-                                    fixes, DEFAULT_ERROR_HINT_PRIORITY));
+                                    new ArrayList<HintFix>(fixes), DEFAULT_ERROR_HINT_PRIORITY));
                         }
-                        
+                        // apply the fixed only once, to prevent fixes duplication
+                        fixes.clear();
                     }
                 }
             }, ElementType.OPEN_TAG);
@@ -319,6 +321,38 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
     }
 
+    private static Set<String> getUndeclaredNamespaces(Set<Named> undeclaredEntries) {
+        Set<String> undeclaredNamespaces = new HashSet<String>();
+        for (Named named : undeclaredEntries) {
+            undeclaredNamespaces.add(named.namespacePrefix().toString());
+        }
+        return undeclaredNamespaces;
+    }
+
+    private static Set<Named> parseForUndeclaredElements(HtmlParserResult result, OpenTag openTag) {
+        Set<Named> undeclaredEntries = new HashSet<Named>();
+
+        // undeclared tag prefix
+        if (openTag.namespacePrefix() != null
+                && !result.getNamespaces().values().contains(openTag.namespacePrefix().toString())) {
+            undeclaredEntries.add(openTag);
+        }
+
+        for (Attribute attribute : openTag.attributes(new AttributeFilter() {
+            @Override
+            public boolean accepts(Attribute attribute) {
+                return attribute.namespacePrefix() != null;
+            }
+        })) {
+            // undeclared attribute prefix
+            if (!result.getNamespaces().values().contains(attribute.namespacePrefix().toString())) {
+                undeclaredEntries.add(attribute);
+            }
+        }
+
+        return undeclaredEntries;
+    }
+
     private static PositionRange createPositionRange(RuleContext context, OffsetRange offsetRange) throws BadLocationException {
         return new PositionRange(context, offsetRange.getStart(), offsetRange.getEnd());
     }
@@ -331,14 +365,14 @@ public class LibraryDeclarationChecker extends HintsProvider {
         return ranges;
     }
     
-    private static List<AbstractFaceletsLibrary> getLibsByPrefix(RuleContext context, String prefix){
-        List<AbstractFaceletsLibrary> libs = new ArrayList<AbstractFaceletsLibrary>();
+    private static Set<AbstractFaceletsLibrary> getLibsByPrefixes(RuleContext context, Set<String> prefixes){
+        Set<AbstractFaceletsLibrary> libs = new HashSet<AbstractFaceletsLibrary>();
         JsfSupportImpl sup = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
 
         if (sup != null){
             //eliminate the library duplicities - see the sup.getLibraries() doc
             for (AbstractFaceletsLibrary lib : new HashSet<AbstractFaceletsLibrary>(sup.getLibraries().values())){
-                if (prefix.equals(lib.getDefaultPrefix())){
+                if (prefixes.contains(lib.getDefaultPrefix())){
                     libs.add(lib);
                 }
             }
