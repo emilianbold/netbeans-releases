@@ -44,6 +44,7 @@ package org.netbeans.modules.cordova.updatetask;
 import java.io.File;
 import java.io.IOException;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.util.FileUtils;
 
 /**
  *
@@ -75,6 +76,7 @@ public class AndroidUpdateTask extends CordovaTask {
             
             updateAndroidConfig(config, androidConfig);
             androidConfig.save();
+            updateResources(config);
             
         } catch (IOException ex) {
             throw new BuildException(ex);
@@ -89,4 +91,64 @@ public class AndroidUpdateTask extends CordovaTask {
     private void updateAndroidConfig(SourceConfig config, DeviceConfig androidConfig) {
         androidConfig.setAccess(config.getAccess());
     }
+    
+    private void updateResources(SourceConfig config) throws IOException {
+        String icon = config.getIcon("android", 36, 36);
+        copy(icon, "drawable-ldpi/icon");
+
+        icon = config.getIcon("android", 48, 48);
+        copy(icon, "drawable-mdpi/icon");
+        
+        icon = config.getIcon("android", 72, 72);
+        copy(icon, "drawable-hdpi/icon");
+
+        icon = config.getIcon("android", 96, 96);
+        copy(icon, "drawable-xhdpi/icon");
+
+        copy(icon, "drawable/icon");
+        
+        String splash = config.getSplash("android", 320, 200);
+        copy(splash, "drawable-ldpi/splash_landscape");
+
+        splash = config.getSplash("android", 200, 320);
+        copy(splash, "drawable-ldpi/splash_portrait");
+        
+        splash = config.getSplash("android", 480, 320);
+        copy(splash, "drawable-mdpi/splash_landscape");
+
+        splash = config.getSplash("android", 320, 480);
+        copy(splash, "drawable-mdpi/splash_portrait");
+        
+        
+        splash = config.getSplash("android", 800, 480);
+        copy(splash, "drawable-hdpi/splash_landscape");
+
+        splash = config.getSplash("android", 480, 800);
+        copy(splash, "drawable-hdpi/splash_portrait");
+        
+        splash = config.getSplash("android", 1280, 720);
+        copy(splash, "drawable-xhdpi/splash_landscape");
+
+        splash = config.getSplash("android", 720, 1280);
+        copy(splash, "drawable-xhdpi/splash_portrait");
+
+        splash = config.getSplash("android", 1280, 720);
+        copy(splash, "drawable/splash_landscape");
+
+        splash = config.getSplash("android", 720, 1280);
+        copy(splash, "drawable/splash_portrait");
+        
+    }
+    
+    private void copy(String source, String dest) throws IOException {
+        if (source==null) {
+            return;
+        }
+        String ext = source.substring(source.indexOf("."));
+        final String prjPath = getProject().getBaseDir().getPath();
+        FileUtils.getFileUtils().copyFile(
+                prjPath + "/" + getProperty("site.root") + "/" + source, 
+                prjPath + "/" + getProject().getProperty("cordova.platforms") + "/android/res/" + dest + ext);
+    }
+            
 }

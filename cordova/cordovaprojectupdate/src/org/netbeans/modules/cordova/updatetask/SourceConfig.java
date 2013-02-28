@@ -85,6 +85,22 @@ public class SourceConfig extends XMLFile {
         getNode("author").setTextContent(author);
     }
     
+    public String getAuthorHref() {
+        return getNode("author").getAttributes().getNamedItem("href").getTextContent();
+    }
+
+    public void setAuthorHref(String href) {
+        getNode("author").getAttributes().getNamedItem("href").setTextContent(href);
+    }
+
+    public String getAuthorEmail() {
+        return getNode("author").getAttributes().getNamedItem("email").getTextContent();
+    }
+
+    public void setAuthorEmail(String email) {
+        getNode("author").getAttributes().getNamedItem("email").setTextContent(email);
+    }
+    
     public String getId() {
         return getNode("widget").getAttributes().getNamedItem("id").getTextContent();
     }

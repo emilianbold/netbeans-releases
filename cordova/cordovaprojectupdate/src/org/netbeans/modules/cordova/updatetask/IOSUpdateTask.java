@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.util.FileUtils;
 
 /**
  *
@@ -90,6 +91,7 @@ public class IOSUpdateTask extends CordovaTask {
 
             updateAndroidConfig(config, androidConfig);
             androidConfig.save();
+            updateResources(config);
         } catch (IOException ex) {
             throw new BuildException(ex);
         } 
@@ -98,6 +100,55 @@ public class IOSUpdateTask extends CordovaTask {
     private void updateAndroidConfig(SourceConfig config, DeviceConfig androidConfig) {
         androidConfig.setAccess(config.getAccess());
     }
+    
+    private void updateResources(SourceConfig config) throws IOException {
+        String icon = config.getIcon("ios", 57, 57);
+        copy(icon, "icons/icon");
+
+        icon = config.getIcon("ios", 114, 114);
+        copy(icon, "icons/icon@2x");
+        
+        icon = config.getIcon("ios", 72, 72);
+        copy(icon, "icons/icon-72");
+
+        icon = config.getIcon("ios", 144, 144);
+        copy(icon, "icons/icon-72@2x");
+
+        String splash = config.getSplash("ios", 320, 480);
+        copy(splash, "splash/Default~iphone");
+
+        splash = config.getSplash("ios", 640, 960);
+        copy(splash, "splash/Default@2x~iphone");
+        
+        splash = config.getSplash("ios", 768, 1024);
+        copy(splash, "splash/Default-Portrait~ipad");
+
+        splash = config.getSplash("ios", 1536, 2048);
+        copy(splash, "splash/Default-Portrait@2x~ipad");
+        
+        splash = config.getSplash("ios", 1024, 768);
+        copy(splash, "splash/Default-Landscape~ipad");
+
+        splash = config.getSplash("ios", 2048, 1536);
+        copy(splash, "splash/Default-Landscape@2x~ipad");
+        
+        splash = config.getSplash("ios", 640, 1136);
+        copy(splash, "splash/Default-568h@2x~iphone.png");
+
+    }
+    
+    private void copy(String source, String dest) throws IOException {
+        if (source==null) {
+            return;
+        }
+        String name = getProject().getProperty("xcode.project.name");
+        
+        String ext = source.substring(source.indexOf("."));
+        final String prjPath = getProject().getBaseDir().getPath();
+        FileUtils.getFileUtils().copyFile(
+                prjPath + "/" + getProperty("site.root") + "/" + source, 
+                prjPath + "/" + getProject().getProperty("cordova.platforms") + "/ios/" + name + "/Resources/" + dest + ext);
+    }    
     
 }
 
