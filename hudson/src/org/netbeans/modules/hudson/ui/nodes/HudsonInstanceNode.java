@@ -47,11 +47,13 @@ package org.netbeans.modules.hudson.ui.nodes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
+import org.netbeans.modules.hudson.api.HudsonFolder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
@@ -65,6 +67,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Union2;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -195,7 +198,7 @@ public class HudsonInstanceNode extends AbstractNode {
      */
     public static final String SELECTED_VIEW = "view"; // NOI18N
     
-    private static class InstanceNodeChildren extends Children.Keys<HudsonJob> implements HudsonChangeListener {
+    private static class InstanceNodeChildren extends Children.Keys<Union2<HudsonJob,HudsonFolder>> implements HudsonChangeListener {
         
         private final HudsonInstanceImpl instance;
         
@@ -209,15 +212,15 @@ public class HudsonInstanceNode extends AbstractNode {
             });
         }
         
-        @Override protected Node[] createNodes(HudsonJob job) {
-            return new Node[] {new HudsonJobNode(job)};
+        @Override protected Node[] createNodes(Union2<HudsonJob,HudsonFolder> item) {
+            return new Node[] {item.hasFirst() ? new HudsonJobNode(item.first()) : new HudsonFolderNode(item.second())};
         }
         
         @Override
         protected void addNotify() {
             super.addNotify();
             if (!instance.isConnected()/* && seems undesirable: !instance.isForbidden()*/) {
-                setKeys(Collections.<HudsonJob>emptySet());
+                setKeys(Collections.<Union2<HudsonJob,HudsonFolder>>emptySet());
                 instance.synchronize(true);
             } else {
                 refreshKeys();
@@ -226,7 +229,7 @@ public class HudsonInstanceNode extends AbstractNode {
         
         @Override
         protected void removeNotify() {
-            setKeys(Collections.<HudsonJob>emptySet());
+            setKeys(Collections.<Union2<HudsonJob,HudsonFolder>>emptySet());
             super.removeNotify();
         }
         
@@ -249,7 +252,15 @@ public class HudsonInstanceNode extends AbstractNode {
                 jobs.add(job);
             }
             Collections.sort(jobs);
-            setKeys(jobs);
+            List<Union2<HudsonJob,HudsonFolder>> items = new LinkedList<Union2<HudsonJob,HudsonFolder>>();
+            for (HudsonFolder folder : instance.getFolders()) {
+                // XXX ideally should restrict by selected view, like jobs
+                items.add(Union2.<HudsonJob,HudsonFolder>createSecond(folder));
+            }
+            for (HudsonJob job : jobs) {
+                items.add(Union2.<HudsonJob,HudsonFolder>createFirst(job));
+            }
+            setKeys(items);
         }
         
         @Override public void stateChanged() {

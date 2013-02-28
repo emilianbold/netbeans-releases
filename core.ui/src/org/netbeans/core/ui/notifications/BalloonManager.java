@@ -487,11 +487,14 @@ class BalloonManager {
 
         private static Color getMouseOverGradientStartColor() {
             if( null == mouseOverGradientStartColor ) {
-                mouseOverGradientStartColor = new Color(224,224,185);
-                if( isMetal || isNimbus ) {
-                    Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
-                    if( null != c ) {
-                        mouseOverGradientStartColor = c.darker();
+                mouseOverGradientStartColor = UIManager.getColor("nb.core.ui.balloon.mouseOverGradientStartColor"); //NOI18N
+                if( null == mouseOverGradientStartColor ) {
+                    mouseOverGradientStartColor = new Color(224,224,185);
+                    if( isMetal || isNimbus ) {
+                        Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
+                        if( null != c ) {
+                            mouseOverGradientStartColor = c.darker();
+                        }
                     }
                 }
             }
@@ -500,11 +503,14 @@ class BalloonManager {
 
         private static Color getMouseOverGradientFinishColor() {
             if( null == mouseOverGradientFinishColor ) {
-                mouseOverGradientFinishColor = new Color(255,255,241);
-                if( isMetal || isNimbus ) {
-                    Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
-                    if( null != c ) {
-                        mouseOverGradientFinishColor = c.brighter();
+                mouseOverGradientFinishColor = UIManager.getColor("nb.core.ui.balloon.mouseOverGradientFinishColor"); //NOI18N
+                if( null == mouseOverGradientFinishColor ) {
+                    mouseOverGradientFinishColor = new Color(255,255,241);
+                    if( isMetal || isNimbus ) {
+                        Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
+                        if( null != c ) {
+                            mouseOverGradientFinishColor = c.brighter();
+                        }
                     }
                 }
             }
@@ -513,11 +519,14 @@ class BalloonManager {
 
         private static Color getDefaultGradientStartColor() {
             if( null == defaultGradientStartColor ) {
-                defaultGradientStartColor = new Color(225,225,225);
-                if( isMetal || isNimbus ) {
-                    Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
-                    if( null != c ) {
-                        defaultGradientStartColor = c.darker();
+                defaultGradientStartColor = UIManager.getColor("nb.core.ui.balloon.defaultGradientStartColor"); //NOI18N
+                if( null == defaultGradientStartColor ) {
+                    defaultGradientStartColor = new Color(225,225,225);
+                    if( isMetal || isNimbus ) {
+                        Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
+                        if( null != c ) {
+                            defaultGradientStartColor = c.darker();
+                        }
                     }
                 }
             }
@@ -527,11 +536,14 @@ class BalloonManager {
 
         private static Color getDefaultGradientFinishColor() {
             if( null == defaultGradientFinishColor ) {
-                defaultGradientFinishColor = new Color(255,255,255);
-                if( isMetal || isNimbus ) {
-                    Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
-                    if( null != c ) {
-                        defaultGradientFinishColor = c;
+                defaultGradientFinishColor = UIManager.getColor("nb.core.ui.balloon.defaultGradientFinishColor"); //NOI18N
+                if( null == defaultGradientFinishColor ) {
+                    defaultGradientFinishColor = new Color(255,255,255);
+                    if( isMetal || isNimbus ) {
+                        Color c = UIManager.getColor( "ToolTip.background" ); //NOI18N
+                        if( null != c ) {
+                            defaultGradientFinishColor = c;
+                        }
                     }
                 }
             }

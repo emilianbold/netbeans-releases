@@ -50,6 +50,7 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -60,9 +61,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -436,6 +440,14 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         listView.setPopupAllowed(false);
         listView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_ListView"));
         //view.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listView.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put( KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "closeSelected") ;//NOI18N
+        listView.getActionMap().put( "closeSelected", new AbstractAction() {//NOI18N
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                closeDocuments(e );
+            }
+
+        });
         panel.add(listView, BorderLayout.CENTER);
         return panel;
     }

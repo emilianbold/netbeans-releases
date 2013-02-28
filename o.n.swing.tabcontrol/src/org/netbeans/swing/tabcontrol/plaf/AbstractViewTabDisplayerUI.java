@@ -809,6 +809,14 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                     //Post a maximize request
                     shouldPerformAction(TabDisplayer.COMMAND_MAXIMIZE, i, e);
                 }
+            } else if( e.getClickCount() == 1 && !e.isPopupTrigger() && e.getButton() == MouseEvent.BUTTON2 ) {
+                //middle-button clicked
+                Point p = e.getPoint();
+                int i = getLayoutModel().indexOfPoint(p.x, p.y);
+                if( i >= 0 ) {
+                    //Post a close request
+                    shouldPerformAction(TabDisplayer.COMMAND_CLOSE, i, e);
+                }
             }
         }
 
