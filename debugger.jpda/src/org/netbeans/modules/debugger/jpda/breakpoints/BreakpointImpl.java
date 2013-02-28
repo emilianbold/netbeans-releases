@@ -143,6 +143,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
      */
     final void set () {
         breakpoint.addPropertyChangeListener (this);
+        debugger.addPropertyChangeListener(JPDADebugger.PROP_BREAKPOINTS_ACTIVE, this);
         if (breakpoint instanceof PropertyChangeListener && isApplicable()) {
             Session s = debugger.getSession();
             DebuggerEngine de = s.getEngineForLanguage ("Java");
@@ -169,7 +170,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
              (getDebugger ().getState () == JPDADebugger.STATE_DISCONNECTED)
         ) return;
         removeAllEventRequests ();
-        if (breakpoint.isEnabled () && isEnabled()) {
+        if (breakpoint.isEnabled () && isEnabled() && debugger.getBreakpointsActive()) {
             setRequests ();
         }
     }
@@ -196,7 +197,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         } else if (!Breakpoint.PROP_VALIDITY.equals(propertyName) &&
                    !Breakpoint.PROP_GROUP_NAME.equals(propertyName) &&
                    !Breakpoint.PROP_GROUP_PROPERTIES.equals(propertyName)) {
-            if (reader != null) {
+            if (reader != null && !JPDADebugger.PROP_BREAKPOINTS_ACTIVE.equals(propertyName)) {
                 reader.storeCachedClassName(breakpoint, null);
             }
             debugger.getRequestProcessor().post(new Runnable() {
@@ -224,6 +225,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             removeAllEventRequests ();
         }
         breakpoint.removePropertyChangeListener(this);
+        debugger.removePropertyChangeListener(JPDADebugger.PROP_BREAKPOINTS_ACTIVE, this);
         setValidity(Breakpoint.VALIDITY.UNKNOWN, null);
         if (breakpoint instanceof PropertyChangeListener) {
             Session s = debugger.getSession();

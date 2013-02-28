@@ -291,6 +291,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 columnModels = null;
                 mm = null;
                 asynchModelFilters = null;
+                tableRenderers = null;
+                tableRendererFilters = null;
                 //rp = null;
                 sessionProviders = null;
                 currentSession = null;

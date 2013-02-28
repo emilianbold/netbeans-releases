@@ -57,7 +57,6 @@ import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,7 +82,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
@@ -92,7 +90,7 @@ import org.openide.windows.TopComponent;
  *
  * @author  Marek Slama
  */
-public class DocumentsDlg extends JPanel implements PropertyChangeListener, ExplorerManager.Provider {
+public class DocumentsDlg extends JPanel implements PropertyChangeListener, ExplorerManager.Provider, HelpCtx.Provider {
     
     private static DocumentsDlg defaultInstance;
     
@@ -132,6 +130,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
     }
     
     /** Gets <code>HelpCtx</code>. Implements <code>HelpCtx.Provider</code>. */
+    @Override
     public HelpCtx getHelpCtx() {
         // PENDING replace by id string.
         return new HelpCtx(DocumentsDlg.class);
@@ -397,6 +396,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
             null,
             null
         );
+        dlgDesc.setHelpCtx( null ); //hide the default Help button
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_DocumentsDialog"));
         if( dlg instanceof JDialog ) {

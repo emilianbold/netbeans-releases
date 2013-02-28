@@ -3,7 +3,7 @@
 <#assign licenseFirst = "/*">
 <#assign licensePrefix = " * ">
 <#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 
 <#if package?? && package != "">
 package ${package}
