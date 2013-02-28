@@ -1586,24 +1586,29 @@ MOZ_REGEXP
 //              that process the whitespace within the parser, ANTLR does not
 //              need to deal with the whitespace directly in the parser.
 //
-WS      : (' '|'\t')+;
+WS      
+    : 
+    (' '|'\t')+
+    ;
 
-NL      : ('\r' '\n'? | '\n')   { 
-	//$channel = HIDDEN;    
-}   ;
+NL      
+    : 
+    ('\r' '\n'? | '\n')    
+    ;
 
-// ------------- 
 // Comments.    Comments may not be nested, may be multilined and are delimited
 //              like C comments: /* ..... */
-//              COMMENTS are hidden from the parser which simplifies the parser 
-//              grammar a lot.
-//
-COMMENT         : '/*' ( options { greedy=false; } : .*) '*/'
-    
-                    {
-//                        $channel = 2;   // Comments on channel 2 in case we want to find them
-                    }
-                ;
+COMMENT         
+    : 
+    '/*' ( options { greedy=false; } : .*) '*/'
+    ;
+
+LINE_COMMENT
+    :
+    '//'( options { greedy=false; } : .*) NL {
+	$channel = HIDDEN;    
+    }   
+    ;
 
 // -------------
 //  Illegal.    Any other character shoudl not be allowed.

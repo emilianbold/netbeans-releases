@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-02-28 17:05:20
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-02-28 17:28:25
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -55,7 +55,7 @@ import org.antlr.runtime.debug.*;
 import java.io.IOException;
 public class Css3Parser extends DebugParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "NAMESPACE_SYM", "SEMI", "IDENT", "STRING", "URI", "CHARSET_SYM", "IMPORT_SYM", "MEDIA_SYM", "LBRACE", "RBRACE", "COMMA", "AND", "ONLY", "NOT", "GEN", "LPAREN", "COLON", "RPAREN", "AT_IDENT", "WS", "MOZ_DOCUMENT_SYM", "MOZ_URL_PREFIX", "MOZ_DOMAIN", "MOZ_REGEXP", "WEBKIT_KEYFRAMES_SYM", "PERCENTAGE", "PAGE_SYM", "COUNTER_STYLE_SYM", "FONT_FACE_SYM", "TOPLEFTCORNER_SYM", "TOPLEFT_SYM", "TOPCENTER_SYM", "TOPRIGHT_SYM", "TOPRIGHTCORNER_SYM", "BOTTOMLEFTCORNER_SYM", "BOTTOMLEFT_SYM", "BOTTOMCENTER_SYM", "BOTTOMRIGHT_SYM", "BOTTOMRIGHTCORNER_SYM", "LEFTTOP_SYM", "LEFTMIDDLE_SYM", "LEFTBOTTOM_SYM", "RIGHTTOP_SYM", "RIGHTMIDDLE_SYM", "RIGHTBOTTOM_SYM", "SOLIDUS", "PLUS", "GREATER", "TILDE", "MINUS", "HASH_SYMBOL", "HASH", "DOT", "LBRACKET", "DCOLON", "STAR", "PIPE", "NAME", "LESS_AND", "OPEQ", "INCLUDES", "DASHMATCH", "BEGINS", "ENDS", "CONTAINS", "RBRACKET", "IMPORTANT_SYM", "NUMBER", "LENGTH", "EMS", "REM", "EXS", "ANGLE", "TIME", "FREQ", "RESOLUTION", "DIMENSION", "NL", "COMMENT", "SASS_VAR", "SASS_MIXIN", "SASS_INCLUDE", "LESS_DOTS", "LESS_REST", "LESS_WHEN", "GREATER_OR_EQ", "LESS", "LESS_OR_EQ", "HEXCHAR", "NONASCII", "UNICODE", "ESCAPE", "NMSTART", "NMCHAR", "URL", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "CDO", "CDC", "INVALID"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "NAMESPACE_SYM", "SEMI", "IDENT", "STRING", "URI", "CHARSET_SYM", "IMPORT_SYM", "MEDIA_SYM", "LBRACE", "RBRACE", "COMMA", "AND", "ONLY", "NOT", "GEN", "LPAREN", "COLON", "RPAREN", "AT_IDENT", "WS", "MOZ_DOCUMENT_SYM", "MOZ_URL_PREFIX", "MOZ_DOMAIN", "MOZ_REGEXP", "WEBKIT_KEYFRAMES_SYM", "PERCENTAGE", "PAGE_SYM", "COUNTER_STYLE_SYM", "FONT_FACE_SYM", "TOPLEFTCORNER_SYM", "TOPLEFT_SYM", "TOPCENTER_SYM", "TOPRIGHT_SYM", "TOPRIGHTCORNER_SYM", "BOTTOMLEFTCORNER_SYM", "BOTTOMLEFT_SYM", "BOTTOMCENTER_SYM", "BOTTOMRIGHT_SYM", "BOTTOMRIGHTCORNER_SYM", "LEFTTOP_SYM", "LEFTMIDDLE_SYM", "LEFTBOTTOM_SYM", "RIGHTTOP_SYM", "RIGHTMIDDLE_SYM", "RIGHTBOTTOM_SYM", "SOLIDUS", "PLUS", "GREATER", "TILDE", "MINUS", "HASH_SYMBOL", "HASH", "DOT", "LBRACKET", "DCOLON", "STAR", "PIPE", "NAME", "LESS_AND", "OPEQ", "INCLUDES", "DASHMATCH", "BEGINS", "ENDS", "CONTAINS", "RBRACKET", "IMPORTANT_SYM", "NUMBER", "LENGTH", "EMS", "REM", "EXS", "ANGLE", "TIME", "FREQ", "RESOLUTION", "DIMENSION", "NL", "COMMENT", "SASS_VAR", "SASS_MIXIN", "SASS_INCLUDE", "LESS_DOTS", "LESS_REST", "LESS_WHEN", "GREATER_OR_EQ", "LESS", "LESS_OR_EQ", "HEXCHAR", "NONASCII", "UNICODE", "ESCAPE", "NMSTART", "NMCHAR", "URL", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "CDO", "CDC", "INVALID", "LINE_COMMENT"
     };
     public static final int EOF=-1;
     public static final int NAMESPACE_SYM=4;
@@ -182,34 +182,36 @@ public class Css3Parser extends DebugParser {
     public static final int CDO=125;
     public static final int CDC=126;
     public static final int INVALID=127;
+    public static final int LINE_COMMENT=128;
 
     // delegates
     // delegators
 
     public static final String[] ruleNames = new String[] {
-        "invalidRule", "scss_interpolation_expression_var", "cp_multiplyExp", 
-        "expression", "mediaQuery", "synpred4_Css3", "mediaQueryList", "scss_interpolation_expression", 
-        "prio", "syncTo_RBRACE", "fnAttribute", "cp_variable_declaration", 
-        "synpred2_Css3", "synpred11_Css3", "slAttributeValue", "expressionPredicate", 
-        "selectorsGroup", "body", "synpred12_Css3", "webkitKeyframes", "elementName", 
-        "margin_sym", "syncToFollow", "cp_mixin_call_args", "fnAttributeName", 
-        "cssId", "typeSelector", "property", "charSet", "function", "synpred3_Css3", 
-        "less_function_in_condition", "fnAttributeValue", "webkitKeyframeSelectors", 
-        "scss_nested_properties", "less_args_list", "synpred1_Css3", "namespacePrefix", 
-        "resourceIdentifier", "webkitKeyframesBlock", "cp_expression", "cp_additionExp", 
-        "less_fn_name", "cp_mixin_call", "declaration", "importItem", "mediaType", 
-        "slAttribute", "synpred6_Css3", "imports", "functionName", "unaryOperator", 
-        "mediaQueryOperator", "atRuleId", "less_condition_operator", "cp_term", 
-        "elementSubsequent", "propertyValue", "counterStyle", "slAttributeName", 
-        "less_condition", "styleSheet", "namespace", "selector", "media", 
-        "namespaces", "esPred", "term", "simpleSelectorSequence", "vendorAtRule", 
-        "moz_document", "syncTo_SEMI", "cp_mixin_declaration", "synpred7_Css3", 
-        "declarations", "namespacePrefixName", "synpred10_Css3", "mediaFeature", 
-        "combinator", "ws", "operator", "mediaExpression", "synpred8_Css3", 
-        "generic_at_rule", "less_arg", "hexColor", "cp_mixin_name", "synpred5_Css3", 
-        "charSetValue", "pseudo", "margin", "fontFace", "moz_document_function", 
-        "less_mixin_guarded", "cp_variable", "cp_atomExp", "syncToDeclarationsRule", 
-        "rule", "pseudoPage", "page", "bodyItem", "cssClass", "synpred9_Css3"
+        "invalidRule", "less_condition", "functionName", "slAttributeName", 
+        "synpred1_Css3", "unaryOperator", "operator", "synpred11_Css3", 
+        "mediaQueryList", "synpred2_Css3", "fnAttributeValue", "simpleSelectorSequence", 
+        "vendorAtRule", "cp_mixin_call", "selectorsGroup", "mediaQuery", 
+        "generic_at_rule", "cssId", "syncTo_RBRACE", "namespaces", "term", 
+        "scss_nested_properties", "namespace", "scss_interpolation_expression_var", 
+        "synpred4_Css3", "slAttributeValue", "pseudo", "typeSelector", "ws", 
+        "importItem", "margin_sym", "webkitKeyframeSelectors", "less_args_list", 
+        "expressionPredicate", "less_fn_name", "cp_mixin_declaration", "cp_atomExp", 
+        "mediaType", "cp_variable_declaration", "scss_interpolation_expression", 
+        "webkitKeyframes", "property", "less_function_in_condition", "prio", 
+        "webkitKeyframesBlock", "charSetValue", "syncToDeclarationsRule", 
+        "cssClass", "mediaFeature", "synpred12_Css3", "synpred6_Css3", "media", 
+        "esPred", "propertyValue", "mediaExpression", "styleSheet", "syncToFollow", 
+        "cp_mixin_call_args", "counterStyle", "resourceIdentifier", "synpred8_Css3", 
+        "bodyItem", "declarations", "page", "hexColor", "mediaQueryOperator", 
+        "synpred3_Css3", "slAttribute", "elementSubsequent", "body", "synpred9_Css3", 
+        "namespacePrefix", "cp_expression", "synpred7_Css3", "pseudoPage", 
+        "atRuleId", "cp_multiplyExp", "rule", "moz_document_function", "margin", 
+        "synpred10_Css3", "expression", "cp_term", "synpred5_Css3", "cp_additionExp", 
+        "elementName", "combinator", "namespacePrefixName", "less_condition_operator", 
+        "moz_document", "cp_variable", "selector", "charSet", "less_arg", 
+        "fnAttribute", "fontFace", "fnAttributeName", "cp_mixin_name", "declaration", 
+        "less_mixin_guarded", "syncTo_SEMI", "imports", "function"
     };
     public static final boolean[] decisionCanBacktrack = new boolean[] {
         false, // invalid decision
@@ -8108,7 +8110,7 @@ public class Css3Parser extends DebugParser {
 
                 int LA132_0 = input.LA(1);
 
-                if ( (LA132_0==NAMESPACE_SYM||(LA132_0>=IDENT && LA132_0<=MEDIA_SYM)||(LA132_0>=COMMA && LA132_0<=RPAREN)||(LA132_0>=WS && LA132_0<=RIGHTBOTTOM_SYM)||(LA132_0>=PLUS && LA132_0<=DCOLON)||(LA132_0>=PIPE && LA132_0<=INVALID)) ) {
+                if ( (LA132_0==NAMESPACE_SYM||(LA132_0>=IDENT && LA132_0<=MEDIA_SYM)||(LA132_0>=COMMA && LA132_0<=RPAREN)||(LA132_0>=WS && LA132_0<=RIGHTBOTTOM_SYM)||(LA132_0>=PLUS && LA132_0<=DCOLON)||(LA132_0>=PIPE && LA132_0<=LINE_COMMENT)) ) {
                     alt132=1;
                 }
 
@@ -8122,7 +8124,7 @@ public class Css3Parser extends DebugParser {
             	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:739:7: ~ ( AT_IDENT | STAR | SOLIDUS | LBRACE | SEMI | RBRACE )
             	    {
             	    dbg.location(739,7);
-            	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=RPAREN)||(input.LA(1)>=WS && input.LA(1)<=RIGHTBOTTOM_SYM)||(input.LA(1)>=PLUS && input.LA(1)<=DCOLON)||(input.LA(1)>=PIPE && input.LA(1)<=INVALID) ) {
+            	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=RPAREN)||(input.LA(1)>=WS && input.LA(1)<=RIGHTBOTTOM_SYM)||(input.LA(1)>=PLUS && input.LA(1)<=DCOLON)||(input.LA(1)>=PIPE && input.LA(1)<=LINE_COMMENT) ) {
             	        input.consume();
             	        state.errorRecovery=false;state.failed=false;
             	    }
@@ -12836,7 +12838,7 @@ public class Css3Parser extends DebugParser {
 
                     int LA210_0 = input.LA(1);
 
-                    if ( (LA210_0==NAMESPACE_SYM||(LA210_0>=IDENT && LA210_0<=MEDIA_SYM)||(LA210_0>=COMMA && LA210_0<=LPAREN)||(LA210_0>=RPAREN && LA210_0<=INVALID)) ) {
+                    if ( (LA210_0==NAMESPACE_SYM||(LA210_0>=IDENT && LA210_0<=MEDIA_SYM)||(LA210_0>=COMMA && LA210_0<=LPAREN)||(LA210_0>=RPAREN && LA210_0<=LINE_COMMENT)) ) {
                         alt210=1;
                     }
 
@@ -12850,7 +12852,7 @@ public class Css3Parser extends DebugParser {
                 	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:560:4: ~ ( LBRACE | SEMI | RBRACE | COLON )
                 	    {
                 	    dbg.location(560,4);
-                	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=LPAREN)||(input.LA(1)>=RPAREN && input.LA(1)<=INVALID) ) {
+                	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=LPAREN)||(input.LA(1)>=RPAREN && input.LA(1)<=LINE_COMMENT) ) {
                 	        input.consume();
                 	        state.errorRecovery=false;state.failed=false;
                 	    }
@@ -12892,7 +12894,7 @@ public class Css3Parser extends DebugParser {
 
                     int LA211_0 = input.LA(1);
 
-                    if ( (LA211_0==NAMESPACE_SYM||(LA211_0>=IDENT && LA211_0<=MEDIA_SYM)||(LA211_0>=COMMA && LA211_0<=INVALID)) ) {
+                    if ( (LA211_0==NAMESPACE_SYM||(LA211_0>=IDENT && LA211_0<=MEDIA_SYM)||(LA211_0>=COMMA && LA211_0<=LINE_COMMENT)) ) {
                         alt211=1;
                     }
 
@@ -12906,7 +12908,7 @@ public class Css3Parser extends DebugParser {
                 	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:560:39: ~ ( SEMI | LBRACE | RBRACE )
                 	    {
                 	    dbg.location(560,39);
-                	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=INVALID) ) {
+                	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=LINE_COMMENT) ) {
                 	        input.consume();
                 	        state.errorRecovery=false;state.failed=false;
                 	    }
@@ -12993,7 +12995,7 @@ public class Css3Parser extends DebugParser {
 
                     int LA213_0 = input.LA(1);
 
-                    if ( (LA213_0==NAMESPACE_SYM||(LA213_0>=IDENT && LA213_0<=MEDIA_SYM)||(LA213_0>=COMMA && LA213_0<=LPAREN)||(LA213_0>=RPAREN && LA213_0<=INVALID)) ) {
+                    if ( (LA213_0==NAMESPACE_SYM||(LA213_0>=IDENT && LA213_0<=MEDIA_SYM)||(LA213_0>=COMMA && LA213_0<=LPAREN)||(LA213_0>=RPAREN && LA213_0<=LINE_COMMENT)) ) {
                         alt213=1;
                     }
 
@@ -13007,7 +13009,7 @@ public class Css3Parser extends DebugParser {
                 	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:562:4: ~ ( LBRACE | SEMI | RBRACE | COLON )
                 	    {
                 	    dbg.location(562,4);
-                	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=LPAREN)||(input.LA(1)>=RPAREN && input.LA(1)<=INVALID) ) {
+                	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=LPAREN)||(input.LA(1)>=RPAREN && input.LA(1)<=LINE_COMMENT) ) {
                 	        input.consume();
                 	        state.errorRecovery=false;state.failed=false;
                 	    }
@@ -13049,7 +13051,7 @@ public class Css3Parser extends DebugParser {
 
                     int LA214_0 = input.LA(1);
 
-                    if ( (LA214_0==NAMESPACE_SYM||(LA214_0>=IDENT && LA214_0<=MEDIA_SYM)||(LA214_0>=COMMA && LA214_0<=INVALID)) ) {
+                    if ( (LA214_0==NAMESPACE_SYM||(LA214_0>=IDENT && LA214_0<=MEDIA_SYM)||(LA214_0>=COMMA && LA214_0<=LINE_COMMENT)) ) {
                         alt214=1;
                     }
 
@@ -13063,7 +13065,7 @@ public class Css3Parser extends DebugParser {
                 	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:562:39: ~ ( SEMI | LBRACE | RBRACE )
                 	    {
                 	    dbg.location(562,39);
-                	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=INVALID) ) {
+                	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=LINE_COMMENT) ) {
                 	        input.consume();
                 	        state.errorRecovery=false;state.failed=false;
                 	    }
@@ -13135,7 +13137,7 @@ public class Css3Parser extends DebugParser {
 
             int LA216_0 = input.LA(1);
 
-            if ( (LA216_0==NAMESPACE_SYM||(LA216_0>=IDENT && LA216_0<=MEDIA_SYM)||(LA216_0>=COMMA && LA216_0<=INVALID)) ) {
+            if ( (LA216_0==NAMESPACE_SYM||(LA216_0>=IDENT && LA216_0<=MEDIA_SYM)||(LA216_0>=COMMA && LA216_0<=LINE_COMMENT)) ) {
                 alt216=1;
             }
 
@@ -13149,7 +13151,7 @@ public class Css3Parser extends DebugParser {
         	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:564:18: ~ ( LBRACE | SEMI | RBRACE )
         	    {
         	    dbg.location(564,18);
-        	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=INVALID) ) {
+        	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=COMMA && input.LA(1)<=LINE_COMMENT) ) {
         	        input.consume();
         	        state.errorRecovery=false;state.failed=false;
         	    }
@@ -13203,7 +13205,7 @@ public class Css3Parser extends DebugParser {
 
             int LA217_0 = input.LA(1);
 
-            if ( ((LA217_0>=NAMESPACE_SYM && LA217_0<=LBRACE)||(LA217_0>=COMMA && LA217_0<=INVALID)) ) {
+            if ( ((LA217_0>=NAMESPACE_SYM && LA217_0<=LBRACE)||(LA217_0>=COMMA && LA217_0<=LINE_COMMENT)) ) {
                 alt217=1;
             }
 
@@ -13217,7 +13219,7 @@ public class Css3Parser extends DebugParser {
         	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:570:16: ~ ( RBRACE )
         	    {
         	    dbg.location(570,16);
-        	    if ( (input.LA(1)>=NAMESPACE_SYM && input.LA(1)<=LBRACE)||(input.LA(1)>=COMMA && input.LA(1)<=INVALID) ) {
+        	    if ( (input.LA(1)>=NAMESPACE_SYM && input.LA(1)<=LBRACE)||(input.LA(1)>=COMMA && input.LA(1)<=LINE_COMMENT) ) {
         	        input.consume();
         	        state.errorRecovery=false;state.failed=false;
         	    }
@@ -13270,7 +13272,7 @@ public class Css3Parser extends DebugParser {
 
             int LA218_0 = input.LA(1);
 
-            if ( ((LA218_0>=NAMESPACE_SYM && LA218_0<=MEDIA_SYM)||(LA218_0>=RBRACE && LA218_0<=MINUS)||(LA218_0>=HASH && LA218_0<=INVALID)) ) {
+            if ( ((LA218_0>=NAMESPACE_SYM && LA218_0<=MEDIA_SYM)||(LA218_0>=RBRACE && LA218_0<=MINUS)||(LA218_0>=HASH && LA218_0<=LINE_COMMENT)) ) {
                 alt218=1;
             }
 
@@ -13284,7 +13286,7 @@ public class Css3Parser extends DebugParser {
         	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:576:11: ~ ( HASH_SYMBOL | LBRACE )
         	    {
         	    dbg.location(576,11);
-        	    if ( (input.LA(1)>=NAMESPACE_SYM && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=RBRACE && input.LA(1)<=MINUS)||(input.LA(1)>=HASH && input.LA(1)<=INVALID) ) {
+        	    if ( (input.LA(1)>=NAMESPACE_SYM && input.LA(1)<=MEDIA_SYM)||(input.LA(1)>=RBRACE && input.LA(1)<=MINUS)||(input.LA(1)>=HASH && input.LA(1)<=LINE_COMMENT) ) {
         	        input.consume();
         	        state.errorRecovery=false;state.failed=false;
         	    }
@@ -13420,7 +13422,7 @@ public class Css3Parser extends DebugParser {
 
             int LA220_0 = input.LA(1);
 
-            if ( (LA220_0==NAMESPACE_SYM||(LA220_0>=IDENT && LA220_0<=LBRACE)||(LA220_0>=COMMA && LA220_0<=LPAREN)||(LA220_0>=RPAREN && LA220_0<=MINUS)||(LA220_0>=HASH && LA220_0<=INVALID)) ) {
+            if ( (LA220_0==NAMESPACE_SYM||(LA220_0>=IDENT && LA220_0<=LBRACE)||(LA220_0>=COMMA && LA220_0<=LPAREN)||(LA220_0>=RPAREN && LA220_0<=MINUS)||(LA220_0>=HASH && LA220_0<=LINE_COMMENT)) ) {
                 alt220=1;
             }
 
@@ -13434,7 +13436,7 @@ public class Css3Parser extends DebugParser {
         	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:707:11: ~ ( HASH_SYMBOL | COLON | SEMI | RBRACE )
         	    {
         	    dbg.location(707,11);
-        	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=LBRACE)||(input.LA(1)>=COMMA && input.LA(1)<=LPAREN)||(input.LA(1)>=RPAREN && input.LA(1)<=MINUS)||(input.LA(1)>=HASH && input.LA(1)<=INVALID) ) {
+        	    if ( input.LA(1)==NAMESPACE_SYM||(input.LA(1)>=IDENT && input.LA(1)<=LBRACE)||(input.LA(1)>=COMMA && input.LA(1)<=LPAREN)||(input.LA(1)>=RPAREN && input.LA(1)<=MINUS)||(input.LA(1)>=HASH && input.LA(1)<=LINE_COMMENT) ) {
         	        input.consume();
         	        state.errorRecovery=false;state.failed=false;
         	    }
@@ -15715,20 +15717,20 @@ public class Css3Parser extends DebugParser {
     static final String DFA212_minS =
         "\3\4\2\uffff\1\4";
     static final String DFA212_maxS =
-        "\3\177\2\uffff\1\177";
+        "\3\u0080\2\uffff\1\u0080";
     static final String DFA212_acceptS =
         "\3\uffff\1\1\1\2\1\uffff";
     static final String DFA212_specialS =
         "\6\uffff}>";
     static final String[] DFA212_transitionS = {
-            "\1\3\1\uffff\1\2\5\3\2\uffff\6\3\1\uffff\40\3\1\2\1\1\2\2\107"+
+            "\1\3\1\uffff\1\2\5\3\2\uffff\6\3\1\uffff\40\3\1\2\1\1\2\2\110"+
             "\3",
-            "\1\3\1\uffff\1\2\5\3\1\4\1\uffff\6\3\1\5\40\3\1\2\1\1\2\2\107"+
+            "\1\3\1\uffff\1\2\5\3\1\4\1\uffff\6\3\1\5\40\3\1\2\1\1\2\2\110"+
             "\3",
-            "\1\3\1\uffff\1\2\5\3\2\uffff\6\3\1\5\40\3\1\2\1\1\2\2\107\3",
+            "\1\3\1\uffff\1\2\5\3\2\uffff\6\3\1\5\40\3\1\2\1\1\2\2\110\3",
             "",
             "",
-            "\1\3\1\uffff\6\3\2\uffff\162\3"
+            "\1\3\1\uffff\6\3\2\uffff\163\3"
     };
 
     static final short[] DFA212_eot = DFA.unpackEncodedString(DFA212_eotS);
@@ -15774,20 +15776,20 @@ public class Css3Parser extends DebugParser {
     static final String DFA215_minS =
         "\3\4\2\uffff\1\4";
     static final String DFA215_maxS =
-        "\3\177\2\uffff\1\177";
+        "\3\u0080\2\uffff\1\u0080";
     static final String DFA215_acceptS =
         "\3\uffff\1\1\1\2\1\uffff";
     static final String DFA215_specialS =
         "\6\uffff}>";
     static final String[] DFA215_transitionS = {
-            "\1\3\1\uffff\1\2\5\3\2\uffff\6\3\1\uffff\40\3\1\2\1\1\2\2\107"+
+            "\1\3\1\uffff\1\2\5\3\2\uffff\6\3\1\uffff\40\3\1\2\1\1\2\2\110"+
             "\3",
-            "\1\3\1\uffff\1\2\5\3\1\4\1\uffff\6\3\1\5\40\3\1\2\1\1\2\2\107"+
+            "\1\3\1\uffff\1\2\5\3\1\4\1\uffff\6\3\1\5\40\3\1\2\1\1\2\2\110"+
             "\3",
-            "\1\3\1\uffff\1\2\5\3\2\uffff\6\3\1\5\40\3\1\2\1\1\2\2\107\3",
+            "\1\3\1\uffff\1\2\5\3\2\uffff\6\3\1\5\40\3\1\2\1\1\2\2\110\3",
             "",
             "",
-            "\1\3\1\uffff\6\3\2\uffff\162\3"
+            "\1\3\1\uffff\6\3\2\uffff\163\3"
     };
 
     static final short[] DFA215_eot = DFA.unpackEncodedString(DFA215_eotS);
@@ -16091,7 +16093,7 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_ws_in_declaration3471 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_expression_in_propertyValue3511 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_cp_expression_in_propertyValue3554 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_expressionPredicate3592 = new BitSet(new long[]{0xF7FDFFFFFFBFEFF0L,0xFFFFFFFFFFFFFFFFL});
+    public static final BitSet FOLLOW_set_in_expressionPredicate3592 = new BitSet(new long[]{0xF7FDFFFFFFBFEFF0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
     public static final BitSet FOLLOW_set_in_expressionPredicate3621 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_SEMI_in_syncTo_SEMI3739 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_IMPORTANT_SYM_in_prio3794 = new BitSet(new long[]{0x0000000000000002L});
@@ -16264,30 +16266,30 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_syncToFollow_in_scss_nested_properties5926 = new BitSet(new long[]{0x5FE00001D1542840L,0x0000000000380000L});
     public static final BitSet FOLLOW_declarations_in_scss_nested_properties5928 = new BitSet(new long[]{0x0000000000002000L});
     public static final BitSet FOLLOW_RBRACE_in_scss_nested_properties5930 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_synpred1_Css31944 = new BitSet(new long[]{0xFFFFFFFFFFFFCFD0L,0xFFFFFFFFFFFFFFFFL});
-    public static final BitSet FOLLOW_COLON_in_synpred1_Css31956 = new BitSet(new long[]{0xFFFFFFFFFFFFCFD0L,0xFFFFFFFFFFFFFFFFL});
-    public static final BitSet FOLLOW_set_in_synpred1_Css31958 = new BitSet(new long[]{0xFFFFFFFFFFFFCFF0L,0xFFFFFFFFFFFFFFFFL});
+    public static final BitSet FOLLOW_set_in_synpred1_Css31944 = new BitSet(new long[]{0xFFFFFFFFFFFFCFD0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
+    public static final BitSet FOLLOW_COLON_in_synpred1_Css31956 = new BitSet(new long[]{0xFFFFFFFFFFFFCFD0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
+    public static final BitSet FOLLOW_set_in_synpred1_Css31958 = new BitSet(new long[]{0xFFFFFFFFFFFFCFF0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
     public static final BitSet FOLLOW_SEMI_in_synpred1_Css31968 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_scss_interpolation_expression_in_synpred1_Css31972 = new BitSet(new long[]{0x0000000000100000L});
     public static final BitSet FOLLOW_COLON_in_synpred1_Css31974 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_synpred2_Css31992 = new BitSet(new long[]{0xFFFFFFFFFFFFCFD0L,0xFFFFFFFFFFFFFFFFL});
-    public static final BitSet FOLLOW_COLON_in_synpred2_Css32004 = new BitSet(new long[]{0xFFFFFFFFFFFFCFD0L,0xFFFFFFFFFFFFFFFFL});
-    public static final BitSet FOLLOW_set_in_synpred2_Css32006 = new BitSet(new long[]{0xFFFFFFFFFFFFDFD0L,0xFFFFFFFFFFFFFFFFL});
+    public static final BitSet FOLLOW_set_in_synpred2_Css31992 = new BitSet(new long[]{0xFFFFFFFFFFFFCFD0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
+    public static final BitSet FOLLOW_COLON_in_synpred2_Css32004 = new BitSet(new long[]{0xFFFFFFFFFFFFCFD0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
+    public static final BitSet FOLLOW_set_in_synpred2_Css32006 = new BitSet(new long[]{0xFFFFFFFFFFFFDFD0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
     public static final BitSet FOLLOW_LBRACE_in_synpred2_Css32016 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_scss_interpolation_expression_in_synpred2_Css32020 = new BitSet(new long[]{0x0000000000100000L});
     public static final BitSet FOLLOW_COLON_in_synpred2_Css32022 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_synpred3_Css32052 = new BitSet(new long[]{0xFFFFFFFFFFFFDFD0L,0xFFFFFFFFFFFFFFFFL});
+    public static final BitSet FOLLOW_set_in_synpred3_Css32052 = new BitSet(new long[]{0xFFFFFFFFFFFFDFD0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
     public static final BitSet FOLLOW_LBRACE_in_synpred3_Css32062 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_synpred4_Css32143 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xFFFFFFFFFFFFFFFFL});
+    public static final BitSet FOLLOW_set_in_synpred4_Css32143 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
     public static final BitSet FOLLOW_RBRACE_in_synpred4_Css32149 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_synpred5_Css32195 = new BitSet(new long[]{0xFFFFFFFFFFFFEFF0L,0xFFFFFFFFFFFFFFFFL});
+    public static final BitSet FOLLOW_set_in_synpred5_Css32195 = new BitSet(new long[]{0xFFFFFFFFFFFFEFF0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
     public static final BitSet FOLLOW_HASH_SYMBOL_in_synpred5_Css32207 = new BitSet(new long[]{0x0000000000001000L});
     public static final BitSet FOLLOW_LBRACE_in_synpred5_Css32209 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_esPred_in_synpred6_Css32327 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_esPred_in_synpred7_Css32348 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_synpred8_Css32453 = new BitSet(new long[]{0x1000000000000000L});
     public static final BitSet FOLLOW_PIPE_in_synpred8_Css32462 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_synpred9_Css33402 = new BitSet(new long[]{0xFFFFFFFFFFEFDFD0L,0xFFFFFFFFFFFFFFFFL});
+    public static final BitSet FOLLOW_set_in_synpred9_Css33402 = new BitSet(new long[]{0xFFFFFFFFFFEFDFD0L,0xFFFFFFFFFFFFFFFFL,0x0000000000000001L});
     public static final BitSet FOLLOW_HASH_SYMBOL_in_synpred9_Css33420 = new BitSet(new long[]{0x0000000000001000L});
     public static final BitSet FOLLOW_LBRACE_in_synpred9_Css33422 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_expressionPredicate_in_synpred10_Css33508 = new BitSet(new long[]{0x0000000000000002L});

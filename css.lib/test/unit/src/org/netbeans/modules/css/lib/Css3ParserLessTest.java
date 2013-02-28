@@ -448,4 +448,17 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
 
     }
+    
+    public void testLineComment() {
+        String source =
+                ".funky {\n"
+                + " //line comment\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
 }
