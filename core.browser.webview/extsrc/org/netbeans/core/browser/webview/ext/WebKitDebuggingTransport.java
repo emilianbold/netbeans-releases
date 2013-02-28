@@ -129,12 +129,15 @@ public class WebKitDebuggingTransport implements TransportImplementation {
     
     @Override
     public URL getConnectionURL() {
-        try {
-            return new URL(browserImpl.getURL());
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
+        String urlStr = browserImpl.getURL();
+        if (urlStr != null) {
+            try {
+                return new URL(urlStr);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
+        return null;
     }
 
     @Override
