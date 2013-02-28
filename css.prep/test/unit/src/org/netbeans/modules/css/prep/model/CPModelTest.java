@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.model;
 
+import org.netbeans.modules.css.prep.model.CPModel;
 import java.util.Arrays;
 import java.util.Collection;
 import org.junit.Test;
@@ -92,14 +93,14 @@ public class CPModelTest extends CssTestBase {
         CPModel model = CPModel.getModel(result);
         assertNotNull(model);
         
-        Collection<String> varNames = model.getVarNames();        
-        assertNotNull(varNames);
+        Collection<Variable> vars = model.getVariables();        
+        assertNotNull(vars);
         
         String[] expected = new String[]{"$navbar-color","$items","$switch","$navbar-width"};
         
         Collection<String> expSet = Arrays.asList(expected);
-        assertTrue(varNames.containsAll(expSet));
-        assertFalse(varNames.retainAll(expSet));
+        assertTrue(vars.containsAll(expSet));
+        assertFalse(vars.retainAll(expSet));
         
     }
 }
