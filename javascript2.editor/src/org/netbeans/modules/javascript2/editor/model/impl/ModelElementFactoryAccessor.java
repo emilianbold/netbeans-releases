@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
 
 /**
@@ -77,5 +76,5 @@ public abstract class ModelElementFactoryAccessor {
         DEFAULT = accessor;
     }
 
-    public abstract ModelElementFactory createModelElementFactory(ModelVisitor visitor);
+    public abstract ModelElementFactory createModelElementFactory();
 }

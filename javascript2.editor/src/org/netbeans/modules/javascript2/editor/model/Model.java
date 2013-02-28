@@ -107,7 +107,7 @@ public final class Model {
             long startResolve = System.currentTimeMillis();
             resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
 
-            ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory(visitor);
+            ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory();
             long startCallingME = System.currentTimeMillis();
             Map<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> calls = visitor.getCallsForProcessing();
             if (calls != null && !calls.isEmpty()) {

@@ -43,7 +43,6 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collections;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -64,7 +63,6 @@ public class ModelTestBase extends JsTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        JQueryModel.skipInTest = true;
     }
     
     public Model getModel(String file) throws Exception {

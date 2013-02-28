@@ -42,37 +42,75 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
+import org.netbeans.modules.javascript2.editor.model.spi.ModelInterceptor;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Hejl
  */
 public final class ModelExtender {
-    public static final String METHOD_INTERCEPTORS_PATH = "JavaScript/Model/MethodInterceptors";
-    private static final Lookup.Result<FunctionInterceptor> METHOD_INTERCEPTORS = Lookups.forPath(METHOD_INTERCEPTORS_PATH).lookupResult(FunctionInterceptor.class);
-            
-    static class InstanceWrapper {
-        static ModelExtender extender = new ModelExtender();
-    }
-    
+
+    public static final String MODEL_INTERCEPTORS_PATH = "JavaScript/Model/ModelInterceptors";
+
+    public static final String FUNCTION_INTERCEPTORS_PATH = "JavaScript/Model/FunctionInterceptors";
+
+    private static final Lookup.Result<ModelInterceptor> MODEL_INTERCEPTORS =
+            Lookups.forPath(MODEL_INTERCEPTORS_PATH).lookupResult(ModelInterceptor.class);
+
+    private static final Lookup.Result<FunctionInterceptor> FUNCTION_INTERCEPTORS =
+            Lookups.forPath(FUNCTION_INTERCEPTORS_PATH).lookupResult(FunctionInterceptor.class);
+
+    private static ModelExtender instance;
+
+    private List<JsObject> extendingObjects;
+
     private ModelExtender() {
-        
+        super();
     }
-    
-    public static ModelExtender getDefault() {
-        return InstanceWrapper.extender;
+
+    public static synchronized ModelExtender getDefault() {
+        if (instance == null) {
+            instance = new ModelExtender();
+            MODEL_INTERCEPTORS.addLookupListener(new LookupListener() {
+
+                @Override
+                public void resultChanged(LookupEvent ev) {
+                    synchronized (instance) {
+                        instance.extendingObjects = null;
+                    }
+                }
+            });
+        }
+        return instance;
     }
-    
+
     /**
      * Get all registered {@link MethodCallProcessor}s.
-     * @return a list of all registered {@link MethodCallProcessor}s; never null.
+     *
+     * @return a list of all registered {@link MethodCallProcessor}s; never
+     * null.
      */
-    public List<FunctionInterceptor> getMethodInterceptors() {
-        return new ArrayList<FunctionInterceptor>(METHOD_INTERCEPTORS.allInstances());
+    public List<FunctionInterceptor> getFunctionInterceptors() {
+        return new ArrayList<FunctionInterceptor>(FUNCTION_INTERCEPTORS.allInstances());
     }
-    
+
+    public synchronized List<? extends JsObject> getExtendingGlobalObjects() {
+        if (extendingObjects == null) {
+            Collection<? extends ModelInterceptor> interceptors = MODEL_INTERCEPTORS.allInstances();
+            extendingObjects = new ArrayList<JsObject>(interceptors.size());
+            for (ModelInterceptor interceptor : interceptors) {
+                extendingObjects.addAll(interceptor.interceptGlobal(
+                        ModelElementFactoryAccessor.getDefault().createModelElementFactory()));
+            }
+        }
+        return extendingObjects;
+    }
 }

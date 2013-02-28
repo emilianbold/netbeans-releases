@@ -70,9 +70,8 @@ import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -516,7 +515,7 @@ public class ModelUtils {
                         }
                     }
 
-                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
                         for (JsObject object : libGlobal.getProperties().values()) {
                             if (object.getName().equals(name)) {
                                 //localObjects.add(object);
@@ -656,7 +655,7 @@ public class ModelUtils {
                             }
                         }
                         // from libraries look for top level types
-                        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
                             for (JsObject object : libGlobal.getProperties().values()) {
                                 if (object.getName().equals(typeUsage.getType())) {
                                     JsObject property = object.getProperty(name);
@@ -847,15 +846,6 @@ public class ModelUtils {
                 }
             } 
         } 
-        return result;
-    }
-    
-    private static Collection<JsObject> getLibrariesGlobalObjects() {
-        Collection<JsObject> result = new ArrayList<JsObject>();
-        JsObject libGlobal = JQueryModel.getGlobalObject();
-        if (libGlobal != null) {
-            result.add(libGlobal);
-        }
         return result;
     }
     

@@ -52,18 +52,17 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.EditorExtender;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryDeclarationFinder;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -133,8 +132,13 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 }
             }
         }
-        JQueryDeclarationFinder jQueryFinder = new JQueryDeclarationFinder();
-        return jQueryFinder.findDeclaration(info, caretOffset);
+        for (DeclarationFinder finder : EditorExtender.getDefault().getDeclarationFinderInterceptors()) {
+            DeclarationLocation loc = finder.findDeclaration(info, caretOffset);
+            if (loc != null && loc != DeclarationLocation.NONE) {
+                return loc;
+            }
+        }
+        return DeclarationLocation.NONE;
     }
 
     private DeclarationLocation processIndexResult(List<IndexResult> indexResults) {
@@ -164,10 +168,13 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 return new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
             }
         }
-        
-        JQueryDeclarationFinder jQueryFinder = new JQueryDeclarationFinder();
-        result =  jQueryFinder.getReferenceSpan(doc, caretOffset);
-        return result;
+        for (DeclarationFinder finder : EditorExtender.getDefault().getDeclarationFinderInterceptors()) {
+            result = finder.getReferenceSpan(doc, caretOffset);
+            if (result != null && result != OffsetRange.NONE) {
+                return result;
+            }
+        }
+        return OffsetRange.NONE;
     }
 
     // Note: this class has a natural ordering that is inconsistent with equals.

@@ -41,18 +41,23 @@
  */
 package org.netbeans.modules.javascript2.editor.model.spi;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -64,21 +69,31 @@ public final class ModelElementFactory {
         ModelElementFactoryAccessor.setDefault(new ModelElementFactoryAccessor() {
 
             @Override
-            public ModelElementFactory createModelElementFactory(ModelVisitor visitor) {
-                return new ModelElementFactory(visitor);
+            public ModelElementFactory createModelElementFactory() {
+                return new ModelElementFactory();
             }
         });
     }
 
-    private final ModelVisitor visitor;
-
-    private ModelElementFactory(ModelVisitor visitor) {
-        this.visitor = visitor;
+    private ModelElementFactory() {
+        super();
     }
 
+    public JsObject newGlobalObject(FileObject fileObject, int length) {
+        return JsFunctionImpl.createGlobal(fileObject, length);
+    }
+    
     public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange,
             boolean isDeclared) {
         return new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, isDeclared);
+    }
+
+    public JsFunction newFunction(DeclarationScope scope, JsObject parent, String name, Collection<String> params) {
+        List<Identifier> realParams = new ArrayList<Identifier>();
+        for (String param : params) {
+            realParams.add(new IdentifierImpl(param, OffsetRange.NONE));
+        }
+        return new JsFunctionImpl(scope, parent, new IdentifierImpl(name, OffsetRange.NONE), realParams, OffsetRange.NONE);
     }
 
     public JsObject newReference(JsObject parent, String name, OffsetRange offsetRange,
@@ -88,8 +103,40 @@ public final class ModelElementFactory {
         }
         return new JsObjectReference(parent, new IdentifierImpl(name, offsetRange), original, isDeclared);
     }
+
+    public JsObject newReference(String name, JsObject original, boolean isDeclared) {
+        if (original instanceof JsFunction) {
+            return new OriginalParentFunctionReference(new IdentifierImpl(name, OffsetRange.NONE), (JsFunction) original, isDeclared);
+        }
+        return new OriginalParentObjectReference(new IdentifierImpl(name, OffsetRange.NONE), original, isDeclared);
+    }
     
     public TypeUsage newType(String name, int offset, boolean resolved) {
         return new TypeUsageImpl(name, offset, resolved);
+    }
+
+    private static class OriginalParentFunctionReference extends JsFunctionReference {
+
+        public OriginalParentFunctionReference(Identifier declarationName, JsFunction original,
+                boolean isDeclared) {
+            super(original.getParent(), declarationName, original, isDeclared);
+        }
+
+        @Override
+        public JsObject getParent() {
+            return getOriginal().getParent();
+        }
+    }
+
+    private static class OriginalParentObjectReference extends JsObjectReference {
+
+        public OriginalParentObjectReference(Identifier declarationName, JsObject original, boolean isDeclared) {
+            super(original.getParent(), declarationName, original, isDeclared);
+        }
+
+        @Override
+        public JsObject getParent() {
+            return getOriginal().getParent();
+        }
     }
 }

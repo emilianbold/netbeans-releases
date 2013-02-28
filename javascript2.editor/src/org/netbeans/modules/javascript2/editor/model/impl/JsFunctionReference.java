@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -77,7 +78,22 @@ public class JsFunctionReference extends JsObjectReference implements JsFunction
     }
 
     @Override
+    public void addReturnType(TypeUsage type) {
+        original.addReturnType(type);
+    }
+
+    @Override
     public Collection<? extends TypeUsage> getReturnTypes() {
         return original.getReturnTypes();
+    }
+
+    @Override
+    public Collection<? extends DeclarationScope> getDeclarationsScope() {
+        return original.getDeclarationsScope();
+    }
+
+    @Override
+    public DeclarationScope getInScope() {
+        return original.getInScope();
     }
 }

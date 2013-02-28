@@ -75,7 +75,7 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -393,7 +393,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
                     String name = sb.substring(0, sb.length() - 1);
                     FunctionInterceptor interceptorToUse = null;
-                    for (FunctionInterceptor interceptor : ModelExtender.getDefault().getMethodInterceptors()) {
+                    for (FunctionInterceptor interceptor : ModelExtender.getDefault().getFunctionInterceptors()) {
                         if (interceptor.getNamePattern().matcher(name).matches()) {
                             interceptorToUse = interceptor;
                             break;
