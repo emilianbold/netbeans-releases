@@ -105,6 +105,40 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="ComponentUtils_adjustPanelsForOptions">
+            <api name="api.search"/>
+            <summary>Added method ComponentUtils.adjustPanelsForOptions</summary>
+            <version major="1" minor="12"/>
+            <date day="6" month="2" year="2013"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Controls for specifying search scope options can now be
+                    split into two panels - one for scope options, and one for
+                    file name options.
+                </p>
+                <p>
+                    Class ComponentUtils has new method
+                    adjustPanelsForOptions(JPanel, JPanel, boolean,
+                    FileNameController), that takes the two panels. It can be
+                    used instead of adjustPanelForOptions(JPanel, boolean,
+                    FileNameController), that puts all controls into a single
+                    panel.
+                </p>
+                <p>
+                    Class ScopeOptionsController has new method
+                    getFileNameComponent() to get the panel with controls
+                    related to file name. (The panel related to search scope can
+                    be get using getComponent()).
+                </p>
+            </description>
+            <class package="org.netbeans.api.search.ui" name="ComponentUtils"/>
+            <class package="org.netbeans.api.search.ui" name="ScopeOptionsController"/>
+            <issue number="226286"/>
+        </change>
+
         <change id="SearchPattern_MatchType">
             <api name="api.search"/>
             <summary>Search pattern supports three match types (literal, basic wildcards, regexp)</summary>

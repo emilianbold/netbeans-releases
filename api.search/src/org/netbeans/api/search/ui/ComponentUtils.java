@@ -138,6 +138,41 @@ public class ComponentUtils {
     }
 
     /**
+     * Adjust two empty panels for specifying search scope options. Several
+     * checkboxes and other controls will be addded to them, and their layout
+     * can be altered.
+     *
+     * Such ajdusted panels are useful if you want to let users customize
+     * options for {@link SearchScopeOptions} that you want to pass to file
+     * object iterator of a {@link SearchInfo}.
+     *
+     * @see ScopeOptionsController#getSearchScopeOptions()
+     *
+     * @param scopePanel Empty (with no child components) panel to adjust for
+     * controls related to search scope (search in archives, search in generated
+     * sources).
+     * @param fileNamePanel Empty (with no child components) panel to adjust for
+     * controls related to file name pattern (regular expression, ignore list).
+     * @param searchAndReplace True if options for search-and-replace mode
+     * should be shown, false to show options for search-only mode.
+     * @param fileNameController File-name combo box that will be bound to this
+     * settings panel.
+     * @return Controller for adjusted {@code JPanel}s with controls for setting
+     * search options (search in archives, search in generated sources, use
+     * ignore list, treat file name pattern as regular expression matching file
+     * path).
+     *
+     * @since api.search/1.12
+     */
+    public static @NonNull ScopeOptionsController adjustPanelsForOptions(
+            @NonNull JPanel scopePanel, @NonNull JPanel fileNamePanel,
+            boolean searchAndReplace,
+            @NonNull FileNameController fileNameController) {
+        return new ScopeOptionsController(scopePanel, fileNamePanel,
+                fileNameController, searchAndReplace);
+    }
+
+    /**
      * Adjust a {@link JComboBox} to act as component for selecting search text
      * pattern, and return a controller object for interacting with it.
      *
