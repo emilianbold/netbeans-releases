@@ -123,6 +123,11 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     }
 
     @Override
+    public void apply(Map<String, Object> map, Project project) throws IOException {
+        apply(map, project, null);
+    }
+    
+    @Override
     public void apply(Map<String, Object> map, Project project, Interrupter interrupter) throws IOException {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
@@ -436,6 +441,11 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         wizardDescriptor.setCompilerName(top);
     }
 
+    @Override
+    public boolean canApply(Map<String, Object> map, Project project) {
+        return canApply(map, project, null);
+    }
+    
     @Override
     public boolean canApply(Map<String, Object> map, Project project, Interrupter interrupter) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
