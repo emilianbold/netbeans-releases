@@ -55,6 +55,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -70,9 +71,14 @@ public class TestNGMethodDebuggerProvider extends TestMethodDebuggerProvider {
     public boolean canHandle(Node activatedNode) {
         FileObject fileO = CommonTestUtil.getFileObjectFromNode(activatedNode);
         if (fileO != null) {
-            EditorCookie ec = activatedNode.getLookup().lookup(EditorCookie.class);
+            final EditorCookie ec = activatedNode.getLookup().lookup(EditorCookie.class);
             if (ec != null) {
-                JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+                JEditorPane pane = Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
+		    @Override
+		    public JEditorPane run() {
+			return NbDocument.findRecentEditorPane(ec);
+		    }
+		});
                 if (pane != null) {
                     String text = pane.getText();
                     int index = text.indexOf("public");  //NOI18N
@@ -92,6 +98,9 @@ public class TestNGMethodDebuggerProvider extends TestMethodDebuggerProvider {
         SingleMethod sm = null;
         if (doc != null) {
             JavaSource js = JavaSource.forDocument(doc);
+            if(js == null) {
+                return null;
+            }
             TestClassInfoTask task = new TestClassInfoTask(cursor);
             try {
                 Future<Void> f = js.runWhenScanFinished(task, true);

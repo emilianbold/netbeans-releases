@@ -278,7 +278,7 @@ public class ImportExecutable implements PropertyChangeListener {
                     Applicable applicable = null;
                     try {
                         ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+                        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor();
                         applicable = extension.isApplicable(map, lastSelectedProject, true);
                         if (applicable.isApplicable()) {
                             if (sourcesPath == null) {
@@ -299,9 +299,9 @@ public class ImportExecutable implements PropertyChangeListener {
                                     map.put(DiscoveryWizardDescriptor.ADDITIONAL_LIBRARIES, additionalDependencies);
                                 }
                             }
-                            if (extension.canApply(map, lastSelectedProject)) {
+                            if (extension.canApply(map, lastSelectedProject, null)) {
                                 try {
-                                    extension.apply(map, lastSelectedProject);
+                                    extension.apply(map, lastSelectedProject, null);
                                     discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                     DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, null);
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
@@ -393,7 +393,7 @@ public class ImportExecutable implements PropertyChangeListener {
         if (provider == null) {
             return;
         }
-        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor();
         if (configurationDescriptor == null) {
             return;
         }

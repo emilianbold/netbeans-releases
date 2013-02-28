@@ -219,6 +219,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             jPanel2.setBackground(color); 
             jPanel4.setBackground(color); 
             jPanel5.setBackground(color); 
+            treeSelectionPanel.setBackground(color); 
         }
     }
 

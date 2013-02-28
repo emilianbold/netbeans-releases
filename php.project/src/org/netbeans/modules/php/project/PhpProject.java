@@ -1264,6 +1264,7 @@ public final class PhpProject implements Project {
                 return browserSupport;
             }
             browserSupportInitialized = true;
+            initBrowser();
             WebBrowser browser = WebBrowserSupport.getBrowser(browserId);
             if (browser == null) {
                 browserSupport = null;

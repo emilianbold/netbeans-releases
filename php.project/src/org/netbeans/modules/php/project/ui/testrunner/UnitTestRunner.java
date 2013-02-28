@@ -101,7 +101,7 @@ public final class UnitTestRunner {
             MANAGER.testStarted(testSession);
             TestSessionImpl session = runInternal();
             if (session != null) {
-                handleCodeCoverage(session.getCoverage());
+                handleCodeCoverage(session.getCoverage(), session.isCoverageSet());
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -133,12 +133,15 @@ public final class UnitTestRunner {
         return false;
     }
 
-    private void handleCodeCoverage(Coverage coverage) {
+    private void handleCodeCoverage(Coverage coverage, boolean coverageSet) {
         if (!coverageProvider.isEnabled()) {
             return;
         }
         if (!testingProvider.isCoverageSupported(project.getPhpModule())) {
             return;
+        }
+        if (!coverageSet) {
+            throw new IllegalStateException("Code coverage was not set (forgot to call TestSession.setCoverage(Coverage)?)");
         }
         if (coverage == null) {
             // some error

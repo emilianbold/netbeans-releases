@@ -199,11 +199,15 @@ public class Css3LexerTest extends NbTestCase {
     }
      
      public void testSassVar() throws Exception {
-        String source = "$var ";
-     
+        String source = "$var ";     
         Lexer lexer = createLexer(source);
-        
         assertANTLRToken(null ,Css3Lexer.SASS_VAR, lexer.nextToken());
+    }
+     
+     public void testCPLineComment() throws Exception {
+        String source = "//line comment\n";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken(null ,Css3Lexer.LINE_COMMENT, lexer.nextToken());
         
     }
      

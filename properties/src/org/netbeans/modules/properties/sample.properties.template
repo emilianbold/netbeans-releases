@@ -1,4 +1,4 @@
 <#-- FreeMarker template (see http://freemarker.org/) -->
 <#assign licensePrefix = "# ">
-<#include "../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 

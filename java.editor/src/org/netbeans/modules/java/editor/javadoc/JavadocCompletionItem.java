@@ -391,6 +391,11 @@ final class JavadocCompletionItem implements CompletionItem {
         public CharSequence getInsertPrefix() {
             return delegate.getInsertPrefix();
         }
+
+        @Override
+        public String toString() {
+            return delegate.toString();
+        }
         
     }
     
@@ -457,6 +462,11 @@ final class JavadocCompletionItem implements CompletionItem {
 
         public CharSequence getInsertPrefix() {
             return delegate.getInsertPrefix();
+        }
+
+        @Override
+        public String toString() {
+            return delegate.toString();
         }
         
     }

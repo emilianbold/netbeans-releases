@@ -427,7 +427,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
                             handle.start();
                             while(sources.hasNext()) {
                                 SourceFolderInfo next = sources.next();
-                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, null, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
                             }
                             handle.finish();
                             waitSources.countDown();
@@ -894,7 +894,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
         // Discovery require a fully completed project
         // Make sure that descriptor was stored and readed
         ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        provider.getConfigurationDescriptor(true);
+        provider.getConfigurationDescriptor();
         try {
             waitSources.await();
         } catch (InterruptedException ex) {
@@ -922,14 +922,14 @@ public class ImportRemoteProject implements PropertyChangeListener {
                             map.put(ROOT_FOLDER, nativeProjectPath);
                             map.put(EXEC_LOG_FILE, execLog.getAbsolutePath());
                             map.put(CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
-                            if (extension.canApply(map, makeProject)) {
+                            if (extension.canApply(map, makeProject, null)) {
                                 if (TRACE) {
                                     logger.log(Level.INFO, "#start discovery by exec log file {0}", execLog.getAbsolutePath()); // NOI18N
                                 }
                                 try {
                                     done = true;
                                     exeLogDone = true;
-                                    extension.apply(map, makeProject);
+                                    extension.apply(map, makeProject, null);
                                     importResult.put(Step.DiscoveryLog, State.Successful);
                                 } catch (IOException ex) {
                                     ex.printStackTrace(System.err);

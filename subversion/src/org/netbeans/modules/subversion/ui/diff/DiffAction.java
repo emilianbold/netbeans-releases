@@ -61,7 +61,12 @@ import org.tigris.subversion.svnclientadapter.ISVNStatus;
  * @author Petr Kuzel
  */
 public class DiffAction extends ContextAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/diff.png"; //NOI18N
 
+    public DiffAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Diff";    // NOI18N
@@ -80,7 +85,7 @@ public class DiffAction extends ContextAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/subversion/resources/icons/diff.png"; // NOI18N
+        return ICON_RESOURCE;
     }
     
     public static void diff(Context ctx, int type, String contextName, boolean initialStatusRefreshDisabled) {

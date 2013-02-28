@@ -67,6 +67,11 @@ import org.openide.util.NbBundle;
  * @author John Rice
  */
 public class DiffAction extends ContextAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/diff.png"; //NOI18N
+    
+    public DiffAction () {
+        super(ICON_RESOURCE);
+    }
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -84,7 +89,7 @@ public class DiffAction extends ContextAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/mercurial/resources/icons/diff.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     @Override

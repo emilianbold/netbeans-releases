@@ -160,7 +160,7 @@ public class NamespacesModule extends CssEditorModule {
                 break;
         }
 
-        return Css3Utils.filterCompletionProposals(proposals, context.getPrefix(), true);
+        return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
 
     private static List<CompletionProposal> getNamespaceCompletionProposals(final CompletionContext context) {

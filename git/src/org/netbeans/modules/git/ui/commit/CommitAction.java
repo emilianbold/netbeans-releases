@@ -99,10 +99,15 @@ import org.openide.util.RequestProcessor;
 public class CommitAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(CommitAction.class.getName());
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/commit.png"; //NOI18N
+    
+    public CommitAction () {
+        super(ICON_RESOURCE);
+    }
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/git/resources/icons/commit.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     @Override

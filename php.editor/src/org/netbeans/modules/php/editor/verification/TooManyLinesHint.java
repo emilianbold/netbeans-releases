@@ -169,7 +169,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
         }
 
         @Override
-        public JComponent getCustomizer(Preferences node) {
+        public JComponent getCustomizer(Preferences preferences) {
             return new FunctionLinesCustomizer(preferences, this);
         }
 
@@ -248,7 +248,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
         }
 
         @Override
-        public JComponent getCustomizer(Preferences node) {
+        public JComponent getCustomizer(Preferences preferences) {
             return new ClassLinesCustomizer(preferences, this);
         }
 
@@ -327,7 +327,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
         }
 
         @Override
-        public JComponent getCustomizer(Preferences node) {
+        public JComponent getCustomizer(Preferences preferences) {
             return new InterfaceLinesCustomizer(preferences, this);
         }
 
@@ -406,7 +406,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
         }
 
         @Override
-        public JComponent getCustomizer(Preferences node) {
+        public JComponent getCustomizer(Preferences preferences) {
             return new TraitLinesCustomizer(preferences, this);
         }
 

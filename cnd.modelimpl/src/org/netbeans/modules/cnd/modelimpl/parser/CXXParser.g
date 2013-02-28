@@ -1260,9 +1260,11 @@ init_declarator_list
  *
  */
 init_declarator
-    :                                                                           {action.init_declarator(input.LT(1));}
-        greedy_declarator initializer?                                          {action.end_init_declarator(input.LT(0));}
+@init                                                                           {if(state.backtracking == 0){action.init_declarator(input.LT(1));}}
+    :                                                                           
+        greedy_declarator initializer?                                          
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_init_declarator(input.LT(0));}}
 
 /*
  * original rule (naming as per C++0X)
@@ -1291,7 +1293,8 @@ noptr_declarator:
 
 
 declarator returns [declarator_type_t type]
-    :                                                                           {action.declarator(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.declarator(input.LT(1));}}
+    :                                                                           
     (
         (ptr_operator)=>
             ptr_operator literal_restrict? nested=declarator
@@ -1301,12 +1304,14 @@ declarator returns [declarator_type_t type]
     |
         noptr_declarator 
 //            {{ type = $noptr_declarator.type; }}
-    )                                                                           {action.end_declarator(input.LT(0));}
+    )                                                                           
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_declarator(input.LT(0));}}
 
 // is quite unpretty because of left recursion removed here
 noptr_declarator returns [declarator_type_t type]
-    :                                                                           {action.noptr_declarator(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.noptr_declarator(input.LT(1));}}
+    :                                                                           
         (
             declarator_id attribute_specifiers?
 //                {{ type = $declarator_id.type; }}
@@ -1326,8 +1331,9 @@ noptr_declarator returns [declarator_type_t type]
             attribute_specifiers?
 //                {{ type.apply_array($constant_expression.expr); }}
         )*
-        trailing_return_type?                                                   {action.end_noptr_declarator(input.LT(0));}
+        trailing_return_type?                                                   
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_noptr_declarator(input.LT(0));}}
 
 trailing_return_type:
     LITERAL_POINTERTO trailing_type_specifier+ 
@@ -1340,20 +1346,24 @@ trailing_return_type:
  * leading class name.
  */
 function_declarator returns [declarator_type_t type]
-    :                                                                           {action.function_declarator(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.function_declarator(input.LT(1));}}
+    :                                                                           
     (
         (constructor_declarator)=>
             constructor_declarator //{{ type = $constructor_declarator.type; }}
     |
         declarator //{{ type = $declarator.type; }}
-    )                                                                           {action.end_function_declarator(input.LT(0));}
+    )                                                                           
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_function_declarator(input.LT(0));}}
 
 constructor_declarator returns [declarator_type_t type]
-    :                                                                           {action.constructor_declarator(input.LT(1));}
-        parameters_and_qualifiers                                               {action.end_constructor_declarator(input.LT(0));}
+@init                                                                           {if(state.backtracking == 0){action.constructor_declarator(input.LT(1));}}
+    :                                                                           
+        parameters_and_qualifiers                                               
             //{{ type.set_constructor($parameters_and_qualifiers.pq); }}
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_constructor_declarator(input.LT(0));}}
 
 /*
 
@@ -1376,7 +1386,8 @@ noptr_abstract_declarator:
 */
 
 abstract_declarator returns [declarator_type_t type]
-    :                                                                           {action.function_declarator(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.function_declarator(input.LT(1));}}
+    :                                                                           
     (
         noptr_abstract_declarator 
         //{{ type = $noptr_abstract_declarator.type; }}
@@ -1388,11 +1399,13 @@ abstract_declarator returns [declarator_type_t type]
 //            }}
     |
         ELLIPSIS                                                                {action.function_declarator(action.FUNCTION_DECLARATOR__ELLIPSIS, input.LT(0));}
-    )                                                                           {action.end_function_declarator(input.LT(0));}
+    )                                                                           
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_function_declarator(input.LT(0));}}
 
 noptr_abstract_declarator returns [declarator_type_t type]
-    :                                                                           {action.noptr_abstract_declarator(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.noptr_abstract_declarator(input.LT(1));}}
+    :                                                                           
     (
         (LPAREN abstract_declarator RPAREN)=>
             LPAREN                                                              {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__LPAREN, input.LT(0));}
@@ -1413,20 +1426,24 @@ noptr_abstract_declarator returns [declarator_type_t type]
             constant_expression? 
             RSQUARE                                                             {action.noptr_abstract_declarator(action.NOPTR_ABSTRACT_DECLARATOR__RSQUARE, input.LT(0));}
         )+
-    )                                                                           {action.end_noptr_abstract_declarator(input.LT(0));}
+    )                                                                           
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_noptr_abstract_declarator(input.LT(0));}}
 
 universal_declarator returns [declarator_type_t type]
-    :                                                                           {action.universal_declarator(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.universal_declarator(input.LT(1));}}
+    :                                                                           
     (options { backtrack = true; }:
         declarator //{ type = $declarator.type; }
     |
         abstract_declarator //{ type = $abstract_declarator.type; }
-    )                                                                           {action.end_universal_declarator(input.LT(0));}
+    )                                                                           
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_universal_declarator(input.LT(0));}}
 
 greedy_declarator returns [declarator_type_t type]
-    :                                                                           {action.greedy_declarator(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.greedy_declarator(input.LT(1));}}
+    :                                                                           
     (
         greedy_nonptr_declarator //{{ type = $greedy_nonptr_declarator.type; }}
     |
@@ -1435,15 +1452,17 @@ greedy_declarator returns [declarator_type_t type]
 //            {{ type = $decl.type;
 //               type.apply_ptr($ptr_operator.type);
 //            }}
-    )                                                                           {action.end_greedy_declarator(input.LT(0));}
+    )                                                                           
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_greedy_declarator(input.LT(0));}}
 
 /*
  * This is to resolve ambiguity between declarator and subsequent (expression) initializer in init_declarator.
  * Eat as much parameter sets as possible.
  */
 greedy_nonptr_declarator returns [declarator_type_t type]
-    :                                                                           {action.greedy_nonptr_declarator(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.greedy_nonptr_declarator(input.LT(1));}}
+    :                                                                           
     (
         (
             declarator_id attribute_specifiers?
@@ -1464,8 +1483,9 @@ greedy_nonptr_declarator returns [declarator_type_t type]
             RSQUARE                                                             {action.greedy_nonptr_declarator(action.GREEDY_NONPTR_DECLARATOR__RSQUARE, input.LT(0));}
                 //{{ type.apply_array($constant_expression.expr); }}
         )*
-    )                                                                           {action.end_greedy_nonptr_declarator(input.LT(0));}
+    )                                                                           
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_greedy_nonptr_declarator(input.LT(0));}}
 
 ptr_operator returns [ declarator_type_t type ]
     :                                                                           {action.ptr_operator(input.LT(1));}
@@ -1513,13 +1533,15 @@ ref_qualifier:
  */
 
 declarator_id returns [ declarator_type_t type ] 
-    :                                                                           {action.declarator_id(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.declarator_id(input.LT(1));}}
+    :                                                                           
         (
             ELLIPSIS                                                            {action.declarator_id(action.DECLARATOR_ID__ELLIPSIS, input.LT(0));}
         )? 
         id_expression //{{ type.set_ident(); }}                       
-                                                                                {action.end_declarator_id(input.LT(0));}
+                                                                                
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_declarator_id(input.LT(0));}}
 
 /*
  * from 8.2 Ambiguity resolution:
@@ -1874,13 +1896,15 @@ member_bitfield_declarator
     ;
 
 member_declarator
-    :                                                                           {action.member_declarator(input.LT(1));}
+@init                                                                           {if(state.backtracking == 0){action.member_declarator(input.LT(1));}}
+    :                                                                           
     (
         declarator virt_specifier* brace_or_equal_initializer
     |
         member_bitfield_declarator
-    )                                                                           {action.end_member_declarator(input.LT(0));}
+    )                                                                           
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_member_declarator(input.LT(0));}}
 
 /*
  * original rule:

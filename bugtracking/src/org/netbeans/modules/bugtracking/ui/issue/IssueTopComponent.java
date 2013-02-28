@@ -77,7 +77,6 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.ui.search.FindSupport;
 import org.netbeans.modules.bugtracking.util.*;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Cancellable;

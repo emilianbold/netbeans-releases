@@ -148,7 +148,7 @@ public class JPDAStart extends Task implements Runnable {
     /** The class debugger should stop in, or null. */
     private String                  stopClassName = null;
     private String                  listeningCP = null;
-    private RequestProcessor        rp = new RequestProcessor("JPDAStart", 1);
+    private RequestProcessor        rp = new RequestProcessor("JPDAStart", 5);
 
     
     // properties ..............................................................

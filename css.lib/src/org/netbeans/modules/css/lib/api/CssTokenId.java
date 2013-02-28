@@ -86,9 +86,9 @@ public enum CssTokenId implements TokenId {
     
     ERROR(org.antlr.runtime.Token.INVALID_TOKEN_TYPE, ERRORS),
     
-    AND(Css3Lexer.AND, KEYWORDS),
-    NOT(Css3Lexer.NOT, KEYWORDS),
-    ONLY(Css3Lexer.ONLY, KEYWORDS),
+    AND(Css3Lexer.AND, OPERATORS),
+    NOT(Css3Lexer.NOT, OPERATORS),
+    ONLY(Css3Lexer.ONLY, OPERATORS),
     RESOLUTION(Css3Lexer.RESOLUTION, NUMBERS),
     WS(Css3Lexer.WS, WHITESPACES),
     CHARSET_SYM(Css3Lexer.CHARSET_SYM, AT_RULE_SYMBOL),
@@ -163,7 +163,9 @@ public enum CssTokenId implements TokenId {
     X(Css3Lexer.X, OTHERS),
     Y(Css3Lexer.Y, OTHERS),
     Z(Css3Lexer.Z, OTHERS),
+    
     COMMENT(Css3Lexer.COMMENT, COMMENTS),
+    LINE_COMMENT(Css3Lexer.LINE_COMMENT, COMMENTS),
     
     //following two should possibly not be part of the grammar at all
     CDO(Css3Lexer.CDO, OTHERS), //<!--
