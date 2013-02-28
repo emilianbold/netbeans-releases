@@ -39,67 +39,48 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep;
-
-import java.util.Arrays;
-import java.util.Collection;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.lib.CssTestBase;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.CssParserResult;
+package org.netbeans.test.php.cc;
+import java.awt.event.InputEvent;
+import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author marekfukala
+ * @author Martin Kanak
  */
-public class CPModelTest extends CssTestBase {
-    
-    public CPModelTest(String name) {
-        super(name);
-    }
+public class testCCTwig extends cc {
+    static final String TEST_PHP_NAME = "PhpProject_cc_0003";
 
-    @Override
-    protected void setUp() throws Exception {
-        setScssSource();
+    public testCCTwig(String arg0) {
+        super(arg0);
     }
     
-    public void testVariables() {
-                String source = "#navbar {\n"
-                + "  $navbar-width: 800px;\n"
-                + "  width: $navbar-width;\n"
-                + "  border-bottom: 2px solid $navbar-color;\n"
-                + "\n"
-                + "  li {\n"
-                + "    float: left;\n"
-                + "    width: $navbar-width/$items - 10px;\n"
-                + "\n"
-                + "    background-color:\n"
-                + "      lighten($navbar-color, 20%);\n"
-                + "    &:hover {\n"
-                + "      background-color:\n"
-                + "        lighten($navbar-color, 10%);\n"
-                + "    }\n"
-                + "  }\n"
-                + ".class {\n"
-                + "  @include mixin($switch, #888);\n"
-                + "}"
-                + "}";
-        CssParserResult result = TestUtil.parse(source);
-        assertResultOK(result);
-        
-        CPModel model = CPModel.getModel(result);
-        assertNotNull(model);
-        
-        Collection<String> varNames = model.getVarNames();        
-        assertNotNull(varNames);
-        
-        String[] expected = new String[]{"$navbar-color","$items","$switch","$navbar-width"};
-        
-        Collection<String> expSet = Arrays.asList(expected);
-        assertTrue(varNames.containsAll(expSet));
-        assertFalse(varNames.retainAll(expSet));
-        
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(testCCTwig.class).addTest(
+                "CreateApplication",
+                "testPhpTwigCodeCompletion").enableModules(".*").clusters(".*") //.gui( true )                
+                );
+    }
+    
+    public void CreateApplication() {
+        startTest();
+        CreatePHPApplicationInternal(TEST_PHP_NAME);
+        endTest();
+    }
+    
+    public void testPhpTwigCodeCompletion() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "Twig HTML file", null);
+        startTest();
+        file.setCaretPosition("#}", false);
+        TypeCode(file, "{%el");
+        file.typeKey(' ', InputEvent.CTRL_MASK);
+        new EventTool().waitNoEvent(1000);
+        CompletionInfo jCompl = GetCompletion();
+        String[] ideal = {"else", "elseif", "else", "elseif"};
+        CheckCompletionItems(jCompl.listItself, ideal);
+        endTest();
     }
 }

@@ -39,76 +39,31 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.model;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
- * naive temporary impl.
+ * xxx: temporary
  *
  * @author marekfukala
  */
-public class CPModel {
+public class Variable {
     
-    private CssParserResult result;
-    
-    private Set<String> varNames;
-    private CPType cpType;
+    private String name;
+    private OffsetRange range;
 
-    public static CPModel getModel(CssParserResult result) {
-        CPModel curr = result.getProperty(CPModel.class);
-        if(curr == null) {
-            curr = new CPModel(result);
-            result.setProperty(CPModel.class, curr);
-        }
-        return curr;
+    public Variable(String name, OffsetRange range) {
+        this.name = name;
+        this.range = range;
     }
-    
-    private CPModel(CssParserResult result) {
-        this.result = result;
+
+    public String getName() {
+        return name;
     }
-    
-    public CPType getPreprocessorType() {
-        if(cpType == null) {
-            String fileMimetype = result.getSnapshot().getSource().getFileObject().getMIMEType();
-            if(fileMimetype == null) {
-                cpType = CPType.NONE;
-            } else {
-                if("text/less".equals(fileMimetype)) { //NOI18N
-                    cpType = CPType.LESS;
-                } else if("text/scss".equals(fileMimetype)) { //NOI18N
-                    cpType = CPType.SCSS;
-                } else {
-                    cpType = CPType.NONE;
-                }
-            }
-        }
-        return cpType;
-    }
-    
-    //xxx just per current file
-    public Collection<String> getVarNames() {
-        if(varNames == null) {
-            varNames = new HashSet<String>();
-            NodeVisitor visitor = new NodeVisitor() {
-                @Override
-                public boolean visit(Node node) {
-                    if(node.type() == NodeType.cp_variable) {
-                        varNames.add(node.image().toString());
-                    }
-                    return false;
-                }
-            };
-            visitor.visitChildren(result.getParseTree());            
-        }
-        
-        return varNames;
+
+    public OffsetRange getRange() {
+        return range;
     }
     
 }

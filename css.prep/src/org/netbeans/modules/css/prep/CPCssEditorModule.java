@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.css.prep;
 
+import org.netbeans.modules.css.prep.model.CPModel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +67,7 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.prep.model.Variable;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
@@ -90,24 +94,47 @@ public class CPCssEditorModule extends CssEditorModule {
     @Override
     public List<CompletionProposal> getCompletionProposals(final CompletionContext context) {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        
+        CPModel model = CPModel.getModel(context.getParserResult());
+        List<CompletionProposal> allVars = getVariableCompletionProposals(context, model);
+        
+        //errorneous source
+        TokenSequence<CssTokenId> ts = context.getTokenSequence();
+        Token<CssTokenId> token = ts.token();
+        
+        if(token.id() == CssTokenId.ERROR) {
+            if(LexerUtils.equals(token.text(), "$", false, true)) {
+                //"$" as a prefix - user likely wants to type variable
+                //check context
+                if(NodeUtil.getAncestorByType(context.getActiveTokenNode(), NodeType.rule) != null) {
+                    //in declarations node -> offer all vars
+                    proposals.addAll(allVars);
+                    return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
+                }
+            }
+        }
+        
+        
+        
         Node activeNode = context.getActiveNode();
         boolean isError = activeNode.type() == NodeType.error;
         if (isError) {
             activeNode = activeNode.parent();
         }
-        CPModel model = CPModel.getModel(context.getParserResult());
 
 //        NodeUtil.dumpTree(context.getParseTreeRoot());
+        
+        
         
         switch (activeNode.type()) {
             case cp_variable:
                 //already in the prefix
-                proposals.addAll(getVariableCompletionProposals(context, model));
+                proposals.addAll(allVars);
                 break;
             case propertyValue:
                 //just $ or @ prefix
                 if(context.getPrefix().length() == 1 && context.getPrefix().charAt(0) == model.getPreprocessorType().getVarPrefix()) {
-                    proposals.addAll(getVariableCompletionProposals(context, model));
+                    proposals.addAll(allVars);
                 }
 
         }
@@ -115,8 +142,14 @@ public class CPCssEditorModule extends CssEditorModule {
     }
 
     private static List<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
-        
-        return Utilities.createRAWCompletionProposals(model.getVarNames(), ElementKind.VARIABLE, context.getAnchorOffset());
+        //filter the variable at the current location (being typed)
+        Collection<String> filtered = new HashSet<String>();
+        for(Variable var : model.getVariables()) {
+            if(!var.getRange().containsInclusive(context.getCaretOffset())) {
+                filtered.add(var.getName());
+            }
+        }
+        return Utilities.createRAWCompletionProposals(filtered, ElementKind.VARIABLE, context.getAnchorOffset());
     }
 
     @Override

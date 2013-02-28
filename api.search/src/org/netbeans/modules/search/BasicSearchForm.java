@@ -292,11 +292,13 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         formPanel.addSeparator();
         formPanel.addRow(lblScope, cboxScope.getComponent());
+        initScopeOptionsRow(searchAndReplace);
         formPanel.addSeparator();
         formPanel.addRow(lblFileNamePattern,
                 cboxFileNamePattern.getComponent());
         formPanel.addRow(new JLabel(), lblFileNameHint);
-        initScopeOptionsRow(searchAndReplace);
+        formPanel.addRow(new JLabel(),
+                scopeSettingsPanel.getFileNameComponent());
         formPanel.addEmptyLine();
     }
 
@@ -335,8 +337,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     }
 
     private void initScopeOptionsRow(boolean searchAndReplace) {
-        this.scopeSettingsPanel = ComponentUtils.adjustPanelForOptions(
-                new JPanel(), searchAndReplace, cboxFileNamePattern);
+        this.scopeSettingsPanel = ComponentUtils.adjustPanelsForOptions(
+                new JPanel(), new JPanel(), searchAndReplace,
+                cboxFileNamePattern);
         formPanel.addRow(new JLabel(), scopeSettingsPanel.getComponent());
     }
 
