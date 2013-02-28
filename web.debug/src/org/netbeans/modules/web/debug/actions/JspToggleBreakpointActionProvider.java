@@ -83,7 +83,9 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
     }
     
     private void destroy () {
-        debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
+        if (debugger != null) {
+            debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
+        }
         Context.removePropertyChangeListener (this);
     }
     

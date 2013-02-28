@@ -2,7 +2,7 @@
 <#assign licenseFirst = "<!--">
 <#assign licensePrefix = "">
 <#assign licenseLast = "-->">
-<#include "../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 
 <xs:schema version="1.0"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"

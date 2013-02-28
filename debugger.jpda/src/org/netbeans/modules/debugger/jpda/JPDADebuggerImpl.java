@@ -206,6 +206,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private boolean                     doContinue = true; // Whether resume() will actually resume
     private Boolean                     singleThreadStepResumeDecision = null;
     private Boolean                     stepInterruptByBptResumeDecision = null;
+    private boolean                     breakpointsActive = true;
     
     private InputOutput                 io;
 
@@ -554,6 +555,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
+    @Override
+    public boolean getBreakpointsActive() {
+        return breakpointsActive;
+    }
+
+    @Override
+    public void setBreakpointsActive(boolean active) {
+        synchronized (this) {
+            if (breakpointsActive == active) {
+                return ;
+            }
+            breakpointsActive = active;
+        }
+        firePropertyChange(PROP_BREAKPOINTS_ACTIVE, !active, active);
+    }
+    
     public Session getSession() {
         return lookupProvider.lookupFirst(null, Session.class);
     }

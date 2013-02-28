@@ -92,6 +92,10 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
             return NbBundle.getMessage 
                 (DebuggerBreakpointAnnotation.class, "TOOLTIP_BREAKPOINT_BROKEN"); // NOI18N
         }
+        if (type.endsWith("_stroke")) {
+            return NbBundle.getMessage(DebuggerBreakpointAnnotation.class,
+                                       "TOOLTIP_BREAKPOINT_STROKE");
+        }
         if (type == EditorContext.BREAKPOINT_ANNOTATION_TYPE) {
             return NbBundle.getMessage 
                 (DebuggerBreakpointAnnotation.class, "TOOLTIP_BREAKPOINT"); // NOI18N

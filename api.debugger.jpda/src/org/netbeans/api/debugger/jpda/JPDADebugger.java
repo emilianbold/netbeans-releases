@@ -107,6 +107,9 @@ public abstract class JPDADebugger {
     /** Property name constant.
      * @since 2.25     */
     public static final String          PROP_CLASSES_FIXED = "classesFixed";  // NOI18N
+    /** Property name constant. Fired when breakpoints are activated / deactivated.
+     * @since 2.42     */
+    public static final String          PROP_BREAKPOINTS_ACTIVE = "breakpointsActive"; // NOI18N
     
     /** Suspend property value constant. */
     public static final int             SUSPEND_ALL = EventRequest.SUSPEND_ALL;
@@ -485,6 +488,30 @@ public abstract class JPDADebugger {
         JPDABreakpointEvent event
     ) {
         breakpoint.fireJPDABreakpointChange (event);
+    }
+    
+    /**
+     * Test, if breakpoints are active.
+     * @return <code>true</code> when breakpoints are active, <code>false</code>
+     * otherwise. The default implementation returns <code>true</code>, to be overridden
+     * when needed.
+     * @since 2.42
+     */
+    public boolean getBreakpointsActive() {
+        return true;
+    }
+    
+    /**
+     * Set all breakpoints to be active / inactive.
+     * Activation or deactivation of breakpoints should not alter the enabled/disabled
+     * state of individual breakpoints.
+     * The default implementation does nothing, override
+     * together with {@link #getBreakpointsActive()} when needed.
+     * @param active <code>true</code> to make all breakpoints active,
+     *               <code>false</code> to make all breakpoints inactive.
+     * @since 2.42
+     */
+    public void setBreakpointsActive(boolean active) {
     }
     
     /**

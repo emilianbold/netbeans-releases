@@ -816,6 +816,25 @@ These are mainly class and thread filters and hit counts.
         <issue number="226029"/>
     </change>
 
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Breakpoints can deactivated.</summary>
+        <version major="2" minor="42"/>
+        <date day="27" month="2" year="2013"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            Two methods are added to JPDADebugger class: getBreakpointsActive()
+            and setBreakpointsActive(boolean). The set method fires PROP_BREAKPOINTS_ACTIVE
+            event. <br/>
+            These methods are used to activate/deactivate all breakpoints in the
+            debugger session.
+            Initially, the breakpoints are active in the debugger session.
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="JPDADebugger" />
+        <issue number="79027"/>
+    </change>
+
 
 </changes>
 
