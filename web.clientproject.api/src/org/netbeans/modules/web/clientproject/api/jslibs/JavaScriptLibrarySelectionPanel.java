@@ -85,6 +85,9 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableRowSorter;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
@@ -93,12 +96,13 @@ import org.netbeans.modules.web.common.api.Version;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
- *
+ * UI for selecting JS libraries.
  * @since 1.20
  */
-public class JavaScriptLibrarySelectionPanel extends JPanel {
+public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     private static final long serialVersionUID = -468734354571212312L;
 
@@ -124,9 +128,15 @@ public class JavaScriptLibrarySelectionPanel extends JPanel {
     private volatile String librariesFolder = null;
 
 
-    public JavaScriptLibrarySelectionPanel(JavaScriptLibrariesValidator librariesValidator) {
-        assert EventQueue.isDispatchThread();
-        assert librariesValidator != null;
+    /**
+     * Create new instance of the panel.
+     * <p>
+     * This method must be run in the UI thread.
+     * @param librariesValidator validator for selected JS libraries
+     */
+    public JavaScriptLibrarySelectionPanel(@NonNull JavaScriptLibrariesValidator librariesValidator) {
+        Parameters.notNull("librariesValidator", librariesValidator); // NOI18N
+        checkUiThread();
 
         this.librariesValidator = librariesValidator;
 
@@ -135,6 +145,139 @@ public class JavaScriptLibrarySelectionPanel extends JPanel {
         initInfos();
         initLibraries();
         initLibrariesFolder();
+    }
+
+    /**
+     * Set additional information message that is displayed in the top of this panel.
+     * <p>
+     * This method must be run in the UI thread.
+     * @param additionalInfo additional information message to be shown, can be {@code null} for no message
+     */
+    public void setAdditionalInfo(@NullAllowed String additionalInfo) {
+        checkUiThread();
+        additionalInfoLabel.setText(additionalInfo);
+        additionalInfoLabel.setVisible(additionalInfo != null);
+        ((GroupLayout) getLayout()).setHonorsVisibility(additionalInfoLabel, additionalInfo != null);
+    }
+
+    /**
+     * Get the list of selected JS libraries.
+     * @return list of selected JS libraries
+     */
+    public List<SelectedLibrary> getSelectedLibraries() {
+        return selectedLibraries;
+    }
+
+    /**
+     * Get path of the libraries folder. The folder does not need to exist.
+     * @return path of the libraries folder
+     */
+    public String getLibrariesFolder() {
+        return librariesFolder;
+    }
+
+    /**
+     * Add listener to changes in the selected libraries or libraries folder.
+     * @param listener listener to be added, can be {@code null}
+     */
+    public void addChangeListener(@NullAllowed ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    /**
+     * Remove listener to changes in the selected libraries or libraries folder.
+     * @param listener listener to be removed, can be {@code null}
+     */
+    public void removeChangeListener(@NullAllowed ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    /**
+     * Validate and get an error message or {@code null} if there are no errors.
+     * @return error message or {@code null} if there are no errors
+     * @see #getWarningMessage()
+     */
+    public String getErrorMessage() {
+        String error;
+        error = validateLibrariesFolder();
+        if (error != null) {
+            return error;
+        }
+        error = validateLibraries();
+        if (error != null) {
+            return error;
+        }
+        return null;
+    }
+
+    /**
+     * Validate and get a warning message or {@code null} if there are no warnings.
+     * @return error message or {@code null} if there are no errors
+     * @see #getErrorMessage()
+     */
+    public String getWarningMessage() {
+        return null;
+    }
+
+    /**
+     * Lock this panel, it means no user changes can be done.
+     * <p>
+     * This method must be run in the UI thread.
+     * @see #unlockPanel()
+     */
+    public void lockPanel() {
+        checkUiThread();
+        enablePanel(false);
+    }
+
+    /**
+     * Unlock this panel, it means no user changes can be done.
+     * <p>
+     * This method must be run in the UI thread.
+     * @see #lockPanel()
+     */
+    public void unlockPanel() {
+        checkUiThread();
+        enablePanel(true);
+    }
+
+    /**
+     * Set default JS libraries. These libraries are automatically selected
+     * and cannot be removed (unselected) by user.
+     * @param defaultLibs default JS libraries, typically relative file paths
+     */
+    public void updateDefaultLibraries(@NonNull Collection<String> defaultLibs) {
+        Parameters.notNull("defaultLibs", defaultLibs); // NOI18N
+        // remove default libraries
+        Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
+        while (iterator.hasNext()) {
+            SelectedLibrary library = iterator.next();
+            if (library.isDefault()) {
+                iterator.remove();
+            }
+        }
+        for (String lib : defaultLibs) {
+            selectedLibraries.add(new SelectedLibrary(lib));
+        }
+        fireSelectedLibrariesChangeInEDT();
+    }
+
+    /**
+     * Set failed JS libraries. Typically if the {@link #getSelectedLibraries() selected JS libraries}
+     * cannot be downloaded.
+     * @param failedLibs failed JS libraries
+     */
+    public void updateFailedLibraries(@NonNull List<SelectedLibrary> failedLibs) {
+        Parameters.notNull("failedLibs", failedLibs); // NOI18N
+        failedLibraries.clear();
+        failedLibraries.addAll(failedLibs);
+        fireSelectedLibrariesChangeInEDT();
+    }
+
+    private void checkUiThread() {
+        if (!EventQueue.isDispatchThread()) {
+            throw new IllegalStateException("Must be run in UI thread");
+        }
     }
 
     private void initInfos() {
@@ -292,58 +435,12 @@ public class JavaScriptLibrarySelectionPanel extends JPanel {
         });
     }
 
-    public List<SelectedLibrary> getSelectedLibraries() {
-        return selectedLibraries;
-    }
-
-    public String getLibrariesFolder() {
-        return librariesFolder;
-    }
-
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
-    final void fireChangeEvent() {
+    void fireChangeEvent() {
         changeSupport.fireChange();
     }
 
-    public String getErrorMessage() {
-        String error;
-        error = validateLibrariesFolder();
-        if (error != null) {
-            return error;
-        }
-        error = validateLibraries();
-        if (error != null) {
-            return error;
-        }
-        return null;
-    }
-
-    public String getWarningMessage() {
-        return null;
-    }
-
-    public void setAdditionalInfo(String additionalInfo) {
-        additionalInfoLabel.setText(additionalInfo);
-        additionalInfoLabel.setVisible(additionalInfo != null);
-        ((GroupLayout) getLayout()).setHonorsVisibility(additionalInfoLabel, additionalInfo != null);
-    }
-
-    public void lockPanel() {
-        enablePanel(false);
-    }
-
-    public void unlockPanel() {
-        enablePanel(true);
-    }
-
     private void enablePanel(boolean enabled) {
+        assert EventQueue.isDispatchThread();
         librariesFilterTextField.setEnabled(enabled);
         librariesTable.setEnabled(enabled);
         librariesTable.setRowSelectionAllowed(enabled);
@@ -431,12 +528,12 @@ public class JavaScriptLibrarySelectionPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "JavaScriptLibrarySelection.error.librariesFolder.invalid=Libraries folder can contain only alphanumeric characters, \"_\", \"-\" and \"/\"."
+        "JavaScriptLibrarySelectionPanel.error.librariesFolder.invalid=Libraries folder can contain only alphanumeric characters, \"_\", \"-\" and \"/\"."
     })
     private String validateLibrariesFolder() {
         for (String segment : librariesFolder.split("/")) { // NOI18N
             if (!LIBRARIES_FOLDER_PATTERN.matcher(segment).matches()) {
-                return Bundle.JavaScriptLibrarySelection_error_librariesFolder_invalid();
+                return Bundle.JavaScriptLibrarySelectionPanel_error_librariesFolder_invalid();
             }
         }
         return null;
@@ -458,27 +555,6 @@ public class JavaScriptLibrarySelectionPanel extends JPanel {
         invalidLibraries.clear();
         invalidLibraries.addAll(result.getA());
         return result.getB();
-    }
-
-    public void updateDefaultLibraries(Collection<String> defaultLibs) {
-        // remove default libraries
-        Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
-        while (iterator.hasNext()) {
-            SelectedLibrary library = iterator.next();
-            if (library.isDefault()) {
-                iterator.remove();
-            }
-        }
-        for (String lib : defaultLibs) {
-            selectedLibraries.add(new SelectedLibrary(lib));
-        }
-        fireSelectedLibrariesChangeInEDT();
-    }
-
-    public void updateFailedLibraries(List<SelectedLibrary> failedLibs) {
-        failedLibraries.clear();
-        failedLibraries.addAll(failedLibs);
-        fireSelectedLibrariesChangeInEDT();
     }
 
     private void fireSelectedLibrariesChangeInEDT() {
@@ -614,6 +690,207 @@ public class JavaScriptLibrarySelectionPanel extends JPanel {
 
     //~ Inner classes
 
+    /**
+     * Class representing a specific JS library version, e.g. "jQuery 1.8 minified".
+     */
+    public static final class LibraryVersion {
+
+        private final Library library;
+        private final String type;
+
+
+        /**
+         * Create new JS library version.
+         * @param library JS library, never {@code null}
+         * @param type library type (e.g. "minified", "regular" etc.), never {@code null} or an empty string
+         */
+        public LibraryVersion(@NonNull Library library, @NonNull String type) {
+            Parameters.notNull("library", library); // NOI18N
+            Parameters.notNull("type", type); // NOI18N
+            if (type.isEmpty()) {
+                throw new IllegalArgumentException("Type cannot be empty string");
+            }
+            this.library = library;
+            this.type = type;
+        }
+
+        /**
+         * Get library.
+         * @return library
+         */
+        public Library getLibrary() {
+            return library;
+        }
+
+        /**
+         * Get library type (e.g. "minified", "regular" etc.).
+         * @return library type (e.g. "minified", "regular" etc.)
+         */
+        public String getType() {
+            return type;
+        }
+
+        /**
+         * Get library version, e.g. "1.8.2".
+         * @return library version, e.g. "1.8.2"
+         */
+        public String getLibraryVersion() {
+            return library.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 41 * hash + getLibraryVersion().hashCode();
+            hash = 41 * hash + (this.type != null ? this.type.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final LibraryVersion other = (LibraryVersion) obj;
+            if (this.library != other.library && (this.library == null || !this.getLibraryVersion().equals(other.getLibraryVersion()))) {
+                return false;
+            }
+            if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; //NOI18N
+        }
+
+    }
+
+    /**
+     * Class representing a selected JS library.
+     */
+    public static final class SelectedLibrary {
+
+        private final String filename;
+        private final LibraryVersion libraryVersion;
+
+
+        /**
+         * Create selected JS library for a local file. Such library is then {@link #isDefault() default}.
+         * @param filename file name, typically with a relative file path
+         */
+        SelectedLibrary(@NonNull String filename) {
+            this(filename, null);
+            Parameters.notNull("filename", filename); // NOI18N
+        }
+
+        /**
+         * Create selected JS library for a library version. Such library is not {@link #isDefault() default}.
+         * @param libraryVersion library version
+         */
+        SelectedLibrary(@NonNull LibraryVersion libraryVersion) {
+            this(null, libraryVersion);
+            Parameters.notNull("libraryVersion", libraryVersion); // NOI18N
+        }
+
+        private SelectedLibrary(String filename, LibraryVersion libraryVersion) {
+            this.filename = filename;
+            this.libraryVersion = libraryVersion;
+        }
+
+        /**
+         * Get paths of files in this JS library.
+         * @return paths of files in this JS library
+         */
+        public List<String> getFilePaths() {
+            if (filename != null) {
+                return Collections.singletonList(filename);
+            }
+            return getLibraryFilePaths();
+        }
+
+        /**
+         * Get library version of this JS library or {@code null} for {@link #isDefault() default} library
+         * @return library version of this JS library or {@code null} for {@link #isDefault() default} library
+         * @see #isDefault()
+         */
+        @CheckForNull
+        public LibraryVersion getLibraryVersion() {
+            return libraryVersion;
+        }
+
+        /**
+         * Return {@code true} if this JS library is {@link JavaScriptLibrarySelectionPanel#updateDefaultLibraries(Collection) default} JS library.
+         * @return {@code true} if this JS library is {@link JavaScriptLibrarySelectionPanel#updateDefaultLibraries(Collection) default} JS library
+         */
+        public boolean isDefault() {
+            return libraryVersion == null;
+        }
+
+        private List<String> getLibraryFilePaths() {
+            return WebClientLibraryManager.getLibraryFilePaths(libraryVersion.getLibrary(), libraryVersion.getType());
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 31 * hash + (this.filename != null ? this.filename.hashCode() : 0);
+            hash = 31 * hash + (this.libraryVersion != null ? this.libraryVersion.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SelectedLibrary other = (SelectedLibrary) obj;
+            if ((this.filename == null) ? (other.filename != null) : !this.filename.equals(other.filename)) {
+                return false;
+            }
+            if (this.libraryVersion != other.libraryVersion && (this.libraryVersion == null || !this.libraryVersion.equals(other.libraryVersion))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "SelectedLibrary{" + "filename=" + filename + ", libraryVersion=" + libraryVersion + '}'; // NOI18N
+        }
+
+    }
+
+    /**
+     * Validator for selected JS libraries.
+     */
+    public interface JavaScriptLibrariesValidator {
+
+        /**
+         * Constant for a valid result of JS libraries validation.
+         */
+        Pair<Set<SelectedLibrary>, String> VALID_RESULT = Pair.of(Collections.<SelectedLibrary>emptySet(), null);
+
+        /**
+         * Validate given libraries.
+         * @param librariesFolder folder for libraries
+         * @param newLibraries new libraries to validate (without default libraries)
+         * @return pair of invalid libraries together with the error message; empty set and {@code null}
+         * if the libraries are valid
+         * @see #VALID_RESULT
+         */
+        Pair<Set<SelectedLibrary>, String> validate(String librariesFolder, Set<SelectedLibrary> newLibraries);
+
+    }
+
     private static final class LibrariesTable extends JTable {
 
         private static final long serialVersionUID = 1578314546784244L;
@@ -722,16 +999,16 @@ public class JavaScriptLibrarySelectionPanel extends JPanel {
         }
 
         @NbBundle.Messages({
-            "JavaScriptLibrarySelection.column.library=Library",
-            "JavaScriptLibrarySelection.column.version=Version"
+            "JavaScriptLibrarySelectionPanel.column.library=Library",
+            "JavaScriptLibrarySelectionPanel.column.version=Version"
         })
         @Override
         public String getColumnName(int columnIndex) {
             if (columnIndex == 0) {
-                return Bundle.JavaScriptLibrarySelection_column_library();
+                return Bundle.JavaScriptLibrarySelectionPanel_column_library();
             }
             if (columnIndex == 1) {
-                return Bundle.JavaScriptLibrarySelection_column_version();
+                return Bundle.JavaScriptLibrarySelectionPanel_column_version();
             }
             assert false : "Unknown column index: " + columnIndex; // NOI18N
             return null;
@@ -847,7 +1124,7 @@ public class JavaScriptLibrarySelectionPanel extends JPanel {
         @NbBundle.Messages({
             "# {0} - library filename",
             "# {1} - library file path",
-            "JavaScriptLibrarySelection.SelectedLibraryRenderer.label.defaultLibrary={0} ({1})"
+            "JavaScriptLibrarySelectionPanel.SelectedLibraryRenderer.label.defaultLibrary={0} ({1})"
         })
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -863,7 +1140,7 @@ public class JavaScriptLibrarySelectionPanel extends JPanel {
                 if (slashIndex == -1) {
                     label = path;
                 } else {
-                    label = Bundle.JavaScriptLibrarySelection_SelectedLibraryRenderer_label_defaultLibrary(path.substring(slashIndex + 1), path.substring(0, slashIndex));
+                    label = Bundle.JavaScriptLibrarySelectionPanel_SelectedLibraryRenderer_label_defaultLibrary(path.substring(slashIndex + 1), path.substring(0, slashIndex));
                 }
             } else {
                 label = StringUtilities.implode(filePaths, ", "); // NOI18N
@@ -975,151 +1252,6 @@ public class JavaScriptLibrarySelectionPanel extends JPanel {
             assert EventQueue.isDispatchThread();
             return versions.iterator().next().getLibrary();
         }
-
-    }
-
-    public static final class LibraryVersion {
-
-        private final Library library;
-        private final String type;
-
-
-        public LibraryVersion(Library library, String type) {
-            assert library != null;
-            assert type != null && !type.isEmpty();
-            this.library = library;
-            this.type = type;
-        }
-
-        public Library getLibrary() {
-            return library;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public String getLibraryVersion() {
-            return library.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 41 * hash + getLibraryVersion().hashCode();
-            hash = 41 * hash + (this.type != null ? this.type.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final LibraryVersion other = (LibraryVersion) obj;
-            if (this.library != other.library && (this.library == null || !this.getLibraryVersion().equals(other.getLibraryVersion()))) {
-                return false;
-            }
-            if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; //NOI18N
-        }
-
-    }
-
-    public static final class SelectedLibrary {
-
-        private final String filename;
-        private final LibraryVersion libraryVersion;
-
-        public SelectedLibrary(String filename) {
-            this(filename, null);
-            assert filename != null;
-        }
-
-        public SelectedLibrary(LibraryVersion libraryVersion) {
-            this(null, libraryVersion);
-            assert libraryVersion != null;
-        }
-
-        private SelectedLibrary(String filename, LibraryVersion libraryVersion) {
-            this.filename = filename;
-            this.libraryVersion = libraryVersion;
-        }
-
-        public List<String> getFilePaths() {
-            if (filename != null) {
-                return Collections.singletonList(filename);
-            }
-            return getLibraryFilePaths();
-        }
-
-        public LibraryVersion getLibraryVersion() {
-            return libraryVersion;
-        }
-
-        public boolean isDefault() {
-            return libraryVersion == null;
-        }
-
-        private List<String> getLibraryFilePaths() {
-            return WebClientLibraryManager.getLibraryFilePaths(libraryVersion.getLibrary(), libraryVersion.getType());
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 31 * hash + (this.filename != null ? this.filename.hashCode() : 0);
-            hash = 31 * hash + (this.libraryVersion != null ? this.libraryVersion.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final SelectedLibrary other = (SelectedLibrary) obj;
-            if ((this.filename == null) ? (other.filename != null) : !this.filename.equals(other.filename)) {
-                return false;
-            }
-            if (this.libraryVersion != other.libraryVersion && (this.libraryVersion == null || !this.libraryVersion.equals(other.libraryVersion))) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return "SelectedLibrary{" + "filename=" + filename + ", libraryVersion=" + libraryVersion + '}'; // NOI18N
-        }
-
-    }
-
-    public interface JavaScriptLibrariesValidator {
-
-        Pair<Set<SelectedLibrary>, String> VALID_RESULT = Pair.of(Collections.<SelectedLibrary>emptySet(), null);
-
-        /**
-         * Validate given libraries.
-         * @param librariesFolder folder for libraries
-         * @param newLibraries new libraries to validate (without default libraries)
-         * @return pair of invalid libraries together with the error message; empty set and {@code null}
-         * if the libraries are valid
-         */
-        Pair<Set<SelectedLibrary>, String> validate(String librariesFolder, Set<SelectedLibrary> newLibraries);
 
     }
 
