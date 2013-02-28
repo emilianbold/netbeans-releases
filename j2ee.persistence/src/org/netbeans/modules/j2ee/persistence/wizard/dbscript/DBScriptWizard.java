@@ -79,7 +79,7 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
 
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
-    private DBScriptWizardDescriptor ejbPanel;
+    private WizardDescriptor.Panel ejbPanel;
     private WizardDescriptor wiz;
     private static final String EXTENSION = "sql";//NOI18N
     private static final Logger LOGGER = Logger.getLogger(DBScriptWizard.class.getName());
@@ -100,15 +100,13 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
     @Override
     public void initialize(WizardDescriptor wizardDescriptor) {
         wiz = wizardDescriptor;
-        Project project = Templates.getProject(wiz);
-        Sources sources = ProjectUtils.getSources(project);
 
-        ejbPanel = new DBScriptWizardDescriptor();
+        ejbPanel = new DBScriptPanel.WizardPanel();
 
         panels = new WizardDescriptor.Panel[]{ejbPanel};
 
 
-        Wizards.mergeSteps(wiz, panels, null);
+        Wizards.mergeSteps(wiz, panels, new String[]{name()});
     }
 
     @Override
@@ -121,13 +119,8 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
                 //execution
                 run(project, sqlFile, pe);
             }
-        FileObject result = generateScript(
-                Templates.getTargetFolder(wiz),
-                Templates.getTargetName(wiz),
-                false
-                );
 
-        return Collections.singleton(result);
+        return Collections.singleton(sqlFile);
     }
 
     @Override
@@ -140,7 +133,7 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
 
     @Override
     public boolean hasPrevious() {
-        return index > 0;
+        return false;
     }
 
     @Override
@@ -167,16 +160,6 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
     @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
-    }
-
-    /**
-     * *
-     */
-    public static FileObject generateScript(final FileObject targetFolder, final String targetName, boolean createDrop) throws IOException {
-
-        FileObject scriptFo = null;
-
-        return scriptFo;
     }
 
     /**
