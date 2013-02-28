@@ -40,6 +40,7 @@
 
 package org.netbeans.modules.javascript2.editor.lexer;
 
+import org.netbeans.modules.javascript2.editor.lexer.api.JsTokenId;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 

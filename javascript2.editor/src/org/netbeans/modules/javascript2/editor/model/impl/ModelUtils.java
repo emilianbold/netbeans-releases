@@ -60,22 +60,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.StringTokenizer;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -250,20 +246,6 @@ public class ModelUtils {
         return result;
     }
     
-    public static String createFQN(JsObject object) {
-        StringBuilder result = new StringBuilder();
-        result.append(object.getName());
-        JsObject parent = object;
-        if (object.getParent() == null) {
-            return object.getName();
-        }
-        while((parent = parent.getParent()).getParent() != null) {
-            result.insert(0, ".");
-            result.insert(0, parent.getName());
-        }
-        return result.toString();
-    }
-    
     public static OffsetRange documentOffsetRange(JsParserResult result, int start, int end) {
         int lStart = LexUtilities.getLexerOffset(result, start);
         int lEnd = LexUtilities.getLexerOffset(result, end);
@@ -371,7 +353,7 @@ public class ModelUtils {
             result.add(type);
         } else if (Type.UNDEFINED.equals(type.getType())) {
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-                result.add(new TypeUsageImpl(ModelUtils.createFQN(object), type.getOffset(), true));
+                result.add(new TypeUsageImpl(object.getFullyQualifiedName(), type.getOffset(), true));
             } else {
                 result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
             }
@@ -401,7 +383,7 @@ public class ModelUtils {
                 parent = parent.getParent();
             }
             if (parent != null) {
-                result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
+                result.add(new TypeUsageImpl(parent.getFullyQualifiedName(), type.getOffset(), true));
             }
         } else if (type.getType().startsWith("@this.")) {
             Identifier objectName = object.getDeclarationName();
@@ -410,10 +392,11 @@ public class ModelUtils {
                 String pName = type.getType().substring(type.getType().indexOf('.') + 1);
                 JsObject property = object.getParent().getProperty(pName);
                 if (property != null && property.getJSKind().isFunction()) {
-                    JsFunctionImpl function = property instanceof JsFunctionImpl
+                    JsFunction function = property instanceof JsFunction
                             ? (JsFunctionImpl) property
                             : ((JsFunctionReference)property).getOriginal();
-                    object.getParent().addProperty(object.getName(), new JsFunctionReference(object.getParent(), object.getDeclarationName(), function, true));
+                    object.getParent().addProperty(object.getName(), new JsFunctionReference(
+                            object.getParent(), object.getDeclarationName(), function, true));
                 }
             }
         } else if (type.getType().startsWith("@new;")) {
@@ -428,7 +411,7 @@ public class ModelUtils {
 //                if (possible instanceof JsFunction) {
 //                    result.addAll(((JsFunction)possible).getReturnTypes());
 //                } else {
-                    result.add(new TypeUsageImpl(ModelUtils.createFQN(possible), possible.getOffset(), true));
+                    result.add(new TypeUsageImpl(possible.getFullyQualifiedName(), possible.getOffset(), true));
 //                }
             } else {
                 result.add(type);
@@ -445,7 +428,7 @@ public class ModelUtils {
 //            JsObject globalObject = ModelUtils.getGlobalObject(object);
             JsObject byOffset = ModelUtils.findJsObject(object, start);
             if(byOffset != null && byOffset.isAnonymous()) {
-                result.add(new TypeUsageImpl(ModelUtils.createFQN(byOffset), byOffset.getOffset(), true));
+                result.add(new TypeUsageImpl(byOffset.getFullyQualifiedName(), byOffset.getOffset(), true));
             }
 //            for(JsObject children : globalObject.getProperties().values()) {
 //                if(children.getOffset() == start && children.getName().startsWith("Anonym$")) {
@@ -532,7 +515,7 @@ public class ModelUtils {
                         }
                     }
 
-                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
                         for (JsObject object : libGlobal.getProperties().values()) {
                             if (object.getName().equals(name)) {
                                 //localObjects.add(object);
@@ -672,7 +655,7 @@ public class ModelUtils {
                             }
                         }
                         // from libraries look for top level types
-                        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
                             for (JsObject object : libGlobal.getProperties().values()) {
                                 if (object.getName().equals(typeUsage.getType())) {
                                     JsObject property = object.getProperty(name);
@@ -703,7 +686,7 @@ public class ModelUtils {
             }
             for (JsObject jsObject : lastResolvedObjects) {
 //                if (jsObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
-                    String fqn = ModelUtils.createFQN(jsObject);
+                    String fqn = jsObject.getFullyQualifiedName();
                     if(!resultTypes.containsKey(fqn)) {
                         resultTypes.put(fqn, new TypeUsageImpl(fqn, offset));
                     }
@@ -863,15 +846,6 @@ public class ModelUtils {
                 }
             } 
         } 
-        return result;
-    }
-    
-    private static Collection<JsObject> getLibrariesGlobalObjects() {
-        Collection<JsObject> result = new ArrayList<JsObject>();
-        JsObject libGlobal = JQueryModel.getGlobalObject();
-        if (libGlobal != null) {
-            result.add(libGlobal);
-        }
         return result;
     }
     
