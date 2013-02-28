@@ -167,6 +167,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                         isFindSubclasses(),
                         isFindDirectSubclassesOnly(),
                         isFindOverridingMethods(),
+                        isSearchOverloadedMethods(),
                         isFindUsages(),
                         null, cancelRequested));
             }
@@ -197,6 +198,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                             isFindSubclasses(),
                             isFindDirectSubclassesOnly(),
                             isFindOverridingMethods(),
+                            isSearchOverloadedMethods(),
                             isFindUsages(), packages, cancelRequested));
                 }
             }
@@ -208,6 +210,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     isFindSubclasses(),
                     isFindDirectSubclassesOnly(),
                     isFindOverridingMethods(),
+                    isSearchOverloadedMethods(),
                     isFindUsages(),
                     null,
                     cancelRequested);
@@ -218,8 +221,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     public static Set<FileObject> getRelevantFiles(
             final TreePathHandle tph, final ClasspathInfo cpInfo,
             final boolean isFindSubclasses, final boolean isFindDirectSubclassesOnly,
-            final boolean isFindOverridingMethods, final boolean isFindUsages,
-            final Set<NonRecursiveFolder> folders, final AtomicBoolean cancel) {
+            final boolean isFindOverridingMethods, final boolean isSearchOverloadedMethods,
+            final boolean isFindUsages, final Set<NonRecursiveFolder> folders,
+            final AtomicBoolean cancel) {
         final ClassIndex idx = cpInfo.getClassIndex();
         final Set<FileObject> set = new TreeSet<FileObject>(new FileComparator());
         final Set<NonRecursiveFolder> packages = (folders == null)? Collections.<NonRecursiveFolder>emptySet() : folders;
@@ -289,32 +293,48 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                         //get type references from index
                         set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType));
                     }
-                } else if (el.getKind() == ElementKind.METHOD && isFindOverridingMethods) {
-                    //Find overriding methods
-                    TypeElement type = (TypeElement) el.getEnclosingElement();
-                    set.addAll(getImplementorsRecursive(idx, cpInfo, type, cancel));
-                }
-                if (el.getKind() == ElementKind.METHOD && isFindUsages) {
-                    //get method references for method and for all it's overriders
-                    Set<ElementHandle<TypeElement>> s = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement) el.getEnclosingElement(), cancel);
-                    for (ElementHandle<TypeElement> eh : s) {
-                        if (cancel != null && cancel.get()) {
-                            set.clear();
-                            return;
-                        }
-                        TypeElement te = eh.resolve(info);
-                        if (te == null) {
-                            continue;
-                        }
-                        for (Element e : te.getEnclosedElements()) {
-                            if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
-                                if (info.getElements().overrides((ExecutableElement) e, (ExecutableElement) el, te)) {
-                                    set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType));
-                                }
+                } else if (el.getKind() == ElementKind.METHOD) {
+                    ExecutableElement method = (ExecutableElement) el;
+                    List<ExecutableElement> methods = new LinkedList<ExecutableElement>();
+                    methods.add(method);
+                    TypeElement enclosingTypeElement = info.getElementUtilities().enclosingTypeElement(method);
+                    if(isSearchOverloadedMethods) {
+                        for (Element overloaded : enclosingTypeElement.getEnclosedElements()) {
+                            if(method != overloaded &&
+                                    method.getKind() == overloaded.getKind() &&
+                                    ((ExecutableElement)overloaded).getSimpleName().contentEquals(method.getSimpleName())) {
+                                methods.add((ExecutableElement)overloaded);
                             }
                         }
                     }
-                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType)); //?????
+                    if (isFindOverridingMethods) {
+                        //Find overriding methods
+                        set.addAll(getImplementorsRecursive(idx, cpInfo, enclosingTypeElement, cancel));
+                    }
+                    if (isFindUsages) {
+                        //get method references for method and for all it's overriders
+                        Set<ElementHandle<TypeElement>> s = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement) method.getEnclosingElement(), cancel);
+                        for (ElementHandle<TypeElement> eh : s) {
+                            if (cancel != null && cancel.get()) {
+                                set.clear();
+                                return;
+                            }
+                            TypeElement te = eh.resolve(info);
+                            if (te == null) {
+                                continue;
+                            }
+                            for (Element e : te.getEnclosedElements()) {
+                                if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
+                                    for (ExecutableElement executableElement : methods) {
+                                        if (info.getElements().overrides((ExecutableElement) e, executableElement, te)) {
+                                            set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType)); //?????
+                    }
                 } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
                     set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType));
                 }
@@ -434,6 +454,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     private boolean isFindOverridingMethods() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS);
     }
+    private boolean isSearchOverloadedMethods() {
+        return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_OVERLOADED);
+    }
     private boolean isSearchFromBaseClass() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS);
     }
@@ -505,7 +528,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             final boolean fromTestRoot = RefactoringUtils.isFromTestRoot(compiler.getFileObject(), compiler.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE));
             AtomicBoolean inImport = new AtomicBoolean();
             if (isFindUsages()) {
-                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, cancelled, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS), fromTestRoot, inImport);
+                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, cancelled, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS), isSearchOverloadedMethods(), fromTestRoot, inImport);
                 findVisitor.scan(compiler.getCompilationUnit(), element);
                 Collection<WhereUsedElement> foundElements = findVisitor.getElements();
                 for (WhereUsedElement el : foundElements) {
