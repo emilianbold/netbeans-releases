@@ -1032,7 +1032,7 @@ public final class FileImpl implements CsmFile,
         APTLanguageFilter languageFilter = getLanguageFilter(ppState);
         tsCache.addNewPair(pcBuilder.get(), tokenStream, languageFilter);
         // remember walk info
-        setAPTCacheEntry(preprocHandler, cacheEntry.get(), false);
+        setAPTCacheEntry(ppState, cacheEntry.get(), false);
         return true;
     }
     
@@ -1057,7 +1057,7 @@ public final class FileImpl implements CsmFile,
             pcBuilderOut.set(pcBuilder);
         }
         // ask for concurrent entry if absent
-        APTFileCacheEntry cacheEntry = getAPTCacheEntry(preprocHandler, Boolean.FALSE);
+        APTFileCacheEntry cacheEntry = getAPTCacheEntry(ppState, Boolean.FALSE);
         if (cacheOut != null) {
             cacheOut.set(cacheEntry);
         }
@@ -1210,19 +1210,19 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    public final APTFileCacheEntry getAPTCacheEntry(APTPreprocHandler preprocHandler, Boolean createExclusiveIfAbsent) {
+    public final APTFileCacheEntry getAPTCacheEntry(APTPreprocHandler.State ppState, Boolean createExclusiveIfAbsent) {
         if (!TraceFlags.APT_FILE_CACHE_ENTRY) {
             return null;
         }
-        APTFileCacheEntry out = APTFileCacheManager.getInstance(getBuffer().getFileSystem()).getEntry(getAbsolutePath(), preprocHandler, createExclusiveIfAbsent);
+        APTFileCacheEntry out = APTFileCacheManager.getInstance(getBuffer().getFileSystem()).getEntry(getAbsolutePath(), ppState, createExclusiveIfAbsent);
         assert createExclusiveIfAbsent == null || out != null;
         return out;
     }
 
-    public final void setAPTCacheEntry(APTPreprocHandler preprocHandler, APTFileCacheEntry entry, boolean cleanOthers) {
+    public final void setAPTCacheEntry(APTPreprocHandler.State ppState, APTFileCacheEntry entry, boolean cleanOthers) {
         if (TraceFlags.APT_FILE_CACHE_ENTRY) {
             final FileBuffer buf = getBuffer();
-            APTFileCacheManager.getInstance(buf.getFileSystem()).setAPTCacheEntry(buf.getAbsolutePath(), preprocHandler, entry, cleanOthers);
+            APTFileCacheManager.getInstance(buf.getFileSystem()).setAPTCacheEntry(buf.getAbsolutePath(), ppState, entry, cleanOthers);
         }
     }
 
@@ -1320,7 +1320,7 @@ public final class FileImpl implements CsmFile,
             // We gather conditional state here as well, because sources are not included anywhere
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
             // ask for concurrent entry if absent
-            APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(preprocHandler, Boolean.FALSE);
+            APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(ppState, Boolean.FALSE);
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, parseParams.triggerParsingActivity, pcBuilder,aptCacheEntry);
             walker.setFileContent(parseParams.content);
             if (TraceFlags.DEBUG) {
@@ -1338,7 +1338,7 @@ public final class FileImpl implements CsmFile,
             parseResult = parser.parse(parseParams.lazyCompound ? CsmParser.ConstructionKind.TRANSLATION_UNIT : CsmParser.ConstructionKind.TRANSLATION_UNIT_WITH_COMPOUND);
             FilePreprocessorConditionState pcState = pcBuilder.build();
             if (false) {
-                setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
+                setAPTCacheEntry(ppState, aptCacheEntry, false);
             }
             startProject.setParsedPCState(this, ppState, pcState);
 

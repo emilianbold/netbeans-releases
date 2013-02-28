@@ -1748,19 +1748,21 @@ public class CppParserActionImpl implements CppParserActionEx {
         declarator(token);        
         DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
         SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top(1);
-        NameBuilder nameBuilder = declBuilder.getTypeBuilder().getNameBuilder();
-        CharSequence newName;
-        if(nameBuilder != null && !nameBuilder.getNames().isEmpty()) {
-            newName = nameBuilder.getLastNamePart();
-        } else {
-            newName = declBuilder.getTypeBuilder().getName();
-        }        
-        declaratorBuilder.setName(newName);
-        declBuilder.setTypeBuilder(null);
-        if(newName != null && newName.toString().contains("~")) { // NOI18N
-            declBuilder.setDestructor();
-        } else {
-            declBuilder.setConstructor();
+        if(declBuilder.getTypeBuilder() != null) {
+            NameBuilder nameBuilder = declBuilder.getTypeBuilder().getNameBuilder();
+            CharSequence newName;
+            if(nameBuilder != null && !nameBuilder.getNames().isEmpty()) {
+                newName = nameBuilder.getLastNamePart();
+            } else {
+                newName = declBuilder.getTypeBuilder().getName();
+            }        
+            declaratorBuilder.setName(newName);
+            declBuilder.setTypeBuilder(null);
+            if(newName != null && newName.toString().contains("~")) { // NOI18N
+                declBuilder.setDestructor();
+            } else {
+                declBuilder.setConstructor();
+            }
         }
     }
     @Override public void end_constructor_declarator(Token token) {

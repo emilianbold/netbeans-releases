@@ -149,6 +149,11 @@ public class APTHandlersSupportImpl {
         return (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
     }
 
+    public static APTIncludeHandler.State extractIncludeState(APTPreprocHandler.State state) {
+        assert state != null;
+        return ((APTPreprocHandlerImpl.StateImpl) state).inclState;
+    }
+    
     public static StateKeyImpl getStateKey(APTPreprocHandler.State state){
         assert state != null;
         APTFileMacroMap.FileStateImpl macro = (FileStateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
