@@ -41,8 +41,8 @@
  */
 
 @Schema2Beans(
-    schema="../../resources/persistence_2_0.xsd",
-    mddFile="../../resources/persistence_2_0.mdd",
+    schema="../../resources/persistence_2_1.xsd",
+    mddFile="../../resources/persistence_2_1.mdd",
     schemaType=SchemaType.XML_SCHEMA,
     outputType=OutputType.TRADITIONAL_BASEBEAN,
     useInterfaces=true,
