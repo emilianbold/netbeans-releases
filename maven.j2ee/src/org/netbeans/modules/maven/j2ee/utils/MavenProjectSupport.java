@@ -237,16 +237,15 @@ public class MavenProjectSupport {
         }
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue
-        String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, true);
-        if (val != null) {
-            return new String[] {val, null};
+        String serverID = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
+        if (serverID != null) {
+            return new String[] {serverID, null};
         }
-        String server = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
-        if (server == null) {
-            //try checking for old values..
-            server = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
+        String serverType = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
+        if (serverType == null) {
+            serverType = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
         }
-        return new String[]{null, server};
+        return new String[]{null, serverType};
     }
     
     /**
@@ -391,7 +390,7 @@ public class MavenProjectSupport {
      * @return server ID
      */
     public static String readServerInstanceID(Project project) {
-        return readSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, true);
+        return readSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
     }
 
     /**
@@ -423,7 +422,7 @@ public class MavenProjectSupport {
     }
     
     public static void setServerInstanceID(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, true);
+        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, false);
     }
     
     private static void setSettings(Project project, String key, String value, boolean shared) {
