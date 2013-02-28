@@ -99,18 +99,21 @@ public class CPCssEditorModule extends CssEditorModule {
         List<CompletionProposal> allVars = getVariableCompletionProposals(context, model);
         
         //errorneous source
-        Node tokenNode = context.getActiveTokenNode();
-        if(NodeUtil.getTokenNodeTokenId(tokenNode) == CssTokenId.ERROR) {
-            if(LexerUtils.equals(tokenNode.image(), "$", false, true)) {
+        TokenSequence<CssTokenId> ts = context.getTokenSequence();
+        Token<CssTokenId> token = ts.token();
+        
+        if(token.id() == CssTokenId.ERROR) {
+            if(LexerUtils.equals(token.text(), "$", false, true)) {
                 //"$" as a prefix - user likely wants to type variable
                 //check context
-                if(NodeUtil.getAncestorByType(tokenNode, NodeType.rule) != null) {
+                if(NodeUtil.getAncestorByType(context.getActiveTokenNode(), NodeType.rule) != null) {
                     //in declarations node -> offer all vars
                     proposals.addAll(allVars);
                     return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
                 }
             }
         }
+        
         
         
         Node activeNode = context.getActiveNode();

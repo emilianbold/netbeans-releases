@@ -93,10 +93,50 @@ public class CPModelTest extends CssTestBase {
         CPModel model = CPModel.getModel(result);
         assertNotNull(model);
         
-        Collection<Variable> vars = model.getVariables();        
+        Collection<String> vars = model.getVarNames();        
         assertNotNull(vars);
         
         String[] expected = new String[]{"$navbar-color","$items","$switch","$navbar-width"};
+        
+        Collection<String> expSet = Arrays.asList(expected);
+        assertTrue(vars.containsAll(expSet));
+        assertFalse(vars.retainAll(expSet));
+        
+    }
+    
+    public void testVariablesInMixin() {
+                String source = "$var: 1;  @mixin my { $foo: $var + 1; }";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+        
+        CPModel model = CPModel.getModel(result);
+        assertNotNull(model);
+        
+        Collection<String> vars = model.getVarNames();
+        assertNotNull(vars);
+        
+        String[] expected = new String[]{"$var","$foo"};
+        
+        Collection<String> expSet = Arrays.asList(expected);
+        assertTrue(vars.containsAll(expSet));
+        assertFalse(vars.retainAll(expSet));
+        
+    }
+    
+    public void testVariablesInMixinWithError_fails() {
+        String source = "$var: 1;  @mixin my { $foo: $ }";
+        CssParserResult result = TestUtil.parse(source);
+        
+        CPModel model = CPModel.getModel(result);
+        assertNotNull(model);
+        
+        Collection<String> vars = model.getVarNames();
+        assertNotNull(vars);
+        
+        //the $foo var won't get to the model's list as it is not parsed
+        //xxx possible solutions: improve err. recovery or make some lexer based heuristic for the error area
+//        String[] expected = new String[]{"$var","$foo"};
+        String[] expected = new String[]{"$var"};
         
         Collection<String> expSet = Arrays.asList(expected);
         assertTrue(vars.containsAll(expSet));

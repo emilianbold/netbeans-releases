@@ -106,10 +106,10 @@ public class CPModel {
                             vars.add(new Variable(node.image().toString(), new OffsetRange(node.from(), node.to())));
                             break;
 
-                        case error:
-                        case recovery:
-                            //skip errorneous content, do not visit
-                            break;
+//                        case error:
+//                        case recovery:
+//                            //skip errorneous content, do not visit
+//                            break;
 
                         default:
                             //visit children

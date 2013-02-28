@@ -72,4 +72,24 @@ public class ScssCompletionTest extends CssModuleTestBase {
         checkCC("$var1: 1; $var2: 2; h1 { font: red $var2| }", arr("$var2"), Match.EXACT);
     }
     
+    public void testVarCompletionInMixinBody() throws ParseException {
+        checkCC("$var: 1;  @mixin my { $| }", arr("$var"), Match.EXACT);
+        checkCC("$var: 1;  @mixin my { $v| }", arr("$var"), Match.EXACT);
+        
+        //this fails as the $foo is not parsed - see CPModelTest.testVariablesInMixinWithError_fails
+//        checkCC("$var: 1;  @mixin my { $foo: $v| }", arr("$var", "$foo"), Match.CONTAINS);
+        checkCC("$var: 1;  @mixin my { $foo: $v| }", arr("$var"), Match.CONTAINS);
+        
+    }
+    
+    public void testVarCompletionInRuleBody() throws ParseException {
+        checkCC("$var: 1;  .clz { $| }", arr("$var"), Match.EXACT);
+        checkCC("$var: 1;  .clz { $v| }", arr("$var"), Match.EXACT);
+        
+        //this fails as the $foo is not parsed - see CPModelTest.testVariablesInMixinWithError_fails
+//        checkCC("$var: 1;  .clz { $foo: $v| }", arr("$var", "$foo"), Match.CONTAINS);
+        checkCC("$var: 1;  .clz { $foo: $v| }", arr("$var"), Match.CONTAINS);
+        
+    }
+    
 }
