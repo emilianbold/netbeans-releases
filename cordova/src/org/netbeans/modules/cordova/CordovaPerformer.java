@@ -94,7 +94,7 @@ public class CordovaPerformer implements BuildPerformer {
     private Session debuggerSession;
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
-    private final int BUILD_SCRIPT_VERSION = 1;
+    private final int BUILD_SCRIPT_VERSION = 2;
     
 
     @Override
@@ -182,6 +182,7 @@ public class CordovaPerformer implements BuildPerformer {
                 conf.setId(DEFAULT_PACKAGE_NAME);
                 conf.setName(ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));
                 conf.setDescription(DEFAULT_DESCRIPTION);
+                conf.setAuthor(System.getProperty("user.name"));
                 conf.save();
             }
             return conf;
