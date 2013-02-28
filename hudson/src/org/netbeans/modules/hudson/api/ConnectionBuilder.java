@@ -446,4 +446,15 @@ public final class ConnectionBuilder {
         }
     }
 
+    /**
+     * Clears list of servers for which we are not checking for authentication any more.
+     * Normally when login fails that server is blacklisted so that you are not pestered to log in over and over.
+     * But sometimes you want to explicitly try again, and should not need to restart the IDE.
+     *
+     * @since hudson/1.30
+     */
+    public static void clearRejectedAuthentication() {
+        authenticationRejected.clear();
+    }
+
 }
