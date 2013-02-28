@@ -80,29 +80,33 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
     private List<WhereUsedElement> elements = new ArrayList<WhereUsedElement>();
     protected CompilationController workingCopy;
     private boolean findInComments = false;
+    private final boolean isSearchOverloadedMethods;
     private final boolean fromTestRoot;
     private final AtomicBoolean inImport;
     private Boolean usagesInComments;
     private final AtomicBoolean isCancelled;
+    private List<ExecutableElement> methods;
 
     public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled) {
-        this(workingCopy, isCancelled, false);
+        this(workingCopy, isCancelled, false, false);
     }
     
-    public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled, boolean findInComments) {
-        this(workingCopy, isCancelled, findInComments, RefactoringUtils.isFromTestRoot(workingCopy.getFileObject(), workingCopy.getClasspathInfo().getClassPath(PathKind.SOURCE)), new AtomicBoolean());
+    public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled, boolean findInComments, boolean isSearchOverloadedMethods) {
+        this(workingCopy, isCancelled, findInComments, isSearchOverloadedMethods, RefactoringUtils.isFromTestRoot(workingCopy.getFileObject(), workingCopy.getClasspathInfo().getClassPath(PathKind.SOURCE)), new AtomicBoolean());
     }
 
-    public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled, boolean findInComments, boolean fromTestRoot, AtomicBoolean inImport) {
+    public FindUsagesVisitor(CompilationController workingCopy, AtomicBoolean isCancelled, boolean findInComments, boolean isSearchOverloadedMethods, boolean fromTestRoot, AtomicBoolean inImport) {
         try {
             setWorkingCopy(workingCopy);
         } catch (ToPhaseException ex) {
             Exceptions.printStackTrace(ex);
         }
         this.findInComments = findInComments;
+        this.isSearchOverloadedMethods = isSearchOverloadedMethods;
         this.fromTestRoot = fromTestRoot;
         this.inImport = inImport;
         this.isCancelled = isCancelled;
+        this.methods = new LinkedList<ExecutableElement>();
     }
 
     //<editor-fold defaultstate="collapsed" desc="Find in Comments">
@@ -130,6 +134,20 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
                             elements.add(comment);
                             usagesInComments = true;
                         }
+                    }
+                }
+            }
+        }
+        if(p.getKind() == ElementKind.METHOD || p.getKind() == ElementKind.CONSTRUCTOR) {
+            ExecutableElement method = (ExecutableElement) p;
+            methods.add(method);
+            TypeElement enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(method);
+            if(isSearchOverloadedMethods) {
+                for (Element overloaded : enclosingTypeElement.getEnclosedElements()) {
+                    if(method != overloaded &&
+                            method.getKind() == overloaded.getKind() &&
+                            ((ExecutableElement)overloaded).getSimpleName().contentEquals(method.getSimpleName())) {
+                        methods.add((ExecutableElement)overloaded);
                     }
                 }
             }
@@ -190,8 +208,12 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
             }
         }
         if (elementToFind != null && elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
-            if (el.equals(elementToFind) || workingCopy.getElements().overrides((ExecutableElement) el, (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())) {
-                addUsage(path);
+            for (ExecutableElement executableElement : methods) {
+                if (el.equals(executableElement) 
+                        || workingCopy.getElements().overrides((ExecutableElement) el,
+                        executableElement, (TypeElement) elementToFind.getEnclosingElement())) {
+                    addUsage(path);
+                }
             }
         } else if (el.equals(elementToFind)) {
             final ElementKind kind = elementToFind.getKind();
