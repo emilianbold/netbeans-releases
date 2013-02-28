@@ -51,19 +51,20 @@ import javafx.util.Callback;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
+import org.netbeans.core.browser.webview.TransportImplementationWithURLToLoad;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
-import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
-public class WebKitDebuggingTransport implements TransportImplementation {
+public class WebKitDebuggingTransport implements TransportImplementationWithURLToLoad {
 
     private WebBrowserImpl browserImpl;
     private Debugger debugger;
     private FXCallback fxCallback;
     private ResponseCallback callback;
+    private volatile String urlToLoad; // The url to be loaded to the browser
     
     private static RequestProcessor RP = new RequestProcessor("JavaFX debugging callback");
     
@@ -128,8 +129,17 @@ public class WebKitDebuggingTransport implements TransportImplementation {
     }
     
     @Override
+    public void setURLToLoad(String urlToLoad) {
+        this.urlToLoad = urlToLoad;
+        
+    }
+    
+    @Override
     public URL getConnectionURL() {
-        String urlStr = browserImpl.getURL();
+        String urlStr = urlToLoad;
+        if (urlStr == null) {
+            urlStr = browserImpl.getURL();
+        }
         if (urlStr != null) {
             try {
                 return new URL(urlStr);
