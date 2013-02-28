@@ -70,6 +70,21 @@ public class TestUtil {
     
     public static final String bodysetPath = "styleSheet/body/bodyItem/";
 
+    public static void setPlainSource() {
+        ExtCss3Parser.isScssSource_unit_tests = false;
+        ExtCss3Parser.isLessSource_unit_tests = false;
+    }
+    
+    public static void setScssSource() {
+        ExtCss3Parser.isScssSource_unit_tests = true;
+        ExtCss3Parser.isLessSource_unit_tests = false;
+    }
+    
+    public static void setLessSource() {
+        ExtCss3Parser.isScssSource_unit_tests = false;
+        ExtCss3Parser.isLessSource_unit_tests = true;
+    }
+    
     public static CssParserResult parse(String code) {
         try {
             Document doc = new PlainDocument();
@@ -100,24 +115,11 @@ public class TestUtil {
     }
 
     public static CssParserResult parse(Source source) throws ParseException, org.netbeans.modules.parsing.spi.ParseException {
-//        final AtomicReference<CssParserResult> resultRef = new AtomicReference<CssParserResult>();
-//        ParserManager.parse(Collections.singleton(source), new UserTask() {
-//
-//            @Override
-//            public void run(ResultIterator resultIterator) throws Exception {
-//                CssParserResult result = (CssParserResult) resultIterator.getParserResult();
-//                resultRef.set(result);
-//            }
-//        });
-//        
-//        return resultRef.get();
-
-        //the CssParserFactory is not registered in the system fs by default. 
-        //If it was the above is the clean way how to get the CssParserResult
-        CssParser parser = (CssParser) CssParserFactory.getDefault().createParser(null);
-        parser.parse(source.createSnapshot(), null, null);
-        return (CssParserResult) parser.getResult(null);
-
+        return parse(source, null);
+    }
+    
+    public static CssParserResult parse(Source source, String topLevelSnapshotMimetype) throws ParseException, org.netbeans.modules.parsing.spi.ParseException {
+        return CssParser.parse(source.createSnapshot(), topLevelSnapshotMimetype);
     }
 
     public static void dumpResult(CssParserResult result) {
