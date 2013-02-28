@@ -56,8 +56,8 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
-import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.SelectedLibrary;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel.SelectedLibrary;
 import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
 import org.netbeans.modules.web.clientproject.validation.ValidationResult;
 import org.netbeans.modules.web.common.api.Pair;
@@ -79,7 +79,7 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
     private final ProjectCustomizer.Category category;
     final ClientSideProjectProperties uiProperties;
     // @GuardedBy("EDT")
-    private final JavaScriptLibrarySelection javaScriptLibrarySelection;
+    private final JavaScriptLibrarySelectionPanel javaScriptLibrarySelection;
 
 
     JavaScriptFilesPanel(ProjectCustomizer.Category category, ClientSideProjectProperties uiProperties) {
@@ -89,7 +89,7 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
 
         this.category = category;
         this.uiProperties = uiProperties;
-        javaScriptLibrarySelection = new JavaScriptLibrarySelection(new LibraryValidator(uiProperties));
+        javaScriptLibrarySelection = new JavaScriptLibrarySelectionPanel(new LibraryValidator(uiProperties));
 
         initComponents();
         init();
@@ -214,7 +214,7 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
 
     //~ Inner classes
 
-    private static final class LibraryValidator implements JavaScriptLibrarySelection.JavaScriptLibrariesValidator {
+    private static final class LibraryValidator implements JavaScriptLibrarySelectionPanel.JavaScriptLibrariesValidator {
 
         private final ClientSideProjectProperties uiProperties;
 

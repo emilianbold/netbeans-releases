@@ -69,7 +69,7 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
-import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -217,7 +217,7 @@ public final class ClientSideProjectUtilities {
     }
 
     /**
-     * Add JS libraries (<b>{@link JavaScriptLibrarySelection.SelectedLibrary#isDefault() non-default} only!</b>) to the given
+     * Add JS libraries (<b>{@link JavaScriptLibrarySelectionPanel.SelectedLibrary#isDefault() non-default} only!</b>) to the given
      * site root, underneath the given JS libraries folder.
      * <p>
      * This method must be run in a background thread and stops if the current thread is interrupted.
@@ -234,14 +234,14 @@ public final class ClientSideProjectUtilities {
         "ClientSideProjectUtilities.msg.downloadingJsLib=Downloading {0}"
     })
     @CheckReturnValue
-    public static List<JavaScriptLibrarySelection.SelectedLibrary> applyJsLibraries(List<JavaScriptLibrarySelection.SelectedLibrary> selectedLibraries,
+    public static List<JavaScriptLibrarySelectionPanel.SelectedLibrary> applyJsLibraries(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries,
             String jsLibFolder, FileObject siteRootDir, @NullAllowed ProgressHandle handle) throws IOException {
         if (EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Must be run in a background thread");
         }
-        List<JavaScriptLibrarySelection.SelectedLibrary> failed = new ArrayList<JavaScriptLibrarySelection.SelectedLibrary>(selectedLibraries.size());
+        List<JavaScriptLibrarySelectionPanel.SelectedLibrary> failed = new ArrayList<JavaScriptLibrarySelectionPanel.SelectedLibrary>(selectedLibraries.size());
         FileObject librariesRoot = null;
-        for (JavaScriptLibrarySelection.SelectedLibrary selectedLibrary : selectedLibraries) {
+        for (JavaScriptLibrarySelectionPanel.SelectedLibrary selectedLibrary : selectedLibraries) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
@@ -252,7 +252,7 @@ public final class ClientSideProjectUtilities {
             if (librariesRoot == null) {
                 librariesRoot = FileUtil.createFolder(siteRootDir, jsLibFolder);
             }
-            JavaScriptLibrarySelection.LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
+            JavaScriptLibrarySelectionPanel.LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
             Library library = libraryVersion.getLibrary();
             if (handle != null) {
                 handle.progress(Bundle.ClientSideProjectUtilities_msg_downloadingJsLib(library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME)));

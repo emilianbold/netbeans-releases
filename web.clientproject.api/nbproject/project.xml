@@ -77,6 +77,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.34</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -150,7 +158,9 @@
                 <friend>org.netbeans.modules.web.livehtml</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.clientproject.api</package>
+                <package>org.netbeans.modules.web.clientproject.api.jslibs</package>
                 <package>org.netbeans.modules.web.clientproject.api.network</package>
+                <package>org.netbeans.modules.web.clientproject.api.util</package>
                 <package>org.netbeans.modules.web.clientproject.spi</package>
                 <package>org.netbeans.modules.web.clientproject.spi.platform</package>
             </friend-packages>

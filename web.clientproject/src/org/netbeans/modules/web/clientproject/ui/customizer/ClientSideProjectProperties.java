@@ -60,9 +60,9 @@ import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel.SelectedLibrary;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
-import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
-import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.SelectedLibrary;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -82,7 +82,7 @@ public final class ClientSideProjectProperties {
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectProperties.class.getName());
 
     final ClientSideProject project;
-    private final List<JavaScriptLibrarySelection.SelectedLibrary> newJsLibraries = new CopyOnWriteArrayList<JavaScriptLibrarySelection.SelectedLibrary>();
+    private final List<JavaScriptLibrarySelectionPanel.SelectedLibrary> newJsLibraries = new CopyOnWriteArrayList<JavaScriptLibrarySelectionPanel.SelectedLibrary>();
 
     private volatile String siteRootFolder = null;
     private volatile String testFolder = null;
@@ -388,8 +388,8 @@ public final class ClientSideProjectProperties {
 
     private List<String> getLibraryNames(List<SelectedLibrary> libraries) {
         List<String> names = new ArrayList<String>(libraries.size());
-        for (JavaScriptLibrarySelection.SelectedLibrary selectedLibrary : libraries) {
-            JavaScriptLibrarySelection.LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
+        for (JavaScriptLibrarySelectionPanel.SelectedLibrary selectedLibrary : libraries) {
+            JavaScriptLibrarySelectionPanel.LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
             Library library = libraryVersion.getLibrary();
             String name = library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME);
             names.add(name);
