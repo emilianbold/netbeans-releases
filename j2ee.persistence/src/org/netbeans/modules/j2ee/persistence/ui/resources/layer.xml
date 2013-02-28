@@ -92,7 +92,7 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.persistence.wizard.dbscript.Bundle#Templates/Persistence/DBScriptFromEntities"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="position" intvalue="400"/>
+                <attr name="position" intvalue="350"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.dbscript.DBScriptWizard.create"/>
                 <attr name="templateCategory" stringvalue="persistence"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/DBScript.html"/>
