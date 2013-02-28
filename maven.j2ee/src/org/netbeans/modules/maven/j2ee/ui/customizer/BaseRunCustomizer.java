@@ -88,7 +88,6 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         if (ExecutionChecker.DEV_NULL.equals(selectedServer.getServerInstanceID())) {
             MavenProjectSupport.setServerID(project, null);
             MavenProjectSupport.setServerInstanceID(project, null);
-            MavenProjectSupport.setOldServerInstanceID(project, null);
         }
 
         MavenProjectSupport.changeServer(project, false);

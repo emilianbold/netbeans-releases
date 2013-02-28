@@ -234,17 +234,12 @@ public class MavenProjectSupport {
         if (sc != null && sc.getServerInstanceId() != null) {
             return new String[] {sc.getServerInstanceId(), null};
         }
+
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue
         String serverID = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
-        if (serverID != null) {
-            return new String[] {serverID, null};
-        }
         String serverType = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
-        if (serverType == null) {
-            serverType = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
-        }
-        return new String[]{null, serverType};
+        
+        return new String[]{serverID, serverType};
     }
     
     /**
@@ -414,10 +409,6 @@ public class MavenProjectSupport {
     
     public static void setServerID(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, value, true);
-    }
-    
-    public static void setOldServerInstanceID(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, value, true);
     }
     
     public static void setServerInstanceID(Project project, String value) {

@@ -103,9 +103,6 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
         } else {
             String serverID = newServer.getServerInstanceID();
 
-            //remove old deprecated data.
-            handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, null, true);
-
             if (ExecutionChecker.DEV_NULL.equals(serverID)) {
                 handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, null, false);
             } else {
@@ -131,11 +128,6 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
             }
         }
 
-        // Try to find at least latest used server
-        final String oldServerID = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
-        if (oldServerID != null) {
-            return findServerByType(oldServerID, serverCBox);
-        }
         return Server.NO_SERVER_SELECTED;
     }
 
