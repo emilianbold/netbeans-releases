@@ -304,7 +304,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
         // if not found in caches => visit include file
         if (!foundInCache) {
-            APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(includedFile, true);
+            APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(includedFile, false);
             if (aptLight == null) {
                 // in the case file was just removed
                 Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", file); //NOI18N
