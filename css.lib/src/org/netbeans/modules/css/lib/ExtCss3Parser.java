@@ -65,11 +65,11 @@ public class ExtCss3Parser extends Css3Parser {
     private boolean isLessSource = isLessSource_unit_tests;
     private boolean isScssSource = isScssSource_unit_tests;
     
-    public ExtCss3Parser(TokenStream input, NbParseTreeBuilder dbg, FileObject fileObject) {
+    public ExtCss3Parser(TokenStream input, NbParseTreeBuilder dbg, String mimeType) {
         super(input, dbg);        
-        if(fileObject != null) {
-            this.isLessSource = fileObject.getMIMEType().equals("text/less");
-            this.isScssSource = fileObject.getMIMEType().equals("text/scss");
+        if(mimeType != null) {
+            this.isLessSource = mimeType.equals("text/less");
+            this.isScssSource = mimeType.equals("text/scss");
         }
     }
 
