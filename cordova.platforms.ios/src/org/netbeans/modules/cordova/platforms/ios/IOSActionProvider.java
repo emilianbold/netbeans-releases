@@ -69,7 +69,8 @@ public class IOSActionProvider implements ActionProvider {
         return new String[]{
                     COMMAND_BUILD,
                     COMMAND_CLEAN,
-                    COMMAND_RUN
+                    COMMAND_RUN,
+                    COMMAND_RUN_SINGLE
                 };
     }
 
@@ -79,7 +80,7 @@ public class IOSActionProvider implements ActionProvider {
         "LBL_Opening=Opening url"    
     })
     @Override
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+    public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (!Utilities.isMac()) {
                 NotifyDescriptor not = new NotifyDescriptor(
                         Bundle.LBL_NoMac(), 
@@ -97,14 +98,14 @@ public class IOSActionProvider implements ActionProvider {
             build.perform(BuildPerformer.BUILD_IOS, p);
         } else if (COMMAND_CLEAN.equals(command)) {
             build.perform(build.CLEAN_IOS, p);
-        } else if (COMMAND_RUN.equals(command)) {
+        } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
             if (build.isPhoneGapBuild(p)) {
                 build.perform(build.RUN_IOS,p);
             } else {
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     @Override
                     public void run() {
-                        IOSDevice.IPHONE.openUrl(build.getUrl(p));
+                        IOSDevice.IPHONE.openUrl(build.getUrl(p, context));
                     }
                 }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
             }

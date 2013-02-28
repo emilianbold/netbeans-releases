@@ -112,14 +112,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         setEnabledRunComponent(enableSelected);
 
         setEnabledAppletControls(appletDescRadioButton.isSelected());
-
-        if (jwsProps.jnlpImplOldOrModified) {
-            warningArea.setVisible(true);
-            setEnabledAllComponents(false);
-        } else {
-            resolvePanel.setVisible(false);
-        }
-
+        
         extResColumnNames = new String[] {
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.href"),
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.name"),
@@ -176,9 +169,6 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         appletDescRadioButton = new javax.swing.JRadioButton();
         appletClassComboBox = new javax.swing.JComboBox();
         appletParamsButton = new javax.swing.JButton();
-        resolvePanel = new javax.swing.JPanel();
-        warningArea = new javax.swing.JTextArea();
-        resolve = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         extResButton = new javax.swing.JButton();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
@@ -430,42 +420,6 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
         add(jPanel1, gridBagConstraints);
 
-        resolvePanel.setLayout(new java.awt.GridBagLayout());
-
-        warningArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
-        warningArea.setColumns(20);
-        warningArea.setEditable(false);
-        warningArea.setLineWrap(true);
-        warningArea.setRows(2);
-        warningArea.setText(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "Previous_Version_Script_Warning")); // NOI18N
-        warningArea.setWrapStyleWord(true);
-        warningArea.setBorder(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        resolvePanel.add(warningArea, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(resolve, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "TXT_ResolveModifiedBuildScript")); // NOI18N
-        resolve.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resolveOldBuildScript(evt);
-            }
-        });
-        resolvePanel.add(resolve, new java.awt.GridBagConstraints());
-        resolve.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "AD_Resolve")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
-        add(resolvePanel, gridBagConstraints);
-
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
 
         org.openide.awt.Mnemonics.setLocalizedText(extResButton, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResButton.text")); // NOI18N
@@ -619,13 +573,6 @@ private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     
 }//GEN-LAST:event_manageResources
 
-private void resolveOldBuildScript(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolveOldBuildScript
-    jwsProps.jnlpImplOldOrModified = false;
-    jwsProps.updateJnlpImpl();
-    resolvePanel.setVisible(false);
-    setEnabledAllComponents(true);
-}//GEN-LAST:event_resolveOldBuildScript
-
     private void setEnabledAppletControls(boolean b) {
         appletClassLabel.setEnabled(b);
         appletClassComboBox.setEnabled(b);
@@ -743,11 +690,8 @@ private void resolveOldBuildScript(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JCheckBox offlineCheckBox;
     private javax.swing.JLabel panelDescLabel;
-    private javax.swing.JButton resolve;
-    private javax.swing.JPanel resolvePanel;
     private javax.swing.JButton signingCustomizeButton;
     private javax.swing.JLabel signingInfolabel;
-    private javax.swing.JTextArea warningArea;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -30,14 +30,15 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="label" alignment="0" max="32767" attributes="0"/>
                   <Component id="jComboBox1" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="searchOverloaded" min="-2" max="-2" attributes="0"/>
                           <Component id="btn_usages_overriders" min="-2" max="-2" attributes="0"/>
                           <Component id="btn_usages" min="-2" max="-2" attributes="0"/>
                           <Component id="searchInComments" min="-2" max="-2" attributes="0"/>
                           <Component id="btn_overriders" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="0" pref="33" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -65,7 +66,9 @@
               <Component id="btn_overriders" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="btn_usages_overriders" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="searchOverloaded" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -149,6 +152,19 @@
           <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="LBL_FindUsagesOverridingMethods" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="searchOverloaded">
+      <Properties>
+        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="((Boolean) RefactoringModule.getOption(&quot;searchOverloaded.whereUsed&quot;, Boolean.FALSE)).booleanValue()" type="code"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="WhereUsedPanelMethod.searchOverloaded.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="searchOverloadedItemStateChanged"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
