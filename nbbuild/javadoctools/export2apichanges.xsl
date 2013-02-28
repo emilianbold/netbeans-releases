@@ -104,7 +104,6 @@ made subject to such option by the copyright holder.
                 <xsl:value-of select="$changes-since-year" /> 
                 <xsl:text>). There are also other documents that list changes 
                 made for </xsl:text>
-                <a href="http://www.netbeans.org/download/release41/javadoc/apichanges.html">release 4.1</a>,
                 <a href="http://www.netbeans.org/download/5_0/javadoc/apichanges.html">release 5.0</a>, 
                 <a href="http://www.netbeans.org/download/5_5/javadoc/apichanges.html">release 5.5</a>,
                 <a href="http://bits.netbeans.org/6.0/javadoc/apichanges.html">release 6.0</a>,

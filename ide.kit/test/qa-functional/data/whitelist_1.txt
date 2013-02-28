@@ -1,3 +1,10 @@
+#226670
+org.eclipse.core.runtime.internal.adaptor.BasicLocation$MockLocker
+org.eclipse.osgi.internal.baseadaptor.weaving.DynamicImportList
+org.eclipse.osgi.internal.baseadaptor.weaving.WovenClassImpl
+org.osgi.framework.hooks.weaving.WeavingHook
+org.osgi.framework.hooks.weaving.WovenClass
+
 #223337
 org.netbeans.modules.project.ui.actions.ShortcutManager
 org.netbeans.modules.project.ui.problems.BrokenProjectNotifier
