@@ -190,6 +190,11 @@ public class DefaultFaceletLibraries {
         }
 
         @Override
+        public String getDefaultPrefix() {
+            return prefix;
+        }
+
+        @Override
         public LibraryDescriptor getLibraryDescriptor() {
             return new LibraryDescriptor() {
 
