@@ -85,6 +85,10 @@ import org.openide.util.Parameters;
 
 /**
  * Manager for project JS library files.
+ * <p>
+ * This panel is ready to be used as a component by {@link ProjectCustomizer.CompositeCategoryProvider}.
+ * @see #getCategoryDisplayName()
+ * @see ProjectCustomizer.Category#create(String, String, java.awt.Image, ProjectCustomizer.Category)
  * @since 1.20
  */
 public final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.Provider {
