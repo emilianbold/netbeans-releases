@@ -1063,7 +1063,7 @@ scss_declaration_interpolation_expression
     
 scss_interpolation_expression_var
     :
-        HASH_SYMBOL LBRACE ws? cp_variable ws? RBRACE //XXX possibly allow cp_ecp_expression inside
+        HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
     ;
     
 //SASS nested properties:

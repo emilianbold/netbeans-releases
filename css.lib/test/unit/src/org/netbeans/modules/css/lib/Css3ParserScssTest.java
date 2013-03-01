@@ -502,6 +502,39 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
+    
+    public void testInterpolationExpressionInFunctionInTheExpression() {
+        String source =
+                ".body.firefox #{ie-hex-str($green)}:before {\n"
+                + "    content: \"Hi, Firefox users!\";\n"
+                + "  }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    //fails as the 
+    //
+    //.body.firefox #{$selector}:before 
+    //
+    //selector is parsed as property declaration - due to the colon presence - FIXME!!!
+    public void testInterpolationExpressionComplex_fails() {
+        String source =
+                "@mixin firefox-message($selector) {\n"
+                + "  .body.firefox #{$selector}:before {\n"
+                + "    content: \"Hi, Firefox users!\";\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
 
     public void testMixinsWithArgumentsComplex() {
         String source =
