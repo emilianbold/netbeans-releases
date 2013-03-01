@@ -128,8 +128,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
         final CharSequence docText = getSourceText(snapshot.getSource());
         final String jsfNsPrefix = result.getNamespaces().get(DefaultFaceletLibraries.JSF_NS);
         final String passthroughNsPrefix = result.getNamespaces().get(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS);
-        final boolean[] passthroughUsage = new boolean[1];
         final boolean[] jsfUsage = new boolean[1];
+        final List<Named> wrongJsfNsUsages = new ArrayList<Named>();
 
         // collects all prefixes with prefix xmlns (namespaces) and jsf (JSF2.2 prefix definable for any HTML element)
         ElementVisitor prefixCollector = new ElementVisitor() {
@@ -236,7 +236,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2. find for unused declarations
-        final boolean declaredPassthrough = declaredNamespaces.contains(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS);
+        final boolean declaredPassthroughOrJsf = declaredNamespaces.contains(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS)
+                || declaredNamespaces.contains(DefaultFaceletLibraries.JSF_NS);
+        final boolean[] passthroughUsage = new boolean[1];
         final Collection<OffsetRange> ranges = new ArrayList<OffsetRange>();
         for (AbstractFaceletsLibrary lib : declaredLibraries) {
             Node rootNode = result.root(lib.getNamespace());
@@ -248,15 +250,23 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 @Override
                 public void visit(Element node) {
                     usages[0]++;
-                    if (declaredPassthrough && !passthroughUsage[0]) {
+                    if (declaredPassthroughOrJsf) {
                         OpenTag ot = (OpenTag) node;
                         for (Attribute attribute : ot.attributes(new AttributeFilter() {
                             @Override
                             public boolean accepts(Attribute attribute) {
-                                return CharSequenceUtilities.equals(attribute.namespacePrefix(), passthroughNsPrefix);
+                                return attribute.namespacePrefix() != null;
                             }
                         })) {
-                            passthroughUsage[0] = true;
+                            if (passthroughNsPrefix != null
+                                    && LexerUtils.equals(passthroughNsPrefix, attribute.namespacePrefix(), true, true)) {
+                                // http://java.sun.com/jsf/passthrough used
+                                passthroughUsage[0] = true;
+                            } else if (jsfNsPrefix != null && ot.namespacePrefix() != null
+                                    && LexerUtils.equals(jsfNsPrefix, attribute.namespacePrefix(), true, true)) {
+                                // http://java.sun.com/jsf used at JSF-aware tag
+                                wrongJsfNsUsages.add(attribute);
+                            }
                         }
                     }
                 }
@@ -274,7 +284,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2b. find for unused declaration of http://java.sun.com/jsf/passthrough
-        if (declaredPassthrough && !passthroughUsage[0]) {
+        if (declaredNamespaces.contains(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS) && !passthroughUsage[0]) {
             addUnusedLibrary(ranges,
                     namespace2Attribute,
                     libs.get(DefaultFaceletLibraries.JSF_PASSTHROUGH_NS),
@@ -304,6 +314,16 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     range,
                     fixes, DEFAULT_ERROR_HINT_PRIORITY);
 
+            hints.add(hint);
+        }
+
+        //generate errors - http://java.sun.com/jsf namespace used at JSF-aware markup
+        for (Named attr : wrongJsfNsUsages) {
+            Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                    NbBundle.getMessage(HintsProvider.class, "MSG_JSF_NS_USED_IN_JSF_AWARE_TAG"), //NOI18N
+                    context.parserResult.getSnapshot().getSource().getFileObject(),
+                    JsfUtils.createOffsetRange(snapshot, docText, attr.from(), attr.from() + attr.name().length() + 1),
+                    Collections.<HintFix>emptyList(), DEFAULT_ERROR_HINT_PRIORITY);
             hints.add(hint);
         }
 
