@@ -61,12 +61,12 @@ import org.netbeans.modules.javascript2.editor.doc.JsDocumentationElement;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.api.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.api.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
-import org.netbeans.modules.javascript2.editor.spi.CompletionInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -239,7 +239,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting JS CC took {0}ms ",  (end - start));
-        for (CompletionInterceptor interceptor : EditorExtender.getDefault().getCompletionInterceptors()) {
+        for (CompletionProvider interceptor : EditorExtender.getDefault().getCompletionProviders()) {
             resultList.addAll(interceptor.complete(ccContext, context, pref));
         }
         if (!resultList.isEmpty()) {
@@ -289,7 +289,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
         if (documentation.length() == 0) {
-            for (CompletionInterceptor interceptor : EditorExtender.getDefault().getCompletionInterceptors()) {
+            for (CompletionProvider interceptor : EditorExtender.getDefault().getCompletionProviders()) {
                 String doc = interceptor.getHelpDocumentation(info, element);
                 if (doc != null && !doc.isEmpty()) {
                     documentation.append(doc);

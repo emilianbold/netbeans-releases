@@ -49,7 +49,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.javascript2.editor.model.spi.ModelInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -59,7 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Petr Pisl
  */
 @ServiceProvider(service=Processor.class)
-@SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.model.spi.ModelInterceptor.Registration") //NOI18N
+@SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor.Registration") //NOI18N
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class ModelInterceptorRegistrationProcessor extends LayerGeneratingProcessor {
 

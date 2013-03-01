@@ -60,9 +60,9 @@ import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
-import org.netbeans.modules.javascript2.editor.lexer.api.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.api.LexUtilities;
-import org.netbeans.modules.javascript2.editor.spi.CompletionInterceptor;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.javascript2.jquery.model.JQueryUtils;
 import org.netbeans.modules.javascript2.jquery.SelectorsLoader;
 import org.openide.filesystems.FileObject;
@@ -73,8 +73,8 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Pisl
  */
-@CompletionInterceptor.Registration(priority=10)
-public class JQueryCodeCompletion implements CompletionInterceptor {
+@CompletionProvider.Registration(priority=10)
+public class JQueryCodeCompletion implements CompletionProvider {
 
     private static final Logger LOGGER = Logger.getLogger(JQueryCodeCompletion.class.getName());
 

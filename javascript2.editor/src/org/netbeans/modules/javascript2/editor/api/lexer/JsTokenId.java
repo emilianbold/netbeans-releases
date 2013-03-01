@@ -35,7 +35,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.lexer.api;
+package org.netbeans.modules.javascript2.editor.api.lexer;
 
 import java.util.Collection;
 import java.util.EnumSet;

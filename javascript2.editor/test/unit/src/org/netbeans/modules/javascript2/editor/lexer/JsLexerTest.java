@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.javascript2.editor.lexer;
 
-import org.netbeans.modules.javascript2.editor.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;

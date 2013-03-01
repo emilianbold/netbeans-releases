@@ -43,7 +43,7 @@ import jdk.nashorn.internal.runtime.Source;
 import jdk.nashorn.internal.runtime.options.Options;
 import java.util.Collections;
 import jdk.nashorn.internal.runtime.ParserException;
-import org.netbeans.modules.javascript2.editor.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**

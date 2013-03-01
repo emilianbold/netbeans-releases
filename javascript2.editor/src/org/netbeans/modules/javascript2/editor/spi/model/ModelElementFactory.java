@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.spi;
+package org.netbeans.modules.javascript2.editor.spi.model;
 
 import java.util.ArrayList;
 import java.util.Collection;

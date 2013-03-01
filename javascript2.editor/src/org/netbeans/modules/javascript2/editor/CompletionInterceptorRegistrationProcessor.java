@@ -49,7 +49,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.javascript2.editor.spi.CompletionInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -59,7 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Petr Pisl
  */
 @ServiceProvider(service=Processor.class)
-@SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.spi.CompletionInterceptor.Registration") //NOI18N
+@SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.spi.CompletionProvider.Registration") //NOI18N
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class CompletionInterceptorRegistrationProcessor extends LayerGeneratingProcessor {
 
@@ -69,10 +69,10 @@ public class CompletionInterceptorRegistrationProcessor extends LayerGeneratingP
     
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(CompletionInterceptor.Registration.class)) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(CompletionProvider.Registration.class)) {
             layer(element)
-                    .instanceFile(EditorExtender.COMPLETION_INTERCEPTORS_PATH, null, CompletionInterceptor.class)
-                    .position(element.getAnnotation(CompletionInterceptor.Registration.class).priority())
+                    .instanceFile(EditorExtender.COMPLETION_PROVIDERS_PATH, null, CompletionProvider.class)
+                    .position(element.getAnnotation(CompletionProvider.Registration.class).priority())
                     .write();
         }
         return true;

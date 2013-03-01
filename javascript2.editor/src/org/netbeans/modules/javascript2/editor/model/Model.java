@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model;
 
 import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
-import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import java.text.MessageFormat;
 import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.ir.Node;
@@ -63,7 +63,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
-import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**

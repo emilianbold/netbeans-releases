@@ -45,13 +45,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.netbeans.modules.csl.api.DeclarationFinder;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface DeclarationFinderInterceptor extends DeclarationFinder {
+public interface DeclarationFinder extends org.netbeans.modules.csl.api.DeclarationFinder {
 
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.TYPE)

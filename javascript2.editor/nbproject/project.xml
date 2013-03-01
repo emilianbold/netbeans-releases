@@ -369,10 +369,10 @@
                 <friend>org.netbeans.modules.javascript2.extjs</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
                 <friend>org.netbeans.modules.javascript2.knockout</friend>
-                <package>org.netbeans.modules.javascript2.editor.spi</package>
-                <package>org.netbeans.modules.javascript2.editor.lexer.api</package>
+                <package>org.netbeans.modules.javascript2.editor.api.lexer</package>
                 <package>org.netbeans.modules.javascript2.editor.model</package>
-                <package>org.netbeans.modules.javascript2.editor.model.spi</package>
+                <package>org.netbeans.modules.javascript2.editor.spi</package>
+                <package>org.netbeans.modules.javascript2.editor.spi.model</package>
             </friend-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">

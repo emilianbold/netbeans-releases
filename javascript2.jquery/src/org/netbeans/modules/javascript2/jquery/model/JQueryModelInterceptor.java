@@ -44,8 +44,8 @@ package org.netbeans.modules.javascript2.jquery.model;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
-import org.netbeans.modules.javascript2.editor.model.spi.ModelInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
 
 /**
  *

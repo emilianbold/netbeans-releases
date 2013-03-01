@@ -43,8 +43,8 @@ package org.netbeans.modules.javascript2.editor;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.spi.CompletionInterceptor;
-import org.netbeans.modules.javascript2.editor.spi.DeclarationFinderInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
+import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -54,15 +54,15 @@ import org.openide.util.lookup.Lookups;
  */
 public final class EditorExtender {
 
-    public static final String COMPLETION_INTERCEPTORS_PATH = "JavaScript/Editor/CompletionInterceptors";
+    public static final String COMPLETION_PROVIDERS_PATH = "JavaScript/Editor/CompletionInterceptors";
 
-    public static final String DECLARATION_FINDER_INTERCEPTORS_PATH = "JavaScript/Editor/DeclarationFinderInterceptors";
+    public static final String DECLARATION_FINDERS_PATH = "JavaScript/Editor/DeclarationFinderInterceptors";
 
-    private static final Lookup.Result<CompletionInterceptor> COMPLETION_INTERCEPTORS =
-            Lookups.forPath(COMPLETION_INTERCEPTORS_PATH).lookupResult(CompletionInterceptor.class);
+    private static final Lookup.Result<CompletionProvider> COMPLETION_PROVIDERS =
+            Lookups.forPath(COMPLETION_PROVIDERS_PATH).lookupResult(CompletionProvider.class);
 
-    private static final Lookup.Result<DeclarationFinderInterceptor> DECLARATION_FINDER_INTERCEPTORS =
-            Lookups.forPath(DECLARATION_FINDER_INTERCEPTORS_PATH).lookupResult(DeclarationFinderInterceptor.class);
+    private static final Lookup.Result<DeclarationFinder> DECLARATION_FINDERS =
+            Lookups.forPath(DECLARATION_FINDERS_PATH).lookupResult(DeclarationFinder.class);
 
     private static EditorExtender instance;
 
@@ -77,11 +77,11 @@ public final class EditorExtender {
         return instance;
     }
 
-    public List<CompletionInterceptor> getCompletionInterceptors() {
-        return new ArrayList<CompletionInterceptor>(COMPLETION_INTERCEPTORS.allInstances());
+    public List<CompletionProvider> getCompletionProviders() {
+        return new ArrayList<CompletionProvider>(COMPLETION_PROVIDERS.allInstances());
     }
 
-    public List<DeclarationFinderInterceptor> getDeclarationFinderInterceptors() {
-        return new ArrayList<DeclarationFinderInterceptor>(DECLARATION_FINDER_INTERCEPTORS.allInstances());
+    public List<DeclarationFinder> getDeclarationFinders() {
+        return new ArrayList<DeclarationFinder>(DECLARATION_FINDERS.allInstances());
     }
 }

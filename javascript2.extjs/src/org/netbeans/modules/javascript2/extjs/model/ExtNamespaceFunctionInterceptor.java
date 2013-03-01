@@ -46,11 +46,11 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.spi.FunctionArgument;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.spi.FunctionInterceptor;
-import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 
 /**
  *

@@ -49,7 +49,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.javascript2.editor.spi.DeclarationFinderInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -59,7 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Petr Pisl
  */
 @ServiceProvider(service=Processor.class)
-@SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.spi.DeclarationFinderInterceptor.Registration") //NOI18N
+@SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.spi.DeclarationFinder.Registration") //NOI18N
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class DeclarationFinderInterceptorRegistrationProcessor extends LayerGeneratingProcessor {
 
@@ -69,10 +69,10 @@ public class DeclarationFinderInterceptorRegistrationProcessor extends LayerGene
     
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(DeclarationFinderInterceptor.Registration.class)) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(DeclarationFinder.Registration.class)) {
             layer(element)
-                    .instanceFile(EditorExtender.DECLARATION_FINDER_INTERCEPTORS_PATH, null, DeclarationFinderInterceptor.class)
-                    .position(element.getAnnotation(DeclarationFinderInterceptor.Registration.class).priority())
+                    .instanceFile(EditorExtender.DECLARATION_FINDERS_PATH, null, DeclarationFinder.class)
+                    .position(element.getAnnotation(DeclarationFinder.Registration.class).priority())
                     .write();
         }
         return true;

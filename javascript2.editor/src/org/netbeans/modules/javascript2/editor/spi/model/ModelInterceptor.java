@@ -39,27 +39,22 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.spi;
+package org.netbeans.modules.javascript2.editor.spi.model;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.List;
-import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.spi.ParserResult;
+import java.util.Collection;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface CompletionInterceptor {
+public interface ModelInterceptor {
 
-    List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix);
-
-    String getHelpDocumentation(ParserResult info, ElementHandle element);
+    Collection<JsObject> interceptGlobal(ModelElementFactory factory);
 
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.TYPE)

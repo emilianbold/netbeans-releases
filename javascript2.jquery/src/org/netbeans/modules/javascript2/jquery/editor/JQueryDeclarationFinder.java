@@ -52,7 +52,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -62,9 +61,9 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.refactoring.api.CssRefactoring;
 import org.netbeans.modules.css.refactoring.api.EntryHandle;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
-import org.netbeans.modules.javascript2.editor.lexer.api.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.api.LexUtilities;
-import org.netbeans.modules.javascript2.editor.spi.DeclarationFinderInterceptor;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
 import org.netbeans.modules.javascript2.jquery.model.JQueryUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,8 +72,8 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-@DeclarationFinderInterceptor.Registration(priority=10)
-public class JQueryDeclarationFinder implements DeclarationFinderInterceptor {
+@DeclarationFinder.Registration(priority=10)
+public class JQueryDeclarationFinder implements DeclarationFinder {
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {

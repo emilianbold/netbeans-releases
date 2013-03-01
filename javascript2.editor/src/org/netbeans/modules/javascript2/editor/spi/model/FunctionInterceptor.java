@@ -39,78 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.spi;
+package org.netbeans.modules.javascript2.editor.spi.model;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Collection;
+import java.util.regex.Pattern;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.impl.FunctionArgumentAccessor;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class FunctionArgument {
+public interface FunctionInterceptor {
 
-    static {
-        FunctionArgumentAccessor.setDefault(new FunctionArgumentAccessor() {
+    Pattern getNamePattern();
 
-            @Override
-            public FunctionArgument createForAnonymousObject(int order, int offset, JsObject value) {
-                return new FunctionArgument(Kind.ANONYMOUS_OBJECT, order, offset, value);
-            }
+    void intercept(String name, JsObject globalObject, ModelElementFactory factory,
+            Collection<FunctionArgument> args);
 
-            @Override
-            public FunctionArgument createForString(int order, int offset, String value) {
-                return new FunctionArgument(Kind.STRING, order, offset, value);
-            }
+    @Retention(RetentionPolicy.SOURCE)
+    @Target(ElementType.TYPE)
+    public @interface Registration {
 
-            @Override
-            public FunctionArgument createForReference(int order, int offset, List<Identifier> value) {
-                return new FunctionArgument(Kind.REFERENCE, order, offset, value);
-            }
-
-            @Override
-            public FunctionArgument createForUnknown(int order) {
-                return new FunctionArgument(Kind.UNKNOWN, order, -1, null);
-            }
-        });
+        int priority() default 100;
     }
-    private final Kind kind;
-
-    private final int order;
-
-    private final int offset;
-    
-    private final Object value;
-
-    private FunctionArgument(Kind kind, int order, int offset, Object value) {
-        this.kind = kind;
-        this.order = order;
-        this.offset = offset;
-        this.value = value;
-    }
-
-    public Kind getKind() {
-        return this.kind;
-    }
-
-    public int getOrder() {
-        return this.order;
-    }
-
-    public int getOffset() {
-        return this.offset;
-    }
-
-    public Object getValue() {
-        return this.value;
-    }
-
-    public static enum Kind {
-        STRING,
-        REFERENCE,
-        ANONYMOUS_OBJECT,
-        UNKNOWN
-    };
 }

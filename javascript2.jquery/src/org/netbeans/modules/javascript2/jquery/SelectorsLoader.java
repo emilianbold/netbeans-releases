@@ -54,7 +54,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.spi.ModelElementFactory;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
