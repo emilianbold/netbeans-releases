@@ -39,15 +39,18 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.validation;
+package org.netbeans.modules.web.clientproject.api.validation;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /**
  * Validation result.
  * <p>
  * This class is not thread safe.
+ * @since 1.20
  */
 public final class ValidationResult {
 
@@ -55,32 +58,65 @@ public final class ValidationResult {
     private final List<Message> warnings = new ArrayList<Message>();
 
 
+    /**
+     * Return {@code true} if this validation contains any error.
+     * @return {@code true} if this validation contains any error, {@code false} otherwise
+     */
     public boolean hasErrors() {
         return !errors.isEmpty();
     }
 
+    /**
+     * Get validation errors.
+     * @return list of validation errors
+     */
     public List<Message> getErrors() {
         return new ArrayList<Message>(errors);
     }
 
+    /**
+     * Return {@code true} if this validation contains any warning.
+     * @return {@code true} if this validation contains any warning, {@code false} otherwise
+     */
     public boolean hasWarnings() {
         return !warnings.isEmpty();
     }
 
+    /**
+     * Get validation warnings.
+     * @return list of validation warnings
+     */
     public List<Message> getWarnings() {
         return new ArrayList<Message>(warnings);
 
     }
 
-    void addError(Message error) {
+    /**
+     * Add validation error.
+     * @param error validation error to be added
+     */
+    public void addError(@NonNull Message error) {
+        Parameters.notNull("error", error);
         errors.add(error);
     }
 
-    void addWarning(Message warning) {
+    /**
+     * Add validation warning.
+     * @param error validation warning to be added
+     */
+    public void addWarning(@NonNull Message warning) {
+        Parameters.notNull("warning", warning);
         warnings.add(warning);
     }
 
-    void merge(ValidationResult otherResult) {
+    /**
+     * Merge this validation result with another one. In other words,
+     * add all errors and warnings from the given validation result
+     * to this one.
+     * @param otherResult validation result to be merged
+     */
+    public void merge(@NonNull ValidationResult otherResult) {
+        Parameters.notNull("otherResult", otherResult);
         errors.addAll(otherResult.errors);
         warnings.addAll(otherResult.warnings);
     }
@@ -101,7 +137,9 @@ public final class ValidationResult {
          * @param source source of the message, e.g. "siteRootFolder"
          * @param message message itself, e.g. "Invalid directory specified."
          */
-        public Message(String source, String message) {
+        public Message(@NonNull String source, @NonNull String message) {
+            Parameters.notNull("source", source);
+            Parameters.notNull("message", message);
             this.source = source;
             this.message = message;
         }

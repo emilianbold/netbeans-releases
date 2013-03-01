@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
+import java.io.File;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraryCustomizerPanel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
@@ -68,7 +70,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     @NbBundle.Messages({
         "CompositePanelProviderImpl.sources.title=Sources",
         "CompositePanelProviderImpl.run.title=Run",
-        "CompositePanelProviderImpl.jsFiles.title=JavaScript Files"
     })
     @Override
     public Category createCategory(Lookup context) {
@@ -86,7 +87,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (JS_FILES.equals(name)) {
             category = ProjectCustomizer.Category.create(
                     JS_FILES,
-                    Bundle.CompositePanelProviderImpl_jsFiles_title(),
+                    JavaScriptLibraryCustomizerPanel.getCategoryDisplayName(),
                     null);
         }
         assert category != null : "No category for name: " + name; //NOI18N
@@ -96,13 +97,18 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     @Override
     public JComponent createComponent(Category category, Lookup context) {
         String categoryName = category.getName();
-        ClientSideProjectProperties uiProperties = context.lookup(ClientSideProjectProperties.class);
+        final ClientSideProjectProperties uiProperties = context.lookup(ClientSideProjectProperties.class);
         if (SOURCES.equals(categoryName)) {
             return new SourcesPanel(category, uiProperties);
         } else if (RUN.equals(categoryName)) {
             return new RunPanel(category, uiProperties);
         } else if (JS_FILES.equals(categoryName)) {
-            return new JavaScriptFilesPanel(category, uiProperties);
+            return new JavaScriptLibraryCustomizerPanel(category, new JavaScriptLibraryCustomizerPanel.LibrariesFolderRootProvider() {
+                @Override
+                public File getLibrariesFolderRoot() {
+                    return uiProperties.getResolvedSiteRootFolder();
+                }
+            });
         }
         assert false : "No component found for " + category.getDisplayName(); //NOI18N
         return new JPanel();

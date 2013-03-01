@@ -39,10 +39,12 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.customizer;
+package org.netbeans.modules.web.clientproject.api.jslibs;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,44 +57,57 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel.SelectedLibrary;
-import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
-import org.netbeans.modules.web.clientproject.validation.ValidationResult;
+import org.netbeans.modules.web.clientproject.api.validation.FolderValidator;
+import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
- * Manager for project JavaScript files.
+ * Manager for project JS library files.
+ * @since 1.20
  */
-public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provider {
+public final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.Provider {
 
     private static final long serialVersionUID = 8973245611032L;
 
     static final String JS_MIME_TYPE = "text/javascript"; // NOI18N
 
     private final ProjectCustomizer.Category category;
-    final ClientSideProjectProperties uiProperties;
+    final LibrariesFolderRootProvider librariesFolderRootProvider;
     // @GuardedBy("EDT")
     private final JavaScriptLibrarySelectionPanel javaScriptLibrarySelection;
 
 
-    JavaScriptFilesPanel(ProjectCustomizer.Category category, ClientSideProjectProperties uiProperties) {
-        assert EventQueue.isDispatchThread();
-        assert category != null;
-        assert uiProperties != null;
+    public JavaScriptLibraryCustomizerPanel(@NonNull ProjectCustomizer.Category category, @NonNull LibrariesFolderRootProvider librariesFolderRootProvider) {
+        Parameters.notNull("category", category);
+        Parameters.notNull("librariesFolderRootProvider", librariesFolderRootProvider);
+        checkUiThread();
 
         this.category = category;
-        this.uiProperties = uiProperties;
-        javaScriptLibrarySelection = new JavaScriptLibrarySelectionPanel(new LibraryValidator(uiProperties));
+        this.librariesFolderRootProvider = librariesFolderRootProvider;
+        javaScriptLibrarySelection = new JavaScriptLibrarySelectionPanel(new LibraryValidator(librariesFolderRootProvider));
 
         initComponents();
         init();
+    }
+
+    @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.category.displayName=JavaScript Files")
+    public static String getCategoryDisplayName() {
+        return Bundle.JavaScriptLibraryCustomizerPanel_category_displayName();
+    }
+
+    private void checkUiThread() {
+        if (!EventQueue.isDispatchThread()) {
+            throw new IllegalStateException("Must be run in UI thread");
+        }
     }
 
     private void init() {
@@ -100,11 +115,18 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
         javaScriptLibrarySelection.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                validateAndStore();
+                validateData();
             }
         });
         // add to placeholder
         placeholderPanel.add(javaScriptLibrarySelection, BorderLayout.CENTER);
+        // set store listener
+        category.setStoreListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                storeData();
+            }
+        });
     }
 
     @Override
@@ -117,9 +139,9 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
     private void setJsFiles() {
         assert EventQueue.isDispatchThread();
         // set js files
-        File siteRootFolder = uiProperties.getResolvedSiteRootFolder();
-        ValidationResult result = new ProjectFoldersValidator()
-                .validateSiteRootFolder(siteRootFolder)
+        File siteRootFolder = librariesFolderRootProvider.getLibrariesFolderRoot();
+        ValidationResult result = new FolderValidator()
+                .validateFolder(siteRootFolder)
                 .getResult();
         Collection<String> jsFiles;
         if (result.hasErrors()) {
@@ -128,12 +150,6 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
             jsFiles = findProjectJsFiles(FileUtil.toFileObject(siteRootFolder));
         }
         javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
-    }
-
-    void validateAndStore() {
-        if (validateData()) {
-            storeData();
-        }
     }
 
     boolean validateData() {
@@ -157,12 +173,13 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
     }
 
     private void storeData() {
-        assert EventQueue.isDispatchThread();
-        uiProperties.setJsLibFolder(javaScriptLibrarySelection.getLibrariesFolder());
-        uiProperties.setNewJsLibraries(javaScriptLibrarySelection.getSelectedLibraries());
+        assert !EventQueue.isDispatchThread();
+        // XXX
+//        uiProperties.setJsLibFolder(javaScriptLibrarySelection.getLibrariesFolder());
+//        uiProperties.setNewJsLibraries(javaScriptLibrarySelection.getSelectedLibraries());
     }
 
-    @NbBundle.Messages("JavaScriptFilesPanel.progress.detectingJsFiles=Detecting JavaScript files...")
+    @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.progress.detectingJsFiles=Detecting JavaScript files...")
     private Collection<String> findProjectJsFiles(final FileObject siteRoot) {
         final Set<String> jsFiles = Collections.synchronizedSortedSet(new TreeSet<String>());
         ProgressUtils.showProgressDialogAndRun(new Runnable() {
@@ -176,7 +193,7 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
                     }
                 }
             }
-        }, Bundle.JavaScriptFilesPanel_progress_detectingJsFiles());
+        }, Bundle.JavaScriptLibraryCustomizerPanel_progress_detectingJsFiles());
         return jsFiles;
     }
 
@@ -214,19 +231,36 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
 
     //~ Inner classes
 
+    /**
+     * Provider for root (parent folder) of {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}.
+     * <p>
+     * Implementations must be thread-safe.
+     */
+    public interface LibrariesFolderRootProvider {
+
+        /**
+         * Get root (parent folder) of {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}.
+         * The root is typically web root folder or site root folder.
+         * The root is also searched for existing JS libraries/files.
+         * @return root (parent folder) of {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}, can be {@code null}
+         */
+        @CheckForNull
+        File getLibrariesFolderRoot();
+    }
+
     private static final class LibraryValidator implements JavaScriptLibrarySelectionPanel.JavaScriptLibrariesValidator {
 
-        private final ClientSideProjectProperties uiProperties;
+        private final LibrariesFolderRootProvider librariesFolderRootProvider;
 
 
-        private LibraryValidator(ClientSideProjectProperties uiProperties) {
-            assert uiProperties != null;
-            this.uiProperties = uiProperties;
+        private LibraryValidator(LibrariesFolderRootProvider librariesFolderRootProvider) {
+            assert librariesFolderRootProvider != null;
+            this.librariesFolderRootProvider = librariesFolderRootProvider;
         }
 
-        @NbBundle.Messages("JavaScriptFilesPanel.error.jsLibsAlreadyExist=Some of the selected libraries already exist.")
+        @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.error.jsLibsAlreadyExist=Some of the selected libraries already exist.")
         @Override
-        public Pair<Set<SelectedLibrary>, String> validate(String librariesFolder, Set<SelectedLibrary> newLibraries) {
+        public Pair<Set<JavaScriptLibrarySelectionPanel.SelectedLibrary>, String> validate(String librariesFolder, Set<JavaScriptLibrarySelectionPanel.SelectedLibrary> newLibraries) {
             if (newLibraries.isEmpty()) {
                 // nothing to validate
                 return VALID_RESULT;
@@ -236,8 +270,8 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
                 // non-existing or invalid js libs folder
                 return VALID_RESULT;
             }
-            Set<SelectedLibrary> existing = new HashSet<SelectedLibrary>();
-            for (SelectedLibrary selectedLibrary : newLibraries) {
+            Set<JavaScriptLibrarySelectionPanel.SelectedLibrary> existing = new HashSet<JavaScriptLibrarySelectionPanel.SelectedLibrary>();
+            for (JavaScriptLibrarySelectionPanel.SelectedLibrary selectedLibrary : newLibraries) {
                 for (String filePath : selectedLibrary.getFilePaths()) {
                     if (libsFolder.getFileObject(filePath) != null) {
                         existing.add(selectedLibrary);
@@ -246,14 +280,19 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
             }
             if (!existing.isEmpty()) {
                 // validation failed
-                return Pair.of(existing, Bundle.JavaScriptFilesPanel_error_jsLibsAlreadyExist());
+                return Pair.of(existing, Bundle.JavaScriptLibraryCustomizerPanel_error_jsLibsAlreadyExist());
             }
             // all ok
             return VALID_RESULT;
         }
 
         private FileObject getLibsFolder(String librariesFolder) {
-            FileObject siteRootFolder = FileUtil.toFileObject(uiProperties.getResolvedSiteRootFolder());
+            File librariesFolderRoot = librariesFolderRootProvider.getLibrariesFolderRoot();
+            if (librariesFolderRoot == null) {
+                // no folder
+                return null;
+            }
+            FileObject siteRootFolder = FileUtil.toFileObject(librariesFolderRoot);
             if (siteRootFolder == null) {
                 // non-existing folder
                 return null;
