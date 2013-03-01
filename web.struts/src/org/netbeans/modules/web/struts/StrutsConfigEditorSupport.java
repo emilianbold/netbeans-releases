@@ -196,7 +196,10 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
             }
             super.saveDocument();
             //moved from Env.save()
-            getDataObject().setModified (false);
+// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
+// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly.
+//            getDataObject().setModified (false);
         }
         else {
                 // update prolog to new valid encoding
@@ -239,7 +242,10 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
 
                 super.saveDocument();
                 //moved from Env.save()
-                getDataObject().setModified (false);
+// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
+// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly.
+//                getDataObject().setModified (false);
             }
             catch (javax.swing.text.BadLocationException e){
                 Logger.getLogger("global").log(Level.INFO, null, e);

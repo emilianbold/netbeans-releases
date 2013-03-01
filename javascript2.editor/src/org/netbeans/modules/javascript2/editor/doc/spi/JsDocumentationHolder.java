@@ -221,6 +221,14 @@ public abstract class JsDocumentationHolder {
         return null;
     }
 
+    /**
+     * 
+     * @return snapshot
+     */
+    public Snapshot getSnapshot() {
+        return this.snapshot;
+    }
+    
     @SuppressWarnings("empty-statement")
     private int getEndOffsetOfAssociatedComment(int offset) {
         TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();

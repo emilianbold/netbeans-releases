@@ -59,7 +59,7 @@ public class OccurrenceImpl implements Occurrence {
     
     public OccurrenceImpl(final OffsetRange offsetRange, final JsObject declaration) {
         this.offsetRange = offsetRange;
-        this.declarations = new ArrayList<JsObject>();
+        this.declarations = new ArrayList<JsObject>(1);
         this.declarations.add(declaration);
     }
     
@@ -71,6 +71,26 @@ public class OccurrenceImpl implements Occurrence {
     @Override
     public Collection<? extends JsObject> getDeclarations() {
         return declarations;
+    }
+    
+    @Override
+    public int hashCode() {
+        return offsetRange.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final OccurrenceImpl other = (OccurrenceImpl) obj;
+        if (this.offsetRange != other.offsetRange && (this.offsetRange == null || !this.offsetRange.equals(other.offsetRange))) {
+            return false;
+        }
+        return true;
     }
     
 }

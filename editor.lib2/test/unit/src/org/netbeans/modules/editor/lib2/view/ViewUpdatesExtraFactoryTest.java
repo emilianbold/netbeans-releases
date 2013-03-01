@@ -59,6 +59,7 @@ import static org.netbeans.modules.editor.lib2.view.ViewUpdatesTesting.TAB_VIEW;
 import static org.netbeans.modules.editor.lib2.view.ViewUpdatesTesting.NL_VIEW;
 import static org.netbeans.modules.editor.lib2.view.ViewUpdatesTesting.P_VIEW;
 import static org.netbeans.modules.editor.lib2.view.ViewUpdatesTesting.VIEW_BUILDER_TEST_VALUE_NAMES;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
 /**
  *
@@ -262,6 +263,41 @@ public class ViewUpdatesExtraFactoryTest extends NbTestCase {
                 hlStartPIndex, hlEndPIndex, 0, 0);
 
         ViewUpdatesTesting.setTestValues();
+    }
+
+    public void testHighlightBeyondDocEnd() throws Exception {
+        loggingOn();
+        ViewUpdatesTesting.setTestValues(ViewUpdatesTesting.NO_OP_TEST_VALUE);
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        final DocumentView docView = DocumentView.get(pane);
+        final OffsetsBag highlights = ViewUpdatesTesting.getSingleHighlightingLayerOffsets(pane);
+        String text = "abcd\nefgh";
+        doc.insertString(0, text, null);
+        highlights.addHighlight(0, 5, ViewUpdatesTesting.FONT_ATTRS[0]);
+        highlights.addHighlight(7, doc.getLength() + 2, ViewUpdatesTesting.FONT_ATTRS[1]); // Beyond doc's end
+
+        docView.op.viewsRebuildOrMarkInvalid(); // Manually mark affected children as invalid
+        docView.ensureAllParagraphsChildrenAndLayoutValid();
+
+    }
+
+    public void testCustomHighlightBeyondDocEnd() throws Exception {
+        loggingOn();
+        ViewUpdatesTesting.setTestValues(ViewUpdatesTesting.NO_OP_TEST_VALUE);
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        final DocumentView docView = DocumentView.get(pane);
+        final TestOffsetsHighlightsContainer highlights = new TestOffsetsHighlightsContainer();
+        ViewUpdatesTesting.getSingleHighlightingLayerCustom(pane, highlights);
+        highlights.setOffsetPairs(new int[] { 0, 5 });
+        String text = "abcd\nefgh";
+        doc.insertString(0, text, null);
+
+        docView.op.viewsRebuildOrMarkInvalid(); // Manually mark affected children as invalid
+        docView.ensureAllParagraphsChildrenAndLayoutValid();
+        highlights.setOffsetPairs(new int[] { 3, 9 });
+        doc.remove(0, doc.getLength());
     }
 
 }

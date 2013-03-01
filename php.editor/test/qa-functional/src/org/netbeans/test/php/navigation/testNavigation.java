@@ -44,6 +44,7 @@
 
 package org.netbeans.test.php.navigation;
 
+import java.awt.event.InputEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -105,7 +106,7 @@ public class testNavigation extends navigation
     EditorOperator eoPHP = new EditorOperator( "EmptyPHPWebPage.php" );
     eoPHP.clickForPopup( );
     JPopupMenuOperator menu = new JPopupMenuOperator( );
-    menu.pushMenuNoBlock( "Navigate|Go to Line or Bookmark ..." );
+    eoPHP.typeKey('g', InputEvent.CTRL_MASK);
     JDialogOperator jdGoto = new JDialogOperator( "Go to Line or Bookmark" );
     JComboBoxOperator jcLine = new JComboBoxOperator( jdGoto, 0 );
     JTextFieldOperator jtTemp = jcLine.getTextField( );

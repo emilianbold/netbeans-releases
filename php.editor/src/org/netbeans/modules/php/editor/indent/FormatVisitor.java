@@ -489,6 +489,7 @@ public class FormatVisitor extends DefaultVisitor {
             }
             ts.movePrevious();
         }
+        resetGroupAlignment(); //reset alignment when leaving a block
     }
 
     @Override

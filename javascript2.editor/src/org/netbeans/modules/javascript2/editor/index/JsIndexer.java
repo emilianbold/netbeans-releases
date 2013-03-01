@@ -49,9 +49,12 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -59,6 +62,7 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.util.Parameters;
 
@@ -96,23 +100,34 @@ public class JsIndexer extends EmbeddingIndexer {
     }
 
     private void storeObject(JsObject object, IndexingSupport support, Indexable indexable) {
-        if (object.isDeclared() || object.getName().equals("prototype")) {
-            // if it's delcared, then store in the index as new document.
-            support.addDocument(IndexedElement.createDocument(object, support, indexable));
-        }
-        // look for all other properties. Even if the object doesn't have to be delcared in the file
-        // there can be declared it's properties or methods
-        for (JsObject property : object.getProperties().values()) {
-            storeObject(property, support, indexable);
+        if (!isInvisibleFunction(object)) {
+            if (object.isDeclared() || object.getName().equals("prototype")) {
+                // if it's delcared, then store in the index as new document.
+                IndexDocument document = IndexedElement.createDocument(object, support, indexable);
+                support.addDocument(document);
+            }
+            // look for all other properties. Even if the object doesn't have to be delcared in the file
+            // there can be declared it's properties or methods
+            for (JsObject property : object.getProperties().values()) {
+                storeObject(property, support, indexable);
+            }
         }
     }
-   
     
+    private boolean isInvisibleFunction(JsObject object) {
+        if (object.getJSKind().isFunction() && (object.isAnonymous() || object.getModifiers().contains(Modifier.PRIVATE))) {
+                Collection<? extends TypeUsage> returnTypes = ((JsFunction)object).getReturnTypes();
+                if (returnTypes.size() == 1 && (returnTypes.iterator().next()).getType().equals("undefined")) {
+                    return true;
+                }
+            }
+        return false;
+    }
     
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 4;
+        public static final int VERSION = 5;
 
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
 

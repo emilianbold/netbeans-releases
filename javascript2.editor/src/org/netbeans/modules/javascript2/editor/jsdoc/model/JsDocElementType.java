@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 /**
  * Represents jsDoc element type.
  */
@@ -110,17 +114,23 @@ public enum JsDocElementType {
         return category;
     }
 
+    private static Map<String, JsDocElementType> types = null;
     /**
      * Gets {@code Type} corresponding to given value.
      * @param value {@code String} value of the {@code Type}
      * @return {@code Type}
      */
-    public static JsDocElementType fromString(String value) {
+    public synchronized static JsDocElementType fromString(String value) {
+        if (types == null) {
+           types = new HashMap<String, JsDocElementType>();
+           for (JsDocElementType type : JsDocElementType.values()) {
+               types.put(type.toString().toLowerCase(Locale.ENGLISH), type);
+           }
+        }
         if (value != null) {
-            for (JsDocElementType type : JsDocElementType.values()) {
-                if (value.equalsIgnoreCase(type.toString())) {
-                    return type;
-                }
+            JsDocElementType type = types.get(value.toLowerCase(Locale.ENGLISH));
+            if (type != null) {
+                return type;
             }
         }
         return UNKNOWN;

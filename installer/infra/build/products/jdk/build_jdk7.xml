@@ -135,6 +135,24 @@
     -->
     <target name="release-platform" depends="build-platform,release"/>
     
+    <!--
+      Corrects the layout of the incoming installation data files. 
+      
+      Overrides the '-pre-package' target in product.xml.
+    -->
+    <target name="-pre-package">
+        <condition property="jdk.folder.exists" value="true">
+            <available file="${data.directory}/${folder.name.unzipped}" type="dir"/>
+        </condition>
+        <if property="jdk.folder.exists" value="true">
+            <exec executable="sh" failonerror="false" dir="${data.directory}">
+                <arg value="-c"/>
+                <arg value="mv ${folder.name.unzipped}/* ./"/>
+            </exec>
+            <delete dir="${data.directory}/${folder.name.unzipped}"/>
+        </if>
+    </target>
+    
     <!-- ============================================================================
       Default
     ============================================================================= -->

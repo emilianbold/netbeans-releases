@@ -233,7 +233,10 @@ implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, Clos
             new java.io.OutputStreamWriter(new java.io.ByteArrayOutputStream(1), enc);
             super.saveDocument();
             //moved from Env.save()
-            getDataObject().setModified (false);
+// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
+// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly.
+//            getDataObject().setModified (false);
         } catch (java.io.UnsupportedEncodingException ex) {
             // ask user what next?
             String message = java.text.MessageFormat.format(NbBundle.getMessage(XMLJ2eeEditorSupport.class,"TEXT_SAVE_AS_UTF"),
@@ -283,7 +286,10 @@ implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, Clos
 
                     super.saveDocument();
                     //moved from Env.save()
-                    getDataObject().setModified (false);
+// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
+// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly.
+//                    getDataObject().setModified (false);
 
                 } catch (BadLocationException lex) {
                     org.openide.ErrorManager.getDefault().notify(lex);

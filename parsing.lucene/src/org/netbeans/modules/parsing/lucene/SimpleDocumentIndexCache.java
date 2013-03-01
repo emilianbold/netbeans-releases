@@ -70,6 +70,9 @@ public class SimpleDocumentIndexCache implements DocumentIndexCache {
 
     @Override
     public boolean addDocument(IndexDocument document) {
+        if (!(document instanceof IndexDocumentImpl)) {
+            throw new IllegalArgumentException(document.getClass().getName());
+        }
         final Reference<List[]> ref = getDataRef();
         assert ref != null;
         final boolean shouldFlush = disableCache || ref.get() == null;

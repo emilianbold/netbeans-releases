@@ -44,8 +44,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
@@ -56,7 +54,6 @@ import static org.netbeans.installer.utils.StringUtils.BACK_SLASH;
 import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
-import org.netbeans.installer.utils.applications.WebLogicUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
@@ -210,7 +207,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             } else {
                 final Progress jdkProgress = new Progress();
                 overallProgress.addChild(jdkProgress,Progress.COMPLETE);
-                results = runJDKInstallerUnix(location, installer, jdkProgress);
+                if (JDK_INSTALLER_FILE_NAME.isEmpty()) {
+                    results = new ExecutionResults(0, "", "");
+                } else {
+                    results = runJDKInstallerUnix(location, installer, jdkProgress);
+                }
                 addUninsallationJVM(results, location);
                 try {
                     addFiles(getProduct().getInstalledFiles(),location);
@@ -233,10 +234,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         StringUtils.EMPTY_STRING + results.getErrorCode()));
             }
         }  finally {
-            try {
-                FileUtils.deleteFile(installer);
-            } catch (IOException e) {
-                LogManager.log("Cannot delete installer file "+ installer, e);
+            if (!JDK_INSTALLER_FILE_NAME.isEmpty()) {
+                try {
+                    FileUtils.deleteFile(installer);
+                } catch (IOException e) {
+                    LogManager.log("Cannot delete installer file "+ installer, e);
+                }
             }
         }
         
@@ -1143,7 +1146,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     @Override
     public int getLogicPercentage() {
-        return 90;
+        return JDK_INSTALLER_FILE_NAME.isEmpty() ? 10 : 90;
     }
     
     @Override

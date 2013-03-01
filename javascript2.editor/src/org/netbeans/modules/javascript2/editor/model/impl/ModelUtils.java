@@ -60,11 +60,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.StringTokenizer;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -218,16 +221,23 @@ public class ModelUtils {
     }
     
     public static DeclarationScope getDeclarationScope(DeclarationScope scope, int offset) {
+        
         DeclarationScopeImpl dScope = (DeclarationScopeImpl)scope;
-        DeclarationScope result = null;
-        DeclarationScope function = null;
-        if (dScope.getOffsetRange().containsInclusive(offset)) {
-            result = dScope;
-            for (DeclarationScope innerScope : dScope.getDeclarationsScope()) {
-                function = getDeclarationScope(innerScope, offset);
-                if (function != null) {
-                    result = function;
-                    break;
+        DeclarationScope result = null; 
+        if (result == null) {
+            if (dScope.getOffsetRange().containsInclusive(offset)) {
+                result = dScope;
+                boolean deep = true;
+                while (deep) {
+                    deep = false;
+                    for (DeclarationScope innerScope : result.getDeclarationsScope()) {
+                        if (((DeclarationScopeImpl)innerScope).getOffsetRange().containsInclusive(offset)) {
+                            result = innerScope;
+                            deep = true;
+                            break;
+                        }
+                        
+                    }
                 }
             }
         }

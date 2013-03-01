@@ -531,7 +531,10 @@ public class WadlEditorSupport extends DataEditorSupport
                 return;
             }
             super.saveDocument();
-            getDataObject().setModified(false);
+// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
+// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly.
+//            getDataObject().setModified(false);
             
         } catch (UnsupportedEncodingException uee) {
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
@@ -573,7 +576,10 @@ public class WadlEditorSupport extends DataEditorSupport
                     NbDocument.runAtomic(doc, edit);
                     
                     super.saveDocument();
-                    getDataObject().setModified(false);
+// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
+// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly.
+//                    getDataObject().setModified(false);
                     
                 } catch (BadLocationException lex) {
                     ErrorManager.getDefault().notify(lex);

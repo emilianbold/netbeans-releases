@@ -318,6 +318,14 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         this.endOffset = endOffset;
     }
     
+    void updateEndOffset() {
+        int viewCount = getViewCount();
+        int endOffset = (viewCount > 0)
+                ? getParagraphView(viewCount - 1).getEndOffset()
+                : getStartOffset();
+        setEndOffset(endOffset);
+    }
+    
     @Override
     public int getViewCount() {
         return children.size();

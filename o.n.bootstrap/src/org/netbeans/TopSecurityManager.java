@@ -407,7 +407,6 @@ public class TopSecurityManager extends SecurityManager {
 
     private final Set<Class> warnedSunMisc = new WeakSet<Class>();
     private final Set<String> callerWhiteList = createCallerWhiteList();
-    private final Set<String> callerBlackList = createCallerBlackList();
     @Override
     public void checkMemberAccess(Class<?> clazz, int which) {
         final String n = clazz.getName();
@@ -424,7 +423,7 @@ public class TopSecurityManager extends SecurityManager {
                 }
             }
             final String msg = "Dangerous reflection access to " + n + " by " + caller + " detected!";
-            if (caller != null && callerBlackList.contains(caller.getName())) {
+            if (caller != null && isDangerous(caller.getName(), n)) {
                 throw new SecurityException(msg);
             }
             Level l;
@@ -459,10 +458,15 @@ public class TopSecurityManager extends SecurityManager {
         wl.add("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport$ParserClassLoader"); //#218690 // NOI18N
         return wl;
     }
-    private static Set<String> createCallerBlackList() {
-        Set<String> wl = new HashSet<String>();
-        wl.add("com.sun.istack.tools.ProtectedTask");             //NOI18N
-        return wl;
+    private static boolean isDangerous(String caller, String accessTo) {
+        if ("com.sun.istack.tools.ProtectedTask".equals(caller)) { // NOI18N
+            if ("sun.misc.ClassLoaderUtil".equals(accessTo)) { // NOI18N
+                // calling ClassLoaderUtil is allowed
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
     
     public @Override void checkPermission(Permission perm) {

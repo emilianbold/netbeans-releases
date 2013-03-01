@@ -52,15 +52,17 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 public class JsDocDocumentationHolder extends JsDocumentationHolder {
 
-    private final Map<Integer, JsDocComment> blocks;
+    private Map<Integer, JsDocComment> blocks = null;
 
     public JsDocDocumentationHolder(JsDocumentationProvider provider, Snapshot snapshot) {
         super(provider, snapshot);
-        blocks = JsDocParser.parse(snapshot);
     }
 
     @Override
-    public Map getCommentBlocks() {
+    public synchronized  Map getCommentBlocks() {
+        if (blocks == null) {
+            blocks = JsDocParser.parse(getSnapshot());
+        }
         return blocks;
     }
 

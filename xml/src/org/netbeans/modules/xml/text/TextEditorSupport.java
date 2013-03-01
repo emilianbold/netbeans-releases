@@ -428,7 +428,10 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             fileEncoding.set(cs);
             super.saveDocument();
             //moved from Env.save()
-            getDataObject().setModified(false);
+// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
+// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly.
+//            getDataObject().setModified(false);
             getXMLDataObjectLook().getSyncInterface().representationChanged(Document.class);
         } catch (UnmappableCharacterException ex) {
             handleUnsupportedEncoding(doc, enc);
@@ -491,7 +494,10 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             NbDocument.runAtomic(doc, edit);
             super.saveDocument();
             //moved from Env.save()
-            getDataObject().setModified(false);
+// DataObject.setModified() already called as part of super.saveDocument(). The save action is now asynchronous
+// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly.
+//            getDataObject().setModified(false);
             getXMLDataObjectLook().getSyncInterface().representationChanged(Document.class);
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Saved."); // NOI18N
         } catch (BadLocationException lex) {

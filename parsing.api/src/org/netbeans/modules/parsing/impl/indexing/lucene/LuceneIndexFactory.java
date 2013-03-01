@@ -48,7 +48,9 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.TransientUpdateSupport;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
@@ -82,7 +84,9 @@ public final class LuceneIndexFactory implements IndexFactoryImpl {
     @NonNull
     public IndexDocument createDocument(@NonNull final Indexable indexable) {
         Parameters.notNull("indexable", indexable); //NOI18N
-        return IndexManager.createDocument(indexable.getRelativePath());
+        return TransientUpdateSupport.isTransientUpdate() ?
+                IndexManager.createDocument(indexable.getRelativePath()) :
+                ClusteredIndexables.createDocument(indexable.getRelativePath());
     }
 
     @Override

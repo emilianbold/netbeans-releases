@@ -41,23 +41,20 @@
  */
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.plaf.basic.BasicTextUI;
 import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
-import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.lib.editor.util.GapList;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 
 /**
@@ -179,12 +176,28 @@ public class ViewUpdatesTesting {
         c.putClientProperty(DocumentView.END_POSITION_PROPERTY, endPos);
     }
     
+    public static OffsetsBag getSingleHighlightingLayerOffsets(final JEditorPane pane) {
+        return (OffsetsBag) getSingleHighlightingLayerImpl(pane, null, true);
+    }
+
     public static PositionsBag getSingleHighlightingLayer(final JEditorPane pane) {
+        return (PositionsBag) getSingleHighlightingLayerImpl(pane, null, false);
+    }
+
+    public static HighlightsContainer getSingleHighlightingLayerCustom(final JEditorPane pane, HighlightsContainer container) {
+        return getSingleHighlightingLayerImpl(pane, container, false);
+    }
+
+    private static HighlightsContainer getSingleHighlightingLayerImpl(
+            final JEditorPane pane, HighlightsContainer container, boolean offsets)
+    {
         String propName = "test-single-highlighting-container";
         HighlightsContainer tshc = (HighlightsContainer) pane.getClientProperty(propName);
         if (tshc == null) {
             final Document doc = pane.getDocument();
-            final PositionsBag bag = new PositionsBag(doc);
+            final HighlightsContainer bag = (container != null)
+                    ? container
+                    : (offsets ? new OffsetsBag(doc) : new PositionsBag(doc));
             doc.render(new Runnable() {
                 @Override
                 public void run() {
@@ -202,7 +215,7 @@ public class ViewUpdatesTesting {
             tshc = bag;
             pane.putClientProperty(propName, tshc);
         }
-        return (PositionsBag) tshc;
+        return tshc;
     }
     
     private static String[] testValueNames;
@@ -234,7 +247,8 @@ public class ViewUpdatesTesting {
             @Override
             public void run() {
                 if (processed) {
-                    throw new IllegalStateException("Already processed");
+                    throw new IllegalStateException("Test values were already processed. " + 
+                            "New call to setTestValues() needed before the code that checks them gets called.");
                 }
                 processed = true;
                 Object[] testValues = DocumentView.testValues;
@@ -319,6 +333,15 @@ public class ViewUpdatesTesting {
         return highlights;
     }
     
+    public static void checkIntegrity(JTextComponent component) {
+        DocumentView docView = DocumentView.get(component);
+        String err = docView.findTreeIntegrityError();
+        if (err != null) {
+            throw new IllegalStateException("Integrity ERROR:\n" +
+                    err + "\n" + docView.toStringDetailNeedsLock());
+        }
+    }
+
     /**
      * Ensure a part of view hierarchy has local views of certain length and class
      * 
@@ -387,7 +410,7 @@ public class ViewUpdatesTesting {
                 sbCall.append("            ").append(view.getLength()).append(", ").append(viewType).append(",\n");
             }
             if (argIndex < argCount && errorMsg == null) {
-                errorMsg = "Ending argIndex=" + argIndex + " != argCount=" + argCount;
+                errorMsg = "checkViews() called with " + argCount + " arguments but only " + argIndex + " used.";
             }
         } else { // No pViews
             if (argCount == 0) { // No pViews => Ok
