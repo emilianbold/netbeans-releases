@@ -303,7 +303,7 @@
             </test-dependencies>
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>ant/extra/org-netbeans-modules-cordova-projectupdate.jar</runtime-relative-path>
+                <runtime-relative-path>../ant/extra/org-netbeans-modules-cordova-projectupdate.jar</runtime-relative-path>
                 <binary-origin>cordovaprojectupdate/dist/org-netbeans-modules-cordova-projectupdate.jar</binary-origin>
             </class-path-extension>
         </data>
