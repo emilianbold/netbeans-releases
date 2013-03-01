@@ -199,7 +199,7 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         try {
             addNewJsLibraries(javaScriptLibrarySelection.getLibrariesFolder(), javaScriptLibrarySelection.getSelectedLibraries());
         } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
