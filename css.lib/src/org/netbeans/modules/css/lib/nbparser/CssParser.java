@@ -78,6 +78,11 @@ public class CssParser extends Parser {
     private CssParserResult result;
 
     public static CssParserResult parse(Snapshot snapshot) throws ParseException {
+        //#calling "ParserManager.parseWhenScanFinished("text/css",someTask)" results into null snapshot passed here
+        if(snapshot == null) {
+            return null; 
+        }
+        
         FileObject fo = snapshot.getSource().getFileObject();        
         String fileMimetype = fo == null ? null : fo.getMIMEType();
         return parse(snapshot, fileMimetype);

@@ -434,4 +434,31 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
 
     }
+    
+     //like normal css import, but the ref. file doesn't need to have an extension,
+    //there are also some rules regarding the naming convention, but these
+    //are covered by semantic analysis, not parsing
+    public void testImport() {
+        String source =
+                "@import \"rounded\";\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+    
+    public void testLineComment() {
+        String source =
+                ".funky {\n"
+                + " //line comment\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
 }

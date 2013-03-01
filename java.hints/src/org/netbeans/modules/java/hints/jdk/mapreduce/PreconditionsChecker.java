@@ -43,8 +43,10 @@ package org.netbeans.modules.java.hints.jdk.mapreduce;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ReturnTree;
@@ -63,7 +65,10 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 
@@ -78,6 +83,7 @@ public class PreconditionsChecker {
     private boolean isForLoop;
     private Set<Name> innerVariables;
     private CompilationInfo workingCopy;
+    private boolean isIterable;
 
     public PreconditionsChecker(Tree forLoop, CompilationInfo workingCopy) {
         if (forLoop.getKind() == Tree.Kind.ENHANCED_FOR_LOOP) {
@@ -87,6 +93,7 @@ public class PreconditionsChecker {
                     .getUncaughtExceptions(TreePath.getPath(workingCopy.getCompilationUnit(), forLoop)).isEmpty();
             this.innerVariables = this.getInnerVariables(forLoop, workingCopy.getTrees());
             this.visitor = new ForLoopTreeVisitor(this.innerVariables, workingCopy, new TreePath(workingCopy.getCompilationUnit()), (EnhancedForLoopTree) forLoop);
+            this.isIterable = this.isIterbale(((EnhancedForLoopTree) forLoop).getExpression());
             visitor.scan(TreePath.getPath(workingCopy.getCompilationUnit(), forLoop), workingCopy.getTrees());
         } else {
             this.isForLoop = false;
@@ -105,6 +112,7 @@ public class PreconditionsChecker {
 
     public Boolean isSafeToRefactor() {
         return this.isForLoop
+                && this.iteratesOverIterable()
                 && !(this.throwsException()
                 || this.containsNEFs()
                 || this.containsReturn()
@@ -169,6 +177,33 @@ public class PreconditionsChecker {
 
     Map<Name, String> getVarToName() {
         return this.visitor.varToType;
+    }
+
+    private boolean iteratesOverIterable() {
+        return this.isIterable;
+    }
+
+    /*
+     * 
+     */
+    private boolean isIterbale(ExpressionTree expression) {
+        TypeMirror tm = workingCopy.getTrees().getTypeMirror(TreePath.getPath(workingCopy.getCompilationUnit(), expression));
+
+        if (tm.getKind() == TypeKind.ARRAY) {
+            return false;
+        } else {
+            tm = workingCopy.getTypes().erasure(tm);
+            TypeElement typeEl = workingCopy.getElements().getTypeElement("java.util.Collection");
+            if (typeEl != null) {
+                TypeMirror collection = typeEl.asType();
+                collection = workingCopy.getTypes().erasure(collection);
+                if (this.workingCopy.getTypes().isSubtype(tm, collection)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public static class VariablesVisitor extends TreeScanner<Tree, Trees> {
@@ -256,26 +291,16 @@ public class PreconditionsChecker {
         public Tree visitIdentifier(IdentifierTree that, Trees trees) {
 
             TypeMirror type = trees.getTypeMirror(this.getCurrentPath());
-            this.varToType.put(that.getName(), type.toString());
 
+            if (type.getKind().isPrimitive()) {
+                this.varToType.put(that.getName(), workingCopy.getTypes().boxedClass((PrimitiveType) type).toString());
+            } else {
+                this.varToType.put(that.getName(), type.toString());
+            }
             TreePath currentTreePath = this.getCurrentPath();
             Element el = trees.getElement(currentTreePath);
-            if (this.isLocalVariable(el)
-                    && !workingCopy.getElementUtilities().isEffectivelyFinal((VariableElement) el)
-                    && !this.inners.contains(that.getName())) {
-                if (isPreOrPostfixIncrement(currentTreePath.getParentPath().getLeaf().getKind())
-                        && currentTreePath.getParentPath().getParentPath().getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT
-                        && isLastInControlFlow(currentTreePath.getParentPath().getParentPath())) {
-                    if (this.hasOneNEFReducer) {
-                        this.hasNonEffectivelyFinalVars = true;
-                    } else {
-                        this.hasOneNEFReducer = true;
-                        this.reducerStatement = currentTreePath.getParentPath().getParentPath().getLeaf();
-                        this.mutatedVariable = that;
-                    }
-                } else {
-                    this.hasNonEffectivelyFinalVars = true;
-                }
+            if (isExternalNEF(el, that)) {
+                checkIfRefactorableMutation(currentTreePath, that);
             }
             return super.visitIdentifier(that, trees);
         }
@@ -296,7 +321,8 @@ public class PreconditionsChecker {
 
         @Override
         public Tree visitReturn(ReturnTree that, Trees trees) {
-            if (!this.hasMatcherReturn && that.getExpression() != null && that.getExpression().getKind() == Tree.Kind.BOOLEAN_LITERAL
+            ExpressionTree thatExpression = that.getExpression();
+            if (!this.hasMatcherReturn && thatExpression != null && thatExpression.getKind() == Tree.Kind.BOOLEAN_LITERAL
                     && thisIsMatcherReturn(that, this.getCurrentPath())) {
                 this.hasMatcherReturn = true;
             } else {
@@ -341,13 +367,6 @@ public class PreconditionsChecker {
 
         }
 
-        private boolean isPreOrPostfixIncrement(Tree.Kind opKind) {
-            return opKind == Tree.Kind.POSTFIX_INCREMENT
-                    || opKind == Tree.Kind.PREFIX_INCREMENT
-                    || opKind == Tree.Kind.POSTFIX_DECREMENT
-                    || opKind == Tree.Kind.PREFIX_DECREMENT;
-        }
-
         private boolean isLastInControlFlow(TreePath pathToInstruction) {
             Tree currentTree = pathToInstruction.getLeaf();
             Tree parentTree = pathToInstruction.getParentPath().getLeaf();
@@ -368,6 +387,44 @@ public class PreconditionsChecker {
             }
 
 
+        }
+
+        private boolean isStatementPreOrPostfix(Tree parent, Tree parentOfParent) {
+            return TreeUtilities.isPreOrPostfixOp(parent.getKind()) && parentOfParent.getKind() == Tree.Kind.EXPRESSION_STATEMENT;
+        }
+
+        private boolean isLeftHandSideOfCompoundAssignement(Tree parent, IdentifierTree that) {
+            return TreeUtilities.isCompoundAssignementAssignement(parent.getKind()) && ((CompoundAssignmentTree) parent).getVariable().equals(that);
+        }
+
+        private boolean isExternalNEF(Element el, IdentifierTree that) {
+            return this.isLocalVariable(el)
+                    && !workingCopy.getElementUtilities().isEffectivelyFinal((VariableElement) el)
+                    && !this.inners.contains(that.getName());
+        }
+
+        private boolean isPureMutator(TreePath parentOfParentPath) {
+            return parentOfParentPath.getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT
+                    && isLastInControlFlow(parentOfParentPath);
+        }
+
+        private void checkIfRefactorableMutation(TreePath currentTreePath, IdentifierTree that) {
+            Tree parent = currentTreePath.getParentPath().getLeaf();
+            TreePath parentOfParentPath = currentTreePath.getParentPath().getParentPath();
+            Tree parentOfParent = parentOfParentPath.getLeaf();
+
+            if ((isStatementPreOrPostfix(parent, parentOfParent) || isLeftHandSideOfCompoundAssignement(parent, that))
+                    && isPureMutator(parentOfParentPath)) {
+                if (this.hasOneNEFReducer) {
+                    this.hasNonEffectivelyFinalVars = true;
+                } else {
+                    this.hasOneNEFReducer = true;
+                    this.reducerStatement = currentTreePath.getParentPath().getParentPath().getLeaf();
+                    this.mutatedVariable = that;
+                }
+            } else {
+                this.hasNonEffectivelyFinalVars = true;
+            }
         }
     };
 }

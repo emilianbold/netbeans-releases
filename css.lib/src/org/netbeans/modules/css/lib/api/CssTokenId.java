@@ -163,7 +163,9 @@ public enum CssTokenId implements TokenId {
     X(Css3Lexer.X, OTHERS),
     Y(Css3Lexer.Y, OTHERS),
     Z(Css3Lexer.Z, OTHERS),
+    
     COMMENT(Css3Lexer.COMMENT, COMMENTS),
+    LINE_COMMENT(Css3Lexer.LINE_COMMENT, COMMENTS),
     
     //following two should possibly not be part of the grammar at all
     CDO(Css3Lexer.CDO, OTHERS), //<!--

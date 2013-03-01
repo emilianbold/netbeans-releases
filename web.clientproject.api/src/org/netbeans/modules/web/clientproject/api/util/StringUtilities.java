@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.util;
+package org.netbeans.modules.web.clientproject.api.util;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,6 +49,7 @@ import org.openide.util.Parameters;
 
 /**
  * Miscellaneous utility methods for strings.
+ * @since 1.20
  */
 public final class StringUtilities {
 

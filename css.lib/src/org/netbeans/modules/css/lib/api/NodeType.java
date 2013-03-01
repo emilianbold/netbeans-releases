@@ -385,7 +385,9 @@ public enum NodeType {
     
     scss_interpolation_expression,
     
-    scss_interpolation_expression_var;
+    scss_interpolation_expression_var,
+    
+    scss_nested_properties;
     
     
 }
