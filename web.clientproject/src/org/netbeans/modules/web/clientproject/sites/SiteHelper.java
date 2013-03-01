@@ -63,7 +63,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
-import org.netbeans.modules.web.clientproject.util.StringUtilities;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;

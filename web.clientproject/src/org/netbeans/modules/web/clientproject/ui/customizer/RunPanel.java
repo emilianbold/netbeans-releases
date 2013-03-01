@@ -58,6 +58,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.ui.BrowseFolders;
@@ -65,7 +66,6 @@ import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectPro
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
 import org.netbeans.modules.web.clientproject.validation.RunProjectValidator;
-import org.netbeans.modules.web.clientproject.validation.ValidationResult;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
