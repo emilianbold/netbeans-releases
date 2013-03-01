@@ -41,242 +41,26 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.TestQuery;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryController;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryController;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author tomas
  */
 public class APITestKit {
-    private static BugtrackingFactory<APITestRepository, APITestQuery, APITestIssue> factory = 
-            new BugtrackingFactory<APITestRepository, APITestQuery, APITestIssue>();
-    private static APITestRepository apiRepo;
-    private static Repository repo;
     
-    public static APITestRepository getAPIRepo() {
-        if(apiRepo == null) {
-            apiRepo = new APITestRepository(
-                        new RepositoryInfo(
-                            APITestRepository.ID, 
-                            APITestConnector.ID_CONNECTOR, 
-                            APITestRepository.URL, 
-                            APITestRepository.DISPLAY_NAME, 
-                            APITestRepository.TOOLTIP));
-        }
-        return apiRepo;
-    }
-
-    public static Repository getRepo() {
-        if(repo == null) {
-            repo = APITestKit.createRepository(getAPIRepo());
-        }
-        return repo;
-    }
-    
-    public static Repository createRepository(APITestRepository repo) {
-        return factory.createRepository(
-                repo, 
-                new APITestRepositoryProvider(), 
-                new APITestQueryProvider(),
-                new APITestIssueProvider());
-    }
-    
-    public static class APITestQueryProvider extends QueryProvider<APITestQuery, APITestIssue> {
-
-        @Override
-        public String getDisplayName(APITestQuery q) {
-            return q.getDisplayName();
-        }
-
-        @Override
-        public String getTooltip(APITestQuery q) {
-            return q.getTooltip();
-        }
-
-        @Override
-        public QueryController getController(APITestQuery q) {
-            return q.getController();
-        }
-
-        @Override
-        public void remove(APITestQuery q) {
-            q.remove();
-        }
-
-        @Override
-        public boolean isSaved(APITestQuery q) {
-            return q.isSaved();
-        }
-
-        @Override
-        public Collection<APITestIssue> getIssues(APITestQuery q) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public boolean contains(APITestQuery q, String id) {
-            return q.contains(id);
-        }
-
-        @Override
-        public void refresh(APITestQuery q) {
-            q.refresh();
-        }
-
-        @Override
-        public void removePropertyChangeListener(APITestQuery q, PropertyChangeListener listener) {
-            q.removePropertyChangeListener(listener);
-        }
-
-        @Override
-        public void addPropertyChangeListener(APITestQuery q, PropertyChangeListener listener) {
-            q.addPropertyChangeListener(listener);
-        }
+    public static APITestRepository getAPIRepo(String id) {
+        return APITestConnector.getAPIRepo(id);
 
     }
-
-    public static class APITestRepositoryProvider extends RepositoryProvider<APITestRepository, APITestQuery, APITestIssue> {
-
-        @Override
-        public RepositoryInfo getInfo(APITestRepository r) {
-            return r.getInfo();
+    public static Repository getRepo(String id) {
+        Collection<Repository> repos = RepositoryManager.getInstance().getRepositories(APITestConnector.ID_CONNECTOR);
+        for (Repository repo : repos) {
+            if(repo.getId().equals(id)) {
+                return repo;
+            }
         }
-
-        @Override
-        public Image getIcon(APITestRepository r) {
-            return r.getIcon();
-        }
-
-        @Override
-        public void remove(APITestRepository r) {
-            r.remove();
-        }
-
-        @Override
-        public RepositoryController getController(APITestRepository r) {
-            return r.getController();
-        }
-
-        @Override
-        public Lookup getLookup(APITestRepository r) {
-            return r.getLookup();
-        }
-
-        @Override
-        public void removePropertyChangeListener(APITestRepository r, PropertyChangeListener listener) {
-            r.removePropertyChangeListener(listener);
-        }
-
-        @Override
-        public void addPropertyChangeListener(APITestRepository r, PropertyChangeListener listener) {
-            r.addPropertyChangeListener(listener);
-        }
-
-        @Override
-        public APITestIssue[] getIssues(APITestRepository r, String... ids) {
-            return r.getIssues(ids);
-        }
-
-        @Override
-        public APITestQuery createQuery(APITestRepository r) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public APITestIssue createIssue(APITestRepository r) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Collection<APITestQuery> getQueries(APITestRepository r) {
-            return r.getQueries();
-        }
-
-        @Override
-        public Collection<APITestIssue> simpleSearch(APITestRepository r, String criteria) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
+        return null;
     }
 
-    public static class APITestIssueProvider extends IssueProvider<APITestIssue> {
-
-        @Override
-        public String[] getSubtasks(APITestIssue data) {
-            return data.getSubtasks();
-        }
-
-        @Override
-        public String getDisplayName(APITestIssue data) {
-            return data.getDisplayName();
-        }
-
-        @Override
-        public String getTooltip(APITestIssue data) {
-            return data.getTooltip();
-        }
-
-        @Override
-        public String getID(APITestIssue data) {
-            return data.getID();
-        }
-
-        @Override
-        public String getSummary(APITestIssue data) {
-            return data.getSummary();
-        }
-
-        @Override
-        public boolean isNew(APITestIssue data) {
-            return data.isNew();
-        }
-
-        @Override
-        public boolean isFinished(APITestIssue data) {
-            return data.isFinished();
-        }
-
-        @Override
-        public boolean refresh(APITestIssue data) {
-            return data.refresh();
-        }
-
-        @Override
-        public void addComment(APITestIssue data, String comment, boolean closeAsFixed) {
-            data.addComment(comment, closeAsFixed);
-        }
-
-        @Override
-        public void attachPatch(APITestIssue data, File file, String description) {
-            data.attachPatch(file, description);
-        }
-
-        @Override
-        public BugtrackingController getController(APITestIssue data) {
-            return data.getController();
-        }
-
-        @Override
-        public void removePropertyChangeListener(APITestIssue data, PropertyChangeListener listener) {
-            data.removePropertyChangeListener(listener);
-        }
-
-        @Override
-        public void addPropertyChangeListener(APITestIssue data, PropertyChangeListener listener) {
-            data.addPropertyChangeListener(listener);
-        }
-
-    }
 }

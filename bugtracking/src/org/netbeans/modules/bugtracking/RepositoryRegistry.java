@@ -248,10 +248,7 @@ public class RepositoryRegistry {
                     if(c.getID().equals(connectorId)) {
                         RepositoryInfo info = SPIAccessor.IMPL.read(getPreferences(), id);
                         if(info != null) {
-                            Repository repo = c.createRepository(info);
-                            if (repo != null) {
-                                repositories.put(APIAccessor.IMPL.getImpl(repo));
-                            }
+                            putRepository(c, info);
                         }
                     }
                 }
@@ -308,6 +305,18 @@ public class RepositoryRegistry {
      */
     private void fireRepositoriesChanged(Collection<RepositoryImpl> oldRepositories, Collection<RepositoryImpl> newRepositories) {
         changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, oldRepositories, newRepositories);
+    }
+
+    /**
+     * Do not call this!!! Public for testing purposes only
+     * @param c
+     * @param info 
+     */
+    public void putRepository(DelegatingConnector c, RepositoryInfo info) {
+        Repository repo = c.createRepository(info);
+        if (repo != null) {
+            repositories.put(APIAccessor.IMPL.getImpl(repo));
+        }
     }
 
     private class RepositoriesMap extends HashMap<String, Map<String, RepositoryImpl>> {
