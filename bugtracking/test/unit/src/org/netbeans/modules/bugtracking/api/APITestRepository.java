@@ -114,7 +114,7 @@ public class APITestRepository extends TestRepository {
         for (String id : ids) {
             APITestIssue i = issues.get(id);
             if(i == null) {
-                i = new APITestIssue(id);
+                i = new APITestIssue(id, this);
                 issues.put(id, i);
             }
             ret.add(i);
@@ -148,7 +148,7 @@ public class APITestRepository extends TestRepository {
     @Override
     public Collection<APITestQuery> getQueries() {
         if(queries == null) {
-            queries = Arrays.asList(new APITestQuery[] {new APITestQuery(APITestQuery.FIRST_QUERY_NAME), new APITestQuery(APITestQuery.SECOND_QUERY_NAME)});
+            queries = Arrays.asList(new APITestQuery[] {new APITestQuery(APITestQuery.FIRST_QUERY_NAME, this), new APITestQuery(APITestQuery.SECOND_QUERY_NAME, this)});
         }
         return queries;
     }

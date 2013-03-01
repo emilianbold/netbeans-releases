@@ -42,9 +42,15 @@
 package org.netbeans.modules.bugtracking.api;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -53,21 +59,41 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 public class APITestIssue extends TestIssue {
     static final String ID_1 = "1";
     static final String ID_2 = "2";
+    static final String ID_SUB_3 = "3";
 
+    static final String SUMMARY_SUF = " - summary";
+    static final String TOOLTIP_SUF = " - tooltip";
+    
     private final String id;
+    private final boolean isNew;
+    boolean wasOpened;
+    boolean wasRefreshed;
+    boolean wasClosedOnComment;
+    String addedComment;
+    String attachedPatchDesc;
+    boolean idFinished;
+    File attachedFile;
+    private BugtrackingController controller;
+    private final APITestRepository repo;
 
-    public APITestIssue(String id) {
+    public APITestIssue(String id, APITestRepository repo) {
+        this(id, repo, false);
+    }
+    
+    public APITestIssue(String id, APITestRepository repo, boolean isNew) {
         this.id = id;
+        this.isNew = isNew;
+        this.repo = repo;
     }
     
     @Override
     public String getDisplayName() {
-        return "Issue : " + id;
+        return "Issue : " + id + getSummary();
     }
 
     @Override
     public String getTooltip() {
-        return getDisplayName() + " tooltip";
+        return id + TOOLTIP_SUF;
     }
 
     @Override
@@ -77,57 +103,76 @@ public class APITestIssue extends TestIssue {
 
     @Override
     public String getSummary() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return id + SUMMARY_SUF;
     }
 
     @Override
     public boolean isNew() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return isNew;
     }
 
     @Override
     public boolean refresh() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public TestIssue createFor(String id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        wasRefreshed = true;
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+        return true;
     }
 
     @Override
     public void addComment(String comment, boolean closeAsFixed) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        wasClosedOnComment = closeAsFixed;
+        addedComment = comment;
     }
 
     @Override
     public void attachPatch(File file, String description) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        attachedPatchDesc = description;
+        attachedFile = file;
     }
 
     @Override
     public BugtrackingController getController() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(controller == null) {
+            controller = new BugtrackingController() {
+                @Override
+                public void opened() {
+                    wasOpened = true;
+                }
+                private JPanel panel;
+                @Override
+                public JComponent getComponent() {
+                    if(panel == null) {
+                        panel = new JPanel();
+                    }
+                    return panel;
+                }
+                @Override public HelpCtx getHelpCtx() { return null; }
+                @Override public boolean isValid() { return true; }
+                @Override public void applyChanges() throws IOException { }
+            };
+        }
+        return controller;
     }
 
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        support.removePropertyChangeListener(listener);
     }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        support.addPropertyChangeListener(listener);
     }
 
     @Override
     public String[] getSubtasks() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new String[] {APITestIssue.ID_SUB_3};
     }
 
     @Override
     public boolean isFinished() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return idFinished;
     }
     
 }
