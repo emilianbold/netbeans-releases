@@ -204,7 +204,8 @@ public class Hk2JavaEEPlatformFactory extends J2eePlatformFactory {
                     getLibraryName(version), getLookupKey(version));
         }
         throw new IllegalArgumentException(
-                "Deployment manager instance is not instance of Hk2DeploymentManager");
+                "Deployment manager instance is not instance"
+                + " of Hk2DeploymentManager");
     }
 
 }
