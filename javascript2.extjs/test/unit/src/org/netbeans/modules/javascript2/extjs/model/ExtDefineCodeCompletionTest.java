@@ -57,9 +57,9 @@ import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAc
  *
  * @author Petr Pisl
  */
-public class ExtDefineMethodInterceptorCompletionTest extends JsCodeComplationBase {
+public class ExtDefineCodeCompletionTest extends JsCodeComplationBase {
     
-    public ExtDefineMethodInterceptorCompletionTest(String testName) {
+    public ExtDefineCodeCompletionTest(String testName) {
         super(testName);
     }
     
