@@ -60,8 +60,6 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigur
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -321,7 +319,7 @@ public final class ClientSideProjectProperties {
     }
 
     public static String createListOfJsLibraries(List<SelectedLibrary> libs) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(200);
         List<SelectedLibrary> selectedLibraries = libs;
         for (SelectedLibrary lib : selectedLibraries) {
             if (lib.isDefault()) {
@@ -330,7 +328,9 @@ public final class ClientSideProjectProperties {
             if (sb.length() > 0) {
                 sb.append("|"); // NOI18N
             }
-            sb.append(lib.getLibraryVersion().getLibrary().getName());
+            JavaScriptLibrarySelectionPanel.LibraryVersion libraryVersion = lib.getLibraryVersion();
+            assert libraryVersion != null;
+            sb.append(libraryVersion.getLibrary().getName());
         }
         return sb.toString();
     }
@@ -338,6 +338,10 @@ public final class ClientSideProjectProperties {
     public void setJsLibFolder(String jsLibFolder) {
         assert jsLibFolder != null;
         this.jsLibFolder = jsLibFolder;
+    }
+
+    public String getJsLibFolder() {
+        return jsLibFolder;
     }
 
     public File getResolvedSiteRootFolder() {
