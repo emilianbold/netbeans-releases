@@ -56,7 +56,10 @@ import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
  * @author Tomas Stupka
  */
 public final class IssueImpl<I> {
-    private static final int SHORT_DISP_NAME_LENGTH = 15;
+    /** 
+     * public for testing purposes
+     */
+    public static final int SHORT_DISP_NAME_LENGTH = 15;
     
     private Issue issue;
     private final RepositoryImpl repo;

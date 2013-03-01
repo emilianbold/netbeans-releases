@@ -115,16 +115,22 @@ public class RepositoryTest extends NbTestCase {
         APITestRepository apiTestRepo = getApiRepo();
         
         final boolean[] received = new boolean[] {false};
-        repo.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent pce) {
-                if(Repository.EVENT_QUERY_LIST_CHANGED.equals(pce.getPropertyName())) {
-                    received[0] = true;
-                }
-            }
-        });
+        final PropertyChangeListener l = new PropertyChangeListener() {
+              @Override
+              public void propertyChange(PropertyChangeEvent pce) {
+                  if(Repository.EVENT_QUERY_LIST_CHANGED.equals(pce.getPropertyName())) {
+                      received[0] = true;
+                  }
+              }
+          };
+        repo.addPropertyChangeListener(l);
         apiTestRepo.fireQueryChangeEvent();
         assertTrue(received[0]);
+        
+        repo.removePropertyChangeListener(l);
+        received[0] = false;
+        apiTestRepo.fireQueryChangeEvent();
+        assertFalse(received[0]);
     }
 
     public void testDisplayNameChanged() throws IOException {
