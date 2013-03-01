@@ -558,9 +558,9 @@ declarations
                 //the DECLARATION rule needs to be before the RULE rule as the 
                 //syn.predicate for the RULE rule also accepts the declaration,
                 //(is less specific).
-		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_interpolation_expression COLON )=>declaration SEMI ws?
+		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
 		|
-		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ LBRACE | scss_interpolation_expression COLON )=>scss_nested_properties ws?
+		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ LBRACE | scss_declaration_interpolation_expression COLON )=>scss_nested_properties ws?
 		|
                 (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
                 |
@@ -574,11 +574,7 @@ declarations
 selectorsGroup
     :	
         // looking for #{, lookeahead exited by { (rule beginning)
-        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> scss_interpolation_expression ws? 
-
-        //scss interpolation expression NOT followed by COLON (which means it represents 
-        //an interpolation expression in property name!
-//        (scss_interpolation_expression ~COLON)=> scss_interpolation_expression ws?
+        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> scss_selector_interpolation_expression ws? 
 	|
         selector (COMMA ws? selector)*
     ;
@@ -705,7 +701,7 @@ declaration
     //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
     STAR? 
     ( 
-        ( ~(HASH_SYMBOL | COLON | SEMI | RBRACE)* HASH_SYMBOL LBRACE )=> scss_interpolation_expression // looking for #{, lookeahead exit at :, ; and }
+        ( ~(HASH_SYMBOL | COLON | SEMI | RBRACE)* HASH_SYMBOL LBRACE )=> scss_declaration_interpolation_expression // looking for #{, lookeahead exit at :, ; and }
         |
         property 
     )
@@ -1025,14 +1021,44 @@ less_condition_operator
 
 
 //SCSS interpolation expression, e.g. #{$vert}
-scss_interpolation_expression
+
+//why there're two almost same selector_interpolation_expression-s?
+//the problem is that the one for selector can contain COLON inside the expression
+//whereas the later cann't. 
+scss_selector_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var        
+            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH) 
-        )+
-//        (IDENT | MINUS | DOT | HASH_SYMBOL)?    
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+        )
+        ( 
+            ws?
+            (
+                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                |
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+            )
+        )*
+
+    ;
+    
+scss_declaration_interpolation_expression
+    :
+        ( 
+            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            |
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
+        )
+        ( 
+            ws?
+            (
+                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                |
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
+            )
+        )*
+
     ;
     
 scss_interpolation_expression_var

@@ -383,7 +383,8 @@ public enum NodeType {
     cp_mixin_call_args,
     cp_mixin_name,
     
-    scss_interpolation_expression,
+    scss_selector_interpolation_expression,
+    scss_declaration_interpolation_expression,
     
     scss_interpolation_expression_var,
     

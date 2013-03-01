@@ -490,6 +490,19 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
+    public void testInterpolationExpressionInSelectorWithWS() {
+        String source =
+                ".body.firefox #{$selector}:before {\n"
+                + "    content: \"Hi, Firefox users!\";\n"
+                + "  }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
     public void testMixinsWithArgumentsComplex() {
         String source =
                 "/* style.scss */\n"
@@ -541,7 +554,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testNestedPropertiesWithValue() {
         String source =
                 ".funky {\n"
@@ -558,7 +571,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testLineComment() {
         String source =
                 ".funky {\n"
@@ -571,7 +584,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testMixinCallInStylesheet() {
         String source =
                 "@include firefox-message(\".header\");\n";
