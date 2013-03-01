@@ -166,8 +166,10 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
             resultComponent.removeAll();
         }
         
+        int i = 0;
         for (Component comp : components ) {
             resultComponent.add(comp);            
+            resultComponent.setToolTipTextAt(i++, getToolTipForComponent(comp));
         }
 
         // Put focus on the first result from the set
@@ -178,6 +180,22 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
         showResultComponent();
     }
     
+    private String getToolTipForComponent(Component comp) {
+        if (comp instanceof JComponent) {
+            String rawToolTip = ((JComponent) comp).getToolTipText();
+            if (rawToolTip == null) {
+                return null;
+            } else {
+                String shortened = rawToolTip.length() > 128
+                        ? rawToolTip.substring(0, 128) + "\u2026" //NOI18N
+                        : rawToolTip;
+                return shortened.replace("\n", " ");                    //NOI18N
+            }
+        } else {
+            return null;
+        }
+    }
+
     @SuppressWarnings("deprecation")
     private void createResultComponent() {
         JPanel container = findContainer(this);
