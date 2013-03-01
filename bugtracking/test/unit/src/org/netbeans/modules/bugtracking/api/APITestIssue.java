@@ -51,20 +51,28 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
  * @author tomas
  */
 public class APITestIssue extends TestIssue {
+    static final String ID_1 = "1";
+    static final String ID_2 = "2";
 
+    private final String id;
+
+    public APITestIssue(String id) {
+        this.id = id;
+    }
+    
     @Override
     public String getDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return "Issue : " + id;
     }
 
     @Override
     public String getTooltip() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getDisplayName() + " tooltip";
     }
 
     @Override
     public String getID() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return id;
     }
 
     @Override

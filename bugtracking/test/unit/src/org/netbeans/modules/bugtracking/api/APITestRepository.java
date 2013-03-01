@@ -48,6 +48,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -74,6 +76,7 @@ public class APITestRepository extends TestRepository {
     private RepositoryInfo info;
     private APITestRepositoryController controller;
     private List<APITestQuery> queries;
+    private HashMap<String, APITestIssue> issues;
 
     public APITestRepository(RepositoryInfo info) {
         this.info = info;
@@ -103,8 +106,20 @@ public class APITestRepository extends TestRepository {
     }
 
     @Override
-    public APITestIssue[] getIssues(String[] id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public synchronized APITestIssue[] getIssues(String[] ids) {
+        if(issues == null) {
+            issues = new HashMap<String, APITestIssue>();
+        }
+        List<APITestIssue> ret = new LinkedList<APITestIssue>();
+        for (String id : ids) {
+            APITestIssue i = issues.get(id);
+            if(i == null) {
+                i = new APITestIssue(id);
+                issues.put(id, i);
+            }
+            ret.add(i);
+        }
+        return ret.toArray(new APITestIssue[ret.size()]);
     }
 
     @Override
@@ -138,8 +153,16 @@ public class APITestRepository extends TestRepository {
         return queries;
     }
     @Override
-    public Collection<TestIssue> simpleSearch(String criteria) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public synchronized Collection<APITestIssue> simpleSearch(String criteria) {
+        if(issues == null) {
+            issues = new HashMap<String, APITestIssue>();
+        }
+        List<APITestIssue> ret = new LinkedList<APITestIssue>();
+        APITestIssue i = issues.get(criteria);
+        if(i != null) {
+            ret.add(i);
+        }
+        return ret;
     }
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
