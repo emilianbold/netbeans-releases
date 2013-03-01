@@ -137,7 +137,22 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         int diff = ts.move(astCaretOffset);
-        boolean tokenFound = diff == 0 ? ts.movePrevious() : ts.moveNext();
+        boolean tokenFound;
+        if(diff == 0) {
+            if(ts.movePrevious()) {
+                tokenFound = true;
+            } else {
+                //no token, try next
+                tokenFound = ts.moveNext();
+            }
+        } else {
+            if(ts.moveNext()) {
+               tokenFound = true; 
+            } else {
+                //no token, try next
+                tokenFound = ts.movePrevious();
+            }
+        }
 
         Node root = info.getParseTree();
         if (root == null) {
