@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-03-01 13:17:00
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-03-01 13:29:02
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -188,31 +188,30 @@ public class Css3Parser extends DebugParser {
     // delegators
 
     public static final String[] ruleNames = new String[] {
-        "invalidRule", "fnAttribute", "resourceIdentifier", "cp_expression", 
-        "combinator", "margin", "syncToDeclarationsRule", "synpred9_Css3", 
-        "expression", "synpred6_Css3", "less_condition_operator", "synpred10_Css3", 
-        "simpleSelectorSequence", "vendorAtRule", "selectorsGroup", "generic_at_rule", 
-        "cssId", "mediaQuery", "namespaces", "expressionPredicate", "function", 
-        "namespace", "scss_interpolation_expression_var", "synpred12_Css3", 
-        "pseudo", "propertyValue", "syncTo_RBRACE", "typeSelector", "ws", 
-        "importItem", "atRuleId", "webkitKeyframesBlock", "declaration", 
-        "cp_mixin_name", "cp_mixin_declaration", "synpred7_Css3", "cp_variable_declaration", 
-        "scss_interpolation_expression", "webkitKeyframes", "less_mixin_guarded", 
-        "operator", "mediaFeature", "cp_multiplyExp", "cssClass", "mediaType", 
-        "syncTo_SEMI", "scss_nested_properties", "media", "mediaQueryOperator", 
-        "mediaQueryList", "mediaExpression", "styleSheet", "hexColor", "slAttributeName", 
-        "counterStyle", "bodyItem", "slAttributeValue", "pseudoPage", "page", 
-        "declarations", "synpred2_Css3", "cp_mixin_call", "slAttribute", 
-        "fnAttributeValue", "elementSubsequent", "esPred", "fnAttributeName", 
-        "less_arg", "synpred11_Css3", "body", "namespacePrefix", "webkitKeyframeSelectors", 
-        "synpred5_Css3", "cp_term", "rule", "less_args_list", "property", 
-        "moz_document_function", "functionName", "synpred1_Css3", "elementName", 
-        "margin_sym", "charSetValue", "namespacePrefixName", "cp_atomExp", 
-        "moz_document", "synpred4_Css3", "synpred3_Css3", "cp_variable", 
-        "selector", "term", "unaryOperator", "syncToFollow", "charSet", 
-        "less_function_in_condition", "fontFace", "less_fn_name", "cp_mixin_call_args", 
-        "less_condition", "synpred8_Css3", "imports", "cp_additionExp", 
-        "prio"
+        "invalidRule", "cp_multiplyExp", "fnAttributeName", "scss_interpolation_expression_var", 
+        "less_arg", "scss_interpolation_expression", "term", "cp_variable_declaration", 
+        "cp_expression", "cp_mixin_call_args", "mediaQueryList", "cp_atomExp", 
+        "selectorsGroup", "body", "webkitKeyframes", "synpred12_Css3", "elementName", 
+        "webkitKeyframesBlock", "cp_term", "cssId", "syncTo_SEMI", "typeSelector", 
+        "expressionPredicate", "syncToDeclarationsRule", "property", "charSet", 
+        "propertyValue", "cp_additionExp", "synpred11_Css3", "synpred9_Css3", 
+        "atRuleId", "synpred8_Css3", "declaration", "cp_mixin_call", "namespacePrefix", 
+        "synpred6_Css3", "declarations", "synpred4_Css3", "pseudoPage", 
+        "mediaFeature", "importItem", "less_mixin_guarded", "slAttribute", 
+        "syncTo_RBRACE", "imports", "cp_mixin_name", "combinator", "elementSubsequent", 
+        "counterStyle", "synpred3_Css3", "unaryOperator", "mediaQuery", 
+        "operator", "charSetValue", "styleSheet", "namespace", "selector", 
+        "media", "namespaces", "functionName", "synpred2_Css3", "fnAttributeValue", 
+        "less_condition_operator", "prio", "resourceIdentifier", "simpleSelectorSequence", 
+        "vendorAtRule", "synpred5_Css3", "scss_nested_properties", "moz_document", 
+        "cp_mixin_declaration", "namespacePrefixName", "mediaExpression", 
+        "function", "synpred1_Css3", "mediaType", "expression", "slAttributeValue", 
+        "margin_sym", "ws", "margin", "mediaQueryOperator", "generic_at_rule", 
+        "fnAttribute", "pseudo", "moz_document_function", "fontFace", "less_fn_name", 
+        "less_condition", "syncToFollow", "cp_variable", "esPred", "hexColor", 
+        "less_args_list", "synpred10_Css3", "slAttributeName", "rule", "page", 
+        "webkitKeyframeSelectors", "bodyItem", "less_function_in_condition", 
+        "cssClass", "synpred7_Css3"
     };
     public static final boolean[] decisionCanBacktrack = new boolean[] {
         false, // invalid decision
