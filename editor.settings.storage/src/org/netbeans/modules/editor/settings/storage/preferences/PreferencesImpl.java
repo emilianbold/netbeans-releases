@@ -63,6 +63,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
+import org.netbeans.modules.editor.settings.storage.api.OverridePreferences;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -71,7 +72,7 @@ import org.openide.util.WeakListeners;
  *
  * @author vita
  */
-public final class PreferencesImpl extends AbstractPreferences implements PreferenceChangeListener {
+public final class PreferencesImpl extends AbstractPreferences implements PreferenceChangeListener, OverridePreferences {
 
     // the constant bellow is used in o.n.e.Settings!!
     private static final String JAVATYPE_KEY_PREFIX = "nbeditor-javaType-for-legacy-setting_"; //NOI18N
@@ -152,6 +153,18 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
             if (putValueJavaType.get().equals(String.class.getName())) {
                 putValueJavaType.remove();
             }
+        }
+    }
+    
+    public @Override boolean isOverriden(String key) {
+        synchronized (lock) {
+            String bareKey;
+            if (key.startsWith(JAVATYPE_KEY_PREFIX)) {
+                bareKey = key.substring(JAVATYPE_KEY_PREFIX.length());
+            } else {
+                bareKey = key;
+            }
+            return getLocal().containsKey(bareKey);
         }
     }
 
