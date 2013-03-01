@@ -200,6 +200,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         return returns;
     }    
         
+    @Override
     public void addReturnType(TypeUsage type) {
         boolean isThere = false;
         for (TypeUsage typeUsage : this.returnTypes) {
