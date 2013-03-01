@@ -461,4 +461,15 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
 
     }
+    
+     public void testMixinCallInStylesheet() {
+        String source =
+                ".firefox-message(\".header\");\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
 }

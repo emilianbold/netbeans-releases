@@ -402,6 +402,7 @@ bodyItem
         | fontFace
         | vendorAtRule
         | {isCssPreprocessorSource()}? cp_variable_declaration
+        | {isCssPreprocessorSource()}? cp_mixin_call
     ;
 
 //    	catch[ RecognitionException rce] {
