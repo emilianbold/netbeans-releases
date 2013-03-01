@@ -165,7 +165,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
      * @return list of selected JS libraries
      */
     public List<SelectedLibrary> getSelectedLibraries() {
-        return selectedLibraries;
+        return new ArrayList<SelectedLibrary>(selectedLibraries);
     }
 
     /**
