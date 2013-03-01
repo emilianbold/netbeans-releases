@@ -853,7 +853,10 @@ ws
 //Some additional modifications to the standard syntax rules has also been done.
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
-    : cp_variable ws? COLON ws? cp_expression SEMI
+    : 
+        {isLessSource()}? cp_variable ws? COLON ws? cp_expression SEMI    
+        | 
+        {isScssSource()}? cp_variable ws? COLON ws? cp_expression (SASS_DEFAULT ws?)? SEMI    
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
@@ -1488,6 +1491,8 @@ SASS_MIXIN          : '@MIXIN';
 SASS_INCLUDE        : '@INCLUDE';
 AT_IDENT	    : '@' NMCHAR+;	
 SASS_VAR            : '$' NMCHAR+;
+SASS_DEFAULT        : '!DEFAULT';
+
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units
 //          as well as '%' it is a precentage. Whitespace cannot be between

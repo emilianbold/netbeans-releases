@@ -502,12 +502,27 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testInterpolationExpressionInFunctionInTheExpression() {
         String source =
                 ".body.firefox #{ie-hex-str($green)}:before {\n"
                 + "    content: \"Hi, Firefox users!\";\n"
                 + "  }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testInterpolationExpressionInPropertyValue_fails() {
+        String source =
+                "p {\n"
+                + "  $font-size: 12px;\n"
+                + "  $line-height: 30px;\n"
+                + "  font: #{$font-size}/#{$line-height};\n"
+                + "}";
 
         CssParserResult result = TestUtil.parse(source);
 
@@ -621,6 +636,17 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testMixinCallInStylesheet() {
         String source =
                 "@include firefox-message(\".header\");\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+    
+    public void testDefaultVariable() {
+        String source =
+                "$content: \"Second content?\" !default;\n";
 
         CssParserResult result = TestUtil.parse(source);
 
