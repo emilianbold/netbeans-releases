@@ -64,8 +64,6 @@ public abstract class TestIssue {
 
     public abstract boolean refresh();
 
-    public abstract TestIssue createFor(String id);
-
     public abstract void addComment(String comment, boolean closeAsFixed);
 
     public abstract void attachPatch(File file, String description);
