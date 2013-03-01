@@ -559,6 +559,8 @@ declarations
                 //(is less specific).
 		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_interpolation_expression COLON )=>declaration SEMI ws?
 		|
+		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ LBRACE | scss_interpolation_expression COLON )=>scss_nested_properties ws?
+		|
                 (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
                 |
                 {isCssPreprocessorSource()}? cp_mixin_call ws?
@@ -1035,6 +1037,29 @@ scss_interpolation_expression
 scss_interpolation_expression_var
     :
         HASH_SYMBOL LBRACE ws? cp_variable ws? RBRACE //XXX possibly allow cp_ecp_expression inside
+    ;
+    
+//SASS nested properties:
+//.funky {
+//  font: 2px/3px {
+//    family: fantasy;
+//    size: 30em;
+//    weight: bold;
+//  }
+//}
+//
+//or just:
+//
+//.funky {
+//  font: {
+//    family: fantasy;
+//    size: 30em;
+//    weight: bold;
+//  }
+//}
+scss_nested_properties
+    :
+    property COLON ws? propertyValue? LBRACE ws? syncToFollow declarations RBRACE
     ;
 
 //*** END OF LESS SYNTAX ***
@@ -1561,24 +1586,29 @@ MOZ_REGEXP
 //              that process the whitespace within the parser, ANTLR does not
 //              need to deal with the whitespace directly in the parser.
 //
-WS      : (' '|'\t')+;
+WS      
+    : 
+    (' '|'\t')+
+    ;
 
-NL      : ('\r' '\n'? | '\n')   { 
-	//$channel = HIDDEN;    
-}   ;
+NL      
+    : 
+    ('\r' '\n'? | '\n')    
+    ;
 
-// ------------- 
 // Comments.    Comments may not be nested, may be multilined and are delimited
 //              like C comments: /* ..... */
-//              COMMENTS are hidden from the parser which simplifies the parser 
-//              grammar a lot.
-//
-COMMENT         : '/*' ( options { greedy=false; } : .*) '*/'
-    
-                    {
-//                        $channel = 2;   // Comments on channel 2 in case we want to find them
-                    }
-                ;
+COMMENT         
+    : 
+    '/*' ( options { greedy=false; } : .*) '*/'
+    ;
+
+LINE_COMMENT
+    :
+    '//'( options { greedy=false; } : .*) NL {
+	$channel = HIDDEN;    
+    }   
+    ;
 
 // -------------
 //  Illegal.    Any other character shoudl not be allowed.
