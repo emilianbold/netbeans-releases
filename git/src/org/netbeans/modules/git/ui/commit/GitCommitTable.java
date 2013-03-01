@@ -57,13 +57,15 @@ import org.openide.util.Utilities;
 public class GitCommitTable extends VCSCommitTable<GitFileNode> {
 
     private String errroMessage;
+    private boolean emptyAllowed;
     
     public GitCommitTable() {
-        this(true);
+        this(true, false);
     }
 
-    public GitCommitTable (boolean editable) {
+    public GitCommitTable (boolean editable, boolean allowEmpty) {
         super(new VCSCommitTableModel<GitFileNode>(), editable);
+        this.emptyAllowed = allowEmpty;
     }
 
     @Override
@@ -93,7 +95,11 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
             ret = true;
         }
         if (isEmpty) {
-            errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_ERROR_NO_FILES"); //NOI18N
+            if (emptyAllowed) {
+                ret = true;
+            } else {
+                errroMessage = NbBundle.getMessage(CommitAction.class, "MSG_ERROR_NO_FILES"); //NOI18N
+            }
         }
         return ret;
     }

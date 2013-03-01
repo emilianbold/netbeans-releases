@@ -410,7 +410,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
 
             DiffProvider diffProvider = new DiffProvider();
 
-            return new GitCommitPanelMerged(new GitCommitTable(false), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
+            return new GitCommitPanelMerged(new GitCommitTable(false, true), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
         }
 
         private GitCommitPanelMerged(GitCommitTable gitCommitTable, File[] roots, File repository, DefaultCommitParameters parameters,
