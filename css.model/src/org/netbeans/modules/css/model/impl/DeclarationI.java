@@ -145,7 +145,9 @@ public class DeclarationI extends ModelElement implements Declaration {
         if (resolvedProperty == null) {
             PropertyDefinition pmodel = Properties.getPropertyDefinition(getProperty().getContent().toString().trim());
             if (pmodel != null) {
-                resolvedProperty = ResolvedProperty.resolve(file, pmodel, getPropertyValue().getExpression().getContent());
+                Expression expression = getPropertyValue().getExpression();
+                CharSequence content = expression != null ? expression.getContent() : "";
+                resolvedProperty = ResolvedProperty.resolve(file, pmodel, content);
             }
         }
         return resolvedProperty;
