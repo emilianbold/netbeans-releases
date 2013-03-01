@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.clientproject.util;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -53,23 +52,17 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
-import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
-import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -214,57 +207,6 @@ public final class ClientSideProjectUtilities {
             fileObjects[i] = groups[i].getRootFolder();
         }
         return fileObjects;
-    }
-
-    /**
-     * Add JS libraries (<b>{@link JavaScriptLibrarySelectionPanel.SelectedLibrary#isDefault() non-default} only!</b>) to the given
-     * site root, underneath the given JS libraries folder.
-     * <p>
-     * This method must be run in a background thread and stops if the current thread is interrupted.
-     * @param selectedLibraries JS libraries to be added
-     * @param jsLibFolder JS libraries folder
-     * @param siteRootDir site root
-     * @param handle progress handle, can be {@code null}
-     * @return list of libraries that cannot be downloaded
-     * @throws IOException if any error occurs
-     */
-    @NbBundle.Messages({
-        "ClientSideProjectUtilities.error.copyingJsLib=Some of the library files could not be retrieved.",
-        "# {0} - library name",
-        "ClientSideProjectUtilities.msg.downloadingJsLib=Downloading {0}"
-    })
-    @CheckReturnValue
-    public static List<JavaScriptLibrarySelectionPanel.SelectedLibrary> applyJsLibraries(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries,
-            String jsLibFolder, FileObject siteRootDir, @NullAllowed ProgressHandle handle) throws IOException {
-        if (EventQueue.isDispatchThread()) {
-            throw new IllegalStateException("Must be run in a background thread");
-        }
-        List<JavaScriptLibrarySelectionPanel.SelectedLibrary> failed = new ArrayList<JavaScriptLibrarySelectionPanel.SelectedLibrary>(selectedLibraries.size());
-        FileObject librariesRoot = null;
-        for (JavaScriptLibrarySelectionPanel.SelectedLibrary selectedLibrary : selectedLibraries) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-            if (selectedLibrary.isDefault()) {
-                // ignore default js lib (they are already applied)
-                continue;
-            }
-            if (librariesRoot == null) {
-                librariesRoot = FileUtil.createFolder(siteRootDir, jsLibFolder);
-            }
-            JavaScriptLibrarySelectionPanel.LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
-            Library library = libraryVersion.getLibrary();
-            if (handle != null) {
-                handle.progress(Bundle.ClientSideProjectUtilities_msg_downloadingJsLib(library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME)));
-            }
-            try {
-                WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
-            } catch (MissingLibResourceException e) {
-                LOGGER.log(Level.FINE, null, e);
-                failed.add(selectedLibrary);
-            }
-        }
-        return failed;
     }
 
     // #217970

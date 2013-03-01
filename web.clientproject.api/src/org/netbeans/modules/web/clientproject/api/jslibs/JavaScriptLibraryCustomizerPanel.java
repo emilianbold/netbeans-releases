@@ -46,12 +46,17 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JPanel;
@@ -59,11 +64,19 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
+import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.api.validation.FolderValidator;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -78,22 +91,24 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
 
     private static final long serialVersionUID = 8973245611032L;
 
+    private static final Logger LOGGER = Logger.getLogger(JavaScriptLibraryCustomizerPanel.class.getName());
+
     static final String JS_MIME_TYPE = "text/javascript"; // NOI18N
 
     private final ProjectCustomizer.Category category;
-    final LibrariesFolderRootProvider librariesFolderRootProvider;
+    final CustomizerSupport customizerSupport;
     // @GuardedBy("EDT")
     private final JavaScriptLibrarySelectionPanel javaScriptLibrarySelection;
 
 
-    public JavaScriptLibraryCustomizerPanel(@NonNull ProjectCustomizer.Category category, @NonNull LibrariesFolderRootProvider librariesFolderRootProvider) {
+    public JavaScriptLibraryCustomizerPanel(@NonNull ProjectCustomizer.Category category, @NonNull CustomizerSupport customizerSupport) {
         Parameters.notNull("category", category);
-        Parameters.notNull("librariesFolderRootProvider", librariesFolderRootProvider);
+        Parameters.notNull("customizerSupport", customizerSupport);
         checkUiThread();
 
         this.category = category;
-        this.librariesFolderRootProvider = librariesFolderRootProvider;
-        javaScriptLibrarySelection = new JavaScriptLibrarySelectionPanel(new LibraryValidator(librariesFolderRootProvider));
+        this.customizerSupport = customizerSupport;
+        javaScriptLibrarySelection = new JavaScriptLibrarySelectionPanel(new LibraryValidator(customizerSupport));
 
         initComponents();
         init();
@@ -115,7 +130,7 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         javaScriptLibrarySelection.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                validateData();
+                validateAndSetData();
             }
         });
         // add to placeholder
@@ -139,7 +154,7 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
     private void setJsFiles() {
         assert EventQueue.isDispatchThread();
         // set js files
-        File siteRootFolder = librariesFolderRootProvider.getLibrariesFolderRoot();
+        File siteRootFolder = customizerSupport.getLibrariesFolderRoot();
         ValidationResult result = new FolderValidator()
                 .validateFolder(siteRootFolder)
                 .getResult();
@@ -150,6 +165,13 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
             jsFiles = findProjectJsFiles(FileUtil.toFileObject(siteRootFolder));
         }
         javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
+    }
+
+    void validateAndSetData() {
+        if (validateData()) {
+            customizerSupport.setLibrariesFolder(javaScriptLibrarySelection.getLibrariesFolder());
+            customizerSupport.setSelectedLibraries(javaScriptLibrarySelection.getSelectedLibraries());
+        }
     }
 
     boolean validateData() {
@@ -174,9 +196,51 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
 
     private void storeData() {
         assert !EventQueue.isDispatchThread();
-        // XXX
-//        uiProperties.setJsLibFolder(javaScriptLibrarySelection.getLibrariesFolder());
-//        uiProperties.setNewJsLibraries(javaScriptLibrarySelection.getSelectedLibraries());
+        try {
+            addNewJsLibraries(javaScriptLibrarySelection.getLibrariesFolder(), javaScriptLibrarySelection.getSelectedLibraries());
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @NbBundle.Messages({
+        "JavaScriptLibraryCustomizerPanel.jsLibs.downloading=Downloading selected JavaScript libraries...",
+        "# {0} - names of JS libraries",
+        "JavaScriptLibraryCustomizerPanel.error.jsLibs=<html><b>These JavaScript libraries failed to download:</b><br><br>{0}<br><br>"
+            + "<i>More information can be found in IDE log.</i>"
+    })
+    void addNewJsLibraries(String jsLibFolder, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> newJsLibraries) throws IOException {
+        if (newJsLibraries.isEmpty()) {
+            return;
+        }
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.JavaScriptLibraryCustomizerPanel_jsLibs_downloading());
+        progressHandle.start();
+        try {
+            List<JavaScriptLibrarySelectionPanel.SelectedLibrary> failedLibs = JsLibUtilities.applyJsLibraries(newJsLibraries, jsLibFolder,
+                    FileUtil.toFileObject(customizerSupport.getLibrariesFolderRoot()), progressHandle);
+            if (!failedLibs.isEmpty()) {
+                LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
+                errorOccured(Bundle.JavaScriptLibraryCustomizerPanel_error_jsLibs(StringUtilities.implode(getLibraryNames(failedLibs), "<br>"))); // NOI18N
+            }
+        } finally {
+            progressHandle.finish();
+        }
+    }
+
+    private static void errorOccured(String message) {
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+    }
+
+    private List<String> getLibraryNames(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> libraries) {
+        List<String> names = new ArrayList<String>(libraries.size());
+        for (JavaScriptLibrarySelectionPanel.SelectedLibrary selectedLibrary : libraries) {
+            JavaScriptLibrarySelectionPanel.LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
+            Library library = libraryVersion.getLibrary();
+            assert library != null : "Library must be found for " + libraryVersion;
+            String name = library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME);
+            names.add(name);
+        }
+        return names;
     }
 
     @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.progress.detectingJsFiles=Detecting JavaScript files...")
@@ -232,11 +296,11 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
     //~ Inner classes
 
     /**
-     * Provider for root (parent folder) of {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}.
+     * Support for this customizer panel.
      * <p>
      * Implementations must be thread-safe.
      */
-    public interface LibrariesFolderRootProvider {
+    public interface CustomizerSupport {
 
         /**
          * Get root (parent folder) of {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}.
@@ -246,16 +310,32 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
          */
         @CheckForNull
         File getLibrariesFolderRoot();
+
+        /**
+         * Set {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}.
+         * <p>
+         * This method is called whenever the libraries folder changes and is valid.
+         * @param librariesFolder libraries folder
+         */
+        void setLibrariesFolder(@NonNull String librariesFolder);
+
+        /**
+         * Set {@link JavaScriptLibrarySelectionPanel#getSelectedLibraries() selected JS libraries}.
+         * <p>
+         * This method is called whenever the selected JS libraries change and are valid.
+         * @param selectedLibraries selected JS libraries
+         */
+        void setSelectedLibraries(@NonNull List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries);
     }
 
     private static final class LibraryValidator implements JavaScriptLibrarySelectionPanel.JavaScriptLibrariesValidator {
 
-        private final LibrariesFolderRootProvider librariesFolderRootProvider;
+        private final CustomizerSupport customizerSupport;
 
 
-        private LibraryValidator(LibrariesFolderRootProvider librariesFolderRootProvider) {
-            assert librariesFolderRootProvider != null;
-            this.librariesFolderRootProvider = librariesFolderRootProvider;
+        private LibraryValidator(CustomizerSupport customizerSupport) {
+            assert customizerSupport != null;
+            this.customizerSupport = customizerSupport;
         }
 
         @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.error.jsLibsAlreadyExist=Some of the selected libraries already exist.")
@@ -287,7 +367,7 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         }
 
         private FileObject getLibsFolder(String librariesFolder) {
-            File librariesFolderRoot = librariesFolderRootProvider.getLibrariesFolderRoot();
+            File librariesFolderRoot = customizerSupport.getLibrariesFolderRoot();
             if (librariesFolderRoot == null) {
                 // no folder
                 return null;

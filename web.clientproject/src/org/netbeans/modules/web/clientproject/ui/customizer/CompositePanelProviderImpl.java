@@ -42,10 +42,12 @@
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraryCustomizerPanel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -103,10 +105,20 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (RUN.equals(categoryName)) {
             return new RunPanel(category, uiProperties);
         } else if (JS_FILES.equals(categoryName)) {
-            return new JavaScriptLibraryCustomizerPanel(category, new JavaScriptLibraryCustomizerPanel.LibrariesFolderRootProvider() {
+            return new JavaScriptLibraryCustomizerPanel(category, new JavaScriptLibraryCustomizerPanel.CustomizerSupport() {
                 @Override
                 public File getLibrariesFolderRoot() {
                     return uiProperties.getResolvedSiteRootFolder();
+                }
+                @Override
+                public void setLibrariesFolder(String librariesFolder) {
+                    assert librariesFolder != null;
+                    uiProperties.setJsLibFolder(librariesFolder);
+                }
+                @Override
+                public void setSelectedLibraries(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
+                    assert selectedLibraries != null;
+                    uiProperties.setNewJsLibraries(selectedLibraries);
                 }
             });
         }

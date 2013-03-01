@@ -59,9 +59,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel.SelectedLibrary;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
+import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
-import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.modules.web.common.api.Pair;
 import org.openide.WizardDescriptor;
@@ -162,7 +162,7 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
                     getComponent().updateFailedLibraries(Collections.<SelectedLibrary>emptyList());
                     return;
                 }
-                List<SelectedLibrary> failedLibs = ClientSideProjectUtilities.applyJsLibraries(
+                List<SelectedLibrary> failedLibs = JsLibUtilities.applyJsLibraries(
                         selectedLibraries, getComponent().getLibrariesFolder(), librariesFolder, progressHandle);
                 getComponent().updateFailedLibraries(failedLibs);
                 if (failedLibs.isEmpty()) {

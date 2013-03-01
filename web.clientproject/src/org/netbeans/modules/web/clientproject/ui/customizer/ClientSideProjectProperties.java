@@ -44,22 +44,16 @@ package org.netbeans.modules.web.clientproject.ui.customizer;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel.SelectedLibrary;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
@@ -150,7 +144,6 @@ public final class ClientSideProjectProperties {
                     saveProperties();
                     saveConfigs();
                     setActiveConfig();
-                    addNewJsLibraries();
                     ProjectManager.getDefault().saveProject(project);
                     return null;
                 }
@@ -193,28 +186,6 @@ public final class ClientSideProjectProperties {
                 project.getProjectConfigurations().setActiveConfiguration(activeConfiguration);
             } catch (IllegalArgumentException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
-            }
-        }
-    }
-
-    @NbBundle.Messages({
-        "ClientSideProjectProperties.jsLibs.downloading=Downloading selected JavaScript libraries...",
-        "# {0} - names of JS libraries",
-        "ClientSideProjectProperties.error.jsLibs=<html><b>These JavaScript libraries failed to download:</b><br><br>{0}<br><br>"
-            + "<i>More information can be found in IDE log.</i>"
-    })
-    void addNewJsLibraries() throws IOException {
-        if (jsLibFolder != null && !newJsLibraries.isEmpty()) {
-            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.ClientSideProjectProperties_jsLibs_downloading());
-            progressHandle.start();
-            try {
-                List<SelectedLibrary> failedLibs = ClientSideProjectUtilities.applyJsLibraries(newJsLibraries, jsLibFolder, project.getSiteRootFolder(), progressHandle);
-                if (!failedLibs.isEmpty()) {
-                    LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
-                    errorOccured(Bundle.ClientSideProjectProperties_error_jsLibs(joinStrings(getLibraryNames(failedLibs), "<br>"))); // NOI18N
-                }
-            } finally {
-                progressHandle.finish();
             }
         }
     }
@@ -382,21 +353,6 @@ public final class ClientSideProjectProperties {
         return resolveFile(getSiteRootFolder() + "/" + getStartFile());
     }
 
-    private static void errorOccured(String message) {
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-    }
-
-    private List<String> getLibraryNames(List<SelectedLibrary> libraries) {
-        List<String> names = new ArrayList<String>(libraries.size());
-        for (JavaScriptLibrarySelectionPanel.SelectedLibrary selectedLibrary : libraries) {
-            JavaScriptLibrarySelectionPanel.LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
-            Library library = libraryVersion.getLibrary();
-            String name = library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME);
-            names.add(name);
-        }
-        return names;
-    }
-
     private String getProjectProperty(String property, String defaultValue) {
         String value = project.getEvaluator().getProperty(property);
         if (value != null) {
@@ -430,17 +386,6 @@ public final class ClientSideProjectProperties {
             return null;
         }
         return project.getProjectHelper().resolveFile(path);
-    }
-
-    private static String joinStrings(Collection<String> strings, String glue) {
-        StringBuilder sb = new StringBuilder(200);
-        for (String string : strings) {
-            if (sb.length() > 0) {
-                sb.append(glue);
-            }
-            sb.append(string);
-        }
-        return sb.toString();
     }
 
     //~ Inner classes
