@@ -49,8 +49,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -69,6 +68,8 @@ public class RepositoryTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {    
+        MockLookup.setLayersAndInstances();
+        APITestConnector.init();
     }
 
     @Override
@@ -76,7 +77,7 @@ public class RepositoryTest extends NbTestCase {
     }
 
     public void testAttributes() {
-        Repository repo = APITestKit.getRepo();
+        Repository repo = getRepo();
         assertEquals(APITestRepository.DISPLAY_NAME, repo.getDisplayName());
         assertEquals(APITestRepository.TOOLTIP, repo.getTooltip());
         assertEquals(APITestRepository.URL, repo.getUrl());
@@ -85,14 +86,33 @@ public class RepositoryTest extends NbTestCase {
     }
     
     public void testGetQueries() {
-        APITestRepository apiRepo = APITestKit.getAPIRepo();
-        Repository repo = APITestKit.getRepo();
+        APITestRepository apiRepo = getApiRepo();
+        Repository repo = getRepo();
         assertEquals(apiRepo.getQueries().size(), repo.getQueries().size());
     }
     
+    public void testGetIssues() {
+        APITestRepository apiRepo = getApiRepo();
+        Repository repo = getRepo();
+        String[] ids = new String[] {APITestIssue.ID_1, APITestIssue.ID_2};
+        assertEquals(apiRepo.getIssues(ids).length, repo.getIssues(ids).length);
+    }
+    
+//    public void testSimpleSearch() {
+//        APITestRepository apiRepo = getApiRepo();
+//        Repository repo = getRepo();
+//        assertEquals(apiRepo.simpleSearch(APITestIssue.ID_1).size(), repo.(APITestIssue.ID_1).);
+//    }
+    
+    public void testIsMutable() {
+        Repository repo = getRepo();
+        String[] ids = new String[] {APITestIssue.ID_1, APITestIssue.ID_2};
+        assertEquals(true, repo.isMutable());
+    }
+    
     public void testQueryListChanged() {
-        APITestRepository apiTestRepo = APITestKit.getAPIRepo();
-        Repository repo = APITestKit.getRepo();
+        Repository repo = getRepo();
+        APITestRepository apiTestRepo = getApiRepo();
         
         final boolean[] received = new boolean[] {false};
         repo.addPropertyChangeListener(new PropertyChangeListener() {
@@ -109,20 +129,20 @@ public class RepositoryTest extends NbTestCase {
 
     public void testDisplayNameChanged() throws IOException {
         final String newDisplayName = "newDisplayName";
-        APITestRepository apiTestRepo = APITestKit.getAPIRepo();
+        APITestRepository apiTestRepo = getApiRepo();
         apiTestRepo.getController().setDisplayName(newDisplayName);
         testAttributeChange(Repository.ATTRIBUTE_DISPLAY_NAME, APITestRepository.DISPLAY_NAME, newDisplayName);
     }
     
     public void testUrlChanged() throws IOException {
         final String newURL = "http://test/newUrl/";
-        APITestRepository apiTestRepo = APITestKit.getAPIRepo();
+        APITestRepository apiTestRepo = getApiRepo();
         apiTestRepo.getController().setURL(newURL);
         testAttributeChange(Repository.ATTRIBUTE_URL, APITestRepository.URL, newURL);
     }
     
     private void testAttributeChange(final String key, final String expectedOldValue, final String expectedNewValue) throws IOException {
-        final Repository repo = APITestKit.getRepo();
+        final Repository repo = getRepo();
         
         final boolean[] received = new boolean[] {false};
         final PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
@@ -152,6 +172,14 @@ public class RepositoryTest extends NbTestCase {
             repo.removePropertyChangeListener(propertyChangeListener);
         }
         assertTrue(received[0]);
+    }
+
+    private APITestRepository getApiRepo() {
+        return APITestKit.getAPIRepo(APITestRepository.ID);
+    }
+
+    private Repository getRepo() {
+        return APITestKit.getRepo(APITestRepository.ID);
     }
     
 }
