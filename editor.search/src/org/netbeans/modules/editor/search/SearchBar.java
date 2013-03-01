@@ -1039,6 +1039,12 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         }
         actualTextComponent = new WeakReference<JTextComponent>(component);
         EditorFindSupport.getInstance().setFocusedTextComponent(getActualTextComponent());
+        //This is for component without highlighting
+        if (Boolean.TRUE.equals(component.getClientProperty("searchbar.hideHighlightIcon"))) { //NOI18N
+            highlight.setVisible(false);
+        } else if (!highlight.isVisible()) {
+            highlight.setVisible(true);
+        }
     }
 
     void addActualComponentListener(PropertyChangeListener propertyChangeListener) {
