@@ -101,6 +101,11 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
     private final JavaScriptLibrarySelectionPanel javaScriptLibrarySelection;
 
 
+    /**
+     * Create new manager for project JS library files.
+     * @param category customizer category
+     * @param customizerSupport customizer support
+     */
     public JavaScriptLibraryCustomizerPanel(@NonNull ProjectCustomizer.Category category, @NonNull CustomizerSupport customizerSupport) {
         Parameters.notNull("category", category);
         Parameters.notNull("customizerSupport", customizerSupport);
@@ -114,6 +119,11 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         init();
     }
 
+    /**
+     * Get display name of customizer category. It can be used
+     * when {@link ProjectCustomizer.Category#create(String, String, java.awt.Image, ProjectCustomizer.Category) creating} a new category.
+     * @return display name of customizer category
+     */
     @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.category.displayName=JavaScript Files")
     public static String getCategoryDisplayName() {
         return Bundle.JavaScriptLibraryCustomizerPanel_category_displayName();
@@ -194,7 +204,7 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         return true;
     }
 
-    private void storeData() {
+    void storeData() {
         assert !EventQueue.isDispatchThread();
         try {
             addNewJsLibraries(javaScriptLibrarySelection.getLibrariesFolder(), javaScriptLibrarySelection.getSelectedLibraries());
@@ -263,7 +273,7 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.JavaScriptFilesPanel");
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.JavaScriptFilesPanel"); // NOI18N
     }
 
     /**
@@ -326,6 +336,7 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
          * @param selectedLibraries selected JS libraries
          */
         void setSelectedLibraries(@NonNull List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries);
+
     }
 
     private static final class LibraryValidator implements JavaScriptLibrarySelectionPanel.JavaScriptLibrariesValidator {
