@@ -201,6 +201,13 @@ public class IssueTest extends NbTestCase {
         assertFalse(refreshed[0]);
     }
     
+//    public void testGetSubtasks() {
+//        APITestIssue apiIssue = getAPIIssue();
+//        Issue issue = getIssue();
+//        
+//        assertEquals(apiIssue.getSubtasks().length, issue.getSubtasks());
+//    }
+    
     private APITestRepository getApiRepo() {
         return APITestKit.getAPIRepo(APITestRepository.ID);
     }

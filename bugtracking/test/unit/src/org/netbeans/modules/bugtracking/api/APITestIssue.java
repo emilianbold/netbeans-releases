@@ -59,6 +59,7 @@ import org.openide.util.HelpCtx;
 public class APITestIssue extends TestIssue {
     static final String ID_1 = "1";
     static final String ID_2 = "2";
+    static final String ID_SUB_3 = "3";
 
     static final String SUMMARY_SUF = " - summary";
     static final String TOOLTIP_SUF = " - tooltip";
@@ -73,14 +74,16 @@ public class APITestIssue extends TestIssue {
     boolean idFinished;
     File attachedFile;
     private BugtrackingController controller;
+    private final APITestRepository repo;
 
-    public APITestIssue(String id) {
-        this(id, false);
+    public APITestIssue(String id, APITestRepository repo) {
+        this(id, repo, false);
     }
     
-    public APITestIssue(String id, boolean isNew) {
+    public APITestIssue(String id, APITestRepository repo, boolean isNew) {
         this.id = id;
         this.isNew = isNew;
+        this.repo = repo;
     }
     
     @Override
@@ -164,7 +167,7 @@ public class APITestIssue extends TestIssue {
 
     @Override
     public String[] getSubtasks() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new String[] {APITestIssue.ID_SUB_3};
     }
 
     @Override
