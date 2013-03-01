@@ -159,8 +159,7 @@ public class DependenciesNode extends AbstractNode {
         
         @Override
         protected Node createNodeForKey(DependencyWrapper wr) {
-            Artifact art = wr.getArtifact();
-            return new DependencyNode(dependencies.project, art, wr.getFileObject(), true);
+            return new DependencyNode(dependencies.project, wr.getArtifact(), wr.getFileObject(), true);
         }
 
         @Override public void stateChanged(ChangeEvent e) {
@@ -255,9 +254,6 @@ public class DependenciesNode extends AbstractNode {
             assert artifact.getDependencyTrail() != null : "#200927 Artifact.getDependencyTrail() is null:" + artifact;
             assert artifact.getVersion() != null : "200927 Artifact.getVersion() is null: " + artifact;
             fileObject = FileUtil.toFileObject(artifact.getFile());
-            if (fileObject != null && !FileUtil.isArchiveFile(fileObject)) {
-                fileObject = null;
-            }
         }
         
         public FileObject getFileObject() {
