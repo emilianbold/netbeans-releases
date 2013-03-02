@@ -372,6 +372,11 @@ public abstract class APTAbstractWalker extends APTWalker {
         props.put(key, value);
     }
     
+    protected final Object getNodeProperty(APT node, Object key) {
+        Map<Object, Object> props = nodeProperties.get(node);
+        return props == null ? null : props.get(key);
+    }
+    
     protected final void includeStream(APTFile apt, APTWalker walker) {
         TokenStream incTS = walker.getTokenStream();
         pushTokenStream(incTS);
