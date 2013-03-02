@@ -463,7 +463,10 @@ public class CssCompletion implements CodeCompletionHandler {
         Snapshot snapshot = info.getSnapshot();
         TokenHierarchy hi = snapshot.getTokenHierarchy();
         String prefix = getPrefix(hi.tokenSequence(), snapshot.getEmbeddedOffset(caretOffset));
-
+        if(prefix == null) {
+            return null;
+        }
+        
         //really ugly handling of class or id selector prefix:
         //Since the getPrefix() method is parser result based it is supposed
         //to work on top of the snapshot, while GsfCompletionProvider$Task.canFilter()

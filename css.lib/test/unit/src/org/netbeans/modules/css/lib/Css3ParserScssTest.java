@@ -490,6 +490,67 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
+    public void testInterpolationExpressionInSelectorWithWS() {
+        String source =
+                ".body.firefox #{$selector}:before {\n"
+                + "    content: \"Hi, Firefox users!\";\n"
+                + "  }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testInterpolationExpressionInFunctionInTheExpression() {
+        String source =
+                ".body.firefox #{ie-hex-str($green)}:before {\n"
+                + "    content: \"Hi, Firefox users!\";\n"
+                + "  }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testInterpolationExpressionInPropertyValue_fails() {
+        String source =
+                "p {\n"
+                + "  $font-size: 12px;\n"
+                + "  $line-height: 30px;\n"
+                + "  font: #{$font-size}/#{$line-height};\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    //fails as the 
+    //
+    //.body.firefox #{$selector}:before 
+    //
+    //selector is parsed as property declaration - due to the colon presence - FIXME!!!
+    public void testInterpolationExpressionComplex_fails() {
+        String source =
+                "@mixin firefox-message($selector) {\n"
+                + "  .body.firefox #{$selector}:before {\n"
+                + "    content: \"Hi, Firefox users!\";\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
     public void testMixinsWithArgumentsComplex() {
         String source =
                 "/* style.scss */\n"
@@ -541,7 +602,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testNestedPropertiesWithValue() {
         String source =
                 ".funky {\n"
@@ -558,7 +619,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testLineComment() {
         String source =
                 ".funky {\n"
@@ -568,6 +629,28 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testMixinCallInStylesheet() {
+        String source =
+                "@include firefox-message(\".header\");\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+    
+    public void testDefaultVariable() {
+        String source =
+                "$content: \"Second content?\" !default;\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }
