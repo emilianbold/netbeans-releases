@@ -41,11 +41,18 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
+import java.awt.Panel;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
 import java.util.Collection;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -56,10 +63,20 @@ public class APITestQuery extends TestQuery {
     public static final String FIRST_QUERY_NAME = "First Query";
     public static final String SECOND_QUERY_NAME = "Second Query";
     
-    private String name;
+    static final String TOOLTIP_SUF = " - tooltip";
+    
+    private final String name;
+    boolean isSaved;
+    boolean wasRefreshed;
+    boolean wasOpened;
+    boolean wasRemoved;
+    QueryController.QueryMode openedMode;
+    private final APITestRepository repo;
+    private QueryController controller;
 
-    public APITestQuery(String name) {
+    public APITestQuery(String name, APITestRepository repo) {
         this.name = name;
+        this.repo = repo;
     }
     
     @Override
@@ -69,47 +86,69 @@ public class APITestQuery extends TestQuery {
 
     @Override
     public String getTooltip() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getDisplayName() + TOOLTIP_SUF;
     }
 
     @Override
     public QueryController getController() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(controller == null) {
+            controller = new QueryController() {
+                @Override
+                public void opened() {
+                    wasOpened = true;
+                }
+                JPanel panel;
+                @Override
+                public JComponent getComponent() {
+                    if(panel == null) {
+                        panel = new JPanel();
+                    }
+                    return panel;
+                }
+                @Override public void setMode(QueryController.QueryMode mode) { 
+                    openedMode = mode;
+                }
+                @Override public HelpCtx getHelpCtx() { return null; }
+            }; 
+        }
+        return controller;
     }
 
     @Override
     public boolean isSaved() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return isSaved;
     }
 
     @Override
-    public Collection<TestIssue> getIssues() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Collection<APITestIssue> getIssues() {
+        return Arrays.asList(repo.getIssues(new String[] {APITestIssue.ID_1}));
     }
 
     @Override
     public boolean contains(String id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getIssues().contains(id);
     }
 
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        support.removePropertyChangeListener(listener);
     }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        support.addPropertyChangeListener(listener);
     }
 
     @Override
     public void remove() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        wasRemoved = true;
     }
 
     @Override
     public void refresh() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        wasRefreshed = true;
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
     }
     
 }
