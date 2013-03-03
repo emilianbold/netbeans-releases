@@ -57,7 +57,7 @@ import org.netbeans.modules.editor.settings.storage.preferences.ProxyPreferences
  * the MemoryPreferences instance. Other clients should be given just the
  * Preferences object from {@link #getPreferences}.
  * <p/>
- * The returned Preferences object implements {@link LocalPreferences} extension
+ * The returned Preferences object implements {@link OverridePreferences} extension
  * interface.
  * <p/>
  * This implementation <b>does not support</b> sub-nodes.
@@ -72,7 +72,7 @@ public final class MemoryPreferences  {
      * Returns an instance of Preferences backed by the delegate.
      * A token is used to identify the desired Preferences set. As long as {@link #destroy} is not called,
      * calls which use the same token & delegate will receive the same Preferences objects (though their
-     * MemoryPreferences may differ). The returned object implements {@link LocalPreferences}
+     * MemoryPreferences may differ). The returned object implements {@link OverridePreferences}
      * interface.
      * 
      * @param token token that determines the tree of Preferences.
@@ -88,13 +88,13 @@ public final class MemoryPreferences  {
      * The persistent storage takes precedence over the parent. The {@link Preferences#remove} call is redefined
      * for this case to just remove the key-value from the 'delegate', so that 'parent' value (if any) can become
      * effective. Before {@link Preferences#flush}, the returned Preferences object delegates to both 'parent'
-     * and 'delegate' so that effective values can be seen. The returned object implements {@link LocalPreferences}
+     * and 'delegate' so that effective values can be seen. The returned object implements {@link OverridePreferences}
      * interface.
      * 
      * @param token 
      * @param parent
      * @param delegate
-     * @return 
+     * @return Preferences that respect inheritace from the 'parent'
      */
     public static MemoryPreferences getWithInherited(Object token, Preferences parent, Preferences delegate) {
         if (parent == null) {
@@ -119,7 +119,6 @@ public final class MemoryPreferences  {
      * Individual Preferences node will not be flushed or cleared, but will become
      * inaccessible from their token
      * 
-     * @see {@link EditorSettings#getProxyPreferences}
      */
     public void destroy() {
         prefInstance.destroy();
