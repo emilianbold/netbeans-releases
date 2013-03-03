@@ -123,8 +123,8 @@ is the proper place.
                     object, that propagates changes to its (persistent) delegate upon flush(). 
                 </p>
             </description>
-            <class package="org.netbeans.editor.settings.storage.api" name="OverridePreferences"/>
-            <class package="org.netbeans.editor.settings.storage.api" name="MemoryPreferences"/>
+            <class package="org.netbeans.modules.editor.settings.storage.api" name="OverridePreferences"/>
+            <class package="org.netbeans.modules.editor.settings.storage.api" name="MemoryPreferences"/>
             <issue number="226111"/>
         </change>
         
