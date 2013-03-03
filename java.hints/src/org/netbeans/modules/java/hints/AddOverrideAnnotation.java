@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-@Hint(displayName="#DN_AddOverrideAnnotation", description="#DESC_AddOverrideAnnotation", category="rules15")
+@Hint(displayName="#DN_AddOverrideAnnotation", description="#DESC_AddOverrideAnnotation", category="rules15", suppressWarnings="override")
 public class AddOverrideAnnotation {
 
     public Set<Kind> getTreeKinds() {
