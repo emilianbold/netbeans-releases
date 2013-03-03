@@ -532,6 +532,80 @@ public final class MimePath {
         return true;
     }
     
+    /**
+     * Returns the inherited Mime type.
+     * For {@link #EMPTY}, returns {@code null}. For most other mime types, returns
+     * {@code ""}. If the mime type derives from another one, such as text/ant+xml derives
+     * from xml, the return value will be the base mime type (text/xml in the example case).
+     * <p/>
+     * For MimePaths that identified embedded content (more components on the MimePath),
+     * the method returns the parent MIME of the last MIME type on the path
+     * 
+     * @return inherited mime type, or {@code null}, if no parent exists (for {@link #EMPTY})
+     */
+    public String getInheritedType() {
+        if ("".equals(mimeType)) {
+            return null;
+        }
+        MimePath lastType = (size() == 1) ? this : MimePath.parse(mimeType);
+        List<String> inheritedPaths = lastType.getInheritedPaths(null, null);
+        if (inheritedPaths.size() > 1) {
+            return inheritedPaths.get(1);
+        } else {
+            return null;
+        }
+    }
+    
+    
+    /**
+     * Returns the included Mime paths.
+     * For MimePath, which nests several MIME types (i.e. text/php/text/html/text/css), it enumerates
+     * sub-paths so that a following element represents one level of nesting of the content.
+     * For the example example, the return would be:
+     * <ol>
+     * <li>text/php/text/html/text/css -- the full path
+     * <li>text/html/text/css -- outer content is removed
+     * <li>text/css -- the mime type of the identified content itself
+     * <li> (empty string)
+     * </ol>
+     * <p/>
+     * If a MIME type on the path has a generic MIME type (i.e. text/x-ant+xml 
+     * has a generic MIME type text/xml), that generic type will be inserted. For example,
+     * for text/java/text/x-ant+xml/text/javascript, the result will list:
+     * <ol>
+     * <li>text/java/text/x-ant+xml/text/javascript, -- the full MimePath
+     * <li>text/x-ant+xml/text/javascript -- a prefix
+     * <li>text/xml/text/javascript -- ant+xml is generalized to xml
+     * <li>text/javascript
+     * <li>  (empty string)
+     * </ol>
+     * For all but {@link #EMPTY} MimePaths, the list contains at least one entry, and the last
+     * entry is the {@link #EMPTY}. Note also, that the complete MimePath is always returned
+     * as the 1st member of the list.
+     * <p/>
+     * The returned sequence of MimePaths is suitable for searching settings or services
+     * for the (embedded) content whose type is described by MimePath as it is ordered from the
+     * most specific to the least specific paths (including generalization) and always contains
+     * the mime type of the identified contents. The last component ({@link ""}) represents 
+     * default settings (services).
+     * <p/>
+     * Note that for MimePaths created from a mime type (not empty!) string, the 
+     * <code>getInheritedPaths().get(1)</code> is a parent mime type. Either empty,
+     * or the generalized MIME.
+     * <p/>
+     * The caller should not modify the returned List.
+     * 
+     * @return list of inherited Mime paths
+     */
+    public List<MimePath> getIncludedPaths() {
+        List<String> paths = getInheritedPaths(null, null);
+        List<MimePath> mpaths = new ArrayList<MimePath>(paths.size());
+        for (String p : paths) {
+            mpaths.add(MimePath.parse(p));
+        }
+        return mpaths;
+    }
+    
     // XXX: This is currently called from editor/settings/storage (SettingsProvider)
     // and editor/mimelookup/impl via reflection.
     // We will eventually make it friend API. In the meantime just
