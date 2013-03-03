@@ -45,11 +45,13 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.DocSourcePositions;
 import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTreePathScanner;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -80,6 +82,7 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
@@ -793,6 +796,50 @@ public final class TreeUtilities {
         return findNameSpan(mst.getIdentifier().toString(), mst, JavaTokenId.DOT, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
     }
     
+    public int[] findNameSpan(MemberReferenceTree mst) {
+        return findNameSpan(mst.getName().toString(), mst, JavaTokenId.DOT, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
+    }
+    
+    public int[] findNameSpan(DocCommentTree docTree, ReferenceTree ref) {
+        Name name = ref.getMemberName();
+        if (name == null || !SourceVersion.isIdentifier(name)) {
+            //names like "<error>", etc.
+            return null;
+        }
+        
+        int pos = (int) ((DocTrees) info.getTrees()).getSourcePositions().getStartPosition(info.getCompilationUnit(), docTree, ref);
+        
+        if (pos < 0)
+            return null;
+        
+        TokenSequence<JavaTokenId> tokenSequence = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+        
+        tokenSequence.move(pos);
+        
+        if (!tokenSequence.moveNext() || tokenSequence.token().id() != JavaTokenId.JAVADOC_COMMENT) return null;
+        
+        TokenSequence<JavadocTokenId> jdocTS = tokenSequence.embedded(JavadocTokenId.language());
+        
+        jdocTS.move(pos);
+        
+        boolean wasNext;
+        
+        while ((wasNext = jdocTS.moveNext()) && jdocTS.token().id() != JavadocTokenId.HASH)
+            ;
+        
+        if (wasNext && jdocTS.moveNext()) {
+            if (jdocTS.token().id() == JavadocTokenId.IDENT &&
+                name.contentEquals(jdocTS.token().text())) {
+                return new int[] {
+                    jdocTS.offset(),
+                    jdocTS.offset() + jdocTS.token().length()
+                };
+            }
+        }
+        
+        return null;
+    }
+    
     private int[] findNameSpan(String name, Tree t, JavaTokenId... allowedTokens) {
         if (!SourceVersion.isIdentifier(name)) {
             //names like "<error>", etc.
@@ -828,6 +875,15 @@ public final class TreeUtilities {
             }
         }
         
+        tokenSequence.move(pos);
+        
+        if (tokenSequence.moveNext() && tokenSequence.token().id() == JavaTokenId.JAVADOC_COMMENT) {
+            //TODO: this is not precise enough
+            return new int[] {
+                pos + 1,
+                pos + name.length() + 1
+            };
+        }
         return null;
     }
     

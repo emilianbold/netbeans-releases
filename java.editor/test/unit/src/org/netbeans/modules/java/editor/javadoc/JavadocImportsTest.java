@@ -99,9 +99,9 @@ public class JavadocImportsTest extends JavadocTestSupport {
         prepareTest(code);
 
         List<String> exp = Arrays.asList("MethodUnresolved", "SeeUnresolved",
-                "ThrowsUnresolved", "FieldUnresolved", "my.pkg.InnerInterfaceUnresolved",
+                "ThrowsUnresolved", "FieldUnresolved", "my",
                 "InnerAnnotationTypeUnresolved", "EnumReferenceUnresolved",
-                "ConstantReferenceUnresolved", "java."
+                "ConstantReferenceUnresolved"
                 );
         Collections.sort(exp);
         
@@ -116,16 +116,17 @@ public class JavadocImportsTest extends JavadocTestSupport {
     public void testComputeReferencedElements() throws Exception {
         String code = 
                 "package p;\n" +
+                "import java.io.IOException;\n" +
                 "import java.util.Collections;\n" +
                 "import java.util.List;\n" +
                 "class C {\n" +
                 "   /**\n" +
                 "    * link1 {@link Runnable}\n" +
-                "    * link3 {@linkplain Collections#binarySearch(java.util.List, java.lang.Object) search}\n" +
+                "    * link3 {@linkplain Collections#binarySearch(java.util.List, Object) search}\n" +
                 "    * {@link java. uncomplete reference}" +
                 "    * unclosed link {@value Math#PI\n" +
                 "    * @see List\n" +
-                "    * @throws java.io.IOException\n" +
+                "    * @throws IOException\n" +
                 "    */\n" +
                 "   void m() throws java.io.IOException {\n" +
                 "   }\n" +
@@ -133,14 +134,14 @@ public class JavadocImportsTest extends JavadocTestSupport {
                 "    * {@link Collections}\n" +
                 "    */\n" +
                 "   int field;\n" +
-                "   /** {@link java.io.IOException */\n" +
+                "   /** {@link IOException */\n" +
                 "   interface InnerInterface {}\n" +
                 "   /** {@link Collections} */\n" +
                 "   @interface InnerAnnotationType {}\n" +
                 "}\n" +
                 "/** {@link Collections} */\n" +
                 "enum TopLevelEnum {\n" +
-                "   /** {@link java.util.Collections} */" +
+                "   /** {@link Collections} */" +
                 "   E1\n" +
                 "}\n";
         prepareTest(code);
@@ -277,6 +278,14 @@ public class JavadocImportsTest extends JavadocTestSupport {
         jdts.move(code.indexOf("Collections", code.indexOf("* @see")));
         assertTrue(jdts.moveNext());
         exp.add(jdts.token());
+        System.err.println("exp:");
+        for (Token e : exp) {
+            System.err.println(e.text());
+        }
+        System.err.println("tokens:");
+        for (Token e : tokens) {
+            System.err.println(e.text());
+        }
         assertEquals(toFind.toString(), exp, tokens);
         
         // toFind Math#PI
