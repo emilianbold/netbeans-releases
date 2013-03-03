@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -634,17 +635,25 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         }
     }
 
-    private String relativizeFile(String filePath) {
-        if (StringUtils.hasText(filePath)) {
-            File file = new File(filePath);
-            String path = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
-            if (path == null) {
-                // sorry, cannot be relativized
-                path = file.getAbsolutePath();
-            }
-            return path;
+    @CheckForNull
+    public File getResolvedWebRootFolder() {
+        File sourceDir = resolveFile(getSrcDir());
+        if (sourceDir == null) {
+            return null;
         }
-        return ""; // NOI18N
+        String wr = getWebRoot();
+        if (StringUtils.hasText(wr)) {
+            return PropertyUtils.resolveFile(sourceDir, wr);
+        }
+        return sourceDir;
+    }
+
+    @CheckForNull
+    private File resolveFile(String path) {
+        if (path == null || path.isEmpty()) {
+            return null;
+        }
+        return project.getHelper().resolveFile(path);
     }
 
     private String getActiveRunAsType() {

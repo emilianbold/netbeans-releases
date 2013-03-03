@@ -225,6 +225,7 @@ public enum NodeType {
     syncTo_IDENT_RBRACKET_LBRACE,
     
     syncTo_RBRACE,
+    syncTo_SEMI,
     
     synpred2_Css3,
     selectorsGroup,
@@ -379,10 +380,15 @@ public enum NodeType {
     
     less_rule,
     
-    less_mixin_call_args;
+    cp_mixin_call_args,
+    cp_mixin_name,
     
+    scss_selector_interpolation_expression,
+    scss_declaration_interpolation_expression,
     
+    scss_interpolation_expression_var,
     
+    scss_nested_properties;
     
     
 }

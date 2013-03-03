@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.project.CordovaPanel;
+import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
@@ -68,7 +69,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -198,12 +198,16 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                 Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
                 preferences.put("phonegap", "true");
                 if (panel != null) {
-                    EditableProperties props = CordovaPerformer.getBuildProperties(project);
+                    
+                    try {
+                        final SourceConfig config = CordovaPerformer.getConfig(project);
+                        config.setId(panel.getPackageName());
+                        config.save();
 
-                    props.put("android.project.package", panel.getPackageName()); //NOI18N
-                    props.put("android.project.package.folder", panel.getPackageName().replace(".", "/"));//NOI18N
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
 
-                    CordovaPerformer.storeBuildProperties(project, props);
                     Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-android", project);
                     Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-ios", project);
                     panel = null;

@@ -48,8 +48,6 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.phpunit.run.TestCaseImpl;
-import org.netbeans.modules.php.phpunit.run.TestSuiteImpl;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -67,21 +65,21 @@ public final class PhpUnitLogParser extends DefaultHandler {
     private static final String NO_FILE = "NO_FILE"; // NOI18N
 
     private final XMLReader xmlReader;
-    private final TestSessionImpl testSession;
-    private Stack<TestSuiteImpl> testSuites = new Stack<TestSuiteImpl>();
-    private TestCaseImpl testCase;
+    private final TestSessionVo testSession;
+    private Stack<TestSuiteVo> testSuites = new Stack<TestSuiteVo>();
+    private TestCaseVo testCase;
     private String file; // actual file
     private Content content = Content.NONE;
     private StringBuilder buffer = new StringBuilder(200); // for error/failure: buffer for the whole message
 
-    private PhpUnitLogParser(TestSessionImpl testSession) throws SAXException {
+    private PhpUnitLogParser(TestSessionVo testSession) throws SAXException {
         assert testSession != null;
         this.testSession = testSession;
         xmlReader = FileUtils.createXmlReader();
         xmlReader.setContentHandler(this);
     }
 
-    static boolean parse(Reader reader, TestSessionImpl testSession) {
+    static boolean parse(Reader reader, TestSessionVo testSession) {
         try {
             PhpUnitLogParser parser = new PhpUnitLogParser(testSession);
             parser.xmlReader.parse(new InputSource(reader));
@@ -154,7 +152,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
         }
         assert file != null;
 
-        TestSuiteImpl testSuite = new TestSuiteImpl(getName(attributes), file, getTime(attributes));
+        TestSuiteVo testSuite = new TestSuiteVo(getName(attributes), file, getTime(attributes));
         testSuites.push(testSuite);
         if (!file.equals(NO_FILE)) {
             testSession.addTestSuite(testSuite);
@@ -167,7 +165,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
 
     private void processTestCase(Attributes attributes) {
         assert testCase == null;
-        testCase = new TestCaseImpl(
+        testCase = new TestCaseVo(
                 getName(attributes),
                 getFile(attributes),
                 getLine(attributes),

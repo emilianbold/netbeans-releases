@@ -402,6 +402,7 @@ bodyItem
         | fontFace
         | vendorAtRule
         | {isCssPreprocessorSource()}? cp_variable_declaration
+        | {isCssPreprocessorSource()}? cp_mixin_call
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -554,19 +555,30 @@ rule
 declarations
     :
             (
-                (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
+                //the DECLARATION rule needs to be before the RULE rule as the 
+                //syn.predicate for the RULE rule also accepts the declaration,
+                //(is less specific).
+		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
 		|
-		(~(LBRACE|SEMI|RBRACE)+ SEMI)=>declaration SEMI ws?
+		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ LBRACE | scss_declaration_interpolation_expression COLON )=>scss_nested_properties ws?
+		|
+                (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
                 |
                 {isCssPreprocessorSource()}? cp_mixin_call ws?
+//                |
+//                (~(LBRACE|SEMI|RBRACE)+ SEMI)=>syncTo_SEMI ws?
             )*
             (( ~(RBRACE)+ RBRACE)=>declaration)?
     ;
     
 selectorsGroup
-    :	selector (COMMA ws? selector)*
+    :	
+        // looking for #{, lookeahead exited by { (rule beginning)
+        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> scss_selector_interpolation_expression ws? 
+	|
+        selector (COMMA ws? selector)*
     ;
-    
+        
 selector
     : simpleSelectorSequence (combinator simpleSelectorSequence)*
     ;
@@ -687,7 +699,13 @@ pseudo
 declaration
     : 
     //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
-    STAR? property COLON ws? propertyValue (prio ws?)?
+    STAR? 
+    ( 
+        ( ~(HASH_SYMBOL | COLON | SEMI | RBRACE)* HASH_SYMBOL LBRACE )=> scss_declaration_interpolation_expression // looking for #{, lookeahead exit at :, ; and }
+        |
+        property 
+    )
+    COLON ws? propertyValue (prio ws?)?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -733,6 +751,14 @@ syncTo_RBRACE
         syncToRBRACE(1); //initial nest == 1
     }
     	:	
+    	;    	
+
+syncTo_SEMI
+    @init {
+        syncToSet(BitSet.of(SEMI)); 
+    }
+    	:	
+            SEMI
     	;    	
 
 //synct to computed follow set in the rule
@@ -827,7 +853,10 @@ ws
 //Some additional modifications to the standard syntax rules has also been done.
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
-    : cp_variable ws? COLON ws? cp_expression SEMI
+    : 
+        {isLessSource()}? cp_variable ws? COLON ws? cp_expression SEMI    
+        | 
+        {isScssSource()}? cp_variable ws? COLON ws? cp_expression (SASS_DEFAULT ws?)? SEMI    
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
@@ -836,6 +865,7 @@ cp_variable
         {isLessSource()}? ( AT_IDENT | MEDIA_SYM )//TODO add all meaningful at-rules here
         |
         {isScssSource()}? ( SASS_VAR )
+//        SASS_VAR
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR
@@ -899,28 +929,29 @@ cp_term
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_declaration
     :
-    ( 
-        {isLessSource()}? cssClass ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
-        |
-        {isScssSource()}? SASS_MIXIN ws IDENT ws? (LPAREN less_args_list? RPAREN ws?)?
-    )
-
+    {isLessSource()}? DOT cp_mixin_name ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
+    |
+    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN less_args_list? RPAREN ws?)?
     ;
 
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_call
-    :
+    :    
     (
-        {isLessSource()}? cssClass 
+        {isLessSource()}? DOT cp_mixin_name
         |
-        {isScssSource()}? SASS_INCLUDE ws IDENT
+        {isScssSource()}? SASS_INCLUDE ws cp_mixin_name
     )
-
-    (ws? LPAREN less_mixin_call_args? RPAREN)? (ws? SEMI)?
+    (ws? LPAREN cp_mixin_call_args? RPAREN)? ws? SEMI
+    ;
+        
+cp_mixin_name
+    :
+    IDENT
     ;
     
-less_mixin_call_args
+cp_mixin_call_args
     : 
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
@@ -979,6 +1010,86 @@ less_fn_name
 less_condition_operator
     :
     GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
+    ;
+
+//Allowed:
+//#I
+//I#
+//#
+//##
+//#I#
+//
+//Not allowed:
+//II
+
+
+//SCSS interpolation expression, e.g. #{$vert}
+
+//why there're two almost same selector_interpolation_expression-s?
+//the problem is that the one for selector can contain COLON inside the expression
+//whereas the later cann't. 
+scss_selector_interpolation_expression
+    :
+        ( 
+            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            |
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+        )
+        ( 
+            ws?
+            (
+                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                |
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+            )
+        )*
+
+    ;
+    
+scss_declaration_interpolation_expression
+    :
+        ( 
+            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            |
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
+        )
+        ( 
+            ws?
+            (
+                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                |
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
+            )
+        )*
+
+    ;
+    
+scss_interpolation_expression_var
+    :
+        HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
+    ;
+    
+//SASS nested properties:
+//.funky {
+//  font: 2px/3px {
+//    family: fantasy;
+//    size: 30em;
+//    weight: bold;
+//  }
+//}
+//
+//or just:
+//
+//.funky {
+//  font: {
+//    family: fantasy;
+//    size: 30em;
+//    weight: bold;
+//  }
+//}
+scss_nested_properties
+    :
+    property COLON ws? propertyValue? LBRACE ws? syncToFollow declarations RBRACE
     ;
 
 //*** END OF LESS SYNTAX ***
@@ -1380,6 +1491,8 @@ SASS_MIXIN          : '@MIXIN';
 SASS_INCLUDE        : '@INCLUDE';
 AT_IDENT	    : '@' NMCHAR+;	
 SASS_VAR            : '$' NMCHAR+;
+SASS_DEFAULT        : '!DEFAULT';
+
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units
 //          as well as '%' it is a precentage. Whitespace cannot be between
@@ -1505,24 +1618,29 @@ MOZ_REGEXP
 //              that process the whitespace within the parser, ANTLR does not
 //              need to deal with the whitespace directly in the parser.
 //
-WS      : (' '|'\t')+;
+WS      
+    : 
+    (' '|'\t')+
+    ;
 
-NL      : ('\r' '\n'? | '\n')   { 
-	//$channel = HIDDEN;    
-}   ;
+NL      
+    : 
+    ('\r' '\n'? | '\n')    
+    ;
 
-// ------------- 
 // Comments.    Comments may not be nested, may be multilined and are delimited
 //              like C comments: /* ..... */
-//              COMMENTS are hidden from the parser which simplifies the parser 
-//              grammar a lot.
-//
-COMMENT         : '/*' ( options { greedy=false; } : .*) '*/'
-    
-                    {
-//                        $channel = 2;   // Comments on channel 2 in case we want to find them
-                    }
-                ;
+COMMENT         
+    : 
+    '/*' ( options { greedy=false; } : .*) '*/'
+    ;
+
+LINE_COMMENT
+    :
+    '//'( options { greedy=false; } : .*) NL {
+	$channel = HIDDEN;    
+    }   
+    ;
 
 // -------------
 //  Illegal.    Any other character shoudl not be allowed.

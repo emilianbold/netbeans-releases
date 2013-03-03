@@ -109,7 +109,12 @@ public class CommitAction extends ContextAction {
 
     public static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
     private static final String PANEL_PREFIX = "commit"; //NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/commit.png"; //NOI18N
 
+    public CommitAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Commit";    // NOI18N
@@ -141,7 +146,7 @@ public class CommitAction extends ContextAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/subversion/resources/icons/commit.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     /**

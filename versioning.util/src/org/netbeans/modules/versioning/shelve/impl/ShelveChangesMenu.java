@@ -38,7 +38,7 @@
 package org.netbeans.modules.versioning.shelve.impl;
 
 import java.awt.event.ActionEvent;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -55,56 +55,50 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
-import org.openide.awt.DynamicMenuContent;
-import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.versioning.shelve.impl.ShelveChangesMenu", category = "Versioning")
+@ActionID(id = "org.netbeans.modules.versioning.shelve.impl.ShelveChangesMenu", category = "Versioning/Additional")
 @ActionRegistration(displayName = "#CTL_Menu_ShelveChanges")
-public class ShelveChangesMenu extends AbstractAction implements DynamicMenuContent {
+@NbBundle.Messages("CTL_Menu_ShelveChanges=&Shelve Changes")
+public class ShelveChangesMenu extends AbstractAction implements Presenter.Menu {
     public static final String PREF_KEY_SHELVED_PATCHES = "shelvedPatches"; //NOI18N
     
     public ShelveChangesMenu () {
         super();
     }
-    
-    @Override
-    public final JComponent[] getMenuPresenters () {
-        return new JComponent[0];
-    }
 
     @Override
-    public final JComponent[] synchMenuPresenters (JComponent[] items) {
-        return getActions();
+    public JMenuItem getMenuPresenter () {
+        JMenu menu = createMenu();
+        return menu;
     }
 
-    private JComponent[] getActions () {
-        List<JComponent> items = new LinkedList<JComponent>();
+    private JMenu createMenu () {
+        JMenu menu = new JMenu(this);
+        org.openide.awt.Mnemonics.setLocalizedText(menu, Bundle.CTL_Menu_ShelveChanges());
+        List<JMenuItem> menuItems = new ArrayList<JMenuItem>();
         // shelve changes
-        items.addAll(getShelveActions());
+        menuItems.addAll(getShelveActions());
         
         // unshelve changes
-        items.addAll(getUnshelveActions());
-        if (!items.isEmpty()) {
-            JMenu menu = new JMenu();
-            Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ShelveChangesMenu.class, "CTL_Menu_ShelveChanges")); //NOI18N
-            for (JComponent item : items) {
-                menu.add(item);
-            }
-            items = Collections.<JComponent>singletonList(menu);
+        menuItems.addAll(getUnshelveActions());
+        for (JMenuItem item : menuItems) {
+            menu.add(item);
         }
-        return items.toArray(new JComponent[items.size()]);
+        enableMenu(menu);
+        return menu;
     }
 
-    private List<JComponent> getShelveActions () {
-        List<JComponent> items = new LinkedList<JComponent>();
+    private List<JMenuItem> getShelveActions () {
+        List<JMenuItem> items = new ArrayList<JMenuItem>();
         VCSContext ctx = VCSContext.forNodes(TopComponent.getRegistry().getActivatedNodes());
         VersioningSystem [] vs = Utils.getOwners(ctx);
 
@@ -127,8 +121,8 @@ public class ShelveChangesMenu extends AbstractAction implements DynamicMenuCont
         return items;
     }
 
-    private List<JComponent> getUnshelveActions () {
-        List<JComponent> items = new LinkedList<JComponent>();
+    private List<JMenuItem> getUnshelveActions () {
+        List<JMenuItem> items = new ArrayList<JMenuItem>();
         List<String> list = Utils.getStringList(NbPreferences.forModule(ShelveChangesMenu.class), PREF_KEY_SHELVED_PATCHES);
         // XXX use Actions.forID
         Action a = Utils.getAcceleratedAction("Actions/Versioning/UnshelveChanges/org-netbeans-modules-versioning-shelve-impl-UnshelveChangesAction.instance");
@@ -153,6 +147,18 @@ public class ShelveChangesMenu extends AbstractAction implements DynamicMenuCont
     @Override
     public void actionPerformed (ActionEvent e) {
         //
+    }
+
+    private void enableMenu (JMenu menu) {
+        boolean enabled = false;
+        for (int i = 0; i < menu.getItemCount(); ++i) {
+            JMenuItem item = menu.getItem(i);
+            if (item != null && item.isEnabled()) {
+                enabled = true;
+                break;
+            }
+        }
+        menu.setEnabled(enabled);
     }
 
 }

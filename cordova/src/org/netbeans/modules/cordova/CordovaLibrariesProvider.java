@@ -73,7 +73,7 @@ public class CordovaLibrariesProvider implements LibraryProvider<LibraryImplemen
     
     @Override
     public LibraryImplementation[] getLibraries() {
-        if (CordovaPlatform.getDefault().getSdkLocation() == null) {
+        if (!CordovaPlatform.getDefault().isReady()) {
             return new LibraryImplementation[0];
         }
         LibraryImplementation3 lib = (LibraryImplementation3) LibrariesSupport.createLibraryImplementation("javascript",new String[]{"regular", "documented", "minified"});

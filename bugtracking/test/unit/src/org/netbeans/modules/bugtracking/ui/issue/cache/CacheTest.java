@@ -422,10 +422,6 @@ public class CacheTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
-        public TestIssue createFor(String id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
     }
 
     private class CTestRepository extends TestRepository {

@@ -127,6 +127,10 @@ public class OptionsDisplayerImpl {
             Exceptions.printStackTrace(ex);
         }
     }
+
+    public void setIsModal(boolean isModal) {
+	this.modal = isModal;
+    }
     
     public boolean isOpen() {
         return dialog != null;

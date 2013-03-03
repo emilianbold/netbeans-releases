@@ -45,11 +45,11 @@ package org.netbeans.modules.bugtracking.bridge.exportdiff;
 import java.awt.BorderLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
@@ -58,16 +58,16 @@ import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class AttachPanel extends javax.swing.JPanel implements ItemListener, PropertyChangeListener {
-    private QuickSearchComboBar qs;
-    private PropertyChangeListener issueListener;
+public class AttachPanel extends javax.swing.JPanel implements ItemListener, ChangeListener {
+    private IssueQuickSearch qs;
+    private ChangeListener issueListener;
     
-    public AttachPanel(PropertyChangeListener issueListener) {
+    public AttachPanel(ChangeListener issueListener) {
         initComponents();
         this.issueListener = issueListener;
-        qs = new QuickSearchComboBar(this);
-        issuePanel.add(qs, BorderLayout.NORTH);
-        issueLabel.setLabelFor(qs.getIssueComponent());
+        qs = new IssueQuickSearch(this);
+        issuePanel.add(qs.getComponent(), BorderLayout.NORTH);
+        issueLabel.setLabelFor(qs.getComponent());
     }
 
     void init(File referenceFile) {
@@ -223,22 +223,21 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
 
     @Override
     public void addNotify() {
-        qs.addPropertyChangeListener(this);
-        qs.addPropertyChangeListener(issueListener);
+        qs.addChangeListener(this);
+        qs.addChangeListener(issueListener);
         super.addNotify();
     }
 
     @Override
     public void removeNotify() {
-        qs.removePropertyChangeListener(this);
-        qs.removePropertyChangeListener(issueListener);
+        qs.removeChangeListener(this);
+        qs.removeChangeListener(issueListener);
         super.removeNotify();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QuickSearchComboBar.EVT_ISSUE_CHANGED)) {
-            enableFields();
-        }
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        enableFields();
     }
 
     @Override
@@ -265,5 +264,6 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         issueLabel.setEnabled(repoSelected && enable);
         qs.enableFields(repoSelected && enable);
     }
+
 
 }

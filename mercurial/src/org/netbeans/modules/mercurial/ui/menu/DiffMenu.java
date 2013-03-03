@@ -47,10 +47,12 @@ package org.netbeans.modules.mercurial.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffToRevisionAction;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
@@ -84,10 +86,15 @@ public final class DiffMenu extends DynamicMenu implements Presenter.Menu {
         if (lkp == null) {
             org.openide.awt.Mnemonics.setLocalizedText(menu, Bundle.CTL_MenuItem_DiffMenu());
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(DiffAction.class), false);
+            Action action = SystemAction.get(DiffAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
             menu.add(item);
+            
             item = new JMenuItem();
-            Actions.connect(item, (Action) SystemAction.get(DiffToRevisionAction.class), false);
+            action = SystemAction.get(DiffToRevisionAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
             menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "CTL_PopupMenuItem_Diff"), lkp)); //NOI18N

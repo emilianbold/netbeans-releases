@@ -56,13 +56,12 @@ public class Css3ParserLessTest extends CssTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        CssParserResult.IN_UNIT_TESTS = true;
-        ExtCss3Parser.isLessSource_unit_tests = true;
+        setLessSource();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        ExtCss3Parser.isLessSource_unit_tests = false;
+        setPlainSource();
     }
     
     public void testAllANTLRRulesHaveNodeTypes() {
@@ -389,7 +388,7 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testMixinCallWithoutParams() {
-        String source = "#shape1{ .Round }";
+        String source = "#shape1{ .Round; }";
 
         CssParserResult result = TestUtil.parse(source);
 
@@ -428,6 +427,44 @@ public class Css3ParserLessTest extends CssTestBase {
         String source = "div {\n"
                 + "border-top: 1px solid @color1 - #222; "
                 + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+    
+     //like normal css import, but the ref. file doesn't need to have an extension,
+    //there are also some rules regarding the naming convention, but these
+    //are covered by semantic analysis, not parsing
+    public void testImport() {
+        String source =
+                "@import \"rounded\";\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+    
+    public void testLineComment() {
+        String source =
+                ".funky {\n"
+                + " //line comment\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+    
+     public void testMixinCallInStylesheet() {
+        String source =
+                ".firefox-message(\".header\");\n";
 
         CssParserResult result = TestUtil.parse(source);
 

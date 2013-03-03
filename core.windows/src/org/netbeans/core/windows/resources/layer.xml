@@ -260,6 +260,27 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+<!--    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="Windows.instance">
+                org.netbeans.core.windows.options.WinSysOptionsPanelController
+                <attr methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory" name="instanceCreate"/>
+                <attr name="controller" newvalue="org.netbeans.core.windows.options.WinSysOptionsPanelController"/>
+                <attr bundlevalue="org.netbeans.core.windows.options.Bundle#AdvancedOption_DisplayName_WinSys" name="displayName"/>
+                <attr bundlevalue="org.netbeans.core.windows.options.Bundle#KW_WindowOptions" name="keywords"/>
+                <attr name="keywordsCategory" stringvalue="Advanced/Windows"/>
+            </file>
+        </folder>
+        <folder name="Keywords">
+            <file name="org.netbeans.core.windows.options.WinSysPanel">
+                org.netbeans.core.windows.options.WinSysPanel
+                <attr name="location" stringvalue="Advanced"/>
+                <attr bundlevalue="org.netbeans.core.windows.options.Bundle#AdvancedOption_DisplayName_WinSys" name="tabTitle"/>
+                <attr bundlevalue="org.netbeans.core.windows.options.Bundle#KW_WindowOptions" name="keywords-1"/>
+            </file>
+        </folder>
+    </folder>
+-->
     <folder name="Toolbars">
         <!-- this attribute is required to correctly instantiate toolbar configuration XML files -->
         <attr name="recognizeXML" boolvalue="true"/>

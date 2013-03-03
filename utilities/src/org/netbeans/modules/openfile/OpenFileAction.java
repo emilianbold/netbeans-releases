@@ -54,6 +54,7 @@ import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -90,6 +91,9 @@ public class OpenFileAction implements ActionListener {
     /** stores the last current directory of the file chooser */
     private static File currentDirectory = null;
 
+    /** stores tha last used file filter */
+    private static String currentFileFilter = null;
+
     public OpenFileAction() {
     }
 
@@ -115,6 +119,14 @@ public class OpenFileAction implements ActionListener {
         chooser.setMultiSelectionEnabled(true);
         chooser.getCurrentDirectory().listFiles(); //preload
         chooser.setCurrentDirectory(getCurrentDirectory());
+        if (currentFileFilter != null) {
+            for (FileFilter ff : chooser.getChoosableFileFilters()) {
+                if (currentFileFilter.equals(ff.getDescription())) {
+                    chooser.setFileFilter(ff);
+                    break;
+                }
+            }
+        }
         HelpCtx.setHelpIDString(chooser, getHelpCtx().getHelpID());
         return chooser;
     }
@@ -182,6 +194,7 @@ public class OpenFileAction implements ActionListener {
                 } else {
                     files = chooseFilesToOpen(chooser);
                     currentDirectory = chooser.getCurrentDirectory();
+                    currentFileFilter = chooser.getFileFilter().getDescription();
                 }
             } catch (UserCancelException ex) {
                 return;

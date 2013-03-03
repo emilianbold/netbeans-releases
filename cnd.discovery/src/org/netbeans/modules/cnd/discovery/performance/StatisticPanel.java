@@ -52,7 +52,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.discovery.performance.AnalyzeStat.AgregatedStat;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
@@ -69,6 +72,9 @@ public class StatisticPanel extends JPanel {
     private final PerformanceIssueDetector activeInstance;
     private final RequestProcessor.Task update;
     private final AtomicBoolean closed = new AtomicBoolean(false);
+    private String lastUnusedFolders;
+    private String lastSlowFolders;
+    private String lastInfiniteParsing;
 
     /**
      * Creates new form StatisticPanel
@@ -77,10 +83,13 @@ public class StatisticPanel extends JPanel {
         initComponents();
         slowFolders.setBackground(getBackground());
         slowFolders.setEditorKit(new HTMLEditorKit());
+        ((DefaultCaret) slowFolders.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         unusedFolders.setBackground(getBackground());
         unusedFolders.setEditorKit(new HTMLEditorKit());
+        ((DefaultCaret) unusedFolders.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         infiniteParsing.setBackground(getBackground());
         infiniteParsing.setEditorKit(new HTMLEditorKit());
+        ((DefaultCaret) infiniteParsing.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         activeInstance = PerformanceIssueDetector.getActiveInstance();
         update = RP.post(new Runnable() {
             @Override
@@ -205,8 +214,9 @@ public class StatisticPanel extends JPanel {
                 if (buf.length()>0) {
                     buf.append("</tbody></table>"); //NOI18N
                 }
-                if (!unusedFolders.getText().equals(buf.toString())) {
-                    unusedFolders.setText(buf.toString());
+                if (lastUnusedFolders == null || !lastUnusedFolders.equals(buf.toString())) {
+                    lastUnusedFolders = buf.toString();
+                    updatePane(lastUnusedFolders, unusedFolders, unusedFoldersScrollPane);
                 }
                 AnalyzeStat.groupByReadingSpeed(statistic);
                 i = 0;
@@ -230,8 +240,9 @@ public class StatisticPanel extends JPanel {
                 if (buf.length()>0) {
                     buf.append("</tbody></table>"); //NOI18N
                 }
-                if (!slowFolders.getText().equals(buf.toString())) {
-                    slowFolders.setText(buf.toString());
+                if (lastSlowFolders == null || !lastSlowFolders.equals(buf.toString())) {
+                    lastSlowFolders = buf.toString();
+                    updatePane(lastSlowFolders, slowFolders, slowFoldersScrollPane);
                 }
                 buf.setLength(0);
                 for(Map.Entry<FileObject, PerformanceLogger.PerformanceEvent> entry : activeInstance.getParseTimeout().entrySet()) {
@@ -247,12 +258,18 @@ public class StatisticPanel extends JPanel {
                 if (buf.length()>0) {
                     buf.append("</tbody></table>"); //NOI18N
                 }
-                if (!infiniteParsing.getText().equals(buf.toString())) {
-                    infiniteParsing.setText(buf.toString());
+                if (lastInfiniteParsing == null || !lastInfiniteParsing.equals(buf.toString())) {
+                    lastInfiniteParsing = buf.toString();
+                    updatePane(lastInfiniteParsing, infiniteParsing, infiniteParsingScrollPane);
                 }
             }
         }
         update.schedule(2000);
+    }
+    
+    private void updatePane(String text, JTextPane pane, JScrollPane scroll) {
+        text = "<head></head><body>"+text+"</body>"; //NOI18N
+        pane.setText(text);
     }
     
     private JPanel getLimit(JPanel parent,int low, int normal, int fact) {
@@ -401,13 +418,13 @@ public class StatisticPanel extends JPanel {
         parsingSpeedPanel = new javax.swing.JPanel();
         parsingRatioPanel = new javax.swing.JPanel();
         itemsSlowPanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        unusedFoldersScrollPane = new javax.swing.JScrollPane();
         unusedFolders = new javax.swing.JTextPane();
         readSlowPanel = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        slowFoldersScrollPane = new javax.swing.JScrollPane();
         slowFolders = new javax.swing.JTextPane();
         parsingPanel = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
+        infiniteParsingScrollPane = new javax.swing.JScrollPane();
         infiniteParsing = new javax.swing.JTextPane();
 
         setMinimumSize(new java.awt.Dimension(500, 350));
@@ -820,9 +837,9 @@ public class StatisticPanel extends JPanel {
         itemsSlowPanel.setLayout(new java.awt.BorderLayout());
 
         unusedFolders.setEditable(false);
-        jScrollPane1.setViewportView(unusedFolders);
+        unusedFoldersScrollPane.setViewportView(unusedFolders);
 
-        itemsSlowPanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        itemsSlowPanel.add(unusedFoldersScrollPane, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -835,9 +852,9 @@ public class StatisticPanel extends JPanel {
         readSlowPanel.setLayout(new java.awt.BorderLayout());
 
         slowFolders.setEditable(false);
-        jScrollPane2.setViewportView(slowFolders);
+        slowFoldersScrollPane.setViewportView(slowFolders);
 
-        readSlowPanel.add(jScrollPane2, java.awt.BorderLayout.CENTER);
+        readSlowPanel.add(slowFoldersScrollPane, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -850,9 +867,9 @@ public class StatisticPanel extends JPanel {
         parsingPanel.setLayout(new java.awt.BorderLayout());
 
         infiniteParsing.setEditable(false);
-        jScrollPane3.setViewportView(infiniteParsing);
+        infiniteParsingScrollPane.setViewportView(infiniteParsing);
 
-        parsingPanel.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+        parsingPanel.add(infiniteParsingScrollPane, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -864,6 +881,7 @@ public class StatisticPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextPane infiniteParsing;
+    private javax.swing.JScrollPane infiniteParsingScrollPane;
     private javax.swing.JTextField itemCpuTime;
     private javax.swing.JLabel itemCpuTimeLabel;
     private javax.swing.JLabel itemLabel;
@@ -878,9 +896,6 @@ public class StatisticPanel extends JPanel {
     private javax.swing.JLabel itemWallTimeLabel;
     private javax.swing.JPanel itemsSlowPanel;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
@@ -914,7 +929,9 @@ public class StatisticPanel extends JPanel {
     private javax.swing.JTextField readWallTime;
     private javax.swing.JLabel readWallTimeLabel;
     private javax.swing.JTextPane slowFolders;
+    private javax.swing.JScrollPane slowFoldersScrollPane;
     private javax.swing.JTextPane unusedFolders;
+    private javax.swing.JScrollPane unusedFoldersScrollPane;
     // End of variables declaration//GEN-END:variables
 
 }

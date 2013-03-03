@@ -58,34 +58,38 @@ import org.openide.util.NbBundle.Messages;
  * @author Alexander Simon
  */
 @Messages({
-    "NotifyProjectProblem.title.text=Detected Project Performance Issues"
-    ,"NotifyProjectProblem.action.text=details"
-    ,"NotifyProjectProblem.open.message.text=Slow File System"
+    "NotifyProjectProblem.action.text=details"
+    ,"NotifyProjectProblem.open.message.text=Slow File System Detected"
     ,"# {0} - details"
     ,"NotifyProjectProblem.open.explanation.text=The IDE has detected slowness while opening/creating the project.<br>\n"
-                                               +"Details:<br>\n"
+                                               +"Most probably this is caused by poor overall file system performance.<br>\n"
                                                +"{0}"
-    ,"NotifyProjectProblem.read.message.text=Slow File System"
+    ,"NotifyProjectProblem.infinite.create.message.text=Too Long File Access Detected"
+    ,"# {0} - details"
+    ,"NotifyProjectProblem.infinite.create.explanation.text=The IDE has detected too long file access.<br>\n"
+                                                           +"{0}"
+    ,"NotifyProjectProblem.read.message.text=Slow File System Detected"
     ,"# {0} - details"
     ,"NotifyProjectProblem.read.explanation.text=The IDE has detected slowness while reading project files.<br>\n"
-                                               +"Details:<br>\n"
+                                               +"Most probably this is caused by poor overall file system performance.<br>\n"
                                                +"{0}"
-    ,"NotifyProjectProblem.parse.message.text=Slow File System"
+    ,"NotifyProjectProblem.parse.message.text=Slow File System Detected"
     ,"# {0} - details"
     ,"NotifyProjectProblem.parse.explanation.text=The IDE has detected slowness while parsing project files.<br>\n"
-                                                +"Details:<br>\n"
+                                                +"Most probably this is caused by poor overall file system performance.<br>\n"
                                                 +"{0}"
-    ,"NotifyProjectProblem.infinite.parse.message.text=Infinite File Parsing"
+    ,"NotifyProjectProblem.infinite.parse.message.text=Too Long File Parsing Detected"
     ,"# {0} - details"
-    ,"NotifyProjectProblem.infinite.parse.explanation.text=The IDE has detected infinite files parsing.<br>\n"
-                                                         +"Details:<br>\n"
+    ,"NotifyProjectProblem.infinite.parse.explanation.text=The IDE has detected too long file parsing.<br>\n"
+                                                         +"Most probably this is caused by a bug in the IDE or too big file.<br>\n"
                                                          +"{0}"
 })
 public class NotifyProjectProblem extends javax.swing.JPanel {
     public static final int CREATE_PROBLEM = 1;
-    public static final int READ_PROBLEM = 2;
-    public static final int PARSE_PROBLEM = 3;
-    public static final int INFINITE_PARSE_PROBLEM = 4;
+    public static final int INFINITE_CREATE_PROBLEM = 2;
+    public static final int READ_PROBLEM = 3;
+    public static final int PARSE_PROBLEM = 4;
+    public static final int INFINITE_PARSE_PROBLEM = 5;
 
     /**
      * Creates new form NotifyProjectProblem
@@ -99,27 +103,41 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
 
     public static void showNotification(final PerformanceIssueDetector detector, int problem, final String details) {
         
+        final String title;
         final String explanation;
         final String shortDescription;
         switch (problem) {
             case CREATE_PROBLEM: {
-                explanation = Bundle.NotifyProjectProblem_open_explanation_text(details);
+                // ignore details
+                explanation = Bundle.NotifyProjectProblem_open_explanation_text(""); // NOI18N
                 shortDescription = Bundle.NotifyProjectProblem_open_message_text();
+                title = shortDescription;
+                break;
+            }
+            case INFINITE_CREATE_PROBLEM: {
+                explanation = Bundle.NotifyProjectProblem_infinite_create_explanation_text(details);
+                shortDescription = Bundle.NotifyProjectProblem_infinite_create_message_text();
+                title = shortDescription;
                 break;
             }
             case READ_PROBLEM: {
-                explanation = Bundle.NotifyProjectProblem_read_explanation_text(details);
+                // ignore details
+                explanation = Bundle.NotifyProjectProblem_read_explanation_text(""); // NOI18N
                 shortDescription = Bundle.NotifyProjectProblem_read_message_text();
+                title = shortDescription;
                 break;
             }
             case PARSE_PROBLEM: {
-                explanation = Bundle.NotifyProjectProblem_parse_explanation_text(details);
+                // ignore details
+                explanation = Bundle.NotifyProjectProblem_parse_explanation_text(""); // NOI18N
                 shortDescription = Bundle.NotifyProjectProblem_parse_message_text();
+                title = shortDescription;
                 break;
             }
             case INFINITE_PARSE_PROBLEM: {
                 explanation = Bundle.NotifyProjectProblem_infinite_parse_explanation_text(details);
                 shortDescription = Bundle.NotifyProjectProblem_infinite_parse_message_text();
+                title = shortDescription;
                 break;
             }
             default:
@@ -131,9 +149,8 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 NotifyProjectProblem panel = new NotifyProjectProblem(detector, explanation);
-                DialogDescriptor descriptor = new DialogDescriptor(panel,
-                        Bundle.NotifyProjectProblem_title_text(),
-                        true, new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
+                DialogDescriptor descriptor = new DialogDescriptor(panel, title, true,
+                        new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
                         DialogDescriptor.DEFAULT_ALIGN, null, null);
                 Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
                 try {
@@ -171,7 +188,7 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
         scrollPane = new javax.swing.JScrollPane();
         explanation = new javax.swing.JTextPane();
 
-        setPreferredSize(new java.awt.Dimension(450, 350));
+        setPreferredSize(new java.awt.Dimension(350, 250));
         setLayout(new java.awt.BorderLayout());
 
         scrollPane.setViewportView(explanation);

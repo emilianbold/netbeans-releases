@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
@@ -78,6 +79,16 @@ final class AccessorImpl extends CsmCorePackageAccessor {
     }
 
     @Override
+    public PreprocessorStatePair getCachedVisitedState(FileImpl csmFile, APTPreprocHandler.State newState) {
+        return csmFile.getCachedVisitedState(newState);
+    }
+
+    @Override
+    public void cacheVisitedState(FileImpl csmFile, APTPreprocHandler.State newState, APTPreprocHandler preprocHandler, FilePreprocessorConditionState pcState) {
+        csmFile.cacheVisitedState(newState, preprocHandler, pcState);
+    }
+        
+    @Override
     public void setFileImplTestHook(TraceModel.TestHook hook) {
         FileImpl.setTestHook(hook);
     }
@@ -98,13 +109,35 @@ final class AccessorImpl extends CsmCorePackageAccessor {
     //  end of access to FileImpl methods
     ////////////////////////////////////////////////////////////////////////////
 
+    ////////////////////////////////////////////////////////////////////////////
+    //  access to ProjectBase methods
+    ////////////////////////////////////////////////////////////////////////////
+
     @Override
     public GraphContainer getGraph(ProjectBase project) {
         return project.getGraph();
     }
     
     ////////////////////////////////////////////////////////////////////////////
-    //  access to ProjectBase methods
+    //  end of access to ProjectBase methods
     ////////////////////////////////////////////////////////////////////////////
     
+    ////////////////////////////////////////////////////////////////////////////
+    //  access to FilePreprocessorConditionState methods
+    ////////////////////////////////////////////////////////////////////////////
+    
+    @Override
+    public FilePreprocessorConditionState createPCState(CharSequence file, int[] deadBlocks) {
+        return FilePreprocessorConditionState.Builder.build(file, deadBlocks);
+    }
+        
+    @Override
+    public int[] getPCStateDeadBlocks(FilePreprocessorConditionState pcState) {
+        return FilePreprocessorConditionState.Builder.getDeadBlocks(pcState);
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    //  end of access to FilePreprocessorConditionState methods
+    ////////////////////////////////////////////////////////////////////////////    
+
 }

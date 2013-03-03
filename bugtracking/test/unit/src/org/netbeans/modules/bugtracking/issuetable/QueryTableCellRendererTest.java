@@ -454,11 +454,6 @@ public class QueryTableCellRendererTest {
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             
         }
-
-        @Override
-        public TestIssue createFor(String id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
         
         @Override
         public String[] getSubtasks() {

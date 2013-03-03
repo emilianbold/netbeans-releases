@@ -136,6 +136,10 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     private void destroy () {
         debugger.removePropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
         EditorContextBridge.getContext().removePropertyChangeListener (this);
+        if (lastActionsManager != null) {
+            lastActionsManager.removeActionsManagerListener(ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
+            lastActionsManager = null;
+        }
     }
     
     static ActionsManager getCurrentActionsManager () {

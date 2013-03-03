@@ -56,35 +56,80 @@ import org.netbeans.modules.mercurial.ui.rollback.StripAction;
 import org.netbeans.modules.mercurial.ui.rollback.VerifyAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.awt.Actions;
+import org.openide.util.Lookup;
+import org.openide.util.actions.Presenter;
 
 /**
- * Container menu for branch actions.
+ * Container menu for repository maintenance actions.
  *
- * @author Maros Sandor
+ * @author Ondra Vrabec
  */
-public class RecoverMenu extends DynamicMenu {
+@NbBundle.Messages({
+    "CTL_MenuItem_RecoverMenu=Reco&ver",
+    "CTL_MenuItem_RecoverMenu.popupName=Recover"
+})
+public class RecoverMenu extends DynamicMenu implements Presenter.Popup {
 
-    public RecoverMenu() {
-        super(NbBundle.getMessage(RecoverMenu.class, "CTL_MenuItem_RecoverMenu"));
+    private final Lookup lkp;
+    
+    public RecoverMenu (Lookup lkp) {
+        super(Bundle.CTL_MenuItem_RecoverMenu());
+        this.lkp = lkp;
     }
 
     @Override
+    @NbBundle.Messages({
+        "CTL_PopupMenuItem_Strip=Strip...",
+        "CTL_PopupMenuItem_Backout=Backout...",
+        "CTL_PopupMenuItem_Rollback=Rollback...",
+        "CTL_PopupMenuItem_Verify=Verify..."
+    })
     protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
-        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(RecoverMenu.class, "CTL_MenuItem_RecoverMenu"));
-        
-        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(StripAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Strip"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        
-        item = menu.add(new SystemActionBridge(SystemAction.get(BackoutAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Backout"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        
-        item = menu.add(new SystemActionBridge(SystemAction.get(RollbackAction.class), SystemAction.get(RollbackAction.class).getName(), MercurialAnnotator.ACTIONS_PATH_PREFIX));
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        
-        item = menu.add(new SystemActionBridge(SystemAction.get(VerifyAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Verify"), MercurialAnnotator.ACTIONS_PATH_PREFIX)); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        JMenuItem item;
+        if (lkp == null) {
+            org.openide.awt.Mnemonics.setLocalizedText(menu, Bundle.CTL_MenuItem_RecoverMenu());
 
+            item = new JMenuItem();
+            Action action = (Action) SystemAction.get(StripAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(BackoutAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(RollbackAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(VerifyAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+        } else {
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(StripAction.class), Bundle.CTL_PopupMenuItem_Strip(), lkp));
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(BackoutAction.class), Bundle.CTL_PopupMenuItem_Backout(), lkp));
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RollbackAction.class), Bundle.CTL_PopupMenuItem_Rollback(), lkp));
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(VerifyAction.class), Bundle.CTL_PopupMenuItem_Verify(), lkp));
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        }
+
+        return menu;
+    }
+
+    @Override
+    public JMenuItem getPopupPresenter() {
+        JMenu menu = createMenu();
+        menu.setText(Bundle.CTL_MenuItem_RecoverMenu_popupName());
+        enableMenu(menu);
         return menu;
     }
 }

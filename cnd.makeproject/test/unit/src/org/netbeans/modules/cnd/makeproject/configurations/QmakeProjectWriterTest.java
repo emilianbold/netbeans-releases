@@ -106,7 +106,7 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
 
         FileObject projectDirFO = CndFileUtils.toFileObject(projectDir);
         ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
-        MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
+        MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor();
         descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
 
         File qtDebug = new File(projectDir, "nbproject/qt-Debug.pro");

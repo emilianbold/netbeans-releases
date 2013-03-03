@@ -137,7 +137,22 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         int diff = ts.move(astCaretOffset);
-        boolean tokenFound = diff == 0 ? ts.movePrevious() : ts.moveNext();
+        boolean tokenFound;
+        if(diff == 0) {
+            if(ts.movePrevious()) {
+                tokenFound = true;
+            } else {
+                //no token, try next
+                tokenFound = ts.moveNext();
+            }
+        } else {
+            if(ts.moveNext()) {
+               tokenFound = true; 
+            } else {
+                //no token, try next
+                tokenFound = ts.movePrevious();
+            }
+        }
 
         Node root = info.getParseTree();
         if (root == null) {
@@ -448,7 +463,10 @@ public class CssCompletion implements CodeCompletionHandler {
         Snapshot snapshot = info.getSnapshot();
         TokenHierarchy hi = snapshot.getTokenHierarchy();
         String prefix = getPrefix(hi.tokenSequence(), snapshot.getEmbeddedOffset(caretOffset));
-
+        if(prefix == null) {
+            return null;
+        }
+        
         //really ugly handling of class or id selector prefix:
         //Since the getPrefix() method is parser result based it is supposed
         //to work on top of the snapshot, while GsfCompletionProvider$Task.canFilter()
@@ -901,7 +919,10 @@ public class CssCompletion implements CodeCompletionHandler {
         //2. in a garbage (may be for example a dash prefix in a ruleset
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
-            if (parent != null && (parent.type() == NodeType.rule || parent.type() == NodeType.declarations || parent.type() == NodeType.moz_document)) {
+            if (parent != null && (parent.type() == NodeType.rule 
+                    || parent.type() == NodeType.declarations 
+                    || parent.type() == NodeType.declaration //related to the declarations rule error recovery issue
+                    || parent.type() == NodeType.moz_document)) {
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
                 boolean bug204821 = false;
@@ -1118,6 +1139,10 @@ public class CssCompletion implements CodeCompletionHandler {
                 propertySearch.visitChildren(declaratioNode);
 
                 Node property = result[0];
+                if(property == null) {
+                    //the property part may be replaced by the scss interpolation expression
+                    return ;
+                }
 
                 String propertyName = property.image().toString();
                 PropertyDefinition propertyDefinition = Properties.getPropertyDefinition(propertyName);

@@ -356,6 +356,32 @@ public class HgUtils {
         }
         return false;
     }
+
+    public static boolean onlyProjects (Node[] nodes) {
+        if (nodes == null) {
+            return false;
+        }
+        for (Node node : nodes) {
+            if (node.getLookup().lookup(Project.class) == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean onlyFolders (Set<File> files) {
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+        for (File file : files) {
+            if (file.isFile()) {
+                return false;
+            }
+            FileInformation status = cache.getCachedStatus(file);
+            if (status == null || (!file.exists() && !status.isDirectory())) {
+                return false;
+            }
+        }
+        return true;
+    }
     
     private static void resetIgnorePatterns(File file) {
         if (ignorePatterns == null) {

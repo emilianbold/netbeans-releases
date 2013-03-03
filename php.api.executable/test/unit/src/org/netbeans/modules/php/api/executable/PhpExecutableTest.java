@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.api.executable;
 
+import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
@@ -105,6 +106,16 @@ public class PhpExecutableTest extends NbTestCase {
         assertEquals(2, command.second.size());
         assertEquals("/verbose", command.second.get(0));
         assertEquals("/version", command.second.get(1));
+    }
+
+    public void testInfoCommand() {
+        List<String> fullCommand = Arrays.asList(
+                "/usr/bin/php",
+                "/usr/bin/phpunit",
+                "--colors",
+                "a=b",
+                "a=\"b\"");
+        assertEquals("\"/usr/bin/php\" \"/usr/bin/phpunit\" \"--colors\" \"a=b\" \"a=\\\"b\\\"\"", PhpExecutable.InfoInputProcessor.getInfoCommand(fullCommand));
     }
 
 }

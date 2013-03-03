@@ -44,9 +44,12 @@ package org.netbeans.modules.css.lib;
 import java.io.PrintWriter;
 import java.util.*;
 import junit.framework.AssertionFailedError;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
@@ -70,6 +73,24 @@ public class CssTestBase extends CslTestBase {
 
     public CssTestBase(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(); 
+        CssParserResult.IN_UNIT_TESTS = true;
+    }
+    
+    protected void setPlainSource() {
+        TestUtil.setPlainSource();
+    }
+    
+    protected void setScssSource() {
+        TestUtil.setScssSource();
+    }
+    
+    protected void setLessSource() {
+        TestUtil.setLessSource();
     }
     
     protected Collection<GrammarResolver.Feature> getEnabledGrammarResolverFeatures() {
@@ -114,9 +135,25 @@ public class CssTestBase extends CslTestBase {
      * Checks whether the parser result covers every character in the source
      * code. In another words ensure there are no lexer tokens which doesn't
      * have a corresponding parse tree token node.
+     * 
+     * Now as we have css preprocessors and line comments it is bit more complicated.
+     * The line comment tokens are ignored by the css parser and hence the parse tree
+     * contains "holes". But this is legal now but *just for the line comment tokens!*
      */
     protected void assertNoTokenNodeLost(CssParserResult result) {
         final StringBuilder sourceCopy = new StringBuilder(result.getSnapshot().getText());
+        
+        //mark the code parts covered by the line comments as "seen"
+        TokenHierarchy<?> tokenHierarchy = result.getSnapshot().getTokenHierarchy();
+        TokenSequence<CssTokenId> ts = tokenHierarchy.tokenSequence(CssTokenId.language());
+        ts.moveStart();
+        while(ts.moveNext()) {
+            if(ts.token().id() == CssTokenId.LINE_COMMENT) {
+                for(int i = ts.offset(); i < ts.offset() + ts.token().length(); i++) {
+                    sourceCopy.setCharAt(i, Character.MAX_VALUE);
+                }
+            }
+        }
 
         NodeVisitor.visitChildren(result.getParseTree(), Collections.<NodeVisitor<Node>>singleton(new NodeVisitor<Node>() {
 

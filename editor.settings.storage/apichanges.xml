@@ -108,6 +108,27 @@ is the proper place.
 
     <changes>
         <change>
+            <summary>Detect preferences override and support inheritance</summary>
+            <version major="1" minor="38"/>
+            <date day="21" month="2" year="2013"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"  deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                    <code>OverridePreferences</code> can be used to detect whether the setting is defined for
+                    the specific MIME type, or inherited from default ('all languages') settings.
+                </p>
+                <p>
+                    During options editing, <code>MemoryPreferences</code> can be used to create Preferences 
+                    object, that propagates changes to its (persistent) delegate upon flush(). 
+                </p>
+            </description>
+            <class package="org.netbeans.modules.editor.settings.storage.api" name="OverridePreferences"/>
+            <class package="org.netbeans.modules.editor.settings.storage.api" name="MemoryPreferences"/>
+            <issue number="226111"/>
+        </change>
+        
+        <change>
             <summary>EditorSettings.PROP_MIME_TYPES</summary>
             <version major="1" minor="21"/>
             <date day="16" month="7" year="2009"/>

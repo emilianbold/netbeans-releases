@@ -82,7 +82,7 @@ import org.openide.util.TaskListener;
  * @author Jan Becicka
  * @author Tomas Stupka
  */
-public class QuickSearchPopup extends javax.swing.JPanel 
+class QuickSearchPopup extends javax.swing.JPanel 
         implements ListDataListener, ActionListener, TaskListener, Runnable {
 
     private QuickSearchComboBar comboBar;
