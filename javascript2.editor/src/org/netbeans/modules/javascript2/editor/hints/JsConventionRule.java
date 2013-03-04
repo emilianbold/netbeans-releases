@@ -201,6 +201,16 @@ public class JsConventionRule extends JsAstRule {
                 if (id == JsTokenId.STRING_END && ts.moveNext()) {
                     id = ts.token().id();
                 }
+                if (id == JsTokenId.EOL) {
+                    int position = ts.offset();
+                    Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                    id = next.id();
+                    if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA && ts.movePrevious()) {
+                        ts.move(position);
+                        ts.moveNext();
+                        id = ts.token().id();
+                    }
+                }
                 if ((id == JsTokenId.EOL || id == JsTokenId.BRACKET_RIGHT_CURLY) && ts.movePrevious()) {
                     id = ts.token().id();
                 }
