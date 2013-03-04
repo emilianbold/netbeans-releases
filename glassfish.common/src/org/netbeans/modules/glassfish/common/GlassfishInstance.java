@@ -73,6 +73,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -742,7 +743,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      */
     @Override
     public GlassFishAdminInterface getAdminInterface() {
-        return GlassFishAdminInterface.HTTP;
+//        if (version.ordinal() < GlassFishVersion.GF_4.ordinal())
+            return GlassFishAdminInterface.HTTP;
+//        else
+//            return GlassFishAdminInterface.REST;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1182,7 +1186,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     // TODO -- this should be done differently
     @Override
     public String getServerDisplayName() {
-        return instanceProvider.getDisplayName(getDeployerUri());
+        return NbBundle.getMessage(GlassfishInstanceProvider.class,
+                "STR_SERVER_NAME", new Object[] {version.toString()});
     }
 
     @Override
@@ -1223,7 +1228,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             tabbedPane.add(page);
         }
         
-        return tabbedPane != null ? tabbedPane : commonCustomizer;
+        return tabbedPane;
     }
 
     @Override

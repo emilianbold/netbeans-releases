@@ -41,9 +41,9 @@
  */
 
 @Schema2Beans(
-    schema="../../resources/orm_2_0.xsd",
+    schema="../../resources/orm_2_1.xsd",
     docRoot="entity-mappings",
-    mddFile="../../resources/orm_2_0.mdd",
+    mddFile="../../resources/orm_2_1.mdd",
     schemaType=SchemaType.XML_SCHEMA,
     outputType=OutputType.TRADITIONAL_BASEBEAN,
     useInterfaces=true,
