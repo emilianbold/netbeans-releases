@@ -280,7 +280,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         final ScopeImpl currentScope = modelBuilder.getCurrentScope();
         markerBuilder.prepare(node, currentScope);
         String typeName = null;
-
         if (currentScope instanceof FunctionScope) {
             FunctionScopeImpl functionScope = (FunctionScopeImpl) currentScope;
             Expression expression = node.getExpression();
@@ -487,7 +486,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
             }
         }
-
         super.visit(node);
     }
 
@@ -593,7 +591,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(SingleFieldDeclaration node) {
-        //super.visit(node);
         scan(node.getValue());
     }
 
@@ -609,7 +606,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         } else {
             occurencesBuilder.prepare(node, scope);
         }
-
         if (scope instanceof VariableNameFactory) {
             ASTNodeInfo<Variable> varInfo = ASTNodeInfo.create(node);
             if (scope instanceof MethodScope && "$this".equals(varInfo.getName())) { //NOI18N
@@ -664,7 +660,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         } else {
             occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
         }
-        //super.visit(node);
         if (field instanceof ArrayAccess) {
             ArrayAccess access = (ArrayAccess) field;
             scan(access.getDimension());
@@ -703,7 +698,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void visit(Assignment node) {
-        //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
         final VariableBase leftHandSide = node.getLeftHandSide();
         Expression rightHandSide = node.getRightHandSide();
@@ -842,7 +836,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     }
                 }
             }
-
             if (parameterName instanceof Variable) {
                 if (parameterType instanceof NamespaceName) {
                     Kind[] kinds = {Kind.CLASS, Kind.IFACE};
@@ -877,8 +870,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             occurencesBuilder.prepare(Kind.CLASS, className, scope);
         }
         occurencesBuilder.prepare(variable, scope);
-
-
         scan(node.getBody());
     }
 
@@ -924,7 +915,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(FunctionInvocation node) {
-        //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
         Expression functionName = node.getFunctionName().getName();
         if (functionName instanceof Variable) {
@@ -950,7 +940,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     occurencesBuilder.prepare(scalarInfo, constantImpl);
                 }
             }
-        } else if ("constant".equals(name) && node.getParameters().size() == 1) {
+        } else if ("constant".equals(name) && node.getParameters().size() == 1) { //NOI18N
             Expression d = node.getParameters().get(0);
             if (d instanceof Scalar) {
                 Scalar scalar = (Scalar) d;
@@ -967,7 +957,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(StaticFieldAccess node) {
-        //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
         Expression className = node.getClassName();
@@ -987,8 +976,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 name = access1.getName();
             }
         }
-
-        //super.visit(node);
     }
 
     @Override
@@ -1324,22 +1311,18 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     private void handleVarAssignment(final String name, final VariableScope varScope, final PhpDocTypeTagInfo phpDocTypeTagInfo) {
-        VariableNameImpl varInstance;
-        varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
+        VariableNameImpl varInstance = (VariableNameImpl) ModelUtils.getFirst(ModelUtils.filter(varScope.getDeclaredVariables(), name));
         if (varInstance == null) {
             varInstance = new VariableNameImpl(varScope, name, varScope.getFile(), phpDocTypeTagInfo.getRange(), varScope instanceof NamespaceScopeImpl);
         }
-        if (varInstance != null) {
-            ASTNode conditionalNode = findConditionalStatement(getPath());
-            VarAssignmentImpl varAssignment = varInstance.createAssignment(
-                    (Scope) varScope,
-                    conditionalNode != null,
-                    getBlockRange(varScope),
-                    phpDocTypeTagInfo.getRange(),
-                    phpDocTypeTagInfo.getTypeName());
-            varInstance.addElement(varAssignment);
-        }
-        //scan(phpDocTypeTagInfo.getTypeTag());
+        ASTNode conditionalNode = findConditionalStatement(getPath());
+        VarAssignmentImpl varAssignment = varInstance.createAssignment(
+                (Scope) varScope,
+                conditionalNode != null,
+                getBlockRange(varScope),
+                phpDocTypeTagInfo.getRange(),
+                phpDocTypeTagInfo.getTypeName());
+        varInstance.addElement(varAssignment);
         occurencesBuilder.prepare(phpDocTypeTagInfo.getTypeTag(), varScope);
     }
 
