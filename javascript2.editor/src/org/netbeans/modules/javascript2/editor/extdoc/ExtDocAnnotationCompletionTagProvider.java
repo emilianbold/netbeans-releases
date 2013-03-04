@@ -45,12 +45,12 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.extdoc.completeion.DescriptionTag;
-import org.netbeans.modules.javascript2.editor.extdoc.completeion.IdentDescribedTag;
-import org.netbeans.modules.javascript2.editor.extdoc.completeion.IdentSimpleTag;
-import org.netbeans.modules.javascript2.editor.extdoc.completeion.TypeDescribedTag;
-import org.netbeans.modules.javascript2.editor.extdoc.completeion.TypeNamedTag;
-import org.netbeans.modules.javascript2.editor.extdoc.completeion.TypeSimpleTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completion.DescriptionTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completion.IdentDescribedTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completion.IdentSimpleTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completion.TypeDescribedTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completion.TypeNamedTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completion.TypeSimpleTag;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
 
 /**
