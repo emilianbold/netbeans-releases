@@ -154,6 +154,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             addGroup(SourceCategory.GRAILSAPP_I18N, "LBL_grails-app_i18n", result);
             addGroup(SourceCategory.WEBAPP, "LBL_web-app", result);
             addGroup(SourceCategory.GRAILSAPP_VIEWS, "LBL_grails-app_views", result);
+            addGroup(SourceCategory.TEMPLATES, "LBL_grails-templates", result);
         } else if (GroovySources.SOURCES_TYPE_GRAILS_UNKNOWN.equals(type)) {
             // plugins may reside in project dir
             File pluginsDirFile = project.getBuildConfig().getProjectPluginsDir();

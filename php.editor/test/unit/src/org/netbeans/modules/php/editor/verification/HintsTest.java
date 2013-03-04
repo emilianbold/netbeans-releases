@@ -219,4 +219,16 @@ public class HintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new MethodRedeclarationHintError(), "testIssue226494.php");
     }
 
+    public void testClosingDelimUseCase01() throws Exception {
+        checkHintsInStartEndFile(new UnnecessaryClosingDelimiterHint(), "testClosingDelimUseCase01.php");
+    }
+
+    public void testClosingDelimUseCase02() throws Exception {
+        checkHintsInWholeFile(new UnnecessaryClosingDelimiterHint(), "testClosingDelimUseCase02.php", "/*^*/");
+    }
+
+    public void testClosingDelimUseCase03() throws Exception {
+        checkHintsInWholeFile(new UnnecessaryClosingDelimiterHint(), "testClosingDelimUseCase03.php", "/*^*/");
+    }
+
 }

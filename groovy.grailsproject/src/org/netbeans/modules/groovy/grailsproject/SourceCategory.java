@@ -52,6 +52,7 @@ public enum SourceCategory {
     SRC_JAVA("src/java", null, null),
     SRC_GWT("src/gwt", null, null),
     SRC_GROOVY("src/groovy", null, null),
+    TEMPLATES("src/templates", "install-templates", null),
     WEBAPP("web-app", null, null),
     LIB("lib", null, null);
 
