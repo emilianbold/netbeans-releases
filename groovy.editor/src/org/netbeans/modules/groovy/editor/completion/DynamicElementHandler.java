@@ -84,7 +84,7 @@ public final class DynamicElementHandler {
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
     // FIXME SPI to plug here for Grails dynamic methods
-    public Map<MethodSignature, ? extends CompletionItem> getMethods(String sourceClassName,
+    public Map<MethodSignature, CompletionItem> getMethods(String sourceClassName,
             String className, String prefix, int anchor, boolean nameOnly, boolean leaf, FileObject classSource) {
 
         if (info.getSnapshot().getSource().getFileObject() == null) {
@@ -108,7 +108,7 @@ public final class DynamicElementHandler {
         return resultDynamic;
     }
 
-    public Map<FieldSignature, ? extends CompletionItem> getFields(String sourceClassName,
+    public Map<FieldSignature, CompletionItem> getFields(String sourceClassName,
             String className, String prefix, int anchor, boolean leaf, FileObject classSource) {
 
         if (info.getSnapshot().getSource().getFileObject() == null) {
