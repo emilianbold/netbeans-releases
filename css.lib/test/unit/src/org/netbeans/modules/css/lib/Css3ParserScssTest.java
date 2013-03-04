@@ -819,7 +819,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testDebug() {
         String source = "@debug 10em + 12em;\n"
                 + ".class {\n"
@@ -835,7 +835,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-   
+
     public void testWarn() {
         String source = "@warn 10em + 12em;\n"
                 + ".class {\n"
@@ -843,6 +843,60 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "}\n"
                 + "@mixin mymixin {\n"
                 + "@warn 20;"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testIf() {
+        String source = "p {\n"
+                + "  @if 1 + 1 == 2 { border: 1px solid;  }\n"
+                + "  @if 5 < 3      { border: 2px dotted; }\n"
+                + "  @if null       { border: 3px double; }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testFor() {
+        String source = "@for $i from 1 through 3 {\n"
+                + "  .item-#{$i} { width: 2em * $i; }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testEach() {
+        String source = "@each $animal in puma, sea-slug, egret, salamander {\n"
+                + "  .#{$animal}-icon {\n"
+                + "    background-image: url('/images/#{$animal}.png');\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testWhile() {
+        String source = "$i: 6;\n"
+                + "@while $i > 0 {\n"
+                + "  .item-#{$i} { width: 2em * $i; }\n"
+                + "  $i: $i - 2;\n"
                 + "}";
 
         CssParserResult result = TestUtil.parse(source);
