@@ -391,7 +391,8 @@ public enum NodeType {
     
     scss_nested_properties,
     sass_extend,
-    sass_extend_only_selector
+    sass_extend_only_selector,
+    sass_debug
     
     ;
     

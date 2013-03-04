@@ -819,4 +819,36 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
+    
+    public void testDebug() {
+        String source = "@debug 10em + 12em;\n"
+                + ".class {\n"
+                + "@debug \"hello\";\n"
+                + "}\n"
+                + "@mixin mymixin {\n"
+                + "@debug 20;"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+   
+    public void testWarn() {
+        String source = "@warn 10em + 12em;\n"
+                + ".class {\n"
+                + "@warn \"hello\";\n"
+                + "}\n"
+                + "@mixin mymixin {\n"
+                + "@warn 20;"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
 }

@@ -375,6 +375,7 @@ media
                 //allow just semicolon closed declaration
                 (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
                 | {isScssSource()}? sass_extend ws?
+                | {isScssSource()}? sass_debug ws?
                 
                 | rule  ws?
                 | page  ws?
@@ -425,6 +426,7 @@ bodyItem
         | vendorAtRule
         | {isCssPreprocessorSource()}? cp_variable_declaration
         | {isCssPreprocessorSource()}? cp_mixin_call
+        | {isScssSource()}? sass_debug
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -587,6 +589,8 @@ declarations
                 (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
                 |
                 {isScssSource()}? sass_extend ws?
+                |
+                {isScssSource()}? sass_debug ws?
                 |
                 {isCssPreprocessorSource()}? media ws?
                 |
@@ -1147,6 +1151,11 @@ sass_extend_only_selector
     SASS_EXTEND_ONLY_SELECTOR
     ;
 
+sass_debug
+    :
+    ( SASS_DEBUG | SASS_WARN ) ws cp_expression SEMI
+    ;
+
 //*** END OF LESS SYNTAX ***
 
 // ==============================================================
@@ -1545,6 +1554,8 @@ WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 SASS_MIXIN          : '@MIXIN';
 SASS_INCLUDE        : '@INCLUDE';
 SASS_EXTEND         : '@EXTEND';
+SASS_DEBUG          : '@DEBUG';
+SASS_WARN           : '@WARN';
 
 AT_IDENT	    : '@' NMCHAR+;	
 
