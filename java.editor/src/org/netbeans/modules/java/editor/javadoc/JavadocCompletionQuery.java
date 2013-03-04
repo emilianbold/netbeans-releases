@@ -341,14 +341,36 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
         items.addAll(JavadocCompletionItem.addInlineTagItems(jdctx.handle.getKind(), prefix, pos));
     }
+
+    private int skipWhitespacesBackwards(final JavadocContext jdctx, final int offset) {
+        jdctx.jdts.move(offset);
+        
+        OUTER: while (jdctx.jdts.movePrevious()) {
+            Token t = jdctx.jdts.token();
+            
+            if (t.id() != JavadocTokenId.OTHER_TEXT) break;
+            
+            CharSequence text = t.text();
+            
+            for (int i = 0; i < text.length(); i++) {
+                if (!Character.isWhitespace(text.charAt(i))) {
+                    //XXX: does not handle the leading '*' correctly
+                    break OUTER;
+                }
+            }
+        }
+        
+        return jdctx.jdts.offset();
+    }
     
     private DocTreePath getTag(final JavadocContext jdctx, final int offset) {
         final DocTreePath[] result = new DocTreePath[1];
+        final int normalizedOffset = skipWhitespacesBackwards(jdctx, offset);
         new DocTreePathScanner<Void, Void>() {
             @Override public Void scan(DocTree node, Void p) {
                 if (   node != null
-                    && jdctx.positions.getStartPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, node) <= offset
-                    && jdctx.positions.getEndPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, node) >= offset) {
+                    && jdctx.positions.getStartPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, node) <= normalizedOffset
+                    && jdctx.positions.getEndPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, node) >= normalizedOffset) {
                     result[0] = new DocTreePath(getCurrentPath(), node);
                     return super.scan(node, p);
                 }
