@@ -847,7 +847,17 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 }
             }
         }
-        view.repaint();
+        if (SwingUtilities.isEventDispatchThread()) {
+            view.repaint();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    view.repaint();
+                }
+            });
+        }
     }
     
     private HtmlElementNode getHtmlNode(Node node) {
