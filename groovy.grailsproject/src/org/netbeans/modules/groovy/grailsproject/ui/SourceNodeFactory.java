@@ -89,6 +89,7 @@ public class SourceNodeFactory implements NodeFactory {
             treeViewBag.add("views"); // NOI18N
             treeViewBag.add("web-app"); // NOI18N
             treeViewBag.add("lib"); // NOI18N
+            treeViewBag.add("templates"); // NOI18N
         }
 
         private final ChangeSupport changeSupport = new ChangeSupport(this);
