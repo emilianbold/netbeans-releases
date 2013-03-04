@@ -77,6 +77,7 @@ public class APITestQuery extends TestQuery {
     public APITestQuery(String name, APITestRepository repo) {
         this.name = name;
         this.repo = repo;
+        this.isSaved = name != null;
     }
     
     @Override

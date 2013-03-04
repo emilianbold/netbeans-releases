@@ -231,12 +231,12 @@ public class APITestConnector extends BugtrackingConnector {
 
         @Override
         public APITestQuery createQuery(APITestRepository r) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.createQuery();
         }
 
         @Override
         public APITestIssue createIssue(APITestRepository r) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.createIssue();
         }
 
         @Override
