@@ -82,6 +82,10 @@ public class PHPHintsTestBase extends PHPTestBase {
         checkHints(this, suggestion, TEST_DIRECTORY + fileName, caretLine);
     }
 
+    protected void checkHintsInWholeFile(Rule hint, String fileName, String caretLine) throws Exception {
+        checkHints(this, hint, TEST_DIRECTORY + fileName, caretLine);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

@@ -60,15 +60,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.StringTokenizer;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -364,9 +361,8 @@ public class ModelUtils {
         return new HashSet<TypeUsage>();
     }
     
-    public static Collection<TypeUsage> resolveTypeFromSemiType(JsObject object, TypeUsage uType) {
+    public static Collection<TypeUsage> resolveTypeFromSemiType(JsObject object, TypeUsage type) {
         Set<TypeUsage> result = new HashSet<TypeUsage>();
-        TypeUsageImpl type = (TypeUsageImpl)uType;
         if (type.isResolved()) {
             result.add(type);
         } else if (Type.UNDEFINED.equals(type.getType())) {
@@ -723,8 +719,8 @@ public class ModelUtils {
             cycle++;
             resolvedAll = true;
             Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
-            for (Type typeUsage : types) {
-                if (!((TypeUsageImpl) typeUsage).isResolved()) {
+            for (TypeUsage typeUsage : types) {
+                if (!typeUsage.isResolved()) {
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
                     if (sexp.startsWith("@exp;")) {

@@ -187,8 +187,11 @@ public final class _RetoucheUtil {
                 List<ExpressionTree> attributesList = new ArrayList<ExpressionTree>();
                 if (attributes != null) {
                     for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                        ExpressionTree attributeTree = generationUtils.createAnnotationArgument(entry.getKey(), entry.getValue());
-                        attributesList.add(attributeTree);
+                        if ("".equals(entry.getKey())) { //NOI18N
+                            attributesList.add(generationUtils.createAnnotationArgument(null, entry.getValue()));
+                        } else {
+                            attributesList.add(generationUtils.createAnnotationArgument(entry.getKey(), entry.getValue()));
+                        }
                     }
                 }
                 AnnotationTree annotationTree = generationUtils.createAnnotation(annotationType, attributesList);
