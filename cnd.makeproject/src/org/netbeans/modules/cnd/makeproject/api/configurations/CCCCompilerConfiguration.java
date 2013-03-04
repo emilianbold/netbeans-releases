@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.OptionItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
@@ -60,6 +61,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguration {
+
+    public static final boolean STANDARDS_SUPPORT = DebugUtils.getBoolean("cnd.support.standards", true); //NOI18N
 
     public static final int LIBRARY_LEVEL_NONE = 0;
     public static final int LIBRARY_LEVEL_RUNTIME = 1;
