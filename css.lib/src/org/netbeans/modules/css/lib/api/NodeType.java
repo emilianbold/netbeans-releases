@@ -385,6 +385,7 @@ public enum NodeType {
     
     scss_selector_interpolation_expression,
     scss_declaration_interpolation_expression,
+    scss_mq_interpolation_expression,
     
     scss_interpolation_expression_var,
     

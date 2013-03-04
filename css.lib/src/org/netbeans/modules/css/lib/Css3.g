@@ -362,9 +362,26 @@ importItem
         {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier) mediaQueryList SEMI
     ;
 media
-    : MEDIA_SYM ws? mediaQueryList
+    : MEDIA_SYM ws? 
+        
+        (
+            ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> scss_mq_interpolation_expression ws? 
+            |
+            (mediaQueryList)=>mediaQueryList
+        )
+        
         LBRACE ws?
-            ( ( rule | page | fontFace | vendorAtRule ) ws?)*
+            ( 
+                //allow just semicolon closed declaration
+                (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
+
+                | rule  ws?
+                | page  ws?
+                | fontFace  ws?
+                | vendorAtRule  ws?
+                | {isScssSource()}? media ws?
+                
+            )*
          RBRACE
     ;
 
@@ -567,6 +584,8 @@ declarations
 		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ LBRACE | scss_declaration_interpolation_expression COLON )=>scss_nested_properties ws?
 		|
                 (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
+                |
+                {isCssPreprocessorSource()}? media ws?
                 |
                 {isCssPreprocessorSource()}? cp_mixin_call ws?
 //                |
@@ -802,7 +821,7 @@ term
     | GEN
     | URI
     | hexColor
-    | function
+    | (function)=>function
     | {isCssPreprocessorSource()}? cp_variable
     )
     ws?
@@ -1063,6 +1082,24 @@ scss_declaration_interpolation_expression
                 (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
+            )
+        )*
+
+    ;
+    
+scss_mq_interpolation_expression
+    :
+        ( 
+            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            |
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
+        )
+        ( 
+            ws?
+            (
+                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                |
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
             )
         )*
 

@@ -643,7 +643,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testDefaultVariable() {
         String source =
                 "$content: \"Second content?\" !default;\n";
@@ -654,7 +654,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testMultipleImport() {
         String source =
                 "@import \"rounded-corners\", \"text-shadow\";\n";
@@ -662,6 +662,109 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testInterpolationExpressionInImport() {
+        String source =
+                "@import url(\"http://fonts.googleapis.com/css?family=#{$family}\");\n";
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    //the grammar defines the imports needs to be at the very beginning of the file,
+    //though this is not true in case of the preprocessor code
+    public void testSASSCodeMayPrecedeImport_fails() {
+        String source = "$var: my;\n"
+                + "@import url(\"#{$var}\"\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testNestedMediaQueries() {
+        String source = ".sidebar {\n"
+                + "  width: 300px;\n"
+                + "  @media screen and (orientation: landscape) {\n"
+                + "  .class {\n"
+                + "    width: 500px;\n"
+                + "  }\n"
+                + "}\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testNestedMediaQueryInMediaQuery() {
+        String source = "@media screen {\n"
+                + "  .sidebar {\n"
+                + "    @media (orientation: landscape) {\n"
+                + "   //   width: 500px;\n"
+                + "    }\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    //the media query can the property declarations directly.
+    public void testPropertiesDirectlyInMediaQuery() {
+        String source = "@media screen and (orientation: landscape) {\n"
+                + "    width: 500px;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testInterpolationExpressionInMediaQuery() {
+        String source = "@media #{$media} {\n"
+                + "  .sidebar {\n"
+                + "    width: 500px;\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+    
+    //the scss_mq_interpolation_expression doesn't want to be extended 
+    //by LPAREN and RPAREN from some reason (endless loop).
+    public void testInterpolationExpressionWithParenMediaQuery_fails() {
+        String source = "$media: screen;\n"
+                + "$feature: -webkit-min-device-pixel-ratio;\n"
+                + "$value: 1.5;\n"
+                + "\n"
+                + "@media #{$media} and (#{$feature}: #{$value}) {\n"
+                + "  .sidebar {\n"
+                + "    width: 500px;\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }
