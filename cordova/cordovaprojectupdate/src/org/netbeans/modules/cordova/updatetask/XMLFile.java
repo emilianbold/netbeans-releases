@@ -58,8 +58,14 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -70,6 +76,7 @@ public class XMLFile {
     
     final protected Document doc;
     private File file;
+    private final XPath xPath;
 
     protected XMLFile(File f) throws IOException {
         this (new FileInputStream(f));
@@ -81,6 +88,7 @@ public class XMLFile {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             doc = dBuilder.parse(resource);
+            xPath = XPathFactory.newInstance().newXPath();
         } catch (ParserConfigurationException ex) {
             throw new IOException(ex);
         } catch (SAXException ex) {
@@ -90,8 +98,101 @@ public class XMLFile {
         }
     }
     
-    protected final Node getNode(String name) {
-        return doc.getElementsByTagName(name).item(0);
+    protected final Node getXpathNode(String axpath) {
+        try {
+            return (Node) xPath.evaluate(axpath, doc, XPathConstants.NODE);
+        } catch (XPathExpressionException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+    
+    protected final NodeList getXpathNodes(String axpath) {
+        try {
+            return (NodeList) xPath.evaluate(axpath, doc, XPathConstants.NODESET);
+        } catch (XPathExpressionException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+    
+    
+    protected final Node getXpathAttribute(String xpath, String attribute) {
+        return getXpathNode(xpath).getAttributes().getNamedItem(attribute);
+    }
+
+    protected final Node getNode(String axpath) {
+        assert axpath !=null;
+        assert axpath.startsWith("/");
+        try {
+            return (Node) xPath.evaluate(axpath, doc, XPathConstants.NODE);
+        } catch (XPathExpressionException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+    
+    protected final String getTextContent(Node node) {
+        if (node==null) {
+            return null;
+        }
+        return node.getTextContent();
+        
+    }
+    
+    protected final String getTextContent(String xpath) {
+        Node node = getNode(xpath);
+        if (node == null) {
+            return null;
+        }
+        return node.getTextContent();
+    }
+    
+    protected final void setTextContent(String xpath, String value) {
+        createXpath(xpath).setTextContent(value);
+        
+    }
+    
+    private Node createXpath(String xpath) {
+        Node n = getNode(xpath);
+        if (n != null) {
+            return n;
+        }
+        
+        int indexOf = xpath.indexOf("/", 1);
+        Node node = getNode(xpath.substring(0, indexOf));
+        Node lastNode = node;
+        int lastIndexOf = indexOf;
+        while (node != null) {
+            indexOf = xpath.indexOf("/", indexOf+1);
+            lastNode = node;
+            node = indexOf <0 ? null : getNode(xpath.substring(0, indexOf));
+        }
+        
+        String rest = xpath.substring(lastIndexOf + 1, xpath.length());
+        for (String newTag:rest.split("/")) {
+            lastNode = lastNode.appendChild(doc.createElement(newTag));
+        }
+        
+        return lastNode;
+    } 
+
+    protected String getAttributeText(String path, String attrName) {
+        return getAttributeText(getNode(path), attrName);
+    }
+
+    protected void setAttributeText(String path, String attrName, String value) {
+        final Attr attr = doc.createAttribute(attrName);
+        attr.setValue(value);
+        createXpath(path).getAttributes().setNamedItem(attr);
+    }
+    
+    protected final String getAttributeText(Node node, String attrName) {
+        if (node==null) {
+            return null;
+        }
+        Node namedItem = node.getAttributes().getNamedItem(attrName);
+        if (namedItem == null) {
+            return null;
+        }
+        return namedItem.getTextContent();
     }
 
     final void printDocument(OutputStream out) throws IOException, TransformerException {

@@ -60,18 +60,18 @@ public class DeviceConfig extends XMLFile {
     }
 
     public String getAccess() {
-        return getNode("access").getAttributes().getNamedItem("origin").getTextContent();
+        return getAttributeText("/cordova/access", "origin");
     }
     
     public void setAccess(String access) {
-        getNode("access").getAttributes().getNamedItem("origin").setTextContent(access);
+        setAttributeText("/cordova/access", "origin", access);
     }
     
-    public String getContetnt() {
-        return getNode("content").getAttributes().getNamedItem("src").getTextContent();
+    public String getContent() {
+        return getAttributeText("/cordova/content", "src");
     }
     
     public void setContent(String src) {
-        getNode("content").getAttributes().getNamedItem("src").setTextContent(src);
+        setAttributeText("/cordova/content", "src", src);
     }
 }

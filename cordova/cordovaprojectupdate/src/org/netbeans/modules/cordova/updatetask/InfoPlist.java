@@ -70,7 +70,7 @@ public class InfoPlist extends XMLFile {
     }
     
     private Node getPackageNode() {
-        Node node = getNode("dict");
+        Node node = getNode("/plist/dict");
         NodeList childNodes = node.getChildNodes();
         for (int i=0;i<childNodes.getLength(); i++) {
             final Node key = childNodes.item(i);

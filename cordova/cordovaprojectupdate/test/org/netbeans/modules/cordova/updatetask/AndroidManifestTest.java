@@ -46,6 +46,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -78,6 +79,10 @@ public class AndroidManifestTest {
     @Test
     public void testOut() throws Exception{
         AndroidManifest m = new AndroidManifest(SourceConfig.class.getResourceAsStream("AndroidManifest.xml"));
+        assertEquals(m.getName(), "HTML5Application5");
+        assertEquals(m.getPackage(), "com.company");
+        m.setPackage("aaa");
+        m.setName("N");
         m.printDocument(System.out);
     }
 }
