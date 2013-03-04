@@ -46,6 +46,7 @@ import org.netbeans.core.ProxySettings;
 import org.netbeans.core.networkproxy.fallback.FallbackNetworkProxy;
 import org.netbeans.core.networkproxy.gnome.GnomeNetworkProxy;
 import org.netbeans.core.networkproxy.kde.KdeNetworkProxy;
+import org.netbeans.core.networkproxy.mac.MacNetworkProxy;
 import org.netbeans.core.networkproxy.windows.WindowsNetworkProxy;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -113,11 +114,12 @@ public class NetworkProxySelector {
     
     private static String getStringFromArray(String[] stringArray) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < stringArray.length - 1; i++) {
+        for (int i = 0; i < stringArray.length; i++) {
             sb.append(stringArray[i]);
-            sb.append(COMMA);
+            if (i == stringArray.length - 1) {
+                sb.append(COMMA);
+            }
         }
-        sb.append(stringArray[stringArray.length - 1]);
         
         return sb.toString();
     }
@@ -133,7 +135,7 @@ public class NetworkProxySelector {
             } 
             
             if (Utilities.isMac()) {
-                return null;
+                return new MacNetworkProxy();
             }
             
             if (Utilities.isUnix()){
