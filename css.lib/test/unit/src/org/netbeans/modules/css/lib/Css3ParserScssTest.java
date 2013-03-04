@@ -701,7 +701,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }
@@ -717,7 +717,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }
@@ -730,7 +730,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }
@@ -744,11 +744,11 @@ public class Css3ParserScssTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }
-    
+
     //the scss_mq_interpolation_expression doesn't want to be extended 
     //by LPAREN and RPAREN from some reason (endless loop).
     public void testInterpolationExpressionWithParenMediaQuery_fails() {
@@ -764,7 +764,58 @@ public class Css3ParserScssTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testExtend() {
+        String source = ".seriousError {\n"
+                + "  @extend .error;\n"
+                + "  border-width: 3px;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testExtendComplex() {
+        String source = ".hoverlink {\n"
+                + "  @extend a:hover;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testExtendOnlySelectors() {
+        String source = "#context a%extreme {\n"
+                + "  color: blue;\n"
+                + "  font-weight: bold;\n"
+                + "  font-size: 2em;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testExtendOnlySelectorCall() {
+        String source = ".notice {\n"
+                + "  @extend %extreme;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }

@@ -389,7 +389,11 @@ public enum NodeType {
     
     scss_interpolation_expression_var,
     
-    scss_nested_properties;
+    scss_nested_properties,
+    sass_extend,
+    sass_extend_only_selector
+    
+    ;
     
     
 }
