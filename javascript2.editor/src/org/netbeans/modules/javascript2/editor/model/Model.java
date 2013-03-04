@@ -182,9 +182,35 @@ public final class Model {
             StringBuilder sb, String ident, Set<JsObject> path) {
 
         sb.append(jsObject.getName());
-        sb.append(" [").append(jsObject.getJSKind()).append("]");
+        sb.append(" [");
+        if (jsObject.getDeclarationName() != null) {
+            sb.append("DECLARED: ");
+            sb.append(jsObject.getDeclarationName().getName());
+            sb.append(" : ");
+        }
+        sb.append(jsObject.getJSKind());
+        sb.append("]");
 
         path.add(jsObject);
+
+        if (jsObject instanceof JsFunction) {
+            JsFunction function = ((JsFunction) jsObject);
+            if (!function.getParameters().isEmpty()) {
+                newLine(printer, sb, ident);
+                sb.append("# PARAMETERS");
+
+                for (JsObject param : function.getParameters()) {
+                    newLine(printer, sb, ident);
+
+                    if (path.contains(param)) {
+                        sb.append("CYCLE ").append(param.getFullyQualifiedName()); // NOI18N
+                    } else {
+                        dumpModel(printer, param, sb, ident + "        ", path);
+                    }
+                }
+            }
+        }
+
         int length = 0;
         for (String str : jsObject.getProperties().keySet()) {
             if (str.length() > length) {
@@ -193,30 +219,40 @@ public final class Model {
         }
 
         StringBuilder identBuilder = new StringBuilder(ident);
-        identBuilder.append("       "); // NOI18N
+        identBuilder.append(' '); // NOI18N
         for (int i = 0; i < length; i++) {
             identBuilder.append(' '); // NOI18N
         }
+
         List<Map.Entry<String, ? extends JsObject>> entries =
                 new ArrayList<Entry<String, ? extends JsObject>>(jsObject.getProperties().entrySet());
-        Collections.sort(entries, PROPERTIES_COMPARATOR);
-        for (Map.Entry<String, ? extends JsObject> entry : entries) {
-            printer.println(sb.toString());
+        if (!entries.isEmpty()) {
+            newLine(printer, sb, ident);
+            sb.append("# PROPERTIES");
 
-            sb.setLength(0);
-            sb.append(ident);
-            sb.append(entry.getKey());
-            for (int i = entry.getKey().length(); i < length; i++) {
-                sb.append(' '); // NOI18N
-            }
-            sb.append(" : "); // NOI18N
-            if (path.contains(entry.getValue())) {
-                sb.append("Cycle to ").append(entry.getValue().getFullyQualifiedName()); // NOI18N
-            } else {
-                dumpModel(printer, entry.getValue(), sb, identBuilder.toString(), path);
+            Collections.sort(entries, PROPERTIES_COMPARATOR);
+            for (Map.Entry<String, ? extends JsObject> entry : entries) {
+                newLine(printer, sb, ident);
+
+                sb.append(entry.getKey());
+                for (int i = entry.getKey().length(); i < length; i++) {
+                    sb.append(' '); // NOI18N
+                }
+                sb.append(" : "); // NOI18N
+                if (path.contains(entry.getValue())) {
+                    sb.append("CYCLE ").append(entry.getValue().getFullyQualifiedName()); // NOI18N
+                } else {
+                    dumpModel(printer, entry.getValue(), sb, identBuilder.toString(), path);
+                }
             }
         }
         path.remove(jsObject);
+    }
+
+    private static void newLine(Printer printer, StringBuilder sb, String ident) {
+        printer.println(sb.toString());
+        sb.setLength(0);
+        sb.append(ident);
     }
 
     public static interface Printer {
