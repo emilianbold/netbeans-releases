@@ -44,8 +44,6 @@
 package org.netbeans.modules.j2ee.persistence.wizard.dbscript;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -87,17 +85,17 @@ import org.openide.util.NbBundle;
  *
  */
 public class DBScriptPanel extends javax.swing.JPanel {
-
+    
     private final static Logger LOGGER = Logger.getLogger(DBScriptPanel.class.getName());
     private static final String EXTENSION = "sql";//NOI18N
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private JTextComponent packageComboBoxEditor;
     private Project project;
-
+    
     private DBScriptPanel() {
-
+        
         initComponents();
-
+        
         packageComboBoxEditor = ((JTextComponent) packageComboBox.getEditor().getEditorComponent());
         Document packageComboBoxDocument = packageComboBoxEditor.getDocument();
         packageComboBoxDocument.addDocumentListener(new DocumentListener() {
@@ -105,41 +103,51 @@ public class DBScriptPanel extends javax.swing.JPanel {
             public void removeUpdate(DocumentEvent e) {
                 packageChanged();
             }
-
+            
             @Override
             public void insertUpdate(DocumentEvent e) {
                 packageChanged();
             }
-
+            
             @Override
             public void changedUpdate(DocumentEvent e) {
                 packageChanged();
             }
         });
-        scriptNameTextField.addActionListener(new ActionListener() {
+        scriptNameTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void insertUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+            
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+            
+            @Override
+            public void changedUpdate(DocumentEvent e) {
                 changeSupport.fireChange();
             }
         });
     }
-
+    
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
-
+    
     public void initialize(Project project, FileObject targetFolder) {
         this.project = project;
-
+        
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
-
+        
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
         SourceGroupUISupport.connect(locationComboBox, sourceGroups);
-
+        
         packageComboBox.setRenderer(PackageView.listRenderer());
-
+        
         updatePackageComboBox();
-
+        
         if (targetFolder != null) {
             // set default source group and package cf. targetFolder
             SourceGroup targetSourceGroup = SourceGroups.getFolderSourceGroup(sourceGroups, targetFolder);
@@ -151,53 +159,35 @@ public class DBScriptPanel extends javax.swing.JPanel {
                 }
             }
         }
-
-
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup groups[] = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        SourceGroup firstGroup = groups[0];
-        FileObject fo = firstGroup.getRootFolder();
-        ClasspathInfo classpathInfo = ClasspathInfo.create(fo);
-        JavaSource javaSource = JavaSource.create(classpathInfo);
-        try {
-            javaSource.runUserActionTask(new Task<CompilationController>() {
-                @Override
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement jc = controller.getElements().getTypeElement("javax.xml.bind.annotation.XmlTransient"); //NOI18N
-                }
-            }, true);
-        } catch (IOException ex) {
-            //no need to throw exception as it just will not disable option possibly unsupported, it's not severe
-            LOGGER.log(Level.FINE, "Fail to check if jaxb is supported");//NOI18N
-        }
+        
+        uniqueName();
     }
-
+    
     public SourceGroup getLocationValue() {
         return (SourceGroup) locationComboBox.getSelectedItem();
     }
-
+    
     public String getPackageName() {
         return packageComboBoxEditor.getText();
     }
-
+    
     public String getScriptName() {
         return scriptNameTextField.getText();
     }
-
+    
     public boolean getCreatePersistenceUnit() {
         return createDropScriptCheckbox.isVisible() && createDropScriptCheckbox.isSelected();
     }
-
+    
     private void locationChanged() {
         updatePackageComboBox();
         changeSupport.fireChange();
     }
-
+    
     private void packageChanged() {
         changeSupport.fireChange();
     }
-
+    
     private void updatePackageComboBox() {
         SourceGroup sourceGroup = (SourceGroup) locationComboBox.getSelectedItem();
         if (sourceGroup != null) {
@@ -234,7 +224,7 @@ public class DBScriptPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(scriptNameLabel, org.openide.util.NbBundle.getMessage(DBScriptPanel.class, "LBL_ScriptName")); // NOI18N
 
         scriptNameTextField.setColumns(40);
-        scriptNameTextField.setText("script");
+        scriptNameTextField.setText(org.openide.util.NbBundle.getMessage(DBScriptPanel.class, "TXT_NAMEBASE")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(DBScriptPanel.class, "LBL_Project")); // NOI18N
 
@@ -317,7 +307,7 @@ public class DBScriptPanel extends javax.swing.JPanel {
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
         locationChanged();
     }//GEN-LAST:event_locationComboBoxActionPerformed
-
+    
     private void createDropScriptCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createDropScriptCheckboxItemStateChanged
         if (createDropScriptCheckbox.isVisible() && createDropScriptCheckbox.isSelected()) {
         } else {
@@ -336,18 +326,44 @@ public class DBScriptPanel extends javax.swing.JPanel {
     private javax.swing.JTextField scriptNameTextField;
     // End of variables declaration//GEN-END:variables
 
-    public static final class WizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
+    private void uniqueName() {
+        String base = org.openide.util.NbBundle.getMessage(DBScriptPanel.class, "TXT_NAMEBASE");
+        SourceGroup sourceGroup = getLocationValue();
+        if(sourceGroup == null) {
+            return;
+        }
+        String packageName = getPackageName();
+        if(packageName == null) {
+            return;
+        }
+        try {
+            FileObject packageFO = SourceGroups.getFolderForPackage(sourceGroup, packageName, false);
+            if(packageFO == null) {
+                return;
+            }
+            String scriptName = base;
+            int counter = 1;
+            while(packageFO.getFileObject(scriptName,EXTENSION)!=null){
+                scriptName = base + counter++;
+            }
+            scriptNameTextField.setText(scriptName);
+        } catch (IOException ex) {
+            
+        }
+    }
 
+    public static final class WizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
+        
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private boolean componentInitialized;
         private DBScriptPanel component;
         private WizardDescriptor wizardDescriptor;
         private Project project;
         private List<Provider> providers;
-
+        
         public WizardPanel() {
         }
-
+        
         @Override
         public DBScriptPanel getComponent() {
             if (component == null) {
@@ -356,36 +372,36 @@ public class DBScriptPanel extends javax.swing.JPanel {
             }
             return component;
         }
-
+        
         @Override
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }
-
+        
         @Override
         public void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
-
+        
         @Override
         public HelpCtx getHelp() {
             return new HelpCtx(DBScriptPanel.class);
         }
-
+        
         @Override
         public void readSettings(Object settings) {
             wizardDescriptor = (WizardDescriptor) settings;
-
+//////            
             if (!componentInitialized) {
                 componentInitialized = true;
-
+                
                 project = Templates.getProject(wizardDescriptor);
                 FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
-
+                
                 getComponent().initialize(project, targetFolder);
             }
         }
-
+        
         @Override
         public boolean isValid() {
             SourceGroup sourceGroup = getComponent().getLocationValue();
@@ -393,18 +409,18 @@ public class DBScriptPanel extends javax.swing.JPanel {
                 setErrorMessage(NbBundle.getMessage(DBScriptPanel.class, "ERR_JavaTargetChooser_SelectSourceGroup"));
                 return false;
             }
-
+            
             String packageName = getComponent().getPackageName();
             if (packageName.trim().equals("")) { // NOI18N
                 setErrorMessage(NbBundle.getMessage(DBScriptPanel.class, "ERR_JavaTargetChooser_CantUseDefaultPackage"));
                 return false;
             }
-
+            
             if (!JavaIdentifiers.isValidPackageName(packageName)) {
                 setErrorMessage(NbBundle.getMessage(DBScriptPanel.class, "ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
                 return false;
             }
-
+            
             if (!SourceGroups.isFolderWritable(sourceGroup, packageName)) {
                 setErrorMessage(NbBundle.getMessage(DBScriptPanel.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
                 return false;
@@ -457,7 +473,7 @@ public class DBScriptPanel extends javax.swing.JPanel {
             setErrorMessage(" "); // NOI18N
             return true;
         }
-
+        
         @Override
         public void storeSettings(Object settings) {
             WizardDescriptor wizardDescriptor = (WizardDescriptor) settings;
@@ -472,16 +488,16 @@ public class DBScriptPanel extends javax.swing.JPanel {
             Templates.setTargetFolder(wizardDescriptor, packageFO);
             Templates.setTargetName(wizardDescriptor, getComponent().getScriptName());
         }
-
+        
         @Override
         public void stateChanged(ChangeEvent event) {
             changeSupport.fireChange();
         }
-
+        
         private void setErrorMessage(String errorMessage) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
         }
-
+        
         @Override
         public boolean isFinishPanel() {
             return true;
@@ -492,14 +508,14 @@ public class DBScriptPanel extends javax.swing.JPanel {
      * A crude attempt at a label which doesn't expand its parent.
      */
     private static final class ShyLabel extends JLabel {
-
+        
         @Override
         public Dimension getPreferredSize() {
             Dimension size = super.getPreferredSize();
             size.width = 0;
             return size;
         }
-
+        
         @Override
         public Dimension getMinimumSize() {
             Dimension size = super.getMinimumSize();
