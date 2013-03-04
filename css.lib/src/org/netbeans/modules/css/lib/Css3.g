@@ -375,6 +375,8 @@ media
                 //allow just semicolon closed declaration
                 (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
                 | {isScssSource()}? sass_extend ws?
+                | {isScssSource()}? sass_debug ws?
+                | {isScssSource()}? sass_control ws?
                 
                 | rule  ws?
                 | page  ws?
@@ -425,6 +427,8 @@ bodyItem
         | vendorAtRule
         | {isCssPreprocessorSource()}? cp_variable_declaration
         | {isCssPreprocessorSource()}? cp_mixin_call
+        | {isScssSource()}? sass_debug
+        | {isScssSource()}? sass_control
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -587,6 +591,10 @@ declarations
                 (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
                 |
                 {isScssSource()}? sass_extend ws?
+                |
+                {isScssSource()}? sass_debug ws?
+                |
+                {isScssSource()}? sass_control ws?
                 |
                 {isCssPreprocessorSource()}? media ws?
                 |
@@ -1147,6 +1155,51 @@ sass_extend_only_selector
     SASS_EXTEND_ONLY_SELECTOR
     ;
 
+sass_debug
+    :
+    ( SASS_DEBUG | SASS_WARN ) ws cp_expression SEMI
+    ;
+    
+sass_control
+    :
+    sass_if | sass_for | sass_each | sass_while
+    ;
+
+sass_if
+    :
+    SASS_IF ws sass_control_expression sass_control_block
+    ;
+    
+sass_control_expression
+    :
+    cp_expression (( CP_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
+    ;
+
+sass_for
+    :
+    SASS_FOR ws cp_variable ws IDENT /*from*/ ws cp_term IDENT /*to*/ ws cp_term sass_control_block
+    ;
+
+sass_each
+    :
+    SASS_EACH ws cp_variable ws IDENT /*in*/ ws sass_each_list sass_control_block
+    ;
+    
+sass_each_list
+    :
+    cp_term (COMMA ws? cp_term)*
+    ;
+    
+sass_while
+    :
+    SASS_WHILE ws sass_control_expression sass_control_block
+    ;
+
+sass_control_block
+    :
+    LBRACE ws? declarations RBRACE //likely not enough!
+    ;
+
 //*** END OF LESS SYNTAX ***
 
 // ==============================================================
@@ -1470,6 +1523,7 @@ DOT             : '.'       ;
 TILDE		: '~'       ;
 PIPE            : '|'       ;
 
+CP_EQ           : '=='       ;
 LESS            : '<'       ;
 GREATER_OR_EQ   : '>='      ;
 LESS_OR_EQ      : '=<'      ;
@@ -1545,6 +1599,13 @@ WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 SASS_MIXIN          : '@MIXIN';
 SASS_INCLUDE        : '@INCLUDE';
 SASS_EXTEND         : '@EXTEND';
+SASS_DEBUG          : '@DEBUG';
+SASS_WARN           : '@WARN';
+SASS_IF             : '@IF';
+SASS_FOR            : '@FOR';
+
+SASS_EACH           : '@EACH';
+SASS_WHILE          : '@WHILE';
 
 AT_IDENT	    : '@' NMCHAR+;	
 
