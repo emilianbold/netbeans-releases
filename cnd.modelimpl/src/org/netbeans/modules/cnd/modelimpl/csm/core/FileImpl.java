@@ -892,6 +892,9 @@ public final class FileImpl implements CsmFile,
         private APTPreprocHandler curPreprocHandler;
         private final FileImpl fileImpl;
         private final boolean triggerParsingActivity;
+        // FIXME: it's worth to remember states before parse and reuse after
+        private final long lastParsed;
+        private final long lastParsedCRC;
 
         public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT, CsmParserProvider.CsmParseCallback callback, boolean emptyFileContent, boolean triggerParsingActivity) {
             this(fileImpl, fullAPT, callback, TraceFlags.EXCLUDE_COMPOUND, emptyFileContent, triggerParsingActivity);
@@ -908,6 +911,8 @@ public final class FileImpl implements CsmFile,
             this.callback = callback;
             this.lazyCompound = lazyCompound;
             this.triggerParsingActivity = triggerParsingActivity;
+            this.lastParsed = fileImpl.fileBuffer.lastModified();
+            this.lastParsedCRC = fileImpl.fileBuffer.getCRC();
         }
 
         private void setCurrentPreprocHandler(APTPreprocHandler preprocHandler) {
@@ -1361,17 +1366,7 @@ public final class FileImpl implements CsmFile,
             }
         }
         clearStateCache();
-        lastParsed = fileBuffer.lastModified();
-        lastParsedCRC = fileBuffer.getCRC();
-        // using file time as parse time disallows offline index: in most cases timestamps differ
-        if (TraceFlags.USE_CURR_PARSE_TIME) {
-            lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
-        }
         lastMacroUsages = null;
-        if (TraceFlags.TRACE_VALIDATION) {
-            System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n",
-                    getAbsolutePath(), fileBuffer.lastModified(), lastParsed, fileBuffer.lastModified() - lastParsed);
-        }
         TraceModel.TestHook aHook = hook;
         if (aHook != null) {
             aHook.parsingFinished(this, preprocHandler);
@@ -1404,6 +1399,16 @@ public final class FileImpl implements CsmFile,
         // handle file content
         currentFileContent = fileContent.toWeakReferenceBasedCopy();
         currentFileContent.put();
+        lastParsed = fileBuffer.lastModified();
+        lastParsedCRC = fileBuffer.getCRC();
+        // using file time as parse time disallows offline index: in most cases timestamps differ
+        if (TraceFlags.USE_CURR_PARSE_TIME) {
+            lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
+        }
+        if (TraceFlags.TRACE_VALIDATION) {
+            System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n",
+                    getAbsolutePath(), fileBuffer.lastModified(), lastParsed, fileBuffer.lastModified() - lastParsed);
+        }
         RepositoryUtils.put(this);
         if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
             if(parsingErrors == null) {
