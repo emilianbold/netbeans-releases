@@ -53,8 +53,6 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
@@ -77,6 +75,8 @@ public class APITestRepository extends TestRepository {
     private APITestRepositoryController controller;
     private List<APITestQuery> queries;
     private HashMap<String, APITestIssue> issues;
+    APITestIssue newIssue;
+    APITestQuery newQuery;
 
     public APITestRepository(RepositoryInfo info) {
         this.info = info;
@@ -136,13 +136,15 @@ public class APITestRepository extends TestRepository {
     }
 
     @Override
-    public TestQuery createQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public APITestQuery createQuery() {
+        newQuery = new APITestQuery(null, this);
+        return newQuery;
     }
 
     @Override
-    public TestIssue createIssue() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public APITestIssue createIssue() {
+        newIssue = new APITestIssue(null, this, true);
+        return newIssue;
     }
 
     @Override
