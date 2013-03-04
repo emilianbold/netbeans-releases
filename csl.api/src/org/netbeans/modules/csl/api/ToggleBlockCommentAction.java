@@ -119,7 +119,12 @@ public class ToggleBlockCommentAction extends BaseAction {
             doc.runAtomic(new Runnable() {
                 public @Override void run() {
                     try {
-                        int offset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
+                        int offset = target.getCaretPosition();
+                        if (Utilities.isSelectionShowing(target)) {
+                            offset = target.getSelectionStart();
+                        } else {
+                            offset = Utilities.getRowFirstNonWhite((BaseDocument) target.getDocument(), offset);
+                        }
 
                         TokenHierarchy<?> th = TokenHierarchy.get(target.getDocument());
 
