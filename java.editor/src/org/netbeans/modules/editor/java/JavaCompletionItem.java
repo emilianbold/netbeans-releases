@@ -1673,23 +1673,27 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 String toAddText = toAdd.toString();
                 int idx = toAddText.indexOf(')');
                 if (idx > 0) {
-                    if (!params.isEmpty()) {
+                    if (!params.isEmpty() || text.length() == length) {
                         if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen()) {
                             sb.append(' '); //NOI18N
                         }
                         sb.append('('); //NOI18N
-                        boolean guessArgs = Utilities.guessMethodArguments();
-                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                            ParamDesc paramDesc = it.next();
-                            sb.append("${"); //NOI18N
-                            sb.append(paramDesc.name);
-                            if (guessArgs) {
-                                sb.append(" named instanceof="); //NOI18N
-                                sb.append(paramDesc.fullTypeName);
-                            }
-                            sb.append('}'); //NOI18N
-                            if (it.hasNext()) {
-                                sb.append(", "); //NOI18N
+                        if (params.isEmpty()) {
+                            sb.append("${cursor}"); //NOI18N
+                        } else {
+                            boolean guessArgs = Utilities.guessMethodArguments();
+                            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                                ParamDesc paramDesc = it.next();
+                                sb.append("${"); //NOI18N
+                                sb.append(paramDesc.name);
+                                if (guessArgs) {
+                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(paramDesc.fullTypeName);
+                                }
+                                sb.append('}'); //NOI18N
+                                if (it.hasNext()) {
+                                    sb.append(", "); //NOI18N
+                                }
                             }
                         }
                         sb.append(')');//NOI18N
