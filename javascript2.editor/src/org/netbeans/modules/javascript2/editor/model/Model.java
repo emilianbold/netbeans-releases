@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import java.text.MessageFormat;
 import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.ir.Node;
@@ -61,6 +63,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -103,9 +106,24 @@ public final class Model {
             }
             long startResolve = System.currentTimeMillis();
             resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
+
+            ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory();
+            long startCallingME = System.currentTimeMillis();
+            Map<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> calls = visitor.getCallsForProcessing();
+            if (calls != null && !calls.isEmpty()) {
+                for (Map.Entry<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> entry : calls.entrySet()) {
+                    Collection<ModelVisitor.FunctionCall> fncCalls = entry.getValue();
+                    if (fncCalls != null && !fncCalls.isEmpty()) {
+                        for (ModelVisitor.FunctionCall call : fncCalls) {
+                            entry.getKey().intercept(call.getName(),
+                                    visitor.getGlobalObject(), elementFactory, call.getArguments());
+                        }
+                    }
+                }
+            }
             long end = System.currentTimeMillis();
             if(LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms", new Object[]{(end - start), (end - startResolve)}));
+                LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms. Extending model took {2}", new Object[]{(end - start), (startCallingME - startResolve), (end - startCallingME)}));
             }
         }
         return visitor;
@@ -164,9 +182,35 @@ public final class Model {
             StringBuilder sb, String ident, Set<JsObject> path) {
 
         sb.append(jsObject.getName());
-        sb.append(" [").append(jsObject.getJSKind()).append("]");
+        sb.append(" [");
+        if (jsObject.getDeclarationName() != null) {
+            sb.append("DECLARED: ");
+            sb.append(jsObject.getDeclarationName().getName());
+            sb.append(" : ");
+        }
+        sb.append(jsObject.getJSKind());
+        sb.append("]");
 
         path.add(jsObject);
+
+        if (jsObject instanceof JsFunction) {
+            JsFunction function = ((JsFunction) jsObject);
+            if (!function.getParameters().isEmpty()) {
+                newLine(printer, sb, ident);
+                sb.append("# PARAMETERS");
+
+                for (JsObject param : function.getParameters()) {
+                    newLine(printer, sb, ident);
+
+                    if (path.contains(param)) {
+                        sb.append("CYCLE ").append(param.getFullyQualifiedName()); // NOI18N
+                    } else {
+                        dumpModel(printer, param, sb, ident + "        ", path);
+                    }
+                }
+            }
+        }
+
         int length = 0;
         for (String str : jsObject.getProperties().keySet()) {
             if (str.length() > length) {
@@ -175,30 +219,40 @@ public final class Model {
         }
 
         StringBuilder identBuilder = new StringBuilder(ident);
-        identBuilder.append("       "); // NOI18N
+        identBuilder.append(' '); // NOI18N
         for (int i = 0; i < length; i++) {
             identBuilder.append(' '); // NOI18N
         }
+
         List<Map.Entry<String, ? extends JsObject>> entries =
                 new ArrayList<Entry<String, ? extends JsObject>>(jsObject.getProperties().entrySet());
-        Collections.sort(entries, PROPERTIES_COMPARATOR);
-        for (Map.Entry<String, ? extends JsObject> entry : entries) {
-            printer.println(sb.toString());
+        if (!entries.isEmpty()) {
+            newLine(printer, sb, ident);
+            sb.append("# PROPERTIES");
 
-            sb.setLength(0);
-            sb.append(ident);
-            sb.append(entry.getKey());
-            for (int i = entry.getKey().length(); i < length; i++) {
-                sb.append(' '); // NOI18N
-            }
-            sb.append(" : "); // NOI18N
-            if (path.contains(entry.getValue())) {
-                sb.append("Cycle to ").append(ModelUtils.createFQN(entry.getValue())); // NOI18N
-            } else {
-                dumpModel(printer, entry.getValue(), sb, identBuilder.toString(), path);
+            Collections.sort(entries, PROPERTIES_COMPARATOR);
+            for (Map.Entry<String, ? extends JsObject> entry : entries) {
+                newLine(printer, sb, ident);
+
+                sb.append(entry.getKey());
+                for (int i = entry.getKey().length(); i < length; i++) {
+                    sb.append(' '); // NOI18N
+                }
+                sb.append(" : "); // NOI18N
+                if (path.contains(entry.getValue())) {
+                    sb.append("CYCLE ").append(entry.getValue().getFullyQualifiedName()); // NOI18N
+                } else {
+                    dumpModel(printer, entry.getValue(), sb, identBuilder.toString(), path);
+                }
             }
         }
         path.remove(jsObject);
+    }
+
+    private static void newLine(Printer printer, StringBuilder sb, String ident) {
+        printer.println(sb.toString());
+        sb.setLength(0);
+        sb.append(ident);
     }
 
     public static interface Printer {

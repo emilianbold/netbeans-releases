@@ -42,51 +42,20 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
 
 /**
  *
  * @author Petr Pisl
  */
-public class ModelTest extends JsTestBase {
-    
+public class ModelTest extends ModelTestBase {
+  
     public ModelTest(String testName) {
         super(testName);
     }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        JQueryModel.skipInTest = true;
-    }
-        
-    
-    private Model getModel(String file) throws Exception {
-        final Model[] globals = new Model[1];
-        Source source = getTestSource(getTestFile(file));
-        
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
-                JsParserResult parameter = (JsParserResult) resultIterator.getParserResult();
-                Model model = parameter.getModel();
-                globals[0] = model;
-            }
-        });        
-        return globals[0];
-    }
-  
-    
     
     public void testObjectName01() throws Exception {
         Model model = getModel("testfiles/model/objectNames01.js");
