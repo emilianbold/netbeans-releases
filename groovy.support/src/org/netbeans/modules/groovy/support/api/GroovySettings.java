@@ -52,6 +52,7 @@ import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import static org.netbeans.modules.groovy.support.api.Bundle.*;
 
 /**
  * Groovy settings
@@ -62,17 +63,14 @@ import org.openide.util.NbPreferences;
 public final class GroovySettings extends AdvancedOption {
 
     public static final String GROOVY_OPTIONS_CATEGORY = "Advanced/org-netbeans-modules-groovy-support-api-GroovySettings"; // NOI18N
-
     public static final String GROOVY_DOC_PROPERTY  = "groovy.doc"; // NOI18N
-
+    
     private static final String GROOVY_DOC  = "groovyDoc"; // NOI18N
-
     private static GroovySettings instance;
-
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    
 
     private GroovySettings() {
-        super();
     }
 
     public static synchronized GroovySettings getInstance() {
@@ -107,14 +105,19 @@ public final class GroovySettings extends AdvancedOption {
         propertyChangeSupport.firePropertyChange(GROOVY_DOC_PROPERTY, oldValue, groovyDoc);
     }
 
+    @Override
+    @NbBundle.Messages("AdvancedOption_DisplayName_Support=Groovy")
     public String getDisplayName() {
-        return NbBundle.getMessage(GroovySettings.class, "AdvancedOption_DisplayName_Support");
+        return AdvancedOption_DisplayName_Support();
     }
 
+    @Override
+    @NbBundle.Messages("AdvancedOption_Tooltip_Support=Groovy configuration")
     public String getTooltip() {
-        return NbBundle.getMessage(GroovySettings.class, "AdvancedOption_Tooltip_Support");
+        return AdvancedOption_Tooltip_Support();
     }
 
+    @Override
     public OptionsPanelController create() {
         return new SupportOptionsPanelController();
     }
