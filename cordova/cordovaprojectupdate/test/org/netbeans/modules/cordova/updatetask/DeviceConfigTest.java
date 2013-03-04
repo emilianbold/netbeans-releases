@@ -46,14 +46,15 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author Jan Becicka
  */
-public class ConfigTest {
+public class DeviceConfigTest {
     
-    public ConfigTest() {
+    public DeviceConfigTest() {
     }
     
     @BeforeClass
@@ -77,19 +78,11 @@ public class ConfigTest {
      */
     @Test
     public void testOut() throws Exception{
-        SourceConfig instance = new SourceConfig(SourceConfig.class.getResourceAsStream("config.xml"));
-        System.out.println(instance.toString());
-        System.out.println(instance.getName());
-        System.out.println(instance.getAuthor());
-        System.out.println(instance.getDescription());
-        instance.setAuthor("be");
-        instance.setName("aaa");
-        instance.setDescription("desc");
+        DeviceConfig instance = new DeviceConfig(DeviceConfig.class.getResourceAsStream("dev_config.xml"));
         
-        System.out.println(instance.getIcon("android"));
-        System.out.println(instance.getPreference("target-device"));
-        System.out.println(instance.getSplash("ios", 320, 480));
-        System.out.println(instance.getId());
+        assertEquals(instance.getAccess(), "*");
+        assertEquals(instance.getContent(), "index.html");
         instance.printDocument(System.out);
     }
+    
 }

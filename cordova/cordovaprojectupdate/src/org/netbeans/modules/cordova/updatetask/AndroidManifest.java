@@ -44,9 +44,6 @@ package org.netbeans.modules.cordova.updatetask;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * API for AndroidManifest.xml
@@ -63,37 +60,19 @@ public class AndroidManifest extends XMLFile {
     }
 
     public String getName() {
-        Node n = getNameNode();
-        if (n==null) {
-            return null;
-        }
-        return n.getTextContent();
+        return getAttributeText("/manifest/application/activity", "android:name");
     }
     
     public void setName(String name) {
-        Node n = getNameNode();
-        if (n!=null) {
-            n.setTextContent(name);
-        }
+        setAttributeText("/manifest/application/activity", "android:name", name);
     }
 
     public String getPackage() {
-        return getNode("manifest").getAttributes().getNamedItem("package").getTextContent();
+        return getAttributeText("/manifest","package");
     }
 
     public void setPackage(String packageName) {
-        getNode("manifest").getAttributes().getNamedItem("package").setTextContent(packageName);
-    }
-
-    private Node getNameNode() throws DOMException {
-        final NodeList childNodes = getNode("application").getChildNodes();
-        for (int i=0; i < childNodes.getLength();i++) {
-            final Node item = childNodes.item(i);
-            if ("activity".equals(item.getNodeName())) {
-                return item.getAttributes().getNamedItem("android:name");
-            }
-        }
-        return null;
+        setAttributeText("/manifest", "package", packageName);
     }
     
 }
