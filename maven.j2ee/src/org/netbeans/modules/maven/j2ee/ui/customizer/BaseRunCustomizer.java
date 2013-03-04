@@ -41,26 +41,19 @@
  */
 package org.netbeans.modules.maven.j2ee.ui.customizer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.ui.Server;
 import static org.netbeans.modules.maven.j2ee.ui.customizer.Bundle.*;
 import org.netbeans.modules.maven.j2ee.ui.util.DeployOnSaveCheckBoxUpdater;
@@ -96,7 +89,6 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         if (ExecutionChecker.DEV_NULL.equals(selectedServer.getServerInstanceID())) {
             MavenProjectSupport.setServerID(project, null);
             MavenProjectSupport.setServerInstanceID(project, null);
-            MavenProjectSupport.setOldServerInstanceID(project, null);
         }
 
         MavenProjectSupport.changeServer(project, false);

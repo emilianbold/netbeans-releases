@@ -892,6 +892,17 @@ public class Util {
         }
         return persistenceUnit;
     }
+    public static PersistenceUnit[] getPersistenceUnits(Project project) throws IOException {
+        PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project);
+        if (persistenceScopes.length > 0) {
+            FileObject persXml = persistenceScopes[0].getPersistenceXml();
+            if (persXml != null) {
+                Persistence persistence = PersistenceMetadata.getDefault().getRoot(persXml);
+                return persistence.getPersistenceUnit();
+            }
+        }
+        return new PersistenceUnit[]{};
+    }
 
     //UI support
     public static Set getSelectedItems(JList list, boolean enabledOnly) {
