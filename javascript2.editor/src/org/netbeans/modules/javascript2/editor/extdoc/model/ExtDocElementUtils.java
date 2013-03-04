@@ -47,7 +47,7 @@ import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 
 /**
  * Parses Type names, types and their offsets for given strings and
@@ -109,7 +109,7 @@ public class ExtDocElementUtils {
         List<Type> types = new LinkedList<Type>();
         String[] typesArray = textToParse.split("[/]"); //NOI18N
         for (String string : typesArray) {
-            types.add(new TypeImpl(string, offset + textToParse.indexOf(string)));
+            types.add(new TypeUsageImpl(string, offset + textToParse.indexOf(string)));
         }
         return types;
     }

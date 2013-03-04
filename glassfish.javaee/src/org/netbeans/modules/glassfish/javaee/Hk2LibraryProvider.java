@@ -111,6 +111,10 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     private Pattern JAXRS_PATTERN
             = Pattern.compile("[jJ][aA][xX][ -]{0,1}[rR][sS]");
 
+    /** Code base for file locator. */
+    static final String JAVAEE_DOC_CODE_BASE
+            = "org.netbeans.modules.j2ee.platform";
+
     /** Internal {@see GlassFishServer} to {@see Hk2LibraryProvider}
      *  mapping. */
     private static final Map <GlassFishServer, Hk2LibraryProvider> providers
@@ -412,7 +416,8 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
                     for (String lookup : javadocLookups) {
                         try {
                             File j2eeDoc = InstalledFileLocator
-                                    .getDefault().locate(lookup, null, false);
+                                    .getDefault().locate(lookup,
+                                    JAVAEE_DOC_CODE_BASE, false);
                             if (j2eeDoc != null) {
                                 javadoc.add(fileToUrl(j2eeDoc));
                             }

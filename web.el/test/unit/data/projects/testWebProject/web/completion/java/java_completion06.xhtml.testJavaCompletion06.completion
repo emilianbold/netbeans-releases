@@ -1,0 +1,5 @@
+Code completion result for source line:
+#{T(Bo|)}
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      Boolean                                    java.lang.Boolean

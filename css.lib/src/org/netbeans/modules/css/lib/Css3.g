@@ -362,9 +362,27 @@ importItem
         {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier) mediaQueryList SEMI
     ;
 media
-    : MEDIA_SYM ws? mediaQueryList
+    : MEDIA_SYM ws? 
+        
+        (
+            ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> scss_mq_interpolation_expression ws? 
+            |
+            (mediaQueryList)=>mediaQueryList
+        )
+        
         LBRACE ws?
-            ( ( rule | page | fontFace | vendorAtRule ) ws?)*
+            ( 
+                //allow just semicolon closed declaration
+                (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
+                | {isScssSource()}? sass_extend ws?
+                
+                | rule  ws?
+                | page  ws?
+                | fontFace  ws?
+                | vendorAtRule  ws?
+                | {isScssSource()}? media ws?
+                
+            )*
          RBRACE
     ;
 
@@ -568,6 +586,10 @@ declarations
 		|
                 (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
                 |
+                {isScssSource()}? sass_extend ws?
+                |
+                {isCssPreprocessorSource()}? media ws?
+                |
                 {isCssPreprocessorSource()}? cp_mixin_call ws?
 //                |
 //                (~(LBRACE|SEMI|RBRACE)+ SEMI)=>syncTo_SEMI ws?
@@ -602,7 +624,7 @@ simpleSelectorSequence
         
 //predicate
 esPred
-    : HASH_SYMBOL | HASH | DOT | LBRACKET | COLON | DCOLON
+    : HASH_SYMBOL | HASH | DOT | LBRACKET | COLON | DCOLON | SASS_EXTEND_ONLY_SELECTOR
     ;        
        
 typeSelector 
@@ -618,7 +640,8 @@ namespacePrefix
 elementSubsequent
     : 
     (
-    	cssId
+        {isScssSource()}? sass_extend_only_selector
+    	| cssId
     	| cssClass
         | slAttribute
         | pseudo
@@ -1068,6 +1091,24 @@ scss_declaration_interpolation_expression
 
     ;
     
+scss_mq_interpolation_expression
+    :
+        ( 
+            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            |
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
+        )
+        ( 
+            ws?
+            (
+                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                |
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
+            )
+        )*
+
+    ;
+    
 scss_interpolation_expression_var
     :
         HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
@@ -1094,6 +1135,16 @@ scss_interpolation_expression_var
 scss_nested_properties
     :
     property COLON ws? propertyValue? LBRACE ws? syncToFollow declarations RBRACE
+    ;
+
+sass_extend
+    :
+    SASS_EXTEND ws simpleSelectorSequence (SASS_OPTIONAL ws?)? SEMI
+    ;
+    
+sass_extend_only_selector
+    :
+    SASS_EXTEND_ONLY_SELECTOR
     ;
 
 //*** END OF LESS SYNTAX ***
@@ -1493,9 +1544,16 @@ WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 //this generic at rule must be after the last of the specific at rule tokens
 SASS_MIXIN          : '@MIXIN';
 SASS_INCLUDE        : '@INCLUDE';
+SASS_EXTEND         : '@EXTEND';
+
 AT_IDENT	    : '@' NMCHAR+;	
+
 SASS_VAR            : '$' NMCHAR+;
 SASS_DEFAULT        : '!DEFAULT';
+SASS_OPTIONAL       : '!OPTIONAL';
+
+SASS_EXTEND_ONLY_SELECTOR
+                    : '%' NMCHAR+;
 
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units

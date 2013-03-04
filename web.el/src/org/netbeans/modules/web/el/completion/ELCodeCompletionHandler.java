@@ -44,6 +44,7 @@ package org.netbeans.modules.web.el.completion;
 import com.sun.el.parser.AstDeferredExpression;
 import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.AstDynamicExpression;
+import com.sun.el.parser.AstFunction;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstListData;
 import com.sun.el.parser.AstMapData;
@@ -119,7 +120,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
         return keywordFixedTexts;
     }
- 
+
     @Override
     public CodeCompletionResult complete(final CodeCompletionContext context) {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(50);
@@ -128,7 +129,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         if (element == null || !element.isValid()) {
             return CodeCompletionResult.NONE;
         }
-        Node target = getTargetNode(element, context.getCaretOffset());
+        final Node target = getTargetNode(element, context.getCaretOffset());
         if(target == null) {
             //completion called outside of the EL content, resp. inside the
             //delimiters #{ or } area
@@ -175,12 +176,15 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     } else if (ELTypeUtilities.isResourceBundleVar(ccontext, nodeToResolve)) {
                         proposeBundleKeysInDotNotation(context, prefixMatcher, element, nodeToResolve, proposals);
                     } else if (resolved == null) {
-                        proposeFunctions(ccontext, context, prefixMatcher, element, proposals);
-                        proposeManagedBeans(ccontext, context, prefixMatcher, element, proposals);
-                        proposeBundles(ccontext, context, prefixMatcher, element, proposals);
-                        proposeVariables(ccontext, context, prefixMatcher, element, proposals);
-                        proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
-                        proposeKeywords(context, prefixMatcher, proposals);
+                        if (target instanceof AstDotSuffix == false && nodeToResolve instanceof AstFunction == false) {
+                            proposeFunctions(ccontext, context, prefixMatcher, element, proposals);
+                            proposeManagedBeans(ccontext, context, prefixMatcher, element, proposals);
+                            proposeBundles(ccontext, context, prefixMatcher, element, proposals);
+                            proposeVariables(ccontext, context, prefixMatcher, element, proposals);
+                            proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
+                            proposeKeywords(context, prefixMatcher, proposals);
+                        }
+                        ELJavaCompletion.propose(ccontext, context, element, target, proposals);
                     } else {
                         proposeMethods(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
                         if (ELTypeUtilities.isIterableElement(ccontext, resolved)) {
