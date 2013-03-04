@@ -143,13 +143,31 @@ public final class FileImpl implements CsmFile,
         return false;
     }
 
+    /*package*/ FileContent prepareLazyStatementParsingContent() {
+        assert TraceFlags.PARSE_HEADERS_WITH_SOURCES;
+        assert parsingFileContentRef.get().get() == null;
+        FileContent out = FileContent.getHardReferenceBasedCopy(this.currentFileContent, false);
+        parsingFileContentRef.get().set(out);
+        return out;
+    }
+    
+    /*package*/ void releaseLazyStatementParsingContent(FileContent tmpFileContent) {
+        assert TraceFlags.PARSE_HEADERS_WITH_SOURCES;
+        FileContent cur = parsingFileContentRef.get().get();
+        if (cur == tmpFileContent) {
+            // TODO: merge parse errors?
+            parsingFileContentRef.get().set(null);
+        }
+    }
+
     public FileContent getParsingFileContent() {
         return parsingFileContentRef.get().get();
     }
     
     public FileContent prepareIncludedFileParsingContent() {
+        assert TraceFlags.PARSE_HEADERS_WITH_SOURCES;
         if (getParsingFileContent() == null) {
-            parsingFileContentRef.get().set(FileContent.getHardReferenceBasedCopy(this.currentFileContent, true));
+            parsingFileContentRef.get().set(FileContent.getHardReferenceBasedCopy(this.currentFileContent, false));
         }
         return getParsingFileContent();
     }
@@ -221,7 +239,7 @@ public final class FileImpl implements CsmFile,
     FileContentSignature getSignature() {
         return FileContentSignature.create(this);
     }
-
+    
     /*tests-only*/void debugInvalidate() {
         this.state = State.INITIAL;
     }

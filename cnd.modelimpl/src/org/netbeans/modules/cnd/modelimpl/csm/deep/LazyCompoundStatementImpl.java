@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -81,16 +82,8 @@ public final class LazyCompoundStatementImpl extends LazyStatementImpl implement
     protected CsmParserResult resolveLazyStatement(TokenStream tokenStream) {
         CsmParser parser = CsmParserProvider.createParser(getContainingFile());
         if (parser != null) {
-            try {
-                if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-                    // FIXME: should be released?
-                    FileContent fc = ((FileImpl)getContainingFile()).prepareIncludedFileParsingContent();
-                }
-                parser.init(this, tokenStream, null);
-                return parser.parse(CsmParser.ConstructionKind.COMPOUND_STATEMENT);
-            } finally {
-                
-            }
+            parser.init(this, tokenStream, null);
+            return parser.parse(CsmParser.ConstructionKind.COMPOUND_STATEMENT);
         }
         assert false : "parser not found";
         return null;
