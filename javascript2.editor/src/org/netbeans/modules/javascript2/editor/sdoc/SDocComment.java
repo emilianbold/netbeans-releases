@@ -54,7 +54,7 @@ import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
@@ -142,7 +142,7 @@ public class SDocComment extends JsComment {
         List<Type> extendsEntries = new LinkedList<Type>();
         for (SDocElement extend : getTagsForType(SDocElementType.INHERITS)) {
             SDocIdentifierElement ident = (SDocIdentifierElement) extend;
-            extendsEntries.add(new TypeImpl(ident.getIdentifier(), -1));
+            extendsEntries.add(new TypeUsageImpl(ident.getIdentifier(), -1));
         }
         return extendsEntries;
     }

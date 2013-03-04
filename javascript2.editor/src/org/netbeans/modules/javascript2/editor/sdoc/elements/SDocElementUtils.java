@@ -47,7 +47,7 @@ import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 
 /**
  * Parses Type names, types and their offsets for given strings and
@@ -98,7 +98,7 @@ public class SDocElementUtils {
         textToParse = removeCurlyBraces(textToParse);
         String[] typesArray = textToParse.split("[,]"); //NOI18N
         for (String string : typesArray) {
-            types.add(new TypeImpl(string.trim(), offset + textToParse.indexOf(string.trim())));
+            types.add(new TypeUsageImpl(string.trim(), offset + textToParse.indexOf(string.trim())));
         }
         return types;
     }
