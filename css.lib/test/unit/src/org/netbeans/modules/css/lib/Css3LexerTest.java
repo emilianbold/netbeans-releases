@@ -211,6 +211,24 @@ public class Css3LexerTest extends NbTestCase {
         
     }
      
+    public void testExtendOnlySelector() throws Exception {
+        String source = "body%my";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.SASS_EXTEND_ONLY_SELECTOR, lexer.nextToken());
+    }
+    
+    public void testExtendOnlySelector2() throws Exception {
+        String source = "#context a%extreme {";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken(null ,Css3Lexer.HASH, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.SASS_EXTEND_ONLY_SELECTOR, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.LBRACE, lexer.nextToken());
+    }
+     
      /**
     * @param expectedImage - use null if you do not want to check the image
     */

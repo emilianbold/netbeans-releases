@@ -246,7 +246,10 @@ public enum CssTokenId implements TokenId {
     SASS_VAR(Css3Lexer.SASS_VAR, IDENTIFIERS),
     SASS_MIXIN(Css3Lexer.SASS_MIXIN, AT_RULE_SYMBOL),
     SASS_INCLUDE(Css3Lexer.SASS_INCLUDE, AT_RULE_SYMBOL),
-    SASS_DEFAULT(Css3Lexer.SASS_DEFAULT, KEYWORDS);
+    SASS_DEFAULT(Css3Lexer.SASS_DEFAULT, KEYWORDS),
+    SASS_EXTEND(Css3Lexer.SASS_EXTEND, KEYWORDS),
+    SASS_EXTEND_ONLY_SELECTOR(Css3Lexer.SASS_EXTEND_ONLY_SELECTOR, IDENTIFIERS),
+    SASS_OPTIONAL(Css3Lexer.SASS_OPTIONAL, KEYWORDS);
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
     static {

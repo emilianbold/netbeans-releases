@@ -374,7 +374,8 @@ media
             ( 
                 //allow just semicolon closed declaration
                 (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
-
+                | {isScssSource()}? sass_extend ws?
+                
                 | rule  ws?
                 | page  ws?
                 | fontFace  ws?
@@ -585,6 +586,8 @@ declarations
 		|
                 (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
                 |
+                {isScssSource()}? sass_extend ws?
+                |
                 {isCssPreprocessorSource()}? media ws?
                 |
                 {isCssPreprocessorSource()}? cp_mixin_call ws?
@@ -621,7 +624,7 @@ simpleSelectorSequence
         
 //predicate
 esPred
-    : HASH_SYMBOL | HASH | DOT | LBRACKET | COLON | DCOLON
+    : HASH_SYMBOL | HASH | DOT | LBRACKET | COLON | DCOLON | SASS_EXTEND_ONLY_SELECTOR
     ;        
        
 typeSelector 
@@ -637,7 +640,8 @@ namespacePrefix
 elementSubsequent
     : 
     (
-    	cssId
+        {isScssSource()}? sass_extend_only_selector
+    	| cssId
     	| cssClass
         | slAttribute
         | pseudo
@@ -821,7 +825,7 @@ term
     | GEN
     | URI
     | hexColor
-    | (function)=>function
+    | function
     | {isCssPreprocessorSource()}? cp_variable
     )
     ws?
@@ -1131,6 +1135,16 @@ scss_interpolation_expression_var
 scss_nested_properties
     :
     property COLON ws? propertyValue? LBRACE ws? syncToFollow declarations RBRACE
+    ;
+
+sass_extend
+    :
+    SASS_EXTEND ws simpleSelectorSequence (SASS_OPTIONAL ws?)? SEMI
+    ;
+    
+sass_extend_only_selector
+    :
+    SASS_EXTEND_ONLY_SELECTOR
     ;
 
 //*** END OF LESS SYNTAX ***
@@ -1530,9 +1544,16 @@ WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 //this generic at rule must be after the last of the specific at rule tokens
 SASS_MIXIN          : '@MIXIN';
 SASS_INCLUDE        : '@INCLUDE';
+SASS_EXTEND         : '@EXTEND';
+
 AT_IDENT	    : '@' NMCHAR+;	
+
 SASS_VAR            : '$' NMCHAR+;
 SASS_DEFAULT        : '!DEFAULT';
+SASS_OPTIONAL       : '!OPTIONAL';
+
+SASS_EXTEND_ONLY_SELECTOR
+                    : '%' NMCHAR+;
 
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units
