@@ -61,21 +61,21 @@ public class ExtModelTest extends ModelTestBase {
     }
     
     public void testExtDefineMethod() throws Exception {
-        Model model = getModel("testfiles/completion/defineMethod/defineMethod.js");
-        assertNotNull(model);
-        JsObject  global = model.getGlobalObject();
-        assertEquals(3, global.getProperties().size());
-        JsObject jsObject = global.getProperty("NetBeans");
-        assertNotNull(jsObject);
-        jsObject = jsObject.getProperty("stuff");
-        assertNotNull(jsObject);
-        jsObject = jsObject.getProperty("engineer");
-        assertNotNull(jsObject);
-        JsObject developer = jsObject.getProperty("developer");
-        assertNotNull(developer);
-        assertFalse(developer.getModifiers().contains(Modifier.PRIVATE));
-        assertEquals(1, developer.getAssignments().size());
-        TypeUsage type = developer.getAssignments().iterator().next();
-        assertEquals("Anonym$0", type.getType());
+        checkModel("testfiles/completion/defineMethod/defineMethod.js");
+//        assertNotNull(model);
+//        JsObject  global = model.getGlobalObject();
+//        assertEquals(3, global.getProperties().size());
+//        JsObject jsObject = global.getProperty("NetBeans");
+//        assertNotNull(jsObject);
+//        jsObject = jsObject.getProperty("stuff");
+//        assertNotNull(jsObject);
+//        jsObject = jsObject.getProperty("engineer");
+//        assertNotNull(jsObject);
+//        JsObject developer = jsObject.getProperty("developer");
+//        assertNotNull(developer);
+//        assertFalse(developer.getModifiers().contains(Modifier.PRIVATE));
+//        assertEquals(1, developer.getAssignments().size());
+//        TypeUsage type = developer.getAssignments().iterator().next();
+//        assertEquals("Anonym$0", type.getType());
     }
 }

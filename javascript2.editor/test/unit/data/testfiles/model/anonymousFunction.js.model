@@ -1,0 +1,24 @@
+anonymousFunction [ANONYMOUS: false, DECLARED: true - anonymousFunction, MODIFIERS: PUBLIC, FILE]
+# RETURN TYPES
+undefined
+# PROPERTIES
+_L44 : _L44 [ANONYMOUS: true, DECLARED: true - _L44, MODIFIERS: PUBLIC, FUNCTION]
+     # RETURN TYPES
+     undefined
+     # PROPERTIES
+     Car       : Car [ANONYMOUS: false, DECLARED: true - Car, MODIFIERS: PRIVATE, OBJECT_LITERAL]
+               # PROPERTIES
+               getColor : getColor [ANONYMOUS: false, DECLARED: true - getColor, MODIFIERS: PUBLIC, METHOD]
+                        # RETURN TYPES
+                        String
+                        # PROPERTIES
+                        arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+               getInfo  : getInfo [ANONYMOUS: false, DECLARED: true - getInfo, MODIFIERS: PUBLIC, METHOD]
+                        # RETURN TYPES
+                        String
+                        # PROPERTIES
+                        arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+     arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+     root      : root [ANONYMOUS: false, DECLARED: true - root, MODIFIERS: PRIVATE, OBJECT]
+               # PROPERTIES
+               Car : Car [ANONYMOUS: false, DECLARED: true - Car, MODIFIERS: PUBLIC, PROPERTY]

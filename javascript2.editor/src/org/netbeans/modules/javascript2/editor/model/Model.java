@@ -57,6 +57,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
@@ -174,8 +175,12 @@ public final class Model {
     }
 
     public void dumpModel(Printer printer) {
-        dumpModel(printer, getGlobalObject(), new StringBuilder(),
-                "", new HashSet<JsObject>()); // NOI18N
+        StringBuilder sb = new StringBuilder();
+        dumpModel(printer, getGlobalObject(), sb, "", new HashSet<JsObject>()); // NOI18N
+        String rest = sb.toString();
+        if (!rest.isEmpty()) {
+            printer.println(rest);
+        }
     }
 
     private static void dumpModel(Printer printer, JsObject jsObject,
@@ -183,11 +188,24 @@ public final class Model {
 
         sb.append(jsObject.getName());
         sb.append(" [");
+        sb.append("ANONYMOUS: ");
+        sb.append(jsObject.isAnonymous());
+        sb.append(", DECLARED: ");
+        sb.append(jsObject.isDeclared());
         if (jsObject.getDeclarationName() != null) {
-            sb.append("DECLARED: ");
-            sb.append(jsObject.getDeclarationName().getName());
-            sb.append(" : ");
+            sb.append(" - ").append(jsObject.getDeclarationName().getName());
         }
+        if (!jsObject.getModifiers().isEmpty()) {
+            sb.append(", MODIFIERS: ");
+            for (Modifier m : jsObject.getModifiers()) {
+                sb.append(m.toString());
+                sb.append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+            
+        }
+
+        sb.append(", ");
         sb.append(jsObject.getJSKind());
         sb.append("]");
 
@@ -195,6 +213,16 @@ public final class Model {
 
         if (jsObject instanceof JsFunction) {
             JsFunction function = ((JsFunction) jsObject);
+            if (!function.getReturnTypes().isEmpty()) {
+                newLine(printer, sb, ident);
+                sb.append("# RETURN TYPES");
+
+                for (TypeUsage type : function.getReturnTypes()) {
+                    newLine(printer, sb, ident);
+
+                    sb.append(type.getType());
+                }
+            }
             if (!function.getParameters().isEmpty()) {
                 newLine(printer, sb, ident);
                 sb.append("# PARAMETERS");

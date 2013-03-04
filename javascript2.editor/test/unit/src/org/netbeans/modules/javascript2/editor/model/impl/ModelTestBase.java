@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.io.StringWriter;
 import java.util.Collections;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -64,7 +65,31 @@ public class ModelTestBase extends JsTestBase {
     protected void setUp() throws Exception {
         super.setUp();
     }
-    
+
+    public void checkModel(String file) throws Exception {
+        final Model[] globals = new Model[1];
+        Source source = getTestSource(getTestFile(file));
+
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                JsParserResult parameter = (JsParserResult) resultIterator.getParserResult();
+                Model model = parameter.getModel();
+                globals[0] = model;
+            }
+        });
+        //return globals[0];
+        final StringWriter sw = new StringWriter();
+        Model.Printer p = new Model.Printer() {
+
+            @Override
+            public void println(String str) {
+                sw.append(str).append("\n");
+            }
+        };
+        globals[0].dumpModel(p);
+        assertDescriptionMatches(source.getFileObject(), sw.toString(), false, ".model", true);
+    }
+
     public Model getModel(String file) throws Exception {
         final Model[] globals = new Model[1];
         Source source = getTestSource(getTestFile(file));
