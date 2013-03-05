@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
@@ -49,11 +48,12 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
  * @author Petr Pisl
  */
 public class TypeUsageImpl implements TypeUsage {
-
     
-    private String type;
+    private final String type;
+
     private final int offset;
-    private boolean resolved;
+    
+    private final boolean resolved;
     
     public TypeUsageImpl(String type, int offset, boolean resolved) {
         this.type = type;
@@ -79,26 +79,38 @@ public class TypeUsageImpl implements TypeUsage {
         return offset;
     }
 
+    @Override
     public boolean isResolved() {
         return resolved;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || !(obj instanceof TypeUsageImpl)) return false;
-        TypeUsageImpl typeUsage = (TypeUsageImpl)obj;
-        return type.equals(typeUsage.getType())
-                && offset == typeUsage.getOffset()
-                && resolved == typeUsage.isResolved();
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TypeUsageImpl other = (TypeUsageImpl) obj;
+        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+            return false;
+        }
+        if (this.offset != other.offset) {
+            return false;
+        }
+        if (this.resolved != other.resolved) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        int hash = 2;
-        hash = hash * 31 + (type != null ? type.hashCode() : 0);
-        hash = hash * 31 + offset;
-        hash = hash * 31 + (resolved ? 1 : 0);
+        int hash = 7;
+        hash = 83 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 83 * hash + this.offset;
+        hash = 83 * hash + (this.resolved ? 1 : 0);
         return hash;
     }
 }

@@ -73,4 +73,28 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion05.xhtml", "#{[\"one\", 2].^}", false);
     }
 
+    public void testJavaCompletion01() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion01.xhtml", "#{^}", false);
+    }
+
+    public void testJavaCompletion02() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion02.xhtml", "#{T(^)}", false);
+    }
+
+    public void testJavaCompletion03() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion03.xhtml", "#{T(Boolean).^}", false);
+    }
+
+    public void testJavaCompletion04() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion04.xhtml", "#{T(java.lang.Boolean).^}", false);
+    }
+
+    public void testJavaCompletion05() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion05.xhtml", "#{java.math.^}", false);
+    }
+
+    public void testJavaCompletion06() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/java/java_completion06.xhtml", "#{T(Bo^)}", false);
+    }
+
 }

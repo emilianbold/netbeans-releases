@@ -45,7 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 
 /**
  * Contains helper classes for work with jsDoc model.
@@ -73,7 +73,7 @@ public class JsDocElementUtils {
                         (values.length > 0) ? new NamePath(values[0].trim()) : null,
                         (values.length > 1) ? new NamePath(values[1].trim()) : null);
             case DECLARATION:
-                return DeclarationElement.create(type, new TypeImpl(tagDescription, descStartOffset));
+                return DeclarationElement.create(type, new TypeUsageImpl(tagDescription, descStartOffset));
             case DESCRIPTION:
                 return DescriptionElement.create(type, tagDescription);
             case LINK:
@@ -101,7 +101,7 @@ public class JsDocElementUtils {
         String[] typesArray = textToParse.split("[|]"); //NOI18N
         for (String string : typesArray) {
             if (!string.trim().isEmpty()) {
-                types.add(new TypeImpl(string, offset + textToParse.indexOf(string)));
+                types.add(new TypeUsageImpl(string, offset + textToParse.indexOf(string)));
             }
         }
         return types;

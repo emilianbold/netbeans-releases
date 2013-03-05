@@ -219,22 +219,22 @@ public class ELTestBaseForTestProject extends ELTestBase {
 
         @Override
         public List<VariableInfo> getManagedBeans(FileObject target, ResolverContext context) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return Collections.emptyList();
         }
 
         @Override
         public List<VariableInfo> getVariables(Snapshot snapshot, int offset, ResolverContext context) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return Collections.emptyList();
         }
 
         @Override
         public List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot, ResolverContext context) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return Collections.emptyList();
         }
 
         @Override
         public List<VariableInfo> getRawObjectProperties(String name, Snapshot snapshot, ResolverContext context) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return Collections.emptyList();
         }
 
     }

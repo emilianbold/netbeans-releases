@@ -385,10 +385,25 @@ public enum NodeType {
     
     scss_selector_interpolation_expression,
     scss_declaration_interpolation_expression,
+    scss_mq_interpolation_expression,
     
     scss_interpolation_expression_var,
     
-    scss_nested_properties;
+    scss_nested_properties,
+    sass_extend,
+    sass_extend_only_selector,
+    sass_debug,
+    
+    sass_control,
+    sass_if,
+    sass_for,
+    sass_each,
+    sass_each_list,
+    sass_while,
+    sass_control_block,
+    sass_control_expression
+    
+    ;
     
     
 }

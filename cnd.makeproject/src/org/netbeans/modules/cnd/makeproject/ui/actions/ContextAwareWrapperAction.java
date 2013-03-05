@@ -87,6 +87,9 @@ abstract public class ContextAwareWrapperAction extends MakeProjectContextAwareA
     
     @Override
     public JMenuItem getPopupPresenter() {
+        if (deligateAction == null) {
+            return null;
+        }
         if (Presenter.Popup.class.isAssignableFrom(deligateAction.getClass())) {
             return ((Presenter.Popup)deligateAction).getPopupPresenter();
         }
@@ -95,6 +98,9 @@ abstract public class ContextAwareWrapperAction extends MakeProjectContextAwareA
     
     @Override
     public JMenuItem getMenuPresenter() {
+        if (deligateAction == null) {
+            return null;
+        }        
         if (Presenter.Menu.class.isAssignableFrom(deligateAction.getClass())) {
             return ((Presenter.Menu)deligateAction).getMenuPresenter();
         }

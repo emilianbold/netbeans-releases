@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.java.hints.jdk;
 
-import org.netbeans.modules.javascript2.editor.model.Type;
+import com.sun.source.tree.Tree.Kind;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author lahvac
  */
-public class TypeImpl implements Type {
-
-    private final String type;
-    private final int offset;
-
-    public TypeImpl(String type, int offset) {
-        this.type = type;
-        this.offset = offset;
-    }
-
-    @Override
-    public String getType() {
-        return type;
-    }
-
-    @Override
-    public String toString() {
-        return "TypeImpl[type=" + type + ",offset=" + offset + "]";
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TypeImpl other = (TypeImpl) obj;
-        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
-            return false;
-        }
-        if (this.offset != other.offset) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 1;
-        hash = hash * 31 + (type != null ? type.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public int getOffset() {
-        return offset;
-    }
+@Messages({
+    "DN_containsForIndexOf=String.indexOf can be replaced with String.contains",
+    "DESC_containsForIndexOf=Finds usages of String.indexOf that can be replaced with String.contains",
+    "ERR_containsForIndexOf=String.indexOf can be replaced with String.contains",
+    "FIX_containsForIndexOf=String.indexOf can be replaced with String.contains",
+})
+public class Tiny {
     
+    @Hint(displayName="#DN_containsForIndexOf", description="#DESC_containsForIndexOf", category="rules15", suppressWarnings="IndexOfReplaceableByContains")
+    @TriggerPatterns({
+        @TriggerPattern(value="$site.indexOf($substring) == (-1)"),
+        @TriggerPattern(value="$site.indexOf($substring) != (-1)")
+    })
+    public static ErrorDescription containsForIndexOf(HintContext ctx) {
+        String target = "$site.contains($substring)";
+        
+        if (ctx.getPath().getLeaf().getKind() == Kind.EQUAL_TO) {
+            target = "!" + target;
+        }
+        
+        Fix fix = JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_containsForIndexOf(), ctx.getPath(), target);
+        
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_containsForIndexOf(), fix);
+    }
 }

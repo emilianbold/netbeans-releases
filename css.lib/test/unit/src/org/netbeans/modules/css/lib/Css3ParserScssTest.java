@@ -643,7 +643,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testDefaultVariable() {
         String source =
                 "$content: \"Second content?\" !default;\n";
@@ -654,10 +654,250 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testMultipleImport() {
         String source =
                 "@import \"rounded-corners\", \"text-shadow\";\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testInterpolationExpressionInImport() {
+        String source =
+                "@import url(\"http://fonts.googleapis.com/css?family=#{$family}\");\n";
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    //the grammar defines the imports needs to be at the very beginning of the file,
+    //though this is not true in case of the preprocessor code
+    public void testSASSCodeMayPrecedeImport_fails() {
+        String source = "$var: my;\n"
+                + "@import url(\"#{$var}\"\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testNestedMediaQueries() {
+        String source = ".sidebar {\n"
+                + "  width: 300px;\n"
+                + "  @media screen and (orientation: landscape) {\n"
+                + "  .class {\n"
+                + "    width: 500px;\n"
+                + "  }\n"
+                + "}\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testNestedMediaQueryInMediaQuery() {
+        String source = "@media screen {\n"
+                + "  .sidebar {\n"
+                + "    @media (orientation: landscape) {\n"
+                + "   //   width: 500px;\n"
+                + "    }\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    //the media query can the property declarations directly.
+    public void testPropertiesDirectlyInMediaQuery() {
+        String source = "@media screen and (orientation: landscape) {\n"
+                + "    width: 500px;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testInterpolationExpressionInMediaQuery() {
+        String source = "@media #{$media} {\n"
+                + "  .sidebar {\n"
+                + "    width: 500px;\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    //the scss_mq_interpolation_expression doesn't want to be extended 
+    //by LPAREN and RPAREN from some reason (endless loop).
+    public void testInterpolationExpressionWithParenMediaQuery_fails() {
+        String source = "$media: screen;\n"
+                + "$feature: -webkit-min-device-pixel-ratio;\n"
+                + "$value: 1.5;\n"
+                + "\n"
+                + "@media #{$media} and (#{$feature}: #{$value}) {\n"
+                + "  .sidebar {\n"
+                + "    width: 500px;\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testExtend() {
+        String source = ".seriousError {\n"
+                + "  @extend .error;\n"
+                + "  border-width: 3px;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testExtendComplex() {
+        String source = ".hoverlink {\n"
+                + "  @extend a:hover;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testExtendOnlySelectors() {
+        String source = "#context a%extreme {\n"
+                + "  color: blue;\n"
+                + "  font-weight: bold;\n"
+                + "  font-size: 2em;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testExtendOnlySelectorCall() {
+        String source = ".notice {\n"
+                + "  @extend %extreme;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testDebug() {
+        String source = "@debug 10em + 12em;\n"
+                + ".class {\n"
+                + "@debug \"hello\";\n"
+                + "}\n"
+                + "@mixin mymixin {\n"
+                + "@debug 20;"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testWarn() {
+        String source = "@warn 10em + 12em;\n"
+                + ".class {\n"
+                + "@warn \"hello\";\n"
+                + "}\n"
+                + "@mixin mymixin {\n"
+                + "@warn 20;"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testIf() {
+        String source = "p {\n"
+                + "  @if 1 + 1 == 2 { border: 1px solid;  }\n"
+                + "  @if 5 < 3      { border: 2px dotted; }\n"
+                + "  @if null       { border: 3px double; }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testFor() {
+        String source = "@for $i from 1 through 3 {\n"
+                + "  .item-#{$i} { width: 2em * $i; }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testEach() {
+        String source = "@each $animal in puma, sea-slug, egret, salamander {\n"
+                + "  .#{$animal}-icon {\n"
+                + "    background-image: url('/images/#{$animal}.png');\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testWhile() {
+        String source = "$i: 6;\n"
+                + "@while $i > 0 {\n"
+                + "  .item-#{$i} { width: 2em * $i; }\n"
+                + "  $i: $i - 2;\n"
+                + "}";
 
         CssParserResult result = TestUtil.parse(source);
 

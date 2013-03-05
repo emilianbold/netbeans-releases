@@ -614,7 +614,7 @@ public class Css3ParserTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(content);
 //        TestUtil.dumpTokens(result);
-//        TestUtil.dumpResult(result);
+        TestUtil.dumpResult(result);
         Node error = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
                 + "rule/declarations/declaration/propertyValue/expression/term/function/expression/error");

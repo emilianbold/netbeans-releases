@@ -18,7 +18,7 @@ import javax.jms.MessageListener;
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
         @ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable"),
         @ActivationConfigProperty(propertyName = "clientId", propertyValue = "TestMDBTopicBean"),
-        @ActivationConfigProperty(propertyName = "subscriptionName", propertyValue = "TestMDBTopicBean")
+        @ActivationConfigProperty(propertyName = "subscriptionName", propertyValue = "TestMDBTopicBean"),
     })
 public class TestMDBTopicBean implements MessageListener {
     

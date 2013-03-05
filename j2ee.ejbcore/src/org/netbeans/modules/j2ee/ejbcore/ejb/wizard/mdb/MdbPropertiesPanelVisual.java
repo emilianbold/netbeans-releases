@@ -250,7 +250,6 @@ public class MdbPropertiesPanelVisual extends javax.swing.JPanel {
         setProperty(ActivationConfigProperties.DESTINATION_LOOKUP, "");
         setProperty(ActivationConfigProperties.DESTINATION_TYPE, DestinationType.QUEUE);
         setProperty(ActivationConfigProperties.MESSAGE_SELECTOR, "");
-        setProperty(ActivationConfigProperties.SHARE_SUBSCRIPTION, "");
         setProperty(ActivationConfigProperties.SUBSCRIPTION_DURABILITY, SubscriptionDurability.NON_DURABLE);
         setProperty(ActivationConfigProperties.SUBSCRIPTION_NAME, "");
     }
