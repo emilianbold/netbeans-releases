@@ -66,11 +66,11 @@ public class GenerateScriptExecutor {
 
             HashMap map = new HashMap();
             //
-            map.put("javax.persistence.schema-generation-action", "create");
-            map.put("javax.persistence.schema-generation-target", "scripts");
+            map.put("javax.persistence.schema-generation.scripts.action", "create");
+            //map.put("javax.persistence.schema-generation-target", "scripts");
             if(!validateOnly) {
                 try {
-                    map.put("javax.persistence.ddl-create-script-target", new FileWriter(FileUtil.toFile(file)));
+                    map.put("javax.persistence.schema-generation.scripts.create-target", new FileWriter(FileUtil.toFile(file)));
                 } catch (IOException ex) {
                     problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_File", file.getPath()));
                 }
