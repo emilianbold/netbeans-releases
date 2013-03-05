@@ -117,7 +117,7 @@ public class HudsonGitSCM implements HudsonSCM {
     @Override public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJobBuild build) {
         final Element changeSet;
         try {
-            changeSet = XMLUtil.findElement(new ConnectionBuilder().job(build.getJob()).url(build.getUrl() + "api/xml?tree=changeSet[items[id,author[fullName],msg,paths[file,editType]]]").parseXML().getDocumentElement(), "changeSet", null);
+            changeSet = XMLUtil.findElement(new ConnectionBuilder().job(build.getJob()).url(build.getUrl() + "api/xml?tree=changeSet[kind,items[id,author[fullName],msg,paths[file,editType]]]").parseXML().getDocumentElement(), "changeSet", null);
         } catch (IOException x) {
             LOG.log(Level.WARNING, "could not parse changelog for {0}: {1}", new Object[] {build, x});
             return Collections.emptyList();
@@ -157,12 +157,15 @@ public class HudsonGitSCM implements HudsonSCM {
                 return files;
             }
         }
+        String kind = Utilities.xpath("kind", changeSet); // #224993    //NOI18N
+        if (kind != null && !"git".equals(kind)) { //NOI18N
+            return null; //not a git changelog
+        }
         List<GitItem> items = new ArrayList<GitItem>();
         NodeList nl = changeSet.getElementsByTagName("item");
         for (int i = 0; i < nl.getLength(); i++) {
             Element itemXML = (Element) nl.item(i);
-            Element idE = XMLUtil.findElement(itemXML, "id", null);
-            if (idE == null || !XMLUtil.findText(idE).matches("[0-9a-f]{40}")) {
+            if (kind == null && !looksLikeGitChangeLog(itemXML)) {
                 return null; // does not look like a Git changelog
             }
             items.add(new GitItem(itemXML));
@@ -171,6 +174,16 @@ public class HudsonGitSCM implements HudsonSCM {
             return null; // might not be a Git changelog
         }
         return items;
+    }
+
+    /**
+     * @return false if the item does not look like a Git changelog, true
+     * otherwise.
+     */
+    private boolean looksLikeGitChangeLog(Element itemXML) {
+        Element idE = XMLUtil.findElement(itemXML, "id", null);         //NOI18N
+        return idE != null
+                && XMLUtil.findText(idE).matches("[0-9a-f]{40}");       //NOI18N
     }
 
     static @CheckForNull URI getRemoteOrigin(URI repository, @NullAllowed HudsonJob job) {

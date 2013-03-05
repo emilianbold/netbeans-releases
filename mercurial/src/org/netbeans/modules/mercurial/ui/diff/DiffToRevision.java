@@ -169,6 +169,8 @@ public class DiffToRevision  implements ActionListener {
 
     private void initializeSelections () {
         selectionsFirst.put(panel.rbLocalToBase, HgRevision.BASE);
+        selectionsFirst.put(panel.rbLocalToAny, baseRevision);
+        selectionsFirst.put(panel.rbBaseToAny, baseRevision);
         selectionsSecond.put(panel.rbLocalToBase, HgRevision.CURRENT);
         selectionsSecond.put(panel.rbLocalToAny, HgRevision.CURRENT);
         selectionsSecond.put(panel.rbBaseToAny, HgRevision.BASE);
