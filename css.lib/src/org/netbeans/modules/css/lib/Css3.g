@@ -429,6 +429,7 @@ bodyItem
         | {isCssPreprocessorSource()}? cp_mixin_call
         | {isScssSource()}? sass_debug
         | {isScssSource()}? sass_control
+        | {isCssPreprocessorSource()}? importItem //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
     ;
 
 //    	catch[ RecognitionException rce] {
