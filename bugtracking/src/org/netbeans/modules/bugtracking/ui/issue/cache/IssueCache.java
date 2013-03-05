@@ -99,6 +99,7 @@ public class IssueCache<I, D> {
     /**
      * issues seen state changed
      */
+    // XXX this is a status change and should be fired by the issue in case it support status values
     public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed"; // NOI18N
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache");
     private Map<String, IssueEntry> cache;
