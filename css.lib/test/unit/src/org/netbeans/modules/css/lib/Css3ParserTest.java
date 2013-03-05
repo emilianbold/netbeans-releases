@@ -1026,7 +1026,8 @@ public class Css3ParserTest extends CssTestBase {
     public void testIssue_207080() {
         String code = "#wrapper {\n"
                 + "   height: 100%;\n"
-                + "#z-index: 200; \n"
+                + "   #z-index: 200; \n"
+                + "   color: red;\n"
                 + "}\n"
                 + "\n"
                 + "#header {\n"
@@ -1038,8 +1039,15 @@ public class Css3ParserTest extends CssTestBase {
         assertResult(result, 1); //ProblemDescription{from=28, to=36, description=Unexpected token HASH found, key=PARSING, type=ERROR}
 
 
-        //check if the #header rule is properly parsed
+        //check if the color: red; is properly parsed, e.g. whether the error recover works
+        //in the preceding erroneous declaration
         Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/body/bodyItem/"
+                + "rule/declarations/declaration|2");
+        assertNotNull(node);
+        
+        //check if the #header rule is properly parsed
+        node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem|1/"
                 + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
         assertNotNull(node);
