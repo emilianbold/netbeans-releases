@@ -9,12 +9,14 @@
                 <element name="persistence" ns="http://java.sun.com/xml/ns/persistence"/>
             </xml-rule>
         </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
         <resolver mime="text/x-persistence1.0+xml">
             <xml-rule>
                 <element name="persistence" ns="http://xmlns.jcp.org/xml/ns/persistence"/>
             </xml-rule>
         </resolver>
-
     </file>
     <file>
         <ext name="xml"/>
@@ -23,6 +25,9 @@
                 <element name="entity-mappings" ns="http://java.sun.com/xml/ns/persistence/orm"/>
             </xml-rule>
             </resolver>           
+    </file>
+    <file>
+        <ext name="xml"/>
             <resolver mime="text/x-orm1.0+xml">
             <xml-rule>
                 <element name="entity-mappings" ns="http://xmlns.jcp.org/xml/ns/persistence/orm"/>
