@@ -40,13 +40,19 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ui.query;
+package org.netbeans.modules.bugtracking.issuetable;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
-import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable.IssueTableProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
@@ -59,20 +65,54 @@ import org.openide.windows.TopComponent;
  * @author Tomas Stupka
  */
 class FindInQuerySupport {
-    private IssueTableProvider tableProvider;
     private QueryImpl query;
     private final FindInQueryBar bar;
+    private final AncestorListener ancestorListener;
 
-    private FindInQuerySupport(TopComponent tc) {
+    private FindInQuerySupport() {
         bar = new FindInQueryBar(this);
+        bar.setVisible(false);
         
-        ActionMap actionMap = tc.getActionMap();
-        CallbackSystemAction a = SystemAction.get(org.openide.actions.FindAction.class);
-        actionMap.put(a.getActionMapKey(), new FindAction());                
+        ancestorListener = new AncestorListener() {
+            private Action sfa;
+            @Override
+            public void ancestorAdded(AncestorEvent ae) {
+                TopComponent tc = findTC(ae.getComponent());
+                if(tc != null) {
+                    ActionMap actionMap = tc.getActionMap();
+                    CallbackSystemAction a = SystemAction.get(org.openide.actions.FindAction.class);
+                    sfa = actionMap.get(a.getActionMapKey());
+                    actionMap.put(a.getActionMapKey(), new FindAction());                
+                }
+            }
+            @Override 
+            public void ancestorRemoved(AncestorEvent ae) { 
+                TopComponent tc = findTC(ae.getComponent());
+                if(tc != null && sfa != null) {
+                    ActionMap actionMap = tc.getActionMap();
+                    CallbackSystemAction a = SystemAction.get(org.openide.actions.FindAction.class);
+                    actionMap.put(a.getActionMapKey(), sfa);                
+                    sfa = null;
+                }
+            }
+            @Override 
+            public void ancestorMoved(AncestorEvent ae) { }
+
+            private TopComponent findTC(Component cmp) {
+                Container parent;
+                while((parent = cmp.getParent()) != null) {
+                    cmp = parent;
+                    if(parent instanceof TopComponent) {
+                        return (TopComponent) cmp;
+                    }
+                }
+                return null;
+            }
+        };
     }
 
-    static FindInQuerySupport create(TopComponent tc) {
-        return new FindInQuerySupport(tc);
+    static FindInQuerySupport create() {
+        return new FindInQuerySupport();
     }
 
     void setQuery(QueryImpl query) {
@@ -81,6 +121,10 @@ class FindInQuerySupport {
 
     FindInQueryBar getFindBar() {
         return bar;
+    }
+
+    public AncestorListener getAncestorListener() {
+        return ancestorListener;
     }
 
     void reset() {

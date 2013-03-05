@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.bugtracking.issuetable;
 
+import java.awt.BorderLayout;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -79,9 +80,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -107,7 +110,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     private NodeTableModel  tableModel;
     private JTable          table;
-    private JScrollPane     component;
+    private JPanel     component;
 
     private TableSorter     sorter;
 
@@ -129,6 +132,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     private SummaryTextFilter textFilter;
 
     private static final String CONFIG_DELIMITER = "<=>";                       // NOI18N
+    private final FindInQuerySupport findInQuerySupport;
 
     public interface IssueTableProvider {
         public IssueTable getIssueTable();
@@ -165,21 +169,23 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
         this.descriptors = descriptors;
         this.query.addPropertyChangeListener(this);
-
-        tableModel = new NodeTableModel();
-        sorter = new TableSorter(tableModel, this);
+        this.component = new JPanel();
         
         initFilters(includeObsoletes);
 
+        /* table */
+        tableModel = new NodeTableModel();
+        sorter = new TableSorter(tableModel, this);
         sorter.setColumnComparator(Node.Property.class, nodeComparator);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
         table.setRowHeight(table.getRowHeight() * 6 / 5);
-        component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        component.getViewport().setBackground(table.getBackground());
+        
+        JScrollPane tableScrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        tableScrollPane.getViewport().setBackground(table.getBackground());
         Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N
         if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
-        component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+        tableScrollPane.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
 
         ImageIcon ic = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/columns_16.png", true)); // NOI18N
         colsButton = new javax.swing.JButton(ic);
@@ -195,10 +201,18 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
                 }
             }
         );
-        component.setCorner(JScrollPane.UPPER_RIGHT_CORNER, colsButton);
+        tableScrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, colsButton);
 
+        /* find bar */
+        findInQuerySupport = FindInQuerySupport.create();
+        FindInQueryBar findBar = findInQuerySupport.getFindBar();
+        findInQuerySupport.setQuery(query);
+        
+        initComponents(tableScrollPane, findBar);       
+        
         table.addMouseListener(this);
         table.addKeyListener(this);
+        table.addAncestorListener(findInQuerySupport.getAncestorListener());
         table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query.getQuery(), this));
         queryTableHeaderRenderer = new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query);
         table.getTableHeader().setDefaultRenderer(queryTableHeaderRenderer);
@@ -239,6 +253,23 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
                                                 .create(storeColumnsWidthHandler);
     }
 
+    private void initComponents(JScrollPane tablePane, FindInQueryBar findBar) {
+        GroupLayout layout = new GroupLayout(component);
+        component.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addComponent(findBar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(tablePane, GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(tablePane, GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(findBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+        );
+    }
+ 
     /**
      * Returns the issue table filters
      * @return
