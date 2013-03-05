@@ -48,6 +48,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.FileUtilities;
@@ -80,7 +81,7 @@ abstract class AbstractMavenForBinaryQueryImpl implements SourceForBinaryQueryIm
         return path != null ? path.replaceFirst("[.][^./]+$", ".jar") : null;
     }
     
-    static FileObject[] getProjectSrcRoots(Project p) {
+    static @NonNull FileObject[] getProjectSrcRoots(Project p) {
         NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
         Collection<FileObject> toReturn = new LinkedHashSet<FileObject>();
         for (String item : project.getOriginalMavenProject().getCompileSourceRoots()) {
@@ -122,7 +123,7 @@ abstract class AbstractMavenForBinaryQueryImpl implements SourceForBinaryQueryIm
         return toReturn.toArray(new FileObject[toReturn.size()]);
     }
     
-    static FileObject[] getProjectTestSrcRoots(Project p) {
+    static @NonNull FileObject[] getProjectTestSrcRoots(Project p) {
         NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
         Collection<FileObject> toReturn = new LinkedHashSet<FileObject>();
         for (String item : project.getOriginalMavenProject().getTestCompileSourceRoots()) {
