@@ -64,26 +64,18 @@ public class PHPHintsTestBase extends PHPTestBase {
     }
 
     /**
-     * Checks hints in a whole file which starts with "<code>&lt;?php\n//START</code>" and ends with "<code>//END\n?&gt;</code>".
+     * Checks hints in a whole file.
      *
      * @param hint Instantion of hint to test.
      * @param fileName Name of the file which is in "<tt>testfiles/verification/</tt>" directory.
      * @throws Exception
      */
-    protected void checkHintsInStartEndFile(Rule hint, String fileName) throws Exception {
-        checkHints(hint, TEST_DIRECTORY + fileName, "<?php\n//START^", "^//END\n?>");
+    protected void checkHints(Rule hint, String fileName) throws Exception {
+        checkHints(hint, fileName, null);
     }
 
-    protected void checkHintsInFile(Rule hint, String fileName, String selStartLine, String selEndLine) throws Exception {
-        super.checkHints(hint, TEST_DIRECTORY + fileName, selStartLine, selEndLine);
-    }
-
-    protected void checkSuggestion(SuggestionRule suggestion, String fileName, String caretLine) throws Exception {
-        checkHints(this, suggestion, TEST_DIRECTORY + fileName, caretLine);
-    }
-
-    protected void checkHintsInWholeFile(Rule hint, String fileName, String caretLine) throws Exception {
-        checkHints(this, hint, TEST_DIRECTORY + fileName, caretLine);
+    protected void checkHints(Rule onLineHint, String fileName, String caretLine) throws Exception {
+        checkHints(this, onLineHint, TEST_DIRECTORY + fileName, caretLine);
     }
 
     @Override

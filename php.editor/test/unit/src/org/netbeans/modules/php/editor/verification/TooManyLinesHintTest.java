@@ -58,39 +58,39 @@ public class TooManyLinesHintTest extends PHPHintsTestBase {
     }
 
     public void testFunctionsLinesFail() throws Exception {
-        checkHintsInStartEndFile(new FunctionLinesHintStub(5), "testFunctionsLines.php");
+        checkHints(new FunctionLinesHintStub(5), "testFunctionsLines.php");
     }
 
     public void testFunctionsLinesOk() throws Exception {
-        checkHintsInStartEndFile(new FunctionLinesHintStub(10), "testFunctionsLines.php");
+        checkHints(new FunctionLinesHintStub(10), "testFunctionsLines.php");
     }
 
     public void testClassesLinesFail() throws Exception {
-        checkHintsInStartEndFile(new ClassLinesHintStub(5), "testClassesLines.php");
+        checkHints(new ClassLinesHintStub(5), "testClassesLines.php");
     }
 
     public void testClassesLinesOk() throws Exception {
-        checkHintsInStartEndFile(new ClassLinesHintStub(10), "testClassesLines.php");
+        checkHints(new ClassLinesHintStub(10), "testClassesLines.php");
     }
 
     public void testInterfacesLinesFail() throws Exception {
-        checkHintsInStartEndFile(new InterfaceLinesHintStub(5), "testInterfacesLines.php");
+        checkHints(new InterfaceLinesHintStub(5), "testInterfacesLines.php");
     }
 
     public void testInterfacesLinesOk() throws Exception {
-        checkHintsInStartEndFile(new InterfaceLinesHintStub(10), "testInterfacesLines.php");
+        checkHints(new InterfaceLinesHintStub(10), "testInterfacesLines.php");
     }
 
     public void testTraitsLinesFail() throws Exception {
-        checkHintsInStartEndFile(new TraitLinesHintStub(5), "testTraitsLines.php");
+        checkHints(new TraitLinesHintStub(5), "testTraitsLines.php");
     }
 
     public void testTraitsLinesOk() throws Exception {
-        checkHintsInStartEndFile(new TraitLinesHintStub(10), "testTraitsLines.php");
+        checkHints(new TraitLinesHintStub(10), "testTraitsLines.php");
     }
 
     public void testIssue226425() throws Exception {
-        checkHintsInStartEndFile(new FunctionLinesHintStub(5), "testIssue226425.php");
+        checkHints(new FunctionLinesHintStub(5), "testIssue226425.php");
     }
 
     private static final class FunctionLinesHintStub extends FunctionLinesHint {
