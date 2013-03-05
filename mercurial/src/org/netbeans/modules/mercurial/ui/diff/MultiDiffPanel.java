@@ -200,7 +200,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         refreshSelectionCombos();
         refreshComponents();
 
-        refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
+        refreshTask = Mercurial.getInstance().getRequestProcessor().create(new RefreshViewTask());
     }
 
     public MultiDiffPanel (File[] roots, HgRevision revisionLeft, HgRevision revisionRight,
@@ -593,7 +593,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
             boolean refresh = !oldSelection.getChangesetId().equals(revisionLeft.getChangesetId());
             if (refresh) {
-                refreshTask.schedule(100);
+                refreshStatuses();
             }
         } else if (source == cmbDiffTreeFirst) {
             HgRevision oldSelection = revisionRight;
@@ -603,7 +603,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
             boolean refresh = !oldSelection.getChangesetId().equals(revisionRight.getChangesetId());
             if (refresh) {
-                refreshTask.schedule(100);
+                refreshStatuses();
             }
         }
     }
