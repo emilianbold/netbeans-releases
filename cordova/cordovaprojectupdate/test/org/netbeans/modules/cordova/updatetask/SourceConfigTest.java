@@ -47,13 +47,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
 /**
  *
  * @author Jan Becicka
  */
-public class InfoPlistTest {
+public class SourceConfigTest {
     
-    public InfoPlistTest() {
+    public SourceConfigTest() {
     }
     
     @BeforeClass
@@ -77,9 +78,21 @@ public class InfoPlistTest {
      */
     @Test
     public void testOut() throws Exception{
-        InfoPlist instance = new InfoPlist(InfoPlistTest.class.getResourceAsStream("Info-plist.xml"));
-        assertEquals(instance.getPackage(), "com");
-        instance.setPackage("org.netbeans");
+        SourceConfig instance = new SourceConfig(SourceConfig.class.getResourceAsStream("config.xml"));
+        assertEquals(instance.getAccess(), "*");
+        assertEquals(instance.getName(), "$name");
+        assertEquals(instance.getAuthor().trim(), "$author");
+        assertEquals(instance.getDescription().trim(), "$description");
+        
+        instance.setAuthor("be");
+        instance.setName("aaa");
+        instance.setDescription("desc");
+        
+        assertEquals(instance.getIcon("android"), "res/icon/android/icon-96-xhdpi.png");
+        assertEquals(instance.getPreference("target-device"), "universal");
+        assertEquals(instance.getSplash("ios", 320, 480), "res/screen/ios/screen-iphone-portrait.png");
+        assertEquals(instance.getId(), "$id");
         instance.printDocument(System.out);
     }
+    
 }

@@ -221,7 +221,10 @@ public class GsfDataObject extends MultiDataObject {
                 @Override
                 public void save() throws java.io.IOException {
                     ((GenericEditorSupport)findCloneableOpenSupport()).saveDocument();
-                    getDataObject().setModified(false);
+// DataObject.setModified() already called as part of saveDocument(). The save action is now asynchronous
+// in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
+// and sets the DO.modified flag accordingly. Explicit call to DO.setModified() in this case may lead to data loss.
+//                    getDataObject().setModified(false);
                 }
             }
             
