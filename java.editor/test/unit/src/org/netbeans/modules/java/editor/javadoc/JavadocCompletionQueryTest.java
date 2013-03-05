@@ -304,6 +304,34 @@ public class JavadocCompletionQueryTest extends JavadocTestSupport {
         performCompletionTest(code, "public static final double PI", /*XXX: should be here?*/"public static double pow(double d, double d1)");
     }
     
+    public void testThrows1() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * @throws |\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, null, "Exception", "NullPointerException");
+    }
+    
+    public void testThrows2() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * @throws Class|\n" +
+                "     */\n" +
+                "    Clazz() {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, "ClassCircularityError", "ClassFormatError", "ClassCastException", "ClassNotFoundException");
+    }
+    
     private static String stripHTML(String from) {
         StringBuilder result = new StringBuilder();
         boolean inHTMLTag = false;
