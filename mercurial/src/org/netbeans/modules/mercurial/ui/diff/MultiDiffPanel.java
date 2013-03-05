@@ -654,6 +654,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private void refreshStatuses() {
+        commitButton.setEnabled(false);
         if ((context == null || context.getRootFiles().isEmpty())) {
             return;
         }
@@ -830,7 +831,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     Dimension dim = fileTable.getComponent().getPreferredSize();
                     fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
                     setDiffIndex(0, 0, false);
-                    commitButton.setEnabled(true);
+                    commitButton.setEnabled(revisionRight == HgRevision.CURRENT &&
+                            (revisionLeft == HgRevision.BASE || revisionLeft == HgRevision.QDIFF_BASE));
                     dpt = new DiffPrepareTask(setups);
                     prepareTask = Mercurial.getInstance().getRequestProcessor().post(dpt);
                 }
