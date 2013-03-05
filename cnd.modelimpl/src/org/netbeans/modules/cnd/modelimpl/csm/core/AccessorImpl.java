@@ -79,6 +79,16 @@ final class AccessorImpl extends CsmCorePackageAccessor {
     }
 
     @Override
+    public FileContent prepareLazyStatementParsingContent(FileImpl fileImpl) {
+        return fileImpl.prepareLazyStatementParsingContent();
+    }
+
+    @Override
+    public void releaseLazyStatementParsingContent(FileImpl fileImpl, FileContent tmpFileContent) {
+        fileImpl.releaseLazyStatementParsingContent(tmpFileContent);
+    }
+
+    @Override
     public PreprocessorStatePair getCachedVisitedState(FileImpl csmFile, APTPreprocHandler.State newState) {
         return csmFile.getCachedVisitedState(newState);
     }

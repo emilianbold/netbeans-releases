@@ -94,6 +94,8 @@ public abstract class CsmCorePackageAccessor {
     public abstract APTFile getFileAPT(FileImpl file, boolean full);
     public abstract int getErrorCount(FileImpl fileImpl);
     public abstract FileContent getFileContent(CsmParserProvider.CsmParserParameters descr);
+    public abstract FileContent prepareLazyStatementParsingContent(FileImpl fileImpl);
+    public abstract void releaseLazyStatementParsingContent(FileImpl fileImpl, FileContent tmpFileContent);
 
     public abstract PreprocessorStatePair getCachedVisitedState(FileImpl csmFile, APTPreprocHandler.State newState);
     public abstract void cacheVisitedState(FileImpl csmFile, APTPreprocHandler.State newState, APTPreprocHandler preprocHandler, FilePreprocessorConditionState pcState);
@@ -127,9 +129,5 @@ public abstract class CsmCorePackageAccessor {
     ////////////////////////////////////////////////////////////////////////////
     //  end of access to FilePreprocessorConditionState methods
     ////////////////////////////////////////////////////////////////////////////
-
-
-
-
 
 }
