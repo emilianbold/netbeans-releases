@@ -125,8 +125,10 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
 
             int idx = Mnemonics.findMnemonicAmpersand(tabName);
             if (idx != -1 && idx + 1 < tabName.length()) {
+                int tabcount = tpCustomizers.getTabCount();
+                assert tabcount > 0 : "Tabcount is less than 1 with processing tab " + tabName;
                 tpCustomizers.setMnemonicAt(
-                    tpCustomizers.getTabCount() - 1, 
+                     tabcount - 1,
                     Character.toUpperCase(tabName.charAt(idx + 1)));
             }
         }
