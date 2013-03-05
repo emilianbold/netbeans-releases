@@ -401,7 +401,9 @@ public enum NodeType {
     sass_each_list,
     sass_while,
     sass_control_block,
-    sass_control_expression
+    sass_control_expression,
+    
+    scss_declaration_property_value_interpolation_expression
     
     ;
     

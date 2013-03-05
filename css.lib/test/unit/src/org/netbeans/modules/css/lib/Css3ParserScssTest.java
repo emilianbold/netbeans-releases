@@ -516,7 +516,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
-    public void testInterpolationExpressionInPropertyValue_fails() {
+    public void testInterpolationExpressionInPropertyValue() {
         String source =
                 "p {\n"
                 + "  $font-size: 12px;\n"
@@ -678,9 +678,9 @@ public class Css3ParserScssTest extends CssTestBase {
 
     //the grammar defines the imports needs to be at the very beginning of the file,
     //though this is not true in case of the preprocessor code
-    public void testSASSCodeMayPrecedeImport_fails() {
+    public void testSASSCodeMayPrecedeImport() {
         String source = "$var: my;\n"
-                + "@import url(\"#{$var}\"\n";
+                + "@import url(\"#{$var}\");\n";
 
         CssParserResult result = TestUtil.parse(source);
 
