@@ -67,6 +67,8 @@ import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -103,6 +105,8 @@ import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.*;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Top component which displays something.
@@ -116,7 +120,6 @@ public final class QueryTopComponent extends TopComponent
 
     /** Set of opened {@code QueryTopComponent}s. */
     private static Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
-    private final FindInQuerySupport findInQuerySupport;
 
     private final RepoPanel repoPanel;
     private final JPanel jPanel2;
@@ -171,12 +174,6 @@ public final class QueryTopComponent extends TopComponent
         scrollPane = new QueryTopComponentScrollPane(jPanel2);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(scrollPane);
-
-         /* find bar */
-        findInQuerySupport = FindInQuerySupport.create(this);
-        FindInQueryBar findBar = findInQuerySupport.getFindBar();
-        findBar.setVisible(false);       
-        add(findBar);
 
         /* texts */
         Mnemonics.setLocalizedText(
@@ -257,7 +254,6 @@ public final class QueryTopComponent extends TopComponent
             QueryController c = getController(query);
             panel.setComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
-            findInQuerySupport.setQuery(query);
         } else {
             newButton.addActionListener(new ActionListener() {
                 @Override
@@ -536,8 +532,6 @@ public final class QueryTopComponent extends TopComponent
                         return;
                     }
 
-                    findInQuerySupport.setQuery(query);
-                    
                     if(context != null && BugtrackingUtil.isNbRepository(repo.getUrl())) {
                         OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(context);
                         if(ownerInfo != null) {
