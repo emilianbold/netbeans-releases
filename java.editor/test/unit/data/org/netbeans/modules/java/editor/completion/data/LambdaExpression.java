@@ -18,9 +18,7 @@ public class Test {
 
     public static void main(String[] args) {
 	Test t = new Test();
-	t.test(s -> s.length());
-	t.test((s) -> s.length());
-	t.test((String s) -> {return s.length();});
-	t.test(s -> {return s.length();});
+	t.test(s -> s.length(), 0);
+	t.test(s -> {return s.length();}, 0);
     }
 }

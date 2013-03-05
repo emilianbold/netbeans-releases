@@ -320,4 +320,28 @@ public class JavaCompletionProvider18FeaturesTest extends CompletionTestBase {
     public void testAfterReturnFromTypedLambdaBlock() throws Exception {
         performTest("SimpleLambdaExpression", 279, null, "lambdaSmartInt.pass", "1.8");
     }
+
+    public void testMoreCandidatesEmptyFileAfterTypingLambdaArrow() throws Exception {
+        performTest("LambdaExpressionStart", 293, "t.test(s ->", "lambdaExpression.pass", "1.8");
+    }
+
+    public void testMoreCandidatesAfterTypingLambdaArrow() throws Exception {
+        performTest("LambdaExpressionEmptyMethodBody", 293, "t.test(s ->", "lambdaExpression.pass", "1.8");
+    }
+
+    public void testMoreCandidatesAfterLambdaArrow() throws Exception {
+        performTest("LambdaExpression", 313, null, "lambdaSmartInt2.pass", "1.8");
+    }
+    
+    public void testMoreCandidatesEmptyFileTypingReturnFromLambdaBlock() throws Exception {
+        performTest("LambdaExpressionStart", 293, "t.test(s -> {return ", "lambdaExpression.pass", "1.8");
+    }
+
+    public void testMoreCandidatesTypingReturnFromLambdaBlock() throws Exception {
+        performTest("LambdaExpressionEmptyMethodBody", 293, "t.test(s -> {return ", "lambdaExpression.pass", "1.8");
+    }
+
+    public void testMoreCandidatesAfterReturnFromLambdaBlock() throws Exception {
+        performTest("LambdaExpression", 350, null, "lambdaSmartInt2.pass", "1.8");
+    }
 }

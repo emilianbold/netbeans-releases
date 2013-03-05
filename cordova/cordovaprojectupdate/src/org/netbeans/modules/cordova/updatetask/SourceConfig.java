@@ -44,7 +44,7 @@ package org.netbeans.modules.cordova.updatetask;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -62,93 +62,88 @@ public class SourceConfig extends XMLFile {
     }
 
     public String getName() {
-        return getNode("name").getTextContent();
+        return getTextContent("/widget/name");
     }
     
     public void setName(String name) {
-        getNode("name").setTextContent(name);
+        setTextContent("/widget/name", name);
     }
 
     public String getDescription() {
-        return getNode("description").getTextContent();
+        return getTextContent("/widget/description");
     }
 
     public void setDescription(String description) {
-        getNode("description").setTextContent(description);
+        setTextContent("/widget/description", description);
     }
 
     public String getAuthor() {
-        return getNode("author").getTextContent();
+        return getTextContent("/widget/author");
     }
 
     public void setAuthor(String author) {
-        getNode("author").setTextContent(author);
+        getTextContent("/widget/author");
     }
     
     public String getAuthorHref() {
-        return getNode("author").getAttributes().getNamedItem("href").getTextContent();
+        return getAttributeText("/widget/author", "href");
     }
 
     public void setAuthorHref(String href) {
-        getNode("author").getAttributes().getNamedItem("href").setTextContent(href);
+        setAttributeText("/widget/author", "href", href);
     }
 
     public String getAuthorEmail() {
-        return getNode("author").getAttributes().getNamedItem("email").getTextContent();
+        return getAttributeText("/widget/author", "email");
     }
 
     public void setAuthorEmail(String email) {
-        getNode("author").getAttributes().getNamedItem("email").setTextContent(email);
+        setAttributeText("/widget/author", "email", email);
     }
     
     public String getId() {
-        return getNode("widget").getAttributes().getNamedItem("id").getTextContent();
+        return getAttributeText("/widget", "id");
     }
     
     public String getAccess() {
-        return getNode("access").getAttributes().getNamedItem("origin").getTextContent();
+        return getAttributeText("/widget/access", "origin");
     }
     
     public void setAccess(String access) {
-        getNode("access").getAttributes().getNamedItem("origin").setTextContent(access);
+        setAttributeText("/widget/access", "origin", access);
     }
 
     public void setId(String id) {
-        getNode("widget").getAttributes().getNamedItem("id").setTextContent(id);
+        setAttributeText("/widget", "id", id);
     }
 
     public String getIcon(String platform, int width, int height) {
-        final NodeList icons = doc.getElementsByTagName("icon");
+        return getSplashOrIcon("icon", platform, width, height);
+    }
+    
+    private String getSplashOrIcon(String name, String platform, int width, int height) {
+        final NodeList icons = doc.getElementsByTagName(name);
         for (int i=0; i < icons.getLength();i++) {
-            final NamedNodeMap attributes = icons.item(i).getAttributes();
-            if (platform.equals(attributes.getNamedItem("gap:platform").getTextContent()) &&
-                    Integer.toString(width).equals(attributes.getNamedItem("width").getTextContent()) &&
-                    Integer.toString(height).equals(attributes.getNamedItem("height").getTextContent())) {
-                return attributes.getNamedItem("src").getTextContent();
+            Node n = icons.item(i);
+            if (platform.equals(getAttributeText(n, "gap:platform")) &&
+                    Integer.toString(width).equals(getAttributeText(n, "width")) &&
+                    Integer.toString(height).equals(getAttributeText(n, "height"))) {
+                return getAttributeText(n, "src");
             }
         }
         return null;
     }
     
     public String getSplash(String platform, int width, int height) {
-        final NodeList splash = doc.getElementsByTagName("gap:splash");
-        for (int i=0; i < splash.getLength();i++) {
-            final NamedNodeMap attributes = splash.item(i).getAttributes();
-            if (platform.equals(attributes.getNamedItem("gap:platform").getTextContent()) &&
-                    Integer.toString(width).equals(attributes.getNamedItem("width").getTextContent()) &&
-                    Integer.toString(height).equals(attributes.getNamedItem("height").getTextContent())) {
-                return attributes.getNamedItem("src").getTextContent();
-            }
-        }
-        return null;
+        return getSplashOrIcon("gap:splash", platform, width, height);
     }
     
     public String getPreference(String name) {
-        final NodeList splash = doc.getElementsByTagName("preference");
-        for (int i=0; i < splash.getLength();i++) {
-            final NamedNodeMap attributes = splash.item(i).getAttributes();
-            if (name.equals(attributes.getNamedItem("name").getTextContent())) {
-                return attributes.getNamedItem("value").getTextContent();
+        final NodeList pref = doc.getElementsByTagName("preference");
+        for (int i=0; i < pref.getLength();i++) {
+            Node n = pref.item(i);
+            if (name.equals(getAttributeText(n, "name"))) {
+                return getAttributeText(n, "value");
             }
         }
         return null;
@@ -162,4 +157,5 @@ public class SourceConfig extends XMLFile {
             return getIcon(platform, 96,96);
         }
     }    
+
 }

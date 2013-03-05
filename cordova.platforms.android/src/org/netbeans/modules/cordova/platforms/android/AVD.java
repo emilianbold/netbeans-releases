@@ -152,7 +152,14 @@ public class AVD implements Device {
     @Override
     public void openUrl(String url) {
         try {
-            String s = ProcessUtils.callProcess(getPlatform().getSdkLocation() + "/platform-tools/adb", false, isEmulator()?"-d":"-e", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", "com.android.browser/.BrowserActivity", url); //NOI18N
+            String s = ProcessUtils.callProcess(
+                    ((AndroidPlatform) getPlatform()).getAdbCommand(), 
+                    false, 
+                    5000, 
+                    isEmulator()?"-d":"-e", 
+                    "wait-for-device", 
+                    "shell", "am", "start", "-a", "android.intent.action.VIEW", 
+                    "-n", "com.android.browser/.BrowserActivity", url); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -95,7 +95,8 @@ public class AndroidDevice implements Device {
             if (browser == browser.DEFAULT) {
             ProcessUtils.callProcess(
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
-                    true, 
+                    true,
+                    5000,
                     isEmulator() ? "-e" : "-d", 
                     "wait-for-device", 
                     "shell", 
@@ -108,6 +109,7 @@ public class AndroidDevice implements Device {
             ProcessUtils.callProcess(
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     true, 
+                    5000,
                     isEmulator() ? "-e" : "-d", 
                     "wait-for-device", 
                     "shell", 
