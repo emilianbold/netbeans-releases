@@ -75,7 +75,7 @@ public final class RepositoryManager {
     private static RepositoryManager instance;
     private static RepositoryRegistry registry;
     
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     private RepositoryManager () {
         registry = RepositoryRegistry.getInstance();

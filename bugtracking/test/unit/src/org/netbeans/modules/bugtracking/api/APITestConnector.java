@@ -88,7 +88,7 @@ public class APITestConnector extends BugtrackingConnector {
         for (DelegatingConnector dc : cons) {
             if(ID_CONNECTOR.equals(dc.getID())) {
                 // init repos
-                RepositoryRegistry.getInstance().putRepository(dc, getInfo());
+                RepositoryRegistry.getInstance().addRepository(dc.createRepository(getInfo()).getImpl());
             }
         }
     }
