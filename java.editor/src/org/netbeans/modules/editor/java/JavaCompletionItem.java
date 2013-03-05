@@ -165,23 +165,23 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new TypeParameterItem(elem, substitutionOffset);
     }
 
-    public static JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean smartType, int assignToVarOffset, WhiteListQuery.WhiteList whiteList) {
+    public static JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean addSemicolon, boolean smartType, int assignToVarOffset, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
             case PARAMETER:
             case EXCEPTION_PARAMETER:
-                return new VariableItem(info, type, elem.getSimpleName().toString(), substitutionOffset, false, smartType, assignToVarOffset);
+                return new VariableItem(info, type, elem.getSimpleName().toString(), substitutionOffset, false, addSemicolon, smartType, assignToVarOffset);
             case ENUM_CONSTANT:
             case FIELD:
-                return new FieldItem(info, elem, type, substitutionOffset, referencesCount, isInherited, isDeprecated, smartType, assignToVarOffset, whiteList);
+                return new FieldItem(info, elem, type, substitutionOffset, referencesCount, isInherited, isDeprecated, addSemicolon, smartType, assignToVarOffset, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
     }
 
     public static JavaCompletionItem createVariableItem(CompilationInfo info, String varName, int substitutionOffset, boolean newVarName, boolean smartType) {
-        return new VariableItem(info, null, varName, substitutionOffset, newVarName, smartType, -1);
+        return new VariableItem(info, null, varName, substitutionOffset, newVarName, false, smartType, -1);
     }
 
     public static JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, boolean memberRef, WhiteListQuery.WhiteList whiteList) {
@@ -241,12 +241,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new AttributeValueItem(info, value, documentation, element, substitutionOffset, referencesCount, whiteList);
     }
 
-    public static JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, WhiteListQuery.WhiteList whiteList) {
+    public static JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
         switch (memberElem.getKind()) {
             case METHOD:
             case ENUM_CONSTANT:
             case FIELD:
-                return new StaticMemberItem(info, type, memberElem, memberType, substitutionOffset, isDeprecated, whiteList);
+                return new StaticMemberItem(info, type, memberElem, memberType, substitutionOffset, isDeprecated, addSemicolon, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + memberElem.getKind());
         }
@@ -1181,17 +1181,19 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private boolean newVarName;
         private boolean smartType;
         private String typeName;
+        private boolean addSemicolon;
         private String leftText;
         private String rightText;
         private int assignToVarOffset;
         private CharSequence assignToVarText;
 
-        private VariableItem(CompilationInfo info, TypeMirror type, String varName, int substitutionOffset, boolean newVarName, boolean smartType, int assignToVarOffset) {
+        private VariableItem(CompilationInfo info, TypeMirror type, String varName, int substitutionOffset, boolean newVarName, boolean addSemicolon, boolean smartType, int assignToVarOffset) {
             super(substitutionOffset);
             this.varName = varName;
             this.newVarName = newVarName;
             this.smartType = smartType;
             this.typeName = type != null ? Utilities.getTypeName(info, type, false).toString() : null;
+            this.addSemicolon = addSemicolon && type.getKind().isPrimitive();
             this.assignToVarOffset = assignToVarOffset;
             this.assignToVarText = assignToVarOffset < 0 ? null : createAssignToVarText(info, type, varName);
         }
@@ -1209,6 +1211,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         public CharSequence getInsertPrefix() {
             return varName;
+        }
+
+        @Override
+        protected CharSequence getInsertPostfix(JTextComponent c) {
+            return addSemicolon ? new StringBuilder().append(';') : null;
         }
 
         @Override
@@ -1270,6 +1277,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String simpleName;
         private Set<Modifier> modifiers;
         private String typeName;
+        private boolean addSemicolon;
         private String leftText;
         private String rightText;
         private boolean autoImportEnclosingType;
@@ -1277,7 +1285,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private int assignToVarOffset;
         private CharSequence assignToVarText;
 
-        private FieldItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean smartType, int assignToVarOffset, WhiteListQuery.WhiteList whiteList) {
+        private FieldItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean addSemicolon, boolean smartType, int assignToVarOffset, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, ElementHandle.create(elem), whiteList);
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
@@ -1285,6 +1293,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.simpleName = elem.getSimpleName().toString();
             this.modifiers = elem.getModifiers();
             this.typeName = Utilities.getTypeName(info, type, false).toString();
+            this.addSemicolon = addSemicolon && type.getKind().isPrimitive();
             this.autoImportEnclosingType = referencesCount != null;
             if (this.autoImportEnclosingType) {
                 this.enclSortText = new LazySortText(elem.getEnclosingElement().getSimpleName().toString(), null, ElementHandle.create((TypeElement)elem.getEnclosingElement()), referencesCount);
@@ -1308,6 +1317,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         public CharSequence getInsertPrefix() {
             return simpleName;
+        }
+
+        @Override
+        protected CharSequence getInsertPostfix(JTextComponent c) {
+            return addSemicolon ? new StringBuilder().append(';') : null;
         }
 
         @Override
@@ -2900,20 +2914,23 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String typeName;
         private String memberName;
         private String memberTypeName;
+        private boolean addSemicolon;
         private Set<Modifier> modifiers;
         private List<ParamDesc> params;
         private String sortText;
         private String leftText;
         private String rightText;
 
-        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, WhiteListQuery.WhiteList whiteList) {
+        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, ElementHandle.create(memberElem), whiteList);
             type = (DeclaredType) info.getTypes().erasure(type);
             this.typeHandle = TypeMirrorHandle.create(type);
             this.isDeprecated = isDeprecated;
             this.typeName = Utilities.getTypeName(info, type, false).toString();
             this.memberName = memberElem.getSimpleName().toString();
-            this.memberTypeName = Utilities.getTypeName(info, memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType(), false).toString();
+            TypeMirror mtm = memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType();
+            this.memberTypeName = Utilities.getTypeName(info, mtm, false).toString();
+            this.addSemicolon = addSemicolon && (mtm.getKind().isPrimitive() || mtm.getKind() == TypeKind.VOID);
             this.modifiers = memberElem.getModifiers();
             if (!memberElem.getKind().isField()) {
                 this.params = new ArrayList<ParamDesc>();
@@ -2958,6 +2975,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         public CharSequence getInsertPrefix() {
             return typeName + "." + memberName; //NOI18N
+        }
+
+        @Override
+        protected CharSequence getInsertPostfix(JTextComponent c) {
+            return addSemicolon ? new StringBuilder().append(';') : null;
         }
 
         @Override
