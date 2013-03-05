@@ -109,6 +109,9 @@ public class MoreBuildActionsAction extends MakeProjectContextAwareAction implem
     }
     
     private ArrayList<Action> getActions() {
+        if (project == null) {
+            return null;
+        }
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp == null) {
             return null;
