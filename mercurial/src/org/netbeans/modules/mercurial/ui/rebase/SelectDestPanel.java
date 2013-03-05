@@ -100,7 +100,7 @@ public class SelectDestPanel extends javax.swing.JPanel {
         jLabel5.setToolTipText(org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "PreviewPanel.legend.lblDestRevision.TTtext")); // NOI18N
 
         jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/tip.png"))); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "PreviewPanel.legend.lblWorkingDirectory.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "PreviewPanel.legend.lblTip.text")); // NOI18N
         jLabel6.setToolTipText(org.openide.util.NbBundle.getMessage(SelectDestPanel.class, "PreviewPanel.legend.lblTip.TTtext")); // NOI18N
 
         jLabel7.setFont(jLabel7.getFont().deriveFont(jLabel7.getFont().getSize()-1f));
