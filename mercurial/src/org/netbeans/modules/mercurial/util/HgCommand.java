@@ -142,7 +142,8 @@ public class HgCommand {
     private static final String HG_OPT_FOLLOW = "--follow"; // NOI18N
     private static final String HG_FLAG_REV_CMD = "--rev"; // NOI18N
     private static final String HG_STATUS_FLAG_TIP_CMD = "tip"; // NOI18N
-    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-marduC"; // NOI18N
+    private static final String HG_STATUS_FLAG_INTERESTING_COPIES_CMD = "-marduC"; // NOI18N
+    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-mardu"; // NOI18N
     private static final String HG_HEAD_STR = "HEAD"; // NOI18N
     private static final String HG_FLAG_DATE_CMD = "--date"; // NOI18N
 
@@ -2118,7 +2119,7 @@ public class HgCommand {
         if (outFile.length() == 0 && retry) {
             if (revision == null) {
                 // maybe the file is copied?
-                FileInformation fi = getStatus(repository, Collections.singletonList(file), null, null, true).get(file);
+                FileInformation fi = getStatus(repository, Collections.singletonList(file), null, null, true, true).get(file);
                 if (fi != null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0
                         && fi.getStatus(null) != null && fi.getStatus(null).getOriginalFile() != null) {
                     doCat(repository, fi.getStatus(null).getOriginalFile(), outFile, revision, false, logger);
@@ -3055,7 +3056,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getStatus (File repository, List<File> files, String revisionFrom, String revisionTo) throws HgException{
-        return getStatus(repository, files, revisionFrom, revisionTo, true);
+        return getStatus(repository, files, revisionFrom, revisionTo, true, true);
     }
 
     /**
@@ -3068,12 +3069,15 @@ public class HgCommand {
      * their content the same in the given revisions. For example files where a line was added and then the same line removed
      * are skipped.
      * <strong>Setting this to false results in a slower command.</strong>
+     * @param detectCopies if set to true then the command takes longer and returns also original files for renames and copies
      * @return Map of files and status for all files of interest, map contains normalized files as keys
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static Map<File, FileInformation> getStatus (File repository, List<File> files,
-            String revisionFrom, String revisionTo, boolean listAlsoMidRevisionChanges) throws HgException{
-        return getStatusWithFlags(repository, files, HG_STATUS_FLAG_INTERESTING_CMD, revisionFrom, revisionTo, listAlsoMidRevisionChanges);
+            String revisionFrom, String revisionTo, boolean listAlsoMidRevisionChanges, boolean detectCopies) throws HgException{
+        return getStatusWithFlags(repository, files, detectCopies 
+                ? HG_STATUS_FLAG_INTERESTING_COPIES_CMD 
+                : HG_STATUS_FLAG_INTERESTING_CMD, revisionFrom, revisionTo, listAlsoMidRevisionChanges);
     }
 
     /**

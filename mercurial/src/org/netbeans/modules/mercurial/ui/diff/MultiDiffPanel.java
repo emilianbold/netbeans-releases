@@ -902,7 +902,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             // optimalization, let's not run the command when the revisions are the same
             if (!revLeft.getChangesetId().equals(revRight.getChangesetId())) {
                 Map<File, FileInformation> statuses = HgCommand.getStatus(repository, new ArrayList<File>(context.getRootFiles()),
-                        revisionLeft.getChangesetId(), revisionRight.getChangesetId(), false);
+                        revisionLeft.getChangesetId(), revisionRight.getChangesetId(), false, revisionRight == HgRevision.CURRENT && (
+                        revisionLeft == HgRevision.BASE || revisionLeft == HgRevision.QDIFF_BASE));
                 statuses.keySet().retainAll(HgUtils.flattenFiles(context.getRootFiles().toArray(
                         new File[context.getRootFiles().size()]), statuses.keySet()));
                 List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
