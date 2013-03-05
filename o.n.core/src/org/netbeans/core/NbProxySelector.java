@@ -289,7 +289,7 @@ public final class NbProxySelector extends ProxySelector {
                 port = null;
                 httpsHost = null;
                 httpsPort = null;
-                nonProxyHosts = ProxySettings.getSystemNonProxyHosts();
+                nonProxyHosts = null;
                 socksHost = null;
                 socksPort = null;
                 break;
@@ -438,14 +438,11 @@ public final class NbProxySelector extends ProxySelector {
     }
     
     static boolean usePAC() {
-        String s = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
-        boolean usePAC = s != null && s.startsWith(ProxySettings.PAC);
-        return usePAC;
+        String pacFile = ProxySettings.getSystemPac();
+        return pacFile != null;
     }
     
     private static String getPacFile() {
-        String init = System.getProperty("netbeans.system_http_proxy"); // NOI18N
-        return init.substring(4).trim();
+        return ProxySettings.getSystemPac();
     }
-    
 }
