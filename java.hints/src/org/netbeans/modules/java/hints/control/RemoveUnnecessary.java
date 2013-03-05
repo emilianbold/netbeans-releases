@@ -35,7 +35,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints;
+package org.netbeans.modules.java.hints.control;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
@@ -53,22 +53,42 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", description = "#DESC_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", category="general", suppressWarnings="UnnecessaryReturnStatement")
-public class RemoveUnnecessaryReturn {
+@Messages({
+    "DN_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn=Remove Unnecessary Return Statement",
+    "DESC_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn=Remove Unnecessary Return Statement",
+    "ERR_UnnecessaryReturnStatement=Unnecessary return statement",
+    "FIX_UnnecessaryReturnStatement=Remove unnecessary return statement",
+    "DN_RemoveUnnecessaryContinue=Remove Unnecessary Continue Statement",
+    "DESC_RemoveUnnecessaryContinue=Remove Unnecessary Continue Statement",
+    "ERR_UnnecessaryContinueStatement=Unnecessary continue statement",
+    "FIX_UnnecessaryContinueStatement=Remove unnecessary continue statement"
+})
+public class RemoveUnnecessary {
 
+    @Hint(id="org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", displayName = "#DN_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", description = "#DESC_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", category="general", suppressWarnings="UnnecessaryReturnStatement")
     @TriggerPattern("return $val$;")
-    public static ErrorDescription hint(HintContext ctx) {
+    public static ErrorDescription unnecessaryReturn(HintContext ctx) {
+        return unnecessaryReturnContinue(ctx, true, "UnnecessaryReturnStatement");
+    }
+    
+    @Hint(displayName="#DN_RemoveUnnecessaryContinue", description="#DESC_RemoveUnnecessaryContinue", category="general", suppressWarnings="UnnecessaryContinue")
+    @TriggerPattern("continue $val$;")
+    public static ErrorDescription unnecessaryContinue(HintContext ctx) {
+        return unnecessaryReturnContinue(ctx, false, "UnnecessaryContinueStatement");
+    }
+    
+    private static ErrorDescription unnecessaryReturnContinue(HintContext ctx, boolean ret, String key) {
         TreePath tp = ctx.getPath();
 
         OUTER: while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
@@ -79,6 +99,7 @@ public class RemoveUnnecessaryReturn {
 
             switch (tp.getLeaf().getKind()) {
                 case METHOD:
+                    if (!ret) return null; //TODO: can happen?
                     MethodTree mt = (MethodTree) tp.getLeaf();
 
                     if (mt.getReturnType() == null) {
@@ -113,7 +134,8 @@ public class RemoveUnnecessaryReturn {
                 case ENHANCED_FOR_LOOP:
                 case FOR_LOOP:
                 case WHILE_LOOP:
-                    return null;
+                    if (ret) return null;
+                    else break OUTER;
                 case TRY:
                     if (((TryTree) tp.getLeaf()).getFinallyBlock() == current) return null;
                 default: continue OUTER;
@@ -155,8 +177,8 @@ public class RemoveUnnecessaryReturn {
             }
         }
 
-        String displayName = NbBundle.getMessage(RemoveUnnecessaryReturn.class, "ERR_UnnecessaryReturnStatement");
-        String fixDisplayName = NbBundle.getMessage(RemoveUnnecessaryReturn.class, "FIX_UnnecessaryReturnStatement");
+        String displayName = NbBundle.getMessage(RemoveUnnecessary.class, "ERR_" + key);
+        String fixDisplayName = NbBundle.getMessage(RemoveUnnecessary.class, "FIX_" + key);
         
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, JavaFixUtilities.removeFromParent(ctx, fixDisplayName, ctx.getPath()));
     }
