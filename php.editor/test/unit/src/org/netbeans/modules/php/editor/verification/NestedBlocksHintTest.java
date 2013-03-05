@@ -54,7 +54,7 @@ public class NestedBlocksHintTest extends PHPHintsTestBase {
     }
 
     public void testDefault() throws Exception {
-        checkHintsInStartEndFile(new NestedBlocksHintStub(2, true), "testNestedBlocksHint_default.php");
+        checkHints(new NestedBlocksHintStub(2, true), "testNestedBlocksHint_default.php");
     }
 
     private class NestedBlocksHintStub extends NestedBlocksHint {

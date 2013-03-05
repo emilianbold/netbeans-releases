@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.api.util;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -82,13 +83,14 @@ public final class StringUtils {
     }
 
     /**
-     * Implode list of strings to one string using delimiter.
-     * @param items list of strings to be imploded, can be empty (but not <code>null</code>)
+     * Implode collection of strings to one string using delimiter.
+     * @param items collection of strings to be imploded, can be empty (but not <code>null</code>)
      * @param delimiter delimiter to be used
      * @return one string of imploded strings using delimiter, never <code>null</code>
      * @see #explode(String, String)
+     * @since 2.14
      */
-    public static String implode(List<String> items, String delimiter) {
+    public static String implode(Collection<String> items, String delimiter) {
         Parameters.notNull("items", items);
         Parameters.notNull("delimiter", delimiter);
 

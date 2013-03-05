@@ -52,183 +52,183 @@ public class HintsTest extends PHPHintsTestBase {
     }
 
     public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHintError(), "testModifiersCheckHint.php");
+        checkHints(new ModifiersCheckHintError(), "testModifiersCheckHint.php");
     }
 
     public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHintError(), "testAbstractClassInstantiationHint.php");
+        checkHints(new AbstractClassInstantiationHintError(), "testAbstractClassInstantiationHint.php");
     }
 
     public void testAbstractClassInstantiationHint_02() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHintError(), "testAbstractClassInstantiationHint_02.php");
+        checkHints(new AbstractClassInstantiationHintError(), "testAbstractClassInstantiationHint_02.php");
     }
 
     public void testImplementAbstractMethodsHint() throws Exception {
-        checkHintsInStartEndFile(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHint.php");
+        checkHints(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHint.php");
     }
 
     public void testMethodRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new MethodRedeclarationHintError(), "testMethodRedeclarationHint.php");
+        checkHints(new MethodRedeclarationHintError(), "testMethodRedeclarationHint.php");
     }
 
     public void testTypeRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new TypeRedeclarationHintError(), "testTypeRedeclarationHint.php");
+        checkHints(new TypeRedeclarationHintError(), "testTypeRedeclarationHint.php");
     }
 
     public void testWrongOrderOfArgsHint() throws Exception {
-        checkHintsInStartEndFile(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
+        checkHints(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
     }
 
     public void testUnusedUsesHint() throws Exception {
-        checkHintsInStartEndFile(new UnusedUsesHint(), "testUnusedUsesHint.php");
+        checkHints(new UnusedUsesHint(), "testUnusedUsesHint.php");
     }
 
     public void testAmbiguousComparisonHint() throws Exception {
-        checkHintsInStartEndFile(new AmbiguousComparisonHint(), "testAmbiguousComparisonHint.php");
+        checkHints(new AmbiguousComparisonHint(), "testAmbiguousComparisonHint.php");
     }
 
     public void testVarDocSuggestion() throws Exception {
-        checkSuggestion(new VarDocSuggestion(), "testVarDocSuggestion.php", "$foo^Bar;");
+        checkHints(new VarDocSuggestion(), "testVarDocSuggestion.php", "$foo^Bar;");
     }
 
     public void testAssignVariableSuggestion() throws Exception {
-        checkSuggestion(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "myFnc();^");
+        checkHints(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "myFnc();^");
     }
 
     public void testAssignVariableSuggestion_02() throws Exception {
-        checkSuggestion(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "die('message');^");
+        checkHints(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "die('message');^");
     }
 
     public void testAssignVariableSuggestion_03() throws Exception {
-        checkSuggestion(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "exit('message');^");
+        checkHints(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "exit('message');^");
     }
 
     public void testIdenticalComparisonSuggestion() throws Exception {
-        checkSuggestion(new IdenticalComparisonSuggestion(), "testIdenticalComparisonSuggestion.php", "if ($a == true)^ {}");
+        checkHints(new IdenticalComparisonSuggestion(), "testIdenticalComparisonSuggestion.php", "if ($a == true)^ {}");
     }
 
     public void testIntroduceSuggestion_01() throws Exception {
-        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "new MyClass();^");
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "new MyClass();^");
     }
 
     public void testIntroduceSuggestion_02() throws Exception {
-        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "$foo->bar;^");
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "$foo->bar;^");
     }
 
     public void testIntroduceSuggestion_03() throws Exception {
-        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "$foo->method();^");
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "$foo->method();^");
     }
 
     public void testIntroduceSuggestion_04() throws Exception {
-        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::CON;^");
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::CON;^");
     }
 
     public void testIntroduceSuggestion_05() throws Exception {
-        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::stMeth();^");
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::stMeth();^");
     }
 
     public void testIntroduceSuggestion_06() throws Exception {
-        checkSuggestion(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::$stFld;^");
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::$stFld;^");
     }
 
     public void testAddUseImportSuggestion_01() throws Exception {
-        checkSuggestion(new AddUseImportSuggestion(), "testAddUseImportSuggestion_01.php", "new Foo\\Bar();^");
+        checkHints(new AddUseImportSuggestion(), "testAddUseImportSuggestion_01.php", "new Foo\\Bar();^");
     }
 
     public void testAddUseImportSuggestion_02() throws Exception {
-        checkSuggestion(new AddUseImportSuggestion(), "testAddUseImportSuggestion_02.php", "new Foox\\Barx();^");
+        checkHints(new AddUseImportSuggestion(), "testAddUseImportSuggestion_02.php", "new Foox\\Barx();^");
     }
 
     public void testIssue223842() throws Exception {
-        checkSuggestion(new IntroduceSuggestion(), "testIssue223842.php", "Foo::{\"\"}();^");
+        checkHints(new IntroduceSuggestion(), "testIssue223842.php", "Foo::{\"\"}();^");
     }
 
     public void testIfBracesHint_01() throws Exception {
-        checkHintsInStartEndFile(new BracesHint.IfBracesHint(), "testIfBracesHint_01.php");
+        checkHints(new BracesHint.IfBracesHint(), "testIfBracesHint_01.php");
     }
 
     public void testIfBracesHint_02() throws Exception {
-        checkHintsInStartEndFile(new BracesHint.IfBracesHint(), "testIfBracesHint_02.php");
+        checkHints(new BracesHint.IfBracesHint(), "testIfBracesHint_02.php");
     }
 
     public void testIfBracesHint_03() throws Exception {
-        checkHintsInStartEndFile(new BracesHint.IfBracesHint(), "testIfBracesHint_03.php");
+        checkHints(new BracesHint.IfBracesHint(), "testIfBracesHint_03.php");
     }
 
     public void testDoWhileBracesHint() throws Exception {
-        checkHintsInStartEndFile(new BracesHint.DoWhileBracesHint(), "testDoWhileBracesHint.php");
+        checkHints(new BracesHint.DoWhileBracesHint(), "testDoWhileBracesHint.php");
     }
 
     public void testWhileBracesHint() throws Exception {
-        checkHintsInStartEndFile(new BracesHint.WhileBracesHint(), "testWhileBracesHint.php");
+        checkHints(new BracesHint.WhileBracesHint(), "testWhileBracesHint.php");
     }
 
     public void testForBracesHint() throws Exception {
-        checkHintsInStartEndFile(new BracesHint.ForBracesHint(), "testForBracesHint.php");
+        checkHints(new BracesHint.ForBracesHint(), "testForBracesHint.php");
     }
 
     public void testForEachBracesHint() throws Exception {
-        checkHintsInStartEndFile(new BracesHint.ForEachBracesHint(), "testForEachBracesHint.php");
+        checkHints(new BracesHint.ForEachBracesHint(), "testForEachBracesHint.php");
     }
 
     public void testGetSuperglobalsHint() throws Exception {
-        checkHintsInStartEndFile(new SuperglobalsHint.GetSuperglobalHint(), "testGetSuperglobalsHint.php");
+        checkHints(new SuperglobalsHint.GetSuperglobalHint(), "testGetSuperglobalsHint.php");
     }
 
     public void testPostSuperglobalsHint() throws Exception {
-        checkHintsInStartEndFile(new SuperglobalsHint.PostSuperglobalHint(), "testPostSuperglobalsHint.php");
+        checkHints(new SuperglobalsHint.PostSuperglobalHint(), "testPostSuperglobalsHint.php");
     }
 
     public void testCookieSuperglobalsHint() throws Exception {
-        checkHintsInStartEndFile(new SuperglobalsHint.CookieSuperglobalHint(), "testCookieSuperglobalsHint.php");
+        checkHints(new SuperglobalsHint.CookieSuperglobalHint(), "testCookieSuperglobalsHint.php");
     }
 
     public void testServerSuperglobalsHint() throws Exception {
-        checkHintsInStartEndFile(new SuperglobalsHint.ServerSuperglobalHint(), "testServerSuperglobalsHint.php");
+        checkHints(new SuperglobalsHint.ServerSuperglobalHint(), "testServerSuperglobalsHint.php");
     }
 
     public void testEnvSuperglobalsHint() throws Exception {
-        checkHintsInStartEndFile(new SuperglobalsHint.EnvSuperglobalHint(), "testEnvSuperglobalsHint.php");
+        checkHints(new SuperglobalsHint.EnvSuperglobalHint(), "testEnvSuperglobalsHint.php");
     }
 
     public void testEmptyStatementHint() throws Exception {
-        checkHintsInStartEndFile(new EmptyStatementHint(), "testEmptyStatementHint.php");
+        checkHints(new EmptyStatementHint(), "testEmptyStatementHint.php");
     }
 
     public void testUnreachableStatementHint() throws Exception {
-        checkHintsInStartEndFile(new UnreachableStatementHint(), "testUnreachableStatementHint.php");
+        checkHints(new UnreachableStatementHint(), "testUnreachableStatementHint.php");
     }
 
     public void testUnreachableStatementHint_02() throws Exception {
-        checkHintsInStartEndFile(new UnreachableStatementHint(), "testUnreachableStatementHint_02.php");
+        checkHints(new UnreachableStatementHint(), "testUnreachableStatementHint_02.php");
     }
 
     public void testParentConstructorCallHint() throws Exception {
-        checkHintsInStartEndFile(new ParentConstructorCallHint(), "testParentConstructorCallHint.php");
+        checkHints(new ParentConstructorCallHint(), "testParentConstructorCallHint.php");
     }
 
     public void testIssue224940() throws Exception {
-        checkSuggestion(new AddUseImportSuggestion(), "testIssue224940.php", "echo \"foo $whatever \\n^\";");
+        checkHints(new AddUseImportSuggestion(), "testIssue224940.php", "echo \"foo $whatever \\n^\";");
     }
 
     public void testErrorControlOperatorHint() throws Exception {
-        checkHintsInStartEndFile(new ErrorControlOperatorHint(), "testErrorControlOperatorHint.php");
+        checkHints(new ErrorControlOperatorHint(), "testErrorControlOperatorHint.php");
     }
 
     public void testIssue226494() throws Exception {
-        checkHintsInStartEndFile(new MethodRedeclarationHintError(), "testIssue226494.php");
+        checkHints(new MethodRedeclarationHintError(), "testIssue226494.php");
     }
 
     public void testClosingDelimUseCase01() throws Exception {
-        checkHintsInStartEndFile(new UnnecessaryClosingDelimiterHint(), "testClosingDelimUseCase01.php");
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testClosingDelimUseCase01.php");
     }
 
     public void testClosingDelimUseCase02() throws Exception {
-        checkHintsInWholeFile(new UnnecessaryClosingDelimiterHint(), "testClosingDelimUseCase02.php", "/*^*/");
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testClosingDelimUseCase02.php");
     }
 
     public void testClosingDelimUseCase03() throws Exception {
-        checkHintsInWholeFile(new UnnecessaryClosingDelimiterHint(), "testClosingDelimUseCase03.php", "/*^*/");
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testClosingDelimUseCase03.php");
     }
 
 }
