@@ -1,0 +1,61 @@
+typeInferenceNew [ANONYMOUS: false, DECLARED: true - typeInferenceNew, MODIFIERS: PUBLIC, FILE]
+# RETURN TYPES
+undefined
+# PROPERTIES
+Address   : Address [ANONYMOUS: false, DECLARED: true - Address, MODIFIERS: PUBLIC, CONSTRUCTOR]
+          # RETURN TYPES
+          Address
+          # PARAMETERS
+          street [ANONYMOUS: false, DECLARED: true - street, MODIFIERS: PUBLIC, PARAMETER]
+          town [ANONYMOUS: false, DECLARED: true - town, MODIFIERS: PUBLIC, PARAMETER]
+          country [ANONYMOUS: false, DECLARED: true - country, MODIFIERS: PUBLIC, PARAMETER]
+          # PROPERTIES
+          arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          country   : country [ANONYMOUS: false, DECLARED: true - country, MODIFIERS: PUBLIC, PROPERTY]
+          street    : street [ANONYMOUS: false, DECLARED: true - street, MODIFIERS: PUBLIC, PROPERTY]
+          town      : town [ANONYMOUS: false, DECLARED: true - town, MODIFIERS: PUBLIC, PROPERTY]
+Car       : Car [ANONYMOUS: false, DECLARED: true - Car, MODIFIERS: PUBLIC, CONSTRUCTOR]
+          # RETURN TYPES
+          Car
+          # PARAMETERS
+          color [ANONYMOUS: false, DECLARED: true - color, MODIFIERS: PUBLIC, PARAMETER]
+          maker [ANONYMOUS: false, DECLARED: true - maker, MODIFIERS: PUBLIC, PARAMETER]
+          # PROPERTIES
+          arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          color     : color [ANONYMOUS: false, DECLARED: true - color, MODIFIERS: PUBLIC, PROPERTY]
+          getColor  : getColor [ANONYMOUS: false, DECLARED: true - getColor, MODIFIERS: PROTECTED, METHOD]
+                    # PROPERTIES
+                    arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          getMaker  : getMaker [ANONYMOUS: false, DECLARED: true - getMaker, MODIFIERS: PROTECTED, METHOD]
+                    # PROPERTIES
+                    arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          maker     : maker [ANONYMOUS: false, DECLARED: true - maker, MODIFIERS: PUBLIC, PROPERTY]
+Context   : Context [ANONYMOUS: false, DECLARED: true - Context, MODIFIERS: PUBLIC, OBJECT_LITERAL]
+          # PROPERTIES
+          id   : id [ANONYMOUS: false, DECLARED: true - id, MODIFIERS: PUBLIC, PROPERTY]
+          user : user [ANONYMOUS: false, DECLARED: true - user, MODIFIERS: PUBLIC, PROPERTY]
+formatter : formatter [ANONYMOUS: false, DECLARED: false - formatter, MODIFIERS: PUBLIC, OBJECT]
+          # PROPERTIES
+          addIndent    : addIndent [ANONYMOUS: false, DECLARED: false - addIndent, MODIFIERS: PUBLIC, METHOD]
+                       # PARAMETERS
+                       param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                       # PROPERTIES
+                       arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          println      : println [ANONYMOUS: false, DECLARED: false - println, MODIFIERS: PUBLIC, METHOD]
+                       # PARAMETERS
+                       param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                       # PROPERTIES
+                       arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          removeIndent : removeIndent [ANONYMOUS: false, DECLARED: false - removeIndent, MODIFIERS: PUBLIC, METHOD]
+                       # PARAMETERS
+                       param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                       # PROPERTIES
+                       arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+object    : object [ANONYMOUS: false, DECLARED: true - object, MODIFIERS: PUBLIC, VARIABLE]
+          # PROPERTIES
+          getColor : getColor [ANONYMOUS: false, DECLARED: false - getColor, MODIFIERS: PUBLIC, METHOD]
+                   # PROPERTIES
+                   arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          maker    : maker [ANONYMOUS: false, DECLARED: false - maker, MODIFIERS: PUBLIC, PROPERTY]
+          street   : street [ANONYMOUS: false, DECLARED: false - street, MODIFIERS: PUBLIC, PROPERTY]
+          town     : town [ANONYMOUS: false, DECLARED: false - town, MODIFIERS: PUBLIC, PROPERTY]
