@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  */
 public class GenerateScriptExecutor {
 
-    public void execute(Project project, FileObject file, PersistenceEnvironment pe, PersistenceUnit pu, List<String> problems) {
+    public void execute(Project project, FileObject file, PersistenceEnvironment pe, PersistenceUnit pu, List<String> problems, boolean validateOnly) {
         try {
 
             Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");//NOI18N
@@ -68,13 +68,15 @@ public class GenerateScriptExecutor {
             //
             map.put("javax.persistence.schema-generation-action", "create");
             map.put("javax.persistence.schema-generation-target", "scripts");
-            try {
-                map.put("javax.persistence.ddl-create-script-target", new FileWriter(FileUtil.toFile(file)));
-            } catch (IOException ex) {
-                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_File", file.getPath()));
+            if(!validateOnly) {
+                try {
+                    map.put("javax.persistence.ddl-create-script-target", new FileWriter(FileUtil.toFile(file)));
+                } catch (IOException ex) {
+                    problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_File", file.getPath()));
+                }
+                //
+                p.generateSchema(pu.getName(), map);
             }
-            //
-            p.generateSchema(pu.getName(), map);
         } catch (ClassNotFoundException ex) {
                 problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getPath()));
         } catch (IllegalAccessException ex) {

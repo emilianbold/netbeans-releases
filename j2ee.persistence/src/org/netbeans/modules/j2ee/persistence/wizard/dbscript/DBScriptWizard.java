@@ -56,9 +56,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
@@ -115,10 +112,10 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
         FileObject tFolder = Templates.getTargetFolder(wiz);
         FileObject sqlFile = tFolder.createData(Templates.getTargetName(wiz), EXTENSION);//NOI18N
         PersistenceEnvironment pe = project.getLookup().lookup(PersistenceEnvironment.class);
-            if (sqlFile != null) {
-                //execution
-                run(project, sqlFile, pe);
-            }
+        if (sqlFile != null) {
+            //execution
+            run(project, sqlFile, pe, false);
+        }
 
         return Collections.singleton(sqlFile);
     }
@@ -162,27 +159,7 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
         return panels[index];
     }
 
-    /**
-     * A panel which checks whether the target project has a valid server set,
-     * otherwise it delegates to the real panel.
-     */
-    private static final class ValidatingPanel extends DelegatingWizardDescriptorPanel {
-
-        public ValidatingPanel(WizardDescriptor.Panel delegate) {
-            super(delegate);
-        }
-
-        @Override
-        public boolean isValid() {
-            boolean valid = super.isValid();
-            if (!ProviderUtil.isValidServerInstanceOrNone(getProject())) {
-                getWizardDescriptor().putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                        NbBundle.getMessage(DBScriptWizardDescriptor.class, "ERR_MissingServer")); // NOI18N
-            }
-            return valid;
-        }
-    }
-    private void run(final Project project, final FileObject sFile, final PersistenceEnvironment pe) {
+    static List<String> run(final Project project, final FileObject sFile, final PersistenceEnvironment pe, final boolean validateOnly) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
         //
@@ -195,9 +172,9 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
             Exceptions.printStackTrace(ex);
         }
         if (pus == null || pus.length == 0) {
-            initialProblems.add( NbBundle.getMessage(DBScriptWizard.class, "ERR_NoPU"));
+            initialProblems.add(NbBundle.getMessage(DBScriptWizard.class, "ERR_NoPU"));
 
-            return;
+            return initialProblems;
         }
         final PersistenceUnit pu = pus[0];
         //connection open
@@ -231,9 +208,9 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
                 @Override
                 public void run() {
                     if (initialProblems.isEmpty()) {
-                        new GenerateScriptExecutor().execute(project, sFile, pe, pu, initialProblems);
-                    } 
-                    if(!initialProblems.isEmpty()){
+                        new GenerateScriptExecutor().execute(project, sFile, pe, pu, initialProblems, validateOnly);
+                    }
+                    if (!initialProblems.isEmpty()) {
                         StringBuilder sb = new StringBuilder();
                         for (String txt : initialProblems) {
                             sb.append(txt).append("\n");
@@ -245,10 +222,12 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
             };
             t.setContextClassLoader(customClassLoader);
             t.start();
+            t.join();
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         } finally {
             Thread.currentThread().setContextClassLoader(defClassLoader);
         }
+        return initialProblems;
     }
 }
