@@ -139,7 +139,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
             String[] returnTypes = returnType.split(TYPE_SEPARATOR_REGEXP);
             distinctTypes.addAll(Arrays.asList(returnTypes));
             distinctTypes.add(type);
-            returnType = StringUtils.implode(new ArrayList<String>(distinctTypes), TYPE_SEPARATOR);
+            returnType = StringUtils.implode(distinctTypes, TYPE_SEPARATOR);
         }
     }
 
