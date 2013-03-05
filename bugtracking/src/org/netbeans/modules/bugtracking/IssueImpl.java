@@ -190,4 +190,8 @@ public final class IssueImpl<I> {
     public BugtrackingController getController() {
         return issueProvider.getController(data);
     }    
+    
+    public boolean isData(Object obj) {
+        return data == obj;
+    }
 }

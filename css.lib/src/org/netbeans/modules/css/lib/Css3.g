@@ -429,6 +429,7 @@ bodyItem
         | {isCssPreprocessorSource()}? cp_mixin_call
         | {isScssSource()}? sass_debug
         | {isScssSource()}? sass_control
+        | {isCssPreprocessorSource()}? importItem //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -557,8 +558,19 @@ unaryOperator
     ;  
     
 property
-    : (IDENT | GEN | {isCssPreprocessorSource()}? cp_variable) ws?
-    ;
+    : 
+    (
+        //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
+        //(the IE allows also just ident as its content)
+        (~(HASH_SYMBOL|COLON)* HASH_SYMBOL LBRACE)=>scss_declaration_interpolation_expression
+        | IDENT 
+        | GEN 
+        | {isCssPreprocessorSource()}? cp_variable
+    ) ws?
+    ; catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(COLON)); 
+    }
     
 rule 
     :   ( 
@@ -584,11 +596,16 @@ declarations
                 //the DECLARATION rule needs to be before the RULE rule as the 
                 //syn.predicate for the RULE rule also accepts the declaration,
                 //(is less specific).
-		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
+//		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
+		(declaration SEMI)=>declaration SEMI ws?
+                |
+                //for the error recovery - if the previous synt. predicate fails (an error in the declaration)
+                //we be still able to recover INSIDE the declaration
+		(~(LBRACE|SEMI|RBRACE|COLON)* COLON ~(SEMI|LBRACE|RBRACE)* SEMI)=>declaration SEMI ws?
 		|
-		(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ LBRACE | scss_declaration_interpolation_expression COLON )=>scss_nested_properties ws?
+		(scss_nested_properties)=>scss_nested_properties ws?
 		|
-                (~(LBRACE|SEMI|RBRACE)+ LBRACE)=>rule ws?
+                (rule)=>rule ws?
                 |
                 {isScssSource()}? sass_extend ws?
                 |
@@ -599,10 +616,10 @@ declarations
                 {isCssPreprocessorSource()}? media ws?
                 |
                 {isCssPreprocessorSource()}? cp_mixin_call ws?
-//                |
-//                (~(LBRACE|SEMI|RBRACE)+ SEMI)=>syncTo_SEMI ws?
+                |
+                (~SEMI* SEMI)=>syncTo_SEMI //doesn't work :-(
             )*
-            (( ~(RBRACE)+ RBRACE)=>declaration)?
+            declaration?
     ;
     
 selectorsGroup
@@ -733,14 +750,7 @@ pseudo
 
 declaration
     : 
-    //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
-    STAR? 
-    ( 
-        ( ~(HASH_SYMBOL | COLON | SEMI | RBRACE)* HASH_SYMBOL LBRACE )=> scss_declaration_interpolation_expression // looking for #{, lookeahead exit at :, ; and }
-        |
-        property 
-    )
-    COLON ws? propertyValue (prio ws?)?
+    STAR? property COLON ws? propertyValue (prio ws?)?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -751,7 +761,10 @@ declaration
 
 propertyValue
 	:
-        ( (expressionPredicate)=>expression )
+        //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
+        //(the IE allows also just ident as its content)
+        (~(HASH_SYMBOL|SEMI)* HASH_SYMBOL LBRACE)=>scss_declaration_property_value_interpolation_expression
+        | (expressionPredicate)=>expression
         | 
         
 //this is a bit mysterious - if the use the semantic predicate for the less_expression
@@ -1094,6 +1107,24 @@ scss_declaration_interpolation_expression
                 (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
+            )
+        )*
+
+    ;
+
+scss_declaration_property_value_interpolation_expression
+    :
+        ( 
+            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            |
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
+        )
+        ( 
+            ws?
+            (
+                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                |
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
             )
         )*
 

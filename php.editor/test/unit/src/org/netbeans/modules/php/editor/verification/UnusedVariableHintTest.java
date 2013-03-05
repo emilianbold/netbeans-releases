@@ -54,19 +54,19 @@ public class UnusedVariableHintTest extends PHPHintsTestBase {
     }
 
     public void testWithParams() throws Exception {
-        checkHintsInStartEndFile(new UnusedVariableHintStub(true), "testUnusedVariableHint.php");
+        checkHints(new UnusedVariableHintStub(true), "testUnusedVariableHint.php");
     }
 
     public void testWithoutParams() throws Exception {
-        checkHintsInStartEndFile(new UnusedVariableHintStub(false), "testUnusedVariableHint.php");
+        checkHints(new UnusedVariableHintStub(false), "testUnusedVariableHint.php");
     }
 
     public void testUnusedInGlobalProgramContext() throws Exception {
-        checkHintsInStartEndFile(new UnusedVariableHintStub(false), "testUnusedInGlobalProgramContext.php");
+        checkHints(new UnusedVariableHintStub(false), "testUnusedInGlobalProgramContext.php");
     }
 
     public void testUnusedInGlobalNamespaceContext() throws Exception {
-        checkHintsInStartEndFile(new UnusedVariableHintStub(false), "testUnusedInGlobalNamespaceContext.php");
+        checkHints(new UnusedVariableHintStub(false), "testUnusedInGlobalNamespaceContext.php");
     }
 
     private class UnusedVariableHintStub extends UnusedVariableHint {

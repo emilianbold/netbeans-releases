@@ -60,6 +60,7 @@ public class APITestIssue extends TestIssue {
     static final String ID_1 = "1";
     static final String ID_2 = "2";
     static final String ID_SUB_3 = "3";
+    static final String ID_NEW = "1000";
 
     static final String SUMMARY_SUF = " - summary";
     static final String TOOLTIP_SUF = " - tooltip";
