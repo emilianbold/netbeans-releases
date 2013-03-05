@@ -135,7 +135,11 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         if (!StringUtils.hasText(returnType)) {
             returnType = type;
         } else {
-            returnType += (TYPE_SEPARATOR + type);
+            Set<String> distinctTypes = new HashSet<String>();
+            String[] returnTypes = returnType.split(TYPE_SEPARATOR_REGEXP);
+            distinctTypes.addAll(Arrays.asList(returnTypes));
+            distinctTypes.add(type);
+            returnType = StringUtils.implode(new ArrayList<String>(distinctTypes), TYPE_SEPARATOR);
         }
     }
 
