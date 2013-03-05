@@ -331,6 +331,16 @@ public class Operator {
             debugger.getThreadsCache().assureThreadIsCached(thref);
         }
         boolean suspendedCurrentThread = suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD && thref != null;
+        // Check if it's a thread death event
+        boolean isThreadDeath = false;
+        for (Event e: eventSet) {
+            if (e instanceof ThreadDeathEvent) {
+                isThreadDeath = true;
+            } else {
+                isThreadDeath = false;
+                break;
+            }
+        }
         if (!silent) {
             if (suspendedAll) {
                 eventAccessLock = debugger.accessLock.writeLock();
@@ -343,7 +353,7 @@ public class Operator {
             }
             if (eventAccessLock != null) {
                 eventAccessLock.lock();
-                if (thref != null) {
+                if (thref != null && !isThreadDeath) {
                     try {
                         if (!ThreadReferenceWrapper.isSuspended(thref)) {
                             // Can not do anything, someone already resumed the thread in the mean time.
@@ -506,16 +516,6 @@ public class Operator {
             logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
         }
         if (isThreadEvent && suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD && !resume) {
-            // Check if it's a thread death event
-            boolean isThreadDeath = false;
-            for (Event e: eventSet) {
-                if (e instanceof ThreadDeathEvent) {
-                    isThreadDeath = true;
-                } else {
-                    isThreadDeath = false;
-                    break;
-                }
-            }
             // We must resume the thread death event, because otherwise nobody would do that in this case.
             if (isThreadDeath) {
                 resume = true;
