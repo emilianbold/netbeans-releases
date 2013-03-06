@@ -257,7 +257,9 @@ public enum CssTokenId implements TokenId {
     SASS_EACH(Css3Lexer.SASS_EACH, KEYWORDS),
     SASS_WHILE(Css3Lexer.SASS_WHILE, KEYWORDS),
     
-    CP_EQ(Css3Lexer.CP_EQ, KEYWORDS)
+    CP_EQ(Css3Lexer.CP_EQ, KEYWORDS),
+    SASS_FUNCTION(Css3Lexer.SASS_FUNCTION, KEYWORDS),
+    SASS_RETURN(Css3Lexer.SASS_RETURN, KEYWORDS),
     
     ;
     

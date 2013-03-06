@@ -905,4 +905,18 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
+
+    public void testDefineOwnFunction() {
+        String source = "@function grid-width($n) {\n"
+                + "  @return $n * $grid-width + ($n - 1) * $gutter-width;\n"
+                + "}\n"
+                + "\n"
+                + "#sidebar { width: grid-width(5); }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
 }

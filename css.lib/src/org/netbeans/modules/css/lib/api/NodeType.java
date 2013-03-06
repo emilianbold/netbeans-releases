@@ -365,12 +365,12 @@ public enum NodeType {
     /**
      * .box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
      */
-    less_args_list,
+    cp_args_list,
     
     /**
      * .box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
      */
-    less_arg,
+    cp_arg,
     
     less_mixin_guarded,
     less_condition,
@@ -403,7 +403,12 @@ public enum NodeType {
     sass_control_block,
     sass_control_expression,
     
-    scss_declaration_property_value_interpolation_expression
+    scss_declaration_property_value_interpolation_expression,
+    
+    sass_function_declaration,
+    sass_function_name,
+    sass_function_return,
+    
     
     ;
     
