@@ -374,4 +374,20 @@ public class RemoveUnnecessaryTest extends NbTestCase {
                               "    }\n" +
                               "}\n");
     }
+    
+    public void testContinueToOutter() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void testContinue(int i, int j) {\n" +
+                       "        OUTER: while (i-- > 0) {\n" +
+                       "            while (j-- > 0) {\n" +
+                       "                continue OUTER;\n" +
+                       "            }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessary.class)
+                .assertWarnings();
+    }
 }

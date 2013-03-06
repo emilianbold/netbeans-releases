@@ -79,16 +79,16 @@ public class RemoveUnnecessary {
     @Hint(id="org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", displayName = "#DN_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", description = "#DESC_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", category="general", suppressWarnings="UnnecessaryReturnStatement")
     @TriggerPattern("return $val$;")
     public static ErrorDescription unnecessaryReturn(HintContext ctx) {
-        return unnecessaryReturnContinue(ctx, true, "UnnecessaryReturnStatement");
+        return unnecessaryReturnContinue(ctx, null, "UnnecessaryReturnStatement");
     }
     
     @Hint(displayName="#DN_RemoveUnnecessaryContinue", description="#DESC_RemoveUnnecessaryContinue", category="general", suppressWarnings="UnnecessaryContinue")
     @TriggerPattern("continue $val$;")
     public static ErrorDescription unnecessaryContinue(HintContext ctx) {
-        return unnecessaryReturnContinue(ctx, false, "UnnecessaryContinueStatement");
+        return unnecessaryReturnContinue(ctx, ctx.getInfo().getTreeUtilities().getBreakContinueTarget(ctx.getPath()), "UnnecessaryContinueStatement");
     }
     
-    private static ErrorDescription unnecessaryReturnContinue(HintContext ctx, boolean ret, String key) {
+    private static ErrorDescription unnecessaryReturnContinue(HintContext ctx, StatementTree targetLoop, String key) {
         TreePath tp = ctx.getPath();
 
         OUTER: while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
@@ -99,7 +99,7 @@ public class RemoveUnnecessary {
 
             switch (tp.getLeaf().getKind()) {
                 case METHOD:
-                    if (!ret) return null; //TODO: can happen?
+                    if (targetLoop != null) return null; //TODO: unnecessary continue - can happen?
                     MethodTree mt = (MethodTree) tp.getLeaf();
 
                     if (mt.getReturnType() == null) {
@@ -134,7 +134,7 @@ public class RemoveUnnecessary {
                 case ENHANCED_FOR_LOOP:
                 case FOR_LOOP:
                 case WHILE_LOOP:
-                    if (ret) return null;
+                    if (tp.getLeaf() != targetLoop) return null;
                     else break OUTER;
                 case TRY:
                     if (((TryTree) tp.getLeaf()).getFinallyBlock() == current) return null;
