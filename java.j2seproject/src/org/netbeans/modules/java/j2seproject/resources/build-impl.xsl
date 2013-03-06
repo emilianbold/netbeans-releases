@@ -338,6 +338,13 @@ is divided into following sections:
                 <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
                     <length length="0" string="${{endorsed.classpath}}" when="greater"/>
                 </condition>
+                <condition property="javac.profile.cmd.line.arg" value="-profile ${{javac.profile}}" else="">
+                    <and>
+                        <isset property="javac.profile"/>
+                        <length length="0" string="${{javac.profile}}" when="greater"/>
+                        <matches pattern="1\.[89](\..*)?" string="${{javac.source}}"/>
+                    </and>
+                </condition>
                 <xsl:if test="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform)">
                     <condition property="jdkBug6558476" else="false"> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 on JDK 1.5 and 1.6 on Windows -->
                         <and>
@@ -508,6 +515,7 @@ is divided into following sections:
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <compilerarg value="-processorpath" />
                             <compilerarg path="@{{processorpath}}:${{empty.dir}}" />
@@ -610,6 +618,7 @@ is divided into following sections:
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>

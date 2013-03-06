@@ -170,11 +170,19 @@ final class MultiPassCompileWorker extends CompileWorker {
                         }
                     }
                     if (jt == null) {
-                        jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), diagnosticListener, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
-                            public @Override boolean isCanceled() {
-                                return context.isCancelled() || (checkForMemLow && mem.isLowMemory());
-                            }
-                        }, active.aptGenerated ? null : APTUtils.get(context.getRoot()));
+                        jt = JavacParser.createJavacTask(
+                                javaContext.getClasspathInfo(),
+                                diagnosticListener,
+                                javaContext.getSourceLevel(),
+                                javaContext.getProfile(),
+                                cnffOraculum,
+                                javaContext.getFQNs(),
+                                new CancelService() {
+                                    public @Override boolean isCanceled() {
+                                        return context.isCancelled() || (checkForMemLow && mem.isLowMemory());
+                                    }
+                                },
+                                active.aptGenerated ? null : APTUtils.get(context.getRoot()));
                         Iterable<? extends Processor> processors = jt.getProcessors();
                         aptEnabled = processors != null && processors.iterator().hasNext();
                         if (JavaIndex.LOG.isLoggable(Level.FINER)) {

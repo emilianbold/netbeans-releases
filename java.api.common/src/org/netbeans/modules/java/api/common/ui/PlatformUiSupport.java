@@ -49,13 +49,21 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -81,7 +89,8 @@ import org.w3c.dom.NodeList;
  */
 public final class PlatformUiSupport {
 
-    private static final SpecificationVersion JDK_1_5 = new SpecificationVersion("1.5"); //NOI18N   
+    private static final SpecificationVersion JDK_1_5 = new SpecificationVersion("1.5"); //NOI18N
+    private static final SpecificationVersion JDK_8 = new SpecificationVersion("1.8");  //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PlatformUiSupport.class.getName());
 
     private PlatformUiSupport() {
@@ -148,7 +157,14 @@ public final class PlatformUiSupport {
             @NonNull final String projectConfigurationNamespace,
             @NonNull final Object platformKey,
             @NullAllowed final Object sourceLevelKey) {
-        storePlatform(props, helper, projectConfigurationNamespace, platformKey, sourceLevelKey, true);
+        storePlatform(
+                props,
+                helper,
+                projectConfigurationNamespace,
+                platformKey,
+                sourceLevelKey,
+                null,
+                true);
     }
 
     /**
@@ -168,16 +184,62 @@ public final class PlatformUiSupport {
             @NonNull final Object platformKey,
             @NullAllowed final Object sourceLevelKey,
             final boolean updatePreferredPlatform) {
+        storePlatform(
+            props,
+            helper,
+            projectConfigurationNamespace,
+            platformKey,
+            sourceLevelKey,
+            null,
+            updatePreferredPlatform);
+    }
+
+    /**
+     * Stores active platform, <i>javac.source</i>,<i>javac.target</i> and <i>javac.profile</i> into the project's metadata.
+     * @param props project's shared properties
+     * @param helper {@link UpdateHelper} that is capable to upgrade project metadata if needed.
+     * @param projectConfigurationNamespace project configuration namespace.
+     * @param platformKey the {@link PlatformKey} got from the platform model.
+     * @param sourceLevelKey {@link SourceLevelKey} representing source level; can be <code>null</code>.
+     * @param profileKey {@link Profile} representing required profile; can be <code>null</code> for full JRE.
+     * @param updatePreferredPlatform if true the {@link PreferredProjectPlatform} will be updated
+     * @since 1.45
+     */
+    public static void storePlatform(
+            @NonNull final EditableProperties props,
+            @NonNull final UpdateHelper helper,
+            @NonNull final String projectConfigurationNamespace,
+            @NonNull final Object platformKey,
+            @NullAllowed final Object sourceLevelKey,
+            @NullAllowed final Object profileKey,
+            final boolean updatePreferredPlatform) {
         Parameters.notNull("props", props); //NOI18N
         Parameters.notNull("helper", helper); //NOI18N
         Parameters.notNull("projectConfigurationNamespace", projectConfigurationNamespace); //NOI18N
         Parameters.notNull("platformKey", platformKey); //NOI18N
-
-        assert platformKey instanceof PlatformKey;
+        if (!(platformKey instanceof PlatformKey)) {
+            throw new IllegalArgumentException(String.format(
+                    "Unsupported platform key: %s of type: %s", //NOI18N
+                    platformKey,
+                    platformKey.getClass()));
+        }
+        if (sourceLevelKey != null && !(sourceLevelKey instanceof SourceLevelKey)) {
+            throw new IllegalArgumentException(String.format(
+                    "Unsupported source level key: %s of type: %s", //NOI18N
+                    sourceLevelKey,
+                    sourceLevelKey.getClass()));
+        }
+        if (profileKey != null && !(profileKey instanceof Profile)) {
+            throw new IllegalArgumentException(String.format(
+                    "Unsupported profile key: %s of type: %s", //NOI18N
+                    profileKey,
+                    profileKey.getClass()));
+        }
 
         final String javaPlatformKey = "platform.active"; //NOI18N
         final String javacSourceKey = "javac.source"; //NOI18N
         final String javacTargetKey = "javac.target"; //NOI18N
+        final String javacProfileKey = "javac.profile";  //NOI18N
 
         PlatformKey pk = (PlatformKey) platformKey;
         JavaPlatform platform = getPlatform(pk);
@@ -251,7 +313,6 @@ public final class PlatformUiSupport {
         if (sourceLevelKey == null) {
             sourceLevel = platform.getSpecification().getVersion();
         } else {
-            assert sourceLevelKey instanceof SourceLevelKey;
             sourceLevel = ((SourceLevelKey) sourceLevelKey).getSourceLevel();
         }
         String javacSource = sourceLevel.toString();
@@ -275,10 +336,45 @@ public final class PlatformUiSupport {
         if (!javacTarget.equals(props.getProperty(javacTargetKey))) {
             props.setProperty(javacTargetKey, javacTarget);
         }
+        
+        final String javacProfile;
+        if (profileKey != null) {
+            javacProfile = ((Profile)profileKey).getAntName();
+        } else {
+            javacProfile = null;
+        }
+        if (javacProfile != null) {
+            if(!javacProfile.equals(props.getProperty(javacProfileKey))) {
+                props.setProperty(javacProfileKey, javacProfile);
+            }
+        } else if (props.containsKey(javacProfileKey)) {
+            props.remove(javacProfileKey);
+        }
 
         if (changed) {
             helper.putPrimaryConfigurationData(root, true);
         }
+    }
+
+    /**
+     * Returns a {@link SpecificationVersion} for an item obtained from the {@link ComboBoxModel} created by
+     * the {@link PlatformUiSupport#createSourceLevelComboBoxModel} method. This method
+     * can return <code>null</code> if the source level is broken.
+     * @param sourceLevelKey  an item obtained from {@link ComboBoxModel} created by
+     *                    {@link PlatformUiSupport#createSourceLevelComboBoxModel}.
+     * @return {@link SpecificationVersion} or <code>null</code> in case when source level is broken.
+     * @throws IllegalArgumentException if the input parameter is not an object created by source level combobox model.
+     * @since 1.45
+     */
+    public static SpecificationVersion getSourceLevel(@NonNull final Object sourceLevelKey) {
+        Parameters.notNull("sourceLevelKey", sourceLevelKey);   //NOI18N
+        if (!(sourceLevelKey instanceof SourceLevelKey)) {
+            throw new IllegalArgumentException(String.format(
+                    "Unsupported source level key: %s of type: %s", //NOI18N
+                    sourceLevelKey,
+                    sourceLevelKey.getClass()));
+        }
+        return ((SourceLevelKey)sourceLevelKey).getSourceLevel();
     }
 
 
@@ -342,6 +438,35 @@ public final class PlatformUiSupport {
      */
     public static ListCellRenderer createSourceLevelListCellRenderer() {
         return new SourceLevelListCellRenderer();
+    }
+
+    /**
+     * Create {@link ComboBoxModel} of JRE profiles for active source level.
+     * The model listens on the source level {@link ComboBoxModel} and update its
+     * state according to the changes. It is possible to define minimal required
+     * JRE profile.
+     * @param sourceLevelModel the source level model used for listening.
+     * @param initialProfile initial profile, null if unknown.
+     * @param minimalProfile minimal JRE profile to be displayed.
+     * It can be <code>null</code> if all the JRE profiles should be displayed.
+     * @return {@link ComboBoxModel}.
+     * @since 1.45
+     */
+    public static ComboBoxModel createProfileComboBoxModel(
+            @NonNull final ComboBoxModel sourceLevelModel,
+            @NullAllowed final String initialProfile,
+            @NullAllowed final String minimalProfile) {
+        return new ProfileComboBoxModel(sourceLevelModel, initialProfile, minimalProfile);
+    }
+
+    /**
+     * Create {@link ListCellRenderer} for JRE profiles.
+     * This renderer highlights incorrect profile names.
+     * @return {@link ListCellRenderer} for JRE profiles.
+     * @since 1.45
+     */
+    public static ListCellRenderer createProfileListCellRenderer() {
+        return new ProfileListCellRenderer();
     }
 
     /**
@@ -812,6 +937,269 @@ public final class PlatformUiSupport {
             }
             return delegate.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
         }
+    }
+
+    private interface Profile {
+        @NonNull
+        String getAntName();
+
+        @NonNull
+        String getDisplayName();
+
+        int getRank();
+
+        boolean isSupportedIn(@NonNull final SpecificationVersion sourceLevel);
+    }
+    
+    private enum StandardProfile implements  Profile {
+        COMPACT1(
+                "compact1", //NOI18N
+                NbBundle.getMessage(PlatformUiSupport.class, "TXT_Profile_Compact1"),
+                0,
+                Arrays.asList(JDK_8)),
+        COMPACT2(
+                "compact2", //NOI18N
+                NbBundle.getMessage(PlatformUiSupport.class, "TXT_Profile_Compact2"),
+                1,
+                Arrays.asList(JDK_8)),
+        COMPACT3(
+                "compact3", //NOI18N
+                NbBundle.getMessage(PlatformUiSupport.class, "TXT_Profile_Compact3"),
+                2,
+                Arrays.asList(JDK_8)),
+        DEFAULT(
+                "",  //NOI18N
+                NbBundle.getMessage(PlatformUiSupport.class, "TXT_Profile_Default"),
+                Integer.MAX_VALUE-1,
+                Arrays.asList(JDK_8));
+        
+        private static final Map<String,Profile> profilesByName =
+                new HashMap<String, Profile>();        
+        static {
+            for (Profile p : values()) {
+                profilesByName.put(p.getAntName(), p);
+            }
+        }
+        
+        private final String name;
+        private final String displayName;
+        private final int rank;
+        private final Set<? extends SpecificationVersion> supportedIn;
+        
+        StandardProfile(
+            @NonNull final String name,
+            @NonNull final String displayName,
+            @NonNull final int rank,
+            @NonNull final Collection<? extends SpecificationVersion> supportedIn) {
+            Parameters.notNull("name", name);   //NOI18N
+            Parameters.notNull("displayName", displayName); //NOI18N
+            this.name = name;
+            this.displayName = displayName;
+            this.rank = rank;
+            this.supportedIn = Collections.unmodifiableSet(
+                new HashSet<SpecificationVersion>(supportedIn));
+        }
+        
+        @Override
+        public String getAntName() {
+            return name;
+        }
+        
+        @Override
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public int getRank() {
+            return rank;
+        }
+
+        @Override
+        public boolean isSupportedIn(SpecificationVersion sourceLevel) {
+            return supportedIn.contains(sourceLevel);
+        }
+        
+        @Override
+        public String toString() {
+            return String.format(
+                "%s (%s)", //NOI18N
+                displayName,
+                name);
+        }
+
+        @CheckForNull
+        static Profile forName(@NonNull final String id) {
+            return profilesByName.get(id);
+        }
+        
+    }
+
+    private static final class ProfileComboBoxModel extends AbstractListModel implements ComboBoxModel, ListDataListener {
+
+        private final ComboBoxModel sourceLevelModel;
+        private final String initialProfileName;
+        private final String minimalProfileName;
+
+        private Profile[] profiles;
+        private Profile selectedItem;
+
+        ProfileComboBoxModel(
+                @NonNull final ComboBoxModel sourceLevelModel,
+                @NullAllowed final String initialProfileName,
+                @NullAllowed final String minimalProfileName) {
+            this.sourceLevelModel = sourceLevelModel;
+            this.initialProfileName = initialProfileName;
+            this.minimalProfileName = minimalProfileName;
+            this.sourceLevelModel.addListDataListener(this);
+        }
+
+        @Override
+        public int getSize() {
+            final Profile[] p = init();
+            return p.length;
+        }
+
+        @Override
+        @CheckForNull
+        public Object getElementAt(final int index) {
+            final Profile[] p = init();
+            if (index < 0 || index >= p.length) {
+                throw new IndexOutOfBoundsException(String.format(
+                    "Index: %d, Profiles count: %d",    //NOI18N
+                    index,
+                    p.length));
+            }
+            return p[index];
+        }
+
+        @Override
+        public void setSelectedItem(@NullAllowed final Object anItem) {
+            assert anItem == null || anItem instanceof Profile;
+            selectedItem = (Profile) anItem;
+        }
+
+        @Override
+        @CheckForNull
+        public Object getSelectedItem() {
+            return selectedItem;
+        }
+
+        @Override
+        public void intervalAdded(ListDataEvent e) {
+        }
+
+        @Override
+        public void intervalRemoved(ListDataEvent e) {
+        }
+
+        @Override
+        public void contentsChanged(ListDataEvent e) {
+            final int oldSize = getSize();
+            profiles = null;
+            fireContentsChanged(this, 0, oldSize);
+        }
+
+        private Profile[] init() {
+            if (profiles == null) {
+                final Comparator<Profile> c = new Comparator<Profile>() {
+                    @Override
+                    public int compare(
+                            @NonNull final Profile p1,
+                            @NonNull final Profile p2) {
+                        final int r1 = p1.getRank();
+                        final int r2 = p2.getRank();
+                        return r1 < r2 ?
+                            -1 :
+                            r1 == r2 ?
+                                0 :
+                                1;
+                    }
+                };
+                Profile minimalProfile = null;
+                if (minimalProfileName != null) {
+                    minimalProfile = StandardProfile.forName(minimalProfileName);
+                }
+                final Collection<Profile> pc = new TreeSet<Profile>(c);
+                final Object slk = sourceLevelModel.getSelectedItem();
+                final SpecificationVersion sl;
+                if (slk instanceof SourceLevelKey) {
+                    sl = ((SourceLevelKey)slk).getSourceLevel();
+                } else {
+                    sl = null;
+                }
+                for (StandardProfile p : StandardProfile.values()) {
+                    if (minimalProfile != null &&
+                        c.compare(minimalProfile, selectedItem) > 0) {
+                            continue;
+                    }
+                    if (sl != null && !p.isSupportedIn(sl)) {
+                        continue;
+                    }
+                    pc.add(p);
+                }
+                if (selectedItem == null) {
+                    if (initialProfileName != null && !initialProfileName.isEmpty()) {
+                        selectedItem = StandardProfile.forName(initialProfileName);
+                        if (selectedItem == null) {
+                            selectedItem = new Profile() {
+                                @Override
+                                public String getAntName() {
+                                    return initialProfileName;
+                                }
+                                @Override
+                                public String getDisplayName() {
+                                    return getAntName();
+                                }
+                                @Override
+                                public int getRank() {
+                                    return Integer.MAX_VALUE;
+                                }
+                                @Override
+                                public boolean isSupportedIn(SpecificationVersion sourceLevel) {
+                                    return true;
+                                }
+                            };
+                            pc.add(selectedItem);
+                        }
+                    } else {
+                        selectedItem = StandardProfile.DEFAULT;
+                    }
+                }
+                this.profiles = pc.toArray(new Profile[pc.size()]);
+            }
+            return profiles;
+        }        
+    }
+
+    private static final class ProfileListCellRenderer implements ListCellRenderer {
+
+        private final ListCellRenderer delegate;
+
+        ProfileListCellRenderer() {
+            delegate = HtmlRenderer.createRenderer();
+        }
+
+        @Override
+        public Component getListCellRendererComponent(
+                @NonNull final JList list,
+                @NullAllowed Object value,
+                final int index,
+                final boolean isSelected,
+                final boolean cellHasFocus) {
+            if (value instanceof Profile) {
+                final Profile p = (Profile) value;
+                if (StandardProfile.forName(p.getAntName()) == null) {
+                    value = "<html><font color=\"#A40000\">" + //NOI18N
+                        p.getDisplayName();
+                } else {
+                    value = p.getDisplayName();
+                }
+            }
+            return delegate.getListCellRendererComponent(
+                    list, value, index, isSelected, cellHasFocus);
+        }
+
     }
 
     /**
