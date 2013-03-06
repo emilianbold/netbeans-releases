@@ -121,7 +121,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         assert Thread.holdsLock(this);
 
         BuildConfig buildConfig = ((GrailsProject) projectConfig.getProject()).getBuildConfig();
-        buildConfig.reload();
 
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         // lib directory from project root
