@@ -69,9 +69,9 @@ import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -92,6 +92,7 @@ public class IssueAccessorTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         try {
             System.setProperty("kenai.com.url","https://testjava.net");
@@ -295,6 +296,16 @@ public class IssueAccessorTest extends NbTestCase {
         public String[] getSubtasks() {
             throw new UnsupportedOperationException("Not supported yet.");
         }        
+
+        @Override
+        public IssueStatusProvider.Status getStatus() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void setSeen(boolean seen) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private static class TestIssueController extends BugtrackingController {

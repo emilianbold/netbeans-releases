@@ -96,6 +96,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -247,6 +248,10 @@ public class NbJiraIssue {
      */
     protected void fireDataChanged() {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+    }
+    
+    private void fireSeenChanged(boolean wasSeen, boolean seen) {
+        support.firePropertyChange(IssueStatusProvider.EVENT_SEEN_CHANGED, wasSeen, seen);
     }
     
     void opened() {
@@ -519,6 +524,32 @@ public class NbJiraIssue {
         return refresh(getID(), false);
     }
 
+    public IssueStatusProvider.Status getIssueStatus() {
+        int status = getRepository().getIssueCache().getStatus(getID());
+        switch(status) {
+            case IssueCache.ISSUE_STATUS_NEW:
+                return IssueStatusProvider.Status.NEW;
+            case IssueCache.ISSUE_STATUS_MODIFIED:
+                return IssueStatusProvider.Status.MODIFIED;
+            case IssueCache.ISSUE_STATUS_SEEN:
+                return IssueStatusProvider.Status.SEEN;
+        }
+        return null;
+    }
+
+    public void setUpToDate(boolean seen) {
+        try {
+            final IssueCache<NbJiraIssue, TaskData> issueCache = getRepository().getIssueCache();
+            boolean wasSeen = issueCache.wasSeen(getID());
+            if(seen != wasSeen) {
+                issueCache.setSeen(getID(), seen);
+                fireSeenChanged(wasSeen, seen);
+            }
+        } catch (IOException ex) {
+            Jira.LOG.log(Level.WARNING, null, ex);
+        }
+    }    
+    
     /**
      * Reloads the task data and refreshes the issue cache
      * @param key key of the issue
