@@ -39,6 +39,7 @@ import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
+import org.netbeans.modules.groovy.gsp.lexer.GspLexerLanguage;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 
 /**
@@ -75,29 +76,52 @@ public class GspCompleter extends CompletionHandler {
 
     private boolean isGroovyCompletion(Document doc, int offset) {
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        TokenSequence<GspTokenId> tokenSequence = tokenHierarchy.tokenSequence(GspLexerLanguage.getLanguage());
 
         tokenSequence.move(offset);
         if (tokenSequence.moveNext() || tokenSequence.movePrevious()) {
-            Object tokenID = tokenSequence.token().id();
-            if (tokenID == GspTokenId.GSTRING_CONTENT
-                || tokenID == GspTokenId.SCRIPTLET_CONTENT
-                || tokenID == GspTokenId.SCRIPTLET_OUTPUT_VALUE_CONTENT) {
+            GspTokenId tokenID = tokenSequence.token().id();
+            if (isGroovyContentTag(tokenID)) {
                 return true;
             }
 
             // maybe the caret is placed just before the ending script delimiter?
-            if (tokenID == GspTokenId.GSTRING_END
-                || tokenID == GspTokenId.SCRIPTLET_END
-                || tokenID == GspTokenId.SCRIPTLET_OUTPUT_VALUE_END) {
+            if (isGroovyEndTag(tokenID)) {
+                
+                // move the caret to the content
                 tokenSequence.movePrevious();
 
-                if (tokenSequence.token().id() == GspTokenId.GSTRING_CONTENT) {
+                if (isGroovyContentTag(tokenID)) {
                     return true;
                 }
             }
         }
 
+        return false;
+    }
+    
+    /**
+     * Finds out if the parameter is a token representing embedded Groovy content.
+     * Typically that code might be between ${ ..some code.. }
+     *
+     * @param tokenID tokenID we want to check
+     * @return true if the tokenID is Groovy content, false otherwise
+     */
+    private boolean isGroovyContentTag(GspTokenId tokenID) {
+        if (tokenID == GspTokenId.GSTRING_CONTENT
+                || tokenID == GspTokenId.SCRIPTLET_CONTENT
+                || tokenID == GspTokenId.SCRIPTLET_OUTPUT_VALUE_CONTENT) {
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean isGroovyEndTag(GspTokenId tokenID) {
+        if (tokenID == GspTokenId.GSTRING_END
+                || tokenID == GspTokenId.SCRIPTLET_END
+                || tokenID == GspTokenId.SCRIPTLET_OUTPUT_VALUE_END) {
+            return true;
+        }
         return false;
     }
 }
