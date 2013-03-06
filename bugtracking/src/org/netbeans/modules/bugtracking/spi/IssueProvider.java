@@ -60,6 +60,10 @@ public abstract class IssueProvider<I> {
         SPIAccessorImpl.createAccesor();
     }
 
+    public IssueStatusProvider getStatusProvider() {
+        return null;
+    }
+    
     /**
      * Returns this issues display name
      * @return
@@ -90,8 +94,6 @@ public abstract class IssueProvider<I> {
      */
     public abstract String[] getSubtasks(I data);
 
-    
-    
     /**
      * Returns this issues summary
      * @return
@@ -105,7 +107,7 @@ public abstract class IssueProvider<I> {
     public abstract boolean isNew(I data);
     
     /**
-     * Determines if the issue has reached a status when is considered finished 
+     * Determines if the issue is considered finished 
      * in the means of the particular bugtracking.
      * 
      * @param data

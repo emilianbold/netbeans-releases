@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.bugtracking.ui.issue.cache;
+package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.openide.util.NbBundle;
+import java.io.File;
+import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
- * Issue cache utility methods
  * 
+ *
  * @author Tomas Stupka
  */
-public class IssueCacheUtils {
+public interface IssueStatusProvider<I> {
 
+    public enum Status {
+        NEW,
+        MODIFIED,
+        SEEN
+    }
+        
     /**
-     * Returns a description summarizing the changes made
-     * in the given issue since the last time it was as seen.
-     *
-     * @param issue
-     * @return
+     * issue status changed
      */
-    public static String getRecentChanges(IssueImpl issue) {
-        IssueCache cache = getCache(issue);
-        String changes = cache != null ? cache.getRecentChanges(issue.getID()) : null;
-        if(changes == null) {
-            changes = "";
-        } else {
-            changes = changes.trim();
-        }
-        int status = cache != null ? cache.getStatus(issue.getID()) : -1;
-        if(changes.equals("") && status == IssueCache.ISSUE_STATUS_MODIFIED) {
-            changes = NbBundle.getMessage(IssueCacheUtils.class, "LBL_IssueModified");
-        }
-        return changes;
-    }
+    public static final String EVENT_SEEN_CHANGED = "issue.status_changed"; // NOI18N
 
-    private static IssueCache getCache(IssueImpl issue) {
-        RepositoryImpl repo = issue.getRepositoryImpl();
-        IssueCache cache = repo.getLookup().lookup(IssueCache.class);
-        assert cache != null;
-        return cache;
-    }
+    /*
+     * 
+     */
+    public Status getStatus(I issue);
+
+    /*
+     * 
+     */
+    public void setSeen(I issue, boolean seen);
+    
+    /*
+     * 
+     */
+    public void removePropertyChangeListener(I issue, PropertyChangeListener listener);
+
+    /*
+     * 
+     */
+    public void addPropertyChangeListener(I issue, PropertyChangeListener listener);
 
 }

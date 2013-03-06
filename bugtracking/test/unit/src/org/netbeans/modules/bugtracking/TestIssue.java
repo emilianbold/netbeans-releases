@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.nodes.Node;
 
 /**
@@ -77,5 +78,9 @@ public abstract class TestIssue {
     public abstract String[] getSubtasks();
 
     public abstract boolean isFinished();
-    
+
+    public abstract IssueStatusProvider.Status getStatus();
+
+    public abstract void setSeen(boolean seen);
+
 }
