@@ -1108,6 +1108,26 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings("7:16-7:25:verifier:ERR_NotNull");
     }
     
+    public void test226558() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    @NotNull\n" +
+                       "    public List<String> n(@Nullable List<String> l) {\n" +
+                       "        if (l == null) {\n" +
+                       "            return Collections.emptyList();\n" +
+                       "        }\n" +
+                       "        return l;\n" +
+                       "    }\n" +
+                       "    @interface Nullable {}\n" +
+                       "    @interface NotNull {}\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

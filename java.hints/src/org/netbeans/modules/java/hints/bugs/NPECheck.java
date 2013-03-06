@@ -211,7 +211,7 @@ public class NPECheck {
         String key = null;
 
         switch (returnState) {
-            case NULL: case NOT_NULL_HYPOTHETICAL:
+            case NULL: case NULL_HYPOTHETICAL:
                 if (expected.isNotNull()) key = "ERR_ReturningNullFromNonNull";
                 break;
             case POSSIBLE_NULL_REPORT:
