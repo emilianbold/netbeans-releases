@@ -29,7 +29,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.gsp;
+package org.netbeans.modules.groovy.gsp.editor.completion;
 
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
