@@ -43,12 +43,16 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -80,12 +84,14 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
+import static org.netbeans.modules.refactoring.java.ui.Bundle.*;
 
 /**
  *
  * @author Martin Matula
  * @author Jan Becicka
  */
+@NbBundle.Messages("DSC_Rename=Rename <b>{0}</b> to <b>{1}</b>")
 public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, Openable, JavaRefactoringUIFactory {
     private AbstractRefactoring refactoring;
     private String oldName = null;
@@ -102,6 +108,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
 
     private RenameRefactoringUI(Lookup lookup) {
         this.lookup = lookup;
+    }
+    
+    private RenameRefactoringUI(TreePathHandle handle, String labelName) {
+        this.handle = handle;
+        this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
+        oldName = labelName;
+        dispOldName = oldName;
     }
     
     private RenameRefactoringUI(TreePathHandle handle, CompilationInfo info) {
@@ -184,7 +197,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         if (panel == null) {
             String name = oldName;
             String suffix = "";
-            if (handle != null && handle.getElementHandle() !=null) {
+            if(handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+                suffix = getString("LBL_Label");
+            } else if (handle != null && handle.getElementHandle() !=null) {
                 ElementKind kind = handle.getElementHandle().getKind();
                 if (kind!=null && (kind.isClass() || kind.isInterface())) {
                     suffix  = kind.isInterface() ? getString("LBL_Interface") : getString("LBL_Class");
@@ -259,9 +274,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
 
     @Override
     public String getDescription() {
-        return new MessageFormat(NbBundle.getMessage(RenamePanel.class, "DSC_Rename")).format (
-                    new Object[] {dispOldName, newName}
-                );
+        return DSC_Rename(dispOldName, newName);
     }
 
     @Override
@@ -414,6 +427,20 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         }
         assert handles.length == 1;
         TreePathHandle selectedElement = handles[0];
+        TreePath resolve = selectedElement.resolve(info);
+        if(resolve != null && EnumSet.of(Kind.LABELED_STATEMENT, Kind.BREAK, Kind.CONTINUE).contains(resolve.getLeaf().getKind())) {
+            TreePath path = resolve;
+            if (path.getLeaf().getKind() != Kind.LABELED_STATEMENT) {
+                StatementTree tgt = info.getTreeUtilities().getBreakContinueTarget(path);
+                path = tgt != null ? info.getTrees().getPath(info.getCompilationUnit(), tgt) : null;
+            }
+            if (path == null) {
+                logger().log(Level.INFO, "doRename: " + handles[0], new NullPointerException("selected")); // NOI18N
+                return null;
+            }
+            LabeledStatementTree label = (LabeledStatementTree) path.getLeaf();
+            return new RenameRefactoringUI(TreePathHandle.create(path, info), label.getLabel().toString());
+        }
         Element selected = handles[0].resolveElement(info);
         if (selected == null) {
             logger().log(Level.INFO, "doRename: " + handles[0], new NullPointerException("selected")); // NOI18N
