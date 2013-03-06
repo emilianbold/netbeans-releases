@@ -66,11 +66,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.indent.IndentationCounter.Indentation;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -79,7 +74,6 @@ import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.openide.util.Exceptions;
 
 /**
  * Provide bracket completion for Ruby. This class provides three broad
