@@ -390,4 +390,68 @@ public class RemoveUnnecessaryTest extends NbTestCase {
                 .run(RemoveUnnecessary.class)
                 .assertWarnings();
     }
+    
+    public void testContinueWithLabel() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void testContinue(int i) {\n" +
+                       "        OUTER: while (i-- > 0) {\n" +
+                       "            continue OUTER;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessary.class)
+                .findWarning("4:12-4:20:verifier:" + Bundle.ERR_UnnecessaryContinueStatementLabel())
+                .applyFix(Bundle.FIX_UnnecessaryContinueStatementLabel())
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void testContinue(int i) {\n" +
+                              "        OUTER: while (i-- > 0) {\n" +
+                              "            continue;\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    public void testBreakWithLabel() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void testContinue(int i) {\n" +
+                       "        OUTER: while (i-- > 0) {\n" +
+                       "            break OUTER;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessary.class)
+                .findWarning("4:12-4:17:verifier:" + Bundle.ERR_UnnecessaryBreakStatementLabel())
+                .applyFix(Bundle.FIX_UnnecessaryBreakStatementLabel())
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void testContinue(int i) {\n" +
+                              "        OUTER: while (i-- > 0) {\n" +
+                              "            break;\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    public void testBreakWithLabelInSwitch() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void testContinue(int i) {\n" +
+                       "        OUTER: while (i-- > 0) {\n" +
+                       "            switch (i) {\n" +
+                       "                case 0: break OUTER;\n" +
+                       "            }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessary.class)
+                .assertWarnings();
+    }
 }
