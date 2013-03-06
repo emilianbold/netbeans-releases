@@ -213,4 +213,32 @@ public class TinyTest extends NbTestCase {
                 .run(Tiny.class)
                 .assertWarnings();
     }
+    
+    public void testAssertEqualsInconvertiblePos1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import junit.framework.Assert;\n" +
+                       "public class Test {\n" +
+                       "    private void test() {\n" +
+                       "        Assert.assertEquals(\"a\", \"golden\", 1);\n" +
+                       "    }\n" +
+                       "}\n")
+                .classpath(FileUtil.getArchiveRoot(Assert.class.getProtectionDomain().getCodeSource().getLocation()))
+                .run(Tiny.class)
+                .assertWarnings("4:15-4:27:verifier:" + Bundle.ERR_assertEqualsIncovertibleTypes());
+    }
+    
+    public void testAssertEqualsInconvertibleNeg1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import junit.framework.Assert;\n" +
+                       "public class Test {\n" +
+                       "    private void test(CharSequence actual) {\n" +
+                       "        Assert.assertEquals(\"a\", \"golden\", actual);\n" +
+                       "    }\n" +
+                       "}\n")
+                .classpath(FileUtil.getArchiveRoot(Assert.class.getProtectionDomain().getCodeSource().getLocation()))
+                .run(Tiny.class)
+                .assertWarnings();
+    }
 }
