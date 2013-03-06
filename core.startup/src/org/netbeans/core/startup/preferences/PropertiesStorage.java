@@ -332,12 +332,10 @@ class PropertiesStorage implements NbPreferences.FileStorage {
 		    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		    LOGGER.log(Level.WARNING, "File {0} seems to already exist."
 			    + "\nCurrent date/time: {1}"
-			    + "\nLast modified: {2}"
-			    + "\nContents: {3}",
-			    new Object[]{FileUtil.toFile(retval).getAbsolutePath(),
+			    + "\nLast modified: {2}",
+			    new Object[]{filePath(),
 				dateFormat.format(Calendar.getInstance()),
-				dateFormat.format(retval.lastModified()),
-				retval.asText()});
+				dateFormat.format(retval.lastModified())});
 		}
 	    }
         }

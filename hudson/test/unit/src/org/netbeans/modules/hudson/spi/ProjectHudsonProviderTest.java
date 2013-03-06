@@ -80,7 +80,7 @@ public class ProjectHudsonProviderTest extends NbTestCase {
         Association a = Association.fromString(
                 "http://localhost:8080/app/hudson/job/folder%201/job/folder%201a/job/TestJob/");
         assertEquals("http://localhost:8080/app/hudson/", a.getServerUrl());
-        assertEquals("TestJob", a.getJobName());
+        assertEquals("folder 1/folder 1a/TestJob", a.getJobName());
         String[] expectedPath = {"http://localhost:8080/app/hudson/",
             "folder 1", "folder 1a", "TestJob"};
         assertEquals("Job path length is wrong",

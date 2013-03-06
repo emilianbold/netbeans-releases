@@ -399,7 +399,7 @@ final class BinaryFS extends FileSystem implements DataInput {
      * Handles common operations and throws exception for any modification
      * attempt.
      * Also handles attribute reading/parsing.
-     * The layout in the bfs file is (beggining from the offset):
+     * The layout in the bfs file is (beginning from the offset):
      *  <pre>
      *   int attrCount
      *   Attribute[attrCount] attrs
