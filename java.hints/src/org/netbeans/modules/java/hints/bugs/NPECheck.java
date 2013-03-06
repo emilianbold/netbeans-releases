@@ -778,6 +778,11 @@ public class NPECheck {
         }
         
         public State visitTry(TryTree node, Void p) {
+            Map<TypeMirror, Collection<Map<VariableElement, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+
+            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
+            
+            try {
             if (node.getFinallyBlock() != null) {
                 pendingFinally.add(0, new TreePath(getCurrentPath(), node.getFinallyBlock()));
             }
@@ -840,6 +845,15 @@ public class NPECheck {
 
                 scan(node.getFinallyBlock(), null);
             }
+            } finally {
+                Map<TypeMirror, Collection<Map<VariableElement, State>>> remainingException = resumeOnExceptionHandler;
+                resumeOnExceptionHandler = oldResumeOnExceptionHandler;
+                for (Entry<TypeMirror, Collection<Map<VariableElement, State>>> e : remainingException.entrySet()) {
+                    for (Map<VariableElement, State> v2s : e.getValue()) {
+                        recordResumeOnExceptionHandler(e.getKey(), v2s);
+                    }
+                }
+            }
             
             return null;
         }
@@ -862,6 +876,10 @@ public class NPECheck {
         }
 
         private void recordResumeOnExceptionHandler(TypeMirror thrown) {
+            recordResumeOnExceptionHandler(thrown, variable2State);
+        }
+        
+        private void recordResumeOnExceptionHandler(TypeMirror thrown, Map<VariableElement, State> variable2State) {
             if (thrown == null || thrown.getKind() == TypeKind.ERROR) return;
             
             Collection<Map<VariableElement, State>> r = resumeOnExceptionHandler.get(thrown);
