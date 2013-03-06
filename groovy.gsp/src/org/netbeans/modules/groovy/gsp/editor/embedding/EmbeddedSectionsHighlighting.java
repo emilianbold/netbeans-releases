@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp;
+package org.netbeans.modules.groovy.gsp.editor.embedding;
 
 import java.awt.Color;
 import java.util.NoSuchElementException;
