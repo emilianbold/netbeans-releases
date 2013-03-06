@@ -346,6 +346,16 @@ public class StorageTest extends NbTestCase {
         public String[] getSubtasks() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public IssueStatusProvider.Status getStatus() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void setSeen(boolean seen) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
     
     private IssueCache<DummyIssue, Object> getCache() {

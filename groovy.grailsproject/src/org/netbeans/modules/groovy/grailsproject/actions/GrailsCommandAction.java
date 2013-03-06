@@ -46,7 +46,11 @@ import java.net.URL;
 import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
@@ -57,9 +61,14 @@ import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandChooser;
 import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -68,7 +77,6 @@ import org.openide.util.actions.CallableSystemAction;
 @Messages("CTL_GrailsCommandAction=Run/Debug Grails Command...")
 @ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GrailsCommandAction", category = "Groovy")
 @ActionRegistration(lazy = false, displayName = "#CTL_GrailsCommandAction")
-
 public class GrailsCommandAction extends CallableSystemAction {
 
     @Override
@@ -79,7 +87,7 @@ public class GrailsCommandAction extends CallableSystemAction {
             return;
         }
 
-        final GrailsProject project = GrailsProject.inferGrailsProject();
+        final GrailsProject project = inferGrailsProject();
         if (project == null) {
             return;
         }
@@ -89,7 +97,7 @@ public class GrailsCommandAction extends CallableSystemAction {
             return;
         }
 
-        ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+        ProjectInformation inf = ProjectUtils.getInformation(project);
         String displayName = inf.getDisplayName() + " (" + commandDescriptor.getGrailsCommand().getCommand() + ")"; // NOI18N
 
 
@@ -153,6 +161,73 @@ public class GrailsCommandAction extends CallableSystemAction {
         }
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
+    }
+    
+    private static GrailsProject inferGrailsProject() {
+        // try current context firstly
+        Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+
+        if (activatedNodes != null) {
+            for (Node n : activatedNodes) {
+                GrailsProject result = lookupGrailsProject(n.getLookup());
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        Lookup globalContext = Utilities.actionsGlobalContext();
+        GrailsProject result = lookupGrailsProject(globalContext);
+        if (result != null) {
+            return result;
+        }
+        FileObject fo = globalContext.lookup(FileObject.class);
+        if (fo != null) {
+            result = lookupGrailsProject(FileOwnerQuery.getOwner(fo));
+            if (result != null) {
+                return result;
+            }
+        }
+
+        // next try main project
+        OpenProjects projects = OpenProjects.getDefault();
+        result = lookupGrailsProject(projects.getMainProject());
+        if (result != null) {
+            return result;
+        }
+
+        // next try other opened projects
+        for (Project project : projects.getOpenProjects()) {
+            result = lookupGrailsProject(project);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    private static GrailsProject lookupGrailsProject(Project project) {
+        if (project != null) {
+            return lookupGrailsProject(project.getLookup());
+        }
+        return null;
+    }
+
+    private static GrailsProject lookupGrailsProject(Lookup lookup) {
+        // try directly
+        GrailsProject result = lookup.lookup(GrailsProject.class);
+        if (result != null) {
+            return result;
+        }
+        // try through Project instance
+        Project project = lookup.lookup(Project.class);
+        if (project != null) {
+            result = project.getLookup().lookup(GrailsProject.class);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
     }
 
     @Override

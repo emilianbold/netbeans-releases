@@ -109,6 +109,26 @@ public final class JavaPluginUtils {
         return null;
     }
     
+    public static Problem isSourceFile(FileObject fo, CompilationInfo info) {
+        Problem preCheckProblem;
+        if (fo == null || FileUtil.getArchiveFile(fo) != null) { //NOI18N
+            preCheckProblem = new Problem(true, NbBundle.getMessage(
+                    JavaPluginUtils.class, "ERR_CannotRefactorLibraryClass",
+                    FileUtil.getFileDisplayName(fo)
+                    ));
+            return preCheckProblem;
+        }
+        // RefactoringUtils.isFromLibrary already checked file for null
+        if (!RefactoringUtils.isFileInOpenProject(fo)) {
+            preCheckProblem =new Problem(true, NbBundle.getMessage(
+                    JavaPluginUtils.class,
+                    "ERR_ProjectNotOpened",
+                    FileUtil.getFileDisplayName(fo)));
+            return preCheckProblem;
+        }
+        return null;
+    }
+    
     public static TreePath findMethod(TreePath path) {
         while (path != null) {
             if (path.getLeaf().getKind() == Kind.METHOD) {

@@ -189,7 +189,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         synchronized (LOCK) {
             int count = 0;
             for (TaskNode taskNode : filteredTaskNodes) {
-                if (taskNode.getTask().getStatus() != Issue.Status.UPTODATE) {
+                if (taskNode.getTask().getStatus() != Issue.Status.SEEN) {
                     count++;
                 }
             }

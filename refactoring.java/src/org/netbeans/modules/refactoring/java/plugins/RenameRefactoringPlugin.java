@@ -44,8 +44,10 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
@@ -78,8 +80,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     private Integer overriddenByMethodsCount = null;
     private Integer overridesMethodsCount = null;
     private boolean doCheckName = true;
-    
     private RenameRefactoring refactoring;
+    private Set<ElementHandle<ExecutableElement>> allMethods = new HashSet<ElementHandle<ExecutableElement>>();
     
     /** Creates a new instance of RenameRefactoring */
     public RenameRefactoringPlugin(RenameRefactoring rename) {
@@ -125,9 +127,12 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             case PRECHECK:
             case FASTCHECKPARAMETERS:
                 return JavaSource.forFileObject(treePathHandle.getFileObject());
-            case CHECKPARAMETERS:    
+            case CHECKPARAMETERS:
                 if (treePathHandle==null) {
                     return null;
+                }
+                if(treePathHandle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+                    return JavaSource.forFileObject(treePathHandle.getFileObject());
                 }
                 ClasspathInfo cpInfo = getClasspathInfo(refactoring);
                 JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
@@ -142,6 +147,15 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         Problem preCheckProblem = null;
         fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
         info.toPhase(JavaSource.Phase.RESOLVED);
+        if(treePathHandle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+            preCheckProblem = JavaPluginUtils.isSourceFile(treePathHandle.getFileObject(), info);
+            if (preCheckProblem != null) {
+                return preCheckProblem;
+            }
+            fireProgressListenerStep();
+            
+            
+        } else {
         Element el = treePathHandle.resolveElement(info);
         preCheckProblem = isElementAvail(treePathHandle, info);
         if (preCheckProblem != null) {
@@ -231,6 +245,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             //                if (!((jmiObject instanceof Resource) && ((Resource)jmiObject).getClassifiers().isEmpty()))
             //                    result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_RenameWrongType"));
         }
+        }
         fireProgressListenerStop();
         return preCheckProblem;
     }
@@ -240,24 +255,37 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         Problem fastCheckProblem = null;
         info.toPhase(JavaSource.Phase.RESOLVED);
         TreePath treePath = treePathHandle.resolve(info);
-        Element element = treePathHandle.resolveElement(info);
-        ElementKind kind = element.getKind();
-        
         String newName = refactoring.getNewName();
-        String oldName = element.getSimpleName().toString();
-        
-        if (oldName.equals(newName)) {
-            boolean nameNotChanged = true;
-            if (kind.isClass()) {
-                if (!((TypeElement) element).getNestingKind().isNested()) {
-                    nameNotChanged = info.getFileObject().getName().contentEquals(((TypeElement) element).getSimpleName());
-                }
-            }
-            if (nameNotChanged) {
+        Element element;
+        ElementKind kind;
+        String oldName;
+        if(treePath.getLeaf().getKind() == Tree.Kind.LABELED_STATEMENT) {
+            element = null;
+            kind = null;
+            LabeledStatementTree lst = (LabeledStatementTree) treePath.getLeaf();
+            oldName = lst.getLabel().toString();
+            if (oldName.equals(newName)) {
                 fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged"));
                 return fastCheckProblem;
             }
-            
+        } else {
+            element = treePathHandle.resolveElement(info);
+            kind = element.getKind();
+            oldName = element.getSimpleName().toString();
+
+            if (oldName.equals(newName)) {
+                boolean nameNotChanged = true;
+                if (kind.isClass()) {
+                    if (!((TypeElement) element).getNestingKind().isNested()) {
+                        nameNotChanged = info.getFileObject().getName().contentEquals(((TypeElement) element).getSimpleName());
+                    }
+                }
+                if (nameNotChanged) {
+                    fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged"));
+                    return fastCheckProblem;
+                }
+
+            }
         }
         
         if (!Utilities.isJavaIdentifier(newName)) {
@@ -269,7 +297,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             return fastCheckProblem;
         }
         
-        if ((kind.isClass() || kind.isInterface()) && !((TypeElement) element).getNestingKind().isNested()) {
+        if (kind != null && (kind.isClass() || kind.isInterface()) && !((TypeElement) element).getNestingKind().isNested()) {
             TypeElement typeElement = (TypeElement) element;
             ElementHandle<TypeElement> handle = ElementHandle.create(typeElement);
             FileObject primFile = SourceUtils.getFile(handle, info.getClasspathInfo());
@@ -321,8 +349,14 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 fastCheckProblem = createProblem(fastCheckProblem, true, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_LocVariableClash", msg));
                 return fastCheckProblem;
             }
-        } else {
+        } else if(element != null) {
             String msg = clashes(element, newName, info);
+            if (msg != null) {
+                fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                return fastCheckProblem;
+            }
+        } else if(treePath.getLeaf().getKind() == Tree.Kind.LABELED_STATEMENT) {
+            String msg = clashes(treePath, newName, info);
             if (msg != null) {
                 fastCheckProblem = createProblem(fastCheckProblem, true, msg);
                 return fastCheckProblem;
@@ -332,7 +366,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         if (newName.contains("$")) {
             fastCheckProblem = createProblem(fastCheckProblem, false, org.openide.util.NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_DollarWarning"));
         }
-        if ((kind.isClass() || kind.isInterface()) && !Character.isUpperCase(newName.charAt(0)) ) {
+        if (kind != null && (kind.isClass() || kind.isInterface()) && !Character.isUpperCase(newName.charAt(0)) ) {
             fastCheckProblem = createProblem(fastCheckProblem, false, org.openide.util.NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_UpperCaseWarning"));
         }
         return fastCheckProblem;
@@ -353,8 +387,10 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStart(RenameRefactoring.PARAMETERS_CHECK, 8 + 3*steps);
         
         info.toPhase(JavaSource.Phase.RESOLVED);
+        if(treePathHandle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+            
+        } else {
         Element element = treePathHandle.resolveElement(info);
-        
         fireProgressListenerStep();
         fireProgressListenerStep();
         String msg;
@@ -382,24 +418,26 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 checkProblem = createProblem(checkProblem, false, msg);
             }
         }
+        }
         fireProgressListenerStop();
         return checkProblem;
     }
     
-        private Problem checkMethodForOverriding(ExecutableElement m, String newName, Problem problem, CompilationInfo info) {
-            ElementUtilities ut = info.getElementUtilities();
-            //problem = willBeOverridden(m, newName, argTypes, problem);
-            fireProgressListenerStep();
-            problem = willOverride(m, newName, problem, info);
-            fireProgressListenerStep();
-            return problem;
-        }
-    
-    private Set<ElementHandle<ExecutableElement>> allMethods = new HashSet<ElementHandle<ExecutableElement>>();
+    private Problem checkMethodForOverriding(ExecutableElement m, String newName, Problem problem, CompilationInfo info) {
+        ElementUtilities ut = info.getElementUtilities();
+        //problem = willBeOverridden(m, newName, argTypes, problem);
+        fireProgressListenerStep();
+        problem = willOverride(m, newName, problem, info);
+        fireProgressListenerStep();
+        return problem;
+    }
     
     private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         final Set<FileObject> set = new LinkedHashSet<FileObject>();
+        if(treePathHandle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+            set.add(treePathHandle.getFileObject());
+        } else {
         JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
         
         try {
@@ -454,6 +492,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         } catch (IOException ioe) {
             throw new RuntimeException (ioe);
         }
+        }
         return set;
     }
     
@@ -473,7 +512,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         }
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size());
-        TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods, refactoring.isSearchInComments()), treePathHandle);
+        TransformTask transform = new TransformTask(new RenameTransformer(treePathHandle, refactoring.getNewName(), allMethods, refactoring.isSearchInComments()), treePathHandle);
         Problem problem = createAndAddElements(a, transform, elements, refactoring);
         fireProgressListenerStop();
         return problem;
@@ -574,6 +613,31 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             }
         }
         return null;
+    }
+    
+    private String clashes(TreePath path, final String newName, CompilationInfo info) {
+        TreePath parent = path.getParentPath();
+        while(parent != null) {
+            if(parent.getLeaf().getKind() == Tree.Kind.LABELED_STATEMENT) {
+                LabeledStatementTree parentLabel = (LabeledStatementTree) parent.getLeaf();
+                if(newName.equals(parentLabel.getLabel().toString())) {
+                    return NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_LabelClash", newName);
+                }
+            }
+            parent = parent.getParentPath();
+        }
+        final String[] result = new String[1];
+        new TreeScanner<Void, Void>() {
+
+            @Override
+            public Void visitLabeledStatement(LabeledStatementTree tree, Void p) {
+                if(newName.equals(tree.getLabel().toString())) {
+                    result[0] = NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_LabelClash", newName);
+                }
+                return super.visitLabeledStatement(tree, p);
+            }
+        }.scan(path.getLeaf(), null);
+        return result[0];
     }
     
     private String clashes(Element feature, String newName, CompilationInfo info) {

@@ -138,8 +138,9 @@ public class UnnecessaryClosingDelimiterHint extends HintRule {
 
         @Override
         public void setHtmlPart(Token<PHPTokenId> inlineHtmlTag) {
-            assert this.inlineHtmlTag == null;
-            this.inlineHtmlTag = inlineHtmlTag;
+            if (this.inlineHtmlTag == null) { //store just first html part after close tag
+                this.inlineHtmlTag = inlineHtmlTag;
+            }
         }
 
         @Override
