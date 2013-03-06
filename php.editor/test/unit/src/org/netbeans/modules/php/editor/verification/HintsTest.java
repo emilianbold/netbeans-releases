@@ -231,4 +231,8 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new UnnecessaryClosingDelimiterHint(), "testClosingDelimUseCase03.php");
     }
 
+    public void testIssue227081() throws Exception {
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue227081.php");
+    }
+
 }

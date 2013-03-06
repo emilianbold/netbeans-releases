@@ -94,10 +94,12 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         this.paremeters = info.getParameters();
         this.returnType = returnType;
     }
+
     FunctionScopeImpl(Scope inScope, LambdaFunctionDeclarationInfo info) {
         super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody(), inScope.isDeprecated());
         this.paremeters = info.getParameters();
     }
+
     protected FunctionScopeImpl(Scope inScope, MethodDeclarationInfo info, String returnType, boolean isDeprecated) {
         super(inScope, info, info.getAccessModifiers(), info.getOriginalNode().getFunction().getBody(), isDeprecated);
         this.paremeters = info.getParameters();

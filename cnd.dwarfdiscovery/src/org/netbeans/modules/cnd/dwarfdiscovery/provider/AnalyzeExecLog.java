@@ -294,6 +294,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
                         if (set != null && set.length() > 0) {
                             myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, myBuildArtifacts, new CompileLineStorage());
+                            store(project);
                         }
                     }
                     return myBuildArtifacts;
@@ -306,6 +307,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
                         if (set != null && set.length() > 0) {
                             myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, myBuildArtifacts, new CompileLineStorage());
+                            store(project);
                         }
                     }
                     return myFileProperties;

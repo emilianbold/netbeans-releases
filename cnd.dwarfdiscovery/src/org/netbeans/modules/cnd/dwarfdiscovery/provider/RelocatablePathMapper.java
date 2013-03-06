@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
+import java.util.List;
+
 /**
  *
  * @author Alexander Simon
@@ -55,5 +57,6 @@ public interface RelocatablePathMapper {
     }
     public interface FS {
         boolean exists(String path);
+        List<String> list(String path);
     }
 }
