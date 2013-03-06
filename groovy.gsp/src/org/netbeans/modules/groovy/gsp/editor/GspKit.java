@@ -56,13 +56,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.modules.csl.api.CslActions;
-import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
-import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
-import org.netbeans.modules.csl.api.NextCamelCasePosition;
-import org.netbeans.modules.csl.api.PreviousCamelCasePosition;
-import org.netbeans.modules.csl.api.SelectCodeElementAction;
-import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
-import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.groovy.gsp.GspLanguage;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 
@@ -79,7 +72,7 @@ import org.netbeans.modules.html.editor.api.HtmlKit;
 public class GspKit extends HtmlKit {
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx(GspKit.class);
+        return new org.openide.util.HelpCtx("org.netbeans.modules.groovy.gsp.editor.GspKit");
     }
     
     static final long serialVersionUID =-1381945567613910297L;
@@ -108,9 +101,6 @@ public class GspKit extends HtmlKit {
         Action[] superActions = super.createActions();
         
         return TextAction.augmentList(superActions, new Action[] {
-            // TODO - also register a Tab key action which tabs out of <% %> if the caret is near the end
-            // (Shift Enter inserts a line below the current - perhaps that's good enough)
-//            new GspToggleCommentAction(),
             CslActions.createSelectCodeElementAction(true),
             CslActions.createSelectCodeElementAction(false),
             CslActions.createCamelCasePositionAction(findAction(superActions, nextWordAction), true),
