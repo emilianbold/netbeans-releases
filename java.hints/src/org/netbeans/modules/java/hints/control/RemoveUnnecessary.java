@@ -194,13 +194,13 @@ public class RemoveUnnecessary {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, JavaFixUtilities.removeFromParent(ctx, fixDisplayName, ctx.getPath()));
     }
 
-    @Hint(displayName="#DN_RemoveUnnecessaryContinueLabel", description="#DESC_RemoveUnnecessaryContinueLabel", category="general", suppressWarnings="UnnecessaryLabelOnContinueStatement")
+    @Hint(id="unnecessaryContinueLabel", displayName="#DN_RemoveUnnecessaryContinueLabel", description="#DESC_RemoveUnnecessaryContinueLabel", category="general", suppressWarnings="UnnecessaryLabelOnContinueStatement")
     @TriggerPattern("continue $val;")
     public static ErrorDescription unnecessaryContinueLabel(HintContext ctx) {
         return unnecessaryLabel(ctx, false);
     }
     
-    @Hint(displayName="#DN_RemoveUnnecessaryBreakLabel", description="#DESC_RemoveUnnecessaryBreakLabel", category="general", suppressWarnings="UnnecessaryLabelOnBreakStatement")
+    @Hint(id="unnecessaryBreakLabel", displayName="#DN_RemoveUnnecessaryBreakLabel", description="#DESC_RemoveUnnecessaryBreakLabel", category="general", suppressWarnings="UnnecessaryLabelOnBreakStatement")
     @TriggerPattern("break $val;")
     public static ErrorDescription unnecessaryBreakLabel(HintContext ctx) {
         return unnecessaryLabel(ctx, true);
