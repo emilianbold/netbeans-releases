@@ -306,6 +306,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                         if (set != null && set.length() > 0) {
                             myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
                             myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, new CompileLineStorage());
+                            store(project);
                         }
                     }
                     return myBuildArtifacts;
@@ -321,6 +322,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                         if (set != null && set.length() > 0) {
                             myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
                             myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, new CompileLineStorage());
+                            store(project);
                         }
                     }
                     return myFileProperties;

@@ -334,6 +334,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                                 System.arraycopy(add, 0, all, 1, add.length);
                                 myFileProperties = getSourceFileProperties(all,null, project, myDependencies, null, new CompileLineStorage());
                             }
+                            store(project);
                         }
                     }
                     return myFileProperties;
