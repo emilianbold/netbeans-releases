@@ -654,6 +654,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private void refreshStatuses() {
+        commitButton.setEnabled(false);
         if ((context == null || context.getRootFiles().isEmpty())) {
             return;
         }
@@ -830,7 +831,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     Dimension dim = fileTable.getComponent().getPreferredSize();
                     fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
                     setDiffIndex(0, 0, false);
-                    commitButton.setEnabled(true);
+                    commitButton.setEnabled(revisionRight == HgRevision.CURRENT &&
+                            (revisionLeft == HgRevision.BASE || revisionLeft == HgRevision.QDIFF_BASE));
                     dpt = new DiffPrepareTask(setups);
                     prepareTask = Mercurial.getInstance().getRequestProcessor().post(dpt);
                 }
@@ -900,7 +902,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             // optimalization, let's not run the command when the revisions are the same
             if (!revLeft.getChangesetId().equals(revRight.getChangesetId())) {
                 Map<File, FileInformation> statuses = HgCommand.getStatus(repository, new ArrayList<File>(context.getRootFiles()),
-                        revisionLeft.getChangesetId(), revisionRight.getChangesetId(), false);
+                        revisionLeft.getChangesetId(), revisionRight.getChangesetId(), false, revisionRight == HgRevision.CURRENT && (
+                        revisionLeft == HgRevision.BASE || revisionLeft == HgRevision.QDIFF_BASE));
                 statuses.keySet().retainAll(HgUtils.flattenFiles(context.getRootFiles().toArray(
                         new File[context.getRootFiles().size()]), statuses.keySet()));
                 List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
