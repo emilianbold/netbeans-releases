@@ -53,7 +53,7 @@ import org.netbeans.core.networkproxy.NetworkProxySettings;
  */
 public class WindowsNetworkProxy implements NetworkProxyResolver {
     
-    private static final Logger LOG = Logger.getLogger(WindowsNetworkProxy.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(WindowsNetworkProxy.class.getName());
     
     private final static String HTTP_PROPERTY_NAME = "http="; //NOI18N
     private final static String HTTPS_PROPERTY_NAME = "https="; //NOI18N
@@ -66,23 +66,29 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
 
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
+        LOGGER.log(Level.FINE, "Windows system proxy resolver started."); //NOI18N
         WindowsNetworkProxyLibrary.ProxyConfig.ByReference prxCnf = new WindowsNetworkProxyLibrary.ProxyConfig.ByReference();
 
         boolean result = WindowsNetworkProxyLibrary.LIBRARY.WinHttpGetIEProxyConfigForCurrentUser(prxCnf);
 
         if (result) {
+            LOGGER.log(Level.FINE, "Windows system proxy resolver successfully retrieved proxy settings."); //NOI18N
+            
             if (prxCnf.autoDetect) {
+                LOGGER.log(Level.FINE, "Windows system proxy resolver: auto detect"); //NOI18N
                 return new NetworkProxySettings();
             }
 
             Pointer pacFilePointer = prxCnf.pacFile;
             if (pacFilePointer != null) {
+                LOGGER.log(Level.FINE, "Windows system proxy resolver: PAC"); //NOI18N
                 return new NetworkProxySettings(pacFilePointer.getString(0L, true));
             }
 
             Pointer proxyPointer = prxCnf.proxy;
             Pointer proxyBypassPointer = prxCnf.proxyBypass;
             if (proxyPointer != null) {
+                LOGGER.log(Level.FINE, "Windows system proxy resolver: manual"); //NOI18N
                 String httpProxy = null;
                 String httpsProxy = null;
                 String socksProxy = null;
@@ -129,8 +135,11 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
 
                 return new NetworkProxySettings(httpProxy, httpsProxy, socksProxy, noProxyHosts);
             }
+            
+            LOGGER.log(Level.FINE, "Windows system proxy resolver: no proxy"); //NOI18N
+            return new NetworkProxySettings();
         } else {
-            LOG.log(Level.SEVERE, "Windows system proxy resolver cannot retrieve proxy settings from Windows API!"); //NOI18N
+            LOGGER.log(Level.SEVERE, "Windows system proxy resolver cannot retrieve proxy settings from Windows API!"); //NOI18N
         }
 
         return new NetworkProxySettings(false);

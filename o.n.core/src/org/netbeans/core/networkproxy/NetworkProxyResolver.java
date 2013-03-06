@@ -42,11 +42,20 @@
 package org.netbeans.core.networkproxy;
 
 /**
- *
+ * Intereface for system (platform) dependent proxy resolvers.
+ * 
+ * Different resolvers for Windows, Mac OS X, Gnome and KDE. Also there is
+ * a fallback resover.
+ * 
  * @author lfischme
  */
 public interface NetworkProxyResolver {
     
+    /**
+     * Returns NetworkProxySetting - wrapper for all proxy settings.
+     * 
+     * @return NetworkProxySettings
+     */
     public NetworkProxySettings getNetworkProxySettings();
 
 }

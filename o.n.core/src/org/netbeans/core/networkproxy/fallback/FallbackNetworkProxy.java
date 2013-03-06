@@ -50,8 +50,8 @@ import org.netbeans.core.networkproxy.NetworkProxySettings;
  */
 public class FallbackNetworkProxy implements NetworkProxyResolver{
     
-    private final static String HTTP_PROXY_SYS_PROPERTY = "http_proxy";
-    private final static String AT = "@";
+    private final static String HTTP_PROXY_SYS_PROPERTY = "http_proxy"; //NOI18N
+    private final static String AT = "@"; //NOI18N
 
     @Override
     public NetworkProxySettings getNetworkProxySettings() {

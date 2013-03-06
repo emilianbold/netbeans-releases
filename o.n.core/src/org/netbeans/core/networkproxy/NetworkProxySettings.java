@@ -45,10 +45,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Immutable class representing all network proxy settings.
+ * 
+ * Holds all praoxy settings values if they were succesfully retrieved
+ * or tells that they were not retrieved well.
+ * 
  * @author lfischme
  */
-public class NetworkProxySettings {
+public final class NetworkProxySettings {
 
     public static enum ProxyMode {
         DIRECT,
@@ -56,7 +60,7 @@ public class NetworkProxySettings {
         MANUAL
     }        
     
-    private final static Logger LOGGER = Logger.getLogger(NetworkProxySelector.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(NetworkProxySettings.class.getName());
     private final static String COLON = ":"; //NOI18N
     private final static String SLASH = "/"; //NOI18N
     private final static String EMPTY_STRING = ""; //NOI18N
