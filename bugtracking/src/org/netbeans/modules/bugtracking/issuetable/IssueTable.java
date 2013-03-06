@@ -44,13 +44,11 @@
 
 package org.netbeans.modules.bugtracking.issuetable;
 
-import java.awt.BorderLayout;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.TableColumn;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.openide.util.NbBundle;
@@ -95,6 +93,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.awt.MouseUtils;
@@ -749,7 +748,8 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
                     BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            IssueCacheUtils.switchSeen(issue);
+                            IssueStatusProvider.Status status = issue.getStatus();
+                            issue.setSeen(status != IssueStatusProvider.Status.SEEN);
                         }
                     });
                 }

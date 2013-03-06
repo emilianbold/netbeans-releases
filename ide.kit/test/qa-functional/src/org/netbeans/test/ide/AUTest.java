@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,56 +40,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.test.ide;
 
-package org.netbeans.modules.bugtracking.ui.issue.cache;
-
-import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.openide.util.NbBundle;
+import java.util.Arrays;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 
-/**
- * Issue cache utility methods
- * 
- * @author Tomas Stupka
- */
-public class IssueCacheUtils {
+public class AUTest extends NbTestCase {
 
-    /**
-     * Returns a description summarizing the changes made
-     * in the given issue since the last time it was as seen.
-     *
-     * @param issue
-     * @return
-     */
-    public static String getRecentChanges(IssueImpl issue) {
-        IssueCache cache = getCache(issue);
-        String changes = cache != null ? cache.getRecentChanges(issue.getID()) : null;
-        if(changes == null) {
-            changes = "";
-        } else {
-            changes = changes.trim();
-        }
-        int status = cache != null ? cache.getStatus(issue.getID()) : -1;
-        if(changes.equals("") && status == IssueCache.ISSUE_STATUS_MODIFIED) {
-            changes = NbBundle.getMessage(IssueCacheUtils.class, "LBL_IssueModified");
-        }
-        return changes;
+    private static final String USERDIR_PROPERTY = "updates.userdir";
+
+    public AUTest(String name) {
+        super(name);
     }
 
-    private static IssueCache getCache(IssueImpl issue) {
-        RepositoryImpl repo = issue.getRepositoryImpl();
-        IssueCache cache = repo.getLookup().lookup(IssueCache.class);
-        assert cache != null;
-        return cache;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(); //To change body of generated methods, choose Tools | Templates.
     }
 
+    public static Test suite() throws IOException {
+        // disable 'slowness detection'
+        System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000");
+        NbTestSuite s = new NbTestSuite();
+        s.addTest(
+                NbModuleSuite.createConfiguration(
+                AUTest.class).gui(true).clusters(".*").enableModules(".*").
+                //reuseUserDir(true).
+                honorAutoloadEager(true).
+                addTest("testUpdatesInUserdir").
+                suite());
+        return s;
+    }
+
+    public void testUpdatesInUserdir() {
+        String ud = System.getProperty(USERDIR_PROPERTY);
+        assertNotNull("Userdir not set, please set by setting property:" + USERDIR_PROPERTY, ud);
+        File userdir = new File(ud);
+        assert userdir.exists() : "Userdir " + ud + " must exist!";
+        File modules = new File(userdir, "modules");
+        assert !modules.exists() : "\"modules\" in userdir exist and contains:" + Arrays.toString(modules.list());
+        System.out.println("Test OK - no updates found in userdir");
+    }
 }
