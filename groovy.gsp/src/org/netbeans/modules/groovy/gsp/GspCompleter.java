@@ -75,7 +75,7 @@ public class GspCompleter extends CompletionHandler {
     }
 
     private boolean isGroovyCompletion(Document doc, int offset) {
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+        TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(doc);
         TokenSequence<GspTokenId> tokenSequence = tokenHierarchy.tokenSequence(GspLexerLanguage.getLanguage());
 
         tokenSequence.move(offset);
