@@ -737,6 +737,7 @@ public final class PhpProject implements Project {
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
             GlobalPathRegistry.getDefault().register(PhpSourcePath.BOOT_CP, bootClassPaths);
+            GlobalPathRegistry.getDefault().register(PhpSourcePath.PROJECT_BOOT_CP, cpProvider.getProjectClassPaths(PhpSourcePath.PROJECT_BOOT_CP));
             GlobalPathRegistry.getDefault().register(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
             for (ClassPath classPath : bootClassPaths) {
                 IncludePathClassPathProvider.addProjectIncludePath(classPath);
@@ -768,6 +769,7 @@ public final class PhpProject implements Project {
                 ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
                 ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
                 GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, bootClassPaths);
+                GlobalPathRegistry.getDefault().unregister(PhpSourcePath.PROJECT_BOOT_CP, cpProvider.getProjectClassPaths(PhpSourcePath.PROJECT_BOOT_CP));
                 GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
                 for (ClassPath classPath : bootClassPaths) {
                     IncludePathClassPathProvider.removeProjectIncludePath(classPath);
