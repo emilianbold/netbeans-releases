@@ -205,6 +205,18 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                             Collections.<VariableTree>emptyList(),
                             Collections.<ExpressionTree>emptyList(),
                             "{}")); //NOI18N
+                    
+                    ClassTree parentTree = (ClassTree) constrPath.getParentPath().getLeaf();
+                    List<? extends TypeParameterTree> typeParameters = parentTree.getTypeParameters();
+                    List<ExpressionTree> typeArguments = new LinkedList<ExpressionTree>();
+                    for (TypeParameterTree vt : typeParameters) {
+                        typeArguments.add(make.Identifier(vt.getName()));
+                    }
+                    
+                    Tree buildertype = make.Type(simpleName);
+                    if(!typeParameters.isEmpty()) {
+                        buildertype = make.ParameterizedType(buildertype, typeArguments);
+                    }
 
                     for (Setter set : refactoring.getSetters()) {
                         List<StatementTree> stmts = new LinkedList<StatementTree>();
@@ -221,7 +233,7 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                         members.add(make.Method(
                                 make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
                                 set.getName(),
-                                make.Type(simpleName),
+                                buildertype,
                                 Collections.<TypeParameterTree>emptyList(),
                                 Collections.<VariableTree>singletonList(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), set.getVarName(), ident, null)),
                                 Collections.<ExpressionTree>emptyList(),
@@ -230,18 +242,11 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                                 varargs));
                     }
                     
-                    ClassTree parentTree = (ClassTree) constrPath.getParentPath().getLeaf();
-                    List<? extends TypeParameterTree> typeParameters = parentTree.getTypeParameters();
-                    
                     List<ExpressionTree> arguments = new LinkedList<ExpressionTree>();
                     for (VariableTree vt : constructor.getParameters()) {
                         arguments.add(make.Identifier(vt.getName()));
                     }
                     
-                    List<ExpressionTree> typeArguments = new LinkedList<ExpressionTree>();
-                    for (TypeParameterTree vt : typeParameters) {
-                        typeArguments.add(make.Identifier(vt.getName()));
-                    }
                     ExpressionTree ident = make.QualIdent(parent);
                     if(!typeArguments.isEmpty()) {
                         ident = (ExpressionTree) make.ParameterizedType(ident, typeArguments);

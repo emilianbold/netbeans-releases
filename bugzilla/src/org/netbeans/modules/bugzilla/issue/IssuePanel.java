@@ -124,6 +124,7 @@ import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.*;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -277,7 +278,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if(evt.getSource() != IssuePanel.this.issue) {
                 return;
             }
-            if (IssueCache.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+            if (IssueStatusProvider.EVENT_SEEN_CHANGED.equals(evt.getPropertyName())) {
                 updateFieldStatuses();
             }
         }
@@ -290,9 +291,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     public void setIssue(BugzillaIssue issue) {
         assert SwingUtilities.isEventDispatchThread() : "Accessing Swing components. Do not call outside event-dispatch thread!"; // NOI18N
         if (this.issue == null) {
-            IssueCache<BugzillaIssue, TaskData> cache = issue.getRepository().getIssueCache();
-            cache.removePropertyChangeListener(issue, cacheListener);
-            cache.addPropertyChangeListener(issue, cacheListener);
+            issue.removePropertyChangeListener(cacheListener);
+            issue.addPropertyChangeListener(cacheListener);
 
             summaryField.getDocument().addDocumentListener(new DocumentListener() {
                 @Override

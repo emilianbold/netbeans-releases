@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,42 +40,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.heapwalk.ui.icons.impl;
+package org.netbeans.test.ide;
 
-import org.netbeans.modules.profiler.heapwalk.ui.icons.HeapWalkerIcons;
-import java.util.Map;
-import org.netbeans.modules.profiler.spi.IconsProvider;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 
-/**
- *
- * @author Jiri Sedlacek
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.IconsProvider.class)
-public final class HeapWalkerIconsProviderImpl extends IconsProvider.Basic {
-    
-    @Override
-    protected final void initStaticImages(Map<String, String> cache) {
-        cache.put(HeapWalkerIcons.CLASSES, "classes.png"); // NOI18N
-        cache.put(HeapWalkerIcons.DATA, "data.png"); // NOI18N
-        cache.put(HeapWalkerIcons.GC_ROOT, "gcRoot.png"); // NOI18N
-        cache.put(HeapWalkerIcons.GC_ROOTS, "gcRoots.png"); // NOI18N
-        cache.put(HeapWalkerIcons.INCOMING_REFERENCES, "incomingRef.png"); // NOI18N
-        cache.put(HeapWalkerIcons.INSTANCES, "instances.png"); // NOI18N
-        cache.put(HeapWalkerIcons.LOOP, "loop.png"); // NOI18N
-        cache.put(HeapWalkerIcons.MEMORY_LINT, "memoryLint.png"); // NOI18N
-        cache.put(HeapWalkerIcons.PROGRESS, "progress.png"); // NOI18N
-        cache.put(HeapWalkerIcons.PROPERTIES, "properties.png"); // NOI18N
-        cache.put(HeapWalkerIcons.RULES, "rules.png"); // NOI18N
-        cache.put(HeapWalkerIcons.SAVED_OQL_QUERIES, "savedOQL.png"); // NOI18N
-        cache.put(HeapWalkerIcons.STATIC, "static.png"); // NOI18N
-        cache.put(HeapWalkerIcons.SYSTEM_INFO, "sysinfo.png"); // NOI18N
-        cache.put(HeapWalkerIcons.WINDOW, "window.png"); // NOI18N
-        cache.put(HeapWalkerIcons.BIGGEST_OBJECTS, "biggestObjects.png"); // NOI18N
+public class AUTest extends NbTestCase {
+
+    private static final String USERDIR_PROPERTY = "updates.userdir";
+
+    public AUTest(String name) {
+        super(name);
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public static Test suite() throws IOException {
+        // disable 'slowness detection'
+        System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000");
+        NbTestSuite s = new NbTestSuite();
+        s.addTest(
+                NbModuleSuite.createConfiguration(
+                AUTest.class).gui(true).clusters(".*").enableModules(".*").
+                //reuseUserDir(true).
+                honorAutoloadEager(true).
+                addTest("testUpdatesInUserdir").
+                suite());
+        return s;
+    }
+
+    public void testUpdatesInUserdir() {
+        String ud = System.getProperty(USERDIR_PROPERTY);
+        assertNotNull("Userdir not set, please set by setting property:" + USERDIR_PROPERTY, ud);
+        File userdir = new File(ud);
+        assert userdir.exists() : "Userdir " + ud + " must exist!";
+        File modules = new File(userdir, "modules");
+        assert !modules.exists() : "\"modules\" in userdir exist and contains:" + Arrays.toString(modules.list());
+        System.out.println("Test OK - no updates found in userdir");
+    }
 }

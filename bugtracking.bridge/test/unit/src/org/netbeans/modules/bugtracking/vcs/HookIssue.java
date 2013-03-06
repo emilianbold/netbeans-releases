@@ -49,6 +49,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
@@ -161,5 +162,15 @@ public class HookIssue extends TestIssue {
     public String[] getSubtasks() {
         throw new UnsupportedOperationException("Not supported yet.");
     }    
+
+    @Override
+    public IssueStatusProvider.Status getStatus() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setSeen(boolean seen) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 }

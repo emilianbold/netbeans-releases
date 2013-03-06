@@ -248,6 +248,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                             }
                             if (set.size() > 0) {
                                 myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, project, null, null, new CompileLineStorage());
+                                store(project);
                             } else {
                                 myFileProperties = new ArrayList<SourceFileProperties>();
                             }

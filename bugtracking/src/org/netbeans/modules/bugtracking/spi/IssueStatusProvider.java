@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.heapwalk.ui.icons.impl;
+package org.netbeans.modules.bugtracking.spi;
 
-import org.netbeans.modules.profiler.heapwalk.ui.icons.HeapWalkerIcons;
-import java.util.Map;
-import org.netbeans.modules.profiler.spi.IconsProvider;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
+ * 
  *
- * @author Jiri Sedlacek
+ * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.IconsProvider.class)
-public final class HeapWalkerIconsProviderImpl extends IconsProvider.Basic {
-    
-    @Override
-    protected final void initStaticImages(Map<String, String> cache) {
-        cache.put(HeapWalkerIcons.CLASSES, "classes.png"); // NOI18N
-        cache.put(HeapWalkerIcons.DATA, "data.png"); // NOI18N
-        cache.put(HeapWalkerIcons.GC_ROOT, "gcRoot.png"); // NOI18N
-        cache.put(HeapWalkerIcons.GC_ROOTS, "gcRoots.png"); // NOI18N
-        cache.put(HeapWalkerIcons.INCOMING_REFERENCES, "incomingRef.png"); // NOI18N
-        cache.put(HeapWalkerIcons.INSTANCES, "instances.png"); // NOI18N
-        cache.put(HeapWalkerIcons.LOOP, "loop.png"); // NOI18N
-        cache.put(HeapWalkerIcons.MEMORY_LINT, "memoryLint.png"); // NOI18N
-        cache.put(HeapWalkerIcons.PROGRESS, "progress.png"); // NOI18N
-        cache.put(HeapWalkerIcons.PROPERTIES, "properties.png"); // NOI18N
-        cache.put(HeapWalkerIcons.RULES, "rules.png"); // NOI18N
-        cache.put(HeapWalkerIcons.SAVED_OQL_QUERIES, "savedOQL.png"); // NOI18N
-        cache.put(HeapWalkerIcons.STATIC, "static.png"); // NOI18N
-        cache.put(HeapWalkerIcons.SYSTEM_INFO, "sysinfo.png"); // NOI18N
-        cache.put(HeapWalkerIcons.WINDOW, "window.png"); // NOI18N
-        cache.put(HeapWalkerIcons.BIGGEST_OBJECTS, "biggestObjects.png"); // NOI18N
+public interface IssueStatusProvider<I> {
+
+    public enum Status {
+        NEW,
+        MODIFIED,
+        SEEN
     }
+        
+    /**
+     * issue status changed
+     */
+    public static final String EVENT_SEEN_CHANGED = "issue.status_changed"; // NOI18N
+
+    /*
+     * 
+     */
+    public Status getStatus(I issue);
+
+    /*
+     * 
+     */
+    public void setSeen(I issue, boolean seen);
     
+    /*
+     * 
+     */
+    public void removePropertyChangeListener(I issue, PropertyChangeListener listener);
+
+    /*
+     * 
+     */
+    public void addPropertyChangeListener(I issue, PropertyChangeListener listener);
+
 }

@@ -39,18 +39,25 @@ package org.netbeans.modules.bugzilla;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiIssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.IssueField;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class BugzillaIssueProvider extends KenaiIssueProvider<BugzillaIssue> {
+    private IssueStatusProvider<BugzillaIssue> statusProvider;
 
     @Override
     public String getDisplayName(BugzillaIssue data) {
@@ -118,6 +125,31 @@ public class BugzillaIssueProvider extends KenaiIssueProvider<BugzillaIssue> {
         data.addPropertyChangeListener(listener);
     }
 
+    @Override
+    public synchronized IssueStatusProvider getStatusProvider() {
+        if(statusProvider == null) {
+            statusProvider = new IssueStatusProvider<BugzillaIssue>() {
+                @Override
+                public IssueStatusProvider.Status getStatus(BugzillaIssue issue) {
+                    return issue.getStatus();
+                }
+                @Override
+                public void setSeen(BugzillaIssue issue, boolean uptodate) {
+                    issue.setUpToDate(uptodate);
+                }
+                @Override
+                public void removePropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {
+                    issue.removePropertyChangeListener(listener);
+                }
+                @Override
+                public void addPropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {
+                    issue.addPropertyChangeListener(listener);
+                }
+            };
+        }
+        return statusProvider;
+    }
+    
     /************************************************************************************
      * Kenai
      ************************************************************************************/
