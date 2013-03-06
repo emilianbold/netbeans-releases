@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.jsf.api.editor;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,12 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.source.ClassIndexListener;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.RootsEvent;
-import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -63,7 +56,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.jsf.api.metamodel.Component;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
-import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
 import org.netbeans.modules.web.jsf.impl.metamodel.ComponentImpl;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.Library;
