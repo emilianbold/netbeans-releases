@@ -862,6 +862,8 @@ function
 		  	(
 				fnAttribute (COMMA ws? fnAttribute )*				
 			) 
+                |
+                {isCssPreprocessorSource()}? //empty
 		)
 		RPAREN
 	;

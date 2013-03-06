@@ -919,4 +919,17 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
+
+    public void testMixinCallWithFunctionWithNoArgs() {
+        String source = ".ease-out-expo-animation {\n"
+                + "  @include transition-timing-function(ease-out-expo()); \n"
+                + "  color: best-color();\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
 }
