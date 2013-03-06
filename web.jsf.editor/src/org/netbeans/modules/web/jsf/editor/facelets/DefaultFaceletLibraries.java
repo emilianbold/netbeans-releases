@@ -42,8 +42,6 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,15 +51,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary.NamedComponent;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
+import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.LibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
-import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 
 /**
  * Access to facelet library descriptors in bundled web.jsf20 library's javax.faces.jar
@@ -75,7 +72,7 @@ public class DefaultFaceletLibraries {
     public static DefaultFaceletLibraries INSTANCE;
     private Collection<FileObject> libraryDescriptorsFiles;
     private Map<String, FaceletsLibraryDescriptor> librariesDescriptors;
-    private static Map<String, AbstractFaceletsLibrary> jsf22FaceletPseudoLibraries;
+    private static Map<String, Library> jsf22FaceletPseudoLibraries;
 
     public static final String JSF_NS = "http://java.sun.com/jsf"; //NOI18N
     public static final String JSF_PASSTHROUGH_NS = "http://java.sun.com/jsf/passthrough"; //NOI18N
@@ -154,65 +151,28 @@ public class DefaultFaceletLibraries {
         return files;
     }
 
-    protected synchronized static Map<String, AbstractFaceletsLibrary> getJsf22FaceletPseudoLibraries(FaceletsLibrarySupport support) {
+    protected synchronized static Map<String, Library> getJsf22FaceletPseudoLibraries(FaceletsLibrarySupport support) {
         if (jsf22FaceletPseudoLibraries == null) {
-            jsf22FaceletPseudoLibraries = new HashMap<String, AbstractFaceletsLibrary>(2);
+            jsf22FaceletPseudoLibraries = new HashMap<String, Library>(2);
             jsf22FaceletPseudoLibraries.put(JSF_NS, new JsfFaceletPseudoLibrary(support, JSF_NS, "jsf"));
             jsf22FaceletPseudoLibraries.put(JSF_PASSTHROUGH_NS, new JsfFaceletPseudoLibrary(support, JSF_PASSTHROUGH_NS, "p"));
         }
         return jsf22FaceletPseudoLibraries;
     }
 
-    private static class JsfFaceletPseudoLibrary extends AbstractFaceletsLibrary {
+    private static class JsfFaceletPseudoLibrary implements Library {
 
         private final String namespace;
         private final String prefix;
 
         public JsfFaceletPseudoLibrary(FaceletsLibrarySupport support, String namespace, String prefix) {
-            super(support);
             this.namespace = namespace;
             this.prefix = prefix;
         }
 
         @Override
-        public Map<String, ? extends NamedComponent> getComponentsMap() {
-            return Collections.emptyMap();
-        }
-
-        @Override
-        public URL getLibraryDescriptorSource() {
-            try {
-                return new URL(getNamespace());
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return null;
-        }
-
-        @Override
         public String getDefaultPrefix() {
             return prefix;
-        }
-
-        @Override
-        public LibraryDescriptor getLibraryDescriptor() {
-            return new LibraryDescriptor() {
-
-                @Override
-                public String getPrefix() {
-                    return prefix;
-                }
-
-                @Override
-                public String getNamespace() {
-                    return namespace;
-                }
-
-                @Override
-                public Map<String, Tag> getTags() {
-                    return Collections.emptyMap();
-                }
-            };
         }
 
         @Override
@@ -227,6 +187,21 @@ public class DefaultFaceletLibraries {
 
         @Override
         public String getNamespace() {
+            return namespace;
+        }
+
+        @Override
+        public Collection<? extends LibraryComponent> getComponents() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public LibraryComponent getComponent(String componentName) {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
             return namespace;
         }
 
