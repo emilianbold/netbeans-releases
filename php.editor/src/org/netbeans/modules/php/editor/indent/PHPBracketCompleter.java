@@ -589,20 +589,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        final long currentTimeMillis = System.currentTimeMillis();
-                        try {
-                            ParserManager.parse(Collections.<Source>singleton(Source.create(doc)), new UserTask() {
-                                @Override
-                                public void run(ResultIterator resultIterator) throws Exception {
-                                    if (System.currentTimeMillis() - currentTimeMillis < 1500) {
-                                        GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
-                                        caret.setDot((Integer) ret[0]);
-                                    }
-                                }
-                            });
-                        } catch (ParseException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                        GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                        caret.setDot((Integer) ret[0]);
                     }
                 });
 
