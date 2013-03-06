@@ -80,8 +80,7 @@ public final class CheckModuleConfigs extends Task {
             throw new BuildException("Must define 'nbroot' param", getLocation());
         }
         File clusterPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties");
-        @SuppressWarnings("unchecked")
-        Map<String,String> properties = getProject().getProperties();
+        Map<String,Object> properties = getProject().getProperties();
         Map<String,Set<String>> clusters = loadModuleClusters(properties, clusterPropertiesFile);
         Set<String> allClusterModules = new TreeSet<String>();
         for (Set<String> s : clusters.values()) {
@@ -99,12 +98,12 @@ public final class CheckModuleConfigs extends Task {
         // Verify sorting and overlaps:
         Pattern clusterNamePat = Pattern.compile("nb\\.cluster\\.([^.]+)");
         Map<String,List<String>> allClusters = new HashMap<String,List<String>>();
-        for (Map.Entry<String,String> clusterDef : properties.entrySet()) {
+        for (Map.Entry<String,Object> clusterDef : properties.entrySet()) {
             Matcher m = clusterNamePat.matcher(clusterDef.getKey());
             if (!m.matches()) {
                 continue;
             }
-            allClusters.put(m.group(1), splitToList(clusterDef.getValue(), clusterDef.getKey()));
+            allClusters.put(m.group(1), splitToList((String) clusterDef.getValue(), clusterDef.getKey()));
         }
         allClusters.get("experimental").removeAll(allClusters.get("betauc")); // intentionally a superset
         allClusters.get("betauc").removeAll(allClusters.get("stableuc")); // ditto
@@ -157,15 +156,15 @@ public final class CheckModuleConfigs extends Task {
         return set;
     }
     
-    private Map<String,Set<String>> loadModuleClusters(Map<String,String> clusterProperties, File clusterPropertiesFile) {
+    private Map<String,Set<String>> loadModuleClusters(Map<String,Object> clusterProperties, File clusterPropertiesFile) {
         String fullConfig = "clusters.config.full.list";
-        String l = clusterProperties.get(fullConfig);
+        String l = (String) clusterProperties.get(fullConfig);
         if (l == null) {
             throw new BuildException(clusterPropertiesFile + ": no definition for clusters.config.full.list");
         }
         Map<String,Set<String>> clusters = new TreeMap<String,Set<String>>();
         for (String cluster : splitToSet(l, fullConfig)) {
-            l = clusterProperties.get(cluster);
+            l = (String) clusterProperties.get(cluster);
             if (l == null) {
                 throw new BuildException(clusterPropertiesFile + ": no definition for " + cluster);
             }

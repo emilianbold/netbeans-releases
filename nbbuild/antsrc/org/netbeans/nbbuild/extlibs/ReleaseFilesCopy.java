@@ -72,8 +72,8 @@ public class ReleaseFilesCopy extends Task {
     }
 
     public @Override void execute() throws BuildException {
-        for (Map.Entry<?,?> entry : ((Map<?,?>) getProject().getProperties()).entrySet()) {
-            String k = (String) entry.getKey();
+        for (Map.Entry<String,Object> entry : ((Map<String,Object>) getProject().getProperties()).entrySet()) {
+            String k = entry.getKey();
             if (k.startsWith("release.") && !k.matches("release\\.(files|files\\.extra|dir)")) {
                 File to = FileUtils.getFileUtils().resolveFile(cluster, (String) entry.getValue());
                 String fromString = k.substring(8);
