@@ -40,40 +40,31 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.spi.platform;
+package org.netbeans.modules.web.clientproject.browser;
 
-import java.beans.PropertyChangeListener;
-import java.util.List;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
-/**
- * Platform here means for example Browser platform which represents all browsers
- * for which project can be developed. Or Cordova platform which represents
- * all different mobile devices supported by Cordova.
- */
-public interface ClientProjectPlatformImplementation {
+@ProjectServiceProvider(
+        projectType = "org-netbeans-modules-web-clientproject",
+        service=ClientProjectEnhancedBrowserProvider.class)
+public class ClientProjectEnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
+    private Project p;
+
+    public ClientProjectEnhancedBrowserProviderImpl(Project p) {
+        this.p = p;
+    }
     
-    String PROP_CONFIGURATIONS = "configurations"; // NOI18N
+    @Override
+    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser) {
+        if (webBrowser.getBrowserFamily().isMobile()) {
+            return null;
+        }
+        return new ClientProjectEnhancedBrowserImpl((ClientSideProject)p, webBrowser);
+    }
 
-    /**
-     * List of configuration this platform provides.
-     */
-    List<? extends ClientProjectConfigurationImplementation> getConfigurations();
-    
-    /**
-     * Returns list of types of configurations user can choose from to create a new one.
-     */
-    List<String> getNewConfigurationTypes();
-
-    /**
-     * Create new configuration of given type and given name and return new
-     * configuration's ID.
-     * @return returns null if configuration type cannot be handled by this platform
-     */
-    String createConfiguration(String configurationType, String configurationName);
-    
-    void addPropertyChangeListener(PropertyChangeListener lst);
-
-    void removePropertyChangeListener(PropertyChangeListener lst);
-    
 }

@@ -50,10 +50,11 @@ import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.PropertyProvider;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
@@ -61,7 +62,7 @@ import org.openide.util.Exceptions;
 /**
  *
  */
-public class ClientProjectConfigurationImpl implements ClientProjectConfigurationImplementation, PropertyProvider {
+public class MobileConfigurationImpl implements ProjectConfiguration, PropertyProvider {
 
     final private Project project;
     //final private ClientProjectPlatformImpl platform;
@@ -71,7 +72,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     private final EditableProperties props;
     private final FileObject file;
 
-    private ClientProjectConfigurationImpl(Project project, FileObject kid, String id, String displayName, String type, EditableProperties ep) {
+    private MobileConfigurationImpl(Project project, FileObject kid, String id, String displayName, String type, EditableProperties ep) {
         this.project = project;
         this.name = id;
         this.displayName = displayName;
@@ -80,17 +81,12 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         this.file = kid;
     }
     
-    @Override
+//    @Override
     public String getId() {
         return name;
     }
 
-    @Override
-    public String getBrowserId() {
-        return type;
-    }
-
-    @Override
+//    @Override
     public void save() {
         if (file == null) {
             return;
@@ -132,7 +128,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         return props.put(prop, value);
     }
     
-    public static ClientProjectConfigurationImpl create(Project proj, FileObject configFile) {
+    public static MobileConfigurationImpl create(Project proj, FileObject configFile) {
 
         try {
             InputStream is = configFile.getInputStream();
@@ -142,7 +138,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
                 String id = configFile.getName();
                 String label = p.getProperty("display.name"); // NOI18N
                 String type = p.getProperty("type"); //NOI18N
-                return new ClientProjectConfigurationImpl(proj, configFile, id, label != null ? label : id, type, p);
+                return new MobileConfigurationImpl(proj, configFile, id, label != null ? label : id, type, p);
             } finally {
                 is.close();
             }
@@ -156,42 +152,19 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         return displayName;
     }
 
-    @Override
-    public RefreshOnSaveListener getRefreshOnSaveListener() {
-        return new RefreshOnSaveListenerImpl(/*???*/);
-    }
 
-    @Override
-    public ActionProvider getActionProvider() {
-        return getDevice().getActionProvider(project);
-    }
-
-    @Override
-    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        return getDevice().getProjectConfigurationCustomizer(project, this);
-    }
-    
-    @Override
+//    @Override
     public boolean canBeDeleted() {
         return true;
     }
 
-    @Override
+//    @Override
     public void delete() {
         try {
             file.delete();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-    @Override
-    public void deactivate() {
-    }
-
-    @Override
-    public boolean isHighlightSelectionEnabled() {
-        return true;
     }
 
 }

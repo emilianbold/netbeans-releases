@@ -55,8 +55,9 @@ import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
+import org.netbeans.modules.cordova.project.ClientProjectEnhancedBrowserImpl;
 import org.netbeans.modules.cordova.project.ClientProjectUtilities;
+import org.netbeans.modules.cordova.project.MobileConfigurationImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebServer;
@@ -137,9 +138,9 @@ public class CordovaPerformer implements BuildPerformer {
         props.put(PROP_DEBUG_ENABLE, debug);//NOI18N
         //workaround for some strange behavior of ant execution in netbeans
         props.put(PROP_ENV_DISPLAY, ":0.0");//NOI18N
-        if (activeConfiguration instanceof ClientProjectConfigurationImpl) {
-            props.put(PROP_CONFIG, ((ClientProjectConfigurationImpl) activeConfiguration).getId());
-            ((ClientProjectConfigurationImpl) activeConfiguration).getDevice().addProperties(props);
+        if (activeConfiguration instanceof MobileConfigurationImpl) {
+            props.put(PROP_CONFIG, ((MobileConfigurationImpl) activeConfiguration).getId());
+            ((MobileConfigurationImpl) activeConfiguration).getDevice().addProperties(props);
         }
         
         props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());

@@ -80,7 +80,11 @@ public final class DropDownButtonFactory {
      * @return A button that is capable of displaying an 'arrow' in its icon to open a popup menu.
      */
     public static JButton createDropDownButton( Icon icon, JPopupMenu dropDownMenu ) {
-        return new DropDownButton( icon, dropDownMenu );
+        return new DropDownButton( icon, dropDownMenu, true);
+    }
+
+    public static JButton createSimpleDropDownButton( Icon icon, JPopupMenu dropDownMenu) {
+        return new DropDownButton( icon, dropDownMenu, false);
     }
     
     /**

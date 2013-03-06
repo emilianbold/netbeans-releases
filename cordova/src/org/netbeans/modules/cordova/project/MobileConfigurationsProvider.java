@@ -46,6 +46,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -56,8 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.ConfigUtils;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -70,14 +70,14 @@ import org.openide.util.Exceptions;
 /**
  * @author Jan Becicka
  */
-public class ClientProjectPlatformImpl implements ClientProjectPlatformImplementation {
+public class MobileConfigurationsProvider implements ProjectConfigurationProvider<MobileConfigurationImpl>{
 
     private Project p;
-    private Map<String, ClientProjectConfigurationImpl> configs;
+    private Map<String, MobileConfigurationImpl> configs;
     private FileObject configDir;
     private FileObject nbProjectDir;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private static final Logger LOGGER = Logger.getLogger(ClientProjectPlatformImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MobileConfigurationsProvider.class.getName());
     private FileChangeListener fclWeakNB;
     private FileChangeListener fclWeakConfig;    
     
@@ -121,12 +121,12 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
         calculateConfigs();
         Set<String> newConfigs = configs.keySet();
         if (!oldConfigs.equals(newConfigs)) {
-            LOGGER.log(Level.FINER, "Firing " + ClientProjectPlatformImplementation.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[]{oldConfigs, newConfigs});
-            support.firePropertyChange(ClientProjectPlatformImplementation.PROP_CONFIGURATIONS, null, null);
+            LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[]{oldConfigs, newConfigs});
+            support.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
         }
     }
     
-    public ClientProjectPlatformImpl(Project p) {
+    public MobileConfigurationsProvider(Project p) {
         this.p = p;
         this.nbProjectDir = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
         if (nbProjectDir != null) {
@@ -143,13 +143,13 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
     }
 
     private void calculateConfigs() {
-        configs = new HashMap<String, ClientProjectConfigurationImpl>();
+        configs = new HashMap<String, MobileConfigurationImpl>();
         if (configDir != null) {
             for (FileObject kid : configDir.getChildren()) {
                 if (!kid.hasExt("properties")) {
                     continue;
                 }
-                ClientProjectConfigurationImpl conf = ClientProjectConfigurationImpl.create(p, kid);
+                MobileConfigurationImpl conf = MobileConfigurationImpl.create(p, kid);
                 configs.put(conf.getId(), conf);
             }
         }
@@ -157,11 +157,11 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
     }
 
     @Override
-    public List<? extends ClientProjectConfigurationImplementation> getConfigurations() {
+    public Collection<MobileConfigurationImpl> getConfigurations() {
         if (configs == null) {
             calculateConfigs();
         }
-        List<ClientProjectConfigurationImpl> l = new ArrayList<ClientProjectConfigurationImpl>(configs.values());
+        Collection<MobileConfigurationImpl> l = new ArrayList<MobileConfigurationImpl>(configs.values());
         return l;
     }
 
@@ -175,12 +175,12 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
         support.removePropertyChangeListener(lst);
     }
 
-    @Override
+//    @Override
     public List<String> getNewConfigurationTypes() {
         return Arrays.asList(new String[]{PlatformManager.ANDROID_TYPE, PlatformManager.IOS_TYPE});
     }
 
-    @Override
+//    @Override
     public String createConfiguration(String configurationType, String configurationName) {
         EditableProperties props = new EditableProperties(true);
         props.put("type", configurationType); //NOI18N
@@ -188,11 +188,34 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
         FileObject conf;
         try {
             conf = ConfigUtils.createConfigFile(p.getProjectDirectory(), configurationType, props);
-            ClientProjectConfigurationImpl cfg = ClientProjectConfigurationImpl.create(p, conf);
+            MobileConfigurationImpl cfg = MobileConfigurationImpl.create(p, conf);
             return cfg.getId();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return null;
+    }
+
+    @Override
+    public MobileConfigurationImpl getActiveConfiguration() {
+        return null;
+    }
+
+    @Override
+    public void setActiveConfiguration(MobileConfigurationImpl configuration) throws IllegalArgumentException, IOException {
+    }
+
+    @Override
+    public boolean hasCustomizer() {
+        return false;
+    }
+
+    @Override
+    public void customize() {
+    }
+
+    @Override
+    public boolean configurationsAffectAction(String command) {
+        return false;
     }
 }

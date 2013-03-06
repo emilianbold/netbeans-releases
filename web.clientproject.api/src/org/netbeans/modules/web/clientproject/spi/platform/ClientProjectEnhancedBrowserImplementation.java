@@ -39,35 +39,50 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.clientproject.spi.platform;
 
-package org.netbeans.modules.web.clientproject.browser;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformProvider;
-import org.openide.util.lookup.ServiceProvider;
+/**
+ * Hook into client side project type for different browsers to provider their
+ * own customizer, actions, configurations, etc.
+ */
+public interface ClientProjectEnhancedBrowserImplementation {
 
-// btw. ServiceProvider is used here instead of ProjectsServiceProvider so that position can be specified
-// and this provider is before one from Cordova
-@ServiceProvider(
-        service=ClientProjectPlatformProvider.class,
-        position=1000)
-public class ClientProjectPlatformProviderImpl implements ClientProjectPlatformProvider {
+    /**
+     * Browser's customizer.
+     * @return can return null if none
+     */
+    ProjectConfigurationCustomizer getProjectConfigurationCustomizer();
 
-    private Map<Project, ClientProjectPlatformImplementation> cache = new WeakHashMap<Project, ClientProjectPlatformImplementation>();
+    /**
+     * Persist changes done in browser's customizer.
+     */
+    void save();
     
-    @Override
-    public Collection<ClientProjectPlatformImplementation> getPlatforms(Project p) {
-        ClientProjectPlatformImplementation res = cache.get(p);
-        if (res == null) {
-            res = new ClientProjectPlatformImpl(p);
-            cache.put(p, res);
-        }
-        return Collections.singletonList(res);
-    }
+    /**
+     * Browser's action provider.
+     * @return can return null
+     */
+    ActionProvider getActionProvider();
 
+    /**
+     * Browser's handler for changes in project sources.
+     * @return can return null
+     */
+    RefreshOnSaveListener getRefreshOnSaveListener();
+
+    /**
+     * Notification to browser that is not active anymore.
+     */
+    void deactivate();
+
+    boolean isHighlightSelectionEnabled();
+
+    /**
+     * Configurations provider associated with this browser.
+     * @return
+     */
+    ProjectConfigurationProvider getProjectConfigurationProvider();
 }

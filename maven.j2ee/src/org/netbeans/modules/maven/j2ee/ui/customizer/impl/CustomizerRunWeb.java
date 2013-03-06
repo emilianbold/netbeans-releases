@@ -105,7 +105,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         if (selectedBrowser == null) {
             selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
         }
-        browserModel = WebBrowserSupport.createBrowserModel(selectedBrowser);
+        browserModel = WebBrowserSupport.createBrowserModel(selectedBrowser, true);
         browserCBox.setModel(browserModel);
         browserCBox.setRenderer(WebBrowserSupport.createBrowserRenderer());
 

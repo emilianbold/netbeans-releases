@@ -632,6 +632,7 @@ public final class WebProject implements Project {
             QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
             new ProjectWebRootProviderImpl(),
             easelSupport,
+            new WebProjectBrowserProvider(this),
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -2506,8 +2507,11 @@ public final class WebProject implements Project {
                 return browserSupport;
             }
             String selectedBrowser = evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
+            if (selectedBrowser == null) {
+                selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
+            }
             WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
-            if (selectedBrowser == null || browser == null) {
+            if (browser == null) {
                 browserSupport = null;
             } else {
                 boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);

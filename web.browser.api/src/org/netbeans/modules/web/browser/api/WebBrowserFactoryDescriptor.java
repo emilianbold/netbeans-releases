@@ -71,6 +71,11 @@ final class WebBrowserFactoryDescriptor {
     }
     
     
+    WebBrowserFactoryDescriptor(WebBrowserFactoryDescriptor delegate, String id, String name) {
+        this(id, delegate.dob, delegate.def, delegate.factory);
+        this.name = name;
+    }
+    
     /**
     * Unique ID of this browser. Should be suitable for persistence reference to this browser.
     */

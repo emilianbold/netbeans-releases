@@ -42,30 +42,28 @@
 
 package org.netbeans.modules.cordova.project;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
-@ServiceProvider(
-        service=ClientProjectPlatformProvider.class,
-        position=2000)
-public class ClientProjectPlatformProviderImpl implements ClientProjectPlatformProvider {
+@ProjectServiceProvider(
+        projectType = "org-netbeans-modules-web-clientproject",
+        service=ClientProjectEnhancedBrowserProvider.class)
+public class ClientProjectEnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
+    private Project p;
 
-    private Map<Project, ClientProjectPlatformImplementation> cache = new WeakHashMap<Project, ClientProjectPlatformImplementation>();
+    public ClientProjectEnhancedBrowserProviderImpl(Project p) {
+        this.p = p;
+    }
     
     @Override
-    public Collection<ClientProjectPlatformImplementation> getPlatforms(Project p) {
-        ClientProjectPlatformImplementation res = cache.get(p);
-        if (res == null) {
-            res = new ClientProjectPlatformImpl(p);
-            cache.put(p, res);
+    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser) {
+        if (!webBrowser.getBrowserFamily().isMobile()) {
+            return null;
         }
-        return Collections.singletonList(res);
+        return new ClientProjectEnhancedBrowserImpl(p, webBrowser);
     }
 
 }

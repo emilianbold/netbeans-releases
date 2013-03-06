@@ -39,65 +39,19 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.web.clientproject.spi.platform;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 
 /**
- * Implementation of project configuration and associated actions, customizer, etc.
+ * Provider of ClientProjectEnhancedBrowserImplementation to be registered in
+ * project type lookup via
+ * @ProjectServiceProvider(projectType = "org-netbeans-modules-web-clientproject", ...).
+ * Provider decides based on browser family type whether they handle browser or not.
  */
-public interface ClientProjectConfigurationImplementation extends ProjectConfiguration {
-
-    /**
-     * Configuration's unique ID used to persist selected configuration etc.
-     */
-    @NonNull String getId();
+public interface ClientProjectEnhancedBrowserProvider {
     
-    /**
-     * Non localizable ID of the browser used; can be null; only used for usage statistic.
-     */
-    String getBrowserId();
-
-    /**
-     * Configuration's customizer.
-     * @return can return null if none
-     */
-    ProjectConfigurationCustomizer getProjectConfigurationCustomizer();
-
-    /**
-     * Persist changes done in configuration's customizer.
-     */
-    void save();
+    ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser);
     
-    /**
-     * Configuration's action provider.
-     * @return can return null
-     */
-    ActionProvider getActionProvider();
-
-    /**
-     * Can this platform be deleted?
-     */
-    boolean canBeDeleted();
-
-    /**
-     * Delete this configuration.
-     */
-    void delete();
-
-
-    /**
-     * Configuration's handler changes in project sources.
-     * @return can return null
-     */
-    RefreshOnSaveListener getRefreshOnSaveListener();
-
-    /**
-     * Notification that configuration is not active anymore.
-     */
-    void deactivate();
-
-    boolean isHighlightSelectionEnabled();
 }

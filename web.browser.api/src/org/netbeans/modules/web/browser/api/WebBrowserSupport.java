@@ -43,9 +43,6 @@ package org.netbeans.modules.web.browser.api;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -57,7 +54,6 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.openide.util.NbBundle;
 
 /**
  * Support for web browsers.
@@ -66,10 +62,6 @@ import org.openide.util.NbBundle;
 public final class WebBrowserSupport {
 
     private static final Logger LOGGER = Logger.getLogger(WebBrowserSupport.class.getName());
-
-    private static final String DEFAULT = "default"; // NOI18N
-    private static final String INTEGRATED = ".INTEGRATED"; // NOI18N
-
 
     private WebBrowserSupport() {
     }
@@ -84,60 +76,39 @@ public final class WebBrowserSupport {
      * @return model for component with browsers
      * @see #createBrowserRenderer()
      */
-    public static BrowserComboBoxModel createBrowserModel(@NullAllowed String selectedBrowserId) {
-        List<BrowserWrapper> browsers = new ArrayList<BrowserWrapper>();
-        int chrome = 200;
-        int chromium = 300;
-        int others = 400;
-        BrowserWrapper nbChrome = null;
-        BrowserWrapper nbChromium = null;
-        BrowserWrapper nbInternal = null;
-        browsers.add(new BrowserWrapper(null, 1, true));
-        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false)) {
-            if (browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
-                nbInternal = new BrowserWrapper(browser, 100, false);
-                browsers.add(nbInternal);
-            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) { // NOI18N
-                BrowserWrapper wrapper = new BrowserWrapper(browser, chrome++, false);
-                if (nbChrome == null) {
-                    nbChrome = wrapper;
+    public static BrowserComboBoxModel createBrowserModel(@NullAllowed String selectedBrowserId, boolean showIDEGlobalBrowserOption) {
+        List<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, true, showIDEGlobalBrowserOption, true);
+        String chromeId = null, chromiumId = null, javafxId = null;
+        if (selectedBrowserId == null) {
+            for (WebBrowser bw : browsers) {
+                if (bw.getBrowserFamily() == BrowserFamilyId.CHROME && chromeId == null) {
+                    chromeId = bw.getId();
                 }
-                browsers.add(wrapper);
-                browsers.add(new BrowserWrapper(browser, chrome++, true));
-            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) { // NOI18N
-                BrowserWrapper wrapper = new BrowserWrapper(browser, chromium++, false);
-                if (nbChromium == null) {
-                    nbChromium = wrapper;
+                if (bw.getBrowserFamily() == BrowserFamilyId.CHROMIUM && chromiumId == null) {
+                    chromiumId = bw.getId();
                 }
-                browsers.add(wrapper);
-                browsers.add(new BrowserWrapper(browser, chromium++, true));
-            } else {
-                browsers.add(new BrowserWrapper(browser, others++, true));
+                if (bw.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW && javafxId == null) {
+                    javafxId = bw.getId();
             }
         }
-        Collections.sort(browsers, new Comparator<BrowserWrapper>() {
-            @Override
-            public int compare(BrowserWrapper o1, BrowserWrapper o2) {
-                return o1.getOrder() - o2.getOrder();
             }
-        });
         if (selectedBrowserId == null) {
-            if (nbChrome != null) {
-                selectedBrowserId = nbChrome.getId();
-            } else if (nbChromium != null) {
-                selectedBrowserId = nbChromium.getId();
-            } else if (nbInternal != null) {
-                selectedBrowserId = nbInternal.getId();
+            if (chromeId != null) {
+                selectedBrowserId = chromeId;
+            } else if (chromeId != null) {
+                selectedBrowserId = chromeId;
+            } else if (javafxId != null) {
+                selectedBrowserId = javafxId;
             }
         }
         BrowserComboBoxModel model = new BrowserComboBoxModel(browsers);
         for (int i = 0; i < model.getSize(); i++) {
-            BrowserWrapper browserWrapper = (BrowserWrapper) model.getElementAt(i);
-            assert browserWrapper != null;
+            WebBrowser browser = (WebBrowser) model.getElementAt(i);
+            assert browser != null;
             if ((selectedBrowserId == null
-                    && !browserWrapper.isDisableIntegration())
-                    || browserWrapper.getId().equals(selectedBrowserId)) {
-                model.setSelectedItem(browserWrapper);
+                    && browser.hasNetBeansIntegration())
+                    || browser.getId().equals(selectedBrowserId)) {
+                model.setSelectedItem(browser);
                 break;
             }
         }
@@ -159,7 +130,7 @@ public final class WebBrowserSupport {
      * @since 1.11
      */
     public static String getDefaultBrowserId() {
-        return DEFAULT;
+        return WebBrowsers.DEFAULT;
     }
 
     /**
@@ -172,11 +143,11 @@ public final class WebBrowserSupport {
      */
     public static boolean isIntegratedBrowser(@NullAllowed String browserId) {
         if (browserId != null
-                && browserId.endsWith(INTEGRATED)) {
+                && browserId.endsWith(WebBrowser.INTEGRATED)) {
             return true;
         }
-        ComboBoxModel model = createBrowserModel(browserId);
-        return !((BrowserWrapper) model.getSelectedItem()).isDisableIntegration();
+        ComboBoxModel model = createBrowserModel(browserId, true);
+        return ((WebBrowser) model.getSelectedItem()).hasNetBeansIntegration();
     }
 
     /**
@@ -185,16 +156,26 @@ public final class WebBrowserSupport {
      * If the browser identifier is {@code null} (likely not set yet?), then the first (external,
      * if possible) browser with NetBeans integration is returned.
      * @param browserId browser identifier, can be {@code null} if e.g. not set yet
-     * @return browser for the given browser identifier or {@code null} for the default IDE browser
+     * @return browser for the given browser identifier
      */
     @CheckForNull
     public static WebBrowser getBrowser(@NullAllowed String browserId) {
-        if (DEFAULT.equals(browserId)) {
+        if (browserId != null) {
+            return findWebBrowserById(browserId);
+        }
+        // otherwise create a model to figure out default browser:
+        ComboBoxModel model = createBrowserModel(browserId, true);
+        return (WebBrowser) model.getSelectedItem();
+    }
+
+    private static WebBrowser findWebBrowserById(String id) {
+        for (WebBrowser wb : WebBrowsers.getInstance().getAll(false, true, true, false)) {
+            if (wb.getId().equals(id)) {
+                return wb;
+            }
+        }
             return null;
         }
-        ComboBoxModel model = createBrowserModel(browserId);
-        return ((BrowserWrapper) model.getSelectedItem()).getBrowser();
-    }
 
     //~ Inner classes
 
@@ -205,12 +186,12 @@ public final class WebBrowserSupport {
 
         private static final long serialVersionUID = -45857643232L;
 
-        private final List<BrowserWrapper> browsers = new CopyOnWriteArrayList<BrowserWrapper>();
+        private final List<WebBrowser> browsers = new CopyOnWriteArrayList<WebBrowser>();
 
-        private volatile BrowserWrapper selectedBrowser = null;
+        private volatile WebBrowser selectedBrowser = null;
 
 
-        BrowserComboBoxModel(List<BrowserWrapper> browsers) {
+        BrowserComboBoxModel(List<WebBrowser> browsers) {
             assert browsers != null;
             assert !browsers.isEmpty();
             this.browsers.addAll(browsers);
@@ -244,7 +225,7 @@ public final class WebBrowserSupport {
          */
         @Override
         public void setSelectedItem(Object browser) {
-            selectedBrowser = (BrowserWrapper) browser;
+            selectedBrowser = (WebBrowser) browser;
             fireContentsChanged(this, -1, -1);
         }
 
@@ -264,7 +245,7 @@ public final class WebBrowserSupport {
         @CheckForNull
         public WebBrowser getSelectedBrowser() {
             assert selectedBrowser != null;
-            return selectedBrowser.getBrowser();
+            return selectedBrowser;
         }
 
         /**
@@ -289,65 +270,10 @@ public final class WebBrowserSupport {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             assert EventQueue.isDispatchThread();
-            if (value instanceof BrowserWrapper) {
-                value = ((BrowserWrapper) value).getDesc();
+            if (value instanceof WebBrowser) {
+                value = ((WebBrowser) value).getName();
             }
             return ORIGINAL_RENDERER.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-        }
-
-    }
-
-    /**
-     * Wrapper class for {@link WebBrowser}.
-     * <p>
-     * This class is thread-safe.
-     */
-    private static final class BrowserWrapper {
-
-        private final WebBrowser browser;
-        private final int order;
-        private final boolean disableIntegration;
-
-
-        public BrowserWrapper(WebBrowser browser, int order, boolean disableIntegration) {
-            this.browser = browser;
-            this.order = order;
-            this.disableIntegration = disableIntegration;
-        }
-
-        @NbBundle.Messages({
-            "WebBrowserSupport.browser.ideDefault=IDE's default browser",
-            "# {0} - web browser",
-            "WebBrowserSupport.browser.integrated={0} with NetBeans Integration"
-        })
-        public String getDesc() {
-            if (browser == null) {
-                return Bundle.WebBrowserSupport_browser_ideDefault();
-            }
-            if (disableIntegration
-                    || browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
-                return browser.getName();
-            }
-            return Bundle.WebBrowserSupport_browser_integrated(browser.getName());
-        }
-
-        public boolean isDisableIntegration() {
-            return disableIntegration;
-        }
-
-        public WebBrowser getBrowser() {
-            return browser;
-        }
-
-        public String getId() {
-            if (browser == null) {
-                return DEFAULT;
-            }
-            return browser.getId() + (disableIntegration ? "" : INTEGRATED); // NOI18N
-        }
-
-        int getOrder() {
-            return order;
         }
 
     }

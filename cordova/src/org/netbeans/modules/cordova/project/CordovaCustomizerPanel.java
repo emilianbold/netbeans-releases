@@ -162,11 +162,12 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
 
     private void initControls() {
         initComponents();
+        // XXX: should be changed probably:
         ProjectConfigurationProvider provider = project.getLookup().lookup(ProjectConfigurationProvider.class);
         boolean isCordovaProject = false;
         if (provider!=null) {
             for (Object conf:provider.getConfigurations()) {
-                if (conf instanceof ClientProjectConfigurationImpl) {
+                if (conf instanceof MobileConfigurationImpl) {
                     isCordovaProject = true;
                     break;
                 }

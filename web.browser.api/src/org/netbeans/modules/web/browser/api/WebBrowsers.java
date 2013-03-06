@@ -45,6 +45,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -56,6 +58,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -82,6 +85,8 @@ public final class WebBrowsers {
     private PropertyChangeListener l;
     private FileChangeListener lis;
     private PreferenceChangeListener lis2;
+    
+    static final String DEFAULT = "default"; // NOI18N
     
     private WebBrowsers() {
         sup = new PropertyChangeSupport(this);
@@ -147,7 +152,7 @@ public final class WebBrowsers {
             if (!desc.isDefault()) {
                 continue;
             }
-            return new WebBrowser(desc);
+            return new WebBrowser(desc, false);
         }
         assert false : "no default browser instance found: " + getFactories(true);
         return null;
@@ -162,7 +167,7 @@ public final class WebBrowsers {
             if (desc.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
                 continue;
             }
-            return new WebBrowser(desc);
+            return new WebBrowser(desc, true);
         }
         return null;
     }
@@ -170,10 +175,89 @@ public final class WebBrowsers {
     /**
      * Returns all browsers registered in the IDE.
      */
-    public List<WebBrowser> getAll(boolean includeSystemDefaultBrowser) {
-        List<WebBrowser> browsers = new ArrayList<WebBrowser>();
+    public List<WebBrowser> getAll(boolean includeSystemDefaultBrowser,
+            boolean includeBrowsersWithNBIntegration,
+            boolean includeIDEGlobalBrowserOption,
+            boolean sortBrowsers) {
+        if (sortBrowsers) {
+            return getSortedBrowsers(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration, includeIDEGlobalBrowserOption);
+        } else {
+            return getUnsortedBrowsers(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration, includeIDEGlobalBrowserOption);
+        }
+    }
+
+    private List<WebBrowser> getSortedBrowsers(boolean includeSystemDefaultBrowser, 
+            boolean includeBrowsersWithNBIntegration,
+            boolean includeIDEGlobalBrowserOption) {
+        List<BrowserWrapper> browsers = new ArrayList<BrowserWrapper>();
+        int chrome = 200;
+        int chromium = 300;
+        int others = 400;
         for (WebBrowserFactoryDescriptor desc : getFactories(includeSystemDefaultBrowser)) {
-            browsers.add(new WebBrowser(desc));
+            WebBrowser browser = new WebBrowser(desc, false);
+            if (browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
+                browsers.add(new BrowserWrapper(browser, 100));
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) { // NOI18N
+                BrowserWrapper wrapper = new BrowserWrapper(browser, chrome++);
+                browsers.add(wrapper);
+                if (includeBrowsersWithNBIntegration) {
+                    WebBrowser browser2 = new WebBrowser(desc, true);
+                    browsers.add(new BrowserWrapper(browser2, chrome++));
+                }
+            } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) { // NOI18N
+                BrowserWrapper wrapper = new BrowserWrapper(browser, chromium++);
+                browsers.add(wrapper);
+                if (includeBrowsersWithNBIntegration) {
+                    WebBrowser browser2 = new WebBrowser(desc, true);
+                    browsers.add(new BrowserWrapper(browser2, chromium++));
+                }
+            } else {
+                browsers.add(new BrowserWrapper(browser, others++));
+            }
+        }
+        Collections.sort(browsers, new Comparator<BrowserWrapper>() {
+            @Override
+            public int compare(BrowserWrapper o1, BrowserWrapper o2) {
+                return o1.getOrder() - o2.getOrder();
+            }
+        });
+        List<WebBrowser> result = new ArrayList<WebBrowser>();
+        if (includeIDEGlobalBrowserOption) {
+            result.add(createIDEGlobalDelegate());
+        }
+        for (BrowserWrapper bw : browsers) {
+            result.add(bw.getBrowser());
+        }
+        return result;
+    }
+
+
+    @NbBundle.Messages({
+        "WebBrowsers.idebrowser=IDE's default browser"
+    })
+    private WebBrowser createIDEGlobalDelegate() {
+        WebBrowser ideBrowser = getPreferred();
+        return new WebBrowser(new WebBrowserFactoryDescriptor(
+                ideBrowser.getFactoryDesc(), DEFAULT, Bundle.WebBrowsers_idebrowser()), false);
+    }
+
+    private List<WebBrowser> getUnsortedBrowsers(boolean includeSystemDefaultBrowser, 
+            boolean includeBrowsersWithNBIntegration,
+            boolean includeIDEGlobalBrowserOption) {
+        List<WebBrowser> browsers = new ArrayList<WebBrowser>();
+        if (includeIDEGlobalBrowserOption) {
+            browsers.add(createIDEGlobalDelegate());
+        }
+        for (WebBrowserFactoryDescriptor desc : getFactories(includeSystemDefaultBrowser)) {
+            WebBrowser browser = new WebBrowser(desc, false);
+            browsers.add(browser);
+            if (includeBrowsersWithNBIntegration && (
+                    browser.getBrowserFamily() == BrowserFamilyId.CHROME ||
+                    browser.getId().endsWith("ChromeBrowser") ||
+                    browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM ||
+                    browser.getId().endsWith("ChromiumBrowser"))) { // NOI18N
+                browsers.add(new WebBrowser(desc, true));
+            }
         }
         return browsers;
     }
@@ -252,4 +336,30 @@ public final class WebBrowsers {
         return browsers;
     }
     
+    /**
+     * Wrapper class for {@link WebBrowser}.
+     * <p>
+     * This class is thread-safe.
+     */
+    private static final class BrowserWrapper {
+
+        private final WebBrowser browser;
+        private final int order;
+
+        public BrowserWrapper(WebBrowser browser, int order) {
+            this.browser = browser;
+            this.order = order;
+        }
+
+        public WebBrowser getBrowser() {
+            return browser;
+        }
+
+        int getOrder() {
+            return order;
+        }
+
+    }
+
+
 }

@@ -79,9 +79,9 @@ public class ClientProjectUtilities {
     
     public static String getProperty(Project p, String key) {
         ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
-        if (!(provider.getActiveConfiguration() instanceof ClientProjectConfigurationImpl))
+        if (!(provider.getActiveConfiguration() instanceof MobileConfigurationImpl))
             return null;
-        ClientProjectConfigurationImpl activeConfiguration = (ClientProjectConfigurationImpl) provider.getActiveConfiguration();
+        MobileConfigurationImpl activeConfiguration = (MobileConfigurationImpl) provider.getActiveConfiguration();
         return activeConfiguration.getProperty(key);
     }
 }
