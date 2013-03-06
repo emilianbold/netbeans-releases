@@ -63,7 +63,7 @@ public class Css3ParserLessTest extends CssTestBase {
     protected void tearDown() throws Exception {
         setPlainSource();
     }
-    
+
     public void testAllANTLRRulesHaveNodeTypes() {
         for (String rule : Css3Parser.ruleNames) {
             if (!rule.startsWith("synpred") && !rule.toLowerCase().endsWith("predicate")) {
@@ -434,8 +434,8 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
-     //like normal css import, but the ref. file doesn't need to have an extension,
+
+    //like normal css import, but the ref. file doesn't need to have an extension,
     //there are also some rules regarding the naming convention, but these
     //are covered by semantic analysis, not parsing
     public void testImport() {
@@ -448,7 +448,7 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testLineComment() {
         String source =
                 ".funky {\n"
@@ -461,10 +461,25 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
-     public void testMixinCallInStylesheet() {
+
+    public void testMixinCallInStylesheet() {
         String source =
                 ".firefox-message(\".header\");\n";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testAmpProblem_fails() {
+        String source =
+                ".clazz {\n"
+                + "    &.position#{$i} {\n"
+                + "    left: ($i * -910px); \n"
+                + "}\n"
+                + "}";
 
         CssParserResult result = TestUtil.parse(source);
 
