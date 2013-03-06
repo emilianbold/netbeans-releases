@@ -59,7 +59,8 @@ public final class DelayScanRegistry {
     private final WeakHashMap<RequestProcessor.Task, DelayedScan> registry;
     private static DelayScanRegistry instance;
     private static int MAX_WAITING_TIME = 180000; // wait max 3 mins
-    private static int WAITING_PERIOD = 5000;
+    private static int WAITING_PERIOD = 10000;
+    private static final boolean BLOCK_INDEFINITELY = "true".equals(System.getProperty("versioning.delayscan.nolimit", "false")); //NOI18N
 
     public static synchronized DelayScanRegistry getInstance() {
         if (instance == null) {
@@ -92,13 +93,11 @@ public final class DelayScanRegistry {
             }
         }
         if (IndexingBridge.getInstance().isIndexingInProgress()
-                && scan.waitingLoops * WAITING_PERIOD < MAX_WAITING_TIME) {
+                && (BLOCK_INDEFINITELY || scan.waitingLoops * WAITING_PERIOD < MAX_WAITING_TIME)) {
             // do not steal disk from openning projects and indexing tasks
-            boolean asserts = false;
-            assert asserts = true;
-            Level level = ++scan.waitingLoops < 20 || !asserts ? Level.FINE : Level.INFO;
-            logger.log(level, logMessagePrefix + ": Scanning in progress, trying again in " + WAITING_PERIOD + "ms"); //NOI18N
-            task.schedule(WAITING_PERIOD); // try again in 5 seconds
+            Level level = ++scan.waitingLoops < 10 ? Level.FINE : Level.INFO;
+            logger.log(level, "{0}: Scanning in progress, trying again in {1}ms", new Object[]{logMessagePrefix, WAITING_PERIOD}); //NOI18N
+            task.schedule(WAITING_PERIOD); // try again later
             rescheduled = true;
         } else {
             scan.waitingLoops = 0;
