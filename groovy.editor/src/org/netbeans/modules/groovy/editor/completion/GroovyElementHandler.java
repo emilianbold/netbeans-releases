@@ -81,7 +81,7 @@ public final class GroovyElementHandler {
 
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
-    public Map<MethodSignature, ? extends CompletionItem> getMethods(GroovyIndex index, String className,
+    public Map<MethodSignature, CompletionItem> getMethods(GroovyIndex index, String className,
             String prefix, int anchor, boolean emphasise, Set<AccessLevel> levels, boolean nameOnly) {
 
         if (index == null) {
@@ -135,7 +135,7 @@ public final class GroovyElementHandler {
         return result;
     }
 
-    public Map<FieldSignature, ? extends CompletionItem> getFields(GroovyIndex index, String className,
+    public Map<FieldSignature, CompletionItem> getFields(GroovyIndex index, String className,
             String prefix, int anchor, boolean emphasise) {
 
         if (index == null) {
@@ -162,7 +162,7 @@ public final class GroovyElementHandler {
 
         LOGGER.log(Level.FINEST, "Found this number of fields : {0} ", fields.size());
 
-        Map<FieldSignature, CompletionItem.JavaFieldItem> result = new HashMap<FieldSignature, CompletionItem.JavaFieldItem>();
+        Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
         for (IndexedField indexedField : fields) {
             LOGGER.log(Level.FINEST, "field from index : {0} ", indexedField.getName());
 
