@@ -58,6 +58,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
@@ -65,6 +66,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -122,21 +124,28 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         emTSR.setRelatedEditMediator( emSR );
         this.sourceLevel.setEditable(false);
         this.sourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);
-        this.sourceLevel.setRenderer(uiProperties.JAVAC_SOURCE_RENDERER);        
+        this.sourceLevel.setRenderer(uiProperties.JAVAC_SOURCE_RENDERER);
         uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener () {
             public void intervalAdded(ListDataEvent e) {
                 enableSourceLevel ();
+                enableProfiles();
             }
 
             public void intervalRemoved(ListDataEvent e) {
                 enableSourceLevel ();
+                enableProfiles();
             }
 
             public void contentsChanged(ListDataEvent e) {
                 enableSourceLevel ();
+                enableProfiles();
             }                                    
         });
+        this.profile.setEditable(false);
+        this.profile.setModel(uiProperties.JAVAC_PROFILE_MODEL);
+        this.profile.setRenderer(uiProperties.JAVAC_PROFILE_RENDERER);
         enableSourceLevel ();
+        enableProfiles();
         this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(J2SEProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
             this.originalEncoding = Charset.defaultCharset().name();
@@ -245,6 +254,15 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private void enableSourceLevel () {
         this.sourceLevel.setEnabled(sourceLevel.getItemCount()>0);
     }
+
+    private void enableProfiles() {
+        final Object si = this.sourceLevel.getSelectedItem();
+        final boolean pe = si != null &&
+              PlatformUiSupport.getSourceLevel(si) != null &&
+              new SpecificationVersion("1.8").compareTo(PlatformUiSupport.getSourceLevel(si)) <= 0; //NOI18N
+        this.profile.setEnabled(pe);
+        this.jLabel6.setEnabled(pe);
+    }
     
     private static class ResizableRowHeightTable extends JTable {
 
@@ -339,6 +357,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jLabel5 = new javax.swing.JLabel();
         encoding = new javax.swing.JComboBox();
         jPanel2 = new javax.swing.JPanel();
+        jLabel6 = new javax.swing.JLabel();
+        profile = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -610,6 +630,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel1.add(includeExcludeButton, gridBagConstraints);
         includeExcludeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_Include")); // NOI18N
@@ -618,7 +639,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_Encoding")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -628,17 +649,40 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         encoding.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         jPanel1.add(encoding, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jPanel2, gridBagConstraints);
+
+        jLabel6.setLabelFor(profile);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Profile")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 12);
+        jPanel1.add(jLabel6, gridBagConstraints);
+        jLabel6.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Profile")); // NOI18N
+
+        profile.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel1.add(profile, gridBagConstraints);
+        profile.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AN_Profile")); // NOI18N
+        profile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_Profile")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -675,10 +719,12 @@ private void includeExcludeButtonActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JComboBox profile;
     private javax.swing.JTextField projectLocation;
     private javax.swing.JButton removeSourceRoot;
     private javax.swing.JButton removeTestRoot;

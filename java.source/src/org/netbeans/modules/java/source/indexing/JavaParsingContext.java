@@ -90,7 +90,7 @@ final class JavaParsingContext {
     private final boolean rootNotNeeded;    
     private final ClasspathInfo cpInfo;
     private final ClassIndexImpl uq;
-    private String sourceLevel;
+    private SourceLevelQuery.Result sourceLevel;
     private boolean sourceLevelInitialized;
     private JavaFileFilterImplementation filter;
     private boolean filterInitialized;
@@ -156,11 +156,14 @@ final class JavaParsingContext {
     
     @CheckForNull
     String getSourceLevel() {
-        if (!sourceLevelInitialized) {
-            sourceLevel = rootNotNeeded ? null : SourceLevelQuery.getSourceLevel(ctx.getRoot());
-            sourceLevelInitialized = true;
-        }
-        return sourceLevel;
+        final SourceLevelQuery.Result sl = initSourceLevel();
+        return sl == null ? null : sl.getSourceLevel();
+    }
+
+    @CheckForNull
+    String getProfile() {
+        final SourceLevelQuery.Result sl = initSourceLevel();
+        return sl == null ? null : sl.getProfile();
     }
     
     @CheckForNull
@@ -298,6 +301,14 @@ final class JavaParsingContext {
             jt.getTypes(),
             JavacTrees.instance(jt.getContext()),
             JavaSourceAccessor.getINSTANCE().createElementUtilities(jt));
+    }
+
+    private SourceLevelQuery.Result initSourceLevel() {
+        if (!sourceLevelInitialized) {
+            sourceLevel = rootNotNeeded ? null : SourceLevelQuery.getSourceLevel2(ctx.getRoot());
+            sourceLevelInitialized = true;
+        }
+        return sourceLevel;
     }
 
     private static void registerVirtualSources(final ClasspathInfo cpInfo, final Collection<? extends CompileTuple> virtualSources) {
