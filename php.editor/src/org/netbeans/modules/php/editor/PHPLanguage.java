@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -91,7 +93,8 @@ import org.openide.windows.TopComponent;
  * @author Petr Pisl
  */
 @LanguageRegistration(mimeType=PHP_MIME_TYPE, useMultiview=true)
-@PathRecognizerRegistration(mimeTypes=PHP_MIME_TYPE, sourcePathIds=PhpSourcePath.SOURCE_CP, libraryPathIds=PhpSourcePath.BOOT_CP, binaryLibraryPathIds={})
+@PathRecognizerRegistration(mimeTypes=PHP_MIME_TYPE, sourcePathIds=PhpSourcePath.SOURCE_CP,
+        libraryPathIds={PhpSourcePath.BOOT_CP, PhpSourcePath.PROJECT_BOOT_CP}, binaryLibraryPathIds={})
 @ActionReferences({
     @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.OpenAction"), path = ACTIONS, position = 100),
     @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.CutAction"), path = ACTIONS, position = 300, separatorBefore = 200),
@@ -232,7 +235,7 @@ public class PHPLanguage extends DefaultLanguageConfig {
 
     @Override
     public Set<String> getLibraryPathIds() {
-        return Collections.singleton(PhpSourcePath.BOOT_CP);
+        return new HashSet<String>(Arrays.asList(PhpSourcePath.BOOT_CP, PhpSourcePath.PROJECT_BOOT_CP));
     }
 
     @Override
