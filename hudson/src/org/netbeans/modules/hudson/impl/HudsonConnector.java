@@ -141,7 +141,7 @@ public class HudsonConnector extends BuilderConnector {
         // Parse jobs and return them
         Collection<ViewData> viewsData = getViewData(docInstance, instanceUrl);
         Collection<FolderData> foldersData = new ArrayList<FolderData>();
-        Collection<JobData> jobsData = getJobsData(docInstance, instanceUrl, viewsData, foldersData);
+        Collection<JobData> jobsData = getJobsData(docInstance, instanceUrl, viewsData, foldersData, null);
         return new InstanceData(jobsData, viewsData, foldersData);
     }
 
@@ -160,7 +160,7 @@ public class HudsonConnector extends BuilderConnector {
         // Clear cache
         cache.clear();
         Collection<FolderData> foldersData = new ArrayList<FolderData>();
-        Collection<JobData> jobsData = getJobsData(docInstance, parentFolder.getUrl(), Collections.<ViewData>emptySet(), foldersData);
+        Collection<JobData> jobsData = getJobsData(docInstance, parentFolder.getUrl(), Collections.<ViewData>emptySet(), foldersData, parentFolder);
         return new InstanceData(jobsData, Collections.<ViewData>emptySet(), foldersData);
     }
 
@@ -324,7 +324,8 @@ public class HudsonConnector extends BuilderConnector {
     }
     
     private Collection<JobData> getJobsData(Document doc, String baseUrl,
-            Collection<ViewData> viewsData, Collection<FolderData> foldersData) {
+            Collection<ViewData> viewsData, Collection<FolderData> foldersData,
+            HudsonFolder parentFolder) {
         Collection<JobData> jobs = new ArrayList<JobData>();
         
         NodeList nodes = doc.getDocumentElement().getChildNodes();
@@ -348,8 +349,11 @@ public class HudsonConnector extends BuilderConnector {
                 }
                 String nodeName = d.getNodeName();
                 if (nodeName.equals(XML_API_NAME_ELEMENT)) {
-                    jd.setJobName(d.getFirstChild().getTextContent());
-                    fd.setName(d.getFirstChild().getTextContent());
+                    String folder = parentFolder == null
+                            ? "" : parentFolder.getName() + "/";        //NOI18N
+                    String name = folder + d.getFirstChild().getTextContent();
+                    jd.setJobName(name);
+                    fd.setName(name);
                 } else if (nodeName.equals(XML_API_URL_ELEMENT)) {
                     String u = normalizeUrl(baseUrl, d.getFirstChild().getTextContent(), "job/[^/]+/"); // NOI18N
                     jd.setJobUrl(u);

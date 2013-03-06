@@ -155,7 +155,7 @@ public class OptionsDisplayerImpl {
         dialog.toFront();
     }
 
-    public void showOptionsDialog (String categoryID, String subpath) {
+    public void showOptionsDialog (String categoryID, String subpath, CategoryModel categoryInstance) {
         log.fine("showOptionsDialog(" + categoryID + ", " + subpath+ ")");
         if (isOpen()) {
             // dialog already opened
@@ -172,7 +172,7 @@ public class OptionsDisplayerImpl {
 
         OptionsPanel optionsPanel = null;
         if (descriptor == null) {
-            optionsPanel = categoryID == null ? new OptionsPanel () : new OptionsPanel(categoryID);            
+            optionsPanel = categoryID == null ? new OptionsPanel (categoryInstance) : new OptionsPanel(categoryID, categoryInstance);
             bOK = (JButton) loc(new JButton(), "CTL_OK");//NOI18N
             bOK.getAccessibleContext().setAccessibleDescription(loc("ACS_OKButton"));//NOI18N
             bAPPLY = (JButton) loc(new JButton(), "CTL_APPLY");//NOI18N
@@ -210,7 +210,8 @@ public class OptionsDisplayerImpl {
             }
             log.fine("Create new Options Dialog"); //NOI18N
         } else {
-            optionsPanel = (OptionsPanel) descriptor.getMessage ();            
+            optionsPanel = (OptionsPanel) descriptor.getMessage ();
+	    optionsPanel.setCategoryInstance(categoryInstance);
             //TODO: 
             //just in case that switched from advanced
             optionsPanel.update();
