@@ -1067,6 +1067,47 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void test226421a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    static String hashOfToString(Object p) {\n" +
+                       "        try {\n" +
+                       "            return p.toString();\n" +
+                       "        } catch (RuntimeException e) {\n" +
+                       "            if (p != null) {\n" +
+                       "                System.err.println();\n" +
+                       "            }\n" +
+                       "            throw e;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test226421b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    static String hashOfToString(Object p) {\n" +
+                       "        if (p == null) throw new IllegalStateException();\n" +
+                       "        try {\n" +
+                       "            return p.toString();\n" +
+                       "        } catch (RuntimeException e) {\n" +
+                       "            if (p != null) {\n" +
+                       "                System.err.println();\n" +
+                       "            }\n" +
+                       "            throw e;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings("7:16-7:25:verifier:ERR_NotNull");
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
