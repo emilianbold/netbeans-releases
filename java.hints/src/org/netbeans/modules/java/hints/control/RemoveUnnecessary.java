@@ -47,11 +47,14 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
@@ -72,23 +75,31 @@ import org.openide.util.NbBundle.Messages;
     "DN_RemoveUnnecessaryContinue=Remove Unnecessary Continue Statement",
     "DESC_RemoveUnnecessaryContinue=Remove Unnecessary Continue Statement",
     "ERR_UnnecessaryContinueStatement=Unnecessary continue statement",
-    "FIX_UnnecessaryContinueStatement=Remove unnecessary continue statement"
+    "FIX_UnnecessaryContinueStatement=Remove unnecessary continue statement",
+    "DN_RemoveUnnecessaryContinueLabel=Remove Unnecessary Label in continue",
+    "DESC_RemoveUnnecessaryContinueLabel=Remove Unnecessary Label in continue statement",
+    "ERR_UnnecessaryContinueStatementLabel=Unnecessary label in continue",
+    "FIX_UnnecessaryContinueStatementLabel=Remove unnecessary label from continue",
+    "DN_RemoveUnnecessaryBreakLabel=Remove Unnecessary Label in break",
+    "DESC_RemoveUnnecessaryBreakLabel=Remove Unnecessary Label in break statement",
+    "ERR_UnnecessaryBreakStatementLabel=Unnecessary label in break",
+    "FIX_UnnecessaryBreakStatementLabel=Remove unnecessary label from break"
 })
 public class RemoveUnnecessary {
 
     @Hint(id="org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", displayName = "#DN_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", description = "#DESC_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", category="general", suppressWarnings="UnnecessaryReturnStatement")
     @TriggerPattern("return $val$;")
     public static ErrorDescription unnecessaryReturn(HintContext ctx) {
-        return unnecessaryReturnContinue(ctx, true, "UnnecessaryReturnStatement");
+        return unnecessaryReturnContinue(ctx, null, "UnnecessaryReturnStatement");
     }
     
     @Hint(displayName="#DN_RemoveUnnecessaryContinue", description="#DESC_RemoveUnnecessaryContinue", category="general", suppressWarnings="UnnecessaryContinue")
     @TriggerPattern("continue $val$;")
     public static ErrorDescription unnecessaryContinue(HintContext ctx) {
-        return unnecessaryReturnContinue(ctx, false, "UnnecessaryContinueStatement");
+        return unnecessaryReturnContinue(ctx, ctx.getInfo().getTreeUtilities().getBreakContinueTarget(ctx.getPath()), "UnnecessaryContinueStatement");
     }
     
-    private static ErrorDescription unnecessaryReturnContinue(HintContext ctx, boolean ret, String key) {
+    private static ErrorDescription unnecessaryReturnContinue(HintContext ctx, StatementTree targetLoop, String key) {
         TreePath tp = ctx.getPath();
 
         OUTER: while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
@@ -99,7 +110,7 @@ public class RemoveUnnecessary {
 
             switch (tp.getLeaf().getKind()) {
                 case METHOD:
-                    if (!ret) return null; //TODO: can happen?
+                    if (targetLoop != null) return null; //TODO: unnecessary continue - can happen?
                     MethodTree mt = (MethodTree) tp.getLeaf();
 
                     if (mt.getReturnType() == null) {
@@ -134,7 +145,7 @@ public class RemoveUnnecessary {
                 case ENHANCED_FOR_LOOP:
                 case FOR_LOOP:
                 case WHILE_LOOP:
-                    if (ret) return null;
+                    if (tp.getLeaf() != targetLoop) return null;
                     else break OUTER;
                 case TRY:
                     if (((TryTree) tp.getLeaf()).getFinallyBlock() == current) return null;
@@ -182,4 +193,34 @@ public class RemoveUnnecessary {
         
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, JavaFixUtilities.removeFromParent(ctx, fixDisplayName, ctx.getPath()));
     }
+
+    @Hint(displayName="#DN_RemoveUnnecessaryContinueLabel", description="#DESC_RemoveUnnecessaryContinueLabel", category="general", suppressWarnings="UnnecessaryLabelOnContinueStatement")
+    @TriggerPattern("continue $val;")
+    public static ErrorDescription unnecessaryContinueLabel(HintContext ctx) {
+        return unnecessaryLabel(ctx, false);
+    }
+    
+    @Hint(displayName="#DN_RemoveUnnecessaryBreakLabel", description="#DESC_RemoveUnnecessaryBreakLabel", category="general", suppressWarnings="UnnecessaryLabelOnBreakStatement")
+    @TriggerPattern("break $val;")
+    public static ErrorDescription unnecessaryBreakLabel(HintContext ctx) {
+        return unnecessaryLabel(ctx, true);
+    }
+    
+    private static ErrorDescription unnecessaryLabel(HintContext ctx, boolean brk) {
+        TreePath loop = ctx.getPath();
+        
+        while (loop != null && !LOOP_KINDS.contains(loop.getLeaf().getKind()) && (!brk || loop.getLeaf().getKind() != Kind.SWITCH)) {
+            loop = loop.getParentPath();
+        }
+        
+        if (loop == null) return null;
+        
+        if (ctx.getInfo().getTreeUtilities().getBreakContinueTarget(ctx.getPath()) != loop.getParentPath().getLeaf()) return null;
+        
+        Fix fix = JavaFixUtilities.rewriteFix(ctx, brk ? Bundle.FIX_UnnecessaryBreakStatementLabel() : Bundle.FIX_UnnecessaryContinueStatementLabel(), ctx.getPath(), brk ? "break;" : "continue;");
+        
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), brk ? Bundle.ERR_UnnecessaryBreakStatementLabel() : Bundle.ERR_UnnecessaryContinueStatementLabel(), fix);
+    }
+    
+    private static final Set<Kind> LOOP_KINDS = EnumSet.of(Kind.DO_WHILE_LOOP, Kind.ENHANCED_FOR_LOOP, Kind.FOR_LOOP, Kind.WHILE_LOOP);
 }
