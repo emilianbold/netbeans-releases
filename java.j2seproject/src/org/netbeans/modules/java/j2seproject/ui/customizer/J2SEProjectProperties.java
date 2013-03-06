@@ -147,6 +147,7 @@ public class J2SEProjectProperties {
     public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
     public static final String JAVAC_TARGET = "javac.target"; // NOI18N
+    public static final String JAVAC_PROFILE = "javac.profile"; // NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N
     public static final String JAVAC_COMPILER_ARG = "javac.compilerargs";    //NOI18N
@@ -195,6 +196,7 @@ public class J2SEProjectProperties {
     DefaultTableModel SOURCE_ROOTS_MODEL;
     DefaultTableModel TEST_ROOTS_MODEL;
     ComboBoxModel JAVAC_SOURCE_MODEL;
+    ComboBoxModel JAVAC_PROFILE_MODEL;
      
     // CustomizerLibraries
     DefaultListModel JAVAC_CLASSPATH_MODEL;
@@ -207,6 +209,7 @@ public class J2SEProjectProperties {
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
     ListCellRenderer JAVAC_SOURCE_RENDERER;
+    ListCellRenderer JAVAC_PROFILE_RENDERER;
     Document SHARED_LIBRARIES_MODEL;
     
     // CustomizerCompile
@@ -325,6 +328,9 @@ public class J2SEProjectProperties {
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET));
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
+        JAVAC_PROFILE_MODEL = PlatformUiSupport.createProfileComboBoxModel(JAVAC_SOURCE_MODEL, evaluator.getProperty(JAVAC_PROFILE), null);
+        JAVAC_PROFILE_RENDERER = PlatformUiSupport.createProfileListCellRenderer();
+
         SHARED_LIBRARIES_MODEL = new PlainDocument(); 
         try {
             SHARED_LIBRARIES_MODEL.insertString(0, project.getAntProjectHelper().getLibrariesLocation(), null);
@@ -578,6 +584,7 @@ public class J2SEProjectProperties {
                 J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,
                 PLATFORM_MODEL.getSelectedItem(),
                 JAVAC_SOURCE_MODEL.getSelectedItem(),
+                JAVAC_PROFILE_MODEL.getSelectedItem(),
                 !isFXProject);
                                 
         // Handle other special cases

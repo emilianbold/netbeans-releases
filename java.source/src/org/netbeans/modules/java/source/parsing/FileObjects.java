@@ -135,11 +135,11 @@ public class FileObjects {
     public static final String RX    = "rx";   //NOI18N
     public static final String RAPT  = "rapt"; //NOI18N
     public static final String RES   = "res";  //NOI18N
+    public static final char NBFS_SEPARATOR_CHAR = '/';  //NOI18N
 
     public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
 
-    private static final String encodingName = new OutputStreamWriter(new ByteArrayOutputStream()).getEncoding();
-    private static final char NBFS_SEPARATOR_CHAR = '/';  //NOI18N
+    private static final String encodingName = new OutputStreamWriter(new ByteArrayOutputStream()).getEncoding();    
     //todo: If more clients than btrace will need this, create a SPI.
     private static final Set<String> javaFlavorExt = new HashSet<String>();
     static {
@@ -193,9 +193,34 @@ public class FileObjects {
      * @param offset the start of zip entry in the zip file
      * @return {@link JavaFileObject}, never returns null
      */
-    public static InferableJavaFileObject zipFileObject(ZipFile zipFile, String folder, String baseName, long mtime) {
+    public static InferableJavaFileObject zipFileObject(
+            @NonNull final ZipFile zipFile,
+            @NonNull final String folder,
+            @NonNull final String baseName,
+            final long mtime) {
+        return zipFileObject(zipFile, null, folder, baseName, mtime);
+    }
+
+
+    /**
+     * Creates {@link JavaFileObject} for a file inside an {@link ZipFile}. The returned {@link JavaFileObject}
+     * uses an opened ZipFile. It's a fastes way to read the archive file content, but the opened {@link ZipFile}s
+     * cannot be modified. So, this {@link JavaFileObject}s can be used only for platform classpath.
+     * @param zip an archive file
+     * @param pathToRootInArchive  relative path to root in the archive
+     * @param folder in the archive
+     * @param name the base (simple name)
+     * @param offset the start of zip entry in the zip file
+     * @return {@link JavaFileObject}, never returns null
+     */
+    public static InferableJavaFileObject zipFileObject(
+            @NonNull final ZipFile zipFile,
+            @NullAllowed final String pathToRootInArchive,
+            @NonNull final String folder,
+            @NonNull final String baseName,
+            final long mtime) {
         assert zipFile != null;
-        return new CachedZipFileObject (zipFile, folder, baseName, mtime);
+        return new CachedZipFileObject (zipFile, pathToRootInArchive, folder, baseName, mtime);
     }
             
     /**
@@ -1114,14 +1139,34 @@ public class FileObjects {
         protected final long mtime;
         protected final String resName;
         
-        public ZipFileBase (final String folderName, final String baseName, long mtime) {
+        public ZipFileBase (
+                @NullAllowed final String pathToRootInArchive,
+                @NonNull final String folderName,
+                @NonNull final String baseName,
+                final long mtime) {
             super (convertFolder2Package(folderName),baseName);
+            assert pathToRootInArchive == null || pathToRootInArchive.charAt(pathToRootInArchive.length()-1) == NBFS_SEPARATOR_CHAR;
             this.mtime = mtime;
             if (folderName.length() == 0) {
-                this.resName = baseName;
-            }
-            else {
-                StringBuilder rn = new StringBuilder (folderName);
+                if (pathToRootInArchive != null) {
+                    final StringBuilder rn = new StringBuilder(
+                            pathToRootInArchive.length() + baseName.length());
+                    rn.append(pathToRootInArchive);
+                    rn.append(baseName);
+                    resName = rn.toString();
+                } else {
+                    this.resName = baseName;
+                }
+            } else {
+                final int pathToRootLen = pathToRootInArchive == null ?
+                        0 :
+                        pathToRootInArchive.length();
+                final StringBuilder rn = new StringBuilder (
+                        pathToRootLen + folderName.length() + 1 + baseName.length());
+                if (pathToRootInArchive != null) {
+                    rn.append(pathToRootInArchive);
+                }
+                rn.append(folderName);
                 rn.append(NBFS_SEPARATOR_CHAR);
                 rn.append(baseName);
                 this.resName = rn.toString();
@@ -1246,7 +1291,7 @@ public class FileObjects {
         
 
         ZipFileObject(final File archiveFile, final String folderName, final String baseName, long mtime) {
-            super (folderName,baseName,mtime);
+            super (null, folderName,baseName,mtime);
             assert archiveFile != null : "archiveFile == null";   //NOI18N
 	    this.archiveFile = archiveFile;
             
@@ -1378,12 +1423,17 @@ public class FileObjects {
     @Trusted
     private static class CachedZipFileObject extends ZipFileBase {
         
-        private ZipFile zipFile;
+        private final ZipFile zipFile;
         
-        CachedZipFileObject(final ZipFile zipFile, final String folderName, final String baseName, long mtime) {
-            super (folderName,baseName,mtime);
+        CachedZipFileObject(
+                @NonNull final ZipFile zipFile,
+                @NullAllowed final String pathToRootInArchive,
+                @NonNull final String folderName,
+                @NonNull final String baseName,
+                final long mtime) {
+            super (pathToRootInArchive, folderName, baseName, mtime);
             assert zipFile != null : "archiveFile == null";   //NOI18N
-	    this.zipFile = zipFile;            
+	    this.zipFile = zipFile;
 	}
         
         @Override
