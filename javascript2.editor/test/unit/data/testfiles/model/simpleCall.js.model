@@ -1,0 +1,14 @@
+simpleCall [ANONYMOUS: false, DECLARED: true - simpleCall, MODIFIERS: PUBLIC, FILE]
+# RETURN TYPES
+undefined
+# PROPERTIES
+Backbone : Backbone [ANONYMOUS: false, DECLARED: false - Backbone, MODIFIERS: PUBLIC, OBJECT]
+         # PROPERTIES
+         Collection : Collection [ANONYMOUS: false, DECLARED: false - Collection, MODIFIERS: PUBLIC, OBJECT]
+                    # PROPERTIES
+                    extend : extend [ANONYMOUS: false, DECLARED: false - extend, MODIFIERS: PUBLIC, METHOD]
+                           # PROPERTIES
+                           arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+window   : window [ANONYMOUS: false, DECLARED: false - window, MODIFIERS: PUBLIC, OBJECT]
+         # PROPERTIES
+         ManufacturerList : ManufacturerList [ANONYMOUS: false, DECLARED: true - ManufacturerList, MODIFIERS: PUBLIC, PROPERTY]

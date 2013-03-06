@@ -1,0 +1,59 @@
+jQueryFragment01 [ANONYMOUS: false, DECLARED: true - jQueryFragment01, MODIFIERS: PUBLIC, FILE]
+# RETURN TYPES
+undefined
+# PROPERTIES
+_L2            : _L2 [ANONYMOUS: true, DECLARED: true - _L2, MODIFIERS: PUBLIC, FUNCTION]
+               # RETURN TYPES
+               undefined
+               # PROPERTIES
+               arguments   : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+               functionVar : functionVar [ANONYMOUS: false, DECLARED: true - functionVar, MODIFIERS: PRIVATE, VARIABLE]
+               jQuery      : jQuery [ANONYMOUS: false, DECLARED: true - jQuery, MODIFIERS: PRIVATE, OBJECT_LITERAL]
+                           # PROPERTIES
+                           event : event [ANONYMOUS: false, DECLARED: true - event, MODIFIERS: PUBLIC, OBJECT_LITERAL]
+                                 # PROPERTIES
+                                 customEvent : customEvent [ANONYMOUS: false, DECLARED: true - customEvent, MODIFIERS: PUBLIC, OBJECT_LITERAL]
+                                             # PROPERTIES
+                                             changeData : changeData [ANONYMOUS: false, DECLARED: true - changeData, MODIFIERS: PUBLIC, PROPERTY]
+                                             class      : class [ANONYMOUS: false, DECLARED: true - class, MODIFIERS: PUBLIC, OBJECT_LITERAL]
+                                                        # PROPERTIES
+                                                        name : name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PROPERTY]
+                                             getData    : getData [ANONYMOUS: false, DECLARED: true - getData, MODIFIERS: PUBLIC, PROPERTY]
+                                             martin     : martin [ANONYMOUS: false, DECLARED: true - martin, MODIFIERS: PUBLIC, OBJECT_LITERAL]
+                                                        # PROPERTIES
+                                                        address : address [ANONYMOUS: false, DECLARED: true - address, MODIFIERS: PUBLIC, PROPERTY]
+                                             name       : name [ANONYMOUS: false, DECLARED: false - name, MODIFIERS: PUBLIC, PROPERTY]
+                                             petr       : petr [ANONYMOUS: false, DECLARED: true - petr, MODIFIERS: PUBLIC, PROPERTY]
+                                             setData    : setData [ANONYMOUS: false, DECLARED: true - setData, MODIFIERS: PUBLIC, PROPERTY]
+                                             test       : test [ANONYMOUS: false, DECLARED: true - test, MODIFIERS: PUBLIC, METHOD]
+                                                        # RETURN TYPES
+                                                        undefined
+                                                        # PROPERTIES
+                                                        arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                 name        : name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PROPERTY]
+formatter      : formatter [ANONYMOUS: false, DECLARED: false - formatter, MODIFIERS: PUBLIC, OBJECT]
+               # PROPERTIES
+               addIndent    : addIndent [ANONYMOUS: false, DECLARED: false - addIndent, MODIFIERS: PUBLIC, METHOD]
+                            # PARAMETERS
+                            param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                            # PROPERTIES
+                            arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+               println      : println [ANONYMOUS: false, DECLARED: false - println, MODIFIERS: PUBLIC, METHOD]
+                            # PARAMETERS
+                            param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                            # PROPERTIES
+                            arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+               removeIndent : removeIndent [ANONYMOUS: false, DECLARED: false - removeIndent, MODIFIERS: PUBLIC, METHOD]
+                            # PARAMETERS
+                            param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                            # PROPERTIES
+                            arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+globalProperty : globalProperty [ANONYMOUS: false, DECLARED: true - globalProperty, MODIFIERS: PUBLIC, VARIABLE]
+jQuery         : jQuery [ANONYMOUS: false, DECLARED: false - jQuery, MODIFIERS: PUBLIC, OBJECT]
+               # PROPERTIES
+               ajaxStart : ajaxStart [ANONYMOUS: false, DECLARED: false - ajaxStart, MODIFIERS: PUBLIC, METHOD]
+                         # PROPERTIES
+                         addClass  : addClass [ANONYMOUS: false, DECLARED: false - addClass, MODIFIERS: PUBLIC, METHOD]
+                                   # PROPERTIES
+                                   arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                         arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]

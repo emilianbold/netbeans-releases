@@ -1,0 +1,17 @@
+objectNames01 [ANONYMOUS: false, DECLARED: true - objectNames01, MODIFIERS: PUBLIC, FILE]
+# RETURN TYPES
+undefined
+# PROPERTIES
+Ridic : Ridic [ANONYMOUS: false, DECLARED: true - Ridic, MODIFIERS: PUBLIC, CONSTRUCTOR]
+      # RETURN TYPES
+      Ridic
+      # PARAMETERS
+      name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
+      surname [ANONYMOUS: false, DECLARED: true - surname, MODIFIERS: PUBLIC, PARAMETER]
+      # PROPERTIES
+      arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+      getName   : getName [ANONYMOUS: false, DECLARED: true - getName, MODIFIERS: PROTECTED, METHOD]
+                # PROPERTIES
+                arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+      name      : name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PROPERTY]
+      surname   : surname [ANONYMOUS: false, DECLARED: true - surname, MODIFIERS: PUBLIC, PROPERTY]
