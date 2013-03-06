@@ -123,7 +123,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
                             if (line == null) {
                                 break;
                             }
-                            if (line.startsWith("#")) {
+                            if (line.startsWith("#")) { // NOI18N
                                 // comment
                                 if (line.startsWith(AUTO_SIGNATURE)) {
                                     String s = line.substring(AUTO_SIGNATURE.length()).trim();
@@ -196,10 +196,10 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
                 FileObject fo = FileUtil.createData(projectDirectory, PATH_TO_MAPPER);
                 os = new OutputStreamWriter(fo.getOutputStream());
                 os.write(AUTO_SIGNATURE+checksum.getValue());
-                os.write('\n');
+                os.write('\n'); // NOI18N
                 for (MapperEntry entry : mapper) {
-                    os.write(entry.from + "=" + entry.to);
-                    os.write('\n');
+                    os.write(entry.from + "=" + entry.to); // NOI18N
+                    os.write('\n'); // NOI18N
                 }
             } catch (IOException ex) {
                 System.err.println(ex);
