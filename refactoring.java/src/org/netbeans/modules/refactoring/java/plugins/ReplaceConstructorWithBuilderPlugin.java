@@ -74,7 +74,8 @@ import org.openide.util.NbBundle;
  * @author Jan Becicka
  */
 @NbBundle.Messages({"# {0} - ParameterName", "WRN_NODEFAULT=Parameter {0}'s setter is optional but has no default value.",
-"ERR_ReplaceAbstract=Cannot Replace Constructor with Builder in an abstract class."})
+                    "# {0} - ParameterName", "ERR_GenericOptional=Parameter {0} is a generic type, it's setter cannot be optional.",
+                    "ERR_ReplaceAbstract=Cannot Replace Constructor with Builder in an abstract class."})
 public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
  
     private final ReplaceConstructorWithBuilderRefactoring refactoring;
@@ -104,8 +105,20 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
     }
 
     @Override
-    public Problem checkParameters() {
-        return null;
+    protected Problem checkParameters(CompilationController javac) throws IOException {
+        Problem problem = null;
+        javac.toPhase(JavaSource.Phase.RESOLVED);
+        TreePath constrPath = treePathHandle.resolve(javac);
+        TypeElement type = (TypeElement) javac.getTrees().getElement(constrPath.getParentPath());
+        for (Setter setter : refactoring.getSetters()) {
+            if(setter.isOptional()) {
+                TypeMirror parsed = javac.getTreeUtilities().parseType(setter.getType(), type);
+                if(parsed != null && parsed.getKind() == TypeKind.TYPEVAR) {
+                    problem = JavaPluginUtils.chainProblems(problem, new Problem(true, NbBundle.getMessage(ReplaceConstructorWithBuilderPlugin.class, "ERR_GenericOptional", setter.getVarName())));
+                }
+            }
+        }
+        return problem;
     }
 
     @Override
