@@ -932,4 +932,14 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
+    
+    public void testVariableDeclarationWithCommaSeparatedValues() {
+        String source = "$blueprint-font-family: Helvetica Neue, Arial, Helvetica, sans-serif;";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
 }

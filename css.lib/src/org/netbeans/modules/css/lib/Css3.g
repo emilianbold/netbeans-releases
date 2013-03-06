@@ -905,9 +905,9 @@ ws
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
     : 
-        {isLessSource()}? cp_variable ws? COLON ws? cp_expression SEMI    
+        {isLessSource()}? cp_variable ws? COLON ws? cp_variable_value SEMI    
         | 
-        {isScssSource()}? cp_variable ws? COLON ws? cp_expression (SASS_DEFAULT ws?)? SEMI    
+        {isScssSource()}? cp_variable ws? COLON ws? cp_variable_value (SASS_DEFAULT ws?)? SEMI    
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
@@ -917,6 +917,11 @@ cp_variable
         |
         {isScssSource()}? ( SASS_VAR )
 //        SASS_VAR
+    ;
+
+cp_variable_value
+    :
+    cp_expression ( COMMA ws? cp_expression)*     
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR

@@ -409,6 +409,8 @@ public enum NodeType {
     sass_function_name,
     sass_function_return,
     
+    cp_variable_value,
+    
     
     ;
     
