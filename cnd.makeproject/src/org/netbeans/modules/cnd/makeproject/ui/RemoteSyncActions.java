@@ -298,7 +298,10 @@ class RemoteSyncActions {
 
         @Override
         protected boolean enable(Node[] activatedNodes) {
-            boolean isSyncActionsEnabled = Boolean.getBoolean("cnd.remote.sync.project.action");
+            boolean isSyncActionsEnabled = true;
+            if (hasRootNode(activatedNodes)) {
+                isSyncActionsEnabled = Boolean.getBoolean("cnd.remote.sync.project.action");
+            }
             if (!isSyncActionsEnabled) {
                 return false;
             }
@@ -516,5 +519,15 @@ class RemoteSyncActions {
         for (Folder subfolder : folder.getFolders()) {
             gatherFiles(files, subfolder);
         }
+    }
+
+    private static boolean hasRootNode(Node[] activatedNodes) {
+        for (Node node : activatedNodes) {
+            Folder folder = node.getLookup().lookup(Folder.class);
+            if (folder != null && folder.getKind() == Folder.Kind.ROOT) {
+                return true;
+            }
+        }
+        return false;
     }
 }
