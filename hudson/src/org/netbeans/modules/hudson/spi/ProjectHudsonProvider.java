@@ -244,7 +244,20 @@ public abstract class ProjectHudsonProvider {
          * @return the code name of the job on that server; may be null
          */
         public String getJobName() {
-            return jobPath.length > 1 ? jobPath[jobPath.length - 1] : null;
+            if (jobPath.length == 2) {
+                return jobPath[1];
+            } else if (jobPath.length > 2) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 1; i < jobPath.length; i++) {
+                    if (sb.length() > 0) {
+                        sb.append("/");                                 //NOI18N
+                    }
+                    sb.append(jobPath[i]);
+                }
+                return sb.toString();
+            } else {
+                return null;
+            }
         }
 
         /**
