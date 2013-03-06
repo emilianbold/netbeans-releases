@@ -81,7 +81,7 @@ public class GspCompleter extends CompletionHandler {
         tokenSequence.move(offset);
         if (tokenSequence.moveNext() || tokenSequence.movePrevious()) {
             GspTokenId tokenID = tokenSequence.token().id();
-            if (isGroovyContentTag(tokenID)) {
+            if (tokenID.isGroovyContent()) {
                 return true;
             }
 
@@ -91,28 +91,12 @@ public class GspCompleter extends CompletionHandler {
                 // move the caret to the content
                 tokenSequence.movePrevious();
 
-                if (isGroovyContentTag(tokenID)) {
+                if (tokenID.isGroovyContent()) {
                     return true;
                 }
             }
         }
 
-        return false;
-    }
-    
-    /**
-     * Finds out if the parameter is a token representing embedded Groovy content.
-     * Typically that code might be between ${ ..some code.. }
-     *
-     * @param tokenID tokenID we want to check
-     * @return true if the tokenID is Groovy content, false otherwise
-     */
-    private boolean isGroovyContentTag(GspTokenId tokenID) {
-        if (tokenID == GspTokenId.GSTRING_CONTENT
-                || tokenID == GspTokenId.SCRIPTLET_CONTENT
-                || tokenID == GspTokenId.SCRIPTLET_OUTPUT_VALUE_CONTENT) {
-            return true;
-        }
         return false;
     }
     
