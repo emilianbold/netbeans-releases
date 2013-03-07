@@ -1089,14 +1089,14 @@ scss_selector_interpolation_expression
         ( 
             (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
         )
         ( 
             ws?
             (
                 (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
                 |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
             )
         )*
 
