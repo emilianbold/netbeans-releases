@@ -359,7 +359,7 @@ importItem
         IMPORT_SYM ws? resourceIdentifier ws? mediaQueryList SEMI
         |
         //multiple imports in one directive
-        {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier) mediaQueryList SEMI
+        {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier)* mediaQueryList SEMI
     ;
 media
     : MEDIA_SYM ws? 
