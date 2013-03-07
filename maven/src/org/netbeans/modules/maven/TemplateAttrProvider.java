@@ -62,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -92,7 +93,7 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
         Map<String,Object> values = new TreeMap<String,Object>();
         String licensePath = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_LICENSE_PATH, true); //NOI18N
         if (licensePath != null) {
-            File path = FileUtil.normalizeFile(new File(licensePath));
+            File path = FileUtil.normalizeFile(FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), licensePath));
             if (path.exists() && path.isAbsolute()) { //is this necessary? should prevent failed license header inclusion
                 URI uri = Utilities.toURI(path);
                 licensePath = uri.toString();

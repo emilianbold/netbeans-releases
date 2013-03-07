@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,58 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.viewmodel;
+package org.netbeans.modules.bugzilla.issue;
 
+import org.netbeans.modules.bugzilla.*;
+import java.util.logging.Level;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.openide.util.test.MockLookup;
 
 /**
- * Provides display name, icon and tool tip value for some type of objects.
- * Designed to be used with {@link TreeModel}.
  *
- * @author   Jan Jancura
+ * @author tomas
  */
-public interface NodeModel extends Model {
+public class ShowLogActionTest extends NbTestCase implements TestConstants {
 
-    /**
-     * Returns display name for given node.
-     *
-     * @return  display name for given node
-     */
-    public abstract String getDisplayName (Object node)
-    throws UnknownTypeException;
+    public ShowLogActionTest(String arg0) {
+        super(arg0);
+    }
 
-    /**
-     * Returns icon for given node.
-     *
-     * @throws  UnknownTypeException if this NodeModel implementation is not
-     *          able to resolve icon for given node type
-     * @return  icon for given node
-     */
-    public abstract String getIconBase (Object node) 
-    throws UnknownTypeException;
-    
-    /**
-     * Returns tool tip for given node.
-     *
-     * @throws  UnknownTypeException if this NodeModel implementation is not
-     *          able to resolve tool tip for given node type
-     * @return  tool tip for given node
-     */
-    public abstract String getShortDescription (Object node) 
-    throws UnknownTypeException;
+    @Override
+    protected Level logLevel() {
+        return Level.ALL;
+    }
 
-    /** 
-     * Registers given listener.
-     * 
-     * @param l the listener to add
-     */
-    public abstract void addModelListener (ModelListener l);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        MockLookup.setLayersAndInstances();
+        BugtrackingUtil.getBugtrackingConnectors(); // ensure conector
+    }
 
-    /** 
-     * Unregisters given listener.
-     *
-     * @param l the listener to remove
-     */
-    public abstract void removeModelListener (ModelListener l);
+    public void testGetShowLogAction() throws Throwable {
+        assertNotNull(IssuePanel.getShowLogAction());
+    }
+
 }

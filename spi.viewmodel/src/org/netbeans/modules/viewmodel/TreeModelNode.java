@@ -398,13 +398,24 @@ public class TreeModelNode extends AbstractNode {
     
     @Override
     public Action[] getActions (boolean context) {
+        Action[] actions;
         if (context) 
-            return treeModelRoot.getRootNode ().getActions (false);
+            actions = treeModelRoot.getRootNode ().getActions (false);
         try {
-            return filterActionsWhenSorted(model.getActions (object));
+            actions = filterActionsWhenSorted(model.getActions (object));
         } catch (UnknownTypeException e) {
             // NodeActionsProvider is voluntary
-            return new Action [0];
+            actions = new Action [0];
+        }
+        presetActionNodes(actions);
+        return actions;
+    }
+    
+    private void presetActionNodes(Action[] actions) {
+        for (Action a : actions) {
+            if (a instanceof ActionOnPresetNodes) {
+                ((ActionOnPresetNodes) a).addNode(this);
+            }
         }
     }
 
@@ -1214,6 +1225,21 @@ public class TreeModelNode extends AbstractNode {
     public static interface DisableableAction extends Action {
 
         Action createDisableable(PrivilegedAction enabledTest);
+        
+    }
+    
+    /**
+     * An action, that can act on a pre-set set of nodes.
+     */
+    public static interface ActionOnPresetNodes extends Action {
+        
+        /**
+         * Add a node to act on.
+         * The set of nodes is cleared in the next cycle of event dispatch loop.
+         * When no nodes are provided, the TopComponent.getRegistry ().getActivatedNodes () are used.
+         * @param n a node to act on
+         */
+        void addNode(Node n);
         
     }
 
