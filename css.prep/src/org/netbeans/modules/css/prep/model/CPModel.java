@@ -41,14 +41,16 @@
  */
 package org.netbeans.modules.css.prep.model;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.prep.CPType;
 
@@ -59,8 +61,22 @@ import org.netbeans.modules.css.prep.CPType;
  */
 public class CPModel {
 
+    public static String topLevelSnapshotMimetype; //set by unit tests
+    private static final Collection<String> SASS_DIRECTIVES = Arrays.asList(new String[]{
+        "@debug",
+        "@each",
+        "@extend",
+        "@if",
+        "@include",
+        "@for",
+        "@function",
+        "@mixin",
+        "@return",
+        "@warn",
+        "@while"
+    });
     private CssParserResult result;
-    private Set<Variable> vars;
+//    private Set<Variable> vars;
     private CPType cpType;
 
     public static CPModel getModel(CssParserResult result) {
@@ -78,7 +94,9 @@ public class CPModel {
 
     public CPType getPreprocessorType() {
         if (cpType == null) {
-            String fileMimetype = result.getSnapshot().getSource().getFileObject().getMIMEType();
+            String fileMimetype = topLevelSnapshotMimetype != null
+                    ? topLevelSnapshotMimetype //unit tests - fileless snapshots
+                    : result.getSnapshot().getSource().getFileObject().getMIMEType();
             if (fileMimetype == null) {
                 cpType = CPType.NONE;
             } else {
@@ -96,45 +114,96 @@ public class CPModel {
 
     //xxx just per current file
     public Collection<Variable> getVariables() {
-        if (vars == null) {
-            vars = new HashSet<Variable>();
-            NodeVisitor visitor = new NodeVisitor() {
-                @Override
-                public boolean visit(Node node) {
-                    switch (node.type()) {
-                        case cp_variable:
-                            vars.add(new Variable(node.image().toString(), new OffsetRange(node.from(), node.to())));
-                            break;
+//        if (vars == null) {
+        final Collection<Variable> vars = new HashSet<Variable>();
+        NodeVisitor visitor = new NodeVisitor() {
+            @Override
+            public boolean visit(Node node) {
+                switch (node.type()) {
+                    case cp_variable:
+                        vars.add(new Variable(node.image().toString(), new OffsetRange(node.from(), node.to())));
+                        break;
 
 //                        case error:
 //                        case recovery:
 //                            //skip errorneous content, do not visit
 //                            break;
 
-                        default:
-                            //visit children
-                            List<Node> children = node.children();
-                            if (children != null) {
-                                for (Node child : children) {
-                                    visit(child);
-                                }
+                    default:
+                        //visit children
+                        List<Node> children = node.children();
+                        if (children != null) {
+                            for (Node child : children) {
+                                visit(child);
                             }
-                    }
-
-                    return false;
+                        }
                 }
-            };
-            visitor.visit(result.getParseTree());
-        }
+
+                return false;
+            }
+        };
+        visitor.visit(result.getParseTree());
+//        }
 
         return vars;
     }
 
+    //xxx just per current file
+    //xxx caching
+    public Collection<Element> getMixins() {
+        final Collection<Element> mixins = new HashSet<Element>();
+        NodeVisitor visitor = new NodeVisitor() {
+            @Override
+            public boolean visit(Node node) {
+                switch (node.type()) {
+                    case cp_mixin_declaration:
+                        Node mixin_name = NodeUtil.getChildByType(node, NodeType.cp_mixin_name);
+                        if (mixin_name != null) {
+                            mixins.add(new Element(mixin_name.image().toString(), new OffsetRange(mixin_name.from(), mixin_name.to())));
+                        }
+                        break;
+                    default:
+                        //visit children
+                        List<Node> children = node.children();
+                        if (children != null) {
+                            for (Node child : children) {
+                                visit(child);
+                            }
+                        }
+                        break;
+                }
+                return false;
+            }
+        };
+        visitor.visit(result.getParseTree());
+        return mixins;
+    }
+    
+    
+
+    public Collection<String> getMixinNames() {
+        return getElementNames(getMixins());
+    }
+    
     public Collection<String> getVarNames() {
-        Collection<String> varNames = new HashSet<String>();
-        for (Variable v : getVariables()) {
-            varNames.add(v.getName());
+        return getElementNames(getVariables());
+    }
+    
+    private static Collection<String> getElementNames(Collection<? extends Element> elements) {
+        Collection<String> names = new HashSet<String>();
+        for (Element e : elements) {
+            names.add(e.getName().toString());
         }
-        return varNames;
+        return names;
+    }
+    
+    public Collection<String> getDirectives() {
+        switch (getPreprocessorType()) {
+            case SCSS:
+                return SASS_DIRECTIVES;
+            default:
+                //nothing
+                return Collections.emptyList();
+        }
     }
 }

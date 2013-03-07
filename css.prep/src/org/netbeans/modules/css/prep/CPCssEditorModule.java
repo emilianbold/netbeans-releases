@@ -63,6 +63,7 @@ import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzer;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.CssTokenIdCategory;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
@@ -94,28 +95,46 @@ public class CPCssEditorModule extends CssEditorModule {
     @Override
     public List<CompletionProposal> getCompletionProposals(final CompletionContext context) {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        
+
         CPModel model = CPModel.getModel(context.getParserResult());
         List<CompletionProposal> allVars = getVariableCompletionProposals(context, model);
-        
+
         //errorneous source
         TokenSequence<CssTokenId> ts = context.getTokenSequence();
         Token<CssTokenId> token = ts.token();
-        
-        if(token.id() == CssTokenId.ERROR) {
-            if(LexerUtils.equals(token.text(), "$", false, true)) {
-                //"$" as a prefix - user likely wants to type variable
-                //check context
-                if(NodeUtil.getAncestorByType(context.getActiveTokenNode(), NodeType.rule) != null) {
-                    //in declarations node -> offer all vars
-                    proposals.addAll(allVars);
-                    return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
+        CssTokenId tid = token.id();
+        CharSequence ttext = token.text();
+        char first = ttext.charAt(0);
+
+        switch (tid) {
+            case ERROR:
+                switch(first) {
+                    case '$':
+                        //"$" as a prefix - user likely wants to type variable
+                        //check context
+                        if (NodeUtil.getAncestorByType(context.getActiveTokenNode(), NodeType.rule) != null) {
+                            //in declarations node -> offer all vars
+                            return Utilities.filterCompletionProposals(allVars, context.getPrefix(), true);
+                        }
+                        break;
+                        
+                    case '@':
+                        //may be:
+                        //1. @-rule beginning
+                        //2. less variable
+                        
+                        //1.@-rule
+                        return Utilities.createRAWCompletionProposals(model.getDirectives(), ElementKind.KEYWORD, context.getAnchorOffset());
                 }
-            }
+                break;
+                
+            case AT_IDENT:
+                //not complete keyword (complete keyword have their own token types,
+                //but no need to complete them except documentation completion request
+                List<CompletionProposal> props = Utilities.createRAWCompletionProposals(model.getDirectives(), ElementKind.KEYWORD, context.getAnchorOffset());
+                return Utilities.filterCompletionProposals(props, context.getPrefix(), true);
         }
-        
-        
-        
+
         Node activeNode = context.getActiveNode();
         boolean isError = activeNode.type() == NodeType.error;
         if (isError) {
@@ -123,30 +142,37 @@ public class CPCssEditorModule extends CssEditorModule {
         }
 
 //        NodeUtil.dumpTree(context.getParseTreeRoot());
-        
-        
-        
+
+
+
         switch (activeNode.type()) {
+            case cp_mixin_call:
+                //@include |
+            case cp_mixin_name:
+                //@include mymi|
+                proposals.addAll(Utilities.createRAWCompletionProposals(model.getMixinNames(), ElementKind.METHOD, context.getAnchorOffset()));
+                break;
+                
             case cp_variable:
                 //already in the prefix
                 proposals.addAll(allVars);
                 break;
             case propertyValue:
                 //just $ or @ prefix
-                if(context.getPrefix().length() == 1 && context.getPrefix().charAt(0) == model.getPreprocessorType().getVarPrefix()) {
+                if (context.getPrefix().length() == 1 && context.getPrefix().charAt(0) == model.getPreprocessorType().getVarPrefix()) {
                     proposals.addAll(allVars);
                 }
 
         }
         return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
-
+    
     private static List<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
         Collection<String> filtered = new HashSet<String>();
-        for(Variable var : model.getVariables()) {
-            if(!var.getRange().containsInclusive(context.getCaretOffset())) {
-                filtered.add(var.getName());
+        for (Variable var : model.getVariables()) {
+            if (!var.getRange().containsInclusive(context.getCaretOffset())) {
+                filtered.add(var.getName().toString());
             }
         }
         return Utilities.createRAWCompletionProposals(filtered, ElementKind.VARIABLE, context.getAnchorOffset());
@@ -227,6 +253,4 @@ public class CPCssEditorModule extends CssEditorModule {
         }
         return null;
     }
-
-   
 }
