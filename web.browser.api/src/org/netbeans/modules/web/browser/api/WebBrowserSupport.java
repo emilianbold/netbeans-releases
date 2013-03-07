@@ -81,13 +81,13 @@ public final class WebBrowserSupport {
         String chromeId = null, chromiumId = null, javafxId = null;
         if (selectedBrowserId == null) {
             for (WebBrowser bw : browsers) {
-                if (bw.getBrowserFamily() == BrowserFamilyId.CHROME && chromeId == null) {
+                if (bw.getBrowserFamily() == BrowserFamilyId.CHROME && chromeId == null && bw.hasNetBeansIntegration()) {
                     chromeId = bw.getId();
                 }
-                if (bw.getBrowserFamily() == BrowserFamilyId.CHROMIUM && chromiumId == null) {
+                if (bw.getBrowserFamily() == BrowserFamilyId.CHROMIUM && chromiumId == null && bw.hasNetBeansIntegration()) {
                     chromiumId = bw.getId();
                 }
-                if (bw.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW && javafxId == null) {
+                if (bw.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW && javafxId == null && bw.hasNetBeansIntegration()) {
                     javafxId = bw.getId();
             }
         }
