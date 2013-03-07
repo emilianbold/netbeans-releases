@@ -51,6 +51,7 @@ import java.lang.annotation.Target;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.netbeans.modules.php.spi.testing.locate.TestLocator;
@@ -104,10 +105,19 @@ public interface PhpTestingProvider {
     /**
      * Checks whether the given file is a test file.
      * @param phpModule the PHP module; never {@code null}
-     * @param fileObj file to be checked
+     * @param fileObj file to be checked; never {@code null}
      * @return {@code true} if the file is a test file
      */
-    boolean isTestFile(@NonNull PhpModule phpModule, FileObject fileObj);
+    boolean isTestFile(@NonNull PhpModule phpModule, @NonNull FileObject fileObj);
+
+    /**
+     * Checks whether the given test is a test case (test method).
+     * @param phpModule the PHP module; never {@code null}
+     * @param method test case (test method) to be checked; never {@code null}
+     * @return {@code true} if the test is a test case (test method)
+     * @since 0.3
+     */
+    boolean isTestCase(@NonNull PhpModule phpModule, @NonNull PhpClass.Method method);
 
     /**
      * Run tests, <b>synchronously</b>, for the given {@link TestRunInfo info} and use

@@ -359,7 +359,7 @@ importItem
         IMPORT_SYM ws? resourceIdentifier ws? mediaQueryList SEMI
         |
         //multiple imports in one directive
-        {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier) mediaQueryList SEMI
+        {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier)* mediaQueryList SEMI
     ;
 media
     : MEDIA_SYM ws? 
@@ -1089,14 +1089,14 @@ scss_selector_interpolation_expression
         ( 
             (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
         )
         ( 
             ws?
             (
                 (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
                 |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
             )
         )*
 
