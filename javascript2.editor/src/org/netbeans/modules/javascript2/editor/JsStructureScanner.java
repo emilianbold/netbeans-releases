@@ -123,6 +123,15 @@ public class JsStructureScanner implements StructureScanner {
                     collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
             }
          }
+        
+        if (jsObject instanceof JsFunction) {
+            for (JsObject param: ((JsFunction)jsObject).getParameters()) {
+                if (hasDeclaredProperty(param)) {                   
+                     getEmbededItems(result, param, collectedItems);
+                    //collectedItems.add(new JsObjectStructureItem(param, embededItems, result));
+                }
+            }
+        }
         return collectedItems;
     }
 
