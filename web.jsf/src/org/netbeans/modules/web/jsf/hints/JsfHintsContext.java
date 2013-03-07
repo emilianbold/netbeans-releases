@@ -41,18 +41,36 @@
  */
 package org.netbeans.modules.web.jsf.hints;
 
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class JsfHintsContext {
+public final class JsfHintsContext {
 
     private final FileObject fileObject;
+    private final CompilationInfo compilationInfo;
+    private final Project project;
 
-    JsfHintsContext(FileObject fileObject) {
+    JsfHintsContext(FileObject fileObject, CompilationInfo compilationInfo) {
         this.fileObject = fileObject;
+        this.compilationInfo = compilationInfo;
+        this.project = FileOwnerQuery.getOwner(fileObject);
     }
 
+    public FileObject getFileObject() {
+        return fileObject;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public CompilationInfo getCompilationInfo() {
+        return compilationInfo;
+    }
 }

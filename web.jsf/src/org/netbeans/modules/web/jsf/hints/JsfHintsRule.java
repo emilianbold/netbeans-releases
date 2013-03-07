@@ -48,7 +48,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-interface JsfHintsRule {
+public interface JsfHintsRule {
 
     /**
      * Checks errors for given context.
