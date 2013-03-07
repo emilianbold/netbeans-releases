@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.SyncOnNonFinal", description = "#DESC_org.netbeans.modules.java.hints.SyncOnNonFinal", id="org.netbeans.modules.java.hints.SyncOnNonFinal", category="thread")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.SyncOnNonFinal", description = "#DESC_org.netbeans.modules.java.hints.SyncOnNonFinal", id="org.netbeans.modules.java.hints.SyncOnNonFinal", category="thread", suppressWarnings="SynchronizeOnNonFinalField")
 public class SyncOnNonFinal {
 
     @TriggerTreeKind(Kind.SYNCHRONIZED)
