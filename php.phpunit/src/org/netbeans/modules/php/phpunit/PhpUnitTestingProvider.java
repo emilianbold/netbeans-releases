@@ -44,6 +44,7 @@ package org.netbeans.modules.php.phpunit;
 import java.io.File;
 import java.util.List;
 import java.util.regex.Matcher;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.phpunit.coverage.CoverageProvider;
@@ -114,6 +115,14 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         return sourceDirectory != null
                 && FileUtil.isParentOf(sourceDirectory, fileObj);
+    }
+
+    @Override
+    public boolean isTestCase(PhpModule phpModule, PhpClass.Method method) {
+        if (!PhpUnit.isTestClass(method.getPhpClass().getName())) {
+            return false;
+        }
+        return PhpUnit.isTestMethod(method.getName());
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.api;
+package org.netbeans.modules.php.project.ui.actions;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.index.PHPIndexer;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.spi.project.SingleMethod;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
- * @author Radek Matous
+ * Debugs one test method.
  */
-public final class QuerySupportFactory {
+public class DebugTestMethodCommand extends Command implements Displayable {
 
-    private QuerySupportFactory() {
+    public static final String ID = SingleMethod.COMMAND_DEBUG_SINGLE_METHOD;
+
+
+    public DebugTestMethodCommand(PhpProject project) {
+        super(project);
     }
 
-    public static QuerySupport get(final FileObject source) {
-        return get(QuerySupport.findRoots(source,
-                Collections.singleton(PhpSourcePath.SOURCE_CP),
-                Arrays.asList(PhpSourcePath.BOOT_CP, PhpSourcePath.PROJECT_BOOT_CP),
-                Collections.<String>emptySet()));
+    @Override
+    public String getCommandId() {
+        return ID;
     }
 
-    public static QuerySupport get(final ParserResult info) {
-        return get(info.getSnapshot().getSource().getFileObject());
+    @NbBundle.Messages("DebugTestMethodCommand.name=Debug Test Method")
+    @Override
+    public String getDisplayName() {
+        return Bundle.DebugTestMethodCommand_name();
     }
 
-    public static QuerySupport get(final Collection<FileObject> roots) {
-        try {
-            return QuerySupport.forRoots(PHPIndexer.Factory.NAME,
-                    PHPIndexer.Factory.VERSION,
-                    roots.toArray(new FileObject[roots.size()]));
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+    @Override
+    public boolean isActionEnabledInternal(Lookup context) {
+        return getConfigAction().isDebugMethodEnabled(context);
     }
+
+    @Override
+    public void invokeActionInternal(Lookup context) {
+        getConfigAction().debugMethod(context);
+    }
+
+    @Override
+    protected ConfigAction getConfigAction() {
+        return ConfigAction.get(ConfigAction.Type.TEST, getProject());
+    }
+
 }

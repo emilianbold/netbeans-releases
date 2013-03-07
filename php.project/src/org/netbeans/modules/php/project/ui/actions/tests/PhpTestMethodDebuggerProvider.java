@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.api;
+package org.netbeans.modules.php.project.ui.actions.tests;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.index.PHPIndexer;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import javax.swing.text.Document;
+import org.netbeans.modules.gsf.testrunner.api.TestMethodDebuggerProvider;
+import org.netbeans.modules.php.project.ui.actions.support.TestSingleMethodSupport;
+import org.netbeans.spi.project.SingleMethod;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.nodes.Node;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
- * @author Radek Matous
- */
-public final class QuerySupportFactory {
+@ActionReferences({
+    @ActionReference(
+        id=@ActionID(id="org.netbeans.modules.gsf.testrunner.TestMethodDebuggerAction", category="CommonTestRunner"),
+        position=870,
+        path="Editors/text/x-php5/Popup")
+})
+@ServiceProvider(service = TestMethodDebuggerProvider.class, position = 100)
+public class PhpTestMethodDebuggerProvider extends TestMethodDebuggerProvider {
 
-    private QuerySupportFactory() {
+    @Override
+    public boolean canHandle(Node activatedNode) {
+        return TestSingleMethodSupport.canHandle(activatedNode);
     }
 
-    public static QuerySupport get(final FileObject source) {
-        return get(QuerySupport.findRoots(source,
-                Collections.singleton(PhpSourcePath.SOURCE_CP),
-                Arrays.asList(PhpSourcePath.BOOT_CP, PhpSourcePath.PROJECT_BOOT_CP),
-                Collections.<String>emptySet()));
+    @Override
+    public SingleMethod getTestMethod(Document doc, int caret) {
+        return TestSingleMethodSupport.getTestMethod(doc, caret);
     }
 
-    public static QuerySupport get(final ParserResult info) {
-        return get(info.getSnapshot().getSource().getFileObject());
-    }
-
-    public static QuerySupport get(final Collection<FileObject> roots) {
-        try {
-            return QuerySupport.forRoots(PHPIndexer.Factory.NAME,
-                    PHPIndexer.Factory.VERSION,
-                    roots.toArray(new FileObject[roots.size()]));
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
 }

@@ -111,6 +111,8 @@ public final class PhpUnit {
     // test files suffix
     public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
     private static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
+    // test method prefix
+    public static final String TEST_METHOD_PREFIX = "test"; // NOI18N
     // suite files suffix
     private static final String SUITE_CLASS_SUFFIX = "Suite"; // NOI18N
     private static final String SUITE_FILE_SUFFIX = SUITE_CLASS_SUFFIX + ".php"; // NOI18N
@@ -303,14 +305,18 @@ public final class PhpUnit {
         List<TestInfo> customTests = runInfo.getCustomTests();
         if (!customTests.isEmpty()) {
             StringBuilder buffer = new StringBuilder(200);
-            boolean first = true;
+            // delimiter start
+            buffer.append("%"); // NOI18N
             for (TestInfo test : customTests) {
-                if (!first) {
+                if (buffer.length() > 1) {
                     buffer.append("|"); // NOI18N
                 }
+                buffer.append("\\b"); // NOI18N
                 buffer.append(test.getName());
-                first = false;
+                buffer.append("\\b"); // NOI18N
             }
+            // delimiter end
+            buffer.append("%"); // NOI18N
             params.add(FILTER_PARAM);
             params.add(buffer.toString());
             runInfo.resetCustomTests();
@@ -499,6 +505,10 @@ public final class PhpUnit {
 
     public static boolean isTestClass(String className) {
         return !className.equals(PhpUnit.TEST_CLASS_SUFFIX) && className.endsWith(PhpUnit.TEST_CLASS_SUFFIX);
+    }
+
+    public static boolean isTestMethod(String methodName) {
+        return !methodName.equals(PhpUnit.TEST_METHOD_PREFIX) && methodName.startsWith(PhpUnit.TEST_METHOD_PREFIX);
     }
 
     public static boolean isSuiteFile(String fileName) {
