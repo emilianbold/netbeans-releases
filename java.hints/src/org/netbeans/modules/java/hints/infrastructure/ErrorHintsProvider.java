@@ -487,7 +487,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             rangePrepared = true;
         }
         
-        if (!rangePrepared) {
+        if (!rangePrepared || endOffset < startOffset) {
             int column = 0;
             int length = text.length();
 
