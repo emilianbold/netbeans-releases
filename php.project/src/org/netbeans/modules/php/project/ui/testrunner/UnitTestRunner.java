@@ -157,10 +157,10 @@ public final class UnitTestRunner {
     private String getOutputTitle(PhpProject project, TestRunInfo info) {
         StringBuilder sb = new StringBuilder(30);
         sb.append(project.getName());
-        String testName = info.getTestName();
-        if (testName != null) {
+        String suiteName = info.getSuiteName();
+        if (suiteName != null) {
             sb.append(":"); // NOI18N
-            sb.append(testName);
+            sb.append(suiteName);
         }
         return sb.toString();
     }

@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -76,7 +77,7 @@ public final class TestRunInfo {
     private final SessionType sessionType;
     private final FileObject workingDirectory;
     private final FileObject startFile;
-    private final String testName;
+    private final String suiteName;
     private final boolean coverageEnabled;
     private final List<TestInfo> customTests = new CopyOnWriteArrayList<TestInfo>();
     private final Map<String, Object> parameters = new ConcurrentHashMap<String, Object>();
@@ -89,43 +90,20 @@ public final class TestRunInfo {
      * @param sessionType run or debug
      * @param workingDirectory working directory
      * @param startFile start file (can be directory)
-     * @param testName test name, can be {@code null}
+     * @param suiteName test name, can be {@code null}
      * @param coverageEnabled {@code true} if the coverage is enabled and should be collected
      */
-    private TestRunInfo(SessionType sessionType, FileObject workingDirectory, FileObject startFile, String testName, boolean coverageEnabled) {
-        Parameters.notNull("sessionType", sessionType); // NOI18N
-        Parameters.notNull("workingDirectory", workingDirectory); // NOI18N
-        Parameters.notNull("startFile", startFile); // NOI18N
+    private TestRunInfo(Builder builder) {
+        assert builder != null;
+        assert builder.sessionType != null;
+        assert builder.workingDirectory != null;
+        assert builder.startFile != null;
 
-        this.sessionType = sessionType;
-        this.workingDirectory = workingDirectory;
-        this.startFile = startFile;
-        this.testName = testName;
-        this.coverageEnabled = coverageEnabled;
-    }
-
-    /**
-     * Create new info about test {@link SessionType#TEST normal} run.
-     * @param workingDirectory working directory
-     * @param startFile start file (can be directory)
-     * @param suiteName test suite name, can be {@code null}
-     * @param coverageEnabled {@code true} if the coverage is enabled and should be collected
-     * @return new info about test {@link SessionType#TEST normal} run
-     */
-    public static TestRunInfo test(FileObject workingDirectory, FileObject startFile, @NullAllowed String suiteName, boolean coverageEnabled) {
-        return new TestRunInfo(SessionType.TEST, workingDirectory, startFile, suiteName, coverageEnabled);
-    }
-
-    /**
-     * Create new info about test {@link SessionType#DEBUG debug} run.
-     * @param workingDirectory working directory
-     * @param startFile start file (can be directory)
-     * @param suiteName test suite name, can be {@code null}
-     * @param coverageEnabled {@code true} if the coverage is enabled and should be collected
-     * @return new info about test {@link SessionType#DEBUG debug} run
-     */
-    public static TestRunInfo debug(FileObject workingDirectory, FileObject startFile, @NullAllowed String suiteName, boolean coverageEnabled) {
-        return new TestRunInfo(SessionType.DEBUG, workingDirectory, startFile, suiteName, coverageEnabled);
+        this.sessionType = builder.sessionType;
+        this.workingDirectory = builder.workingDirectory;
+        this.startFile = builder.startFile;
+        this.suiteName = builder.suiteName;
+        this.coverageEnabled = builder.coverageEnabled;
     }
 
     /**
@@ -147,9 +125,11 @@ public final class TestRunInfo {
     /**
      * Get name of the test to be run, can be {@code null}.
      * @return name of the test to be run, can be {@code null}
+     * @since 0.3
      */
-    public String getTestName() {
-        return testName;
+    @CheckForNull
+    public String getSuiteName() {
+        return suiteName;
     }
 
     /**
@@ -157,7 +137,7 @@ public final class TestRunInfo {
      * @return {@code true} if all tests are to be run
      */
     public boolean allTests() {
-        return testName == null;
+        return suiteName == null;
     }
 
     /**
@@ -257,6 +237,82 @@ public final class TestRunInfo {
     }
 
     //~ Inner classes
+
+    /**
+     * Builder for {@link TestRunInfo}.
+     * @since 0.3
+     */
+    public static final class Builder {
+
+        SessionType sessionType;
+        FileObject workingDirectory;
+        FileObject startFile;
+        String suiteName;
+        boolean coverageEnabled;
+
+
+        /**
+         * Set session type.
+         * @param sessionType session type
+         * @return this instance
+         */
+        public Builder setSessionType(@NonNull SessionType sessionType) {
+            this.sessionType = sessionType;
+            return this;
+        }
+
+        /**
+         * Set working directory.
+         * @param workingDirectory working directory
+         * @return this instance
+         */
+        public Builder setWorkingDirectory(@NonNull FileObject workingDirectory) {
+            this.workingDirectory = workingDirectory;
+            return this;
+        }
+
+        /**
+         * Set start file (can be directory).
+         * @param startFile start file (can be directory)
+         * @return this instance
+         */
+        public Builder setStartFile(@NonNull FileObject startFile) {
+            this.startFile = startFile;
+            return this;
+        }
+
+        /**
+         * Set test suite name, can be {@code null}.
+         * @param suiteName test suite name, can be {@code null}
+         * @return this instance
+         */
+        public Builder setSuiteName(@NullAllowed String suiteName) {
+            this.suiteName = suiteName;
+            return this;
+        }
+
+        /**
+         * Set {@code true} if the coverage is enabled and should be collected.
+         * @param coverageEnabled {@code true} if the coverage is enabled and should be collected
+         * @return this instance
+         */
+        public Builder setCoverageEnabled(boolean coverageEnabled) {
+            this.coverageEnabled = coverageEnabled;
+            return this;
+        }
+
+        /**
+         * Create {@link TestRunInfo}.
+         * @return {@link TestRunInfo} instance
+         */
+        public TestRunInfo build() {
+            Parameters.notNull("sessionType", sessionType); // NOI18N
+            Parameters.notNull("workingDirectory", workingDirectory); // NOI18N
+            Parameters.notNull("startFile", startFile); // NOI18N
+            return new TestRunInfo(this);
+        }
+
+    }
 
     /**
      * Class representing information about a test.

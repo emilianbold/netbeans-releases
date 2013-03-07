@@ -222,10 +222,12 @@ class ConfigActionTest extends ConfigAction {
         if (!dir.isValid()) {
             return null;
         }
-        if (debug) {
-            return TestRunInfo.debug(dir, dir, null, getCoverageProvider().isEnabled());
-        }
-        return TestRunInfo.test(dir, dir, null, getCoverageProvider().isEnabled());
+        return new TestRunInfo.Builder()
+                .setSessionType(debug ? TestRunInfo.SessionType.DEBUG : TestRunInfo.SessionType.TEST)
+                .setWorkingDirectory(dir)
+                .setStartFile(dir)
+                .setCoverageEnabled(getCoverageProvider().isEnabled())
+                .build();
     }
 
     @CheckForNull
@@ -246,10 +248,13 @@ class ConfigActionTest extends ConfigAction {
             workDir = fileObj.getParent();
             name = fileObj.getName();
         }
-        if (debug) {
-            return TestRunInfo.debug(workDir, fileObj, name, getCoverageProvider().isEnabled());
-        }
-        return TestRunInfo.test(workDir, fileObj, name, getCoverageProvider().isEnabled());
+        return new TestRunInfo.Builder()
+                .setSessionType(debug ? TestRunInfo.SessionType.DEBUG : TestRunInfo.SessionType.TEST)
+                .setWorkingDirectory(workDir)
+                .setStartFile(fileObj)
+                .setSuiteName(name)
+                .setCoverageEnabled(getCoverageProvider().isEnabled())
+                .build();
     }
 
     //~ Inner classes
