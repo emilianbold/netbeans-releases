@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.css.lib;
 
+import java.io.IOException;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.lib.api.*;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
@@ -904,5 +907,63 @@ public class Css3ParserScssTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
+    }
+
+    public void testDefineOwnFunction() {
+        String source = "@function grid-width($n) {\n"
+                + "  @return $n * $grid-width + ($n - 1) * $gutter-width;\n"
+                + "}\n"
+                + "\n"
+                + "#sidebar { width: grid-width(5); }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testMixinCallWithFunctionWithNoArgs() {
+        String source = ".ease-out-expo-animation {\n"
+                + "  @include transition-timing-function(ease-out-expo()); \n"
+                + "  color: best-color();\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testVariableDeclarationWithCommaSeparatedValues() {
+        String source = "$blueprint-font-family: Helvetica Neue, Arial, Helvetica, sans-serif;";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testAmpProblem_fails() {
+        String source =
+                ".clazz {\n"
+                + "    &.position#{$i} {\n"
+                + "    left: ($i * -910px); \n"
+                + "}\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+    
+     public void testMergedScssTests() throws ParseException, BadLocationException, IOException {
+        CssParserResult result = TestUtil.parse(getTestFile("testfiles/scss/scss-tests-merged.scss"));
+//        TestUtil.dumpResult(result);
+        assertResult(result, 0);
     }
 }

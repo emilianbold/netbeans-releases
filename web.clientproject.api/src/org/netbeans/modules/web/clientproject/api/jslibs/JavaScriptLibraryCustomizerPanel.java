@@ -168,15 +168,14 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
     private void setJsFiles() {
         assert EventQueue.isDispatchThread();
         // set js files
-        File siteRootFolder = customizerSupport.getLibrariesFolderRoot();
-        ValidationResult result = new FolderValidator()
-                .validateFolder(siteRootFolder)
-                .getResult();
+        File webRoot = customizerSupport.getWebRoot();
+        ValidationResult result = validateWebRoot(webRoot);
         Collection<String> jsFiles;
         if (result.hasErrors()) {
             jsFiles = Collections.<String>emptyList();
         } else {
-            jsFiles = findProjectJsFiles(FileUtil.toFileObject(siteRootFolder));
+            assert webRoot != null;
+            jsFiles = findProjectJsFiles(FileUtil.toFileObject(webRoot));
         }
         javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
     }
@@ -188,8 +187,15 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         }
     }
 
+    @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.error.webRoot.invalid=Invalid web/site root provided.")
     boolean validateData() {
         assert EventQueue.isDispatchThread();
+        ValidationResult result = validateWebRoot(customizerSupport.getWebRoot());
+        if (result.hasErrors()) {
+            category.setErrorMessage(Bundle.JavaScriptLibraryCustomizerPanel_error_webRoot_invalid());
+            category.setValid(false);
+            return false;
+        }
         String errorMessage = javaScriptLibrarySelection.getErrorMessage();
         if (errorMessage != null) {
             category.setErrorMessage(errorMessage);
@@ -206,6 +212,12 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         category.setErrorMessage(null);
         category.setValid(true);
         return true;
+    }
+
+    private ValidationResult validateWebRoot(File webRoot) {
+        return new FolderValidator()
+                .validateFolder(webRoot)
+                .getResult();
     }
 
     void storeData() {
@@ -230,8 +242,10 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.JavaScriptLibraryCustomizerPanel_jsLibs_downloading());
         progressHandle.start();
         try {
+            File webRoot = customizerSupport.getWebRoot();
+            assert webRoot != null;
             List<JavaScriptLibrarySelectionPanel.SelectedLibrary> failedLibs = JsLibUtilities.applyJsLibraries(newJsLibraries, jsLibFolder,
-                    FileUtil.toFileObject(customizerSupport.getLibrariesFolderRoot()), progressHandle);
+                    FileUtil.toFileObject(webRoot), progressHandle);
             if (!failedLibs.isEmpty()) {
                 LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
                 errorOccured(Bundle.JavaScriptLibraryCustomizerPanel_error_jsLibs(StringUtilities.implode(getLibraryNames(failedLibs), "<br>"))); // NOI18N
@@ -317,13 +331,13 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
     public interface CustomizerSupport {
 
         /**
-         * Get root (parent folder) of {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}.
-         * The root is typically web root folder or site root folder.
-         * The root is also searched for existing JS libraries/files.
-         * @return root (parent folder) of {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}, can be {@code null}
+         * Get web root that is used as a parent folder of {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}
+         * as well as for searching existing JavaScript files. Can be {@code null} if the current web root or project is broken - in such case,
+         * an error is displayed and JS libraries cannot be added.
+         * @return web root, can be {@code null}
          */
         @CheckForNull
-        File getLibrariesFolderRoot();
+        File getWebRoot();
 
         /**
          * Set {@link JavaScriptLibrarySelectionPanel#getLibrariesFolder() libraries folder}.
@@ -382,17 +396,17 @@ public final class JavaScriptLibraryCustomizerPanel extends JPanel implements He
         }
 
         private FileObject getLibsFolder(String librariesFolder) {
-            File librariesFolderRoot = customizerSupport.getLibrariesFolderRoot();
-            if (librariesFolderRoot == null) {
+            File webRoot = customizerSupport.getWebRoot();
+            if (webRoot == null) {
                 // no folder
                 return null;
             }
-            FileObject siteRootFolder = FileUtil.toFileObject(librariesFolderRoot);
-            if (siteRootFolder == null) {
+            FileObject webRootFo = FileUtil.toFileObject(webRoot);
+            if (webRootFo == null) {
                 // non-existing folder
                 return null;
             }
-            return siteRootFolder.getFileObject(librariesFolder);
+            return webRootFo.getFileObject(librariesFolder);
         }
 
     }

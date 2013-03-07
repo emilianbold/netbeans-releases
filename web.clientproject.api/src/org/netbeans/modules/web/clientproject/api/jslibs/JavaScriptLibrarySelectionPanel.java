@@ -815,7 +815,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         }
 
         /**
-         * Get library version of this JS library or {@code null} for {@link #isDefault() default} library
+         * Get library version of this JS library or {@code null} for {@link #isDefault() default} library.
          * @return library version of this JS library or {@code null} for {@link #isDefault() default} library
          * @see #isDefault()
          */

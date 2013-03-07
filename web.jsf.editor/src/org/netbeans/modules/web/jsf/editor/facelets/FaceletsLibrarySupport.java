@@ -64,6 +64,7 @@ import javax.servlet.ServletContext;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager;
@@ -155,6 +156,9 @@ public class FaceletsLibrarySupport {
 
     private synchronized void invalidateLibrariesCache() {
         faceletsLibraries = null;
+//        
+//        //refresh tasklist indexer
+//        IndexingManager.getDefault().refreshAllIndices(getJsfSupport().getClassPathRoots());
     }
     
     /*
