@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,47 +34,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
- */
-
-package org.netbeans.modules.java.hints;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.SynchronizedTree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerTreeKind;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.util.NbBundle;
-
-/**
  *
- * @author Jan Lahoda
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.SyncOnNonFinal", description = "#DESC_org.netbeans.modules.java.hints.SyncOnNonFinal", id="org.netbeans.modules.java.hints.SyncOnNonFinal", category="thread", suppressWarnings="SynchronizeOnNonFinalField")
-public class SyncOnNonFinal {
+package org.netbeans.modules.php.project.ui.actions.tests;
 
-    @TriggerTreeKind(Kind.SYNCHRONIZED)
-    public static ErrorDescription run(HintContext ctx) {
-        ExpressionTree expression = ((SynchronizedTree) ctx.getPath().getLeaf()).getExpression();
-        
-        Element e = ctx.getInfo().getTrees().getElement(new TreePath(ctx.getPath(), expression));
-        
-        if (e == null || e.getKind() != ElementKind.FIELD || e.getModifiers().contains(Modifier.FINAL)) {
-            return null;
-        }
-        
-        String displayName = NbBundle.getMessage(SyncOnNonFinal.class, "ERR_SynchronizationOnNonFinalField");
-        
-        return ErrorDescriptionFactory.forTree(ctx, expression, displayName);
+import javax.swing.text.Document;
+import org.netbeans.modules.gsf.testrunner.api.TestMethodDebuggerProvider;
+import org.netbeans.modules.php.project.ui.actions.support.TestSingleMethodSupport;
+import org.netbeans.spi.project.SingleMethod;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.nodes.Node;
+import org.openide.util.lookup.ServiceProvider;
+
+@ActionReferences({
+    @ActionReference(
+        id=@ActionID(id="org.netbeans.modules.gsf.testrunner.TestMethodDebuggerAction", category="CommonTestRunner"),
+        position=870,
+        path="Editors/text/x-php5/Popup")
+})
+@ServiceProvider(service = TestMethodDebuggerProvider.class, position = 100)
+public class PhpTestMethodDebuggerProvider extends TestMethodDebuggerProvider {
+
+    @Override
+    public boolean canHandle(Node activatedNode) {
+        return TestSingleMethodSupport.canHandle(activatedNode);
+    }
+
+    @Override
+    public SingleMethod getTestMethod(Document doc, int caret) {
+        return TestSingleMethodSupport.getTestMethod(doc, caret);
     }
 
 }

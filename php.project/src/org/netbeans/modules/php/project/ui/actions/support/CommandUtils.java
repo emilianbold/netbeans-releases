@@ -55,7 +55,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
@@ -63,6 +65,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.spi.project.SingleMethod;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -97,6 +100,16 @@ public final class CommandUtils {
         String message = NbBundle.getMessage(CommandUtils.class, "MSG_NoMoreDebugSession");
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message, NotifyDescriptor.OK_CANCEL_OPTION);
         return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION;
+    }
+
+    public static String encodeMethod(String className, String methodName) {
+        return className + "::" + methodName; // NOI18N
+    }
+
+    public static Pair<String, String> decodeMethod(String encodedMethodName) {
+        List<String> decoded = StringUtils.explode(encodedMethodName, "::"); // NOI18N
+        assert decoded.size() == 2 : encodedMethodName + " -> " + decoded;
+        return Pair.of(decoded.get(0), decoded.get(1));
     }
 
     /**
@@ -203,6 +216,16 @@ public final class CommandUtils {
         return isUnderSources(project, fileObj)
                 || isUnderTests(project, fileObj, showFileChooser)
                 || isUnderSelenium(project, fileObj, showFileChooser);
+    }
+
+    /**
+     * Get {@link SingleMethod single method} for context.
+     * @param context context to search in.
+     * @return {@link SingleMethod single method} for context, {@code null} if not found
+     */
+    @CheckForNull
+    public static SingleMethod singleMethodForContext(Lookup context) {
+        return context.lookup(SingleMethod.class);
     }
 
     /**

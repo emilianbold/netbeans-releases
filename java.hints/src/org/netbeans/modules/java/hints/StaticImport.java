@@ -85,7 +85,7 @@ public class StaticImport extends AbstractHint {
     private final AtomicBoolean cancel = new AtomicBoolean();
 
     public StaticImport() {
-        super(false, false, HintSeverity.CURRENT_LINE_WARNING);
+        super(false, false, HintSeverity.CURRENT_LINE_WARNING, "", "StaticImport");
     }
 
     @Override

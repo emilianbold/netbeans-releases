@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  */
 public class UtilityClass {
     
-    @Hint(id="org.netbeans.modules.java.hints.UtilityClass_1", displayName="#MSG_UtilityClass", description="#HINT_UtilityClass", category="api", enabled=false, severity= Severity.VERIFIER)
+    @Hint(id="org.netbeans.modules.java.hints.UtilityClass_1", displayName="#MSG_UtilityClass", description="#HINT_UtilityClass", category="api", enabled=false, severity=Severity.VERIFIER, suppressWarnings="UtilityClassWithoutPrivateConstructor")
     @TriggerTreeKind(Kind.CLASS)
     public static ErrorDescription utilityClass(HintContext ctx) {
         CompilationInfo compilationInfo = ctx.getInfo();
@@ -95,7 +95,7 @@ public class UtilityClass {
                                                ).toEditorFix());
     }
     
-    @Hint(id="org.netbeans.modules.java.hints.UtilityClass_2", displayName="#MSG_PublicConstructor", description="#HINT_PublicConstructor", category="api", enabled=false, severity= Severity.HINT)
+    @Hint(id="org.netbeans.modules.java.hints.UtilityClass_2", displayName="#MSG_PublicConstructor", description="#HINT_PublicConstructor", category="api", enabled=false, severity=Severity.HINT, suppressWarnings="UtilityClassWithPublicConstructor")
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription constructor(HintContext ctx) {
         CompilationInfo compilationInfo = ctx.getInfo();

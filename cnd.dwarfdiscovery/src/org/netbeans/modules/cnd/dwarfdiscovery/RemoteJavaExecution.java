@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
  */
-package org.netbeans.modules.cnd.dwarfdiscovery.provider;
+package org.netbeans.modules.cnd.dwarfdiscovery;
 
 import java.io.BufferedReader;
 import java.io.File;

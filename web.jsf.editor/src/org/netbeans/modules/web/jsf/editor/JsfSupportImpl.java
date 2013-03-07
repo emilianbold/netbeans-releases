@@ -43,6 +43,8 @@ package org.netbeans.modules.web.jsf.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -196,6 +198,14 @@ public class JsfSupportImpl implements JsfSupport {
     @Override
     public ClassPath getClassPath() {
         return compileClasspath;
+    }
+    
+    public FileObject[] getClassPathRoots() {
+        Collection<FileObject> roots = new ArrayList<FileObject>();
+        roots.addAll(Arrays.asList(sourceClassPath.getRoots()));
+        roots.addAll(Arrays.asList(compileClasspath.getRoots()));
+        roots.addAll(Arrays.asList(executeClassPath.getRoots()));
+        return roots.toArray(new FileObject[0]);
     }
 
     /**

@@ -359,7 +359,7 @@ importItem
         IMPORT_SYM ws? resourceIdentifier ws? mediaQueryList SEMI
         |
         //multiple imports in one directive
-        {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier) mediaQueryList SEMI
+        {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier)* mediaQueryList SEMI
     ;
 media
     : MEDIA_SYM ws? 
@@ -427,9 +427,10 @@ bodyItem
         | vendorAtRule
         | {isCssPreprocessorSource()}? cp_variable_declaration
         | {isCssPreprocessorSource()}? cp_mixin_call
+        | {isCssPreprocessorSource()}? importItem //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
         | {isScssSource()}? sass_debug
         | {isScssSource()}? sass_control
-        | {isCssPreprocessorSource()}? importItem //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
+        | {isScssSource()}? sass_function_declaration
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -861,6 +862,8 @@ function
 		  	(
 				fnAttribute (COMMA ws? fnAttribute )*				
 			) 
+                |
+                {isCssPreprocessorSource()}? //empty
 		)
 		RPAREN
 	;
@@ -902,9 +905,9 @@ ws
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
     : 
-        {isLessSource()}? cp_variable ws? COLON ws? cp_expression SEMI    
+        {isLessSource()}? cp_variable ws? COLON ws? cp_variable_value SEMI    
         | 
-        {isScssSource()}? cp_variable ws? COLON ws? cp_expression (SASS_DEFAULT ws?)? SEMI    
+        {isScssSource()}? cp_variable ws? COLON ws? cp_variable_value (SASS_DEFAULT ws?)? SEMI    
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
@@ -914,6 +917,11 @@ cp_variable
         |
         {isScssSource()}? ( SASS_VAR )
 //        SASS_VAR
+    ;
+
+cp_variable_value
+    :
+    cp_expression ( COMMA ws? cp_expression)*     
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR
@@ -977,9 +985,9 @@ cp_term
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_declaration
     :
-    {isLessSource()}? DOT cp_mixin_name ws? LPAREN less_args_list? RPAREN ws? (less_mixin_guarded ws?)?
+    {isLessSource()}? DOT cp_mixin_name ws? LPAREN cp_args_list? RPAREN ws? (less_mixin_guarded ws?)?
     |
-    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN less_args_list? RPAREN ws?)?
+    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN cp_args_list? RPAREN ws?)?
     ;
 
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
@@ -1007,17 +1015,17 @@ cp_mixin_call_args
     ;
 
 //.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
-less_args_list
+cp_args_list
     : 
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    ( less_arg ( ( COMMA | SEMI ) ws? less_arg)* ( ( COMMA | SEMI ) ws? (LESS_DOTS | LESS_REST))?)
+    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)* ( ( COMMA | SEMI ) ws? (LESS_DOTS | LESS_REST))?)
     | 
     (LESS_DOTS | LESS_REST)
     ;
     
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
-less_arg
+cp_arg
     :
     cp_variable ( COLON ws? cp_expression )?
     ;
@@ -1081,14 +1089,14 @@ scss_selector_interpolation_expression
         ( 
             (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
         )
         ( 
             ws?
             (
                 (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
                 |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
             )
         )*
 
@@ -1230,7 +1238,23 @@ sass_control_block
     :
     LBRACE ws? declarations RBRACE //likely not enough!
     ;
+    
+sass_function_declaration
+    :
+    //I assume there can be not only the return statement in the function block, 
+    //but so far haven't found any such example so assuming the simplier case
+    SASS_FUNCTION ws sass_function_name ws? LPAREN cp_args_list? RPAREN ws? LBRACE ws? sass_function_return ws? RBRACE
+    ;
+    
+sass_function_name
+    :
+    IDENT
+    ;
 
+sass_function_return
+    :
+    SASS_RETURN ws cp_expression SEMI
+    ;
 //*** END OF LESS SYNTAX ***
 
 // ==============================================================
@@ -1634,6 +1658,8 @@ SASS_DEBUG          : '@DEBUG';
 SASS_WARN           : '@WARN';
 SASS_IF             : '@IF';
 SASS_FOR            : '@FOR';
+SASS_FUNCTION       : '@FUNCTION';
+SASS_RETURN         : '@RETURN';
 
 SASS_EACH           : '@EACH';
 SASS_WHILE          : '@WHILE';
