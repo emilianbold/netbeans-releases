@@ -1149,6 +1149,23 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void test226923() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    private static void test(String str) {\n" +
+                       "        System.err.println(str != null);\n" +
+                       "        if ((str != null) && (str.length() == 0)) {\n" +
+                       "            System.err.println(0);\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

@@ -579,7 +579,16 @@ public class NPECheck {
 
         @Override
         public State visitNewClass(NewClassTree node, Void p) {
-            super.visitNewClass(node, p);
+            scan(node.getEnclosingExpression(), p);
+            scan(node.getIdentifier(), p);
+            scan(node.getTypeArguments(), p);
+            
+            for (Tree param : node.getArguments()) {
+                scan(param, p);
+                clearHypothetical();
+            }
+            
+            scan(node.getClassBody(), p);
             
             Element invoked = info.getTrees().getElement(getCurrentPath());
 
@@ -597,6 +606,7 @@ public class NPECheck {
             
             for (Tree param : node.getArguments()) {
                 scan(param, p);
+                clearHypothetical();
             }
             
             Element e = info.getTrees().getElement(getCurrentPath());
@@ -730,6 +740,7 @@ public class NPECheck {
         @Override
         public State visitAssert(AssertTree node, Void p) {
             scan(node.getCondition(), p);
+            //XXX: todo clear hypothetical, evaluate negation?
             scan(node.getDetail(), p);
             return null;
         }
@@ -954,6 +965,16 @@ public class NPECheck {
         
         private boolean isVariableElement(Element ve) {
             return NPECheck.isVariableElement(ctx, ve);
+        }
+        
+        private void clearHypothetical() {
+            for (Iterator<Entry<VariableElement, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
+                Entry<VariableElement, State> e = it.next();
+                
+                if (e.getValue() == State.NOT_NULL_HYPOTHETICAL || e.getValue() == State.NULL_HYPOTHETICAL) {
+                    it.remove();
+                }
+            }
         }
     }
     
