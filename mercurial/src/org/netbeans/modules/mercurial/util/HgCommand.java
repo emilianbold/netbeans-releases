@@ -4832,6 +4832,9 @@ public class HgCommand {
             if (m.matches()) {
                 String path = m.group(1);
                 while (path.endsWith(" ")) path = path.substring(0, path.length() - 1);
+                if (Utilities.isWindows()) {
+                    path = path.replace("/", File.separator); //NOI18N
+                }
                 changedFiles.add(path);
             }
         }
