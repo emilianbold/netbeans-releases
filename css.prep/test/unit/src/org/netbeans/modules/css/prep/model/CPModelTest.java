@@ -143,4 +143,27 @@ public class CPModelTest extends CssTestBase {
         assertFalse(vars.retainAll(expSet));
         
     }
+    
+     public void testMixins() {
+                String source = ""
+                        + "@mixin mymixin() {\n"
+                        + "    .clz {}\n"
+                        + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+        
+        CPModel model = CPModel.getModel(result);
+        assertNotNull(model);
+        
+        Collection<String> mixins = model.getMixinNames();        
+        assertNotNull(mixins);
+        
+        String[] expected = new String[]{"mymixin"};
+        
+        Collection<String> expSet = Arrays.asList(expected);
+        assertTrue(mixins.containsAll(expSet));
+        assertFalse(mixins.retainAll(expSet));
+        
+    }
+    
 }

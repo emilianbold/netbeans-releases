@@ -39,62 +39,27 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.options.colors;
+package org.netbeans.modules.css.prep;
 
-import javax.swing.JComponent;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.options.colors.spi.FontsColorsController;
-import org.netbeans.spi.options.OptionsPanelController;
+import javax.swing.text.Document;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  *
- * @since 1.39
+ * @author marekfukala
  */
-@OptionsPanelController.Keywords(keywords={"#KW_HighlightPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "#Editor_tab.displayName")
-public class HighlightingPanelController implements FontsColorsController{
+public class EmptyDeclarationFinder implements DeclarationFinder {
 
-    private HighlightingPanel component = null;
-    
     @Override
-    public void update(ColorModel model) {
-        getHighlightingPanel().update(model);
+    public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
+        return DeclarationLocation.NONE;
     }
 
     @Override
-    public void setCurrentProfile(String profile) {
-        getHighlightingPanel().setCurrentProfile(profile);
-    }
-
-    @Override
-    public void deleteProfile(String profile) {
-        getHighlightingPanel().deleteProfile(profile);
-    }
-
-    @Override
-    public void applyChanges() {
-        getHighlightingPanel().applyChanges();
-    }
-
-    @Override
-    public void cancel() {
-        getHighlightingPanel().cancel();
-    }
-
-    @Override
-    public boolean isChanged() {
-        return getHighlightingPanel().isChanged();
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return getHighlightingPanel();
-    }
-
-    private synchronized HighlightingPanel getHighlightingPanel() {
-        if (component == null) {
-            component = new HighlightingPanel();
-        }
-        return component;
+    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
+        return OffsetRange.NONE;
     }
 
 }

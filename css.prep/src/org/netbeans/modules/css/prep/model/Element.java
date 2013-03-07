@@ -39,62 +39,42 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.options.colors;
+package org.netbeans.modules.css.prep.model;
 
-import javax.swing.JComponent;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.options.colors.spi.FontsColorsController;
-import org.netbeans.spi.options.OptionsPanelController;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @since 1.39
+ * @author marekfukala
  */
-@OptionsPanelController.Keywords(keywords={"#KW_HighlightPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "#Editor_tab.displayName")
-public class HighlightingPanelController implements FontsColorsController{
-
-    private HighlightingPanel component = null;
+public class Element {
     
-    @Override
-    public void update(ColorModel model) {
-        getHighlightingPanel().update(model);
+    private FileObject file;
+    private OffsetRange range;
+    private CharSequence name;
+
+    public Element(String name, OffsetRange range, FileObject file) {
+        this(name, range);
+        this.file = file;
     }
 
-    @Override
-    public void setCurrentProfile(String profile) {
-        getHighlightingPanel().setCurrentProfile(profile);
+    public Element(String name, OffsetRange range) {
+        this.name = name;
+        this.range = range;
     }
 
-    @Override
-    public void deleteProfile(String profile) {
-        getHighlightingPanel().deleteProfile(profile);
+    public FileObject getFile() {
+        return file;
     }
 
-    @Override
-    public void applyChanges() {
-        getHighlightingPanel().applyChanges();
+    public OffsetRange getRange() {
+        return range;
     }
 
-    @Override
-    public void cancel() {
-        getHighlightingPanel().cancel();
+    public CharSequence getName() {
+        return name;
     }
-
-    @Override
-    public boolean isChanged() {
-        return getHighlightingPanel().isChanged();
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return getHighlightingPanel();
-    }
-
-    private synchronized HighlightingPanel getHighlightingPanel() {
-        if (component == null) {
-            component = new HighlightingPanel();
-        }
-        return component;
-    }
-
+    
+    
 }
