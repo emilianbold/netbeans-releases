@@ -401,7 +401,11 @@ public class ConfigurationMakefileWriter {
             writeBuildTestTargets(makefileWriter, projectDescriptor, conf, bw);
             makefileWriter.writeRunTestTarget(projectDescriptor, conf, bw);
             makefileWriter.writeCleanTarget(projectDescriptor, conf, bw);
-            makefileWriter.writeDependencyChecking(projectDescriptor, conf, bw);
+            //we need to write dependencies only in case they are enabled
+            if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration() && 
+                    !conf.isQmakeConfiguration() && conf.getCompilerSet().getCompilerSet() != null) {
+                makefileWriter.writeDependencyChecking(projectDescriptor, conf, bw);
+            }
         } finally {
             closeWriter(bw);
         }
