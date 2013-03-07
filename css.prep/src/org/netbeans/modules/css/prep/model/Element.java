@@ -42,16 +42,39 @@
 package org.netbeans.modules.css.prep.model;
 
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.openide.filesystems.FileObject;
 
 /**
- * xxx: temporary
  *
  * @author marekfukala
  */
-public class Variable extends Element {
+public class Element {
+    
+    private FileObject file;
+    private OffsetRange range;
+    private CharSequence name;
 
-    public Variable(String name, OffsetRange range) {
-        super(name, range);
+    public Element(String name, OffsetRange range, FileObject file) {
+        this(name, range);
+        this.file = file;
     }
 
+    public Element(String name, OffsetRange range) {
+        this.name = name;
+        this.range = range;
+    }
+
+    public FileObject getFile() {
+        return file;
+    }
+
+    public OffsetRange getRange() {
+        return range;
+    }
+
+    public CharSequence getName() {
+        return name;
+    }
+    
+    
 }
