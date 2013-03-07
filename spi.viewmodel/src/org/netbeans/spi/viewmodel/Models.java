@@ -77,6 +77,7 @@ import org.netbeans.modules.viewmodel.AsynchronousModel;
 import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
 import org.netbeans.modules.viewmodel.HyperCompoundModel;
 import org.netbeans.modules.viewmodel.OutlineTable;
+import org.netbeans.modules.viewmodel.TreeModelNode.ActionOnPresetNodes;
 import org.netbeans.modules.viewmodel.TreeModelNode.DisableableAction;
 import org.netbeans.modules.viewmodel.TreeModelRoot;
 
@@ -633,12 +634,14 @@ public final class Models {
     /**
      * @author   Jan Jancura
      */
-    private static class ActionSupport extends AbstractAction implements DisableableAction {
+    private static class ActionSupport extends AbstractAction implements DisableableAction,
+                                                                         ActionOnPresetNodes {
 
         private ActionPerformer     performer;
         private int                 multiselectionType;
         private String              displayName;
         private PrivilegedAction    enabledTest;
+        private List<Node>          presetNodes;
 
  
         ActionSupport (
@@ -653,6 +656,23 @@ public final class Models {
         }
         
         @Override
+        public void addNode(Node n) {
+            if (presetNodes == null) {
+                presetNodes = new LinkedList<Node>();
+                SwingUtilities.invokeLater(new PresetNodesCleaner());
+            }
+            presetNodes.add(n);
+        }
+        
+        private Node[] getActiveNodes() {
+            if (presetNodes != null) {
+                return presetNodes.toArray(new Node[] {});
+            } else {
+                return TopComponent.getRegistry().getActivatedNodes();
+            }
+        }
+        
+        @Override
         public boolean isEnabled () {
             if (enabledTest != null) {
                 if (Boolean.FALSE.equals(enabledTest.run())) {
@@ -660,7 +680,7 @@ public final class Models {
                 }
             }
             boolean any = multiselectionType == MULTISELECTION_TYPE_ANY;
-            Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
+            Node[] ns = getActiveNodes();
             if (multiselectionType == MULTISELECTION_TYPE_EXACTLY_ONE) {
                 if (ns.length != 1) return false;
                 return performer.isEnabled (
@@ -688,7 +708,7 @@ public final class Models {
 
         public void actionPerformed (ActionEvent e) {
             //System.err.println("Models.ActionSupport.actionPerformed("+e+")");
-            Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
+            Node[] ns = getActiveNodes();
             int i, k = ns.length;
             IdentityHashMap<Action, ArrayList<Object>> h = new IdentityHashMap<Action, ArrayList<Object>>();
             for (i = 0; i < k; i++) {
@@ -745,6 +765,15 @@ public final class Models {
                 }
             }
             return a;
+        }
+        
+        private class PresetNodesCleaner implements Runnable {
+
+            @Override
+            public void run() {
+                presetNodes = null;
+            }
+            
         }
     }
 
