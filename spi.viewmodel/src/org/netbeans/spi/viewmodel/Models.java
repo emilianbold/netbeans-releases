@@ -44,6 +44,7 @@
 
 package org.netbeans.spi.viewmodel;
 
+import java.awt.Component;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
@@ -69,6 +70,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -83,6 +85,8 @@ import org.netbeans.modules.viewmodel.TreeModelRoot;
 
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 import org.openide.awt.Actions;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.TreeView;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -664,12 +668,43 @@ public final class Models {
             presetNodes.add(n);
         }
         
-        private Node[] getActiveNodes() {
-            if (presetNodes != null) {
-                return presetNodes.toArray(new Node[] {});
-            } else {
-                return TopComponent.getRegistry().getActivatedNodes();
+        private Node[] getActiveNodes(ActionEvent e) {
+            Node[] nodes = null;
+            if (e != null) {
+                nodes = getOutlineViewSelection(e);
+            } else if (presetNodes != null) {
+                nodes = presetNodes.toArray(new Node[] {});
             }
+            if (nodes == null) {
+                nodes = TopComponent.getRegistry().getActivatedNodes();
+            }
+            return nodes;
+        }
+        
+        private Node[] getOutlineViewSelection(ActionEvent e) {
+            Object source = e.getSource();
+            if (source instanceof Component) {
+                Component c = (Component) source;
+                JPopupMenu popupMenu = null;
+                while (c != null) {
+                    if (c instanceof JPopupMenu) {
+                        popupMenu = (JPopupMenu) c;
+                        break;
+                    }
+                    c = c.getParent();
+                }
+                if (popupMenu != null) {
+                    c = popupMenu.getInvoker();
+                    while (c != null) {
+                        if (c instanceof OutlineView) {
+                            ExplorerManager manager = ExplorerManager.find(c);
+                            return manager.getSelectedNodes();
+                        }
+                        c = c.getParent();
+                    }
+                }
+            }
+            return null;
         }
         
         @Override
@@ -680,7 +715,7 @@ public final class Models {
                 }
             }
             boolean any = multiselectionType == MULTISELECTION_TYPE_ANY;
-            Node[] ns = getActiveNodes();
+            Node[] ns = getActiveNodes(null);
             if (multiselectionType == MULTISELECTION_TYPE_EXACTLY_ONE) {
                 if (ns.length != 1) return false;
                 return performer.isEnabled (
@@ -708,7 +743,7 @@ public final class Models {
 
         public void actionPerformed (ActionEvent e) {
             //System.err.println("Models.ActionSupport.actionPerformed("+e+")");
-            Node[] ns = getActiveNodes();
+            Node[] ns = getActiveNodes(e);
             int i, k = ns.length;
             IdentityHashMap<Action, ArrayList<Object>> h = new IdentityHashMap<Action, ArrayList<Object>>();
             for (i = 0; i < k; i++) {
