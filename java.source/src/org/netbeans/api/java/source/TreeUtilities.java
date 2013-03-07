@@ -72,6 +72,7 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenSequence;
@@ -214,8 +215,8 @@ public final class TreeUtilities {
         return Collections.unmodifiableList(comments);
     }
 
-    static void ensureCommentsMapped(CompilationInfo info, Tree tree, CommentSetImpl set) {
-        if (!set.areCommentsMapped()) {
+    static void ensureCommentsMapped(CompilationInfo info, @NullAllowed Tree tree, CommentSetImpl set) {
+        if (!set.areCommentsMapped() && tree != null) {
             boolean assertsEnabled = false;
             boolean automap = true;
 
