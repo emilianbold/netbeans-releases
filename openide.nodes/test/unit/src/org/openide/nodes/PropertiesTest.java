@@ -44,8 +44,11 @@
 
 package org.openide.nodes;
 
+import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.Node.Property;
+import org.openide.util.RequestProcessor;
 
 
 
@@ -168,4 +171,31 @@ public class PropertiesTest extends NbTestCase {
             
     }
 
+    public void testNeverSharePropertyEditorBetweenTwoThreads() {
+        final Node.Property p = new PropertySupport.ReadOnly<String>("name", String.class, "display", "short") {
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                return "Hello";
+            }
+        };
+        
+        PropertyEditor p1 = p.getPropertyEditor();
+        
+        class R implements Runnable {
+            PropertyEditor p2;
+
+            @Override
+            public void run() {
+                p2 = p.getPropertyEditor();
+            }
+        }
+        R r = new R();
+        RequestProcessor.getDefault().post(r).waitFinished();
+        
+        assertNotNull("Find 1", p1);
+        assertNotNull("Find 2", r.p2);
+        if (p1 == r.p2) {
+            fail("Editors obtained from different threads should be different! was " + p1 + " and " + r.p2);
+        }
+    }
 }
