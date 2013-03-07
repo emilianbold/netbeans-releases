@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsfapi.api;
+package org.netbeans.modules.web.jsf.hints;
 
-public enum DefaultLibraryInfo implements LibraryInfo {
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.RuleContext;
 
-    HTML("http://java.sun.com/jsf/html", "Html Basic", "h"), //NOI18N
-    JSF_CORE("http://java.sun.com/jsf/core", "Jsf Core", "f"), //NOI18N
-    JSTL_CORE("http://java.sun.com/jsp/jstl/core", "Jstl Core", "c"), //NOI18N
-    JSTL_CORE_FUNCTIONS("http://java.sun.com/jsp/jstl/functions", "Jstl Core Functions", "fn"), //NOI18N
-    FACELETS("http://java.sun.com/jsf/facelets", "Facelets", "ui"), //NOI18N
-    COMPOSITE("http://java.sun.com/jsf/composite", "Composite Components", "cc"), //NOI18N
-    PRIMEFACES("http://primefaces.org/ui", "PrimeFaces", "p"), //NOI18N
-    FLOW("http://java.sun.com/jsf/flow", "Faces Flow", "j"), //NOI18N
-    JSF("http://java.sun.com/jsf", "Jsf", "jsf"), //NOI18N
-    PASSTHROUGH("http://java.sun.com/jsf/passthrough", "Passthrough", "p"); //NOI18N
-    
-    private String namespace;
-    private String displayName;
-    private String defaultPrefix;
+/**
+ * Hints provider for the JSF sources.
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public class JsfHintsProvider implements HintsProvider {
 
-    private DefaultLibraryInfo(String namespace, String displayName, String defaultPrefix) {
-        this.namespace = namespace;
-        this.displayName = displayName;
-        this.defaultPrefix = defaultPrefix;
+    @Override
+    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public String getNamespace() {
-        return namespace;
+    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public String getDefaultPrefix() {
-        return defaultPrefix;
+    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public String getDisplayName() {
-        return displayName;
+    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public static LibraryInfo forNamespace(String namespace) {
-        for(int i = 0; i < values().length; i++) {
-            if(values()[i].getNamespace().equals(namespace)) {
-                return values()[i];
-            }
-        }
-        return null;
+    @Override
+    public void cancel() {
     }
 
+    @Override
+    public List<Rule> getBuiltinRules() {
+        return Collections.<Rule>emptyList();
+    }
+
+    @Override
+    public RuleContext createRuleContext() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 }

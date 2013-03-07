@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsfapi.api;
+package org.netbeans.modules.web.jsf.hints;
 
-public enum DefaultLibraryInfo implements LibraryInfo {
+import java.util.Collection;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
-    HTML("http://java.sun.com/jsf/html", "Html Basic", "h"), //NOI18N
-    JSF_CORE("http://java.sun.com/jsf/core", "Jsf Core", "f"), //NOI18N
-    JSTL_CORE("http://java.sun.com/jsp/jstl/core", "Jstl Core", "c"), //NOI18N
-    JSTL_CORE_FUNCTIONS("http://java.sun.com/jsp/jstl/functions", "Jstl Core Functions", "fn"), //NOI18N
-    FACELETS("http://java.sun.com/jsf/facelets", "Facelets", "ui"), //NOI18N
-    COMPOSITE("http://java.sun.com/jsf/composite", "Composite Components", "cc"), //NOI18N
-    PRIMEFACES("http://primefaces.org/ui", "PrimeFaces", "p"), //NOI18N
-    FLOW("http://java.sun.com/jsf/flow", "Faces Flow", "j"), //NOI18N
-    JSF("http://java.sun.com/jsf", "Jsf", "jsf"), //NOI18N
-    PASSTHROUGH("http://java.sun.com/jsf/passthrough", "Passthrough", "p"); //NOI18N
-    
-    private String namespace;
-    private String displayName;
-    private String defaultPrefix;
+/**
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public interface JsfHintsRule {
 
-    private DefaultLibraryInfo(String namespace, String displayName, String defaultPrefix) {
-        this.namespace = namespace;
-        this.displayName = displayName;
-        this.defaultPrefix = defaultPrefix;
-    }
-
-    @Override
-    public String getNamespace() {
-        return namespace;
-    }
-
-    @Override
-    public String getDefaultPrefix() {
-        return defaultPrefix;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public static LibraryInfo forNamespace(String namespace) {
-        for(int i = 0; i < values().length; i++) {
-            if(values()[i].getNamespace().equals(namespace)) {
-                return values()[i];
-            }
-        }
-        return null;
-    }
-
+    /**
+     * Checks errors for given context.
+     * @param ctx context
+     * @return list of found errors
+     */
+    Collection<ErrorDescription> check(JsfHintsContext ctx);
 
 }

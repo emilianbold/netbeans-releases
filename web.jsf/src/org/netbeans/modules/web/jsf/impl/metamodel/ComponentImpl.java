@@ -137,7 +137,8 @@ public class ComponentImpl extends PersistentObject implements Component,  Refre
         }
         tagName = parseResult.get("tagName", String.class);         //NOI18N
         if (tagName == null) {
-            tagName = "";                                           //NOI18N
+            tagName = typeElement.getSimpleName().toString();
+            tagName = tagName.substring(0, 1).toLowerCase() + tagName.substring(1);
         }
         return true;
     }
