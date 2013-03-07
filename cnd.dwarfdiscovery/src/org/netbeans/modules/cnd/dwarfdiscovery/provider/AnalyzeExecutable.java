@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
+import org.netbeans.modules.cnd.dwarfdiscovery.RemoteJavaExecution;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
