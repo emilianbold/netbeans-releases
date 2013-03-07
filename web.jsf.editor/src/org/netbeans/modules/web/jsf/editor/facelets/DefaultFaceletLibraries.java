@@ -154,8 +154,10 @@ public class DefaultFaceletLibraries {
     protected synchronized static Map<String, Library> getJsf22FaceletPseudoLibraries(FaceletsLibrarySupport support) {
         if (jsf22FaceletPseudoLibraries == null) {
             jsf22FaceletPseudoLibraries = new HashMap<String, Library>(2);
-            jsf22FaceletPseudoLibraries.put(JSF_NS, new JsfFaceletPseudoLibrary(support, JSF_NS, "jsf"));
-            jsf22FaceletPseudoLibraries.put(JSF_PASSTHROUGH_NS, new JsfFaceletPseudoLibrary(support, JSF_PASSTHROUGH_NS, "p"));
+            jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.JSF.getNamespace(),
+                    new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.JSF));
+            jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.PASSTHROUGH.getNamespace(),
+                    new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.PASSTHROUGH));
         }
         return jsf22FaceletPseudoLibraries;
     }
@@ -164,10 +166,12 @@ public class DefaultFaceletLibraries {
 
         private final String namespace;
         private final String prefix;
+        private final String displayName;
 
-        public JsfFaceletPseudoLibrary(FaceletsLibrarySupport support, String namespace, String prefix) {
-            this.namespace = namespace;
-            this.prefix = prefix;
+        public JsfFaceletPseudoLibrary(FaceletsLibrarySupport support, DefaultLibraryInfo defaultLibraryInfo) {
+            this.namespace = defaultLibraryInfo.getNamespace();
+            this.prefix = defaultLibraryInfo.getDefaultPrefix();
+            this.displayName = defaultLibraryInfo.getDisplayName();
         }
 
         @Override
@@ -202,7 +206,7 @@ public class DefaultFaceletLibraries {
 
         @Override
         public String getDisplayName() {
-            return namespace;
+            return displayName;
         }
 
     }
