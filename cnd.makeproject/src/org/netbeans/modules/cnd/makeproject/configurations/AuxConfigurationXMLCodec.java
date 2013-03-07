@@ -45,15 +45,18 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.picklist.PicklistElement;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import static org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.DEVELOPMENT_SERVER_ELEMENT;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.xml.sax.Attributes;
@@ -143,7 +146,25 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
                 ((MakeConfiguration) currentConf).getDevelopmentHost().setBuildPlatform(set);
             }
-        }
+        } else if (element.equals(COMPILE_DIR_ELEMENT)) {
+            if (currentConf instanceof MakeConfiguration) {
+                ((MakeConfiguration) currentConf).getCompileConfiguration().getCompileCommandWorkingDir().setValue(currentText);
+                ((MakeConfiguration) currentConf).getCompileConfiguration().getCompileCommandWorkingDir().getPicklist().addElement(currentText);
+            }
+        } else if (element.equals(COMPILE_DIR_PICKLIST_ITEM_ELEMENT)) {
+            if (currentConf instanceof MakeConfiguration) {
+                ((MakeConfiguration) currentConf).getCompileConfiguration().getCompileCommandWorkingDir().getPicklist().addElement(currentText);
+            }
+        } else if (element.equals(COMPILE_COMMAND_ELEMENT)) {
+            if (currentConf instanceof MakeConfiguration) {
+                ((MakeConfiguration) currentConf).getCompileConfiguration().getCompileCommand().setValue(currentText);
+                ((MakeConfiguration) currentConf).getCompileConfiguration().getCompileCommand().getPicklist().addElement(currentText);
+            }
+        } else if (element.equals(COMPILE_COMMAND_PICKLIST_ITEM_ELEMENT)) {
+            if (currentConf instanceof MakeConfiguration) {
+                ((MakeConfiguration) currentConf).getCompileConfiguration().getCompileCommand().getPicklist().addElement(currentText);
+            }
+	}
     }
 
     @Override
@@ -157,4 +178,31 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getDevelopmentHost().getBuildPlatform()); // NOI18N
         xes.elementClose(TOOLS_SET_ELEMENT);
     }
+    
+    @Override
+    protected void writeCompileConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
+        if (makeConfiguration.isMakefileConfiguration()) {
+            CompileConfiguration compileConfiguration = makeConfiguration.getCompileConfiguration();
+            xes.elementOpen(COMPILE_ID);
+
+            xes.elementOpen(COMPILE_DIR_PICKLIST_ELEMENT);
+            PicklistElement[] elements = compileConfiguration.getCompileCommandWorkingDir().getPicklist().getElements();
+            for (int i = (elements.length-1); i >= 0; i--) {
+                 xes.element(COMPILE_DIR_PICKLIST_ITEM_ELEMENT, elements[i].displayName());
+            }
+            xes.elementClose(COMPILE_DIR_PICKLIST_ELEMENT);
+            xes.element(COMPILE_DIR_ELEMENT, compileConfiguration.getCompileCommandWorkingDir().getValue());
+
+            xes.elementOpen(COMPILE_COMMAND_PICKLIST_ELEMENT);
+            elements = compileConfiguration.getCompileCommand().getPicklist().getElements();
+            for (int i = (elements.length-1); i >= 0; i--) {
+                 xes.element(COMPILE_COMMAND_PICKLIST_ITEM_ELEMENT, elements[i].displayName());
+            }
+            xes.elementClose(COMPILE_COMMAND_PICKLIST_ELEMENT);
+            xes.element(COMPILE_COMMAND_ELEMENT, compileConfiguration.getCompileCommand().getValue());
+
+            xes.elementClose(COMPILE_ID);
+        }
+    }
+    
 }

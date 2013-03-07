@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.api.model.xref;
 
+import org.netbeans.modules.cnd.support.Interrupter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -121,10 +122,6 @@ public abstract class CsmReferenceRepository {
      *          empty collection if no references
      */
     public abstract Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter);
-
-    public interface Interrupter {
-        boolean cancelled();
-    }
     
     //
     // Implementation of the default Repository

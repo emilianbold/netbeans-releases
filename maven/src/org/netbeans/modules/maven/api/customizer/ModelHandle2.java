@@ -307,7 +307,6 @@ public class ModelHandle2 {
      * @param mapp
      */
     public static void setUserActionMapping(NetbeansActionMapping action, ActionToGoalMapping mapp) {
-        action.setPackagings(null);
         List<NetbeansActionMapping> lst = mapp.getActions() != null ? mapp.getActions() : new ArrayList<NetbeansActionMapping>();
         Iterator<NetbeansActionMapping> it = lst.iterator();
         while (it.hasNext()) {

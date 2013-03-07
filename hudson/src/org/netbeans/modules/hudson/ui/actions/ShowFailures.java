@@ -42,67 +42,174 @@
 package org.netbeans.modules.hudson.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.logging.Logger;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
-import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Action to display test failures.
  */
-public class ShowFailures extends AbstractAction {
+public class ShowFailures extends AbstractAction implements ContextAwareAction {
 
-    private static final Logger LOG = Logger.getLogger(ShowFailures.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(ShowFailures.class);
-    private final HudsonJobBuild build;
-    private final HudsonMavenModuleBuild moduleBuild;
+    private static ShowFailures INSTANCE = null;
+    private final Lookup context;
 
-    public ShowFailures(HudsonJobBuild build) {
-        this(build, null);
+    /**
+     * Get the shared instance from system filesystem.
+     */
+    public static ShowFailures getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new ShowFailures();
+        }
+        return INSTANCE;
     }
 
-    public ShowFailures(HudsonMavenModuleBuild module) {
-        this(module.getBuild(), module);
+    public ShowFailures() {
+        this(Utilities.actionsGlobalContext());
     }
 
     @Messages("ShowFailures.label=Show Test Failures")
-    private ShowFailures(HudsonJobBuild build,
-            HudsonMavenModuleBuild moduleBuild) {
-
-        this.build = build;
-        this.moduleBuild = moduleBuild;
-        putValue(NAME, ShowFailures_label());
+    private ShowFailures(Lookup context) {
+        putValue(NAME, Bundle.ShowFailures_label());
+        this.context = context;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        HudsonInstance hudsonInstance = build.getJob().getInstance();
-        if (hudsonInstance instanceof HudsonInstanceImpl) {
-            HudsonInstanceImpl hudsonInstanceImpl =
-                    (HudsonInstanceImpl) hudsonInstance;
-            BuilderConnector builderClient = hudsonInstanceImpl.getBuilderConnector();
-            if (moduleBuild != null) {
-                builderClient.getFailureDisplayer().showFailures(moduleBuild);
-            } else {
-                builderClient.getFailureDisplayer().showFailures(build);
-            }
-        }
-    }
-
-    @Override
-    public boolean isEnabled() {
+    /**
+     * Check if failures for job build or maven module build can be shown. The
+     * build has to be unstable, and a failure displayer has to be available.
+     */
+    private boolean canShowFailures(HudsonJobBuild build,
+            HudsonMavenModuleBuild module) {
         HudsonInstance instance = build.getJob().getInstance();
         if (instance instanceof HudsonInstanceImpl) {
+            if (module == null && !HudsonJobBuild.Result.UNSTABLE.equals(
+                    build.getResult())) {
+                return false;
+            } else if (module != null) {
+                boolean failed = false;
+                switch (module.getColor()) {
+                    case yellow:
+                    case yellow_anime:
+                        failed = true;
+                }
+                if (!failed) {
+                    return false;
+                }
+            }
             BuilderConnector builderClient =
                     ((HudsonInstanceImpl) instance).getBuilderConnector();
             return builderClient.getFailureDisplayer() != null;
         }
         return false;
+    }
+
+    /**
+     * Find maven module builds that are part of a job build but are not already
+     * included in the context. It's used for prevention of duplicate opening of
+     * test results.
+     */
+    private List<HudsonMavenModuleBuild> getExtraModuleBuilds(
+            HudsonJobBuild build) {
+        List<HudsonMavenModuleBuild> result =
+                new LinkedList<HudsonMavenModuleBuild>();
+        Collection<? extends HudsonMavenModuleBuild> alreadyIncludedBuilds =
+                context.lookupAll(HudsonMavenModuleBuild.class);
+        Set<String> alreadyIncludedURLs =
+                new HashSet<String>(alreadyIncludedBuilds.size());
+        for (HudsonMavenModuleBuild b : alreadyIncludedBuilds) {
+            alreadyIncludedURLs.add(b.getUrl());
+        }
+        for (HudsonMavenModuleBuild m : build.getMavenModules()) {
+            if (!alreadyIncludedURLs.contains(m.getUrl())) {
+                result.add(m);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * If there is at least one unstable build in the context, this action will
+     * be enabled.
+     */
+    @Override
+    public boolean isEnabled() {
+        for (HudsonJobBuild job : context.lookupAll(HudsonJobBuild.class)) {
+            if (canShowFailures(job, null)) {
+                return true;
+            }
+        }
+        for (HudsonMavenModuleBuild module
+                : context.lookupAll(HudsonMavenModuleBuild.class)) {
+            if (canShowFailures(module.getBuild(), module)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        for (HudsonJobBuild job : context.lookupAll(HudsonJobBuild.class)) {
+            showFailures(job, null);
+        }
+        for (HudsonMavenModuleBuild module
+                : context.lookupAll(HudsonMavenModuleBuild.class)) {
+            showFailures(module.getBuild(), module);
+        }
+    }
+
+    /**
+     * Show failures in a job build or maven module build. If a maven module
+     * build is not specified, but the job build contains some module build,
+     * failures from all its module builds will be shown.
+     */
+    private void showFailures(HudsonJobBuild build,
+            HudsonMavenModuleBuild moduleBuild) {
+
+        if (!canShowFailures(build, moduleBuild)) {
+            return;
+        }
+        HudsonInstance hudsonInstance = build.getJob().getInstance();
+        if (hudsonInstance instanceof HudsonInstanceImpl) {
+            HudsonInstanceImpl hudsonInstanceImpl =
+                    (HudsonInstanceImpl) hudsonInstance;
+            BuilderConnector builderClient =
+                    hudsonInstanceImpl.getBuilderConnector();
+            BuilderConnector.FailureDisplayer failureDisplayer =
+                    builderClient.getFailureDisplayer();
+            if (failureDisplayer != null) {
+                if (moduleBuild != null) {
+                    failureDisplayer.showFailures(moduleBuild);
+                } else {
+                    if (build.getMavenModules().isEmpty()) {
+                        failureDisplayer.showFailures(build);
+                    } else {
+                        for (HudsonMavenModuleBuild extraModule
+                                : getExtraModuleBuilds(build)) {
+                            failureDisplayer.showFailures(extraModule);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new ShowFailures(actionContext);
     }
 }

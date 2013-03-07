@@ -414,29 +414,8 @@ public class CompileLineService {
     }
 
     private static Set<String> getObjectFiles(String root){
-        HashSet<String> set = new HashSet<String>();
-        gatherSubFolders(new File(root), set, new HashSet<String>());
         HashSet<String> map = new HashSet<String>();
-        for (Iterator<String> it = set.iterator(); it.hasNext();){
-            File d = new File(it.next());
-            if (d.exists() && d.isDirectory() && d.canRead()){
-                File[] ff = d.listFiles();
-                if (ff != null) {
-                    for (int i = 0; i < ff.length; i++) {
-                        if (ff[i].isFile()) {
-                            String name = ff[i].getName();
-                            if (name.endsWith(".o") ||  // NOI18N
-                                name.endsWith(".so") || // NOI18N
-                                name.endsWith(".a") ||  // NOI18N
-                                isExecutable(ff[i])){
-                                String path = ff[i].getAbsolutePath();
-                                map.add(path);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        gatherSubFolders(new File(root), map, new HashSet<String>());
         return map;
     }
 
@@ -445,7 +424,7 @@ public class CompileLineService {
         return name.indexOf('.') < 0;
     }
 
-    private static void gatherSubFolders(File d, HashSet<String> set, HashSet<String> antiLoop){
+    private static void gatherSubFolders(File d, HashSet<String> map, HashSet<String> antiLoop){
         if (d.exists() && d.isDirectory() && d.canRead()){
             if (ignoreFolder(d)){
                 return;
@@ -459,12 +438,20 @@ public class CompileLineService {
             }
             if (!antiLoop.contains(canPath)){
                 antiLoop.add(canPath);
-                set.add(d.getAbsolutePath());
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
                         if (ff[i].isDirectory()) {
-                            gatherSubFolders(ff[i], set, antiLoop);
+                            gatherSubFolders(ff[i], map, antiLoop);
+                        } else if (ff[i].isFile()) {
+                            String name = ff[i].getName();
+                            if (name.endsWith(".o") ||  // NOI18N
+                                name.endsWith(".so") || // NOI18N
+                                name.endsWith(".a") ||  // NOI18N
+                                isExecutable(ff[i])){
+                                String path = ff[i].getAbsolutePath();
+                                map.add(path);
+                            }
                         }
                     }
                 }

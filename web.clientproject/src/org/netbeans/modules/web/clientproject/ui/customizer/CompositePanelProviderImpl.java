@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
+import java.io.File;
+import java.util.List;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraryCustomizerPanel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -68,7 +72,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     @NbBundle.Messages({
         "CompositePanelProviderImpl.sources.title=Sources",
         "CompositePanelProviderImpl.run.title=Run",
-        "CompositePanelProviderImpl.jsFiles.title=JavaScript Files"
     })
     @Override
     public Category createCategory(Lookup context) {
@@ -86,7 +89,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (JS_FILES.equals(name)) {
             category = ProjectCustomizer.Category.create(
                     JS_FILES,
-                    Bundle.CompositePanelProviderImpl_jsFiles_title(),
+                    JavaScriptLibraryCustomizerPanel.getCategoryDisplayName(),
                     null);
         }
         assert category != null : "No category for name: " + name; //NOI18N
@@ -96,13 +99,28 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     @Override
     public JComponent createComponent(Category category, Lookup context) {
         String categoryName = category.getName();
-        ClientSideProjectProperties uiProperties = context.lookup(ClientSideProjectProperties.class);
+        final ClientSideProjectProperties uiProperties = context.lookup(ClientSideProjectProperties.class);
         if (SOURCES.equals(categoryName)) {
             return new SourcesPanel(category, uiProperties);
         } else if (RUN.equals(categoryName)) {
             return new RunPanel(category, uiProperties);
         } else if (JS_FILES.equals(categoryName)) {
-            return new JavaScriptFilesPanel(category, uiProperties);
+            return new JavaScriptLibraryCustomizerPanel(category, new JavaScriptLibraryCustomizerPanel.CustomizerSupport() {
+                @Override
+                public File getLibrariesFolderRoot() {
+                    return uiProperties.getResolvedSiteRootFolder();
+                }
+                @Override
+                public void setLibrariesFolder(String librariesFolder) {
+                    assert librariesFolder != null;
+                    uiProperties.setJsLibFolder(librariesFolder);
+                }
+                @Override
+                public void setSelectedLibraries(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
+                    assert selectedLibraries != null;
+                    uiProperties.setNewJsLibraries(selectedLibraries);
+                }
+            });
         }
         assert false : "No component found for " + category.getDisplayName(); //NOI18N
         return new JPanel();

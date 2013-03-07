@@ -68,6 +68,10 @@ public class JsStructureScannerTest extends JsTestBase {
         checkFolds("testfiles/coloring/czechChars.js");
     }
     
+    public void testIssue226142() throws Exception {
+        checkFolds("testfiles/structure/issue226142.js");
+    }
+    
     public void testSimpleMethodChain() throws Exception {
         checkStructure("testfiles/completion/simpleMethodChain/methodChainSimple.js");
     }
@@ -242,5 +246,13 @@ public class JsStructureScannerTest extends JsTestBase {
     
     public void testIssue224520() throws Exception {
         checkStructure("testfiles/markoccurences/issue224520.js");
+    }
+    
+    public void testIssue226480() throws Exception {
+        checkStructure("testfiles/structure/issue226480.js");
+    }
+    
+    public void testIssue226559() throws Exception {
+        checkStructure("testfiles/structure/issue226559.js");
     }
 }

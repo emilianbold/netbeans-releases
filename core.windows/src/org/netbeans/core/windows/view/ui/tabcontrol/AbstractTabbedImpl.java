@@ -65,7 +65,7 @@ import org.openide.windows.TopComponent;
  * 
  * @author S. Aubrecht
  */
-abstract class AbstractTabbedImpl extends Tabbed {
+public abstract class AbstractTabbedImpl extends Tabbed {
 
     protected abstract TabDataModel getTabModel();
     protected abstract SingleSelectionModel getSelectionModel();
@@ -491,7 +491,7 @@ abstract class AbstractTabbedImpl extends Tabbed {
     }
 
     /** Notifies all registered listeners about the event. */
-    void fireStateChanged() {
+    protected final void fireStateChanged() {
         if (!SwingUtilities.isEventDispatchThread()) {
             Logger.getAnonymousLogger().warning(
                 "All state changes to the tab component must happen on the event thread!"); //NOI18N

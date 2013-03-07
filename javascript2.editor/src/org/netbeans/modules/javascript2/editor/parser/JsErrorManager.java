@@ -233,8 +233,8 @@ public class JsErrorManager extends ErrorManager {
         List<JsParserError> ret = new ArrayList<JsParserError>(errors.size());
         final FileObject file = snapshot != null ? snapshot.getSource().getFileObject() : null;
 
-        String mimepath = snapshot.getMimePath().getPath();
-        if (!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
+        String mimepath = snapshot != null ? snapshot.getMimePath().getPath() : null;
+        if (snapshot != null && !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
             && !JsTokenId.JSON_MIME_TYPE.equals(mimepath)) {
                 int nextCorrect = -1;
                 for (SimpleError error : errors) {

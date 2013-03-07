@@ -76,6 +76,23 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="JDK8-profiles">
+            <api name="queries"/>
+            <summary>The <code>SourceLevelQuery</code> supports JDK 8 profiles</summary>
+            <version major="1" minor="45"/>
+            <date day="5" month="3" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    The JDK 8 provides three limited profiles (compact1, compact2, compact3) in addition
+                    to the full JDK. Each profile specifies a specific set of Java API packages and
+                    contains all of the APIs of the smaller profile. The new API allows a client of the
+                    <code>SourceLevelQuery</code> to query the required profile.
+                </p>
+            </description>
+            <issue number="226657"/>
+        </change>
         <change id="source-level-synonyms">
             <api name="queries"/>
             <summary>The <code>SourceLevelQuery</code> supports source level synonyms</summary>

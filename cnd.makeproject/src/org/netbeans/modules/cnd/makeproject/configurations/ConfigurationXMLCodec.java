@@ -1021,7 +1021,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } catch (FileStateInvalidException ex) {
             throw new IllegalStateException(ex);
         }
-        MakeConfiguration makeConfiguration = new MakeConfiguration(fsPath, getString(value), confType, customizerId, host);
+        MakeConfiguration makeConfiguration = MakeConfiguration.createConfiguration(fsPath, getString(value), confType, customizerId, host);
         return makeConfiguration;
     }
 
@@ -1062,5 +1062,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             xes.element(REBUILD_PROP_CHANGED, "" + makeConfiguration.getRebuildPropChanged().getValue()); // NOI18N
         }
         xes.elementClose(TOOLS_SET_ELEMENT);
+    }
+
+    @Override
+    protected void writeCompileConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
     }
 }

@@ -357,6 +357,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         String id = lf.getID();
         boolean useClean = tableUI && (lf instanceof MetalLookAndFeel 
                 || "GTK".equals(id) //NOI18N
+                || "Nimbus".equals(id) //NOI18N
                 || ("Aqua".equals(id) && "10.5".compareTo(System.getProperty("os.version")) <= 0) //NOI18N
                 || PropUtils.isWindowsVistaLaF() //#217957
                 || "Kunststoff".equals(id)); //NOI18N
@@ -647,7 +648,6 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                 )
             );
         } else {
-            g.setColor(Color.red);
             super.paintComponent(g);
         }
     }

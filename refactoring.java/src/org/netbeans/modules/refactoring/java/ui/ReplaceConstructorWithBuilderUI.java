@@ -57,6 +57,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -81,15 +83,18 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
     private String name;
     private List <String> paramaterNames;
     private List <String> parameterTypes;
+    private List <Boolean> parameterTypeVars;
 
     private ReplaceConstructorWithBuilderUI(TreePathHandle constructor, CompilationInfo info) {
         this.refactoring = new ReplaceConstructorWithBuilderRefactoring(constructor);
         ExecutableElement contructorElement = (ExecutableElement) constructor.resolveElement(info);
         this.name = contructorElement.getSimpleName().toString();
         MethodTree constTree = (MethodTree) constructor.resolve(info).getLeaf();
-        paramaterNames = new ArrayList();
-        parameterTypes = new ArrayList();
+        paramaterNames = new ArrayList<String>();
+        parameterTypes = new ArrayList<String>();
+        parameterTypeVars = new ArrayList<Boolean>();
         boolean varargs = contructorElement.isVarArgs();
+        List<? extends VariableElement> parameterElements = contructorElement.getParameters();
         List<? extends VariableTree> parameters = constTree.getParameters();
         for (int i = 0; i < parameters.size(); i++) {
             VariableTree var = parameters.get(i);
@@ -103,6 +108,7 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
                 }
             }
             parameterTypes.add(type);
+            parameterTypeVars.add(parameterElements.get(i).asType().getKind() == TypeKind.TYPEVAR);
         }
         builderFQN = ((TypeElement) contructorElement.getEnclosingElement()).getQualifiedName().toString();
     }
@@ -128,7 +134,7 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
     @Override
     public CustomRefactoringPanel getPanel(final ChangeListener parent) {
         if (panel == null) {
-            panel = new ReplaceConstructorWithBuilderPanel(parent, builderFQN + "Builder", paramaterNames, parameterTypes);
+            panel = new ReplaceConstructorWithBuilderPanel(parent, builderFQN + "Builder", paramaterNames, parameterTypes, parameterTypeVars);
         }
         return panel;
     }

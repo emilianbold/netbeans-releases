@@ -61,10 +61,10 @@ import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -422,11 +422,11 @@ public class KenaiUtil {
     }
 
     public static void addCacheListener(Issue issue, PropertyChangeListener l) {
-        IssueCacheUtils.addCacheListener(APIAccessor.IMPL.getImpl(issue), l);
+        APIAccessor.IMPL.getImpl(issue).addIssueStatusListener(l);
     }
     
     public static void removeCacheListener(Issue issue, PropertyChangeListener l) {
-        IssueCacheUtils.removeCacheListener(APIAccessor.IMPL.getImpl(issue), l);
+        APIAccessor.IMPL.getImpl(issue).removeIssueStatusListener(l);
     }
 
     public static boolean isOpen(Issue issue) {
@@ -435,5 +435,13 @@ public class KenaiUtil {
     
     public static boolean isShowing(Issue issue) {
         return BugtrackingUtil.isOpened(APIAccessor.IMPL.getImpl(issue));
+    }
+
+    public static boolean notifyJiraDownload(String projectUrl) {
+        return JiraUpdater.notifyJiraDownload(projectUrl);
+    }
+
+    public static void downloadAndInstallJira() {
+        JiraUpdater.getInstance().downloadAndInstall();
     }
 }

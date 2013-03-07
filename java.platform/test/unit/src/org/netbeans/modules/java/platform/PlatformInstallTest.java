@@ -62,7 +62,12 @@ public class PlatformInstallTest extends NbTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.createConfiguration(PlatformInstallTest.class).gui(false).enableModules("org.netbeans.modules.java.j2seplatform").suite();
+        return NbModuleSuite.
+                createConfiguration(PlatformInstallTest.class).
+                gui(false).
+                clusters("extide"). //NOI18N
+                enableModules("org.netbeans.modules.java.j2seplatform").    //NOI18N
+                suite();
     }
 
     public void testLookup () {

@@ -274,13 +274,13 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Project">
             <!-- Project operations -->
-            <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingItemAction.instance">
+            <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction"/>
             </file>
             <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingFolderItemsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-actions-NewFolderAction.instance">
+            <file name="org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction"/>
             </file>
             <file name="org-netbeans-modules-cnd-makeproject-actions-RunTestAction.instance">
@@ -298,6 +298,36 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-cnd-makeproject-actions-ConfigurationManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.ConfigurationManagerAction"/>
             </file>            
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-MoreBuildActionsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MoreBuildActionsAction"/>
+            </file>                        
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-MakeProjectConfigurationAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectConfigurationAction"/>
+            </file>                                    
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-MakeProjectBuildHostAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectBuildHostAction"/>
+            </file>                                                
+            <file name="org-netbeans-modules-cnd-makeproject-ui-UploadAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.RemoteSyncActions.createUploadAction"/>
+            </file>                                                                        
+            <file name="org-netbeans-modules-cnd-makeproject-ui-DownloadAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.RemoteSyncActions.createDownloadAction"/>
+            </file>                                                                        
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-BatchBuildProject.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.batchBuildAction"/>            
+            </file>                               
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.actions.BuildPackageAction"/>            
+            </file>                           
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.debugAction"/>            
+            </file>                           
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.stepIntoAction"/>            
+            </file>                                       
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-TestAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.testAction"/>            
+            </file>                           
         </folder>
         <folder name="Tools">
             <file name="org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance">
@@ -697,10 +727,155 @@ made subject to such option by the copyright holder.
     <folder name="Projects">
         <!-- MakeProject Extension Points-->
         <folder name="org-netbeans-modules-cnd-makeproject">
+            <folder name="MoreBuildActions">
+                <file name="org-netbeans-modules-project-ui-CleanProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-BatchBuildProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-BatchBuildProject.instance"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.instance"/>
+                    <attr name="position" intvalue="300"/>
+                </file>                                
+            </folder>
+            
             <folder name="Nodes"/>
             <folder name="ImportantFiles"/>
             <folder name="Customizer"/>
-            <folder name="Actions"/>
+            <folder name="Actions">        
+                <file name="org-netbeans-modules-project-ui-NewFile$WithSubMenu.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile$WithSubMenu.instance"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="sep-1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance"/>
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingFolderItemsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-AddExistingFolderItemsAction.instance"/>
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.instance"/>
+                    <attr name="position" intvalue="500"/>
+                </file>                                        
+                <file name="sep-1.1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="600"/>
+                </file>                
+                <file name="org-netbeans-modules-project-ui-BuildProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance"/>
+                    <attr name="position" intvalue="700"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-RebuildProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildProject.instance"/>
+                    <attr name="position" intvalue="800"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-MoreBuildActionsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-MoreBuildActionsAction.instance"/>
+                    <attr name="position" intvalue="900"/>
+                </file>                                        
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-MakeProjectConfigurationAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-MakeProjectConfigurationAction.instance"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>                                        
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-MakeProjectBuildHostAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-MakeProjectBuildHostAction.instance"/>
+                    <attr name="position" intvalue="1100"/>
+                </file>                                    
+                <file name="org-netbeans-modules-cnd-makeproject-ui-UploadAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-UploadAction.instance"/>
+                    <attr name="position" intvalue="1120"/>
+                </file>                             
+                <file name="org-netbeans-modules-cnd-makeproject-ui-DownloadAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-DownloadAction.instance"/>
+                    <attr name="position" intvalue="1130"/>
+                </file>                                                             
+                                                    
+                <file name="sep-2.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="1200"/>
+                </file>                
+                <file name="org-netbeans-modules-project-ui-RunProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
+                    <attr name="position" intvalue="1300"/>
+                </file>                
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.instance"/>
+                    <attr name="position" intvalue="1400"/>
+                </file>                                                                        
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.instance"/>
+                    <attr name="position" intvalue="1500"/>
+                </file>                                                                        
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-TestAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-TestAction.instance"/>
+                    <attr name="position" intvalue="1600"/>
+                </file>                                                                                                        
+                <file name="sep-3.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="1700"/>
+                </file>      
+                <file name="org-netbeans-modules-project-ui-SetMainProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SetMainProject.instance"/>
+                    <attr name="position" intvalue="1800"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-actions-OpenSubprojects.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-OpenSubprojects.instance"/>
+                    <attr name="position" intvalue="1900"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-CloseProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CloseProject.instance"/>
+                    <attr name="position" intvalue="2000"/>
+                </file>
+                <file name="sep-4.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="2100"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-RenameProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RenameProject.instance"/>
+                    <attr name="position" intvalue="2200"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-MoveProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-MoveProject.instance"/>
+                    <attr name="position" intvalue="2300"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-CopyProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CopyProject.instance"/>
+                    <attr name="position" intvalue="2400"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-DeleteProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DeleteProject.instance"/>
+                    <attr name="position" intvalue="2500"/>
+                </file>
+                <file name="sep-5.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="2600"/>
+                </file>                
+                <file name="org-openide-actions-FindAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
+                    <attr name="position" intvalue="2700"/>
+                </file>
+                <file name="general.shadow">
+                    <attr name="originalFile" stringvalue="Projects/Actions"/>
+                    <attr name="position" intvalue="2800"/>
+                </file>
+                <file name="sep-6.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="2900"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-CustomizeProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CustomizeProject.instance"/>
+                    <attr name="position" intvalue="3000"/>
+                </file>                
+            </folder>                                                
             <folder name="ActionsFolder"/>
             <folder name="ActionsExtFolder"/>
             <folder name="Lookup">

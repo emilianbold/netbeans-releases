@@ -55,9 +55,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
+import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
 import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
-import org.netbeans.modules.csl.api.InstantRenameAction;
 import org.netbeans.modules.csl.api.NextCamelCasePosition;
 import org.netbeans.modules.csl.api.PreviousCamelCasePosition;
 import org.netbeans.modules.csl.api.SelectCodeElementAction;
@@ -111,15 +111,15 @@ public class GspKit extends HtmlKit {
             // TODO - also register a Tab key action which tabs out of <% %> if the caret is near the end
             // (Shift Enter inserts a line below the current - perhaps that's good enough)
 //            new GspToggleCommentAction(),
-            new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
-            new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
-            new NextCamelCasePosition(findAction(superActions, nextWordAction)),
-            new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
-            new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
-            new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
-            new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
-            new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
-            new InstantRenameAction(),
+            CslActions.createSelectCodeElementAction(true),
+            CslActions.createSelectCodeElementAction(false),
+            CslActions.createCamelCasePositionAction(findAction(superActions, nextWordAction), true),
+            CslActions.createCamelCasePositionAction(findAction(superActions, previousWordAction), false),
+            CslActions.createSelectCamelCasePositionAction(findAction(superActions, selectionNextWordAction), true),
+            CslActions.createSelectCamelCasePositionAction(findAction(superActions, selectionPreviousWordAction), false),
+            CslActions.createDeleteToCamelCasePositionAction(findAction(superActions, removeNextWordAction), true),
+            CslActions.createDeleteToCamelCasePositionAction(findAction(superActions, removePreviousWordAction), false),
+            CslActions.createInstantRenameAction()
          });
     }
 

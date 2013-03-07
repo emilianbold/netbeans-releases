@@ -58,7 +58,7 @@ public class Procedure extends Tuple {
     }
 
     /**
-     * Returns the schema containing this table.
+     * Returns the schema containing this procedure.
      *
      * @return the parent schema.
      */
@@ -132,6 +132,6 @@ public class Procedure extends Tuple {
 
     @Override
     public String toString() {
-        return "View[name='" + getName() + "']"; // NOI18N
+        return "Procedure[name='" + getName() + "']";                  // NOI18N
     }
 }

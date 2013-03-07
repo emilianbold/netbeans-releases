@@ -96,10 +96,18 @@ Contributor(s):
     <folder name="Projects">
         <folder name="org-netbeans-modules-cnd-makeproject">
             <folder name="Actions">
+                <file name="sep-6.1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="2650"/>
+                </file>                                
                 <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/NativeProject/org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance"/>
-                    <attr name="position" intvalue="100"/> 
+                    <attr name="position" intvalue="2660"/> 
                 </file>
+                <file name="sep-6.2.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="2670"/>
+                </file>                                                
             </folder>
         </folder>
     </folder>

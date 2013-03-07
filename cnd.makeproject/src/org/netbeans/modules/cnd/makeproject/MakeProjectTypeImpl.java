@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -59,6 +60,7 @@ import org.openide.util.ImageUtilities;
 public final class MakeProjectTypeImpl implements NativeProjectType {
 
     public static final String TYPE = "org.netbeans.modules.cnd.makeproject"; // NOI18N
+    public static final String PROJECT_TYPE = "org-netbeans-modules-cnd-makeproject";//NOI18N
     public static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
     public static final String PROJECT_CONFIGURATION__NAME_NAME = "name"; // NOI18N
@@ -167,6 +169,11 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     }
 
     private String projectLayerPath() {
-        return "Projects/org-netbeans-modules-cnd-makeproject"; //NOI18N
+        return "Projects/" + PROJECT_TYPE; //NOI18N
     }
+    
+
+    public static String projectMetadataFactoryPath(String customizerId) {
+        return "Projects/" + (customizerId == null ?  PROJECT_TYPE : customizerId) + "/" + ProjectMetadataFactory.LAYER_PATH; //NOI18N
+    }    
 }

@@ -201,7 +201,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     };
 
     private static Map<ServerInstanceProvider, RunTimeDDCatalog> ddCatalogMap = new HashMap<ServerInstanceProvider, RunTimeDDCatalog>();
-    private static RunTimeDDCatalog preludeDDCatalog;
+//    private static RunTimeDDCatalog preludeDDCatalog;
     private static RunTimeDDCatalog javaEE6DDCatalog;
 
     private File platformRootDir=null;
@@ -223,15 +223,15 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         return ddCatalogMap.get(ip);
     }
 
-    /** Factory method providing catalog for XML completion of DD */
-    public static synchronized RunTimeDDCatalog getPreludeRunTimeDDCatalog(){
-        if (preludeDDCatalog==null) {
-            preludeDDCatalog = new RunTimeDDCatalog();
-            preludeDDCatalog.displayNameKey = "LBL_PreludeRunTimeDDCatalog"; // NOI18N
-            preludeDDCatalog.shortDescriptionKey = "DESC_PreludeRunTimeDDCatalog"; // NOI18N
-        }
-        return preludeDDCatalog;
-    }
+//    /** Factory method providing catalog for XML completion of DD */
+//    public static synchronized RunTimeDDCatalog getPreludeRunTimeDDCatalog(){
+//        if (preludeDDCatalog==null) {
+//            preludeDDCatalog = new RunTimeDDCatalog();
+//            preludeDDCatalog.displayNameKey = "LBL_PreludeRunTimeDDCatalog"; // NOI18N
+//            preludeDDCatalog.shortDescriptionKey = "DESC_PreludeRunTimeDDCatalog"; // NOI18N
+//        }
+//        return preludeDDCatalog;
+//    }
 
     /** Factory method providing catalog for XML completion of DD */
     public static synchronized RunTimeDDCatalog getEE6RunTimeDDCatalog(){

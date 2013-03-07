@@ -768,8 +768,8 @@ public final class GitUtils {
     }
     
     private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
-    private static final String REF_PUSHSPEC_PATTERN = "+refs/heads/{0}:refs/heads/{1}"; //NOI18N
-    private static final String REF_TAG_PUSHSPEC_PATTERN = "+refs/tags/{0}:refs/tags/{0}"; //NOI18N
+    private static final String REF_PUSHSPEC_PATTERN = "refs/heads/{0}:refs/heads/{1}"; //NOI18N
+    private static final String REF_TAG_PUSHSPEC_PATTERN = "refs/tags/{0}:refs/tags/{0}"; //NOI18N
 
     public static String getRefSpec(GitBranch branch, String remoteName) {
         return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
@@ -812,6 +812,8 @@ public final class GitUtils {
                 }
             }
         } catch (GitException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
             throw new GitException("Cannot run without indexing due to: " + ex.getMessage(), ex); //NOI18N

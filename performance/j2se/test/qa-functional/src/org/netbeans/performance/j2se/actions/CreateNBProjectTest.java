@@ -137,7 +137,6 @@ public class CreateNBProjectTest extends PerformanceTestCase {
             new JTextFieldOperator(next).enterText("test");
         }
         wizard_location.finish();
-        CommonUtilities.waitProjectTasksFinished();
         return null;
     }
 

@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.bugtracking.ui.issue.cache;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -96,13 +94,8 @@ public class IssueCache<I, D> {
             ISSUE_STATUS_NEW |
             ISSUE_STATUS_MODIFIED;
 
-    /**
-     * issues seen state changed
-     */
-    public static final String EVENT_ISSUE_SEEN_CHANGED = "issue.seen_changed"; // NOI18N
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache");
     private Map<String, IssueEntry> cache;
-    private final Map<String, PropertyChangeSupport> supports = new HashMap<String, PropertyChangeSupport>();
     private Map<String, Map<String, String>> lastSeenAttributes;
 
     private String nameSpace;
@@ -375,8 +368,6 @@ public class IssueCache<I, D> {
             entry.seen = seen;
             storeIssue(entry);
         }
-        Issue issue = getIssue(entry.issue);
-        fireSeenChanged(issue, oldValue, seen);
     }
 
     /**
@@ -598,48 +589,6 @@ public class IssueCache<I, D> {
 
     private void storeIssue(IssueEntry entry) throws IOException {
         IssueStorage.getInstance().storeIssue(nameSpace, entry);
-    }
-
-    public void addPropertyChangeListener(Issue issue, PropertyChangeListener propertyChangeListener) {
-        PropertyChangeSupport support = getChangeSupport(issue, true);
-        support.addPropertyChangeListener(propertyChangeListener);
-        
-    }
-    public void addPropertyChangeListener(I i, PropertyChangeListener l) {
-        addPropertyChangeListener(getIssue(i), l);
-    }
-
-    public void removePropertyChangeListener(I i, PropertyChangeListener l) {
-        removePropertyChangeListener(getIssue(i), l);
-    }
-    
-    public void removePropertyChangeListener(Issue issue, PropertyChangeListener l) {
-        PropertyChangeSupport support = getChangeSupport(issue, true);
-        support.removePropertyChangeListener(l);
-    }
-    
-    private PropertyChangeSupport getChangeSupport(Issue issue, boolean forceCreate) {
-        PropertyChangeSupport support = supports.get(issue.getID());
-        if (support == null && forceCreate) {
-            support = new PropertyChangeSupport(issue);
-            supports.put(issue.getID(), support);
-        }
-        return support;
-    }
-
-
-    /**
-     * Notify listeners on this issue that the seen state has chaged
-     *
-     * @param oldSeen the old seen state
-     * @param newSeen the new seen state
-     * @see #EVENT_ISSUE_SEEN_CHANGED
-     */
-    private void fireSeenChanged(Issue issue, boolean oldSeen, boolean newSeen) {
-        PropertyChangeSupport support = getChangeSupport(issue, false);
-        if(support != null) {
-            support.firePropertyChange(EVENT_ISSUE_SEEN_CHANGED, oldSeen, newSeen);
-        }
     }
 
     private boolean isChanged(Map<String, String> oldAttr, Map<String, String> newAttr) {

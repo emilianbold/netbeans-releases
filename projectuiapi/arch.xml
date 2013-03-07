@@ -719,6 +719,8 @@ Nothing.
        The encoding of the parent folder of the new file is used if the attribute was not found in any
        project lookup.
      </api>
+     <api name="project.licensePath" category="stable" group="property" type="export"> contains <code>String</code> path to the license header include file, by default as path to <code>Templates/Licenses/license-${project.license}.txt</code> system filesystem location, but a local filesystem (file:) url is also supported. </api>
+     
    </p>
  </answer>
 

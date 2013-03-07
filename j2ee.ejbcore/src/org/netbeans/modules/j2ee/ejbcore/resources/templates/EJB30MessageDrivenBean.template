@@ -1,7 +1,7 @@
 <#assign licenseFirst = "/*">
 <#assign licensePrefix = " * ">
 <#assign licenseLast = " */">
-<#include "../../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 
 package ${package};
 
@@ -14,7 +14,7 @@ import javax.jms.MessageListener;
  *
  * @author ${user}
  */
-@MessageDriven(mappedName = "${messageDestinationName}", activationConfig =  {
+@MessageDriven(<#if useMappedName?? && useMappedName>mappedName = "${messageDestinationName}", </#if>activationConfig =  {
 <#list activationConfigProperties as property>
         @ActivationConfigProperty(propertyName = "${property.getKey()}", propertyValue = "${property.getValue()}")<#if property_has_next>,</#if>
 </#list>

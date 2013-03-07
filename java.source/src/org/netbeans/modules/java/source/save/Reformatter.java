@@ -31,6 +31,7 @@
 package org.netbeans.modules.java.source.save;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.source.util.*;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
@@ -120,7 +121,7 @@ public class Reformatter implements ReformatTask {
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
             ClasspathInfo cpInfo = ClasspathInfo.create(JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries(), empty, empty);
-            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null, null, null);
+            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null, null, null, null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("","", text)).iterator().next(); //NOI18N
@@ -308,6 +309,8 @@ public class Reformatter implements ReformatTask {
                             if (text != null && t != null)
                                 text = text.length() > t.length() ? text.substring(t.length()) : null;
                         }
+                    } else {
+                        continue;
                     }
                 }
                 start = startOffset;
@@ -1287,6 +1290,10 @@ public class Reformatter implements ReformatTask {
                     bracePlacement = cs.getMethodDeclBracePlacement();
                     spaceBeforeLeftBrace = cs.spaceBeforeMethodDeclLeftBrace();
                     break;
+                case LAMBDA_EXPRESSION:
+                    bracePlacement = cs.getOtherBracePlacement();
+                    spaceBeforeLeftBrace = cs.spaceAroundLambdaArrow();
+                    break;
                 case TRY:
                     bracePlacement = cs.getOtherBracePlacement();
                     if (((TryTree)getCurrentPath().getParentPath().getLeaf()).getBlock() == node)
@@ -1519,6 +1526,44 @@ public class Reformatter implements ReformatTask {
             } else {
                 accept(DOT);
                 accept(IDENTIFIER, STAR, THIS, SUPER, CLASS);
+            }
+            return true;
+        }
+
+        @Override
+        public Boolean visitLambdaExpression(LambdaExpressionTree node, Void p) {
+            List<? extends VariableTree> params = node.getParameters();
+            JavaTokenId accepted = params != null && params.size() == 1 ? accept(LPAREN, IDENTIFIER) : accept(LPAREN);
+            if (accepted == LPAREN) {
+                if (params != null && !params.isEmpty()) {
+                    spaces(cs.spaceWithinLambdaParens() ? 1 : 0, true);
+                    wrapList(cs.wrapLambdaParams(), cs.alignMultilineLambdaParams(), false, COMMA, params);
+                    spaces(cs.spaceWithinLambdaParens() ? 1 : 0);
+                }
+                accept(RPAREN);
+            }
+            if (cs.wrapAfterLambdaArrow()) {
+                boolean containedNewLine = spaces(cs.spaceAroundLambdaArrow() ? 1 : 0, false);
+                if (accept(ARROW) != null) {
+                    col += 2;
+                    lastBlankLines = -1;
+                    lastBlankLinesTokenIndex = -1;
+                    if (containedNewLine)
+                        newline();
+                }
+                if (node.getBodyKind() == BodyKind.STATEMENT) {
+                    boolean oldContinuationIndent = continuationIndent;
+                    continuationIndent = false;
+                    try {
+                        scan(node.getBody(), p);
+                    } finally {
+                        continuationIndent = oldContinuationIndent;
+                    }
+                } else {
+                    wrapTree(cs.wrapLambdaArrow(), -1, cs.spaceAroundLambdaArrow() ? 1 : 0, node.getBody());
+                }
+            } else {
+                wrapOperatorAndTree(cs.wrapLambdaArrow(), -1, cs.spaceAroundLambdaArrow() ? 1 : 0, node.getBody());
             }
             return true;
         }
@@ -3243,8 +3288,17 @@ public class Reformatter implements ReformatTask {
                         lastBlankLinesTokenIndex = -1;
                         tokens.moveNext();
                     }
-                    spaces(spacesCnt);
-                    scan(tree, null);
+                    oldContinuationIndent = continuationIndent;
+                    try {
+                        if (tree.getKind() != Tree.Kind.BLOCK) {
+                            spaces(spacesCnt);
+                        } else {
+                            continuationIndent = false;
+                        }
+                        scan(tree, null);
+                    } finally {
+                        continuationIndent = oldContinuationIndent;
+                    }
                     break;
                 case WRAP_IF_LONG:
                     int index = tokens.index();
@@ -3273,8 +3327,16 @@ public class Reformatter implements ReformatTask {
                             lastBlankLinesTokenIndex = -1;
                             tokens.moveNext();
                         }
-                        spaces(spacesCnt);
-                        scan(tree, null);
+                        try {
+                            if (tree.getKind() != Tree.Kind.BLOCK) {
+                                spaces(spacesCnt);
+                            } else {
+                                continuationIndent = false;
+                            }
+                            scan(tree, null);
+                        } finally {
+                            continuationIndent = oldContinuationIndent;
+                        }
                     } catch (WrapAbort wa) {
                     } finally {
                         checkWrap = oldCheckWrap;
@@ -3301,8 +3363,16 @@ public class Reformatter implements ReformatTask {
                             lastBlankLinesTokenIndex = -1;
                             tokens.moveNext();
                         }
-                        spaces(spacesCnt);
-                        scan(tree, null);
+                        try {
+                            if (tree.getKind() != Tree.Kind.BLOCK) {
+                                spaces(spacesCnt);
+                            } else {
+                                continuationIndent = false;
+                            }
+                            scan(tree, null);
+                        } finally {
+                            continuationIndent = oldContinuationIndent;
+                        }
                     }
                     break;
                 case WRAP_NEVER:
@@ -3328,30 +3398,38 @@ public class Reformatter implements ReformatTask {
                         lastBlankLinesTokenIndex = -1;
                         tokens.moveNext();
                     }
-                    if (spaces(spacesCnt, false)) {
-                        rollback(index, c, d);
-                        old = indent;
-                        oldContinuationIndent = continuationIndent;
-                        try {
-                            if (alignIndent >= 0) {
-                                indent = alignIndent;
-                                continuationIndent = false;
+                    try {
+                        if (tree.getKind() != Tree.Kind.BLOCK) {
+                            if (spaces(spacesCnt, false)) {
+                                rollback(index, c, d);
+                                old = indent;
+                                oldContinuationIndent = continuationIndent;
+                                try {
+                                    if (alignIndent >= 0) {
+                                        indent = alignIndent;
+                                        continuationIndent = false;
+                                    }
+                                    newline();
+                                } finally {
+                                    indent = old;
+                                    continuationIndent = oldContinuationIndent;
+                                }
+                                ret = col;
+                                if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                                    col += tokens.token().length();
+                                    lastBlankLines = -1;
+                                    lastBlankLinesTokenIndex = -1;
+                                    tokens.moveNext();
+                                }
+                                spaces(spacesCnt);
                             }
-                            newline();
-                        } finally {
-                            indent = old;
-                            continuationIndent = oldContinuationIndent;
+                        } else {
+                            continuationIndent = false;
                         }
-                        ret = col;
-                        if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
-                            col += tokens.token().length();
-                            lastBlankLines = -1;
-                            lastBlankLinesTokenIndex = -1;
-                            tokens.moveNext();
-                        }
-                        spaces(spacesCnt);
+                        scan(tree, null);
+                    } finally {
+                        continuationIndent = oldContinuationIndent;
                     }
-                    scan(tree, null);
                 break;
             }
             return ret;

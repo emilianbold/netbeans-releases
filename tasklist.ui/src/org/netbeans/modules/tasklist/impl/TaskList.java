@@ -86,7 +86,7 @@ public class TaskList {
         
         List<Task> removed = clear( scanner, resource );
         
-        List<Task> tasksToAdd = null;
+        Set<Task> tasksToAdd = null;
         int currentCount = countTasks( scanner );
         for( Task t : tasks ) {
             if( filter.accept( t ) && !filter.isTaskCountLimitReached(currentCount) ) {
@@ -96,18 +96,18 @@ public class TaskList {
                     continue;
                 
                 if( null == tasksToAdd )
-                    tasksToAdd = new ArrayList<Task>( tasks.size() );
+                    tasksToAdd = new HashSet<Task>( tasks.size() );
                 
                 List<Task> scannerTasks = pushScanner2tasks.get( scanner );
                 if( null == scannerTasks ) {
-                    scannerTasks = new LinkedList<Task>();
+                    scannerTasks = new ArrayList<Task>();
                     pushScanner2tasks.put( scanner, scannerTasks );
                 }
                 
                 TaskGroup group = Accessor.getGroup( t );
                 List<Task> groupTasks = group2tasks.get( group );
                 if( null == groupTasks ) {
-                    groupTasks = new LinkedList<Task>();
+                    groupTasks = new ArrayList<Task>();
                     group2tasks.put( group, groupTasks );
                 }
 
@@ -125,7 +125,7 @@ public class TaskList {
         if( null != removed && !removed.isEmpty() )
             fireTasksRemoved( removed );
         if( null != tasksToAdd && !tasksToAdd.isEmpty() )
-            fireTasksAdded( tasksToAdd );
+            fireTasksAdded(new ArrayList(tasksToAdd));
     }
     
     void clear( PushTaskScanner scanner ) {
@@ -183,20 +183,20 @@ public class TaskList {
         
         List<Task> removed = clear( scanner, resource );
 
-        ArrayList<Task> tasksToAdd = new ArrayList<Task>( newTasks.size() );
+        Set<Task> tasksToAdd = new HashSet<Task>(newTasks.size());
         for( Task t : newTasks ) {
             if( sortedTasks.contains( t ) || tasksToAdd.contains( t ) )
                 continue;
             if( !filter.isTaskCountLimitReached( countTasks( scanner ) ) && filter.accept( t ) ) {
                 List<Task> scannerTasks = fileScanner2tasks.get( scanner );
                 if( null == scannerTasks ) {
-                    scannerTasks = new LinkedList<Task>();
+                    scannerTasks = new ArrayList<Task>();
                     fileScanner2tasks.put( scanner, scannerTasks );
                 }
                 TaskGroup group = Accessor.getGroup( t );
                 List<Task> groupTasks = group2tasks.get( group );
                 if( null == groupTasks ) {
-                    groupTasks = new LinkedList<Task>();
+                    groupTasks = new ArrayList<Task>();
                     group2tasks.put( group, groupTasks );
                 }
                 scannerTasks.add( t );
@@ -213,7 +213,7 @@ public class TaskList {
         if( null != removed && !removed.isEmpty() )
             fireTasksRemoved( removed );
         if( !tasksToAdd.isEmpty() )
-            fireTasksAdded( tasksToAdd );
+            fireTasksAdded(new ArrayList<Task>(tasksToAdd));
     }
     
     public int size() {

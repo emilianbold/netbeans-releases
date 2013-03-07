@@ -152,7 +152,7 @@ public final class JDBCUtils {
         }
     }
     
-    public static Direction getDirection(short sqlDirection) {
+    public static Direction getProcedureDirection(short sqlDirection) {
         switch (sqlDirection) {
             case DatabaseMetaData.procedureColumnOut:
                 return Direction.OUT;
@@ -161,7 +161,21 @@ public final class JDBCUtils {
             case DatabaseMetaData.procedureColumnIn:
                 return Direction.IN;
             default:
-                LOGGER.log(Level.INFO, "Unknown direction value from DatabaseMetadat.getProcedureColumns(): " + sqlDirection);
+                LOGGER.log(Level.INFO, "Unknown direction value from DatabaseMetadata.getProcedureColumns(): " + sqlDirection);
+                return Direction.IN;
+        }
+    }
+
+    public static Direction getFunctionDirection(short sqlDirection) {
+        switch (sqlDirection) {
+            case DatabaseMetaData.functionColumnOut:
+                return Direction.OUT;
+            case DatabaseMetaData.functionColumnInOut:
+                return Direction.INOUT;
+            case DatabaseMetaData.functionColumnIn:
+                return Direction.IN;
+            default:
+                LOGGER.log(Level.INFO, "Unknown direction value from DatabaseMetadata.getFunctionColumns(): " + sqlDirection);
                 return Direction.IN;
         }
     }

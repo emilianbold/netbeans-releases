@@ -166,4 +166,28 @@ public class SQLExecuteHelperTest extends NbTestCase {
             assertEquals(expected[i].getRawEndOffset(), stmts.get(i).getRawEndOffset());
         }
     }
+
+    public void testFindStatementAtOffset() {
+        String sql = "select * from APP.JHTEST; \n"
+                + "select * from APP.JHTEST where COL_NUMERIC = 2;";
+        List<StatementInfo> l = SQLExecuteHelper.split(sql, false);
+
+        StatementInfo s1 = l.get(0);
+        StatementInfo s2 = l.get(1);
+
+        assertSame(s1, SQLExecuteHelper.findStatementAtOffset(l, 24, sql)); //;
+        assertSame(s1, SQLExecuteHelper.findStatementAtOffset(l, 25, sql)); //_
+        assertSame(s1, SQLExecuteHelper.findStatementAtOffset(l, 26, sql)); //\n
+        assertSame(s2, SQLExecuteHelper.findStatementAtOffset(l, 27, sql)); //s
+        assertSame(s2, SQLExecuteHelper.findStatementAtOffset(l, 28, sql)); //e
+    }
+
+    public void testFindStatementAtOffsetAtTheEndOfFile() {
+        String sql = "select * from APP.JHTEST;\n"
+                + "select * from APP.JHTEST;";
+        List<StatementInfo> l = SQLExecuteHelper.split(sql, false);
+
+        StatementInfo s2 = l.get(1);
+        assertSame(s2, SQLExecuteHelper.findStatementAtOffset(l, 51, sql));
+    }
 }

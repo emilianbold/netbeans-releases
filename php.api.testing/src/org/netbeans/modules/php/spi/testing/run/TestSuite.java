@@ -41,39 +41,29 @@
  */
 package org.netbeans.modules.php.spi.testing.run;
 
-import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Interface for a test suite.
+ * <p>
+ * Every test suite <b>must be</b> {@link #finish(long) finished}.
  */
 public interface TestSuite {
 
     /**
-     * Get the name of this test suite.
-     * @return the name of this test suite
+     * Add new test case to this test suite.
+     * @param name name of the test case
+     * @param type type of the test case
+     * @return new test case
+     * @since 0.2
      */
-    String getName();
+    TestCase addTestCase(@NonNull String name, @NonNull String type);
 
     /**
-     * Get the location of this test suite. Can be {@code null}
-     * if not known.
-     * @return the location of this test suite, {@code null} if not known
+     * Finish this test suite and set time of this suite run, in milliseconds.
+     * @param time time of this suite run, in milliseconds
+     * @since 0.2
      */
-    @CheckForNull
-    FileObject getLocation();
-
-    /**
-     * Get time of this suite run, in milliseconds.
-     * @return time of this suite run, in milliseconds
-     */
-    long getTime();
-
-    /**
-     * Get all test cases of this test suite.
-     * @return all test cases, can be empty list but never {@code null}
-     */
-    List<TestCase> getTestCases();
+    void finish(long time);
 
 }

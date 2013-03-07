@@ -107,7 +107,7 @@ public class DebuggerOptions {
     }
 
     public String getProjectEncoding() {
-        return projectEncoding;
+        return projectEncoding != null ? projectEncoding : getGlobalInstance().getProjectEncoding();
     }
 
     private static class DefaultGlobal extends DebuggerOptions {

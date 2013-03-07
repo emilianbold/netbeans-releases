@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -112,7 +113,7 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
             // broken java platform
             return Collections.<Fix>emptyList();
         }
-        
+        LinkedList<Fix> fixes = new LinkedList<Fix>();
         if(error.getKind() == Tree.Kind.METHOD_INVOCATION) {
             MethodInvocationTree invocation = (MethodInvocationTree) error;
             
@@ -140,84 +141,48 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
                     }
                 }
 
-                LinkedList<Fix> fixes = new LinkedList<Fix>();
                 for (TreePath path : methods) {
                     if(cancel) return Collections.<Fix>emptyList();
                     ExecutableElement method = (ExecutableElement) info.getTrees().getElement(path);
-                    List<? extends VariableElement> parameters = method.getParameters();
-                    ChangeParametersRefactoring.ParameterInfo[] parameterInfo = new ChangeParametersRefactoring.ParameterInfo[parameters.size()];
-                    for (int i = 0; i < parameters.size(); i++) {
-                        VariableElement param = parameters.get(i);
-                        VariableTree parTree = (VariableTree) info.getTrees().getTree(param);
-                        parameterInfo[i] = new ChangeParametersRefactoring.ParameterInfo(i, param.toString(), parTree.getType().toString(), null);
+                    if (!createFixes(info, arguments, path, enclosingTypePath, method, fixes)) {
+                        return Collections.<Fix>emptyList();
                     }
-                    ChangeParametersRefactoring.ParameterInfo[] newParameterInfo = new ChangeParametersRefactoring.ParameterInfo[arguments.size()];
-                    MethodTree methodTree = (MethodTree) path.getLeaf();
-                    BlockTree methodBody = methodTree.getBody();
-                    Scope scope =  null;
-                    if(methodBody != null) {
-                        TreePath bodyPath = new TreePath(path, methodBody);
-                        scope = info.getTrees().getScope(bodyPath);
-                    }
-                    int i = 0;
-                    for (ExpressionTree argument : arguments) {
-                        if(cancel) return Collections.<Fix>emptyList();
-                        TreePath argumentPath = new TreePath(path, argument);
-                        TypeMirror argumentType = info.getTrees().getTypeMirror(argumentPath);
-                        String type = argumentType.toString();
-                        String name = Utilities.getName(argumentPath.getLeaf());
-                        if (name == null) {
-                            name = DEFAULT_NAME;
-                        }
-                        name = makeNameUnique(info, scope, name, newParameterInfo, i);
-                        newParameterInfo[i] = new ChangeParametersRefactoring.ParameterInfo(-1, name, type, argument.toString());
-                        i++;
-                    }
-
-                    TypeElement typeElement = (TypeElement) info.getTrees().getElement(enclosingTypePath);
-                    
-                    // Find old parameters with the same type and copy the information
-                    for (i = 0; i < newParameterInfo.length; i++) {
-                        if(cancel) return Collections.<Fix>emptyList();
-                        ParameterInfo param = newParameterInfo[i];
-                        ParameterInfo next = findNextByType(info, parameterInfo, param.getType(), typeElement);
-                        if (next != null) {
-                            newParameterInfo[i] = new ParameterInfo(next.getOriginalIndex(), next.getName(), next.getType(), param.getDefaultValue());
-                        }
-                    }
-                    // Reaplace parameter types with simple type names
-                    for (i = 0; i < newParameterInfo.length; i++) {
-                        if(cancel) return Collections.<Fix>emptyList();
-                        ParameterInfo param = newParameterInfo[i];
-                        TypeMirror type = info.getTreeUtilities().parseType(param.getType(), typeElement);
-                        String typeString = org.netbeans.modules.editor.java.Utilities.getTypeName(info, type, false).toString();
-                        newParameterInfo[i] = new ParameterInfo(param.getOriginalIndex(), param.getName(), typeString, param.getDefaultValue());
-                    }
-                    
-                    // Find old parameters with the same index and copy the information if removed
-                    for (i = 0; i < newParameterInfo.length; i++) {
-                        if(cancel) return Collections.<Fix>emptyList();
-                        ParameterInfo param = newParameterInfo[i];
-                        if (param.getOriginalIndex() == -1 &&
-                                parameterInfo.length > i &&
-                                parameterInfo[i].getOriginalIndex() != -1) {
-                            newParameterInfo[i] = new ParameterInfo(parameterInfo[i].getOriginalIndex(), parameterInfo[i].getName(), param.getType(), param.getDefaultValue());
-                        }
-                    }
-                    
-                    TreePathHandle tph = TreePathHandle.create(path, info);
-                    boolean doFullRefactoring = true;
-                    if(methodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
-                        doFullRefactoring = false;
-                    }
-		    Set<Modifier> modifiers = method.getModifiers();
-                    fixes.add(new ChangeParametersFix(doFullRefactoring, tph, modifiers, genDeclarationString(methodTree, parameterInfo), genDeclarationString(methodTree, newParameterInfo), newParameterInfo));
                 }
-                return fixes;
+            }
+        } else if(error.getKind() == Tree.Kind.NEW_CLASS) {
+            NewClassTree invocation = (NewClassTree) error;
+            
+            TreePath enclosingTypePath = findEnclosingType(errorPath.getParentPath());
+            if(enclosingTypePath == null) {
+                return Collections.<Fix>emptyList();
+            }
+            
+            Element element = info.getTrees().getElement(new TreePath(errorPath, invocation.getIdentifier()));
+            Element enclosingType = info.getTrees().getElement(enclosingTypePath);
+            
+            if (element != null && element.equals(enclosingType))  {
+
+                List<? extends ExpressionTree> arguments = invocation.getArguments();
+                Pair<List<? extends TypeMirror>, List<String>> formalArguments = Utilities.resolveArguments(info, errorPath.getParentPath(), arguments, info.getTrees().getElement(enclosingTypePath));
+
+                //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
+                if (formalArguments == null) {
+                    return Collections.<Fix>emptyList();
+                }
+
+                for (ExecutableElement method : ElementFilter.constructorsIn(((TypeElement)enclosingType).getEnclosedElements())) {
+                    if(cancel) return Collections.<Fix>emptyList();
+                    
+                    TreePath path = info.getTrees().getPath(method);
+                    if(path == null) continue;
+                    if (!createFixes(info, arguments, path, enclosingTypePath, method, fixes)) {
+                        return Collections.<Fix>emptyList();
+                    }
+                }
             }
         }
         
-        return Collections.<Fix>emptyList();
+        return fixes;
     }
     
     private static String makeNameUnique(CompilationInfo info, Scope s, String name, ParameterInfo[] parameters, int current) {
@@ -252,9 +217,9 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
         return proposedName;
     }
     
-    public String genDeclarationString(MethodTree methodTree, ChangeParametersRefactoring.ParameterInfo[] parameters) {
+    public String genDeclarationString(TypeElement typeElement, MethodTree methodTree, ChangeParametersRefactoring.ParameterInfo[] parameters) {
         StringBuilder buf = new StringBuilder();
-        buf.append(methodTree.getName());
+        buf.append(getMethodName(methodTree, typeElement));
         buf.append('('); //NOI18N
         if (parameters.length > 0) {
             int i;
@@ -319,5 +284,89 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
                 return false;
             }
         }
+    }
+
+    private boolean createFixes(CompilationInfo info, List<? extends ExpressionTree> arguments, TreePath path, TreePath enclosingTypePath, ExecutableElement method, LinkedList<Fix> fixes) throws IllegalArgumentException {
+        List<? extends VariableElement> parameters = method.getParameters();
+        ChangeParametersRefactoring.ParameterInfo[] parameterInfo = new ChangeParametersRefactoring.ParameterInfo[parameters.size()];
+        for (int i = 0; i < parameters.size(); i++) {
+            VariableElement param = parameters.get(i);
+            VariableTree parTree = (VariableTree) info.getTrees().getTree(param);
+            parameterInfo[i] = new ChangeParametersRefactoring.ParameterInfo(i, param.toString(), parTree.getType().toString(), null);
+        }
+        ChangeParametersRefactoring.ParameterInfo[] newParameterInfo = new ChangeParametersRefactoring.ParameterInfo[arguments.size()];
+        MethodTree methodTree = (MethodTree) path.getLeaf();
+        BlockTree methodBody = methodTree.getBody();
+        Scope scope =  null;
+        if(methodBody != null) {
+            TreePath bodyPath = new TreePath(path, methodBody);
+            scope = info.getTrees().getScope(bodyPath);
+        }
+        int i = 0;
+        for (ExpressionTree argument : arguments) {
+            if (cancel) {
+                return false;
+            }
+            TreePath argumentPath = new TreePath(path, argument);
+            TypeMirror argumentType = info.getTrees().getTypeMirror(argumentPath);
+            String type = argumentType.toString();
+            String name = Utilities.getName(argumentPath.getLeaf());
+            if (name == null) {
+                name = DEFAULT_NAME;
+            }
+            name = makeNameUnique(info, scope, name, newParameterInfo, i);
+            newParameterInfo[i] = new ChangeParametersRefactoring.ParameterInfo(-1, name, type, argument.toString());
+            i++;
+        }
+        TypeElement typeElement = (TypeElement) info.getTrees().getElement(enclosingTypePath);
+        // Find old parameters with the same type and copy the information
+        for (i = 0; i < newParameterInfo.length; i++) {
+            if (cancel) {
+                return false;
+            }
+            ParameterInfo param = newParameterInfo[i];
+            ParameterInfo next = findNextByType(info, parameterInfo, param.getType(), typeElement);
+            if (next != null) {
+                newParameterInfo[i] = new ParameterInfo(next.getOriginalIndex(), next.getName(), next.getType(), param.getDefaultValue());
+            }
+        }
+        // Reaplace parameter types with simple type names
+        for (i = 0; i < newParameterInfo.length; i++) {
+            if (cancel) {
+                return false;
+            }
+            ParameterInfo param = newParameterInfo[i];
+            TypeMirror type = info.getTreeUtilities().parseType(param.getType(), typeElement);
+            String typeString = org.netbeans.modules.editor.java.Utilities.getTypeName(info, type, false).toString();
+            newParameterInfo[i] = new ParameterInfo(param.getOriginalIndex(), param.getName(), typeString, param.getDefaultValue());
+        }
+        // Find old parameters with the same index and copy the information if removed
+        for (i = 0; i < newParameterInfo.length; i++) {
+            if (cancel) {
+                return false;
+            }
+            ParameterInfo param = newParameterInfo[i];
+            if (param.getOriginalIndex() == -1 &&
+                    parameterInfo.length > i &&
+                    parameterInfo[i].getOriginalIndex() != -1) {
+                newParameterInfo[i] = new ParameterInfo(parameterInfo[i].getOriginalIndex(), parameterInfo[i].getName(), param.getType(), param.getDefaultValue());
+            }
+        }
+        TreePathHandle tph = TreePathHandle.create(path, info);
+        boolean doFullRefactoring = true;
+        if(methodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
+            doFullRefactoring = false;
+        }
+        Set<Modifier> modifiers = method.getModifiers();
+        fixes.add(new ChangeParametersFix(doFullRefactoring, tph, modifiers, genDeclarationString(typeElement, methodTree, parameterInfo), genDeclarationString(typeElement, methodTree, newParameterInfo), newParameterInfo, method.getKind() == ElementKind.CONSTRUCTOR));
+        return true;
+    }
+
+    private String getMethodName(MethodTree methodTree, TypeElement typeElement) {
+        String name = methodTree.getName().toString();
+        if(name.equals("<init>")) { //NOI18N
+            name = typeElement.getSimpleName().toString();
+        }
+        return name;
     }
 }

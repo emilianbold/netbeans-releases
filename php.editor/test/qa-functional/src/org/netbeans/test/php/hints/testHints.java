@@ -66,6 +66,7 @@ public class testHints extends GeneralPHP {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(testHints.class).addTest(
                 "CreateApplication",
+                "testAmbiguousHint",
                 "testImmutableVariable",
                 "testImmutableVariableSimple",
                 "testUnusedUse",
@@ -170,6 +171,18 @@ public class testHints extends GeneralPHP {
         endTest();
     }
 
+    public void testAmbiguousHint() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "AmbiguousHint");
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "\n $foo == 1+1;");
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("Possible accidental ", 1, "Incorrect number of Ambiguous comparison hints", file);
+        endTest();
+    }
+
     public void testImmutableVariable() {
         EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "Immutable2");
         startTest();
@@ -196,38 +209,38 @@ public class testHints extends GeneralPHP {
     }
 
     private void checkNumberOfAnnotationsContains(String annotation, int expectedOccurences, String failMsg, EditorOperator file) {
-        
+
         final EditorOperator eo = new EditorOperator(file.getName());
         final int limit = expectedOccurences;
         try {
             new Waiter(new Waitable() {
 
-              @Override
-              public Object actionProduced(Object oper) {
-                  return eo.getAnnotations().length > limit ? Boolean.TRUE : null;
-              }
+                @Override
+                public Object actionProduced(Object oper) {
+                    return eo.getAnnotations().length > limit ? Boolean.TRUE : null;
+                }
 
-              @Override
-              public String getDescription() {
-                  return ("Wait parser annotations."); // NOI18N
-              }
-          }).waitAction(null);
-          
-          
-          int numberOfErrors = 0;
-          int lines = file.getText().split(System.getProperty("line.separator")).length;
-          Object[] ann;
-          int lineCounter = 1;
-          while (lineCounter <= lines) {
-              ann = file.getAnnotations(lineCounter);
-              for (Object o : ann) {
-                  if (EditorOperator.getAnnotationShortDescription(o).toString().contains(annotation) && !EditorOperator.getAnnotationShortDescription(o).toString().contains("HTML error checking")) {
-                      numberOfErrors++;
-                  }
-              }
-              lineCounter++;
-          }
-          assertEquals(failMsg, expectedOccurences, numberOfErrors);
+                @Override
+                public String getDescription() {
+                    return ("Wait parser annotations."); // NOI18N
+                }
+            }).waitAction(null);
+
+
+            int numberOfErrors = 0;
+            int lines = file.getText().split(System.getProperty("line.separator")).length;
+            Object[] ann;
+            int lineCounter = 1;
+            while (lineCounter <= lines) {
+                ann = file.getAnnotations(lineCounter);
+                for (Object o : ann) {
+                    if (EditorOperator.getAnnotationShortDescription(o).toString().contains(annotation) && !EditorOperator.getAnnotationShortDescription(o).toString().contains("HTML error checking")) {
+                        numberOfErrors++;
+                    }
+                }
+                lineCounter++;
+            }
+            assertEquals(failMsg, expectedOccurences, numberOfErrors);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }

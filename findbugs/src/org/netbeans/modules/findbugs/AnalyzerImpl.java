@@ -272,6 +272,7 @@ public class AnalyzerImpl implements Analyzer {
         @Override
         public Iterable<? extends WarningDescription> getWarnings() {
             List<WarningDescription> result = new ArrayList<WarningDescription>();
+            DetectorCollectionProvider.initializeDetectorFactoryCollection();
             DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
 
             for (DetectorFactory df : dfc.getFactories()) {

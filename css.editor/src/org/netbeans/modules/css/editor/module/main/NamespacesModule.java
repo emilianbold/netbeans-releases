@@ -103,11 +103,12 @@ public class NamespacesModule extends CssEditorModule {
             case root:
             case styleSheet:
             case body:
+            case bodyItem:
                 CompletionProposal nsKeywordProposal =
                         CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
                 proposals.add(nsKeywordProposal);
+                break;
 
-            case bodyItem:
             case media:
             case combinator:
             case selector:
@@ -159,7 +160,7 @@ public class NamespacesModule extends CssEditorModule {
                 break;
         }
 
-        return Css3Utils.filterCompletionProposals(proposals, context.getPrefix(), true);
+        return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
 
     private static List<CompletionProposal> getNamespaceCompletionProposals(final CompletionContext context) {

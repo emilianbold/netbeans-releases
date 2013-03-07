@@ -56,7 +56,31 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 class AntDeploymentProviderImpl implements AntDeploymentProvider {
-    
+
+    /** Property files location in GlassFish configuration directory. */
+    private static String PROPERTIES_PATH = "/GlassFishEE6/Properties";
+
+    /**
+     * Returns property files location in GlassFish configuration directory.
+     * <p/>
+     * New property configuration directory is created when not exists under
+     * NetBeans configuration directory.
+     * <p/>
+     * @return Property files location in GlassFish configuration directory.
+     */
+    private static File getPropertiesDir() {
+        FileObject dir = FileUtil.getConfigFile(PROPERTIES_PATH);
+        if (dir == null) {
+            try {
+                dir = FileUtil.createFolder(
+                        FileUtil.getConfigRoot(), PROPERTIES_PATH);
+            } catch(IOException ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, null, ex);
+            }
+        }
+        return FileUtil.toFile(dir);
+    }
+
     private final File propFile;
     private final Properties props;
 
@@ -113,7 +137,7 @@ class AntDeploymentProviderImpl implements AntDeploymentProvider {
         String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
         String user = commonSupport.getInstanceProperties().get(GlassfishModule.USERNAME_ATTR);
         String name = "gfv3" + (url+domainDir+domain+user).hashCode() + "";  // NOI18N
-        return new File(System.getProperty("netbeans.user"), name + ".properties"); // NOI18N
+        return new File(getPropertiesDir(), name + ".properties"); // NOI18N
     }
 
     private Properties computeProps(GlassfishModule commonSupport) {

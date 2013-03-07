@@ -89,6 +89,10 @@ public class APTHandlersSupport {
         return APTHandlersSupportImpl.extractMacroMapState(state);
     }
 
+    public static APTIncludeHandler.State extractIncludeState(APTPreprocHandler.State state) {
+        return APTHandlersSupportImpl.extractIncludeState(state);
+    }
+    
     public static APTPreprocHandler.StateKey getStateKey(APTPreprocHandler.State state){
         return APTHandlersSupportImpl.getStateKey(state);
     }

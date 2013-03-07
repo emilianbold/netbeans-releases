@@ -87,10 +87,13 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
+import org.netbeans.modules.findbugs.DetectorCollectionProvider;
 import org.netbeans.modules.findbugs.RunFindBugs;
 import org.netbeans.modules.findbugs.RunInEditor;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
@@ -101,14 +104,24 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
     private static final RequestProcessor WORKER = new RequestProcessor(FindBugsPanel.class.getName(), 1, false, false);
     private Preferences settings;
+    private List<String> modifiedPluginsList;
     private final boolean defaultsToDisabled;
     private final Map<BugCategory, List<BugPattern>> categorizedBugs = new HashMap<BugCategory, List<BugPattern>>();
     private final Map<String, TreePath> bug2Path =  new HashMap<String, TreePath>();
     private DefaultTreeModel treeModel;
+    private final OptionsFilter filter;
+    private final CustomizerContext<?, ?> cc;
 
     @Messages("LBL_Loading=Loading...")
     public FindBugsPanel(final @NullAllowed OptionsFilter filter, final @NullAllowed CustomizerContext<?, ?> cc) {
         defaultsToDisabled = cc != null;
+        this.filter = filter;
+        this.cc = cc;
+        reinitialize();
+    }
+    
+    private void reinitialize() {
+        final Boolean previousRunInEditor = this.runInEditor != null ? this.runInEditor.isSelected() : null;
         WORKER.post(new Runnable() {
             @Override public void run() {
                 final TreeNode root = backgroundInit();
@@ -116,13 +129,14 @@ public final class FindBugsPanel extends javax.swing.JPanel {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
                         FindBugsPanel.this.removeAll();
-                        FindBugsPanel.this.uiInit(filter, root, cc);
+                        FindBugsPanel.this.uiInit(filter, root, cc, previousRunInEditor);
                     }
                 });
             }
         });
 
         setLayout(new GridBagLayout());
+        removeAll();
         add(new JLabel(Bundle.LBL_Loading()), new GridBagConstraints());
     }
     
@@ -138,12 +152,13 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         return rootNode;
     }
     
-    private synchronized void uiInit(OptionsFilter filter, TreeNode rootNode, final CustomizerContext<?, ?> cc) {
+    private synchronized void uiInit(OptionsFilter filter, TreeNode rootNode, final CustomizerContext<?, ?> cc, Boolean previousRunInEditor) {
         if (this.settings == null) { //might have already been set through setSettings method, do not reset!
             this.settings = new ModifiedPreferences(NbPreferences.forModule(FindBugsPanel.class).node("global-settings"));
         }
         
         initComponents();
+        
         this.treeModel = new DefaultTreeModel(rootNode);
         if (filter != null) {
             filter.installFilteringModel(bugsTree, treeModel, new Acceptor() {
@@ -224,8 +239,14 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         });
 
         runInEditor.setVisible(cc == null);
+        customPlugins.setVisible(cc == null);
 
-        load();
+        if (cc == null) {
+            if (previousRunInEditor == null)
+                load();
+            else 
+                runInEditor.setSelected(previousRunInEditor);
+        }
     }
 
     private boolean toggle( TreePath treePath ) {
@@ -285,6 +306,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         description = new javax.swing.JTextPane();
         jLabel1 = new javax.swing.JLabel();
         runInEditor = new javax.swing.JCheckBox();
+        customPlugins = new javax.swing.JButton();
 
         jSplitPane1.setDividerLocation(200);
 
@@ -318,7 +340,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(0, 153, Short.MAX_VALUE)
+                .addGap(0, 147, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -328,6 +350,13 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(runInEditor, org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.runInEditor.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(customPlugins, org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.customPlugins.text")); // NOI18N
+        customPlugins.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                customPluginsActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -335,12 +364,16 @@ public final class FindBugsPanel extends javax.swing.JPanel {
             .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(runInEditor)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(customPlugins)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(runInEditor)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(runInEditor)
+                    .addComponent(customPlugins))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSplitPane1))
         );
@@ -351,6 +384,21 @@ public final class FindBugsPanel extends javax.swing.JPanel {
             URLDisplayer.getDefault().showURL(evt.getURL());
         }
     }//GEN-LAST:event_descriptionHyperlinkUpdate
+
+    @Messages("CAP_CustomPlugins=Custom Plugins Selector")
+    private void customPluginsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customPluginsActionPerformed
+        if (modifiedPluginsList == null) {
+            modifiedPluginsList = new ArrayList<String>(DetectorCollectionProvider.customPlugins());
+        }
+        
+        CustomPluginsPanel panel = new CustomPluginsPanel(modifiedPluginsList);
+        DialogDescriptor dd = new DialogDescriptor(panel, Bundle.CAP_CustomPlugins(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
+        
+        if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            modifiedPluginsList = panel.getPlugins();
+            reinitialize();
+        }
+    }//GEN-LAST:event_customPluginsActionPerformed
 
     void load() {
         if (this.runInEditor == null) {
@@ -367,6 +415,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         }
         ((ModifiedPreferences) this.settings).store(NbPreferences.forModule(FindBugsPanel.class).node("global-settings"));
         NbPreferences.forModule(RunInEditor.class).putBoolean(RunInEditor.RUN_IN_EDITOR, this.runInEditor.isSelected());
+        if (modifiedPluginsList != null) DetectorCollectionProvider.setCustomPlugins(modifiedPluginsList);
     }
 
     boolean valid() {
@@ -406,8 +455,11 @@ public final class FindBugsPanel extends javax.swing.JPanel {
     }
     
     private TreeNode createRootNode() {
+        categorizedBugs.clear();
+        bug2Path.clear();
+        
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
+        DetectorFactoryCollection dfc = modifiedPluginsList == null ? DetectorFactoryCollection.instance() : DetectorCollectionProvider.getTemporaryCollection(modifiedPluginsList);
 
         for (BugPattern bp : dfc.getBugPatterns()) {
             BugCategory c = dfc.getBugCategory(bp.getCategory());
@@ -454,6 +506,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTree bugsTree;
+    private javax.swing.JButton customPlugins;
     private javax.swing.JTextPane description;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;

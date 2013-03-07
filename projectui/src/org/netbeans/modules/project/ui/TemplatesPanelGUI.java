@@ -64,6 +64,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -336,6 +337,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         Mnemonics.setLocalizedText(jLabel1, this.firer.getCategoriesName());
         Mnemonics.setLocalizedText(jLabel2, this.firer.getTemplatesName());
         this.description.setEditorKit(new HTMLEditorKit());
+        description.putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
 
         // please wait node, see issue 52900
         pleaseWait = new AbstractNode (Children.LEAF) {

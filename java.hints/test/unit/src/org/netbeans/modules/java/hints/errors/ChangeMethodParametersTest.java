@@ -61,6 +61,25 @@ public class ChangeMethodParametersTest extends HintsTestBase {
         super(name);
     }
     
+    public void testConstructor() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.Constructor",
+                    180,  new HashSet<String>(Arrays.asList(
+                "Change constructor from Constructor(int i) to Constructor(int i, String hello_World)"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.Constructor",
+                    226,  new HashSet<String>(Arrays.asList(
+                "Change constructor from Constructor(int i) to Constructor(String hello_World, int i)"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.Constructor",
+                    272,  new HashSet<String>(Arrays.asList(
+                "Change constructor from Constructor(int i) to Constructor(String hello_World, int i, String string)"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.Constructor",
+                    323,  new HashSet<String>(Arrays.asList(
+                "Change constructor from Constructor(int i) to Constructor(int i, int par1, int par2)"
+        )));
+    }
+    
     public void testAddParameter() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.AddParameter",
                     180,  new HashSet<String>(Arrays.asList(

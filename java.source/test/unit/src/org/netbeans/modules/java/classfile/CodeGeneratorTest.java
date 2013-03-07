@@ -145,6 +145,34 @@ public class CodeGeneratorTest extends ClassIndexTestCase {
                     "    @Deprecated public Class test1();\n" +
                     "}\n");
     }
+    
+    public void testDecompile1() throws Exception {
+        performFromClassTest("package test; class Test {\n" +
+                             "    private void test() {\n" +
+                             "        System.out.println(100000);\n" +
+                             "    }\n" +
+                             "}\n",
+                             "package test;\n" +
+                             "class Test {\n" +
+                             "    Test() {\n" +
+                             "        // <editor-fold defaultstate=\"collapsed\" desc=\"Compiled Code\">\n" +
+                             "        /* 0: aload_0\n" +
+                             "         * 1: invokespecial java/lang/Object.\"<init>\":()V\n" +
+                             "         * 4: return\n" +
+                             "         *  */\n" +
+                             "        // </editor-fold>\n" +
+                             "    }\n" +
+                             "    private void test() {\n" +
+                             "        // <editor-fold defaultstate=\"collapsed\" desc=\"Compiled Code\">\n" +
+                             "        /* 0: getstatic     java/lang/System.out:Ljava/io/PrintStream;\n" +
+                             "         * 3: ldc           100000\n" +
+                             "         * 5: invokevirtual java/io/PrintStream.println:(I)V\n" +
+                             "         * 8: return\n" +
+                             "         *  */\n" +
+                             "        // </editor-fold>\n" +
+                             "    }\n" +
+                             "}\n");
+    }
 
     private void performTest(String test, final String golden) throws Exception {
         clearWorkDir();
@@ -190,6 +218,44 @@ public class CodeGeneratorTest extends ClassIndexTestCase {
                 assertTrue(cc.getDiagnostics().toString(), cc.getDiagnostics().isEmpty());
             }
         }, true);
+    }
+
+    private void performFromClassTest(String test, final String golden) throws Exception {
+        clearWorkDir();
+        beginTx();
+        FileObject wd = FileUtil.toFileObject(getWorkDir());
+
+        assertNotNull(wd);
+
+        FileObject src   = FileUtil.createFolder(wd, "src");
+        FileObject build = FileUtil.createFolder(wd, "build");
+        FileObject cache = FileUtil.createFolder(wd, "cache");
+
+        SourceUtilsTestUtil.prepareTest(src, build, cache);
+        FileObject testFile = FileUtil.createData(src, "test/Test.java");
+        TestUtilities.copyStringToFile(testFile, test);
+        SourceUtilsTestUtil.compileRecursively(src);
+        final FileObject testOutFile = FileUtil.createData(src, "out/Test.java");
+        final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(testOutFile, null, true, true, false, true);
+        JavaSource testSource = JavaSource.create(cpInfo, testOutFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            @Override
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+
+                TypeElement t = workingCopy.getElements().getTypeElement("test.Test");
+
+                assertNotNull(t);
+
+                workingCopy.rewrite(workingCopy.getCompilationUnit(), CodeGenerator.generateCode(workingCopy, t));
+            }
+        };
+
+        ModificationResult mr = testSource.runModificationTask(task);
+
+        mr.commit();
+
+        assertEquals(normalizeWhitespaces(golden), normalizeWhitespaces(TestUtilities.copyFileToString(FileUtil.toFile(testOutFile))));
     }
 
     private static String normalizeWhitespaces(String text) {

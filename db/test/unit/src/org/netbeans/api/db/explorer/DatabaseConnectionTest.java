@@ -45,6 +45,7 @@
 package org.netbeans.api.db.explorer;
 
 import java.sql.Connection;
+import java.util.Properties;
 import org.netbeans.modules.db.test.Util;
 import org.netbeans.modules.db.test.DBTestBase;
 
@@ -229,6 +230,32 @@ public class DatabaseConnectionTest extends DBTestBase {
         assertEquals("The connection was created with the default display name ", "database [user on schema]", dbconn.getDisplayName());
 
         Util.clearConnections();
+    }
+
+    /**
+     * Test that additional connection properties are set and get correctly.
+     */
+    public void testGetConnectionProperties() throws Exception {
+        DatabaseConnection nullPropertiesConn = DatabaseConnection.create(
+                getJDBCDriver(), getDbUrl(), getUsername(), getSchema(),
+                getPassword(), false, "Test", null);
+        Properties p = nullPropertiesConn.getConnectionProperties();
+        assertNotNull(p);
+        assertTrue("Properties object should be empty", p.keySet().isEmpty());
+
+        Properties testConnProps = new Properties();
+        testConnProps.put("testKey", "testValue");
+        DatabaseConnection somePopertiesConn = DatabaseConnection.create(
+                getJDBCDriver(), getDbUrl(), getUsername(), getSchema(),
+                getPassword(), false, "Test", testConnProps);
+        Properties returnedProps = somePopertiesConn.getConnectionProperties();
+        assertEquals(1, returnedProps.keySet().size());
+        assertEquals("testValue", returnedProps.get("testKey"));
+
+        returnedProps.put("addedKey", "addedValue");
+        Properties returnedAgain = somePopertiesConn.getConnectionProperties();
+        assertEquals("Internal properties should not be affected by changes",
+                1, returnedAgain.keySet().size());
     }
 
     private static boolean connectionIsValid(Connection conn) throws Exception {

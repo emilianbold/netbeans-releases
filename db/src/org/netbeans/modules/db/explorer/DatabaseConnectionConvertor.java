@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -239,7 +240,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 handler.driverName,
                 handler.connectionUrl,
                 handler.schema,
-                handler.user);
+                handler.user,
+                handler.connectionProperties);
         dbconn.setConnectionFileName(handler.connectionFileName);
         if (handler.displayName != null) {
             dbconn.setDisplayName(handler.displayName);
@@ -416,6 +418,19 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             } else {
                 DatabaseConnection.deletePassword(name);
             }
+            if (instance.getConnectionProperties() != null) {
+                Properties p = instance.getConnectionProperties();
+                for (String key : p.stringPropertyNames()) {
+                    pw.println("  <connection-property>");              //NOI18N
+                    pw.print("    <name>");                             //NOI18N
+                    pw.print(XMLUtil.toElementContent(key));
+                    pw.println("</name>");                              //NOI18N
+                    pw.print("    <value>");                            //NOI18N
+                    pw.print(XMLUtil.toElementContent(p.getProperty(key)));
+                    pw.println("</value>");                             //NOI18N
+                    pw.println("  </connection-property>");             //NOI18N
+                }
+            }
             pw.println("</connection>"); //NOI18N
         }        
     }
@@ -434,9 +449,16 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         private static final String ELEMENT_DISPLAY_NAME = "display-name"; // NOI18N
         private static final String ELEMENT_IMPORTANT_SCHEMA = "important-schema"; //NOI18N
         private static final String ELEMENT_IMPORTANT_CATALOG = "important-catalog"; //NOI18N
+        private static final String ELEMENT_CONNECTION_PROPERTY = "connection-property"; // NOI18N
+        private static final String ELEMENT_CONNECTION_PROPERTY_NAME = "name"; // NOI18N
+        private static final String ELEMENT_CONNECTION_PROPERTY_VALUE = "value"; // NOI18N
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
         
         final String connectionFileName;
+        private boolean readingProperty = false;
+        private String propertyName;
+        private String propertyValue;
+        private final StringBuilder buffer = new StringBuilder();
         
         String driverClass;
         String driverName;
@@ -444,11 +466,13 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         String schema;
         String user;
         String displayName;
+        Properties connectionProperties;
         List<String> importantSchemas = new ArrayList<String>();
         List<String> importantCatalogs = new ArrayList<String>();
         
         public Handler(String connectionFileName) {
             this.connectionFileName = connectionFileName;
+            this.connectionProperties = new Properties();
         }
 
         @Override
@@ -475,6 +499,14 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 user = value;
             } else if (ELEMENT_DISPLAY_NAME.equals(qName)) {
                 displayName = value;
+            } else if (ELEMENT_CONNECTION_PROPERTY.equals(qName)) {
+                readingProperty = true;
+                propertyName = "";                                      //NOI18N
+                propertyValue = "";                                     //NOI18N
+            } else if (readingProperty && ELEMENT_CONNECTION_PROPERTY_NAME.equals(qName)) {
+                buffer.setLength(0);
+            } else if (readingProperty && ELEMENT_CONNECTION_PROPERTY_VALUE.equals(qName)) {
+                buffer.setLength(0);
             } else if (ELEMENT_PASSWORD.equals(qName)) {
                 // reading old settings
                 byte[] bytes = null;
@@ -502,6 +534,35 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 importantSchemas.add(value);
             } else if (ELEMENT_IMPORTANT_CATALOG.equals(qName)) {
                 importantCatalogs.add(value);
+            }
+        }
+
+        @Override
+        public void ignorableWhitespace(char[] chars, int start, int length) throws SAXException {
+            if (readingProperty) {
+                buffer.append(chars, start, length);
+            }
+        }
+
+        @Override
+        public void characters(char[] chars, int start, int length) throws SAXException {
+            if (readingProperty) {
+                buffer.append(chars, start, length);
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if (readingProperty && ELEMENT_CONNECTION_PROPERTY.equals(qName)) {
+                connectionProperties.put(propertyName, propertyValue);
+                readingProperty = false;
+                propertyName = "";
+                propertyValue = "";
+                buffer.setLength(0);
+            } else if (readingProperty && ELEMENT_CONNECTION_PROPERTY_NAME.equals(qName)) {
+                propertyName = buffer.toString();
+            } else if (readingProperty && ELEMENT_CONNECTION_PROPERTY_VALUE.equals(qName)) {
+                propertyValue = buffer.toString();
             }
         }
     }

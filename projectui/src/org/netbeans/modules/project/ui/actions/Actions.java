@@ -357,7 +357,7 @@ public class Actions implements ActionsFactory {
     }
         
     public static Action runMainProject() {
-        Action a = new MainProjectAction(
+        Action a = new MainProjectActionWithHistory(
             ActionProvider.COMMAND_RUN,
             NbBundle.getMessage(Actions.class, "LBL_RunMainProjectAction_Name"),null); //NOI18N
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runProject.png"); //NOI18N

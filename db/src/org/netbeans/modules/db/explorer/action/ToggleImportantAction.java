@@ -89,11 +89,12 @@ public class ToggleImportantAction extends BaseAction {
                     "ToggleImportantRemove");                           //NOI18N
             return true;
         } else if (toggleImportant) {
-            actionDisplayName = actionDisplayName = NbBundle.getMessage(
-                    ToggleImportantAction.class,
+            actionDisplayName = NbBundle.getMessage(ToggleImportantAction.class,
                     "ToggleImportantAdd");                              //NOI18N
             return true;
         }
+        actionDisplayName = NbBundle.getMessage(ToggleImportantAction.class,
+                "ToggleImportant");                                     //NOI18N
 
         return false;
     }

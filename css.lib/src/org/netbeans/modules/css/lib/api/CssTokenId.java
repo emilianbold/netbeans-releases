@@ -86,9 +86,9 @@ public enum CssTokenId implements TokenId {
     
     ERROR(org.antlr.runtime.Token.INVALID_TOKEN_TYPE, ERRORS),
     
-    AND(Css3Lexer.AND, KEYWORDS),
-    NOT(Css3Lexer.NOT, KEYWORDS),
-    ONLY(Css3Lexer.ONLY, KEYWORDS),
+    AND(Css3Lexer.AND, OPERATORS),
+    NOT(Css3Lexer.NOT, OPERATORS),
+    ONLY(Css3Lexer.ONLY, OPERATORS),
     RESOLUTION(Css3Lexer.RESOLUTION, NUMBERS),
     WS(Css3Lexer.WS, WHITESPACES),
     CHARSET_SYM(Css3Lexer.CHARSET_SYM, AT_RULE_SYMBOL),
@@ -163,7 +163,9 @@ public enum CssTokenId implements TokenId {
     X(Css3Lexer.X, OTHERS),
     Y(Css3Lexer.Y, OTHERS),
     Z(Css3Lexer.Z, OTHERS),
+    
     COMMENT(Css3Lexer.COMMENT, COMMENTS),
+    LINE_COMMENT(Css3Lexer.LINE_COMMENT, COMMENTS),
     
     //following two should possibly not be part of the grammar at all
     CDO(Css3Lexer.CDO, OTHERS), //<!--
@@ -203,14 +205,61 @@ public enum CssTokenId implements TokenId {
     CONTAINS(Css3Lexer.CONTAINS, OPERATORS),
     
     FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, AT_RULE_SYMBOL),
-    HASH_CHAR_ONLY(Css3Lexer.T__117, OTHERS),
+    HASH_SYMBOL(Css3Lexer.HASH_SYMBOL, OTHERS),
+    
+    /**
+     * '...' in less_args_list rule
+     */
+    LESS_VARARG(Css3Lexer.LESS_DOTS, OTHERS),
+    /**
+     * '@rest...' in less_args_list rule
+     */
+    LESS_REST(Css3Lexer.LESS_REST, OTHERS),
+    
+    /**
+     * WHEN keyword in guarded mixin
+     * .mixin (@a) "when" (@a > 10), (@a < -10) { ... }
+     */
+    LESS_WHEN(Css3Lexer.LESS_WHEN, OTHERS),
+    
+    /**
+     * & operator in rules:
+     * 
+     * .parent & {
+     *       color: black;
+     * }
+     */
+    LESS_AND(Css3Lexer.LESS_AND, OTHERS),
     
     MOZ_DOCUMENT_SYM(Css3Lexer.MOZ_DOCUMENT_SYM, AT_RULE_SYMBOL),
     MOZ_DOMAIN(Css3Lexer.MOZ_DOMAIN, URIS),
     MOZ_URL_PREFIX(Css3Lexer.MOZ_URL_PREFIX, URIS),
     MOZ_REGEXP(Css3Lexer.MOZ_REGEXP, STRINGS),
     
-    GENERIC_AT_RULE(Css3Lexer.GENERIC_AT_RULE, AT_RULE_SYMBOL);
+    AT_IDENT(Css3Lexer.AT_IDENT, AT_RULE_SYMBOL),
+    
+    GREATER_OR_EQ(Css3Lexer.GREATER_OR_EQ, OPERATORS),
+    LESS(Css3Lexer.LESS, OPERATORS),
+    LESS_OR_EQ(Css3Lexer.LESS_OR_EQ, OPERATORS),
+    
+    LESS_DOTS(Css3Lexer.LESS_DOTS, IDENTIFIERS),
+    SASS_VAR(Css3Lexer.SASS_VAR, IDENTIFIERS),
+    SASS_MIXIN(Css3Lexer.SASS_MIXIN, AT_RULE_SYMBOL),
+    SASS_INCLUDE(Css3Lexer.SASS_INCLUDE, AT_RULE_SYMBOL),
+    SASS_DEFAULT(Css3Lexer.SASS_DEFAULT, KEYWORDS),
+    SASS_EXTEND(Css3Lexer.SASS_EXTEND, KEYWORDS),
+    SASS_EXTEND_ONLY_SELECTOR(Css3Lexer.SASS_EXTEND_ONLY_SELECTOR, IDENTIFIERS),
+    SASS_OPTIONAL(Css3Lexer.SASS_OPTIONAL, KEYWORDS),
+    SASS_DEBUG(Css3Lexer.SASS_DEBUG, KEYWORDS),
+    SASS_WARN(Css3Lexer.SASS_WARN, KEYWORDS),
+    SASS_IF(Css3Lexer.SASS_IF, KEYWORDS),
+    SASS_FOR(Css3Lexer.SASS_FOR, KEYWORDS),
+    SASS_EACH(Css3Lexer.SASS_EACH, KEYWORDS),
+    SASS_WHILE(Css3Lexer.SASS_WHILE, KEYWORDS),
+    
+    CP_EQ(Css3Lexer.CP_EQ, KEYWORDS)
+    
+    ;
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
     static {

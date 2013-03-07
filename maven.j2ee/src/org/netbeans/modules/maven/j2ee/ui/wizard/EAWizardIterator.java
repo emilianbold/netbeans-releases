@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import static org.netbeans.modules.maven.j2ee.ui.wizard.Bundle.*;
 import org.netbeans.modules.maven.j2ee.ui.wizard.archetype.J2eeArchetypeFactory;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
@@ -115,11 +116,17 @@ public class EAWizardIterator extends BaseWizardIterator {
                 continue;
             }
 
-            saveSettingsToNbConfiguration(project);
-
             // We don't want to set server in pom.xml for pom-packaging module
             String projectDirName = projectFile.getName();
+
+            // See issue #226261
+            if (projectDirName.endsWith("-web")) { // NOI18N
+                String javaeeVersion = (String) wiz.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION);
+                wiz.putProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, javaeeVersion + "-web");
+            }
+
             if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
+                saveSettingsToNbConfiguration(project);
                 saveServerToPom(project);
                 MavenProjectSupport.changeServer(project, true);
             }

@@ -180,6 +180,26 @@ public class SourceLevelQuery {
         }
 
         /**
+         * Returns the name of the required profile.
+         * @return a name of the required profile or null if the profile is either unknown
+         * or unsupported by actual source level.
+         * <div class="nonnormative">
+         * The JDK 8 provides three limited profiles (compact1, compact2, compact3) in addition
+         * to the full JDK. Each profile specifies a specific set of Java API packages and
+         * contains all of the APIs of the smaller profile, @see http://openjdk.java.net/jeps/161
+         * </div>
+         * @since 1.45
+         */
+        @CheckForNull
+        public String getProfile() {
+            final SourceLevelQueryImplementation2.Result delegate = getDelegate();
+            if (!(delegate instanceof SourceLevelQueryImplementation2.Result2)) {
+                return null;
+            }
+            return ((SourceLevelQueryImplementation2.Result2)delegate).getProfile();
+        }
+
+        /**
          * Add a listener to changes of source level.
          * If {@link #supportsChanges} is false, the listener will never be notified
          * although {@link #getSourceLevel} may change from call to call.

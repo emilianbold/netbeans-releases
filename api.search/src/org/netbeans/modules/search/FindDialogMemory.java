@@ -240,6 +240,9 @@ public final class FindDialogMemory {
                 fileNamePatterns.add(fileNamePattern);
             }
         }
+        if (fileNamePatterns.isEmpty()) {
+            addDefaultFileNamePatterns(fileNamePatterns);
+        }
         int i = 0;
         while (true) {
             String item = prefs.get(PROP_IGNORE_LIST_PREFIX + i, null);
@@ -288,6 +291,19 @@ public final class FindDialogMemory {
     public List<String> getFileNamePatterns() {
         return (fileNamePatterns != null) ? fileNamePatterns
                                           : Collections.<String>emptyList();
+    }
+
+    /**
+     * If there is some free space in the list of file name patterns, add some
+     * default values.
+     */
+    private static void addDefaultFileNamePatterns(List<String> l) {
+        String[] patterns = {"*.properties", "*.txt", "*.php", "*.xml", //NOI18N
+            "*.java"};                                                  //NOI18N
+        int free = maxFileNamePatternCount - l.size();
+        for (int i = 0; i < free && i < patterns.length; i++) {
+            l.add(patterns[i]);
+        }
     }
 
     public boolean isWholeWords() {
