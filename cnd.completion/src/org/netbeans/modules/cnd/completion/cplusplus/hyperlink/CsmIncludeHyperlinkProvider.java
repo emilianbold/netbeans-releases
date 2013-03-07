@@ -255,7 +255,8 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     } else {
                         inclString = "#include \"" + brokenInclude.getIncludeName() + "\""; // NOI18N
                     }
-                    buf.append(i18n("InresolvedInFile", CsmDisplayUtilities.htmlize(inclString), brokenInclude.getContainingFile().getAbsolutePath())); // NOI18N
+                    String key = brokenInclude.getIncludeState() == CsmInclude.IncludeState.Recursive ? "RecursionInFile" : "UnresolvedInFile"; // NOI18N
+                    buf.append(i18n(key, CsmDisplayUtilities.htmlize(inclString), brokenInclude.getContainingFile().getAbsolutePath()));
                     tooltip = buf.toString();
                 }
             }
