@@ -318,6 +318,13 @@ public final class CodeStyle {
         return preferences.getBoolean(alignMultilineMethodParams, getDefaultAsBoolean(alignMultilineMethodParams));
     }
 
+    /**
+     * @since 0.113
+     */
+    public boolean alignMultilineLambdaParams() {
+        return preferences.getBoolean(alignMultilineLambdaParams, getDefaultAsBoolean(alignMultilineLambdaParams));
+    }
+
     public boolean alignMultilineCallArgs() {
         return preferences.getBoolean(alignMultilineCallArgs, getDefaultAsBoolean(alignMultilineCallArgs));
     }
@@ -404,6 +411,29 @@ public final class CodeStyle {
     public WrapStyle wrapMethodParams() {
         String wrap = preferences.get(wrapMethodParams, getDefaultAsString(wrapMethodParams));
         return WrapStyle.valueOf(wrap);
+    }
+
+    /**
+     * @since 0.113
+     */
+    public WrapStyle wrapLambdaParams() {
+        String wrap = preferences.get(wrapLambdaParams, getDefaultAsString(wrapLambdaParams));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    /**
+     * @since 0.113
+     */
+    public WrapStyle wrapLambdaArrow() {
+        String wrap = preferences.get(wrapLambdaArrow, getDefaultAsString(wrapLambdaArrow));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    /**
+     * @since 0.113
+     */
+    public boolean wrapAfterLambdaArrow() {
+        return preferences.getBoolean(wrapAfterLambdaArrow, getDefaultAsBoolean(wrapAfterLambdaArrow));
     }
 
     public WrapStyle wrapThrowsKeyword() {
@@ -661,6 +691,20 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAroundAnnotationValueAssignOps, getDefaultAsBoolean(spaceAroundAnnotationValueAssignOps));
     }
 
+    /**
+     * @since 0.113
+     */
+    public boolean spaceAroundLambdaArrow() {
+        return preferences.getBoolean(spaceAroundLambdaArrow, getDefaultAsBoolean(spaceAroundLambdaArrow));
+    }
+
+    /**
+     * @since 0.113
+     */
+    public boolean spaceAroundMethodReferenceDoubleColon() {
+        return preferences.getBoolean(spaceAroundMethodReferenceDoubleColon, getDefaultAsBoolean(spaceAroundMethodReferenceDoubleColon));
+    }
+
     public boolean spaceBeforeClassDeclLeftBrace() {
         return preferences.getBoolean(spaceBeforeClassDeclLeftBrace, getDefaultAsBoolean(spaceBeforeClassDeclLeftBrace));
     }
@@ -723,6 +767,13 @@ public final class CodeStyle {
 
     public boolean spaceWithinMethodDeclParens() {
         return preferences.getBoolean(spaceWithinMethodDeclParens, getDefaultAsBoolean(spaceWithinMethodDeclParens));
+    }
+
+    /**
+     * @since 0.113
+     */
+    public boolean spaceWithinLambdaParens() {
+        return preferences.getBoolean(spaceWithinLambdaParens, getDefaultAsBoolean(spaceWithinLambdaParens));
     }
 
     public boolean spaceWithinMethodCallParens() {
