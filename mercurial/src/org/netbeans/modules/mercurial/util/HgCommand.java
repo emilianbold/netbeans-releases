@@ -2126,10 +2126,14 @@ public class HgCommand {
                 }
             } else {
                 // Perhaps the file has changed its name
-                String newRevision = Integer.toString(Integer.parseInt(revision)+1);
-                File prevFile = getPreviousName(repository, file, newRevision, tryHard);
-                if (prevFile != null) {
-                    doCat(repository, prevFile, outFile, revision, false, logger); //NOI18N
+                try {
+                    String newRevision = Integer.toString(Integer.parseInt(revision)+1);
+                    File prevFile = getPreviousName(repository, file, newRevision, tryHard);
+                    if (prevFile != null) {
+                        doCat(repository, prevFile, outFile, revision, false, logger); //NOI18N
+                    }
+                } catch (NumberFormatException ex) {
+                    // revision is not a number
                 }
             }
         }
