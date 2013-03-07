@@ -50,27 +50,32 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzer;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.css.lib.api.CssTokenIdCategory;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.prep.model.Element;
 import org.netbeans.modules.css.prep.model.Variable;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.Pair;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -253,4 +258,61 @@ public class CPCssEditorModule extends CssEditorModule {
         }
         return null;
     }
+
+     @Override
+    public Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclaration(Document document, int caretOffset) {
+        //first try to find the reference span
+        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(document, caretOffset, CssTokenId.language());
+        if (ts == null) {
+            return null;
+        }
+
+        OffsetRange foundRange = null;
+        Token<CssTokenId> token = ts.token();
+        int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
+        OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
+        CharSequence mixinName = null;
+        
+        //MIXINs go to declaration
+        if (token.id() == CssTokenId.IDENT) {
+            mixinName = token.text();
+            
+            //check if there is @import token before
+            while(ts.movePrevious() && ts.token().id() == CssTokenId.WS) {
+            }
+            
+            Token t = ts.token();
+            if(t != null) {
+                if(t.id() == CssTokenId.DOT || t.id() == CssTokenId.SASS_INCLUDE) {
+                    //gotcha!
+                    //@import xxx --sass
+                    //.xxx --less
+                    foundRange = range;
+                }
+            }
+        }
+
+        if (foundRange == null) {
+            return null;
+        }
+        
+        final CharSequence searchedMixinName = mixinName;
+        FutureParamTask<DeclarationLocation, EditorFeatureContext> callable = new FutureParamTask<DeclarationLocation, EditorFeatureContext>() {
+
+            @Override
+            public DeclarationLocation run(EditorFeatureContext context) {
+                CPModel model = CPModel.getModel(context.getParserResult());
+                for(Element mixin : model.getMixins()) {
+                    if(LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
+                        return new DeclarationLocation(context.getFileObject(), mixin.getRange().getStart());
+                    }
+                }
+                return DeclarationLocation.NONE;
+            }
+        };
+
+        return new Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>(foundRange, callable);
+    }
+    
+    
 }
