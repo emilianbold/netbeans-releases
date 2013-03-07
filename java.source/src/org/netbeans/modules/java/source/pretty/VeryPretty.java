@@ -46,6 +46,7 @@ package org.netbeans.modules.java.source.pretty;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
@@ -995,14 +996,39 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
-    public void visitLambda(JCLambda that) {
-	print("(");
-        wrapTrees(that.params, WrapStyle.WRAP_NEVER, out.col);
-        print(") -> ");
-        if (that.body.getKind() == Kind.BLOCK) {
-            printStat(that.body);
+    public void visitLambda(JCLambda tree) {
+        print(cs.spaceWithinLambdaParens() && tree.params.nonEmpty() ? "( " : "(");
+        boolean oldPrintingMethodParams = printingMethodParams;
+        printingMethodParams = true;
+        wrapTrees(tree.params, cs.wrapLambdaParams(), cs.alignMultilineLambdaParams()
+                ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
+                  true);
+        printingMethodParams = oldPrintingMethodParams;
+        if (cs.spaceWithinLambdaParens() && tree.params.nonEmpty())
+            needSpace();
+        print(')');
+        print(cs.spaceAroundLambdaArrow() ? " ->" : "->");
+        if (tree.getBodyKind() == BodyKind.STATEMENT) {
+            printBlock(tree.body, cs.getOtherBracePlacement(), cs.spaceAroundLambdaArrow());
         } else {
-            printExpr(that.body, TreeInfo.notExpression);
+            int rm = cs.getRightMargin();
+            switch(cs.wrapBinaryOps()) {
+            case WRAP_IF_LONG:
+                if (widthEstimator.estimateWidth(tree.body, rm - out.col) + out.col <= cs.getRightMargin()) {
+                    if(cs.spaceAroundLambdaArrow())
+                        print(' ');
+                    break;
+                }
+            case WRAP_ALWAYS:
+                newline();
+                toColExactly(out.leftMargin + cs.getContinuationIndentSize());
+                break;
+            case WRAP_NEVER:
+                if(cs.spaceAroundLambdaArrow())
+                    print(' ');
+                break;
+            }
+            printExpr(tree.body, TreeInfo.notExpression);
         }
     }
 
