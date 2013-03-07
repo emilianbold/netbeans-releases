@@ -45,32 +45,64 @@ import org.netbeans.core.networkproxy.NetworkProxyResolver;
 import org.netbeans.core.networkproxy.NetworkProxySettings;
 
 /**
+ * Fallback resolver tries to retrieve proxy setting from environment variables.
+ *
+ * It is looking for: http_proxy, https_proxy, socks_proxy and no_proxy
+ * variables. It cannot resolve if PAC is set up. Also environment variables may
+ * be set but in system there are not used. Fallback cannot resolve it.
  *
  * @author lfischme
  */
-public class FallbackNetworkProxy implements NetworkProxyResolver{
-    
-    private final static String HTTP_PROXY_SYS_PROPERTY = "http_proxy"; //NOI18N
+public class FallbackNetworkProxy implements NetworkProxyResolver {
+
     private final static String AT = "@"; //NOI18N
+    private final static String COMMA = ","; //NOI18N
+    private final static String SLASH = "/"; //NOI18N
+    private final static String PROTOCOL_PREXIF_SEPARATOR = "://"; //NOI18N
+    private final static String EMPTY_STRING = ""; //NOI18N
+    private final static String HTTP_PROXY_SYS_PROPERTY = "http_proxy"; //NOI18N
+    private final static String HTTPS_PROXY_SYS_PROPERTY = "https_proxy"; //NOI18N
+    private final static String SOCKS_PROXY_SYS_PROPERTY = "socks_proxy"; //NOI18N
+    private final static String NO_PROXY_SYS_PROPERTY = "no_proxy"; //NOI18N
 
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
-        String httpProxy = System.getenv(HTTP_PROXY_SYS_PROPERTY);
-        if (httpProxy != null && !httpProxy.isEmpty()) {
-            if (httpProxy.contains(AT)) {
-                httpProxy = httpProxy.substring(httpProxy.lastIndexOf(AT));
-            }
-            
-            // TODO other protocols...
-            // resolve http://<host>:<port>/
-            // ftp_proxy=ftp://<host>:<port>/
-            // socks_proxy=socks://<host>:<port>/
-            // no_proxy
-            
-            return new NetworkProxySettings(httpProxy, new String[0]);
-        }        
+        System.getenv();
         
-        return new NetworkProxySettings(false);
+        String httpProxyRaw = System.getenv(HTTP_PROXY_SYS_PROPERTY);
+        if (httpProxyRaw != null && !httpProxyRaw.isEmpty()) {
+            String httpProxy = prepareVariable(httpProxyRaw);
+            String httpsProxy = prepareVariable(System.getenv(HTTPS_PROXY_SYS_PROPERTY));
+            String socksProxy = prepareVariable(System.getenv(SOCKS_PROXY_SYS_PROPERTY));
+            String noProxyHostsString = System.getenv(NO_PROXY_SYS_PROPERTY);
+            String[] noProxyHosts = noProxyHostsString == null ? new String[0] : noProxyHostsString.split(COMMA);                   
+            
+            return new NetworkProxySettings(httpProxy, httpsProxy, socksProxy, noProxyHosts);
+        }
+
+        return new NetworkProxySettings();
     }
-    
+
+    private String prepareVariable(String variable) {
+        if (variable == null) {
+            return EMPTY_STRING;
+        }
+
+        // remove slash at the end if present
+        if (variable.endsWith(SLASH)) {
+            variable = variable.substring(0, variable.length() - 1);
+        }
+
+        // remove username and password if present
+        if (variable.contains(AT)) {
+            variable = variable.substring(variable.lastIndexOf(AT) + 1);
+        }
+        
+        // remove protocol prefix if presented
+        if (variable.contains(PROTOCOL_PREXIF_SEPARATOR)) {
+            variable = variable.substring(variable.indexOf(PROTOCOL_PREXIF_SEPARATOR) + 3);
+        }
+
+        return variable;
+    }       
 }

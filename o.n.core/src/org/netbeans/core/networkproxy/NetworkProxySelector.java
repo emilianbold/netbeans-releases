@@ -60,15 +60,14 @@ import org.openide.util.Utilities;
  */
 public class NetworkProxySelector {
     
-    private static NetworkProxyResolver networkProxyResolver = getNetworkProxyResolver();
-    private static NetworkProxyResolver fallbackNetworkProxyResolver = getFallbackProxyResolver();
-    
-    private final static Logger LOGGER = Logger.getLogger(NetworkProxySelector.class.getName());    
+    private final static Logger LOGGER = Logger.getLogger(NetworkProxySelector.class.getName());                    
     private final static String COMMA = ","; //NOI18N
     private final static String GNOME = "gnome"; //NOI18N
     private final static String KDE = "kde"; //NOI18N
     private final static String RUNNING_ENV_SYS_PROPERTY = "netbeans.running.environment"; //NOI18N
-
+    
+    private static NetworkProxyResolver networkProxyResolver = getNetworkProxyResolver();
+    private static NetworkProxyResolver fallbackNetworkProxyResolver = getFallbackProxyResolver();
     /**
      * Reloads system proxy network settings.
      * 
@@ -196,7 +195,7 @@ public class NetworkProxySelector {
             return new FallbackNetworkProxy();
         } else {
             return networkProxyResolver;
-        }        
+        }   
     }
     
     /**

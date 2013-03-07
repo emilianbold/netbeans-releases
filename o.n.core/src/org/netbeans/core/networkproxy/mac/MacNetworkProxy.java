@@ -163,6 +163,10 @@ public class MacNetworkProxy implements NetworkProxyResolver {
                 String noProxyHost = getStringFromCFStringRef(value);
                 noProxyHosts[(int) i] = noProxyHost;
             }
+            // Much more better vould be to use CFArrayGetValues method.
+            // But I was unsuccessful to retrieve value correctly.
+            // the const void **value is problem in this case
+            // also CFRange wasn't easy to create (via Structure)
             
             return noProxyHosts;
         }

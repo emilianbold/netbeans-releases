@@ -180,7 +180,11 @@ public final class NetworkProxySettings {
         if (string == null) {
             return EMPTY_STRING;
         } else {
-            return string.substring(0, string.lastIndexOf(COLON));
+            if (string.contains(COLON)) {
+                return string.substring(0, string.lastIndexOf(COLON));
+            } else {
+                return string;
+            }
         }
     }
 
@@ -191,7 +195,11 @@ public final class NetworkProxySettings {
             if (string.endsWith(SLASH)) {
                 string = string.substring(string.length() - 1, string.length());
             }
-            return string.substring(string.lastIndexOf(COLON) + 1);
+            if (string.contains(COLON)) {
+                return string.substring(string.lastIndexOf(COLON) + 1);
+            } else {
+                return EMPTY_STRING;
+            }
         }
     }
 
