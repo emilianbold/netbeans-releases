@@ -510,7 +510,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
         String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-javadoc.jar"); //NOI18N
+        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? ("tests".equals(art.getClassifier()) ? "-test" : "-" + art.getClassifier()) : "") + "-javadoc.jar"); //NOI18N
     }
 
     //normalized
@@ -518,7 +518,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
         String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-sources.jar"); //NOI18N
+        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? ("tests".equals(art.getClassifier()) ? "-test" : "-" + art.getClassifier()) : "") + "-sources.jar"); //NOI18N
     }
 
     public boolean hasSourceInRepository() {
@@ -534,21 +534,40 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
         try {
             String classifier;
+            String baseClassifier;
             String bundleName;
             if (isjavadoc) {
-                classifier = "javadoc";
+                if (art.getClassifier() != null) {
+                    if ("tests".equals(art.getClassifier())) {
+                        classifier = "test-javadoc";
+                    } else {
+                        classifier = art.getClassifier() + "-javadoc";
+                    }
+                } else {
+                    classifier = "javadoc";
+                }
+                baseClassifier = "javadoc";
                 bundleName = "MSG_Checking_Javadoc";
             } else {
-                classifier = "sources";
+                baseClassifier = "sources";
+                if (art.getClassifier() != null) {
+                    if ("tests".equals(art.getClassifier())) {
+                        classifier = "test-sources";
+                    } else {
+                        classifier = art.getClassifier() + "-sources";
+                    }
+                } else {
+                    classifier = "sources";
+                }
                 bundleName = "MSG_Checking_Sources";
             }
-                
+            
             Artifact sources = project.getEmbedder().createArtifactWithClassifier(
                 art.getGroupId(),
                 art.getArtifactId(),
                 art.getVersion(),
                 art.getType(),
-                (art.getClassifier() != null ? art.getClassifier() + "-" : "") + classifier); 
+                classifier); 
             progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName,art.getId()), 1);
             online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
             if (art.getFile() != null && art.getFile().exists()) {
@@ -560,7 +579,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                             coordinate.artifactId,
                             coordinate.version,
                             "jar",
-                            classifier);
+                            baseClassifier);
                         progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName, art.getId()), 1);
                         online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
                     }
