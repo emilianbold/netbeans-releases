@@ -3176,12 +3176,16 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     }
 
     static void showLogFile(ActionEvent evt) {
-        Action a = FileUtil.getConfigObject("Actions/View/org-netbeans-core-actions-LogAction.instance", Action.class); // NOI18N
+        Action a = getShowLogAction();
         if(a != null) {
             a.actionPerformed(evt);
         }
     }
 
+    static Action getShowLogAction() {
+        return FileUtil.getConfigObject("Actions/View/org-netbeans-core-actions-LogAction.instance", Action.class); // NOI18N
+    }
+    
     private void switchViewLog() {
         viewLogButton.setVisible(attachLogCheckBox.isSelected());
     }
