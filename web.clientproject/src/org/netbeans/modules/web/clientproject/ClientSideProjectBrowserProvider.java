@@ -86,7 +86,7 @@ public class ClientSideProjectBrowserProvider implements ProjectBrowserProvider 
     public WebBrowser getActiveBrowser() {
         String selectedBrowser = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER);
         WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
-        if (selectedBrowser == null || browser == null) {
+        if (browser == null) {
             return null;
         } else {
             return browser;
