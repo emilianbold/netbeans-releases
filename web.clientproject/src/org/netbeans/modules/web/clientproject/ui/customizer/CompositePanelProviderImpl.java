@@ -107,7 +107,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (JS_FILES.equals(categoryName)) {
             return new JavaScriptLibraryCustomizerPanel(category, new JavaScriptLibraryCustomizerPanel.CustomizerSupport() {
                 @Override
-                public File getLibrariesFolderRoot() {
+                public File getWebRoot() {
                     return uiProperties.getResolvedSiteRootFolder();
                 }
                 @Override
