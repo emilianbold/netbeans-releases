@@ -108,24 +108,24 @@ public final class TestRunInfo {
      * Create new info about test {@link SessionType#TEST normal} run.
      * @param workingDirectory working directory
      * @param startFile start file (can be directory)
-     * @param testName test name, can be {@code null}
+     * @param suiteName test suite name, can be {@code null}
      * @param coverageEnabled {@code true} if the coverage is enabled and should be collected
      * @return new info about test {@link SessionType#TEST normal} run
      */
-    public static TestRunInfo test(FileObject workingDirectory, FileObject startFile, @NullAllowed String testName, boolean coverageEnabled) {
-        return new TestRunInfo(SessionType.TEST, workingDirectory, startFile, testName, coverageEnabled);
+    public static TestRunInfo test(FileObject workingDirectory, FileObject startFile, @NullAllowed String suiteName, boolean coverageEnabled) {
+        return new TestRunInfo(SessionType.TEST, workingDirectory, startFile, suiteName, coverageEnabled);
     }
 
     /**
      * Create new info about test {@link SessionType#DEBUG debug} run.
      * @param workingDirectory working directory
      * @param startFile start file (can be directory)
-     * @param testName test name, can be {@code null}
+     * @param suiteName test suite name, can be {@code null}
      * @param coverageEnabled {@code true} if the coverage is enabled and should be collected
      * @return new info about test {@link SessionType#DEBUG debug} run
      */
-    public static TestRunInfo debug(FileObject workingDirectory, FileObject startFile, @NullAllowed String testName, boolean coverageEnabled) {
-        return new TestRunInfo(SessionType.DEBUG, workingDirectory, startFile, testName, coverageEnabled);
+    public static TestRunInfo debug(FileObject workingDirectory, FileObject startFile, @NullAllowed String suiteName, boolean coverageEnabled) {
+        return new TestRunInfo(SessionType.DEBUG, workingDirectory, startFile, suiteName, coverageEnabled);
     }
 
     /**
@@ -263,6 +263,12 @@ public final class TestRunInfo {
      */
     public static final class TestInfo {
 
+        /**
+         * Unknown test type.
+         * @since 0.3
+         */
+        public static final String UNKNOWN_TYPE = "UNKNOWN_TYPE"; // NOI18N
+
         private final String type;
         private final String name;
         private final String className;
@@ -271,7 +277,7 @@ public final class TestRunInfo {
 
         /**
          * Create new information about a test.
-         * @param type type of the test, typically an identifier of the testing provider
+         * @param type type of the test, typically an identifier of the testing provider, can be {@see #UNKNOWN_TYPE unknown}
          * @param name name of the test
          * @param className class name, can be {@code null}
          * @param location location, can be {@code null}
@@ -287,8 +293,8 @@ public final class TestRunInfo {
         }
 
         /**
-         * Get the type of the test, typically an identifier of the testing provider.
-         * @return the type of the test, typically an identifier of the testing provider
+         * Get the type of the test, typically an identifier of the testing provider (can be {@see #UNKNOWN_TYPE unknown}).
+         * @return the type of the test, typically an identifier of the testing provider (can be {@see #UNKNOWN_TYPE unknown})
          */
         public String getType() {
             return type;
