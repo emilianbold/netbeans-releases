@@ -69,7 +69,7 @@ import org.netbeans.spi.java.hints.Hint.Options;
  *
  * @author lahvac
  */
-@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY, suppressWarnings = {"null", "ConstantConditions"})
+@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY, suppressWarnings = {"null", "", "NullableProblems"})
 public class NPECheck {
 
     static final boolean DEF_ENABLE_FOR_FIELDS = false;
