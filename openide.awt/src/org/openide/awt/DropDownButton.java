@@ -90,13 +90,13 @@ class DropDownButton extends JButton {
     private static final String ICON_ROLLOVER_SELECTED_LINE = "rolloverSelectedLine"; //NOI18N
 
     private PopupMenuListener menuListener;
-    private boolean drawSeparatorLine;
+    private boolean arrowHasSeparateState;
     
     /** Creates a new instance of MenuToggleButton */
-    public DropDownButton( Icon icon, JPopupMenu popup, boolean drawSeparatorLine) {
+    public DropDownButton( Icon icon, JPopupMenu popup, boolean arrowHasSeparateState) {
         Parameters.notNull("icon", icon); //NOI18N
         assert null != icon;
-        this.drawSeparatorLine = drawSeparatorLine;
+        this.arrowHasSeparateState = arrowHasSeparateState;
         
         putClientProperty( DropDownButtonFactory.PROP_DROP_DOWN_MENU, popup );
         
@@ -134,7 +134,8 @@ class DropDownButton extends JButton {
                 if ( menu != null && getModel() instanceof Model ) {
                     Model model = (Model) getModel();
                     if ( !model._isPressed() ) {
-                        if( isInArrowArea( e.getPoint() ) && menu.getComponentCount() > 0 ) {
+                        if( (isInArrowArea( e.getPoint() ) || !DropDownButton.this.arrowHasSeparateState)
+                                && menu.getComponentCount() > 0 ) {
                             model._press();
                             menu.addPopupMenuListener( getMenuListener() );
                             menu.show( DropDownButton.this, 0, getHeight() );
@@ -248,7 +249,7 @@ class DropDownButton extends JButton {
             Icon orig = regIcons.get( ICON_ROLLOVER );
             if( null == orig )
                 orig = regIcons.get( ICON_NORMAL );
-            icon = new IconWithArrow( orig, drawSeparatorLine ? !mouseInArrowArea : false );
+            icon = new IconWithArrow( orig, arrowHasSeparateState ? !mouseInArrowArea : false );
             arrowIcons.put( mouseInArrowArea ? ICON_ROLLOVER : ICON_ROLLOVER_LINE, icon );
         }
         return icon;
@@ -263,7 +264,7 @@ class DropDownButton extends JButton {
                 orig = regIcons.get( ICON_ROLLOVER );
             if( null == orig )
                 orig = regIcons.get( ICON_NORMAL );
-            icon = new IconWithArrow( orig, drawSeparatorLine ? !mouseInArrowArea : false );
+            icon = new IconWithArrow( orig, arrowHasSeparateState ? !mouseInArrowArea : false );
             arrowIcons.put( mouseInArrowArea ? ICON_ROLLOVER_SELECTED : ICON_ROLLOVER_SELECTED_LINE, icon );
         }
         return icon;
@@ -282,8 +283,7 @@ class DropDownButton extends JButton {
     }
     
     private boolean isInArrowArea( Point p ) {
-        return p.getLocation().x >= getWidth() - IconWithArrow.getArrowAreaWidth() - getInsets().right ||
-                !drawSeparatorLine;
+        return p.getLocation().x >= getWidth() - IconWithArrow.getArrowAreaWidth() - getInsets().right;
     }
 
     @Override
