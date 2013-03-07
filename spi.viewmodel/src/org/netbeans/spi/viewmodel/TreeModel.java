@@ -95,7 +95,7 @@ public interface TreeModel extends Model {
      * Returns true if node is leaf.
      * 
      * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve dchildren for given node type
+     *          able to resolve children for given node type
      * @return  true if node is leaf
      */
     public abstract boolean isLeaf (Object node) throws UnknownTypeException;
