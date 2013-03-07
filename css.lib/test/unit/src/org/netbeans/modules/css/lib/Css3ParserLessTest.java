@@ -473,18 +473,4 @@ public class Css3ParserLessTest extends CssTestBase {
 
     }
 
-    public void testAmpProblem_fails() {
-        String source =
-                ".clazz {\n"
-                + "    &.position#{$i} {\n"
-                + "    left: ($i * -910px); \n"
-                + "}\n"
-                + "}";
-
-        CssParserResult result = TestUtil.parse(source);
-
-        NodeUtil.dumpTree(result.getParseTree());
-        assertResultOK(result);
-
-    }
 }
