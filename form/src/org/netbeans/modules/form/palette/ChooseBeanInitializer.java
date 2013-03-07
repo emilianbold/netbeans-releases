@@ -69,9 +69,8 @@ class ChooseBeanInitializer implements PaletteItem.ComponentInitializer {
         DialogDescriptor dd = new DialogDescriptor(panel,
                 NbBundle.getMessage(ChooseBeanInitializer.class, "TITLE_Choose_Bean")); // NOI18N
         dd.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        // setting the help id on the panel after creating the dialog will avoid the help button
         HelpCtx.setHelpIDString(panel, "f1_gui_choose_bean_html"); // NOI18N
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         boolean invalidInput;
         do {
             invalidInput = false;
