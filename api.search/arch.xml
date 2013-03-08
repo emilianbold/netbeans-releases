@@ -131,14 +131,18 @@
     <answer id="arch-usecases">
         <usecase id="searchHistory" name="Search History">
             <p>
-                SearchHistory is synchronising history content through netbeans modules and it saves history to preferences.
+                <code><a href="@TOP@/org/netbeans/api/search/SearchHistory.html">SearchHistory</a></code>
+                is synchronising history content through netbeans modules and it saves history to preferences.
             </p>
             <p>
                 There are two separate histories. One for search and another for replace.
-                When you add your propertyListener to SearchHistory - you can listen for changes in histories.
+                When you add your propertyListener to
+                <code><a href="@TOP@/org/netbeans/api/search/SearchHistory.html">SearchHistory</a></code>
+                - you can listen for changes in histories.
             </p>
             <p>
-                SearchHistory has methods for adding new entries and getting whole history list.
+                <code><a href="@TOP@/org/netbeans/api/search/SearchHistory.html">SearchHistory</a></code>
+                has methods for adding new entries and getting whole history list.
             </p>
 
         </usecase>
@@ -153,32 +157,39 @@
             </p>
             <p>
                 The definition is represented by objects extending class
-                <code>SearchInfoDefinition</code>. To customize searching on
-                a custom node, a
+                <code>
+                    <a href="@TOP@/org/netbeans/spi/search/SearchInfoDefinition.html">
+                        SearchInfoDefinition</a>
+                </code>. To customize searching on a custom node, a
                 <code>SearchInfoDefinition</code> object must be added to the node's lookup.
                 In most cases, there is no need to define own class extending the
                 class - one can use factory methods of class
-                <code>SearchInfoDefinitionFactory</code>.
+                <code>
+                    <a href="@TOP@/org/netbeans/spi/search/SearchInfoDefinitionFactory.html">
+                        SearchInfoDefinitionFactory</a>
+                </code>.
             </p>
             <p>
                 In some cases implementators may need to apply the same set
                 of SearchFilterDefinitions in the whole subtree of a node.
-                If so, it is not needed to put SearchInfoDefinition to all 
-                nodes' lookups, but only one instance of SubTreeSearchOptions 
-                have to be put into the lookup of the root node.
+                If so, it is not needed to put <code>SearchInfoDefinition</code> to all
+                nodes' lookups, but only one instance of <code>
+                    <a href="@TOP@/org/netbeans/spi/search/SubTreeSearchOptions.html">
+                        SubTreeSearchOptions</a>
+                </code> have to be put into the lookup of the root node.
             </p>
 
             <api group="java"
                  name="SearchInfoSPI"
                  type="export"
-                 category="devel"
+                 category="stable"
                  url="@TOP@org/netbeans/spi/search/package-summary.html">
                 Defines abstract classes
-                <code>SearchInfoDefinition</code>,
-                <code>SearchFilterDefinition</code>,
-                <code>SubTreeSearchOptions</code>
+                <code><a href="@TOP@/org/netbeans/spi/search/SearchInfoDefinition.html">SearchInfoDefinition</a></code>,
+                <code><a href="@TOP@/org/netbeans/spi/search/SearchFilterDefinition.html">SearchFilterDefinition</a></code>,
+                <code><a href="@TOP@/org/netbeans/spi/search/SubTreeSearchOptions.html">SubTreeSearchOptions</a></code>
                 and a factory class
-                <code>SearchInfoDefinitionFactory</code>
+                <code><a href="@TOP@/org/netbeans/spi/search/SearchInfoDefinitionFactory.html">SearchInfoDefinitionFactory</a></code>
             </api>
         </usecase>
         <usecase id="SearchProvider" name="Enhance IDE searching features">
@@ -192,50 +203,58 @@
             </p>
             <ul>
                 <li>
-                    <code>SearchProvider</code> to register the new search feature to the IDE or platform application.
+                    <code><a href="@TOP@/org/netbeans/spi/search/provider/SearchProvider.html">SearchProvider</a></code>
+                    to register the new search feature to the IDE or platform application.
                 </li>
                 <li>
-                    <code>SearchProvider.Presenter</code> that creates visual component for adding to the search dialog and that can interact with dialog buttons.
+                    <code><a href="@TOP@/org/netbeans/spi/search/provider/SearchProvider.Presenter.html">SearchProvider.Presenter</a></code>
+                    that creates visual component for adding to the search dialog and that can interact with dialog buttons.
                 </li>
                 <li>
-                    <code>SearchResultsDisplayer</code> to show search results to the user.
+                    <code><a href="@TOP@/org/netbeans/spi/search/provider/SearchResultsDisplayer.html">SearchResultsDisplayer</a></code>
+                    to show search results to the user.
                 </li>
                 <li>
-                    <code>SearchComposition</code> that encapsulates setting and state of searches, provide access to result displayer, and is able to start and terminate the search.
+                    <code><a href="@TOP@/org/netbeans/spi/search/provider/SearchComposition.html">SearchComposition</a></code>
+                    that encapsulates setting and state of searches, provide access to result displayer, and is able to start
+                    and terminate the search.
                 </li>
             </ul>
             <api group="java"
                  name="SearchProviderSPI"
                  type="export"
-                 category="devel"
+                 category="stable"
                  url="@TOP@org/netbeans/spi/search/provider/package-summary.html">
                 Defines abstract classes that need to be implemented when 
                 creating custom providers:
-                <code>SearchProvider</code>,
-                <code>SearchProvider.Presenter</code>,
-                <code>SearchResultsDisplayer</code>,
-                <code>SearchComposition</code>
+                <code><a href="@TOP@/org/netbeans/spi/search/provider/SearchProvider.html">SearchProvider</a></code>,
+                <code><a href="@TOP@/org/netbeans/spi/search/provider/SearchProvider.Presenter.html">SearchProvider.Presenter</a></code>,
+                <code><a href="@TOP@/org/netbeans/spi/search/provider/SearchResultsDisplayer.html">SearchResultsDisplayer</a></code>,
+                <code><a href="@TOP@/org/netbeans/spi/search/provider/SearchComposition.html">SearchComposition</a></code>
                 and relative classes.
             </api>
             <api group="java"
                  name="SearchProviderAPI"
                  type="export"
-                 category="devel"
+                 category="stable"
                  url="@TOP@org/netbeans/api/search/provider/package-summary.html">
 
                 Classes usually used by search providers.
-                Contains class <code>SearchInfo</code>, that defines which files 
-                should be searched (it can be retrieved from methods in 
-                SearchInfoUtils, or UI component ScopeComboBox), <code>
-                SearchListener</code> that you should inform about events that
-                happen during searching, and helper classes <code>FileInfoUtils
-                </code> (getting SearchInfo objects for nodes) and 
-                <code>FileNameMatcher</code> (filtering files by file name).
+                Contains class <code><a href="@TOP@/org/netbeans/api/search/provider/SearchInfo.html">SearchInfo</a></code>,
+                that defines which files should be searched (it can be retrieved from methods in
+                <code><a href="@TOP@/org/netbeans/api/search/provider/SearchInfoUtils.html">SearchInfoUtils</a></code>,
+                or UI component controller <code><a href="@TOP@/org/netbeans/api/search/ui/ScopeController.html">ScopeController</a></code>),
+                <code><a href="@TOP@/org/netbeans/api/search/provider/SearchListener.html">SearchListener</a></code>
+                that you should inform about events that happen during searching, and helper classes
+                <code><a href="@TOP@/org/netbeans/api/search/provider/SearchInfoUtils.html">SearchInfoUtils</a></code>
+                (getting SearchInfo objects for nodes) and
+                <code><a href="@TOP@/org/netbeans/api/search/provider/FileNameMatcher.html">FileNameMatcher</a></code>
+                (filtering files by file name).
             </api>
             <api group="java"
                  name="SearchProviderUIAPI"
                  type="export"
-                 category="devel"
+                 category="stable"
                  url="@TOP@org/netbeans/api/search/ui/package-summary.html">
 
                 Several UI components that can be used in presenters of search 
@@ -251,7 +270,7 @@
             <api group="java"
                  name="SearchAPI"
                  type="export"
-                 category="devel"
+                 category="stable"
                  url="@TOP@org/netbeans/api/search/package-summary.html">
 
                 Contains classes for controlling search, passing search 
