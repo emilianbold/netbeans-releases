@@ -948,12 +948,18 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      */
     private int[] computeRowIndices(TreeModelEvent e) {
         int[] rowIndices;
+        int parentRow = getLayout().getRowForPath(e.getTreePath());
         if (e.getChildren() != null) {
             rowIndices = new int[e.getChildren().length];
             for (int i = 0; i < e.getChildren().length; i++) {
                 TreePath childPath =
                         e.getTreePath().pathByAddingChild(e.getChildren()[i]);
-                rowIndices[i] = getLayout().getRowForPath(childPath);
+                int index = getLayout().getRowForPath(childPath);
+                rowIndices[i] = index < 0
+                        // child node is not shown yet, compute child row from
+                        // parent row and index of the child
+                        ? parentRow + e.getChildIndices()[i] + 1
+                        : index;
             }
         } else {
             rowIndices = null;
