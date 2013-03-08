@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.libraries;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -70,6 +71,18 @@ import org.openide.util.Exceptions;
  */
 //@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
 public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementation> {
+
+    private static final CDNJSLibrariesProvider INSTANCE = new CDNJSLibrariesProvider();
+
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+
+    private CDNJSLibrariesProvider() {
+    }
+
+    public static CDNJSLibrariesProvider getDefault() {
+        return INSTANCE;
+    }
 
     @Override
     public LibraryImplementation[] getLibraries() {
@@ -126,12 +139,19 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         return libs.toArray(new LibraryImplementation[libs.size()]);
     }
 
+    public void updateLibraries() {
+        // XXX download libs
+        propertyChangeSupport.firePropertyChange(PROP_LIBRARIES, null, null);
+    }
+
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
     private void addLibrary(List<LibraryImplementation> libs, ZipInputStream str, 

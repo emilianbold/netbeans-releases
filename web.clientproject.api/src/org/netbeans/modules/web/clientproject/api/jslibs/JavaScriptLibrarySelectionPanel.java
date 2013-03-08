@@ -833,7 +833,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         }
 
         private List<String> getLibraryFilePaths() {
-            return WebClientLibraryManager.getLibraryFilePaths(libraryVersion.getLibrary(), libraryVersion.getType());
+            return WebClientLibraryManager.getDefault().getLibraryFilePaths(libraryVersion.getLibrary(), libraryVersion.getType());
         }
 
         @Override
@@ -962,7 +962,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         public LibrariesTableModel() {
             assert EventQueue.isDispatchThread();
             Map<String, List<Library>> map = new HashMap<String, List<Library>>();
-            for (Library lib : /*LibraryManager.getDefault().getLibraries()*/WebClientLibraryManager.getLibraries()) {
+            for (Library lib : /*LibraryManager.getDefault().getLibraries()*/WebClientLibraryManager.getDefault().getLibraries()) {
                 if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
                     String name = lib.getProperties().get(
                             WebClientLibraryManager.PROPERTY_REAL_NAME);

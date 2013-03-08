@@ -42,6 +42,9 @@
  */
 package org.netbeans.modules.web.clientproject.api;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +53,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -66,8 +70,9 @@ import org.openide.modules.SpecificationVersion;
 
 
 /**
- * @author ads
- *
+ * Manager for web client libraries.
+ * <p>
+ * Rewritten since 1.22.
  */
 public final class WebClientLibraryManager {
 
@@ -114,36 +119,95 @@ public final class WebClientLibraryManager {
     public static final String PROPERTY_SITE = "site"; // NOI18N
 
     /**
-     * Default relative path for libraries folder
-     */
-    public static final String LIBS = "js/libs";       // NOI18N
-
-    /**
      * Library version.
      */
     public static final String PROPERTY_VERSION = "version"; // NOI18N
 
-    private static List<Library> libs;
+    /**
+     * Property that is fired if libraries change.
+     */
+    public static final String PROPERTY_LIBRARIES = "libraries"; // NOI18N
+
+    /**
+     * Default relative path for libraries folder.
+     */
+    public static final String LIBS = "js/libs";       // NOI18N
+
+    private static final WebClientLibraryManager INSTANCE = WebClientLibraryManager.create();
+
+    private final PropertyChangeListener libraryChangeListener = new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            resetLibraries();
+        }
+    };
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    // @GuardedBy("this")
+    private List<Library> libraries = null;
+
 
     private WebClientLibraryManager() {
     }
 
+    private static WebClientLibraryManager create() {
+        WebClientLibraryManager webClientLibraryManager = new WebClientLibraryManager();
+        // listeners
+        CDNJSLibrariesProvider.getDefault().addPropertyChangeListener(webClientLibraryManager.libraryChangeListener);
+        return webClientLibraryManager;
+    }
+
+    /**
+     * Gets default instance of manager for web client libraries.
+     * @return default instance of manager for web client libraries
+     */
+    public static WebClientLibraryManager getDefault() {
+        return INSTANCE;
+    }
+
+    /**
+     * Adds property change listener.
+     * @param listener listener to be added, can be {@code null}
+     */
+    public void addPropertyChangeListener(@NullAllowed PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Removes property change listener.
+     * @param listener listener to be removed, can be {@code null}
+     */
+    public void removePropertyChangeListener(@NullAllowed PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
 
     /**
      * Returns all JavaScript libraries. They are not registered in global libraries
      * repository for now.
      */
-    public static synchronized List<Library> getLibraries() {
-        if (libs == null) {
+    public synchronized List<Library> getLibraries() {
+        assert Thread.holdsLock(this);
+        if (libraries == null) {
             List<Library> libs2 = new ArrayList<Library>();
-            addLibraries(libs2, new CDNJSLibrariesProvider());
+            addLibraries(libs2, CDNJSLibrariesProvider.getDefault());
             addLibraries(libs2, new GoogleLibrariesProvider());
-            libs = libs2;
+            libraries = new CopyOnWriteArrayList<Library>(libs2);
         }
-        return libs;
+        return libraries;
     }
 
-    private static void addLibraries(List<Library> libs, LibraryProvider<LibraryImplementation> provider) {
+    void resetLibraries() {
+        synchronized (this) {
+            assert Thread.holdsLock(this);
+            libraries = null;
+        }
+        propertyChangeSupport.firePropertyChange(PROPERTY_LIBRARIES, null, null);
+    }
+
+    public void updateLibraries() {
+        CDNJSLibrariesProvider.getDefault().updateLibraries();
+    }
+
+    private void addLibraries(List<Library> libs, LibraryProvider<LibraryImplementation> provider) {
         for (LibraryImplementation li : provider.getLibraries()) {
             libs.add(LibraryFactory.createLibrary(li));
         }
@@ -157,7 +221,7 @@ public final class WebClientLibraryManager {
      * @param version library version
      * @return library
      */
-    public static Library findLibrary( String name , String version ){
+    public Library findLibrary( String name , String version ){
         SpecificationVersion lastVersion=null;
         Library lib = null;
         for (Library library : getLibraries()) {
@@ -196,7 +260,7 @@ public final class WebClientLibraryManager {
      * @param libraryName library name
      * @return all version of library
      */
-    public static String[] getVersions( String libraryName ){
+    public String[] getVersions( String libraryName ){
         List<String> result = new LinkedList<String>();
         for (Library library : getLibraries()) {
             if ( library.getType().equals(TYPE)){
@@ -219,9 +283,8 @@ public final class WebClientLibraryManager {
      * @param library library to get file paths for
      * @param volume volume, can be {@code null}
      * @return list of relative file paths of the given library and the given volume
-     * @since 1.9
      */
-    public static List<String> getLibraryFilePaths(@NonNull Library library, @NullAllowed String volume) {
+    public List<String> getLibraryFilePaths(@NonNull Library library, @NullAllowed String volume) {
         String libRootName = getLibraryRootName(library);
         List<URL> urls = getLibraryUrls(library, volume);
         List<String> filePaths = new ArrayList<String>(urls.size());
