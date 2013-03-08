@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
+import org.netbeans.modules.css.indexing.CssIndexModelSupport;
 import org.netbeans.modules.css.indexing.CssIndexer;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
@@ -159,6 +160,61 @@ public class CssIndex {
         changeSupport.fireChange();
     }
 
+    /**
+     * Creates an instance of {@link CssIndexModel} for the given file and factory type.
+     * 
+     * @param <T> the type of requested {@link CssIndexModel}
+     * @param factoryClass class of the {@link CssIndexModelFactory}
+     * @param file the file you want to get the model for
+     * @return instance of the model or null if the model cann't be build upon the requested file index data.
+     * @throws IOException 
+     */
+    public <T extends CssIndexModel> T getIndexModel(Class<CssIndexModelFactory<T>> factoryClass, FileObject file) throws IOException {
+        if(file == null) {
+            throw new NullPointerException("The file argument cannot be null!");
+        }
+        CssIndexModelFactory<T> factory = CssIndexModelSupport.getFactory(factoryClass);
+        if(factory == null) {
+            throw new IllegalArgumentException(String.format("No %s class registered as a system service!", factoryClass.getName()));
+        }
+        
+        Collection<? extends IndexResult> results =
+                    querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, factory.getIndexKeys().toArray(new String[0]));
+            
+        for(IndexResult result : results) {
+            if(result.getFile().equals(file)) {
+                return factory.loadFromIndex(result);
+            }
+        }
+        return null;
+    }
+    
+      /**
+     * Creates a map of file to {@link CssIndexModel}.
+     * 
+     * @see #getIndexModel(java.lang.Class, org.openide.filesystems.FileObject) 
+     * 
+     * @param <T> the type of requested {@link CssIndexModel}
+     * @param factoryClass class of the {@link CssIndexModelFactory}
+     * @return instance of the model or null if the model cann't be build upon the requested file index data.
+     * @throws IOException 
+     */
+    public <T extends CssIndexModel> Map<FileObject, T> getIndexModels(Class<CssIndexModelFactory<T>> factoryClass) throws IOException {
+        CssIndexModelFactory<T> factory = CssIndexModelSupport.getFactory(factoryClass);
+        if(factory == null) {
+            throw new IllegalArgumentException(String.format("No %s class registered as a system service!", factoryClass.getName()));
+        }
+        
+        Collection<? extends IndexResult> results =
+                    querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, factory.getIndexKeys().toArray(new String[0]));
+            
+        Map<FileObject, T> file2model = new HashMap<FileObject, T>();
+        for(IndexResult result : results) {
+            file2model.put(result.getFile(), factory.loadFromIndex(result));
+        }
+        return file2model;
+    }
+    
     /**
      *
      * @param id

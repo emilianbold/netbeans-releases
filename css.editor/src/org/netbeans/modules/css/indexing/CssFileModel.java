@@ -77,6 +77,8 @@ import org.openide.util.Exceptions;
 /**
  * Instances of this class represents a css model associated with a snapshot of the file content.
  *
+ * TODO: make it CssIndexModel so it uses the generic mechanism.
+ * 
  * @author mfukala@netbeans.org
  */
 public class CssFileModel {
