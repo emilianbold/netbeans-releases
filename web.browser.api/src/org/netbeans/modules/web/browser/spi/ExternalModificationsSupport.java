@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.web.browser.spi;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -118,9 +118,8 @@ public final class ExternalModificationsSupport {
         try {
             lock = modifiedFile.lock();
             os = modifiedFile.getOutputStream(lock);
-            ByteInputStream bis = new ByteInputStream();
-            bis.setBuf(content.getBytes());
-            FileUtil.copy(bis, os);
+            // TODO: is encoding going to be OK?? what encoding CDT sends the file in??
+            FileUtil.copy(new ByteArrayInputStream(content.getBytes()), os);
         } catch (FileAlreadyLockedException ex) {
             DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
                     "Content of "+FileUtil.getFileDisplayName(modifiedFile)+" cannot be updated with "
