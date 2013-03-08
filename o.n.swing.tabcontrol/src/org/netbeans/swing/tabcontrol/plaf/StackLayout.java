@@ -159,12 +159,16 @@ borderDump((javax.swing.JComponent)comp, "");*/
         }
     }
 
+    @Override
     public Dimension minimumLayoutSize(Container parent) {
-        return getEmptySize();
+        Component c = getVisibleComponent();
+        return c != null ? c.getMinimumSize() : getEmptySize();
     }
 
+    @Override
     public Dimension preferredLayoutSize(Container parent) {
-        return getEmptySize();
+        Component c = getVisibleComponent();
+        return c != null ? c.getPreferredSize() : getEmptySize();
     }
 
     /**
