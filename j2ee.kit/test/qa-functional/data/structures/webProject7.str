@@ -8,11 +8,11 @@ nbproject/private/
 nbproject/private/private.properties
 src/
 src/conf/
-src/conf/application-client.xml
-src/conf/glassfish-application-client.xml
 src/conf/MANIFEST.MF
 src/java/
-src/java/appclient14/
-src/java/appclient14/Main.java
-test/
+web/
+web/index.html
+web/WEB-INF/
+web/WEB-INF/beans.xml
+web/WEB-INF/glassfish-web.xml
 build.xml
