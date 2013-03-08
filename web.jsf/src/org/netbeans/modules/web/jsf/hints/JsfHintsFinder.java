@@ -85,6 +85,7 @@ public class JsfHintsFinder implements CancellableTask<CompilationInfo> {
             return;
         }
 
+        hints.clear();
         JsfHintsContext ctx = new JsfHintsContext(fileObject, parameter);
         hints.addAll(JsfHintsRegistry.check(ctx));
         HintsController.setErrors(fileObject, JsfHintsFinder.class.getName(), hints);
