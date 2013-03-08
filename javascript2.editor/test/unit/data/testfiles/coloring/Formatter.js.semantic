@@ -58,11 +58,11 @@ var |>GLOBAL:formatter<| = {
 
         var text = "" + code;
         text = "<pre>" + code + "</pre>";
-        var |>CLASS:textParts<| = text.split("\"");
+        var textParts = text.split("\"");
         var number = 0;
-        if (textParts.|>FIELD:length<| > 1){
+        if (textParts.length > 1){
             text = "";
-            for (var i = 0; i < textParts.|>FIELD:length<|; i++) {
+            for (var i = 0; i < textParts.length; i++) {
                 if (number == 0) {
                     text += textParts[i] + "<font color='#ce7b00'>\"";
                     number = 1;

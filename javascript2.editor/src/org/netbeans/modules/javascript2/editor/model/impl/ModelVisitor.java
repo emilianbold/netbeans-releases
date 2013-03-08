@@ -190,7 +190,11 @@ public class ModelVisitor extends PathNodeVisitor {
             JsObjectImpl property = (JsObjectImpl)fromAN.getProperty(accessNode.getProperty().getName());
             int pathSize = getPath().size();
             Node lastVisited = getPath().get(pathSize - 2);
-            boolean onLeftSite =  lastVisited instanceof BinaryNode && ((BinaryNode)lastVisited).lhs().equals(accessNode);
+            boolean onLeftSite = false;
+            if (lastVisited instanceof BinaryNode) {
+                BinaryNode bNode = (BinaryNode)lastVisited;
+                onLeftSite = bNode.tokenType() == TokenType.ASSIGN && bNode.lhs().equals(accessNode);       
+            }
             if (property != null) {
                 if(onLeftSite && !property.isDeclared()) {
                     property.setDeclared(true);
