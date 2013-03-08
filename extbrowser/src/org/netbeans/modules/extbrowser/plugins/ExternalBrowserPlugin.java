@@ -64,6 +64,7 @@ import org.netbeans.modules.netserver.api.WebSocketServer;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.api.ResizeOptions;
+import org.netbeans.modules.web.browser.spi.ExternalModificationsSupport;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
@@ -313,6 +314,9 @@ public final class ExternalBrowserPlugin {
                     break;
                 case SAVE_RESIZE_OPTIONS:
                     handleSaveResizeOptions(msg.getValue());
+                    break;
+                case RESOURCE_CHANGED:
+                    handleResourceChanged(msg.getValue());
                     break;
                 case READY:
                     break;
@@ -589,6 +593,19 @@ public final class ExternalBrowserPlugin {
         @Override
         public void closed(SelectionKey key) {
             removeKey( key );
+        }
+
+        private void handleResourceChanged(JSONObject value) {
+            final String content = String.valueOf(value.get("content"));
+            JSONObject resource = (JSONObject)value.get("resource");
+            final String url = String.valueOf(resource.get("url"));
+            final String type = String.valueOf(resource.get("type"));
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    ExternalModificationsSupport.handle(url, type, content);
+                }
+            });
         }
 
     }
