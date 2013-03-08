@@ -169,7 +169,7 @@ public class CssIndex {
      * @return instance of the model or null if the model cann't be build upon the requested file index data.
      * @throws IOException 
      */
-    public <T extends CssIndexModel> T getIndexModel(Class<CssIndexModelFactory<T>> factoryClass, FileObject file) throws IOException {
+    public <T extends CssIndexModel> T getIndexModel(Class factoryClass, FileObject file) throws IOException {
         if(file == null) {
             throw new NullPointerException("The file argument cannot be null!");
         }
