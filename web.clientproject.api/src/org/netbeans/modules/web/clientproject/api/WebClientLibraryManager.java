@@ -67,6 +67,7 @@ import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -166,10 +167,15 @@ public final class WebClientLibraryManager {
 
     /**
      * Adds property change listener.
+     * <p>
+     * All listeners are hold as {@link WeakListeners#propertyChange(PropertyChangeListener, Object) weak listeners}.
      * @param listener listener to be added, can be {@code null}
      */
     public void addPropertyChangeListener(@NullAllowed PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
+        if (listener == null) {
+            return;
+        }
+        propertyChangeSupport.addPropertyChangeListener(WeakListeners.propertyChange(listener, propertyChangeSupport));
     }
 
     /**
