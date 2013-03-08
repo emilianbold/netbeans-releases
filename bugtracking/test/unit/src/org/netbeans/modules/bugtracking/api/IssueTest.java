@@ -118,11 +118,15 @@ public class IssueTest extends NbTestCase {
         assertTrue(apiIssue.wasRefreshed);
     }
     
-    public void testOpen() throws InterruptedException {
+    /**
+     * invoked from BugtrackingViewsTest
+     * @throws InterruptedException 
+     */
+    public void _testOpen() throws InterruptedException {
         APITestIssue apiIssue = getAPIIssue();
         Issue issue = getIssue();
         
-        assertFalse(apiIssue.wasOpened);
+        apiIssue.wasOpened = false;
         issue.open();
         assertOpened(apiIssue);
         
