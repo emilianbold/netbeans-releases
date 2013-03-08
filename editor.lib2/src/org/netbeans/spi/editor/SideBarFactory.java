@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.spi.editor;
 
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
@@ -53,12 +53,9 @@ import org.netbeans.spi.editor.mimelookup.MimeLocation;
  *  in the editor sidebar. Known implementing class is i.e GlyphGutter.
  *  
  *  @author  Martin Roskanin
- *  @deprecated use {@link org.netbeans.spi.editor.SideBarFactory} from editor.lib2 module.
  */
-@Deprecated
 @MimeLocation(subfolderName="SideBar")
 public interface SideBarFactory {
-
     public JComponent createSideBar(JTextComponent target);
 
 }

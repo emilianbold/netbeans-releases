@@ -66,7 +66,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.editor.SideBarFactory;
 import org.netbeans.editor.WeakEventListenerList;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -212,9 +211,10 @@ public final class CustomizableSideBar {
         }
     }
     
+    @SuppressWarnings("deprecation")
     private static Map<SideBarPosition, List<JComponent>> createSideBarsMap(JTextComponent target) {
         String mimeType = NbEditorUtilities.getMimeType(target);
-        Map<SideBarPosition, List<SideBarFactory>> factoriesMap = getFactoriesMap(mimeType);
+        Map<SideBarPosition, List> factoriesMap = getFactoriesMap(mimeType);
         Map<SideBarPosition, List<JComponent>> sideBarsMap = new HashMap<SideBarPosition, List<JComponent>>(factoriesMap.size());
         
         Collection<String> locations = null;
@@ -232,7 +232,7 @@ public final class CustomizableSideBar {
                 !locations.contains(pos.getPositionName())) {
                 continue;
             }
-            List<SideBarFactory> factoriesList = factoriesMap.get(pos);
+            List factoriesList = factoriesMap.get(pos);
             
             // Get sideBars list
             List<JComponent> sideBars = sideBarsMap.get(pos);
@@ -242,8 +242,16 @@ public final class CustomizableSideBar {
             }
             
             // Create side bars from the factories for this position
-            for(SideBarFactory f : factoriesList) {
-                JComponent sideBar = f.createSideBar(target);
+            for(Object f : factoriesList) {
+                final JComponent sideBar;
+                if (f instanceof org.netbeans.editor.SideBarFactory) {
+                    sideBar = ((org.netbeans.editor.SideBarFactory)f).createSideBar(target);
+                } else if (f instanceof org.netbeans.spi.editor.SideBarFactory) {
+                    sideBar = ((org.netbeans.spi.editor.SideBarFactory)f).createSideBar(target);
+                } else {
+                    LOG.fine("Unexpected sidebar instance: " + f);
+                    continue;
+                }
                 if (sideBar == null) {
                     LOG.fine("Ignoring null side bar created by the factory: " + f); //NOI18N
                     continue;
@@ -265,7 +273,7 @@ public final class CustomizableSideBar {
         return sideBarsMap;
     }
 
-    public static Map<SideBarPosition, List<SideBarFactory>> getFactoriesMap(String mimeType) {
+    public static Map<SideBarPosition, List> getFactoriesMap(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);
         
         Lookup.Result<SideBarFactoriesProvider> lR = LR.get(mimePath);
