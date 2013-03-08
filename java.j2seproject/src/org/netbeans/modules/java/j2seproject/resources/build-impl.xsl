@@ -221,7 +221,14 @@ is divided into following sections:
                             <equals arg1="${{main.class}}" arg2="" trim="true"/>
                         </not>
                     </and>
-                </condition>                
+                </condition>
+                <condition property="profile.available">
+                    <and>
+                        <isset property="javac.profile"/>
+                        <length length="0" string="${{javac.profile}}" when="greater"/>
+                        <matches pattern="1\.[89](\..*)?" string="${{javac.source}}"/>
+                    </and>
+                </condition>
                 <condition property="do.archive">
                     <not>
                         <istrue value="${{jar.archive.disabled}}"/>  <!-- Disables archive creation when archiving is overriden by an extension -->
@@ -253,7 +260,13 @@ is divided into following sections:
                         <isset property="splashscreen.available"/>
                         <istrue value="${{do.archive}}"/>
                     </and>
-                </condition>                
+                </condition>
+                <condition property="do.archive+profile.available">
+                    <and>
+                        <isset property="profile.available"/>
+                        <istrue value="${{do.archive}}"/>
+                    </and>
+                </condition>
                                 
                 <xsl:call-template name="createRootAvailableTest">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
@@ -309,11 +322,7 @@ is divided into following sections:
                     <length length="0" string="${{endorsed.classpath}}" when="greater"/>
                 </condition>
                 <condition property="javac.profile.cmd.line.arg" value="-profile ${{javac.profile}}" else="">
-                    <and>
-                        <isset property="javac.profile"/>
-                        <length length="0" string="${{javac.profile}}" when="greater"/>
-                        <matches pattern="1\.[89](\..*)?" string="${{javac.source}}"/>
-                    </and>
+                    <isset property="profile.available"/>
                 </condition>
                 <xsl:if test="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform)">
                     <condition property="jdkBug6558476" else="false"> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 on JDK 1.5 and 1.6 on Windows -->
@@ -1855,6 +1864,14 @@ is divided into following sections:
                 </manifest>
             </target>
 
+            <target name="-do-jar-set-profile">
+                <xsl:attribute name="depends">init,-do-jar-create-manifest,-do-jar-copy-manifest</xsl:attribute>
+                <xsl:attribute name="if">do.archive+profile.available</xsl:attribute>
+                <manifest file="${{tmp.manifest.file}}" mode="update">
+                    <attribute name="Profile" value="${{javac.profile}}"/>
+                </manifest>
+            </target>
+
             <target name="-do-jar-set-splashscreen">
                 <xsl:attribute name="depends">init,-do-jar-create-manifest,-do-jar-copy-manifest</xsl:attribute>
                 <xsl:attribute name="if">do.archive+splashscreen.available</xsl:attribute>
@@ -1867,7 +1884,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-jar-copylibs">
-                <xsl:attribute name="depends">init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-splashscreen</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen</xsl:attribute>
                 <xsl:attribute name="if">do.mkdist</xsl:attribute>
                 <j2seproject3:copylibs manifest="${{tmp.manifest.file}}"/>
                 <echo level="info">To run this application from the command line without Ant, try:</echo>
@@ -1879,7 +1896,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-jar-jar">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-splashscreen</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen</xsl:attribute>
                 <xsl:attribute name="if">do.archive</xsl:attribute>
                 <xsl:attribute name="unless">do.mkdist</xsl:attribute>
                 <j2seproject1:jar manifest="${{tmp.manifest.file}}"/>
@@ -1908,10 +1925,10 @@ is divided into following sections:
 
 
             <target name="-do-jar-without-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-splashscreen,-do-jar-jar,-do-jar-delete-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen,-do-jar-jar,-do-jar-delete-manifest</xsl:attribute>
             </target>
             <target name="-do-jar-with-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-splashscreen,-do-jar-copylibs,-do-jar-delete-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen,-do-jar-copylibs,-do-jar-delete-manifest</xsl:attribute>
             </target>
            
             <target name="-post-jar">
