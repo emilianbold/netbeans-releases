@@ -244,7 +244,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     protected @Override void updateActions() {
         addSystemActionMapping(cutAction, javax.swing.text.DefaultEditorKit.cutAction);
         addSystemActionMapping(copyAction, javax.swing.text.DefaultEditorKit.copyAction);
-        addSystemActionMapping(pasteAction, javax.swing.text.DefaultEditorKit.pasteAction);
+        addSystemActionMapping(pasteAction, org.openide.actions.PasteAction.class);
         // #69077 - DeleteAction now delegates to deleteNextCharAction
         addSystemActionMapping(deleteNextCharAction, "delete");
         addSystemActionMapping(showPopupMenuAction, org.openide.actions.PopupAction.class);
