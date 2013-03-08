@@ -297,7 +297,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return hasName;
     }
     
-    protected void setJsKind(JsElement.Kind kind) {
+    public final void setJsKind(JsElement.Kind kind) {
         this.kind = kind;
     }
         

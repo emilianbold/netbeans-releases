@@ -41,12 +41,16 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -161,6 +165,30 @@ public class ModelTest extends ModelTestBase {
 
     public void testPerson() throws Exception {
         checkModel("testfiles/model/person.js");
+    }
+
+    public void testPersonRevert() throws Exception {
+        FileObject fo = getTestFile("testfiles/model/person.js.model");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+        try {
+            JsObject obj = Model.readModel(reader);
+
+            final StringWriter sw = new StringWriter();
+            Model.Printer p = new Model.Printer() {
+                @Override
+                public void println(String str) {
+                    sw.append(str).append("\n");
+                }
+            };
+            Model.writeObject(p, obj);
+            assertDescriptionMatches(fo, sw.toString(), false, ".revert", true);
+        } finally {
+            reader.close();
+        }
+
+        // bit hacky check that .model and .model.revert are the same
+        String text = fo.asText();
+        assertDescriptionMatches("testfiles/model/person.js.model", text, false, ".revert", true);
     }
 
     public void testIssue217679() throws Exception {

@@ -50,6 +50,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -67,17 +68,9 @@ public class ModelTestBase extends JsTestBase {
     }
 
     public void checkModel(String file) throws Exception {
-        final Model[] globals = new Model[1];
-        Source source = getTestSource(getTestFile(file));
+        FileObject fo = getTestFile(file);
+        Model model = getModel(file);
 
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
-                JsParserResult parameter = (JsParserResult) resultIterator.getParserResult();
-                Model model = parameter.getModel();
-                globals[0] = model;
-            }
-        });
-        //return globals[0];
         final StringWriter sw = new StringWriter();
         Model.Printer p = new Model.Printer() {
 
@@ -86,8 +79,8 @@ public class ModelTestBase extends JsTestBase {
                 sw.append(str).append("\n");
             }
         };
-        globals[0].dumpModel(p);
-        assertDescriptionMatches(source.getFileObject(), sw.toString(), false, ".model", true);
+        model.writeModel(p);
+        assertDescriptionMatches(fo, sw.toString(), false, ".model", true);
     }
 
     public Model getModel(String file) throws Exception {
