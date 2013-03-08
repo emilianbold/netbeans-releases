@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.clientproject.api;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -59,6 +60,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
 import org.netbeans.modules.web.clientproject.libraries.GoogleLibrariesProvider;
 import org.netbeans.spi.project.libraries.LibraryFactory;
@@ -209,7 +211,17 @@ public final class WebClientLibraryManager {
         propertyChangeSupport.firePropertyChange(PROPERTY_LIBRARIES, null, null);
     }
 
-    public void updateLibraries() {
+    /**
+     * Update web client libraries.
+     * <p>
+     * This method must be called only in a background thread.
+     * @throws NetworkException if any network error occurs
+     * @throws IOException if any error occurs
+     */
+    public void updateLibraries() throws NetworkException, IOException {
+        if (EventQueue.isDispatchThread()) {
+            throw new IllegalStateException("Cannot run in UI thread");
+        }
         CDNJSLibrariesProvider.getDefault().updateLibraries();
     }
 
