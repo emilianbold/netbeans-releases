@@ -207,7 +207,6 @@ public final class Model {
                 sb.append(", ");
             }
             sb.setLength(sb.length() - 2);
-            
         }
 
         sb.append(", ");
