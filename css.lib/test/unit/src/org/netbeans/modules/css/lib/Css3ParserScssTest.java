@@ -960,10 +960,27 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
-     public void testMergedScssTests() throws ParseException, BadLocationException, IOException {
+
+    public void testMergedScssTests() throws ParseException, BadLocationException, IOException {
         CssParserResult result = TestUtil.parse(getTestFile("testfiles/scss/scss-tests-merged.scss"));
 //        TestUtil.dumpResult(result);
         assertResult(result, 0);
+    }
+
+    public void testLocalVariableDeclaration() {
+        String source =
+                "p {\n"
+                + "  $width: 1000px;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+        
+        //the "$width: 1000px;" is supposed to be parsed as variable declaration, not property declaration!
+        assertNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration"));
+        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/cp_variable_declaration"));
+
     }
 }

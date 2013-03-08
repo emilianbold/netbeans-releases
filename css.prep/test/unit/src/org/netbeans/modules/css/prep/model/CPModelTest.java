@@ -41,12 +41,10 @@
  */
 package org.netbeans.modules.css.prep.model;
 
-import org.netbeans.modules.css.prep.model.CPModel;
 import java.util.Arrays;
 import java.util.Collection;
-import org.junit.Test;
+import java.util.Iterator;
 import static org.junit.Assert.*;
-import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.lib.CssTestBase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
@@ -56,7 +54,7 @@ import org.netbeans.modules.css.lib.api.CssParserResult;
  * @author marekfukala
  */
 public class CPModelTest extends CssTestBase {
-    
+
     public CPModelTest(String name) {
         super(name);
     }
@@ -65,9 +63,9 @@ public class CPModelTest extends CssTestBase {
     protected void setUp() throws Exception {
         setScssSource();
     }
-    
+
     public void testVariables() {
-                String source = "#navbar {\n"
+        String source = "#navbar {\n"
                 + "  $navbar-width: 800px;\n"
                 + "  width: $navbar-width;\n"
                 + "  border-bottom: 2px solid $navbar-color;\n"
@@ -89,81 +87,133 @@ public class CPModelTest extends CssTestBase {
                 + "}";
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
-        
+
         CPModel model = CPModel.getModel(result);
         assertNotNull(model);
-        
-        Collection<String> vars = model.getVarNames();        
-        assertNotNull(vars);
-        
-        String[] expected = new String[]{"$navbar-color","$items","$switch","$navbar-width"};
-        
-        Collection<String> expSet = Arrays.asList(expected);
-        assertTrue(vars.containsAll(expSet));
-        assertFalse(vars.retainAll(expSet));
-        
-    }
-    
-    public void testVariablesInMixin() {
-                String source = "$var: 1;  @mixin my { $foo: $var + 1; }";
-        CssParserResult result = TestUtil.parse(source);
-        assertResultOK(result);
-        
-        CPModel model = CPModel.getModel(result);
-        assertNotNull(model);
-        
+
         Collection<String> vars = model.getVarNames();
         assertNotNull(vars);
-        
-        String[] expected = new String[]{"$var","$foo"};
-        
+
+        String[] expected = new String[]{"$navbar-color", "$items", "$switch", "$navbar-width"};
+
         Collection<String> expSet = Arrays.asList(expected);
         assertTrue(vars.containsAll(expSet));
         assertFalse(vars.retainAll(expSet));
-        
+
     }
-    
+
+    public void testVariablesInMixin() {
+        String source = "$var: 1;  @mixin my { $foo: $var + 1; }";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+
+        CPModel model = CPModel.getModel(result);
+        assertNotNull(model);
+
+        Collection<String> vars = model.getVarNames();
+        assertNotNull(vars);
+
+        String[] expected = new String[]{"$var", "$foo"};
+
+        Collection<String> expSet = Arrays.asList(expected);
+        assertTrue(vars.containsAll(expSet));
+        assertFalse(vars.retainAll(expSet));
+
+    }
+
     public void testVariablesInMixinWithError_fails() {
         String source = "$var: 1;  @mixin my { $foo: $ }";
         CssParserResult result = TestUtil.parse(source);
-        
+
         CPModel model = CPModel.getModel(result);
         assertNotNull(model);
-        
+
         Collection<String> vars = model.getVarNames();
         assertNotNull(vars);
-        
+
         //the $foo var won't get to the model's list as it is not parsed
         //xxx possible solutions: improve err. recovery or make some lexer based heuristic for the error area
 //        String[] expected = new String[]{"$var","$foo"};
         String[] expected = new String[]{"$var"};
-        
+
         Collection<String> expSet = Arrays.asList(expected);
         assertTrue(vars.containsAll(expSet));
         assertFalse(vars.retainAll(expSet));
-        
+
     }
-    
-     public void testMixins() {
-                String source = ""
-                        + "@mixin mymixin() {\n"
-                        + "    .clz {}\n"
-                        + "}";
+
+    public void testMixins() {
+        String source = ""
+                + "@mixin mymixin() {\n"
+                + "    .clz {}\n"
+                + "}";
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
-        
+
         CPModel model = CPModel.getModel(result);
         assertNotNull(model);
-        
-        Collection<String> mixins = model.getMixinNames();        
+
+        Collection<String> mixins = model.getMixinNames();
         assertNotNull(mixins);
-        
+
         String[] expected = new String[]{"mymixin"};
-        
+
         Collection<String> expSet = Arrays.asList(expected);
         assertTrue(mixins.containsAll(expSet));
         assertFalse(mixins.retainAll(expSet));
+
+    }
+
+    public void testVariablesType() {
+        String source =
+                "$global: 1;\n"
+                + "@mixin my($arg) {\n"
+                + "    $local: 2;\n"
+                + "    color: $usage;\n"
+                + "}\n";
+
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+
+//        TestUtil.dumpResult(result);
+        
+        CPModel model = CPModel.getModel(result);
+        assertNotNull(model);
+
+        Collection<Variable> variables = model.getVariables();
+        assertNotNull(variables);
+
+        Iterator<Variable> vars = variables.iterator();
+
+//        for(Variable v : variables) {
+//            System.out.println(v.getName() + "; " + v.getRange() + "; " + v.getType());
+//        }
+        
+        assertTrue(vars.hasNext());
+        Variable v = vars.next();
+        assertNotNull(v);
+        assertEquals("$global", v.getName().toString());
+        assertEquals(Variable.Type.GLOBAL_DECLARATION, v.getType());
+
+        assertTrue(vars.hasNext());
+        v = vars.next();
+        assertNotNull(v);
+        assertEquals("$arg", v.getName().toString());
+        assertEquals(Variable.Type.METHOD_PARAM_DECLARATION, v.getType());
+
+        assertTrue(vars.hasNext());
+        v = vars.next();
+        assertNotNull(v);
+        assertEquals("$local", v.getName().toString());
+        assertEquals(Variable.Type.LOCAL_DECLARATION, v.getType());
+
+        assertTrue(vars.hasNext());
+        v = vars.next();
+        assertNotNull(v);
+        assertEquals("$usage", v.getName().toString());
+        assertEquals(Variable.Type.USAGE, v.getType());
+
+        assertFalse(vars.hasNext());
         
     }
-    
 }
