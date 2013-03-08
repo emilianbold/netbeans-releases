@@ -58,6 +58,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -75,6 +77,9 @@ import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -97,6 +102,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final PropertyChangeListener projectListener;
     private static final RequestProcessor RP = new RequestProcessor(MavenWhiteListQueryImpl.class.getName(), 3);
+    private static final Logger LOG = Logger.getLogger(MavenWhiteListQueryImpl.class.getName());
 
     private final Set<MavenWhiteListImplementation> results = Collections.synchronizedSet(new WeakSet<MavenWhiteListImplementation>());
     
@@ -111,8 +117,48 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
                 //TODO listen just on changes of classpath??
                 if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     synchronized (LOCK) {
+                        Set<String> oldPrivate = cachePrivatePackages != null ? cachePrivatePackages.get() : null;
+                        if (oldPrivate == null) {
+                            oldPrivate = Collections.emptySet();
+                        }
+                        Set<String> oldTransitive = cacheTransitivePackages != null ? cacheTransitivePackages.get() : null;
+                        if (oldTransitive == null) {
+                            oldTransitive = Collections.emptySet();
+                        }
                         isCached = false;
                         cacheOrLoad();
+                        Set<String> newPrivate = cachePrivatePackages != null ? cachePrivatePackages.get() : null;
+                        if (newPrivate == null) {
+                            newPrivate = Collections.emptySet();
+                        }
+                        Set<String> newTransitive = cacheTransitivePackages != null ? cacheTransitivePackages.get() : null;
+                        if (newTransitive == null) {
+                            newTransitive = Collections.emptySet();
+                        }
+                        HashSet oldNotNew1 = new HashSet(oldPrivate);
+                        oldNotNew1.removeAll(newPrivate);
+                        HashSet newNotOld1 = new HashSet(newPrivate);
+                        newNotOld1.removeAll(oldPrivate);
+                        HashSet oldNotNew2 = new HashSet(oldTransitive);
+                        oldNotNew2.removeAll(newTransitive);
+                        HashSet newNotOld2 = new HashSet(newTransitive);
+                        newNotOld2.removeAll(oldTransitive);
+                        
+                        boolean privateChanged = !oldNotNew1.isEmpty() || !newNotOld1.isEmpty();
+                        boolean transitiveChanged = !oldNotNew2.isEmpty() || !newNotOld2.isEmpty();
+                        if (privateChanged || transitiveChanged) {
+                            ClassPath[] cps = project.getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.SOURCE);
+                            Set<FileObject> fos = new HashSet<FileObject>();
+                            for (ClassPath cp : cps) {
+                                fos.addAll(Arrays.asList(cp.getRoots()));
+                            }
+                            LOG.log(Level.INFO, "Refreshing indexes for {0} because {1}{2} changed.", new Object[]{project.getProjectDirectory(), privateChanged ? "accessible private packages, " : "", transitiveChanged ? "accessible transitive packages " : ""});
+                            LOG.log(Level.FINE, "changes in private1-{0}", Arrays.toString(oldNotNew1.toArray()));
+                            LOG.log(Level.FINE, "changes in private2-{0}", Arrays.toString(newNotOld1.toArray()));
+                            LOG.log(Level.FINE, "changes in transitive1-{0}", Arrays.toString(oldNotNew2.toArray()));
+                            LOG.log(Level.FINE, "changes in transitive2-{0}", Arrays.toString(newNotOld2.toArray()));
+                            IndexingManager.getDefault().refreshAllIndices(fos.toArray(new FileObject[0]));
+                        }
                     }
                 }
             }
@@ -124,10 +170,9 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
         //TODO decide if test or main source root.
         NbMavenProject mvn = project.getLookup().lookup(NbMavenProject.class);
         assert mvn != null;
-        MavenProject mp = mvn.getMavenProject();
-        //TODO remove the check
-        if (mp.getProperties() == null || (mp.getProperties() != null && mp.getProperties().getProperty("enable.whitelist") == null)) {
-            //a temporary thing to enable the whitelists for experimentation..
+        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+        String disable = props.get("netbeans.hint.disable.whitelist", true);
+        if (disable != null) {
             return null;
         }
         ProjectSourcesClassPathProvider prov = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
@@ -228,8 +273,10 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
         }
         
         List<ExplicitDependency> explicits = PluginPropertyUtils.getPluginPropertyBuildable(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, null, new ExplicitBuilder());
-        String codenamebase = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "codeNameBase", null, null);
-        
+//        String codenamebase = PluginPropertyUtils.getPluginProperty(project, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "codeNameBase", null, null);
+//        if (codenamebase == null) {
+//            codenamebase = mp.getGroupId() + "." + mp.getArtifactId();
+//        }
         //these two are here to remove duplicates, if a package is both private (in one module) and public (in another module)
         // consider the package public for our purposes. better a false negative than false positive here..
         Set<String> nonPrivatePackages = new HashSet<String>();
