@@ -126,9 +126,10 @@ public class JsStructureScanner implements StructureScanner {
         
         if (jsObject instanceof JsFunction) {
             for (JsObject param: ((JsFunction)jsObject).getParameters()) {
-                if (hasDeclaredProperty(param)) {                   
-                     getEmbededItems(result, param, collectedItems);
-                    //collectedItems.add(new JsObjectStructureItem(param, embededItems, result));
+                if (hasDeclaredProperty(param)) { 
+                    final List<StructureItem> items = new ArrayList<StructureItem>();
+                    getEmbededItems(result, param, items);
+                    collectedItems.add(new JsObjectStructureItem(param, items, result));
                 }
             }
         }
