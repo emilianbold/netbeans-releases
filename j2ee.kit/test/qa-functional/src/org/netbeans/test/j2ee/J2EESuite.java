@@ -180,10 +180,10 @@ public class J2EESuite extends J2eeTestCase {
                 "testPUProviders",
                 "testPUDataSource");
         // wizard/NewProjectWizardsTest
-        conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest4.class);
         conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest5.class);
         conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest6.class);
-        conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest4.class, "closeProjects");        
+        conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest7.class);
+        conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest5.class, "closeProjects");        
         // wizard/WizardsTest
         conf = conf.addTest(WizardsTest.Suite.class);
         // wizard/WizardsJavaEE5Test

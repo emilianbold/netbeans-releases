@@ -9,7 +9,6 @@ nbproject/private/private.properties
 src/
 src/conf/
 src/java/
-src/conf/ejb-jar.xml
 src/conf/MANIFEST.MF
-src/conf/glassfish-ejb-jar.xml
+src/conf/beans.xml
 build.xml
