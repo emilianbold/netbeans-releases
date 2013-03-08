@@ -61,8 +61,8 @@ public final class ReplacePattern {
     /**
      * Creates a new ReplacePattern in accordance with given parameters
      *
-     * @param searchExpression non-null String of a searched text
-     * @param wholeWords if true, only whole words were searched
+     * @param replaceExpression non-null String of a replace expression
+     * @param preserveCase if true, the case of original text will be preserved
      */
     public static ReplacePattern create(String replaceExpression, boolean preserveCase) {
         return new ReplacePattern(replaceExpression, preserveCase);
