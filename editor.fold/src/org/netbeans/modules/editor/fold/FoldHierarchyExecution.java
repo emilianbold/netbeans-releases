@@ -51,12 +51,14 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -80,7 +82,9 @@ import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.netbeans.lib.editor.util.PriorityMutex;
+import org.netbeans.spi.editor.fold.FoldHierarchyMonitor;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
@@ -174,6 +178,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     private Task initTask;
     
+    private volatile boolean active;
+    
     public static synchronized FoldHierarchy getOrCreateFoldHierarchy(JTextComponent component) {
         return getOrCreateFoldExecution(component).getHierarchy();
     }
@@ -191,8 +197,17 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             execution.init();
 
             component.putClientProperty(FoldHierarchyExecution.class, execution);
+
+            String mime = DocumentUtilities.getMimeType(component);
+            Collection<? extends FoldHierarchyMonitor> monitors = MimeLookup.getLookup(mime).lookupAll(FoldHierarchyMonitor.class);
+            for (FoldHierarchyMonitor m : monitors) {
+                try {
+                    m.foldsAttached(execution.getHierarchy());
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
-        
         return execution;
     }
     
@@ -205,6 +220,10 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     private FoldHierarchyExecution(JTextComponent component) {
         this.component = component;
         this.listenerList = new EventListenerList();
+    }
+    
+    public boolean hasProviders() {
+        return active;
     }
     
     /**
@@ -230,8 +249,12 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
 
         // Start listening on component changes
         startComponentChangesListening();
+        
+        // initialize conservatively the active flag
+        active = !FoldManagerFactoryProvider.getDefault().getFactoryList(hierarchy).isEmpty();
 
         this.initTask = RP.post(this);
+        
     }
     
     private void updateRootFold(Document doc) {
@@ -703,11 +726,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         operations = EMPTY_FOLD_OPERTAION_IMPL_ARRAY; // really release
         
         // Call all the providers
-        FoldManagerFactoryProvider provider = !releaseOnly
-            ? FoldManagerFactoryProvider.getDefault()
-            : FoldManagerFactoryProvider.getEmpty();
-
-        List factoryList = provider.getFactoryList(getHierarchy());
+        List factoryList = releaseOnly ? Collections.emptyList() : 
+                FoldManagerFactoryProvider.getDefault().getFactoryList(getHierarchy());
         int factoryListLength = factoryList.size();
 
         if (debug) {
@@ -756,6 +776,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             }
             transaction.commit();
         }
+        // update the active flag
+        active = operations.length > 0;
     }
     
     private void startComponentChangesListening() {

@@ -112,6 +112,25 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="fold-editorlib-separation">
+        <api name="api"/>
+        <summary>Fold UI separation from Editor Library</summary>
+        <version major="1" minor="34"/>
+        <date day="8" month="3" year="2013"/>
+        <author login="sdedic"/>
+        <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes"/>
+        <description>
+            <p>
+                <code>FoldHierarchyMonitor</code> was introduced to allow hooking into UI when
+                a FoldHierarchy is produced for a JTextComponent. The 'active' flag is provided on 
+                the <code>FoldHierarchy</code> to determine whether the hierarchy be popuplated with folds 
+                at all.
+            </p>
+        </description>
+        <class name="FoldHierarchy" package="org.netbeans.api.editor.fold"/>
+        <class name="FoldHierarchyMonitor" package="org.netbeans.spi.editor.fold"/>
+        <issue number="226368"/>
+    </change>
   <change id="FoldOperation-owns-added">
       <api name="api"/>
       <summary>FoldOperation.owns(Fold) added</summary>
