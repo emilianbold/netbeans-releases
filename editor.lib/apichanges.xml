@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="EditorLibDeprecation.SidebarFactory">
+            <summary>SidebarFactory interface deprecated</summary>
+            <version major="3" minor="37"/>
+            <date day="8" month="3" year="2013"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="yes"/>
+            <description>
+                <p>The interface <code>org.netbeans.editor.SideBarFactory</code> was
+                adopted to <code>editor.lib2</code>. The original interface was
+                deprecated. Clients should start using the relocated interface.
+                </p>
+            </description>
+            <class name="SideBarFactory" package="org.netbeans.editor"/>
+            <issue number="226877"/>
+        </change>
         <change id="moving-find">
             <summary>Moving find implementations to module editor.search</summary>
             <version major="3" minor="36"/>

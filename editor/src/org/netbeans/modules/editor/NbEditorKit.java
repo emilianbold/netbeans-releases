@@ -86,7 +86,6 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.SideBarFactory;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.openide.awt.DynamicMenuContent;
@@ -950,10 +949,10 @@ public class NbEditorKit extends ExtKit implements Callable {
 
     @Override
     public Object call() {
-        Map<SideBarPosition, List<SideBarFactory>> factoriesMap = CustomizableSideBar.getFactoriesMap(getContentType());
+        Map<SideBarPosition, List> factoriesMap = CustomizableSideBar.getFactoriesMap(getContentType());
         //initialize all factories
-        for (Entry<SideBarPosition, List<SideBarFactory>> e : factoriesMap.entrySet()) {
-            for (SideBarFactory f : e.getValue()) {
+        for (Entry<SideBarPosition, List> e : factoriesMap.entrySet()) {
+            for (Object f : e.getValue()) {
                 if (f instanceof MimeTypeInitializer) { //TODO: SideBarFactory should probably implement MimeTypeInitializer
                     try {
                         ((MimeTypeInitializer) f).init(getContentType());
