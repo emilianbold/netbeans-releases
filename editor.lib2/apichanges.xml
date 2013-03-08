@@ -107,6 +107,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="AbstractEditorAction.in.SPI">
+            <summary>AbstractEditorAction made part of editor SPI</summary>
+            <version major="1" minor="76"/>
+            <date day="1" month="3" year="2013"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    AbstractEditorAction made part of editor SPI by making org.netbeans.spi.editor a public package.
+                </p>
+            </description>
+            <issue number="225792"/>
+        </change>
+
         <change id="EditorActionRegistration.noKeyBinding.noIconInMenu">
             <summary>Added EditorActionRegistration.noKeyBinding and EditorActionRegistration.noIconInMenu</summary>
             <version major="1" minor="75"/>
