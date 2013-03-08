@@ -35,11 +35,6 @@ multicombo:METHOD:[PUBLIC]:ESCAPED{multicombo}ESCAPED{(}ESCAPED{select}ESCAPED{,
     val:METHOD:[PUBLIC]:ESCAPED{val}ESCAPED{(}ESCAPED{values}ESCAPED{)}<font color="#999999">ESCAPED{ : }returnArray</font>:
   resetSearchWidth:METHOD:[PRIVATE]:ESCAPED{resetSearchWidth}ESCAPED{(}ESCAPED{)}:
   resizeSelect:METHOD:[PRIVATE]:ESCAPED{resizeSelect}ESCAPED{(}ESCAPED{target}ESCAPED{, }ESCAPED{options}ESCAPED{)}:
-    sizeAttr:FIELD:[PUBLIC]:ESCAPED{sizeAttr}:
-    toggle:FIELD:[PUBLIC]:ESCAPED{toggle}:
-    width:FIELD:[PUBLIC]:ESCAPED{width}:
   rightSelectOptionsData:VARIABLE:[PRIVATE]:ESCAPED{rightSelectOptionsData}<font color="#999999">ESCAPED{ : }Array</font>:
 fn:CLASS:[PUBLIC]:ESCAPED{fn}:
   multicombo:METHOD:[PUBLIC]:ESCAPED{multicombo}ESCAPED{(}ESCAPED{options}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
-keyCode:FIELD:[PUBLIC]:ESCAPED{keyCode}:
-keyCode:FIELD:[PUBLIC]:ESCAPED{keyCode}:
