@@ -55,6 +55,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.mercurial.HgFileNode;
+import org.netbeans.modules.mercurial.ui.status.OpenInEditorAction;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.openide.cookies.EditorCookie;
@@ -109,6 +110,11 @@ class DiffNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         if (context) return null;
         return new Action [0];
+    }
+
+    @Override
+    public Action getPreferredAction () {
+        return new OpenInEditorAction();
     }
 
     /**
