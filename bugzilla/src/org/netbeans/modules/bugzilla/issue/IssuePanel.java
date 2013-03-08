@@ -139,6 +139,7 @@ import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.util.NbBugzillaConstants;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -446,10 +447,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         boolean isNetbeans = BugtrackingUtil.isNbRepository(issue.getRepository().getUrl());
         if(isNew && isNetbeans) {
             attachLogCheckBox.setVisible(true);
+            viewLogButton.setVisible(true);
             attachLogCheckBox.setSelected(BugzillaConfig.getInstance().getAttachLogFile());
         } else {
             attachLogCheckBox.setVisible(false);
+            viewLogButton.setVisible(false);
         }
+        switchViewLog();
         headerField.setVisible(!isNew);
         statusCombo.setEnabled(!isNew);
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
@@ -1548,6 +1552,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         issueTypeWarning = new javax.swing.JLabel();
         assignToDefaultCheckBox = new javax.swing.JCheckBox();
         attachLogCheckBox = new javax.swing.JCheckBox();
+        viewLogButton = new org.netbeans.modules.bugtracking.util.LinkButton();
 
         FormListener formListener = new FormListener();
 
@@ -1864,6 +1869,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         attachLogCheckBox.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         org.openide.awt.Mnemonics.setLocalizedText(attachLogCheckBox, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachLogCheckBox.text")); // NOI18N
+        attachLogCheckBox.addActionListener(formListener);
+
+        org.openide.awt.Mnemonics.setLocalizedText(viewLogButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.viewLogButton.text")); // NOI18N
+        viewLogButton.addActionListener(formListener);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -1920,8 +1929,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 .addComponent(summaryField)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(messagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(customFieldsPanelRight, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(messagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -2017,8 +2026,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(submitButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(cancelButton))
-                                    .addComponent(attachLogCheckBox))
+                                        .addComponent(cancelButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(attachLogCheckBox)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(viewLogButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addGap(24, 24, 24))
         );
@@ -2138,16 +2150,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(dummyTimetrackingLabel))
                     .addComponent(dummyTimetrackingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(attachmentsLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(dummyLabel3))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(attachLogCheckBox)))
+                    .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(customFieldsPanelRight, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2162,15 +2171,21 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(addCommentLabel)
                     .addComponent(scrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(submitButton)
-                    .addComponent(cancelButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(messagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(2, 2, 2)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(viewLogButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(attachLogCheckBox)))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(submitButton)
+                        .addComponent(cancelButton)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(messagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 2, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE))
+                .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 38, Short.MAX_VALUE))
         );
 
         layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {refreshButton, reloadButton, separatorLabel, separatorLabel2, separatorLabel3, showInBrowserButton});
@@ -2271,14 +2286,20 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             else if (evt.getSource() == submitButton) {
                 IssuePanel.this.submitButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == cancelButton) {
-                IssuePanel.this.cancelButtonActionPerformed(evt);
-            }
             else if (evt.getSource() == resolutionCombo) {
                 IssuePanel.this.resolutionComboActionPerformed(evt);
             }
             else if (evt.getSource() == assignedCombo) {
                 IssuePanel.this.assignedComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == attachLogCheckBox) {
+                IssuePanel.this.attachLogCheckBoxActionPerformed(evt);
+            }
+            else if (evt.getSource() == viewLogButton) {
+                IssuePanel.this.viewLogButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == cancelButton) {
+                IssuePanel.this.cancelButtonActionPerformed(evt);
             }
         }
 
@@ -2399,11 +2420,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         resolutionLabel.setLabelFor(resolutionCombo.isVisible() ? resolutionCombo : resolutionField);
     }//GEN-LAST:event_statusComboActionPerformed
-
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        reloadForm(true);
-    }//GEN-LAST:event_cancelButtonActionPerformed
-
+ 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         final boolean isNew = issue.getTaskData().isNew();
         if (isNew) {
@@ -2852,6 +2869,18 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     }
 }//GEN-LAST:event_workedFieldFocusLost
 
+    private void attachLogCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attachLogCheckBoxActionPerformed
+        switchViewLog();
+    }//GEN-LAST:event_attachLogCheckBoxActionPerformed
+
+    private void viewLogButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewLogButtonActionPerformed
+        showLogFile(evt);
+    }//GEN-LAST:event_viewLogButtonActionPerformed
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        reloadForm(true);
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField actualField;
     private javax.swing.JLabel actualLabel;
@@ -2974,6 +3003,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JComboBox versionCombo;
     private javax.swing.JLabel versionLabel;
     private javax.swing.JLabel versionWarning;
+    private org.netbeans.modules.bugtracking.util.LinkButton viewLogButton;
     private javax.swing.JTextField workedField;
     private javax.swing.JLabel workedLabel;
     private javax.swing.JLabel workedSumField;
@@ -3134,6 +3164,21 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             Bugzilla.LOG.log(Level.WARNING, txt, e);
             return 0;
         }
+    }
+
+    static void showLogFile(ActionEvent evt) {
+        Action a = getShowLogAction();
+        if(a != null) {
+            a.actionPerformed(evt);
+        }
+    }
+
+    static Action getShowLogAction() {
+        return FileUtil.getConfigObject("Actions/View/org-netbeans-core-actions-LogAction.instance", Action.class); // NOI18N
+    }
+    
+    private void switchViewLog() {
+        viewLogButton.setVisible(attachLogCheckBox.isSelected());
     }
 
     class CancelHighlightDocumentListener implements DocumentListener {
