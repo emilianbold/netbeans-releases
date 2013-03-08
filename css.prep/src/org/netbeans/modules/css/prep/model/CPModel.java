@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Stack;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
@@ -55,6 +56,7 @@ import static org.netbeans.modules.css.lib.api.NodeType.cp_variable_declaration;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.prep.CPType;
+import org.openide.filesystems.FileObject;
 
 /**
  * naive temporary impl.
@@ -94,6 +96,10 @@ public class CPModel {
         this.result = result;
     }
 
+    public FileObject getFile() {
+        return result.getSnapshot().getSource().getFileObject();
+    }
+    
     public CPType getPreprocessorType() {
         if (cpType == null) {
             String fileMimetype = topLevelSnapshotMimetype != null
@@ -113,32 +119,64 @@ public class CPModel {
         }
         return cpType;
     }
-
-    //xxx just per current file
+    
+    /**
+     * Gets a collection of variables accessible(visible) at the given location.
+     * 
+     * @param offset
+     * @return 
+     */
+    public Collection<Variable> getVariables(int offset) {
+        Collection<Variable> visible = new ArrayList<Variable>();
+        for(Variable var : getVariables()) {
+            OffsetRange context = var.getContext();
+            if(context == null || context.containsInclusive(offset)) {
+                visible.add(var);
+            }
+        }
+        return visible;
+    }
+        
+    /**
+     * Gets all variables from this file's model.
+     * 
+     * @return 
+     */
     public Collection<Variable> getVariables() {
         final Collection<Variable> vars = new ArrayList<Variable>();
         NodeVisitor visitor = new NodeVisitor() {
             private boolean in_cp_variable_declaration, in_cp_args_list, in_declarations;
-
+            private Stack<OffsetRange> contexts = new Stack<OffsetRange>();
+            
             @Override
             public boolean visit(Node node) {
+                
                 switch (node.type()) {
                     case declarations:
+                        OffsetRange range = new OffsetRange(node.from(), node.to());
+                        contexts.push(range);
                         //the declarations node represents a content of a code block
                         in_declarations = true;
+                        
                         _visitChildren(this, node);
+                        
+                        contexts.pop();
                         in_declarations = false;
                         break;
 
                     case cp_variable_declaration:
                         in_cp_variable_declaration = true;
+                        
                         _visitChildren(this, node);
+                        
                         in_cp_variable_declaration = false;
                         break;
 
                     case cp_args_list:
                         in_cp_args_list = true;
+
                         _visitChildren(this, node);
+                        
                         in_cp_args_list = false;
                         break;
 
@@ -158,8 +196,8 @@ public class CPModel {
                                 type = Variable.Type.USAGE;
                             }
                         }
-
-                        vars.add(new Variable(node.image().toString(), new OffsetRange(node.from(), node.to()), type));
+                        OffsetRange context = contexts.isEmpty() ? null : contexts.peek();
+                        vars.add(new Variable(node.image().toString(), new OffsetRange(node.from(), node.to()), getFile(), type, context));
                         break;
 
                     case token:
@@ -197,7 +235,7 @@ public class CPModel {
                     case cp_mixin_declaration:
                         Node mixin_name = NodeUtil.getChildByType(node, NodeType.cp_mixin_name);
                         if (mixin_name != null) {
-                            mixins.add(new Element(mixin_name.image().toString(), new OffsetRange(mixin_name.from(), mixin_name.to())));
+                            mixins.add(new Element(mixin_name.image().toString(), new OffsetRange(mixin_name.from(), mixin_name.to()), getFile()));
                         }
                         break;
                     default:

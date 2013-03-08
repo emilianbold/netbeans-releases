@@ -42,10 +42,8 @@
 package org.netbeans.modules.css.editor.module.spi;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -83,7 +81,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
     private int anchorOffset;
     private String value;
-    private CssElement element;
+    private ElementHandle element;
     protected boolean addSemicolon;
 
     /**
@@ -189,7 +187,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
     private CssCompletionItem() {
     }
 
-    protected CssCompletionItem(CssElement element, String value, int anchorOffset, boolean addSemicolon) {
+    protected CssCompletionItem(ElementHandle element, String value, int anchorOffset, boolean addSemicolon) {
         this.anchorOffset = anchorOffset;
         this.value = value;
         this.element = element;
