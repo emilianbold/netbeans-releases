@@ -256,10 +256,7 @@ public class CssFileModel {
         @Override
         public boolean visit(Node node) {
             if (node.type() == NodeType.importItem) {
-                Entry entry = getImportedEntry(node);
-                if (entry != null) {
-                    getImportsCollectionInstance().add(entry);
-                }
+                getImportsCollectionInstance().addAll(getImports(node));
             } else if (node.type() == NodeType.rule) {
                 currentBodyRange = NodeUtil.getRuleBodyRange(node);
             } else if (NodeUtil.isSelectorNode(node)) {
@@ -282,8 +279,7 @@ public class CssFileModel {
                             start_offset_diff = 0;
                             break;
                         default:
-                            collection = null; //cannot happen
-                            start_offset_diff = 0;
+                            throw new IllegalStateException();
                     }
 
                     CharSequence image = node.image().subSequence(start_offset_diff, node.image().length());
@@ -312,40 +308,40 @@ public class CssFileModel {
             return false;
         }
 
-        private Entry getImportedEntry(Node node) {
+        private Collection<Entry> getImports(Node node) {
+            Collection<Entry> imports = new ArrayList<Entry>();
             //@import "resources/global.css";
-            Node resourceIdentifier = NodeUtil.getChildByType(node, NodeType.resourceIdentifier);
-            if(resourceIdentifier == null) {
-                return null;
-            }
-            
-            Node token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.STRING);
-            if (token != null) {
-                CharSequence image = token.image();
-                boolean quoted = WebUtils.isValueQuoted(image);
-                return createEntry(WebUtils.unquotedValue(image),
-                        new OffsetRange(token.from() + (quoted ? 1 : 0),
-                        token.to() - (quoted ? 1 : 0)),
-                        false);
-            }
+            Node[] resourceIdentifiers = NodeUtil.getChildrenByType(node, NodeType.resourceIdentifier);
+            //scss import can contain several resourece separated by comma
+            for(Node resourceIdentifier : resourceIdentifiers) {
+                Node token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.STRING);
+                if (token != null) {
+                    CharSequence image = token.image();
+                    boolean quoted = WebUtils.isValueQuoted(image);
+                    imports.add(createEntry(WebUtils.unquotedValue(image),
+                            new OffsetRange(token.from() + (quoted ? 1 : 0),
+                            token.to() - (quoted ? 1 : 0)),
+                            false));
+                }
 
-            //@import url("another.css");
-            token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.URI);
-            if (token != null) {
-                Matcher m = URI_PATTERN.matcher(token.image());
-                if (m.matches()) {
-                    int groupIndex = 1;
-                    String content = m.group(groupIndex);
-                    boolean quoted = WebUtils.isValueQuoted(content);
-                    int from = token.from() + m.start(groupIndex) + (quoted ? 1 : 0);
-                    int to = token.from() + m.end(groupIndex) - (quoted ? 1 : 0);
-                    return createEntry(WebUtils.unquotedValue(content),
-                            new OffsetRange(from, to),
-                            false);
+                //@import url("another.css");
+                token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.URI);
+                if (token != null) {
+                    Matcher m = URI_PATTERN.matcher(token.image());
+                    if (m.matches()) {
+                        int groupIndex = 1;
+                        String content = m.group(groupIndex);
+                        boolean quoted = WebUtils.isValueQuoted(content);
+                        int from = token.from() + m.start(groupIndex) + (quoted ? 1 : 0);
+                        int to = token.from() + m.end(groupIndex) - (quoted ? 1 : 0);
+                        imports.add(createEntry(WebUtils.unquotedValue(content),
+                                new OffsetRange(from, to),
+                                false));
+                    }
                 }
             }
 
-            return null;
+            return imports;
         }
     }
 
