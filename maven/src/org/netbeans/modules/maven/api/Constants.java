@@ -73,6 +73,10 @@ public interface Constants {
      */
     public static final String HINT_JDK_PLATFORM = "netbeans.hint.jdkPlatform"; //NOI18N
 
+    /**
+     * maven property disabling whitelist processing in netbeans module projects.
+     */
+//    public static final String HINT_WHITELIST = "netbeans.hint.disable.whitelist";
     
     /**
      * Maven property that hints netbeans to handle the project as if it were of given packaging..
