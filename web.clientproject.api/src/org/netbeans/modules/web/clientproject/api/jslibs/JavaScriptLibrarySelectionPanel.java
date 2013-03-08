@@ -42,12 +42,16 @@
 package org.netbeans.modules.web.clientproject.api.jslibs;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,6 +65,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
@@ -88,15 +93,20 @@ import javax.swing.table.TableRowSorter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.Version;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  * UI for selecting JS libraries.
@@ -109,6 +119,8 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelectionPanel.class.getName());
 
     private static final Pattern LIBRARIES_FOLDER_PATTERN = Pattern.compile("^[\\w-]+$", Pattern.CASE_INSENSITIVE); // NOI18N
+
+    private static final RequestProcessor RP = new RequestProcessor(JavaScriptLibrarySelectionPanel.class);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JavaScriptLibrariesValidator librariesValidator;
@@ -126,6 +138,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     // folder path is accessed outside of EDT thread
     private volatile String librariesFolder = null;
+    private volatile boolean panelEnabled = true;
 
 
     /**
@@ -441,6 +454,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     private void enablePanel(boolean enabled) {
         assert EventQueue.isDispatchThread();
+        panelEnabled = enabled;
         librariesFilterTextField.setEnabled(enabled);
         librariesTable.setEnabled(enabled);
         librariesTable.setRowSelectionAllowed(enabled);
@@ -567,6 +581,10 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         });
     }
 
+    static void errorOccured(String message) {
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -582,6 +600,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         librariesFilterTextField = new javax.swing.JTextField();
         librariesScrollPane = new javax.swing.JScrollPane();
         librariesTable = new LibrariesTable();
+        updateLibrariesLabel = new javax.swing.JLabel();
         selectSelectedButton = new javax.swing.JButton();
         deselectSelectedButton = new javax.swing.JButton();
         selectedLabel = new javax.swing.JLabel();
@@ -598,6 +617,16 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelectionPanel.class, "JavaScriptLibrarySelectionPanel.librariesLabel.text")); // NOI18N
 
         librariesScrollPane.setViewportView(librariesTable);
+
+        org.openide.awt.Mnemonics.setLocalizedText(updateLibrariesLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelectionPanel.class, "JavaScriptLibrarySelectionPanel.updateLibrariesLabel.text")); // NOI18N
+        updateLibrariesLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                updateLibrariesLabelMouseEntered(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                updateLibrariesLabelMousePressed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(selectSelectedButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelectionPanel.class, "JavaScriptLibrarySelectionPanel.selectSelectedButton.text")); // NOI18N
 
@@ -621,12 +650,21 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(librariesFolderTextField))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(generalInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(additionalInfoLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(updateLibrariesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(librariesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(librariesFilterTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE))
-                    .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                        .addComponent(librariesFilterTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
+                    .addComponent(librariesScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectSelectedButton)
@@ -634,13 +672,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
-                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(additionalInfoLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(generalInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                .addContainerGap())
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectSelectedButton, selectSelectedButton});
@@ -648,7 +680,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(generalInfoLabel)
+                .addComponent(generalInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addComponent(additionalInfoLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -658,7 +690,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                     .addComponent(librariesFilterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(selectSelectedButton)
@@ -666,11 +698,50 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                         .addComponent(deselectSelectedButton)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(updateLibrariesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesFolderLabel)
                     .addComponent(librariesFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void updateLibrariesLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_updateLibrariesLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_updateLibrariesLabelMouseEntered
+
+    @NbBundle.Messages({
+        "JavaScriptLibrarySelectionPanel.progress.jsLibs.update=Updating available libraries...",
+        "JavaScriptLibrarySelectionPanel.error.jsLibs.update=Available libraries not updated, see IDE log for more details."
+    })
+    private void updateLibrariesLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_updateLibrariesLabelMousePressed
+        if (!panelEnabled) {
+            // panel not enabled
+            return;
+        }
+        lockPanel();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.JavaScriptLibrarySelectionPanel_progress_jsLibs_update());
+                progressHandle.start();
+                try {
+                    WebClientLibraryManager.getDefault().updateLibraries();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    errorOccured(Bundle.JavaScriptLibrarySelectionPanel_error_jsLibs_update());
+                } finally {
+                    progressHandle.finish();
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            unlockPanel();
+                        }
+                    });
+                }
+            }
+        });
+    }//GEN-LAST:event_updateLibrariesLabelMousePressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel additionalInfoLabel;
@@ -686,6 +757,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     private javax.swing.JLabel selectedLabel;
     private javax.swing.JList selectedLibrariesList;
     private javax.swing.JScrollPane selectedLibrariesScrollPane;
+    private javax.swing.JLabel updateLibrariesLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -833,7 +905,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         }
 
         private List<String> getLibraryFilePaths() {
-            return WebClientLibraryManager.getLibraryFilePaths(libraryVersion.getLibrary(), libraryVersion.getType());
+            return WebClientLibraryManager.getDefault().getLibraryFilePaths(libraryVersion.getLibrary(), libraryVersion.getType());
         }
 
         @Override
@@ -960,9 +1032,28 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
 
         public LibrariesTableModel() {
+            populateModel();
+            WebClientLibraryManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (WebClientLibraryManager.PROPERTY_LIBRARIES.equals(evt.getPropertyName())) {
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                populateModel();
+                                fireTableDataChanged();
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        void populateModel() {
             assert EventQueue.isDispatchThread();
+            items.clear();
             Map<String, List<Library>> map = new HashMap<String, List<Library>>();
-            for (Library lib : /*LibraryManager.getDefault().getLibraries()*/WebClientLibraryManager.getLibraries()) {
+            for (Library lib : /*LibraryManager.getDefault().getLibraries()*/WebClientLibraryManager.getDefault().getLibraries()) {
                 if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
                     String name = lib.getProperties().get(
                             WebClientLibraryManager.PROPERTY_REAL_NAME);

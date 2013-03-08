@@ -397,7 +397,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
     }
     
     private FileObject addLibrary(FileObject libs, String libName ) {
-        Library backbone = WebClientLibraryManager.findLibrary(libName, 
+        Library backbone = WebClientLibraryManager.getDefault().findLibrary(libName,
                 null);    // NOI18N
         if ( backbone == null ){
             return null;
