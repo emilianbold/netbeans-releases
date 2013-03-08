@@ -420,7 +420,9 @@ class LineTranslations {
             this.dataObject = dataObject;
             lineChangePostProcess.setRepeats(false);
             DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
-            des.addPropertyChangeListener(this);
+            if (des != null) {
+                des.addPropertyChangeListener(this);
+            }
         }
         
         public synchronized void attach() throws IOException {
@@ -577,7 +579,9 @@ class LineTranslations {
             }
             if (LineBreakpoint.PROP_URL.equals(propertyName)) {
                 DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
-                des.removePropertyChangeListener(this);
+                if (des != null) {
+                    des.removePropertyChangeListener(this);
+                }
 
                 DataObject newDO = getDataObject(lb.getURL());
                 Line newLine;
@@ -606,7 +610,9 @@ class LineTranslations {
                     this.line = newLine;
                 }
                 des = newDO.getLookup().lookup(DataEditorSupport.class);
-                des.addPropertyChangeListener(this);
+                if (des != null) {
+                    des.addPropertyChangeListener(this);
+                }
             }
         }
         

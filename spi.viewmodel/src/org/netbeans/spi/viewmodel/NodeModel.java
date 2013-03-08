@@ -46,7 +46,7 @@ package org.netbeans.spi.viewmodel;
 
 
 /**
- * Provides display name, icon and tooltip value for some type of objects.
+ * Provides display name, icon and tool tip value for some type of objects.
  * Designed to be used with {@link TreeModel}.
  *
  * @author   Jan Jancura
@@ -72,11 +72,11 @@ public interface NodeModel extends Model {
     throws UnknownTypeException;
     
     /**
-     * Returns tooltip for given node.
+     * Returns tool tip for given node.
      *
      * @throws  UnknownTypeException if this NodeModel implementation is not
-     *          able to resolve tooltip for given node type
-     * @return  tooltip for given node
+     *          able to resolve tool tip for given node type
+     * @return  tool tip for given node
      */
     public abstract String getShortDescription (Object node) 
     throws UnknownTypeException;

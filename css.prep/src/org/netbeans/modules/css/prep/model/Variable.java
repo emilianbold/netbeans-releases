@@ -48,22 +48,10 @@ import org.netbeans.modules.csl.api.OffsetRange;
  *
  * @author marekfukala
  */
-public class Variable {
-    
-    private String name;
-    private OffsetRange range;
+public class Variable extends Element {
 
     public Variable(String name, OffsetRange range) {
-        this.name = name;
-        this.range = range;
+        super(name, range);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public OffsetRange getRange() {
-        return range;
-    }
-    
 }

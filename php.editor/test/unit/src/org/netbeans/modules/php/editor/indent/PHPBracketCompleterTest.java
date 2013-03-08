@@ -654,7 +654,7 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
     }
 
     public void testContComment() throws Exception {
-        if (PHPBracketCompleter.CONTINUE_COMMENTS) {
+        if (PhpTypedBreakInterceptor.CONTINUE_COMMENTS) {
             insertBreak("// ^", "// \n// ^");
         } else {
             insertBreak("// ^", "// \n^");

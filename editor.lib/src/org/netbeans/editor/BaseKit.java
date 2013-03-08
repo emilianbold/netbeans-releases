@@ -1283,7 +1283,7 @@ public class BaseKit extends DefaultEditorKit {
                 }
 
                 if (caretPosition != -1) {
-                    assert caretPosition >= 0 && (caretPosition < insertionText.length() || (insertionText.isEmpty() && caretPosition == 0));
+                    assert caretPosition >= 0 && (caretPosition <= insertionText.length());
                     caret.setDot(insertionOffset + caretPosition);
                 }
             } finally {

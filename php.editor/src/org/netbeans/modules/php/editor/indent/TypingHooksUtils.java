@@ -39,62 +39,45 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.options.colors;
+package org.netbeans.modules.php.editor.indent;
 
-import javax.swing.JComponent;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.options.colors.spi.FontsColorsController;
-import org.netbeans.spi.options.OptionsPanelController;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.csl.api.EditorOptions;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
 /**
  *
- * @since 1.39
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@OptionsPanelController.Keywords(keywords={"#KW_HighlightPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "#Editor_tab.displayName")
-public class HighlightingPanelController implements FontsColorsController{
+public final class TypingHooksUtils {
 
-    private HighlightingPanel component = null;
-    
-    @Override
-    public void update(ColorModel model) {
-        getHighlightingPanel().update(model);
+    /**
+     * Tokens which indicate that we're within a literal string
+     */
+    private static final PHPTokenId[] STRING_TOKENS = {
+        PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING,
+        PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE
+    };
+
+    private TypingHooksUtils() {
     }
 
-    @Override
-    public void setCurrentProfile(String profile) {
-        getHighlightingPanel().setCurrentProfile(profile);
-    }
-
-    @Override
-    public void deleteProfile(String profile) {
-        getHighlightingPanel().deleteProfile(profile);
-    }
-
-    @Override
-    public void applyChanges() {
-        getHighlightingPanel().applyChanges();
-    }
-
-    @Override
-    public void cancel() {
-        getHighlightingPanel().cancel();
-    }
-
-    @Override
-    public boolean isChanged() {
-        return getHighlightingPanel().isChanged();
-    }
-
-    @Override
-    public JComponent getComponent() {
-        return getHighlightingPanel();
-    }
-
-    private synchronized HighlightingPanel getHighlightingPanel() {
-        if (component == null) {
-            component = new HighlightingPanel();
+    public static boolean isStringToken(Token<? extends PHPTokenId> token) {
+        for (PHPTokenId stringTokenId : STRING_TOKENS) {
+            if (token.id() == stringTokenId) {
+                return true;
+            }
         }
-        return component;
+        return false;
+    }
+
+    public static boolean isInsertMatchingEnabled() {
+        EditorOptions options = EditorOptions.get(FileUtils.PHP_MIME_TYPE);
+        if (options != null) {
+            return options.getMatchBrackets();
+        }
+        return true;
     }
 
 }
