@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.prep.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +51,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
+import static org.netbeans.modules.css.lib.api.NodeType.cp_variable_declaration;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.prep.CPType;
@@ -114,38 +116,74 @@ public class CPModel {
 
     //xxx just per current file
     public Collection<Variable> getVariables() {
-//        if (vars == null) {
-        final Collection<Variable> vars = new HashSet<Variable>();
+        final Collection<Variable> vars = new ArrayList<Variable>();
         NodeVisitor visitor = new NodeVisitor() {
+            private boolean in_cp_variable_declaration, in_cp_args_list, in_declarations;
+
             @Override
             public boolean visit(Node node) {
                 switch (node.type()) {
-                    case cp_variable:
-                        vars.add(new Variable(node.image().toString(), new OffsetRange(node.from(), node.to())));
+                    case declarations:
+                        //the declarations node represents a content of a code block
+                        in_declarations = true;
+                        _visitChildren(this, node);
+                        in_declarations = false;
                         break;
 
-//                        case error:
-//                        case recovery:
-//                            //skip errorneous content, do not visit
-//                            break;
+                    case cp_variable_declaration:
+                        in_cp_variable_declaration = true;
+                        _visitChildren(this, node);
+                        in_cp_variable_declaration = false;
+                        break;
 
-                    default:
-                        //visit children
-                        List<Node> children = node.children();
-                        if (children != null) {
-                            for (Node child : children) {
-                                visit(child);
+                    case cp_args_list:
+                        in_cp_args_list = true;
+                        _visitChildren(this, node);
+                        in_cp_args_list = false;
+                        break;
+
+                    case cp_variable:
+                        //determine the variable type
+                        Variable.Type type;
+                        if (in_cp_args_list) {
+                            type = Variable.Type.METHOD_PARAM_DECLARATION;
+                        } else {
+                            if (in_cp_variable_declaration) {
+                                if (in_declarations) {
+                                    type = Variable.Type.LOCAL_DECLARATION;
+                                } else {
+                                    type = Variable.Type.GLOBAL_DECLARATION;
+                                }
+                            } else {
+                                type = Variable.Type.USAGE;
                             }
                         }
-                }
 
+                        vars.add(new Variable(node.image().toString(), new OffsetRange(node.from(), node.to()), type));
+                        break;
+
+                    case token:
+                        //ignore toke nodes
+                        break;
+                        
+                    default:
+                        _visitChildren(this, node);
+
+                }
                 return false;
             }
         };
         visitor.visit(result.getParseTree());
-//        }
-
         return vars;
+    }
+
+    private static void _visitChildren(NodeVisitor visitor, Node node) {
+        List<Node> children = node.children();
+        if (children != null) {
+            for (Node child : children) {
+                visitor.visit(child);
+            }
+        }
     }
 
     //xxx just per current file
@@ -178,17 +216,15 @@ public class CPModel {
         visitor.visit(result.getParseTree());
         return mixins;
     }
-    
-    
 
     public Collection<String> getMixinNames() {
         return getElementNames(getMixins());
     }
-    
+
     public Collection<String> getVarNames() {
         return getElementNames(getVariables());
     }
-    
+
     private static Collection<String> getElementNames(Collection<? extends Element> elements) {
         Collection<String> names = new HashSet<String>();
         for (Element e : elements) {
@@ -196,7 +232,7 @@ public class CPModel {
         }
         return names;
     }
-    
+
     public Collection<String> getDirectives() {
         switch (getPreprocessorType()) {
             case SCSS:

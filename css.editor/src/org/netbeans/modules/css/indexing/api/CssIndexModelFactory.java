@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.libraries;
+package org.netbeans.modules.css.indexing.api;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
+import java.util.Collection;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
-public class CDNJSLibrariesProviderTest {
+/**
+ * A factory for {@link CssIndexModel} to be registered in the global lookup.
+ *
+ * @since 1.47
+ * @author marekfukala
+ */
+public abstract class CssIndexModelFactory<T extends CssIndexModel> {
+   
+    /**
+     * Creates an instance of {@link CssIndexModel} for the given {@link CssParserResult}.
+     * @param result
+     * @return non null instance of the model
+     */
+    public abstract T getModel(CssParserResult result);
 
-    public CDNJSLibrariesProviderTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    @Test
-    public void testGetLibraries() {
-        CDNJSLibrariesProvider instance = CDNJSLibrariesProvider.getDefault();
-        LibraryImplementation[] result = instance.getLibraries();
-        assertTrue("libraries are succcessfully parsed and recreated", result.length >= 476);
-    }
-
+    /**
+     * Builds an instance of {@link CssIndexModel} from the given {@link IndexResult}
+     * @param result
+     * @return non null instance of the model
+     */
+    public abstract T loadFromIndex(IndexResult result);
+    
+    /**
+     * Gets a collection of all index keys which are stored by the {@link #loadFromIndex(org.netbeans.modules.parsing.spi.indexing.support.IndexResult) }
+     * @return non null collection of index keys
+     */
+    public abstract Collection<String> getIndexKeys();
 }

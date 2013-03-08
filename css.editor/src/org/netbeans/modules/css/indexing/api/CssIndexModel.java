@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.libraries;
+package org.netbeans.modules.css.indexing.api;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 
-public class CDNJSLibrariesProviderTest {
-
-    public CDNJSLibrariesProviderTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    @Test
-    public void testGetLibraries() {
-        CDNJSLibrariesProvider instance = CDNJSLibrariesProvider.getDefault();
-        LibraryImplementation[] result = instance.getLibraries();
-        assertTrue("libraries are succcessfully parsed and recreated", result.length >= 476);
-    }
-
+/**
+ * A domain model representing some information related to one file with css content.
+ *
+ * @since 1.47
+ * @author marekfukala
+ */
+public abstract class CssIndexModel {
+    
+    /**
+     * Stores the model to the given {@link IndexDocument}
+     * @param document 
+     */
+    public abstract void storeToIndex(IndexDocument document);
+    
 }

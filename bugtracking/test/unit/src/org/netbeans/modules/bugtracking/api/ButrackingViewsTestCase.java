@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,47 +34,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.libraries;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+package org.netbeans.modules.bugtracking.api;
+
+import java.util.logging.Level;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.util.test.MockLookup;
 
-public class CDNJSLibrariesProviderTest {
+/**
+ *
+ * @author tomas
+ */
+public class ButrackingViewsTestCase extends NbTestCase {
 
-    public CDNJSLibrariesProviderTest() {
+    public static junit.framework.Test suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTestSuite(UtilTestCase.class);
+        suite.addTest(new IssueTest("_testOpen"));
+        suite.addTest(new QueryTest("_testOpen"));
+        return suite;
     }
 
-    @BeforeClass
-    public static void setUpClass() {
+    
+    public ButrackingViewsTestCase(String arg0) {
+        super(arg0);
     }
 
-    @AfterClass
-    public static void tearDownClass() {
+    @Override
+    protected Level logLevel() {
+        return Level.ALL;
+    }   
+    
+    @Override
+    protected void setUp() throws Exception {    
+        MockLookup.setLayersAndInstances();
+        APITestConnector.init();
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    @Test
-    public void testGetLibraries() {
-        CDNJSLibrariesProvider instance = CDNJSLibrariesProvider.getDefault();
-        LibraryImplementation[] result = instance.getLibraries();
-        assertTrue("libraries are succcessfully parsed and recreated", result.length >= 476);
-    }
-
+    @Override
+    protected void tearDown() throws Exception { }
+    
 }

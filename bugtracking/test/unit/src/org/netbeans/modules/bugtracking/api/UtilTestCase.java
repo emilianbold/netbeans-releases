@@ -62,9 +62,9 @@ import org.openide.windows.WindowManager;
  *
  * @author tomas
  */
-public class UtilTest extends NbTestCase {
+public class UtilTestCase extends NbTestCase {
 
-    public UtilTest(String arg0) {
+    public UtilTestCase(String arg0) {
         super(arg0);
     }
 
@@ -86,7 +86,7 @@ public class UtilTest extends NbTestCase {
         APITestIssue apiIssue = getAPIIssue(APITestIssue.ID_1);
         Issue issue = getIssue(APITestIssue.ID_1);
         
-        assertFalse(apiIssue.wasOpened);
+        apiIssue.wasOpened = false;
         Util.openIssue(getRepo(), APITestIssue.ID_1);
         assertOpened(apiIssue);
         
