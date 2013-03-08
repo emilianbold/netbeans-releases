@@ -62,6 +62,7 @@ public enum PHPDocCommentTokenId implements TokenId {
     PHPDOC_HTML_TAG(null, "htmltag"), //NOI18N
     PHPDOC_ANNOTATION(null, "phpdockeyword"); //NOI18N
 
+    public static final String MIME_TYPE = "text/x-php-doccomment";
     private final String fixedText;
     private final String primaryCategory;
 
@@ -99,7 +100,7 @@ public enum PHPDocCommentTokenId implements TokenId {
 
                 @Override
                 public String mimeType() {
-                    return "text/x-php-doccomment";
+                    return MIME_TYPE;
                 }
             }.language();
 
