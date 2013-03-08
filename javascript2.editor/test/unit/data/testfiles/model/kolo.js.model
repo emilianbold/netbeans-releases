@@ -1,53 +1,53 @@
-kolo [ANONYMOUS: false, DECLARED: true - kolo, MODIFIERS: PUBLIC, FILE]
+FUNCTION kolo [ANONYMOUS: false, DECLARED: true - kolo, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
 undefined
 # PROPERTIES
-Kolo      : Kolo [ANONYMOUS: false, DECLARED: true - Kolo, MODIFIERS: PUBLIC, CONSTRUCTOR]
+Kolo      : FUNCTION Kolo [ANONYMOUS: false, DECLARED: true - Kolo, MODIFIERS: PUBLIC, CONSTRUCTOR]
           # RETURN TYPES
           Kolo
           # PROPERTIES
-          arguments   : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-          ctverec     : ctverec [ANONYMOUS: false, DECLARED: true - ctverec, MODIFIERS: PRIVATE, VARIABLE]
-          data        : data [ANONYMOUS: false, DECLARED: true - data, MODIFIERS: PUBLIC, OBJECT_LITERAL]
+          arguments   : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          ctverec     : OBJECT ctverec [ANONYMOUS: false, DECLARED: true - ctverec, MODIFIERS: PRIVATE, VARIABLE]
+          data        : OBJECT data [ANONYMOUS: false, DECLARED: true - data, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                       # PROPERTIES
-                      guma   : guma [ANONYMOUS: false, DECLARED: true - guma, MODIFIERS: PUBLIC, PROPERTY]
-                      print  : print [ANONYMOUS: false, DECLARED: true - print, MODIFIERS: PUBLIC, METHOD]
+                      guma   : OBJECT guma [ANONYMOUS: false, DECLARED: true - guma, MODIFIERS: PUBLIC, PROPERTY]
+                      print  : FUNCTION print [ANONYMOUS: false, DECLARED: true - print, MODIFIERS: PUBLIC, METHOD]
                              # RETURN TYPES
                              undefined
                              # PROPERTIES
-                             arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                      prumer : prumer [ANONYMOUS: false, DECLARED: true - prumer, MODIFIERS: PUBLIC, PROPERTY]
-          description : description [ANONYMOUS: false, DECLARED: true - description, MODIFIERS: PROTECTED, METHOD]
+                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                      prumer : OBJECT prumer [ANONYMOUS: false, DECLARED: true - prumer, MODIFIERS: PUBLIC, PROPERTY]
+          description : FUNCTION description [ANONYMOUS: false, DECLARED: true - description, MODIFIERS: PROTECTED, METHOD]
                       # RETURN TYPES
                       undefined
                       # PROPERTIES
-                      arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-          trojuhelnik : trojuhelnik [ANONYMOUS: false, DECLARED: true - trojuhelnik, MODIFIERS: PUBLIC, PROPERTY]
-formatter : formatter [ANONYMOUS: false, DECLARED: false - formatter, MODIFIERS: PUBLIC, OBJECT]
+                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          trojuhelnik : OBJECT trojuhelnik [ANONYMOUS: false, DECLARED: true - trojuhelnik, MODIFIERS: PUBLIC, PROPERTY]
+formatter : OBJECT formatter [ANONYMOUS: false, DECLARED: false - formatter, MODIFIERS: PUBLIC, OBJECT]
           # PROPERTIES
-          addIndent    : addIndent [ANONYMOUS: false, DECLARED: false - addIndent, MODIFIERS: PUBLIC, METHOD]
+          addIndent    : FUNCTION addIndent [ANONYMOUS: false, DECLARED: false - addIndent, MODIFIERS: PUBLIC, METHOD]
                        # PARAMETERS
-                       param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                       OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                        # PROPERTIES
-                       arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-          println      : println [ANONYMOUS: false, DECLARED: false - println, MODIFIERS: PUBLIC, METHOD]
+                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          println      : FUNCTION println [ANONYMOUS: false, DECLARED: false - println, MODIFIERS: PUBLIC, METHOD]
                        # PARAMETERS
-                       param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                       OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                        # PROPERTIES
-                       arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-          removeIndent : removeIndent [ANONYMOUS: false, DECLARED: false - removeIndent, MODIFIERS: PUBLIC, METHOD]
+                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          removeIndent : FUNCTION removeIndent [ANONYMOUS: false, DECLARED: false - removeIndent, MODIFIERS: PUBLIC, METHOD]
                        # PARAMETERS
-                       param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                       OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                        # PROPERTIES
-                       arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-kolo      : kolo [ANONYMOUS: false, DECLARED: true - kolo, MODIFIERS: PUBLIC, VARIABLE]
+                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+kolo      : OBJECT kolo [ANONYMOUS: false, DECLARED: true - kolo, MODIFIERS: PUBLIC, VARIABLE]
           # PROPERTIES
-          data : data [ANONYMOUS: false, DECLARED: false - data, MODIFIERS: PUBLIC, OBJECT]
+          data : OBJECT data [ANONYMOUS: false, DECLARED: false - data, MODIFIERS: PUBLIC, OBJECT]
                # PROPERTIES
-               print : print [ANONYMOUS: false, DECLARED: false - print, MODIFIERS: PUBLIC, METHOD]
+               print : FUNCTION print [ANONYMOUS: false, DECLARED: false - print, MODIFIERS: PUBLIC, METHOD]
                      # PROPERTIES
-                     arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-obdelnik  : obdelnik [ANONYMOUS: false, DECLARED: false - obdelnik, MODIFIERS: PUBLIC, VARIABLE]
-println   : println [ANONYMOUS: false, DECLARED: false - println, MODIFIERS: PUBLIC, FUNCTION]
+                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+obdelnik  : OBJECT obdelnik [ANONYMOUS: false, DECLARED: false - obdelnik, MODIFIERS: PUBLIC, VARIABLE]
+println   : FUNCTION println [ANONYMOUS: false, DECLARED: false - println, MODIFIERS: PUBLIC, FUNCTION]
           # PROPERTIES
-          arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]

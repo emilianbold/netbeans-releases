@@ -186,6 +186,11 @@ public final class Model {
     private static void dumpModel(Printer printer, JsObject jsObject,
             StringBuilder sb, String ident, Set<JsObject> path) {
 
+        if (jsObject instanceof JsFunction) {
+            sb.append("FUNCTION ");
+        } else {
+            sb.append("OBJECT ");
+        }
         sb.append(jsObject.getName());
         sb.append(" [");
         sb.append("ANONYMOUS: ");

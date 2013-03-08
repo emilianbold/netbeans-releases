@@ -1,59 +1,59 @@
-arguments [ANONYMOUS: false, DECLARED: true - arguments, MODIFIERS: PUBLIC, FILE]
+FUNCTION arguments [ANONYMOUS: false, DECLARED: true - arguments, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
 undefined
 # PROPERTIES
-ArgumentsContext : ArgumentsContext [ANONYMOUS: false, DECLARED: true - ArgumentsContext, MODIFIERS: PUBLIC, OBJECT_LITERAL]
+ArgumentsContext : OBJECT ArgumentsContext [ANONYMOUS: false, DECLARED: true - ArgumentsContext, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                  # PROPERTIES
-                 getFunction  : getFunction [ANONYMOUS: false, DECLARED: true - getFunction, MODIFIERS: PUBLIC, METHOD]
+                 getFunction  : FUNCTION getFunction [ANONYMOUS: false, DECLARED: true - getFunction, MODIFIERS: PUBLIC, METHOD]
                               # RETURN TYPES
                               Function
                               # PROPERTIES
-                              arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                 testFunction : testFunction [ANONYMOUS: false, DECLARED: true - testFunction, MODIFIERS: PUBLIC, METHOD]
+                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                 testFunction : FUNCTION testFunction [ANONYMOUS: false, DECLARED: true - testFunction, MODIFIERS: PUBLIC, METHOD]
                               # RETURN TYPES
                               Number
                               # PARAMETERS
-                              param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
-                              param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
+                              OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
+                              OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
                               # PROPERTIES
-                              arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
+                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
                                         # PROPERTIES
-                                        length : length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
-                              i         : i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]
-                              length    : length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
-                              name      : name [ANONYMOUS: false, DECLARED: false - name, MODIFIERS: PUBLIC, PROPERTY]
-                              toString  : toString [ANONYMOUS: false, DECLARED: false - toString, MODIFIERS: PUBLIC, METHOD]
+                                        length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                              i         : OBJECT i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]
+                              length    : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                              name      : OBJECT name [ANONYMOUS: false, DECLARED: false - name, MODIFIERS: PUBLIC, PROPERTY]
+                              toString  : FUNCTION toString [ANONYMOUS: false, DECLARED: false - toString, MODIFIERS: PUBLIC, METHOD]
                                         # PROPERTIES
-                                        arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-Function         : Function [ANONYMOUS: false, DECLARED: false - Function, MODIFIERS: PUBLIC, FUNCTION]
+                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+Function         : FUNCTION Function [ANONYMOUS: false, DECLARED: false - Function, MODIFIERS: PUBLIC, FUNCTION]
                  # PROPERTIES
-                 arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-createdFunction  : createdFunction [ANONYMOUS: false, DECLARED: true - createdFunction, MODIFIERS: PUBLIC, VARIABLE]
-formatter        : formatter [ANONYMOUS: false, DECLARED: false - formatter, MODIFIERS: PUBLIC, OBJECT]
+                 arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+createdFunction  : OBJECT createdFunction [ANONYMOUS: false, DECLARED: true - createdFunction, MODIFIERS: PUBLIC, VARIABLE]
+formatter        : OBJECT formatter [ANONYMOUS: false, DECLARED: false - formatter, MODIFIERS: PUBLIC, OBJECT]
                  # PROPERTIES
-                 addIndent    : addIndent [ANONYMOUS: false, DECLARED: false - addIndent, MODIFIERS: PUBLIC, METHOD]
+                 addIndent    : FUNCTION addIndent [ANONYMOUS: false, DECLARED: false - addIndent, MODIFIERS: PUBLIC, METHOD]
                               # PARAMETERS
-                              param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                              OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                               # PROPERTIES
-                              arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                 println      : println [ANONYMOUS: false, DECLARED: false - println, MODIFIERS: PUBLIC, METHOD]
+                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                 println      : FUNCTION println [ANONYMOUS: false, DECLARED: false - println, MODIFIERS: PUBLIC, METHOD]
                               # PARAMETERS
-                              param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                              OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                               # PROPERTIES
-                              arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                 removeIndent : removeIndent [ANONYMOUS: false, DECLARED: false - removeIndent, MODIFIERS: PUBLIC, METHOD]
+                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                 removeIndent : FUNCTION removeIndent [ANONYMOUS: false, DECLARED: false - removeIndent, MODIFIERS: PUBLIC, METHOD]
                               # PARAMETERS
-                              param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                              OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                               # PROPERTIES
-                              arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-testFunction     : testFunction [ANONYMOUS: false, DECLARED: true - testFunction, MODIFIERS: PUBLIC, FUNCTION]
+                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+testFunction     : FUNCTION testFunction [ANONYMOUS: false, DECLARED: true - testFunction, MODIFIERS: PUBLIC, FUNCTION]
                  # RETURN TYPES
                  Number
                  # PARAMETERS
-                 param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
-                 param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
+                 OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
+                 OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
                  # PROPERTIES
-                 arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
+                 arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
                            # PROPERTIES
-                           length : length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
-                 i         : i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]
+                           length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                 i         : OBJECT i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]
