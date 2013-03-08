@@ -39,38 +39,72 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.model;
+package org.netbeans.modules.css.prep;
 
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author marekfukala
  */
-public class Element {
-    
+public class CPElementHandle implements ElementHandle {
+      
     private FileObject file;
-    private OffsetRange range;
     private CharSequence name;
 
-    public Element(String name, OffsetRange range, FileObject file) {
-        this.name = name;
-        this.range = range;
-        this.file = file;
+    public CPElementHandle(CharSequence name) {
+        this(null, name);
     }
 
-    public FileObject getFile() {
+    public CPElementHandle(FileObject file, CharSequence name) {
+        this.file = file;
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name.toString();
+    }
+
+    @Override
+    public FileObject getFileObject() {
         return file;
     }
 
-    public OffsetRange getRange() {
-        return range;
+    @Override
+    public String getMimeType() {
+        return "text/css";
     }
 
-    public CharSequence getName() {
-        return name;
+    @Override
+    public String getIn() {
+        return null;
     }
-    
-    
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.FIELD;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return null;
+    }
 }

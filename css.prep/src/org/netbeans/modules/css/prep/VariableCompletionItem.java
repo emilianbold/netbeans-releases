@@ -39,38 +39,34 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.model;
+package org.netbeans.modules.css.prep;
 
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 
 /**
  *
  * @author marekfukala
  */
-public class Element {
-    
-    private FileObject file;
-    private OffsetRange range;
-    private CharSequence name;
+public class VariableCompletionItem extends CssCompletionItem {
 
-    public Element(String name, OffsetRange range, FileObject file) {
-        this.name = name;
-        this.range = range;
-        this.file = file;
+    private String origin;
+
+    public VariableCompletionItem(ElementHandle elementHandle, String value, int anchorOffset, String origin) {
+        super(elementHandle, value, anchorOffset, false);
+        this.origin = origin;
     }
 
-    public FileObject getFile() {
-        return file;
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.VARIABLE;
     }
 
-    public OffsetRange getRange() {
-        return range;
+    @Override
+    public String getRhsHtml(HtmlFormatter formatter) {
+        return "<font color=999999>" + (origin == null ? "" : origin) + "</font>"; //NOI18N
     }
-
-    public CharSequence getName() {
-        return name;
-    }
-    
     
 }

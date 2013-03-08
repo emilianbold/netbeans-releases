@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.prep.model;
 
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.openide.filesystems.FileObject;
 
 /**
  * xxx: temporary
@@ -81,14 +82,20 @@ public class Variable extends Element {
     }
 
     private Type type;
+    private OffsetRange context; //context of the variable
     
-    public Variable(String name, OffsetRange range, Type type) {
-        super(name, range);
+    public Variable(String name, OffsetRange range, FileObject file, Type type, OffsetRange context) {
+        super(name, range, file);
         this.type = type;
+        this.context = context;
     }
 
     public Type getType() {
         return type;
+    }
+
+    public OffsetRange getContext() {
+        return context;
     }
     
 }
