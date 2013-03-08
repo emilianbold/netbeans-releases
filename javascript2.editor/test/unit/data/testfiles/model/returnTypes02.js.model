@@ -1,0 +1,100 @@
+returnTypes02 [ANONYMOUS: false, DECLARED: true - returnTypes02, MODIFIERS: PUBLIC, FILE]
+# RETURN TYPES
+undefined
+# PROPERTIES
+Man           : Man [ANONYMOUS: false, DECLARED: true - Man, MODIFIERS: PUBLIC, CONSTRUCTOR]
+              # RETURN TYPES
+              Man
+              # PARAMETERS
+              firstName [ANONYMOUS: false, DECLARED: true - firstName, MODIFIERS: PUBLIC, PARAMETER]
+              lastName [ANONYMOUS: false, DECLARED: true - lastName, MODIFIERS: PUBLIC, PARAMETER]
+              street [ANONYMOUS: false, DECLARED: true - street, MODIFIERS: PUBLIC, PARAMETER]
+              town [ANONYMOUS: false, DECLARED: true - town, MODIFIERS: PUBLIC, PARAMETER]
+              zip [ANONYMOUS: false, DECLARED: true - zip, MODIFIERS: PUBLIC, PARAMETER]
+              # PROPERTIES
+              Address       : Address [ANONYMOUS: false, DECLARED: true - Address, MODIFIERS: PRIVATE, CONSTRUCTOR]
+                            # RETURN TYPES
+                            Man.Address
+                            # PARAMETERS
+                            streetp [ANONYMOUS: false, DECLARED: true - streetp, MODIFIERS: PUBLIC, PARAMETER]
+                            townp [ANONYMOUS: false, DECLARED: true - townp, MODIFIERS: PUBLIC, PARAMETER]
+                            zipp [ANONYMOUS: false, DECLARED: true - zipp, MODIFIERS: PUBLIC, PARAMETER]
+                            # PROPERTIES
+                            arguments    : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            correct      : correct [ANONYMOUS: false, DECLARED: true - correct, MODIFIERS: PROTECTED, METHOD]
+                                         # RETURN TYPES
+                                         Man.Address
+                                         # PROPERTIES
+                                         arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            getZip       : getZip [ANONYMOUS: false, DECLARED: true - getZip, MODIFIERS: PROTECTED, METHOD]
+                                         # PROPERTIES
+                                         arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            printAddress : printAddress [ANONYMOUS: false, DECLARED: true - printAddress, MODIFIERS: PROTECTED, METHOD]
+                                         # RETURN TYPES
+                                         undefined
+                                         # PROPERTIES
+                                         arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                         tmp       : tmp [ANONYMOUS: false, DECLARED: true - tmp, MODIFIERS: PRIVATE, OBJECT]
+                                                   # PROPERTIES
+                                                   getZip : getZip [ANONYMOUS: false, DECLARED: false - getZip, MODIFIERS: PUBLIC, METHOD]
+                                                          # PROPERTIES
+                                                          arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            street       : street [ANONYMOUS: false, DECLARED: true - street, MODIFIERS: PRIVATE, VARIABLE]
+                            town         : town [ANONYMOUS: false, DECLARED: true - town, MODIFIERS: PRIVATE, VARIABLE]
+                            zip          : zip [ANONYMOUS: false, DECLARED: true - zip, MODIFIERS: PRIVATE, VARIABLE]
+              address       : address [ANONYMOUS: false, DECLARED: true - address, MODIFIERS: PRIVATE, VARIABLE]
+              arguments     : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+              createAddress : createAddress [ANONYMOUS: false, DECLARED: true - createAddress, MODIFIERS: PRIVATE, METHOD]
+                            # RETURN TYPES
+                            Man.Address
+                            # PARAMETERS
+                            street [ANONYMOUS: false, DECLARED: true - street, MODIFIERS: PUBLIC, PARAMETER]
+                            town [ANONYMOUS: false, DECLARED: true - town, MODIFIERS: PUBLIC, PARAMETER]
+                            zip [ANONYMOUS: false, DECLARED: true - zip, MODIFIERS: PUBLIC, PARAMETER]
+                            # PROPERTIES
+                            arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+              getAddress    : getAddress [ANONYMOUS: false, DECLARED: true - getAddress, MODIFIERS: PROTECTED, METHOD]
+                            # PROPERTIES
+                            arguments    : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            printAddress : printAddress [ANONYMOUS: false, DECLARED: false - printAddress, MODIFIERS: PUBLIC, METHOD]
+                                         # PROPERTIES
+                                         arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+              print         : print [ANONYMOUS: false, DECLARED: true - print, MODIFIERS: PROTECTED, METHOD]
+                            # RETURN TYPES
+                            Man
+                            # PROPERTIES
+                            arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+createAddress : createAddress [ANONYMOUS: false, DECLARED: false - createAddress, MODIFIERS: PUBLIC, FUNCTION]
+              # PROPERTIES
+              arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+formatter     : formatter [ANONYMOUS: false, DECLARED: false - formatter, MODIFIERS: PUBLIC, OBJECT]
+              # PROPERTIES
+              addIndent    : addIndent [ANONYMOUS: false, DECLARED: false - addIndent, MODIFIERS: PUBLIC, METHOD]
+                           # PARAMETERS
+                           param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                           # PROPERTIES
+                           arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+              println      : println [ANONYMOUS: false, DECLARED: false - println, MODIFIERS: PUBLIC, METHOD]
+                           # PARAMETERS
+                           param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                           # PROPERTIES
+                           arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+              removeIndent : removeIndent [ANONYMOUS: false, DECLARED: false - removeIndent, MODIFIERS: PUBLIC, METHOD]
+                           # PARAMETERS
+                           param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                           # PROPERTIES
+                           arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+person        : person [ANONYMOUS: false, DECLARED: true - person, MODIFIERS: PUBLIC, VARIABLE]
+              # PROPERTIES
+              getAddress : getAddress [ANONYMOUS: false, DECLARED: false - getAddress, MODIFIERS: PUBLIC, METHOD]
+                         # PROPERTIES
+                         arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                         correct   : correct [ANONYMOUS: false, DECLARED: false - correct, MODIFIERS: PUBLIC, METHOD]
+                                   # PROPERTIES
+                                   arguments    : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                   printAddress : printAddress [ANONYMOUS: false, DECLARED: false - printAddress, MODIFIERS: PUBLIC, METHOD]
+                                                # PROPERTIES
+                                                arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+              print      : print [ANONYMOUS: false, DECLARED: false - print, MODIFIERS: PUBLIC, METHOD]
+                         # PROPERTIES
+                         arguments : arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
