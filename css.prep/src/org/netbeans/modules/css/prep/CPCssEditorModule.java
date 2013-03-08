@@ -41,21 +41,24 @@
  */
 package org.netbeans.modules.css.prep;
 
+import java.io.IOException;
 import org.netbeans.modules.css.prep.model.CPModel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
@@ -65,6 +68,7 @@ import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzer;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -73,9 +77,12 @@ import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.prep.model.Element;
 import org.netbeans.modules.css.prep.model.Variable;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -113,7 +120,7 @@ public class CPCssEditorModule extends CssEditorModule {
 
         switch (tid) {
             case ERROR:
-                switch(first) {
+                switch (first) {
                     case '$':
                         //"$" as a prefix - user likely wants to type variable
                         //check context
@@ -122,17 +129,17 @@ public class CPCssEditorModule extends CssEditorModule {
                             return Utilities.filterCompletionProposals(allVars, context.getPrefix(), true);
                         }
                         break;
-                        
+
                     case '@':
                         //may be:
                         //1. @-rule beginning
                         //2. less variable
-                        
+
                         //1.@-rule
                         return Utilities.createRAWCompletionProposals(model.getDirectives(), ElementKind.KEYWORD, context.getAnchorOffset());
                 }
                 break;
-                
+
             case AT_IDENT:
                 //not complete keyword (complete keyword have their own token types,
                 //but no need to complete them except documentation completion request
@@ -152,12 +159,12 @@ public class CPCssEditorModule extends CssEditorModule {
 
         switch (activeNode.type()) {
             case cp_mixin_call:
-                //@include |
+            //@include |
             case cp_mixin_name:
                 //@include mymi|
                 proposals.addAll(Utilities.createRAWCompletionProposals(model.getMixinNames(), ElementKind.METHOD, context.getAnchorOffset()));
                 break;
-                
+
             case cp_variable:
                 //already in the prefix
                 proposals.addAll(allVars);
@@ -171,16 +178,57 @@ public class CPCssEditorModule extends CssEditorModule {
         }
         return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
-    
+
     private static List<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
-        Collection<String> filtered = new HashSet<String>();
-        for (Variable var : model.getVariables()) {
-            if (!var.getRange().containsInclusive(context.getCaretOffset())) {
-                filtered.add(var.getName().toString());
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        for (Variable var : model.getVariables(context.getCaretOffset())) {
+            if (var.getType() != Variable.Type.USAGE && !var.getRange().containsInclusive(context.getCaretOffset())) {
+                ElementHandle handle = new CPElementHandle(context.getFileObject(), var.getName());
+                VariableCompletionItem item = new VariableCompletionItem(handle,
+                        var.getName().toString(),
+                        context.getAnchorOffset(),
+                        var.getFile() == null ? null : var.getFile().getNameExt());
+
+                proposals.add(item);
             }
         }
-        return Utilities.createRAWCompletionProposals(filtered, ElementKind.VARIABLE, context.getAnchorOffset());
+        try {
+            //now gather global vars from all linked sheets
+            FileObject file = context.getFileObject();
+            if (file != null) {
+                Project project = FileOwnerQuery.getOwner(file);
+                if (project != null) {
+                    CssIndex index = CssIndex.get(project);
+                    DependenciesGraph dependencies = index.getDependencies(file);
+                    Collection<FileObject> referingFiles = dependencies.getAllReferingFiles();
+                    for (FileObject reff : referingFiles) {
+                        CPCssIndexModel cpIndexModel = (CPCssIndexModel) index.getIndexModel(CPCssIndexModel.Factory.class, reff);
+                        
+                        //*********************************
+                        //XXX TODO XXX - index also the variable type so we can add just the global variables from the imported files
+                        //*********************************
+                        
+                        Collection<String> variableNames = cpIndexModel.getVariableNames();
+                        for(String varName : variableNames) {
+                            ElementHandle handle = new CPElementHandle(context.getFileObject(), varName);
+                            VariableCompletionItem item = new VariableCompletionItem(handle,
+                                    varName,
+                                    context.getAnchorOffset(),
+                                    reff.getNameExt());
+                            
+                            proposals.add(item);
+                        }
+
+                    }
+
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return proposals;
     }
 
     @Override
@@ -259,7 +307,7 @@ public class CPCssEditorModule extends CssEditorModule {
         return null;
     }
 
-     @Override
+    @Override
     public Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclaration(Document document, int caretOffset) {
         //first try to find the reference span
         TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(document, caretOffset, CssTokenId.language());
@@ -272,18 +320,18 @@ public class CPCssEditorModule extends CssEditorModule {
         int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
         OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
         CharSequence mixinName = null;
-        
+
         //MIXINs go to declaration
         if (token.id() == CssTokenId.IDENT) {
             mixinName = token.text();
-            
+
             //check if there is @import token before
-            while(ts.movePrevious() && ts.token().id() == CssTokenId.WS) {
+            while (ts.movePrevious() && ts.token().id() == CssTokenId.WS) {
             }
-            
+
             Token t = ts.token();
-            if(t != null) {
-                if(t.id() == CssTokenId.DOT || t.id() == CssTokenId.SASS_INCLUDE) {
+            if (t != null) {
+                if (t.id() == CssTokenId.DOT || t.id() == CssTokenId.SASS_INCLUDE) {
                     //gotcha!
                     //@import xxx --sass
                     //.xxx --less
@@ -295,15 +343,14 @@ public class CPCssEditorModule extends CssEditorModule {
         if (foundRange == null) {
             return null;
         }
-        
+
         final CharSequence searchedMixinName = mixinName;
         FutureParamTask<DeclarationLocation, EditorFeatureContext> callable = new FutureParamTask<DeclarationLocation, EditorFeatureContext>() {
-
             @Override
             public DeclarationLocation run(EditorFeatureContext context) {
                 CPModel model = CPModel.getModel(context.getParserResult());
-                for(Element mixin : model.getMixins()) {
-                    if(LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
+                for (Element mixin : model.getMixins()) {
+                    if (LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
                         return new DeclarationLocation(context.getFileObject(), mixin.getRange().getStart());
                     }
                 }
@@ -313,6 +360,4 @@ public class CPCssEditorModule extends CssEditorModule {
 
         return new Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>(foundRange, callable);
     }
-    
-    
 }

@@ -75,6 +75,14 @@ public class CPCssIndexModel extends CssIndexModel {
         this.variableNames = variableNames;
     }
     
+    public Collection<String> getVariableNames() {
+        return variableNames;
+    }
+    
+    public Collection<String> getMixinNames() {
+        return mixinNames;
+    }
+    
     @Override
     public void storeToIndex(IndexDocument document) {
          storeItems(mixinNames, document, MIXINS_INDEX_KEY);
@@ -94,7 +102,7 @@ public class CPCssIndexModel extends CssIndexModel {
     }
     
     @ServiceProvider(service = CssIndexModelFactory.class)
-    public static final class Factory extends CssIndexModelFactory<CPCssIndexModel>{
+    public static final class Factory extends CssIndexModelFactory{
 
         @Override
         public CPCssIndexModel getModel(CssParserResult result) {
