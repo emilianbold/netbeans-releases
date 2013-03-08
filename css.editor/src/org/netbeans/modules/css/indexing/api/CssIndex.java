@@ -553,8 +553,7 @@ public class CssIndex {
             Collection<FileReference> imported = new HashSet<FileReference>();
             for (String importedFileName : imports) {
                 //resolve the file
-                FileReference resolvedReference = WebUtils.resolveToReference(file, importedFileName);
-//                FileObject resolvedFileObject = ref.target();
+                FileReference resolvedReference = resolveImport(file, importedFileName);
                 if (resolvedReference != null) {
                     imported.add(resolvedReference);
                     //add reverse dependency
@@ -571,6 +570,35 @@ public class CssIndex {
 
         return new AllDependenciesMaps(source2dests, dest2sources);
 
+    }
+    
+    //some hardcoded SASS logic here, may be refactored to some nice resolver SPI though :-)
+    private FileReference resolveImport(FileObject source, String importedFileName) {
+        //possibly remove the query part of the link
+        int qmIndex = importedFileName.indexOf("?"); //NOI18N
+        if(qmIndex >= 0) {
+            importedFileName = importedFileName.substring(0, qmIndex);
+        }
+        
+        //first try the original file reference
+        FileReference resolvedReference = WebUtils.resolveToReference(source, importedFileName);
+        if(resolvedReference != null) {
+            return resolvedReference; 
+        }
+        
+        //The SASS import spec: http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#import
+        //
+        //if the original reference is not resolved to an existing file
+        //so first try to append the .scss extension
+        String impliedScssExt = importedFileName + ".scss"; //NOI18N
+        resolvedReference = WebUtils.resolveToReference(source, impliedScssExt);
+        if(resolvedReference != null) {
+            return resolvedReference; 
+        }
+        //if still nothing then try .sass extension as a last resort
+        String impliedSassExt = importedFileName + ".sass"; //NOI18N
+        return WebUtils.resolveToReference(source, impliedSassExt);
+        
     }
     
 
