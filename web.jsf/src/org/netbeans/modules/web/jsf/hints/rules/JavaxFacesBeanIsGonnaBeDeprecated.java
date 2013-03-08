@@ -39,30 +39,60 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.hints;
+package org.netbeans.modules.web.jsf.hints.rules;
 
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import org.netbeans.modules.web.jsf.hints.rules.FlowScopedBeanWithoutCdi;
-import org.netbeans.modules.web.jsf.hints.rules.JavaxFacesBeanIsGonnaBeDeprecated;
+import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.netbeans.modules.web.jsf.hints.JsfHintsContext;
+import org.netbeans.modules.web.jsf.hints.JsfHintsRule;
+import org.netbeans.modules.web.jsf.hints.JsfHintsUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class JsfHintsRegistry {
+public class JavaxFacesBeanIsGonnaBeDeprecated implements JsfHintsRule {
 
-    private static final Collection<? extends JsfHintsRule> RULES = Arrays.asList(
-            new FlowScopedBeanWithoutCdi(),
-            new JavaxFacesBeanIsGonnaBeDeprecated());
+    private static final String JAVAX_FACES_BEAN = "javax.faces.bean"; //NOI18N
 
-    public static Collection<ErrorDescription> check(JsfHintsContext ctx) {
-        Collection<ErrorDescription> hints = new ArrayList<ErrorDescription>();
-        for (JsfHintsRule rule : RULES) {
-            hints.addAll(rule.check(ctx));
+    @NbBundle.Messages({
+        "JavaxFacesBeanIsGonnaBeDeprecated.lbl.package.will.be.deprecated=Annotations from the package javax.faces.bean"
+            + "will be deprecated in the next JSF version. CDI ones are recommended instead."
+    })
+    @Override
+    public Collection<ErrorDescription> check(JsfHintsContext ctx) {
+        List<ErrorDescription> hints = new ArrayList<ErrorDescription>();
+        if (!ctx.getJsfVersion().isAtLeast(JSFVersion.JSF_2_2)) {
+            return hints;
+        }
+
+        CompilationInfo info = ctx.getCompilationInfo();
+        for (TypeElement typeElement : info.getTopLevelElements()) {
+            for (AnnotationMirror annotationMirror : typeElement.getAnnotationMirrors()) {
+                if (annotationMirror.getAnnotationType().toString().startsWith(JAVAX_FACES_BEAN)) {
+                    // it's javax.faces.bean annotation
+                    Tree tree = info.getTrees().getTree(typeElement, annotationMirror);
+                    hints.add(JsfHintsUtils.createProblem(
+                            tree,
+                            info,
+                            Bundle.JavaxFacesBeanIsGonnaBeDeprecated_lbl_package_will_be_deprecated(),
+                            Severity.HINT,
+                            Arrays.<Fix>asList()));
+                }
+            }
         }
         return hints;
     }
+
 }
