@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.libraries;
+package org.netbeans.modules.css.indexing;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.css.indexing.api.CssIndexModel;
+import org.netbeans.modules.css.indexing.api.CssIndexModelFactory;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.openide.util.Lookup;
 
-public class CDNJSLibrariesProviderTest {
+/**
+ *
+ * @author marekfukala
+ */
+public class CssIndexModelSupport {
 
-    public CDNJSLibrariesProviderTest() {
+    public static Collection<CssIndexModel> getModels(CssParserResult result) {
+        Collection<CssIndexModel> models = new ArrayList<CssIndexModel>();
+        Collection<? extends CssIndexModelFactory> factories = Lookup.getDefault().lookupAll(CssIndexModelFactory.class);
+
+        for (CssIndexModelFactory factory : factories) {
+            CssIndexModel model = factory.getModel(result);
+            if (model != null) {
+                models.add(model);
+            }
+        }
+        return models;
     }
 
-    @BeforeClass
-    public static void setUpClass() {
+    public static CssIndexModelFactory getFactory(Class modelFactoryClass) {
+        Collection<? extends CssIndexModelFactory> factories = Lookup.getDefault().lookupAll(CssIndexModelFactory.class);
+        for (CssIndexModelFactory factory : factories) {
+            if (factory.getClass().equals(modelFactoryClass)) {
+                return factory;
+            }
+        }
+        return null;
     }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    @Test
-    public void testGetLibraries() {
-        CDNJSLibrariesProvider instance = CDNJSLibrariesProvider.getDefault();
-        LibraryImplementation[] result = instance.getLibraries();
-        assertTrue("libraries are succcessfully parsed and recreated", result.length >= 476);
-    }
-
+    
 }

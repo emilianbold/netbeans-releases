@@ -594,6 +594,8 @@ rule
 declarations
     :
             (
+                (cp_variable_declaration)=>cp_variable_declaration ws?
+                |
                 //the DECLARATION rule needs to be before the RULE rule as the 
                 //syn.predicate for the RULE rule also accepts the declaration,
                 //(is less specific).

@@ -49,9 +49,46 @@ import org.netbeans.modules.csl.api.OffsetRange;
  * @author marekfukala
  */
 public class Variable extends Element {
-
-    public Variable(String name, OffsetRange range) {
-        super(name, range);
+    
+    public enum Type {
+        /**
+         * Variable in the stylesheet body.
+         * 
+         * $var: value;
+         */
+        GLOBAL_DECLARATION,
+        
+        /**
+         * Variable in a rule or mixin or other code block.
+         * 
+         * $var: value; 
+         */
+        LOCAL_DECLARATION, 
+        
+        /**
+         * Variable declared as a param in a mixin declaration or for, each, while block.
+         * 
+         * @mixin left($dist) { ... } 
+         */
+        METHOD_PARAM_DECLARATION, 
+        
+        /**
+         * Variable usage.
+         * 
+         * .clz { color: $best; } 
+         */
+        USAGE; 
     }
 
+    private Type type;
+    
+    public Variable(String name, OffsetRange range, Type type) {
+        super(name, range);
+        this.type = type;
+    }
+
+    public Type getType() {
+        return type;
+    }
+    
 }

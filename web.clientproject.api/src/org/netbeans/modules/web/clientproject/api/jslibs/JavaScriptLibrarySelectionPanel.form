@@ -21,14 +21,26 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="librariesFolderTextField" max="32767" attributes="0"/>
           </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="generalInfoLabel" pref="0" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
           <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
+              <Component id="additionalInfoLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" attributes="0">
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="updateLibrariesLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
                       <Component id="librariesLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="librariesFilterTextField" pref="164" max="32767" attributes="0"/>
+                      <Component id="librariesFilterTextField" pref="156" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="librariesScrollPane" pref="0" max="32767" attributes="0"/>
+                  <Component id="librariesScrollPane" alignment="0" pref="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -38,16 +50,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="selectedLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="selectedLibrariesScrollPane" pref="221" max="32767" attributes="0"/>
+                  <Component id="selectedLibrariesScrollPane" pref="215" max="32767" attributes="0"/>
               </Group>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="additionalInfoLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="generalInfoLabel" pref="0" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -65,15 +69,17 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="selectedLibrariesScrollPane" pref="145" max="32767" attributes="0"/>
+                  <Component id="selectedLibrariesScrollPane" pref="0" max="32767" attributes="0"/>
                   <Component id="librariesScrollPane" pref="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="selectSelectedButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="deselectSelectedButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="74" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="updateLibrariesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="librariesFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -122,6 +128,17 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JLabel" name="updateLibrariesLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/api/jslibs/Bundle.properties" key="JavaScriptLibrarySelectionPanel.updateLibrariesLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="updateLibrariesLabelMouseEntered"/>
+        <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="updateLibrariesLabelMousePressed"/>
+      </Events>
+    </Component>
     <Component class="javax.swing.JButton" name="selectSelectedButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
