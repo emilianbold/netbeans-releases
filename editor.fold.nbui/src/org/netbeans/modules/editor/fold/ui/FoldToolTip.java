@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.fold;
+package org.netbeans.modules.editor.fold.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -65,7 +65,7 @@ import org.openide.util.Lookup;
  *
  * @author Miloslav Metelka
  */
-public class FoldToolTip extends JPanel {
+final class FoldToolTip extends JPanel {
     private int editorPaneWidth;
 
     public FoldToolTip(JEditorPane editorPane, final JEditorPane foldPreviewPane, Color borderColor) {

@@ -62,7 +62,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateCompletionProvider;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
-import org.netbeans.modules.csl.editor.GsfCodeFoldingSideBarFactory;
 import org.netbeans.modules.csl.editor.codetemplates.GsfCodeTemplateFilter;
 import org.netbeans.modules.csl.editor.codetemplates.GsfCodeTemplateProcessor;
 import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
@@ -277,10 +276,6 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
     }
 
     private static void registerCodeFolding(LayerBuilder b, String mimeType) {
-        File f = instanceFile(b, "Editors/" + mimeType + "/SideBar", null, GsfCodeFoldingSideBarFactory.class, null); //NOI18N
-        f.position(1200);
-        f.write();
-
         instanceFile(b, "Editors/" + mimeType + "/FoldManager", null, GsfFoldManagerFactory.class, null).write(); //NOI18N
 //
 //        // Code Folding

@@ -126,10 +126,17 @@ is the proper place.
                 the <code>FoldHierarchy</code> to determine whether the hierarchy be popuplated with folds 
                 at all.
             </p>
+            <p>
+                Using <code>FoldingSupport</code> utility class, clients can create instance of
+                <code>FoldManager</code> that creates folds based on comments, previously <code>CustomFoldManager</code>
+                in editor.lib module.
+            </p>
         </description>
         <class name="FoldHierarchy" package="org.netbeans.api.editor.fold"/>
+        <class name="FoldingSupport" package="org.netbeans.api.editor.fold"/>
         <class name="FoldHierarchyMonitor" package="org.netbeans.spi.editor.fold"/>
         <issue number="226368"/>
+        <issue number="226413"/>
     </change>
   <change id="FoldOperation-owns-added">
       <api name="api"/>

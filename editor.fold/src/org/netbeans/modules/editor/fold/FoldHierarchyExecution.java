@@ -76,6 +76,7 @@ import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.fold.FoldManager;
@@ -122,6 +123,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     private static final String PROPERTY_FOLD_HIERARCHY_MUTEX = "foldHierarchyMutex"; //NOI18N
 
     private static final String PROPERTY_FOLDING_ENABLED = "code-folding-enable"; //NOI18N
+    
+    private static final boolean DEFAULT_CODE_FOLDING_ENABLED = true;
 
     private static final boolean debug
         = Boolean.getBoolean("netbeans.debug.editor.fold"); //NOI18N
@@ -282,8 +285,13 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     }
     
     /* testing only */
-    static void waitHierarchyInitialized(JTextComponent panel) {
+    public static void waitHierarchyInitialized(JTextComponent panel) {
         getOrCreateFoldExecution(panel).getInitTask().waitFinished();
+    }
+    
+    /* testing only */
+    static boolean waitAllTasks() throws InterruptedException {
+        return RP.awaitTermination(30, TimeUnit.SECONDS);
     }
     
     private Task getInitTask() {
@@ -567,6 +575,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         } finally {
             transaction.commit();
         }
+        // update the active flag
+        active = operations.length > 0;
     }
     
     /**
@@ -712,7 +722,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             }
         }
     }
-        
+    
     /**
      * Rebuild (or release) the root folds of the hierarchy in the event dispatch thread.
      *
@@ -893,9 +903,13 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             unlock();
         }
     }
-
+    
     private boolean getFoldingEnabledSetting() {
-        Boolean b = (Boolean)component.getClientProperty(PROPERTY_FOLDING_ENABLED);
+        return getFoldingEnabledSetting(true);
+    }
+
+    private boolean getFoldingEnabledSetting(boolean useProperty) {
+        Boolean b = useProperty ? (Boolean)component.getClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE) : null;
         // no preferences in component; get from lookup:
         if (b == null && component.getDocument() != null) {
             String mime = DocumentUtilities.getMimeType(component.getDocument());
@@ -904,12 +918,14 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 b = prefs.getBoolean(PROPERTY_FOLDING_ENABLED, true);
             }
         }
-        return (b != null) ? b.booleanValue() : true;
+        boolean ret = (b != null) ? b.booleanValue() : DEFAULT_CODE_FOLDING_ENABLED;
+        component.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, ret);
+        return ret;
     }
     
     public void foldingEnabledSettingChange() {
         boolean origFoldingEnabled = foldingEnabled;
-        foldingEnabled = getFoldingEnabledSetting();
+        foldingEnabled = getFoldingEnabledSetting(false);
         if (origFoldingEnabled != foldingEnabled) {
             RP.post(this);
         }
