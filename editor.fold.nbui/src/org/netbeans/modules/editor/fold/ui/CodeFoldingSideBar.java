@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.fold.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -90,8 +90,14 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseDocumentEvent;
+import org.netbeans.editor.BaseTextUI;
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.spi.editor.SideBarFactory;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
-import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ParagraphViewDescriptor;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
@@ -106,15 +112,16 @@ import org.openide.util.WeakListeners;
 /**
  *  Code Folding Side Bar. Component responsible for drawing folding signs and responding 
  *  on user fold/unfold action.
+ * <p/>
+ * The class was copied/hidden from org.netbeans.editor.CodeFoldingSidebar. If any error is fixed here,
+ * please fix it as well in {@link org.netbeans.editor.CodeFoldingSidebar} in this module for backward
+ * compatibility with potential users.
  *
  *  @author  Martin Roskanin
- *  @deprecated You should use {@link FoldUtilities#createSidebarComponent(javax.swing.text.JTextComponent)} or
- *  {@link FoldUtilities#getFoldingSidebarFactory()} instead. Subclassing CodeFoldingSidebar
- *  is no longer actively supported, though still working.
  */
-@Deprecated
-public class CodeFoldingSideBar extends JComponent implements Accessible {
-
+public final class CodeFoldingSideBar extends JComponent implements Accessible {
+    public static final String PROP_SIDEBAR_MARK = "org.netbeans.editor.CodeFoldingSidebar"; // NOI18N
+    
     private static final Logger LOG = Logger.getLogger(CodeFoldingSideBar.class.getName());
 
     /** This field should be treated as final. Subclasses are forbidden to change it. 
@@ -193,6 +200,8 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
      */
     private int topmostBelowMouse = Integer.MAX_VALUE;
     
+    private boolean alreadyPresent;
+    
     /** Paint operations */
     public static final int PAINT_NOOP             = 0;
     /**
@@ -226,8 +235,6 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     private static Stroke LINE_DASHED = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 
             1f, new float[] { 1f, 1f }, 0f);
     
-    private boolean alreadyPresent;
-    
     /**
      * Stroke used to draw outlines for 'active' fold
      */
@@ -246,7 +253,6 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     updatePreferredSize();
                 }
             }
-            SettingsConversions.callSettingsChange(CodeFoldingSideBar.this);
         }
     };
     
@@ -264,24 +270,13 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         });
     }
     
-    /**
-     * @deprecated Don't use this constructor, it does nothing!
-     */
-    public CodeFoldingSideBar() {
-        component = null;
-        prefs = null;
-        throw new IllegalStateException("Do not use this constructor!"); //NOI18N
-    }
-
-    public CodeFoldingSideBar(JTextComponent component){
+    public CodeFoldingSideBar(final JTextComponent component){
         super();
         this.component = component;
 
-        // The same property tag is used by migrated implementation of the SideBar.
-        // The new implementation is registered with weight higher than CF used to have, so if a
-        // legacy client registers subclass of this CFSB, it will register the client property first and win.
-        if (component.getClientProperty("org.netbeans.editor.CodeFoldingSidebar") == null) {  // NOI18N
-            component.putClientProperty("org.netbeans.editor.CodeFoldingSidebar", Boolean.TRUE); // NOI18N
+        // prevent from display CF sidebar twice
+        if (component.getClientProperty(PROP_SIDEBAR_MARK) == null) {
+            component.putClientProperty(PROP_SIDEBAR_MARK, Boolean.TRUE);
         } else {
             alreadyPresent = true;
             prefs = null;
@@ -291,10 +286,10 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         addMouseListener(listener);
         addMouseMotionListener(listener);
 
-        FoldHierarchy foldHierarchy = FoldHierarchy.get(component);
+        final FoldHierarchy foldHierarchy = FoldHierarchy.get(component);
         foldHierarchy.addFoldHierarchyListener(WeakListeners.create(FoldHierarchyListener.class, listener, foldHierarchy));
 
-        Document doc = getDocument();
+        final Document doc = getDocument();
         doc.addDocumentListener(WeakListeners.document(listener, doc));
         setOpaque(true);
         
@@ -313,6 +308,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     }
     
     private void updatePreferredSize() {
+        // do not show at all, if there are no providers registered.
         if (enabled && !alreadyPresent) {
             setPreferredSize(new Dimension(getColoring().getFont().getSize(), component.getHeight()));
             setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
@@ -1448,6 +1444,9 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
 
         @Override
         public void run() {
+            if (getPreferredSize().width == 0 && enabled) {
+                updatePreferredSize();
+            }
             repaint();
         }
     } // End of Listener class
@@ -1485,5 +1484,22 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         }        
         return Coloring.fromAttributeSet(attribs);
     }
-    
+
+    /**
+     * Factory for the sidebars. Use {@link FoldUtilities#getFoldingSidebarFactory()} to
+     * obtain an instance.
+     */
+    public static class Factory implements SideBarFactory {
+        @Override
+        public JComponent createSideBar(JTextComponent target) {
+            if (target.getClientProperty(PROP_SIDEBAR_MARK) != null) {
+                return null;
+            }
+            FoldHierarchy fh = FoldHierarchy.get(target);
+            if (fh == null || !fh.isActive()) {
+                return null;
+            }
+            return new CodeFoldingSideBar(target);
+        }
+    }
 }

@@ -88,7 +88,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Martin Roskanin
  */
-/* package */ class CollapsedView extends View {
+/* package */ @Deprecated class CollapsedView extends View {
 
     private static final int MARGIN_WIDTH = 4;
     
