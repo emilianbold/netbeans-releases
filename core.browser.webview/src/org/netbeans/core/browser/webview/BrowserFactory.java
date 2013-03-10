@@ -41,6 +41,7 @@
  */
 package org.netbeans.core.browser.webview;
 
+import java.awt.Image;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.core.IDESettings;
@@ -119,5 +120,15 @@ public class BrowserFactory implements HtmlBrowser.Factory, EnhancedBrowserFacto
     @Override
     public BrowserFamilyId getBrowserFamilyId() {
         return BrowserFamilyId.JAVAFX_WEBVIEW;
+    }
+
+    @Override
+    public Image getIconImage() {
+        return null;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return null;
     }
 }

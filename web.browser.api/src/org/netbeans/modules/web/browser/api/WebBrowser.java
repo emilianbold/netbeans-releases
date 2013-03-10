@@ -90,7 +90,10 @@ public final class WebBrowser {
     }
 
     public Image getIconImage() {
-        Image im = ImageUtilities.loadImage(getIconFile(getBrowserFamily()));
+        Image im = factoryDesc.getIconImage();
+        if (im == null) {
+            ImageUtilities.loadImage(getIconFile(getBrowserFamily()));
+        }
         if (withNetBeansIntegration) {
             im = ImageUtilities.mergeImages(
                 im,

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.browser.spi;
 
+import java.awt.Image;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 
 /**
@@ -49,6 +50,25 @@ import org.netbeans.modules.web.browser.api.BrowserFamilyId;
  */
 public interface EnhancedBrowserFactory {
 
+    /**
+     * Type of browser.
+     */
     BrowserFamilyId getBrowserFamilyId();
+
+    /**
+     * Image icon representing this browser. 24x24 size expected.
+     * @return can return null (in which case a fallback icon will be used as
+     * implemented in WebBrowser itself)
+     */
+    Image getIconImage();
+
+    /**
+     * Display name of browser.
+     * 
+     * @return can return null (in which case display name of the node which
+     * represents registration of this browser in the SystemFileSystem will be
+     * used instead)
+     */
+    String getDisplayName();
     
 }

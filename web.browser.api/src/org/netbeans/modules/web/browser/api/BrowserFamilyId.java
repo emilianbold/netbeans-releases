@@ -44,10 +44,8 @@ package org.netbeans.modules.web.browser.api;
 
 
 /**
- * Ids browser with available plugin 
+ * Identification of different browser types.
  * 
- * @author ads
- *
  */
 public enum BrowserFamilyId {
 
