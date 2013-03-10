@@ -78,6 +78,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorNames;
@@ -990,6 +991,9 @@ public class NbEditorKit extends ExtKit implements Callable {
         };
         pane.setDocument(doc);
         HighlightingManager.getInstance(pane).getBottomHighlights();
+
+        // initialize FoldHierarchy (#172381)
+        FoldHierarchy.get(pane).getRootFold();
 
         // initialize popup menu actions providers (#174175)
         PopupMenuActionsProvider.getPopupMenuItems(getContentType());

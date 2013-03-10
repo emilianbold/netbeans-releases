@@ -97,7 +97,7 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
                     if (sharp) {
                         res = f.getStartOffset() < offset && f.getEndOffset() > offset;
                     } else {
-                        res = f.getStartOffset() >= offset && f.getEndOffset() >= offset;
+                        res = f.getStartOffset() <= offset && f.getEndOffset() >= offset;
                     }
                     if (res) {
                         foldHierarchy.expand(f);
@@ -130,7 +130,7 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
         int caretOffset = component.getCaret().getDot();
         final int addedFoldCnt = evt.getAddedFoldCount();
         final boolean scrollToView;
-        LOG.finest("Received fold hierarchy change");
+        LOG.finest("Received fold hierarchy change"); // NOI18N
         if (addedFoldCnt > 0) {
             FoldHierarchy hierarchy = (FoldHierarchy) evt.getSource();
             Fold collapsed = null;
@@ -172,7 +172,7 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
         if (addedFoldCnt > 1 || scrollToView) {
             SwingUtilities.invokeLater(new Runnable() {
                 public @Override void run() {
-                    LOG.finest("Updating after fold hierarchy change");
+                    LOG.finest("Updating after fold hierarchy change"); // NOI18N
                     if (component == null) {
                         return;
                     }
