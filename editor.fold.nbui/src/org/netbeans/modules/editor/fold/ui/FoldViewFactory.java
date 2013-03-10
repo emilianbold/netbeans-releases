@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.fold;
+package org.netbeans.modules.editor.fold.ui;
 
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -54,6 +54,7 @@ import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.view.EditorView;
@@ -85,7 +86,7 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     // -J-Dorg.netbeans.modules.editor.fold.FoldViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(FoldViewFactory.class.getName());
 
-    static void register() {
+    public static void register() {
         EditorViewFactory.registerFactory(new FoldFactory());
     }
 
