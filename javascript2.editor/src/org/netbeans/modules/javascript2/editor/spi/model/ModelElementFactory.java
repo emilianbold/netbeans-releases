@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.spi.model;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,6 +53,7 @@ import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
@@ -81,6 +86,32 @@ public final class ModelElementFactory {
 
     public JsObject newGlobalObject(FileObject fileObject, int length) {
         return JsFunctionImpl.createGlobal(fileObject, length);
+    }
+
+    public JsObject loadGlobalObject(FileObject fileObject, int length) throws IOException {
+        JsFunctionImpl global = JsFunctionImpl.createGlobal(fileObject, length);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(fileObject.getInputStream()));
+        try {
+            JsObject object = Model.readModel(reader);
+            global.addProperty(object.getName(), object);
+
+            return global;
+        } finally {
+            reader.close();
+        }
+    }
+
+    public JsObject loadGlobalObject(InputStream is) throws IOException {
+        JsFunctionImpl global = JsFunctionImpl.createGlobal(null, Integer.MAX_VALUE);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        try {
+            JsObject object = Model.readModel(reader);
+            global.addProperty(object.getName(), object);
+
+            return global;
+        } finally {
+            reader.close();
+        }
     }
     
     public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange,

@@ -57,7 +57,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
  *
  * @author Petr Hejl
  */
-@FunctionInterceptor.Registration(priority = 100)
+//@FunctionInterceptor.Registration(priority = 100)
 public class KnockoutMinifiedFunctionInterceptor implements FunctionInterceptor {
 
     private static final String GLOBAL_KO_OBJECT = "ko"; // NOI18N
