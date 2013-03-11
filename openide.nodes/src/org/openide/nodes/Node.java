@@ -1483,7 +1483,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
 
         //Soft caching of property editor references to improve JTable
         //property sheet performance
-        private Reference<PropertyEditor> edRef = null;
+        private PropertyEditorRef edRef = null;
 
         /** Constructor.
         * @param valueType type of the property
@@ -1575,8 +1575,14 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         }
 
         /** Get a property editor for this property.
-         * The default implementation tries to use {@link java.beans.PropertyEditorManager}.
-         * @return the property editor, or <CODE>null</CODE> if there is no editor  */
+         * The default implementation uses standard Java
+         * {@link java.beans.PropertyEditorManager}. If a property
+         * editor is found, its instance is cached using {@link SoftReference}.
+         * Caching happens per thread - e.g. it is guaranteed that multiple 
+         * threads accessing the editor will get different instance.
+         * 
+         * @return the property editor, or <CODE>null</CODE> if there is no editor
+         */
         public PropertyEditor getPropertyEditor() {
             if (type == null) {
                 return null;
@@ -1597,7 +1603,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 )) { 
                     result = null;
                 }
-                edRef = new SoftReference<PropertyEditor>(result);
+                edRef = new PropertyEditorRef(result);
             }
 
             return result;
@@ -1801,6 +1807,23 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             }
 
             fireCookieChange();
+        }
+    }
+    
+    private static final class PropertyEditorRef extends SoftReference<PropertyEditor> {
+        private final Thread createdBy;
+        
+        public PropertyEditorRef(PropertyEditor referent) {
+            super(referent);
+            createdBy = Thread.currentThread();
+        }
+
+        @Override
+        public PropertyEditor get() {
+            if (Thread.currentThread() != createdBy) {
+                return null;
+            }
+            return super.get();
         }
     }
 }

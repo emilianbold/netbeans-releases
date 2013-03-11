@@ -95,7 +95,7 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
             NbModuleSuite.emptyConfiguration().
             addTest(FeaturesOffDemandTest.class).
             clusters("ergonomics[0-9]*").
-            clusters("ide[0-9]*|java[0-9]*").
+            clusters("ide[0-9]*|extide[0-9]*|java[0-9]*").
             gui(false)
         );
     }
