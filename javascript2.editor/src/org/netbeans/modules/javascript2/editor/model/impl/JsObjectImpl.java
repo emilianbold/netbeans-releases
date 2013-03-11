@@ -212,6 +212,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         types.addAll(typeNames);
     }
     
+    @Override
     public void addAssignment(TypeUsage typeName, int offset){
         Collection<TypeUsage> types = assignments.get(offset);
         if (types == null) { 
@@ -269,6 +270,22 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     @Override
+    public String getFullyQualifiedName() {
+        if (getParent() == null) {
+            return getName();
+        }
+        StringBuilder result = new StringBuilder();
+        JsObject pObject = this;
+        result.append(getName());
+      
+        while((pObject = pObject.getParent()).getParent() != null) {
+            result.insert(0, ".");
+            result.insert(0, pObject.getName());
+        }
+        return result.toString();
+    }
+    
+    @Override
     public boolean isAnonymous() {
         return false;
     }
@@ -280,7 +297,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return hasName;
     }
     
-    protected void setJsKind(JsElement.Kind kind) {
+    public final void setJsKind(JsElement.Kind kind) {
         this.kind = kind;
     }
         
@@ -291,7 +308,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     
     protected Collection<TypeUsage> resolveAssignments(JsObject jsObject, int offset, Collection<String> visited) {
         Collection<TypeUsage> result = new HashSet();
-        String fqn = ModelUtils.createFQN(jsObject);
+        String fqn = jsObject.getFullyQualifiedName();
         if(visited.contains(fqn)) {
            return result; 
         }
@@ -302,7 +319,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             offsetAssignments = found.getValue();
         }
         if (offsetAssignments.isEmpty() && !jsObject.getProperties().isEmpty()) {
-            result.add(new TypeUsageImpl(ModelUtils.createFQN(jsObject), jsObject.getOffset(), true));
+            result.add(new TypeUsageImpl(jsObject.getFullyQualifiedName(), jsObject.getOffset(), true));
         } else {
             for (TypeUsage assignment : offsetAssignments) {
                 if (!visited.contains(assignment.getType())) {
@@ -314,7 +331,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                         if(object != null) {
                             Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, found != null ? found.getKey() : -1, visited);
                             if(resolvedFromObject.isEmpty()) {
-                                result.add(new TypeUsageImpl(ModelUtils.createFQN(object), assignment.getOffset(), true));
+                                result.add(new TypeUsageImpl(object.getFullyQualifiedName(), assignment.getOffset(), true));
                             } else {
                                 result.addAll(resolvedFromObject);
                             }

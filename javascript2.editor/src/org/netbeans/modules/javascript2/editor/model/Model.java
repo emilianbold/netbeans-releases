@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import java.text.MessageFormat;
 import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.ir.Node;
@@ -48,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,12 +60,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.model.impl.AnonymousObject;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
+import org.netbeans.modules.javascript2.editor.model.impl.ParameterObject;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -76,6 +90,14 @@ public final class Model {
         @Override
         public int compare(Entry<String, ? extends JsObject> o1, Entry<String, ? extends JsObject> o2) {
             return o1.getKey().compareTo(o2.getKey());
+        }
+    };
+
+    private static final Comparator<TypeUsage> RETURN_TYPES_COMPARATOR = new Comparator<TypeUsage>() {
+
+        @Override
+        public int compare(TypeUsage o1, TypeUsage o2) {
+            return o1.getType().compareTo(o2.getType());
         }
     };
 
@@ -103,9 +125,24 @@ public final class Model {
             }
             long startResolve = System.currentTimeMillis();
             resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
+
+            ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory();
+            long startCallingME = System.currentTimeMillis();
+            Map<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> calls = visitor.getCallsForProcessing();
+            if (calls != null && !calls.isEmpty()) {
+                for (Map.Entry<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> entry : calls.entrySet()) {
+                    Collection<ModelVisitor.FunctionCall> fncCalls = entry.getValue();
+                    if (fncCalls != null && !fncCalls.isEmpty()) {
+                        for (ModelVisitor.FunctionCall call : fncCalls) {
+                            entry.getKey().intercept(call.getName(),
+                                    visitor.getGlobalObject(), elementFactory, call.getArguments());
+                        }
+                    }
+                }
+            }
             long end = System.currentTimeMillis();
             if(LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms", new Object[]{(end - start), (end - startResolve)}));
+                LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms. Extending model took {2}", new Object[]{(end - start), (startCallingME - startResolve), (end - startCallingME)}));
             }
         }
         return visitor;
@@ -155,18 +192,220 @@ public final class Model {
         return ModelVisitor.getNodeName(node, parserResult);
     }
 
-    public void dumpModel(Printer printer) {
-        dumpModel(printer, getGlobalObject(), new StringBuilder(),
-                "", new HashSet<JsObject>()); // NOI18N
+    public void writeModel(Printer printer) {
+        writeObject(printer, getGlobalObject());
     }
 
-    private static void dumpModel(Printer printer, JsObject jsObject,
+    public static void writeObject(Printer printer, JsObject object) {
+        StringBuilder sb = new StringBuilder();
+        writeObject(printer, object, sb, "", new HashSet<JsObject>()); // NOI18N
+        String rest = sb.toString();
+        if (!rest.isEmpty()) {
+            printer.println(rest);
+        }
+    }
+
+    private static Pattern OBJECT_PATTERN = Pattern.compile(
+            "(FUNCTION|OBJECT) (\\S+) \\[ANONYMOUS: (true|false), DECLARED: (true|false)( - (\\S+))?"
+            + "(, MODIFIERS: ((PUBLIC|STATIC|PROTECTED|PRIVATE|DEPRECATED|ABSTRACT)"
+            + "(, (PUBLIC|STATIC|PROTECTED|PRIVATE|DEPRECATED|ABSTRACT))*))?"
+            + ", (FUNCTION|METHOD|CONSTRUCTOR|OBJECT|PROPERTY|VARIABLE|FIELD|FILE|PARAMETER|ANONYMOUS_OBJECT|PROPERTY_GETTER|PROPERTY_SETTER|OBJECT_LITERAL|CATCH_BLOCK)\\]");
+
+    private static enum State {
+        RETURN, PARAMETER, PROPERTY
+    }
+
+    public static JsObject readModel(BufferedReader reader) throws IOException {
+        String line = reader.readLine();
+        if (line == null) {
+            throw new IOException("No objects to read");
+        }
+        StringBuilder pushback = new StringBuilder();
+        JsObject ret = readObject(null, line, 0, reader, pushback, false);
+        if (pushback.length() > 0) {
+            throw new IOException("Unexpected line: " + pushback);
+        }
+        return ret;
+    }
+
+    private static JsObject readObject(JsObject parent, String firstLine, int indent,
+            BufferedReader reader, StringBuilder pushback, boolean parameter) throws IOException {
+
+        JsObject object = readObject(parent, firstLine, parameter);
+
+        State state = null;
+        String line = null;
+        StringBuilder innerPushback = new StringBuilder();
+
+        while (innerPushback.length() > 0 || (line = reader.readLine()) != null) {
+            if (innerPushback.length() > 0) {
+                line = innerPushback.toString();
+                innerPushback.setLength(0);
+            }
+
+            if (line.length() < indent || !line.substring(0, indent).trim().isEmpty()) {
+                pushback.append(line);
+                break;
+            }
+
+            if ("# RETURN TYPES".equals(line.trim())) {
+                state = State.RETURN;
+                continue;
+            } else if ("# PARAMETERS".equals(line.trim())) {
+                state = State.PARAMETER;
+                continue;
+            } else if ("# PROPERTIES".equals(line.trim())) {
+                state = State.PROPERTY;
+                continue;
+            } else {
+                if (state == null) {
+                    pushback.append(line);
+                    break;
+                }
+                switch (state) {
+                    case RETURN:
+                        ((JsFunctionImpl) object).addReturnType(new TypeUsageImpl(line.trim(), -1, true));
+                        break;
+                    case PARAMETER:
+                        JsObject parameterObject = readObject(object, line.trim(),
+                                indent + 8, reader, innerPushback, true);
+                        ((JsFunctionImpl) object).addParameter(parameterObject);
+                        break;
+                    case PROPERTY:
+                        int index = line.indexOf(':');
+                        assert index > 0 && index < line.length() : line;
+
+                        String name = line.substring(0, index);
+                        String value = line.substring(index + 1);
+
+                        int newIndent = name.length();
+                        name = name.trim();
+                        JsObject property = readObject(object, value.trim(), newIndent,
+                                    reader, innerPushback, false);
+                        object.addProperty(name, property);
+                        break;
+                    default:
+                        throw new IOException("Unexpected line: " + line);
+                }
+            }
+        }
+        return object;
+    }
+
+    private static JsObject readObject(JsObject parent, String line, boolean parameter) throws IOException {
+        Matcher m = OBJECT_PATTERN.matcher(line);
+        if (!m.matches()) {
+            throw new IOException("Malformed line: " + line);
+        }
+
+        boolean function = "FUNCTION".equals(m.group(1)); // NOI18N
+        String name = m.group(2);
+        boolean anonymous = Boolean.valueOf(m.group(3));
+        boolean declared = Boolean.valueOf(m.group(4));
+        // Decalartion name is not used actually
+        String declarationName = m.group(6);
+        String strModifiers = m.group(8);
+        // Kind is not used actually
+        JsElement.Kind kind = JsElement.Kind.valueOf(m.group(12));
+        EnumSet<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
+        if (modifiers != null) {
+            String[] parts = strModifiers.split(", ");
+            for (String part : parts) {
+                modifiers.add(Modifier.valueOf(part));
+            }
+        }
+        JsObjectImpl ret;
+        if (parameter) {
+            ret = new ParameterObject(parent, new IdentifierImpl(name, OffsetRange.NONE));
+        } else if (function) {
+            JsFunctionImpl functionImpl = new JsFunctionImpl(null, parent,
+                    new IdentifierImpl(name, OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE);
+            functionImpl.setAnonymous(anonymous);
+            ret = functionImpl;
+        } else {
+            if (anonymous) {
+                ret = new AnonymousObject(parent, name, OffsetRange.NONE);
+            } else {
+                ret = new JsObjectImpl(parent, new IdentifierImpl(name, OffsetRange.NONE),
+                    OffsetRange.NONE);
+            }
+        }
+
+        assert declarationName == null || declarationName.equals(ret.getDeclarationName().getName());
+        ret.setJsKind(kind);
+
+        ret.setDeclared(declared);
+        ret.getModifiers().clear();
+        for (Modifier modifier : modifiers) {
+            ret.addModifier(modifier);
+        }
+        ret.getProperties().clear();
+        return ret;
+    }
+
+    private static void writeObject(Printer printer, JsObject jsObject,
             StringBuilder sb, String ident, Set<JsObject> path) {
 
+        if (jsObject instanceof JsFunction) {
+            sb.append("FUNCTION ");
+        } else {
+            sb.append("OBJECT ");
+        }
         sb.append(jsObject.getName());
-        sb.append(" [").append(jsObject.getJSKind()).append("]");
+        sb.append(" [");
+        sb.append("ANONYMOUS: ");
+        sb.append(jsObject.isAnonymous());
+        sb.append(", DECLARED: ");
+        sb.append(jsObject.isDeclared());
+        if (jsObject.getDeclarationName() != null) {
+            sb.append(" - ").append(jsObject.getDeclarationName().getName());
+        }
+        if (!jsObject.getModifiers().isEmpty()) {
+            sb.append(", MODIFIERS: ");
+            for (Modifier m : jsObject.getModifiers()) {
+                sb.append(m.toString());
+                sb.append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+        }
+
+        sb.append(", ");
+        sb.append(jsObject.getJSKind());
+        sb.append("]");
 
         path.add(jsObject);
+
+        if (jsObject instanceof JsFunction) {
+            JsFunction function = ((JsFunction) jsObject);
+            if (!function.getReturnTypes().isEmpty()) {
+                newLine(printer, sb, ident);
+                sb.append("# RETURN TYPES");
+
+                List<TypeUsage> returnTypes = new ArrayList<TypeUsage>(function.getReturnTypes());
+                Collections.sort(returnTypes, RETURN_TYPES_COMPARATOR);
+                for (TypeUsage type : returnTypes) {
+                    newLine(printer, sb, ident);
+
+                    sb.append(type.getType());
+                }
+            }
+            if (!function.getParameters().isEmpty()) {
+                newLine(printer, sb, ident);
+                sb.append("# PARAMETERS");
+
+
+                for (JsObject param : function.getParameters()) {
+                    newLine(printer, sb, ident);
+
+                    if (path.contains(param)) {
+                        sb.append("CYCLE ").append(param.getFullyQualifiedName()); // NOI18N
+                    } else {
+                        writeObject(printer, param, sb, ident + "        ", path);
+                    }
+                }
+            }
+        }
+
         int length = 0;
         for (String str : jsObject.getProperties().keySet()) {
             if (str.length() > length) {
@@ -175,30 +414,40 @@ public final class Model {
         }
 
         StringBuilder identBuilder = new StringBuilder(ident);
-        identBuilder.append("       "); // NOI18N
+        identBuilder.append(' '); // NOI18N
         for (int i = 0; i < length; i++) {
             identBuilder.append(' '); // NOI18N
         }
+
         List<Map.Entry<String, ? extends JsObject>> entries =
                 new ArrayList<Entry<String, ? extends JsObject>>(jsObject.getProperties().entrySet());
-        Collections.sort(entries, PROPERTIES_COMPARATOR);
-        for (Map.Entry<String, ? extends JsObject> entry : entries) {
-            printer.println(sb.toString());
+        if (!entries.isEmpty()) {
+            newLine(printer, sb, ident);
+            sb.append("# PROPERTIES");
 
-            sb.setLength(0);
-            sb.append(ident);
-            sb.append(entry.getKey());
-            for (int i = entry.getKey().length(); i < length; i++) {
-                sb.append(' '); // NOI18N
-            }
-            sb.append(" : "); // NOI18N
-            if (path.contains(entry.getValue())) {
-                sb.append("Cycle to ").append(ModelUtils.createFQN(entry.getValue())); // NOI18N
-            } else {
-                dumpModel(printer, entry.getValue(), sb, identBuilder.toString(), path);
+            Collections.sort(entries, PROPERTIES_COMPARATOR);
+            for (Map.Entry<String, ? extends JsObject> entry : entries) {
+                newLine(printer, sb, ident);
+
+                sb.append(entry.getKey());
+                for (int i = entry.getKey().length(); i < length; i++) {
+                    sb.append(' '); // NOI18N
+                }
+                sb.append(" : "); // NOI18N
+                if (path.contains(entry.getValue())) {
+                    sb.append("CYCLE ").append(entry.getValue().getFullyQualifiedName()); // NOI18N
+                } else {
+                    writeObject(printer, entry.getValue(), sb, identBuilder.toString(), path);
+                }
             }
         }
         path.remove(jsObject);
+    }
+
+    private static void newLine(Printer printer, StringBuilder sb, String ident) {
+        printer.println(sb.toString());
+        sb.setLength(0);
+        sb.append(ident);
     }
 
     public static interface Printer {
