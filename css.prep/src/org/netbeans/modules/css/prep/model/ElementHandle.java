@@ -41,72 +41,46 @@
  */
 package org.netbeans.modules.css.prep.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.openide.filesystems.FileObject;
 
 /**
- * Resolved element.
- * 
- * Can hold model and parser result!
  *
  * @author marekfukala
  */
-public class Element {
-
-    private ElementHandle handle;
-    private OffsetRange range; 
-    private OffsetRange scope;
-
-    public Element(ElementHandle handle, OffsetRange range) {
-        this(handle, range, null);
-    }
-
-    public Element(ElementHandle handle, OffsetRange range, OffsetRange scope) {
-        this.handle = handle;
-        this.range = range;
-        this.scope = scope;
-    }
+public class ElementHandle {
     
-    public String getName() {
-        return getHandle().getName();
+    private FileObject file;
+    private String name;
+    private ElementType type;
+
+    public ElementHandle(FileObject file, String name, ElementType type) {
+        this.file = file;
+        this.name = name;
+        this.type = type;
     }
-    
-    public ElementType getType() {
-        return getHandle().getType();
-    }
-    
+
     public FileObject getFile() {
-        return getHandle().getFile();
+        return file;
     }
 
-    /**
-     * range of the element itself.
-     */
-    public OffsetRange getRange() {
-        return range;
+    public String getName() {
+        return name;
     }
 
-    /**
-     * range of the element scope.
-     * 
-     * null means no scope 
-     */
-    public OffsetRange getScope() {
-        return scope;
-    }
-
-    private ElementHandle getHandle() {
-        return handle;
+    public ElementType getType() {
+        return type;
     }
     
-    public static Collection<ElementHandle> toHandles(Collection<Element> elements) {
-        Collection<ElementHandle> handles = new ArrayList<ElementHandle>();
-        for(Element e : elements) {
-            handles.add(e.getHandle());
+    /**
+     * Resolve to {@link Element}.
+     */
+    public Element resolve(CPModel model) {
+        for(Element var : model.getElements()) {
+            if(var.getType() == getType() && var.getName().equals(getName())) {
+                return var;
+            }
         }
-        return handles;
+        return null;
     }
     
 }
