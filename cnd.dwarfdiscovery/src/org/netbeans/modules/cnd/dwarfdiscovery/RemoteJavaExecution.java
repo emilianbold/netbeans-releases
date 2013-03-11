@@ -59,10 +59,14 @@ public class RemoteJavaExecution {
     }
     
     public List<SourceFile> getCompileLines(String executable) {
+        return getCompileLines(executable, true);
+    }
+
+    public List<SourceFile> getCompileLines(String executable, boolean preferExistingProjectCreator) {
         NativeProcess process = null;
         Task errorTask = null;
         try {
-            process = getJavaProcess(CompileLineService.class, env, new String[]{"-file", executable}); //NOI18N
+            process = getJavaProcess(CompileLineService.class, env, new String[]{"-file", executable}, preferExistingProjectCreator); //NOI18N
             if (process == null) {
                 return null;
             }
@@ -113,10 +117,14 @@ public class RemoteJavaExecution {
     }
     
     public SharedLibraries getDlls(String executable) {
+        return getDlls(executable, true);
+    }
+
+    public SharedLibraries getDlls(String executable, boolean preferExistingProjectCreator) {
         NativeProcess process = null;
         Task errorTask = null;
         try {
-            process = getJavaProcess(LddService.class, env, new String[]{executable});
+            process = getJavaProcess(LddService.class, env, new String[]{executable}, preferExistingProjectCreator);
             if (process == null) {
                 return null;
             }
@@ -166,13 +174,15 @@ public class RemoteJavaExecution {
         return null;
     }
 
-    private FileObject findProjectCreator() {
-        for(CompilerSet set : CompilerSetManager.get(env).getCompilerSets()) {
-            if (set.getCompilerFlavor().isSunStudioCompiler()) {
-                String directory = set.getDirectory();
-                FileObject dwarfDump = fileSystem.findResource(directory+"/../lib/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdump.jar");
-                if (dwarfDump != null && dwarfDump.isValid()) {
-                    return dwarfDump;
+    private FileObject findProjectCreator(boolean preferExisting) {
+        if (preferExisting) {
+            for(CompilerSet set : CompilerSetManager.get(env).getCompilerSets()) {
+                if (set.getCompilerFlavor().isSunStudioCompiler()) {
+                    String directory = set.getDirectory();
+                    FileObject dwarfDump = fileSystem.findResource(directory+"/../lib/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdump.jar");
+                    if (dwarfDump != null && dwarfDump.isValid()) {
+                        return dwarfDump;
+                    }
                 }
             }
         }
@@ -207,8 +217,8 @@ public class RemoteJavaExecution {
     }
 
     
-    private NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
-        FileObject dwarfDump = findProjectCreator();
+    private NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments, boolean preferExisting) throws IOException{
+        FileObject dwarfDump = findProjectCreator(preferExisting);
         if (dwarfDump == null) {
             return null;
         }
