@@ -105,6 +105,15 @@ public enum CPElementType {
         return indexCode;
     }
     
+    public boolean isOfTypes(CPElementType... types) {
+        for(CPElementType type : types) {
+            if(type == this) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public static CPElementType forIndexCode(String indexCode) {
         if(CODES_TO_ELEMENTS == null) {
             CODES_TO_ELEMENTS = new HashMap<String, CPElementType>();

@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
@@ -56,6 +57,12 @@ import static org.netbeans.modules.css.lib.api.NodeType.cp_variable_declaration;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.prep.CPType;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -92,6 +99,34 @@ public class CPModel {
         return curr;
     }
 
+    /**
+     * Will run parsing task!.
+     * 
+     * XXX CPModel shouldn't be exposed outside of the parsing task :-(
+     * 
+     * @param file
+     * @return 
+     */
+    public static CPModel getModel(FileObject file) throws ParseException {
+        final AtomicReference<CPModel> model_ref = new AtomicReference<CPModel>();
+        Source source = Source.create(file);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                ResultIterator cssRI = WebUtils.getResultIterator(resultIterator, "text/css");
+                if(cssRI != null) {
+                    CssParserResult result = (CssParserResult)cssRI.getParserResult();
+                    if(result != null) {
+                        model_ref.set(CPModel.getModel(result));
+                    }
+                }
+            }
+        });
+        
+        return model_ref.get();
+    }
+    
     private CPModel(CssParserResult result) {
         this.result = result;
     }
