@@ -380,12 +380,40 @@ public class CPCssEditorModule extends CssEditorModule {
                 FutureParamTask<DeclarationLocation, EditorFeatureContext> callable = new FutureParamTask<DeclarationLocation, EditorFeatureContext>() {
                     @Override
                     public DeclarationLocation run(EditorFeatureContext context) {
+                        //TODO - once the css.editor allows to return several DeclarationLocation from one task, update the following code!
+                        //first look at the current file
                         CPModel model = CPModel.getModel(context.getParserResult());
                         for (CPElement mixin : model.getMixins()) {
-                            if (LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
-                                return new DeclarationLocation(context.getFileObject(), mixin.getRange().getStart());
+                            if(mixin.getType() == CPElementType.MIXIN_DECLARATION) {
+                                if (LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
+                                    return new DeclarationLocation(context.getFileObject(), mixin.getRange().getStart());
+                                }
                             }
                         }
+                        
+                        //then look at the referred files
+                        try {
+                            Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(context.getFileObject());
+                            for(Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
+                                CPCssIndexModel im = entry.getValue();
+                                FileObject file = entry.getKey();
+                                for(CPElementHandle mixin : im.getMixins()) {
+                                    if(mixin.getType() == CPElementType.MIXIN_DECLARATION 
+                                            && LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
+                                        CPElement element = mixin.resolve(CPModel.getModel(file));
+                                        if(element != null) {
+                                            OffsetRange elementRange = element.getRange();
+                                            return new DeclarationLocation(file, elementRange.getStart());
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (ParseException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        
                         return DeclarationLocation.NONE;
                     }
                 };
@@ -401,7 +429,6 @@ public class CPCssEditorModule extends CssEditorModule {
                     @Override
                     public DeclarationLocation run(EditorFeatureContext context) {
                         //TODO - once the css.editor allows to return several DeclarationLocation from one task, update the following code!
-                        
                         //first look at the current file
                         CPModel model = CPModel.getModel(context.getParserResult());
                         for (CPElement var : model.getVariables()) {
