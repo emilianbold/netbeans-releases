@@ -680,7 +680,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             if (c != null) {
                 elems = c;
                 //for partial results attempt re-query, do not wait for results
-                if (versionPartialCache.contains(groupId)) {
+                if (versionPartialCache.contains(id)) {
                     tsk.schedule(200);
                 }
                 
