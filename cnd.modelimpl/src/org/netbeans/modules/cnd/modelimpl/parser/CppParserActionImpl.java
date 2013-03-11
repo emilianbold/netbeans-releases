@@ -1299,6 +1299,14 @@ public class CppParserActionImpl implements CppParserActionEx {
         return currentContext.objects;
     }
     
+    CsmFile getCurrentFile() {
+        return currentContext.file;
+    }
+    
+    int getBacktrackingLevel() {
+        return parser.backtrackingLevel();
+    }
+
     private SymTabStack createGlobal() {
         SymTabStack out = SymTabStack.create();
         // TODO: need to push symtab for predefined types
