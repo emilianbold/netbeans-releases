@@ -60,6 +60,7 @@ import org.netbeans.test.j2ee.persistence.PersistenceUnitTest;
 import org.netbeans.test.j2ee.wizard.MultiSrcRootModsWizardsTest;
 import org.netbeans.test.j2ee.wizard.NewProjectWizardsTest;
 import org.netbeans.test.j2ee.wizard.WizardsJavaEE5Test;
+import org.netbeans.test.j2ee.wizard.WizardsJavaEE7Test;
 import org.netbeans.test.j2ee.wizard.WizardsTest;
 
 /**
@@ -188,6 +189,8 @@ public class J2EESuite extends J2eeTestCase {
         conf = conf.addTest(WizardsTest.Suite.class);
         // wizard/WizardsJavaEE5Test
         conf = conf.addTest(WizardsJavaEE5Test.Suite.class);
+        // wizard/WizardsJavaEE7Test
+        conf = conf.addTest(WizardsJavaEE7Test.Suite.class);
         // wizard/MultiSrcRootModsWizardsTest
         conf = conf.addTest(MultiSrcRootModsWizardsTest.Suite.class);
         return conf.suite();
