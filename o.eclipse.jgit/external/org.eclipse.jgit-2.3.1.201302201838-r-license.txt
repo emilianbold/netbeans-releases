@@ -1,5 +1,5 @@
 Name: JGit Library
-Version: 1.3.0.201202151440-r
+Version: 2.3.1.201302201838-r
 Description: Integration library for Git client
 License: EDL-1.0
 OSR: 5376

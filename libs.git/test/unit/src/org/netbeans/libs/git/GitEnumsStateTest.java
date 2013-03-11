@@ -67,7 +67,7 @@ public class GitEnumsStateTest extends AbstractGitTestCase {
     
     public void testMergeStatus () {
         for (MergeResult.MergeStatus status : MergeResult.MergeStatus.values()) {
-            assertNotNull(GitMergeResult.MergeStatus.valueOf(status.name()));
+            assertNotNull(GitMergeResult.parseMergeStatus(status));
         }
     }
 
