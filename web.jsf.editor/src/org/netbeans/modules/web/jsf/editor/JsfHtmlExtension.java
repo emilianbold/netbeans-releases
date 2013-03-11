@@ -70,12 +70,10 @@ import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
 import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
 import org.netbeans.modules.web.common.taginfo.TagMetadata;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
-import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
-import org.netbeans.modules.web.jsf.editor.index.JsfPageModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.Library;
@@ -154,7 +152,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return;
         }
-        Map<String, AbstractFaceletsLibrary> libs = jsfs.getLibraries();
+        Map<String, Library> libs = jsfs.getLibraries();
 
         Map<String, String> nss = result.getNamespaces();
 
@@ -167,7 +165,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
             Node root = result.root(namespace);
             if (root != null) {
-                final AbstractFaceletsLibrary tldl = libs.get(namespace);
+                final Library tldl = libs.get(namespace);
                 ElementUtils.visitChildren(root, new ElementVisitor() {
                     @Override
                     public void visit(Element element) {
@@ -221,8 +219,8 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, AbstractFaceletsLibrary> libs = jsfs.getLibraries();
-        Set<AbstractFaceletsLibrary> librariesSet = new HashSet<AbstractFaceletsLibrary>(libs.values());
+        Map<String, Library> libs = jsfs.getLibraries();
+        Set<Library> librariesSet = new HashSet<Library>(libs.values());
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -232,7 +230,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (colonIndex == -1) {
             //editing namespace or tag w/o ns
             //offer all tags
-            for (AbstractFaceletsLibrary lib : librariesSet) {
+            for (Library lib : librariesSet) {
                 String declaredPrefix = declaredNS.get(lib.getNamespace());
                 if (declaredPrefix == null) {
                     //undeclared prefix, try to match with default library prefix
@@ -250,7 +248,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             if (namespace == null) {
                 //undeclared prefix, check if a taglib contains it as
                 //default prefix. If so, offer it in the cc w/ tag autoimport function
-                for (AbstractFaceletsLibrary lib : librariesSet) {
+                for (Library lib : librariesSet) {
                     if (lib.getDefaultPrefix() != null && lib.getDefaultPrefix().equals(tagNamePrefix)) {
                         //match
                         items.addAll(queryLibrary(context, lib, tagNamePrefix, true));
@@ -259,7 +257,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
             } else {
                 //query only associated lib
-                AbstractFaceletsLibrary lib = libs.get(namespace);
+                Library lib = libs.get(namespace);
                 if (lib == null) {
                     //no such lib, exit
                     return Collections.emptyList();
@@ -291,9 +289,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         return null;
     }
 
-    private Collection<CompletionItem> queryLibrary(CompletionContext context, AbstractFaceletsLibrary lib, String nsPrefix, boolean undeclared) {
+    private Collection<CompletionItem> queryLibrary(CompletionContext context, Library lib, String nsPrefix, boolean undeclared) {
         Collection<CompletionItem> items = new ArrayList<CompletionItem>();
-        for (AbstractFaceletsLibrary.NamedComponent component : lib.getComponents()) {
+        for (LibraryComponent component : lib.getComponents()) {
             items.add(JsfCompletionItem.createTag(context.getCCItemStartOffset(), component, nsPrefix, undeclared));
         }
 
@@ -308,7 +306,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, AbstractFaceletsLibrary> libs = jsfs.getLibraries();
+        Map<String, Library> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -327,7 +325,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         String tagName = ot.unqualifiedName().toString();
 
         String namespace = getUriForPrefix(nsPrefix.toString(), declaredNS);
-        AbstractFaceletsLibrary flib = libs.get(namespace);
+        Library flib = libs.get(namespace);
         if (flib == null) {
             //The facelets library not found. This happens if one declares
             //a namespace which is not matched to any existing library
@@ -563,7 +561,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             return DeclarationLocation.NONE;
         }
 
-        AbstractFaceletsLibrary lib = jsfs.getLibraries().get(ns);
+        Library lib = jsfs.getLibraries().get(ns);
         if (lib == null) {
             return DeclarationLocation.NONE;
         }

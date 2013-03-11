@@ -61,7 +61,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
@@ -231,7 +230,7 @@ public class JsfSupportImpl implements JsfSupport {
      * Once under the declared namespace key and once under the default cc namespace key.
      */
     @Override
-    public Map<String, AbstractFaceletsLibrary> getLibraries() {
+    public Map<String, Library> getLibraries() {
         return faceletsLibrarySupport.getLibraries();
     }
     

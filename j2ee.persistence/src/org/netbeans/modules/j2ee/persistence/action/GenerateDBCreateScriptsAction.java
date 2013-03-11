@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,126 +34,79 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.persistence.wizard.dbscript;
+package org.netbeans.modules.j2ee.persistence.action;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.logging.Logger;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.Utils;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
+ * Action which show file chooser and save sql for entities creation component.
+ *
  */
-public final class DBScriptWizard implements WizardDescriptor.InstantiatingIterator {
+public class GenerateDBCreateScriptsAction extends NodeAction {
 
-    private WizardDescriptor.Panel[] panels;
-    private int index = 0;
-    private WizardDescriptor.Panel ejbPanel;
-    private WizardDescriptor wiz;
-    private static final String EXTENSION = "sql";//NOI18N
-    private static final Logger LOGGER = Logger.getLogger(DBScriptWizard.class.getName());
+    private FileChooserBuilder fileChooser;
+    private static final String EXTENSION = "sql";
+    private Project project;
+    private static final Logger LOGGER = Logger.getLogger(GenerateDBCreateScriptsAction.class.getName());
 
-    public static DBScriptWizard create() {
-        return new DBScriptWizard();
+    public GenerateDBCreateScriptsAction() {
+        super();
     }
 
     @Override
-    public String name() {
-        return NbBundle.getMessage(DBScriptWizard.class, "LBL_CreateDBScriptWizardTitle");
+    protected boolean asynchronous() {
+        return false;
     }
 
     @Override
-    public void uninitialize(WizardDescriptor wiz) {
-    }
-
-    @Override
-    public void initialize(WizardDescriptor wizardDescriptor) {
-        wiz = wizardDescriptor;
-
-        ejbPanel = new DBScriptPanel.WizardPanel();
-
-        panels = new WizardDescriptor.Panel[]{ejbPanel};
-
-
-        Wizards.mergeSteps(wiz, panels, new String[]{name()});
-    }
-
-    @Override
-    public Set instantiate() throws IOException {
-        Project project = Templates.getProject(wiz);
-        FileObject tFolder = Templates.getTargetFolder(wiz);
-        FileObject sqlFile = tFolder.createData(Templates.getTargetName(wiz), EXTENSION);//NOI18N
+    protected void performAction(final Node[] activatedNodes) {
+        //save dialog
+        fileChooser = new FileChooserBuilder(GenerateDBCreateScriptsAction.class);
+        fileChooser.setDefaultWorkingDirectory(FileUtil.toFile(project.getProjectDirectory()));
+        fileChooser.setFileFilter(new MyFileFilter());
+        fileChooser.setFilesOnly(true);
+        File sFile = fileChooser.showSaveDialog();
         PersistenceEnvironment pe = project.getLookup().lookup(PersistenceEnvironment.class);
-        if (sqlFile != null) {
+        if (sFile != null) {
             //execution
-            run(project, sqlFile, pe, false);
+            run(project, sFile, pe);
         }
-
-        return Collections.singleton(sqlFile);
     }
 
-    @Override
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
-    }
-
-    @Override
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
-    }
-
-    @Override
-    public boolean hasPrevious() {
-        return false;
-    }
-
-    @Override
-    public boolean hasNext() {
-        return false;
-    }
-
-    @Override
-    public void nextPanel() {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
-        }
-        index++;
-    }
-
-    @Override
-    public void previousPanel() {
-        if (!hasPrevious()) {
-            throw new NoSuchElementException();
-        }
-        index--;
-    }
-
-    @Override
-    public WizardDescriptor.Panel current() {
-        return panels[index];
-    }
-
-    static List<String> run(final Project project, final FileObject sFile, final PersistenceEnvironment pe, final boolean validateOnly) {
+    private void run(final Project project, final File sFile, final PersistenceEnvironment pe) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
         //
@@ -172,9 +119,9 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
             Exceptions.printStackTrace(ex);
         }
         if (pus == null || pus.length == 0) {
-            initialProblems.add(NbBundle.getMessage(DBScriptWizard.class, "ERR_NoPU"));
+            initialProblems.add( NbBundle.getMessage(GenerateDBCreateScriptsAction.class, "ERR_NoPU"));
 
-            return initialProblems;
+            return;
         }
         final PersistenceUnit pu = pus[0];
         //connection open
@@ -208,9 +155,9 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
                 @Override
                 public void run() {
                     if (initialProblems.isEmpty()) {
-                        new GenerateScriptExecutor().execute(project, sFile, pe, pu, initialProblems, validateOnly);
-                    }
-                    if (!initialProblems.isEmpty()) {
+                        new GenerateScriptExecutor().execute(project, sFile, pe, pu, initialProblems);
+                    } 
+                    if(!initialProblems.isEmpty()){
                         StringBuilder sb = new StringBuilder();
                         for (String txt : initialProblems) {
                             sb.append(txt).append("\n");
@@ -222,12 +169,54 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
             };
             t.setContextClassLoader(customClassLoader);
             t.start();
-            t.join();
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         } finally {
             Thread.currentThread().setContextClassLoader(defClassLoader);
         }
-        return initialProblems;
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if ((activatedNodes != null) && (activatedNodes.length == 1)) {
+            if (activatedNodes[0] != null) {
+                DataObject data = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+                if (data != null) {
+                    FileObject pXml = data.getPrimaryFile();
+                    project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
+                    PersistenceEnvironment pe = project != null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
+                    if (pe != null) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(GenerateDBCreateScriptsAction.class, "CTL_GenerateDBCreateScripsAction");
+    }
+
+    private static class MyFileFilter extends FileFilter {
+
+        @Override
+        public boolean accept(File file) {
+            if (file.isDirectory()) {
+                return true;
+            }
+            return file.getName().toLowerCase().endsWith("." + EXTENSION); // NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(GenerateDBCreateScriptsAction.class, "SQL"); // NOI18N
+        }
     }
 }
