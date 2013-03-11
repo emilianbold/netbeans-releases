@@ -41,61 +41,77 @@
  */
 package org.netbeans.modules.css.prep.model;
 
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.openide.filesystems.FileObject;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * xxx: temporary
  *
  * @author marekfukala
  */
-public class Variable extends Element {
-    
-    public enum Type {
-        /**
-         * Variable in the stylesheet body.
-         * 
-         * $var: value;
-         */
-        GLOBAL_DECLARATION,
-        
-        /**
-         * Variable in a rule or mixin or other code block.
-         * 
-         * $var: value; 
-         */
-        LOCAL_DECLARATION, 
-        
-        /**
-         * Variable declared as a param in a mixin declaration or for, each, while block.
-         * 
-         * @mixin left($dist) { ... } 
-         */
-        METHOD_PARAM_DECLARATION, 
-        
-        /**
-         * Variable usage.
-         * 
-         * .clz { color: $best; } 
-         */
-        USAGE; 
-    }
+public enum ElementType {
 
-    private Type type;
-    private OffsetRange context; //context of the variable
+    /**
+     * Variable in the stylesheet body.
+     *
+     * $var: value;
+     */
+    VARIABLE_GLOBAL_DECLARATION("var_gl"),
     
-    public Variable(String name, OffsetRange range, FileObject file, Type type, OffsetRange context) {
-        super(name, range, file);
-        this.type = type;
-        this.context = context;
-    }
+    /**
+     * Variable in a rule or mixin or other code block.
+     *
+     * $var: value;
+     */
+    VARIABLE_LOCAL_DECLARATION("var_loc"),
+    
+    /**
+     * Variable declared as a param in a mixin declaration or for, each, while
+     * block.
+     *
+     * @mixin left($dist) { ... }
+     */
+    VARIABLE_DECLARATION_MIXIN_PARAMS("var_prms"),
+    
+    /**
+     * Variable usage.
+     *
+     * .clz { color: $best; }
+     */
+    VARIABLE_USAGE("var_usg"),
+    
+    /**
+     * Mixin declaration:
+     * 
+     * @mixin mymixin() { ... }
+     */
+    MIXIN_DECLARATION("mx"),
+    
+    /**
+     * Mixin usage:
+     * 
+     * @include mymixin;
+     */
+    MIXIN_USAGE("mx_usg");
+    
+    private static Map<String, ElementType> CODES_TO_ELEMENTS;
+    
+    private String indexCode;
 
-    public Type getType() {
-        return type;
-    }
-
-    public OffsetRange getContext() {
-        return context;
+    private ElementType(String indexCode) {
+        this.indexCode = indexCode;
     }
     
+    public String getIndexCode() {
+        return indexCode;
+    }
+    
+    public static ElementType forIndexCode(String indexCode) {
+        if(CODES_TO_ELEMENTS == null) {
+            CODES_TO_ELEMENTS = new HashMap<String, ElementType>();
+            for(ElementType et : values()) {
+                CODES_TO_ELEMENTS.put(et.getIndexCode(), et);
+            }
+        }
+        return CODES_TO_ELEMENTS.get(indexCode);
+    }
 }
