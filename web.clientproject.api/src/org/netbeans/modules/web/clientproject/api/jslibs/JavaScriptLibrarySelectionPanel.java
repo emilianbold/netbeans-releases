@@ -130,7 +130,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     // @GuardedBy("EDT")
     final Set<SelectedLibrary> invalidLibraries = new HashSet<SelectedLibrary>();
     // @GuardedBy("EDT")
-    final LibrariesTableModel librariesTableModel = new LibrariesTableModel();
+    final LibrariesTableModel librariesTableModel = LibrariesTableModel.create();
     // @GuardedBy("EDT")
     final TableRowSorter<LibrariesTableModel> librariesTableSorter = new TableRowSorter<LibrariesTableModel>(librariesTableModel);
     // @GuardedBy("EDT")
@@ -1023,30 +1023,22 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     }
 
-    private static final class LibrariesTableModel extends AbstractTableModel {
+    private static final class LibrariesTableModel extends AbstractTableModel implements PropertyChangeListener {
 
-        private static final long serialVersionUID = 8732134781780336L;
+        private static final long serialVersionUID = -6832132354654L;
 
         // @GuardedBy("EDT")
         private final List<ModelItem> items = new ArrayList<ModelItem>();
 
 
-        public LibrariesTableModel() {
+        private LibrariesTableModel() {
             populateModel();
-            WebClientLibraryManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (WebClientLibraryManager.PROPERTY_LIBRARIES.equals(evt.getPropertyName())) {
-                        Mutex.EVENT.readAccess(new Runnable() {
-                            @Override
-                            public void run() {
-                                populateModel();
-                                fireTableDataChanged();
-                            }
-                        });
-                    }
-                }
-            });
+        }
+
+        static LibrariesTableModel create() {
+            LibrariesTableModel model = new LibrariesTableModel();
+            WebClientLibraryManager.getDefault().addPropertyChangeListener(model);
+            return model;
         }
 
         void populateModel() {
@@ -1143,6 +1135,19 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         List<ModelItem> getItems() {
             assert EventQueue.isDispatchThread();
             return items;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (WebClientLibraryManager.PROPERTY_LIBRARIES.equals(evt.getPropertyName())) {
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        populateModel();
+                        fireTableDataChanged();
+                    }
+                });
+            }
         }
 
     }
