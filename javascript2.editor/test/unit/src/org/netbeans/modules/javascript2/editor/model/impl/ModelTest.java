@@ -171,7 +171,7 @@ public class ModelTest extends ModelTestBase {
         FileObject fo = getTestFile("testfiles/model/person.js.model");
         BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));
         try {
-            Collection<JsObject> obj = Model.readModel(reader);
+            Collection<JsObject> obj = Model.readModel(reader, null);
             assertEquals(1, obj.size());
 
             final StringWriter sw = new StringWriter();

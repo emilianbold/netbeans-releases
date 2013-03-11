@@ -48,12 +48,20 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
@@ -84,7 +92,7 @@ public final class ModelElementFactory {
         super();
     }
 
-    public JsObject newGlobalObject(FileObject fileObject, int length) {
+    public JsFunction newGlobalObject(FileObject fileObject, int length) {
         return JsFunctionImpl.createGlobal(fileObject, length);
     }
 
@@ -98,16 +106,35 @@ public final class ModelElementFactory {
     }
 
     public JsObject loadGlobalObject(InputStream is) throws IOException {
-        JsFunctionImpl global = JsFunctionImpl.createGlobal(null, Integer.MAX_VALUE);
+        JsFunction global = newGlobalObject(null, Integer.MAX_VALUE);
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
-            for (JsObject object : Model.readModel(reader)) {
-                global.addProperty(object.getName(), object);
+            for (JsObject object : Model.readModel(reader, global)) {
+                putGlobalProperty(global, object);
             }
             return global;
         } finally {
             reader.close();
         }
+    }
+
+    public JsObject putGlobalProperty(JsFunction global, JsObject property) {
+        if (property.getParent() != global) {
+            throw new IllegalArgumentException("Property is not child of global");
+        }
+        JsObject wrapped;
+        if (property instanceof JsFunction) {
+            GlobalFunction real = new GlobalFunction((JsFunction) property);
+            real.setInScope(global);
+            real.setParent(global);
+            wrapped = real;
+        } else {
+            GlobalObject real = new GlobalObject(property);
+            real.setParent(global);
+            wrapped = real;
+        }
+        global.addProperty(wrapped.getName(), wrapped);
+        return wrapped;
     }
     
     public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange,
@@ -165,5 +192,359 @@ public final class ModelElementFactory {
         public JsObject getParent() {
             return getOriginal().getParent();
         }
+    }
+
+    private static class GlobalObject implements JsObject {
+
+        private final JsObject delegate;
+
+        private JsObject parent;
+
+        public GlobalObject(JsObject delegate) {
+            this.delegate = delegate;
+            this.parent = delegate.getParent();
+        }
+
+        @Override
+        public JsObject getParent() {
+            return this.parent;
+        }
+
+        public void setParent(JsObject parent) {
+            this.parent = parent;
+        }
+
+        // pure delegation follows
+
+        @Override
+        public Identifier getDeclarationName() {
+            return delegate.getDeclarationName();
+        }
+
+        @Override
+        public Map<String, ? extends JsObject> getProperties() {
+            return delegate.getProperties();
+        }
+
+        @Override
+        public void addProperty(String name, JsObject property) {
+            delegate.addProperty(name, property);
+        }
+
+        @Override
+        public JsObject getProperty(String name) {
+            return delegate.getProperty(name);
+        }
+
+        @Override
+        public List<Occurrence> getOccurrences() {
+            return delegate.getOccurrences();
+        }
+
+        @Override
+        public void addOccurrence(OffsetRange offsetRange) {
+            delegate.addOccurrence(offsetRange);
+        }
+
+        @Override
+        public String getFullyQualifiedName() {
+            return delegate.getFullyQualifiedName();
+        }
+
+        @Override
+        public Collection<? extends TypeUsage> getAssignmentForOffset(int offset) {
+            return delegate.getAssignmentForOffset(offset);
+        }
+
+        @Override
+        public Collection<? extends TypeUsage> getAssignments() {
+            return delegate.getAssignments();
+        }
+
+        @Override
+        public void addAssignment(TypeUsage typeName, int offset) {
+            delegate.addAssignment(typeName, offset);
+        }
+
+        @Override
+        public boolean isAnonymous() {
+            return delegate.isAnonymous();
+        }
+
+        @Override
+        public boolean isDeprecated() {
+            return delegate.isDeprecated();
+        }
+
+        @Override
+        public boolean hasExactName() {
+            return delegate.hasExactName();
+        }
+
+        @Override
+        public String getDocumentation() {
+            return delegate.getDocumentation();
+        }
+
+        @Override
+        public int getOffset() {
+            return delegate.getOffset();
+        }
+
+        @Override
+        public OffsetRange getOffsetRange() {
+            return delegate.getOffsetRange();
+        }
+
+        @Override
+        public Kind getJSKind() {
+            return delegate.getJSKind();
+        }
+
+        @Override
+        public boolean isDeclared() {
+            return delegate.isDeclared();
+        }
+
+        @Override
+        public boolean isPlatform() {
+            return delegate.isPlatform();
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return delegate.getFileObject();
+        }
+
+        @Override
+        public String getMimeType() {
+            return delegate.getMimeType();
+        }
+
+        @Override
+        public String getName() {
+            return delegate.getName();
+        }
+
+        @Override
+        public String getIn() {
+            return delegate.getIn();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return delegate.getKind();
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return delegate.getModifiers();
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return delegate.signatureEquals(handle);
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return delegate.getOffsetRange(result);
+        }
+    }
+
+    private static class GlobalFunction implements JsFunction {
+
+        private final JsFunction delegate;
+
+        private DeclarationScope inScope;
+
+        private JsObject parent;
+
+        public GlobalFunction(JsFunction delegate) {
+            this.delegate = delegate;
+            this.inScope = delegate.getInScope();
+            this.parent = delegate.getParent();
+        }
+
+        @Override
+        public DeclarationScope getInScope() {
+            return this.inScope;
+        }
+
+        protected void setInScope(DeclarationScope inScope) {
+            this.inScope = inScope;
+        }
+
+        @Override
+        public JsObject getParent() {
+            return this.parent;
+        }
+
+        public void setParent(JsObject parent) {
+            this.parent = parent;
+        }
+
+        // pure delegation follows
+
+        @Override
+        public JsObject getProperty(String name) {
+            return delegate.getProperty(name);
+        }
+        
+        @Override
+        public Collection<? extends DeclarationScope> getDeclarationsScope() {
+            return delegate.getDeclarationsScope();
+        }
+
+        @Override
+        public Collection<? extends JsObject> getParameters() {
+            return delegate.getParameters();
+        }
+
+        @Override
+        public JsObject getParameter(String name) {
+            return delegate.getParameter(name);
+        }
+
+        @Override
+        public void addReturnType(TypeUsage type) {
+            delegate.addReturnType(type);
+        }
+
+        @Override
+        public Collection<? extends TypeUsage> getReturnTypes() {
+            return delegate.getReturnTypes();
+        }
+
+        @Override
+        public Identifier getDeclarationName() {
+            return delegate.getDeclarationName();
+        }
+
+        @Override
+        public Map<String, ? extends JsObject> getProperties() {
+            return delegate.getProperties();
+        }
+
+        @Override
+        public void addProperty(String name, JsObject property) {
+            delegate.addProperty(name, property);
+        }
+
+        @Override
+        public List<Occurrence> getOccurrences() {
+            return delegate.getOccurrences();
+        }
+
+        @Override
+        public void addOccurrence(OffsetRange offsetRange) {
+            delegate.addOccurrence(offsetRange);
+        }
+
+        @Override
+        public String getFullyQualifiedName() {
+            return delegate.getFullyQualifiedName();
+        }
+
+        @Override
+        public Collection<? extends TypeUsage> getAssignmentForOffset(int offset) {
+            return delegate.getAssignmentForOffset(offset);
+        }
+
+        @Override
+        public Collection<? extends TypeUsage> getAssignments() {
+            return delegate.getAssignments();
+        }
+
+        @Override
+        public void addAssignment(TypeUsage typeName, int offset) {
+            delegate.addAssignment(typeName, offset);
+        }
+
+        @Override
+        public boolean isAnonymous() {
+            return delegate.isAnonymous();
+        }
+
+        @Override
+        public boolean isDeprecated() {
+            return delegate.isDeprecated();
+        }
+
+        @Override
+        public boolean hasExactName() {
+            return delegate.hasExactName();
+        }
+
+        @Override
+        public String getDocumentation() {
+            return delegate.getDocumentation();
+        }
+
+        @Override
+        public int getOffset() {
+            return delegate.getOffset();
+        }
+
+        @Override
+        public OffsetRange getOffsetRange() {
+            return delegate.getOffsetRange();
+        }
+
+        @Override
+        public JsElement.Kind getJSKind() {
+            return delegate.getJSKind();
+        }
+
+        @Override
+        public boolean isDeclared() {
+            return delegate.isDeclared();
+        }
+
+        @Override
+        public boolean isPlatform() {
+            return delegate.isPlatform();
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return delegate.getFileObject();
+        }
+
+        @Override
+        public String getMimeType() {
+            return delegate.getMimeType();
+        }
+
+        @Override
+        public String getName() {
+            return delegate.getName();
+        }
+
+        @Override
+        public String getIn() {
+            return delegate.getIn();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return delegate.getKind();
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return delegate.getModifiers();
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return delegate.signatureEquals(handle);
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return delegate.getOffsetRange(result);
+        }
+
     }
 }

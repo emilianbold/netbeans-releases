@@ -74,9 +74,9 @@ public class JQueryModel {
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_SHOULD_BE_FINAL")
     public static boolean skipInTest = false;
 
-    private static JQFunctionImpl jQuery = null;
+    private static JsObject jQuery = null;
     private static JsObject rjQuery = null;
-    private static JsObject globalObject = null;
+    private static JsFunction globalObject = null;
     
     public static  JsObject getGlobalObject(ModelElementFactory modelElementFactory) {
         if (skipInTest) {
@@ -84,50 +84,25 @@ public class JQueryModel {
         }
         File apiFile = InstalledFileLocator.getDefault().locate(JQueryCodeCompletion.HELP_LOCATION, "org.netbeans.modules.javascript2.jquery", false); //NoI18N
         if (globalObject == null && apiFile != null) {
-            globalObject = modelElementFactory.newGlobalObject(FileUtil.toFileObject(apiFile), (int) apiFile.length());
-            JsFunction function = modelElementFactory.newFunction((DeclarationScope)globalObject, globalObject, "jQuery", Collections.<String>emptyList());
-            jQuery =  new JQFunctionImpl(function);
-            rjQuery = modelElementFactory.newReference("$", jQuery, false);
+            globalObject = modelElementFactory.newGlobalObject(
+                    FileUtil.toFileObject(apiFile), (int) apiFile.length());
+            JsFunction function = new JQFunction(modelElementFactory.newFunction(
+                    (DeclarationScope) globalObject, globalObject, "jQuery", Collections.<String>emptyList())); // NOI18N
+            jQuery =  modelElementFactory.putGlobalProperty(globalObject, function);
+            rjQuery = modelElementFactory.newReference("$", jQuery, false); // NOI18N
             
             SelectorsLoader.addToModel(apiFile, modelElementFactory, jQuery);
-            jQuery.setInScope((DeclarationScope)globalObject);
-            jQuery.setParent(globalObject);
-            globalObject.addProperty("jQuery", jQuery); // NOI18N
-            globalObject.addProperty("$", rjQuery);     // NOI18N
+            globalObject.addProperty(rjQuery.getName(), rjQuery);
         }
         return globalObject;
     }
 
-    private static class JQFunctionImpl implements JsFunction, DeclarationScope {
-
+    private static class JQFunction implements JsFunction {
+    
         private final JsFunction delegate;
 
-        private DeclarationScope inScope;
-
-        private JsObject parent;
-
-        public JQFunctionImpl(JsFunction delegate) {
+        public JQFunction(JsFunction delegate) {
             this.delegate = delegate;
-            this.inScope = delegate.getInScope();
-            this.parent = delegate.getParent();
-        }
-
-        @Override
-        public DeclarationScope getInScope() {
-            return this.inScope;
-        }
-
-        protected void setInScope(DeclarationScope inScope) {
-            this.inScope = inScope;
-        }
-
-        @Override
-        public JsObject getParent() {
-            return this.parent;
-        }
-        
-        public void setParent(JsObject parent) {
-            this.parent = parent;
         }
 
         @Override
@@ -146,6 +121,16 @@ public class JQueryModel {
         }
 
         // pure delegation follows
+
+        @Override
+        public JsObject getParent() {
+            return delegate.getParent();
+        }
+
+        @Override
+        public DeclarationScope getInScope() {
+            return delegate.getInScope();
+        }
 
         @Override
         public Collection<? extends DeclarationScope> getDeclarationsScope() {
@@ -303,5 +288,5 @@ public class JQueryModel {
         }
 
     }
-    
+
 }

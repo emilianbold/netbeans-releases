@@ -215,7 +215,7 @@ public final class Model {
         }
     }
 
-    public static Collection<JsObject> readModel(BufferedReader reader) throws IOException {
+    public static Collection<JsObject> readModel(BufferedReader reader, JsObject parent) throws IOException {
         String line = null;
         StringBuilder pushback = new StringBuilder();
         List<JsObject> ret = new ArrayList<JsObject>();
@@ -227,7 +227,7 @@ public final class Model {
             if (line.trim().isEmpty()) {
                 continue;
             }
-            ret.add(readObject(null, line, 0, reader, pushback, false));
+            ret.add(readObject(parent, line, 0, reader, pushback, false));
         }
         return ret;
     }
