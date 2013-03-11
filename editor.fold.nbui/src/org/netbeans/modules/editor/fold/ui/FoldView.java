@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.fold;
+package org.netbeans.modules.editor.fold.ui;
 
 import java.awt.Color;
 import java.awt.Container;

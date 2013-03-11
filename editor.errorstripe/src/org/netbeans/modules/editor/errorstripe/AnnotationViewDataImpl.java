@@ -193,7 +193,13 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         // Collect status providers
         Collection<? extends UpToDateStatusProviderFactory> factories = 
             mime2StatusProviders.get(mimeType);
-        createStatusProviders(factories, newStatusProviders, pane);
+        if (factories != null) {
+            createStatusProviders(factories, newStatusProviders, pane);
+        } else {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Factories set to null in mimeType " + mimeType); //NOI18N
+            }
+        }
 
         this.statusProviders = newStatusProviders;
         

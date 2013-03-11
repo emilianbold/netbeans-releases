@@ -2500,6 +2500,20 @@ public class Reformatter implements ReformatTask {
         }
 
         @Override
+        public Boolean visitIntersectionType(IntersectionTypeTree node, Void p) {
+            for (Iterator<? extends Tree> it = node.getBounds().iterator(); it.hasNext();) {
+                Tree bound = it.next();
+                scan(bound, p);
+                if (it.hasNext()) {
+                    space();
+                    accept(AMP);
+                    space();
+                }
+            }
+            return true;
+        }
+
+        @Override
         public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
             accept(LPAREN);
             boolean spaceWithinParens;
@@ -2594,6 +2608,9 @@ public class Reformatter implements ReformatTask {
         private JavaTokenId accept(JavaTokenId first, JavaTokenId... rest) {
             if (checkWrap != null && col > rightMargin && checkWrap.pos >= lastNewLineOffset) {
                 throw checkWrap;
+            }
+            if (tokens.offset() >= endPos || eof) {
+                return null;
             }
             lastBlankLines = -1;
             lastBlankLinesTokenIndex = -1;

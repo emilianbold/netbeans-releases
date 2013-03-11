@@ -191,7 +191,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
                 });
         editorPane.setBorder(new EmptyBorder (0, 0, 0, 0));
         if (isCurrentLF("GTK")) {
-            editorPane.setBackground((Color) UIManager.get("EditorPane.background"));
+            editorPane.setBackground((Color) UIManager.get("text"));
         } else {
             editorPane.setBackground(referenceTextField.getBackground());
         }

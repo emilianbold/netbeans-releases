@@ -42,24 +42,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.java;
+package org.netbeans.spi.editor;
 
-import org.netbeans.editor.CodeFoldingSideBar;
-import org.netbeans.editor.SideBarFactory;
+import javax.swing.JComponent;
+import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
- *  Java Code Folding Side Bar Factory, responsible for creating CodeFoldingSideBar
- *  Plugged via layer.xml
- *
+ *  This interface should implement all components that need to be added
+ *  in the editor sidebar. Known implementing class is i.e GlyphGutter.
+ *  
  *  @author  Martin Roskanin
  */
-public class NbJavaCodeFoldingSideBarFactory implements SideBarFactory{
-
-    public NbJavaCodeFoldingSideBarFactory() {
-    }
-
-    public javax.swing.JComponent createSideBar(javax.swing.text.JTextComponent target) {
-        return new CodeFoldingSideBar(target);
-    }
+@MimeLocation(subfolderName="SideBar")
+public interface SideBarFactory {
+    public JComponent createSideBar(JTextComponent target);
 
 }
