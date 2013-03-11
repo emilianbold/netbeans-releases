@@ -115,11 +115,6 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.editor.fold.nbui</code-name-base>
-                        <recursive/>
-                        <test/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.settings.storage</code-name-base>
                         <recursive/>
                         <test/>
