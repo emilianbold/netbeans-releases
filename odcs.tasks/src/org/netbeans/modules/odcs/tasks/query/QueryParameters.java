@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -165,7 +166,7 @@ public class QueryParameters {
     }
     
     Collection<Parameter> getAll() {
-        return map.values();
+        return new HashSet<Parameter>(map.values()); 
     }
     
     ListParameter createParameter(Column c, JList list) {
