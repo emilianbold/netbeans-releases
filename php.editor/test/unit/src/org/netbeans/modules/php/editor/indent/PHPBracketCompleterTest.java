@@ -1328,4 +1328,19 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertBreak(original, expected);
     }
 
+    public void testIssue227105() throws Exception {
+        String original = "switch(true)\n" +
+                "{\n" +
+                "    case 1: if(true) break;\n" +
+                "    default:^\n" +
+                "}";
+        String expected = "switch(true)\n" +
+                "{\n" +
+                "    case 1: if(true) break;\n" +
+                "    default:\n" +
+                "        ^\n" +
+                "}";
+        insertBreak(original, expected);
+    }
+
 }
