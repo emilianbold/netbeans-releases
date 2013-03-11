@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.prep.scss;
 
+import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 import org.netbeans.modules.css.prep.model.CPModel;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -70,6 +71,11 @@ public class ScssCompletionTest extends CssModuleTestBase {
     @Override
     protected String getTopLevelSnapshotMimetype() {
         return "text/scss";
+    }
+
+    @Override
+    protected String getCompletionItemText(CompletionProposal cp) {
+        return cp.getInsertPrefix();
     }
     
     public void testVarCompletionInSimplePropertyValue() throws ParseException {
