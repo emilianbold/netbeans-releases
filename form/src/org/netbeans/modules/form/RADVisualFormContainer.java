@@ -183,11 +183,22 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     private Dimension setDesignerSizeImpl(Dimension value, boolean persistent) {
-        Dimension old = designerSize;
+        final Dimension old = designerSize;
         designerSize = value;
         setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, persistent ? value : null);
         if (getNodeReference() != null) { // propagate the change to node
-            getNodeReference().firePropertyChangeHelper(FormDesigner.PROP_DESIGNER_SIZE, old, value);
+            if (!FormLAF.inLAFBlock()) {
+                getNodeReference().firePropertyChangeHelper(FormDesigner.PROP_DESIGNER_SIZE, old, value);
+            } else { // firing the change may lead to UI update out of GUI builder, we don't want that in LAF block
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getNodeReference() != null) {
+                            getNodeReference().firePropertyChangeHelper(FormDesigner.PROP_DESIGNER_SIZE, old, designerSize);
+                        }
+                    }
+                });
+            }
         }
         return old;
     }
