@@ -77,13 +77,30 @@ public class GeneralHTMLProject extends JellyTestCase {
     public static final String PROJECT_NAME = "HTML5 Application";
     public static final String SAMPLES = "Samples";
     public static final String SAMPLES_CATEGORY = "HTML5";
+    public static int RUN_WAIT_TIMEOUT = 1000;
     public static String current_project = "";
     public static boolean inEmbeddedBrowser = false;
+    public static String currentBrowser = "Chrome";
     public static final Logger LOGGER = Logger.getLogger(GeneralHTMLProject.class.getName());
 
     public GeneralHTMLProject(String arg0) {
         super(arg0);
         this.evt = new EventTool();
+    }
+
+    /**
+     * Sets time to wait when run file action is performed based on browser
+     *
+     * @param browserName
+     */
+    public static void setRunTimeout(String browserName) {
+        if (browserName.startsWith("Chrome") || browserName.startsWith("Chromium")) {
+            GeneralHTMLProject.RUN_WAIT_TIMEOUT = 5000;
+        } else if (browserName.startsWith("Embedded")) {
+            GeneralHTMLProject.RUN_WAIT_TIMEOUT = 1000;
+        } else {
+            GeneralHTMLProject.RUN_WAIT_TIMEOUT = 2000;
+        }
     }
 
     public void createDefaultProject(String projectName) {
@@ -231,7 +248,8 @@ public class GeneralHTMLProject extends JellyTestCase {
         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
         JComboBoxOperator browsers = new JComboBoxOperator(propertiesDialogOper, "Browser");
         ClientProjectConfigurationImpl browser;
-
+        GeneralHTMLProject.setRunTimeout(browserName);
+        GeneralHTMLProject.currentBrowser = browserName;
         for (int i = 0; i < browsers.getModel().getSize(); i++) {
             browser = (ClientProjectConfigurationImpl) browsers.getModel().getElementAt(i);
 
@@ -360,15 +378,15 @@ public class GeneralHTMLProject extends JellyTestCase {
         List<? extends org.openide.nodes.Node> nodes = page.getNodesMatchingSelectedRule();
         return getElements(nodes);
     }
-    
+
     /**
      * Opens given file and types space at the end of first line (on slow system this seems to help with parsing Remote files)
      * @param pathAndFileName
      * @param projectName
-     * @param fileName 
+     * @param fileName
      */
     public void dummyEdit(String pathAndFileName, String projectName, String fileName){
-         
+
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         Node node = new Node(rootNode, "Site Root|" + pathAndFileName);
         evt.waitNoEvent(500);
@@ -377,7 +395,7 @@ public class GeneralHTMLProject extends JellyTestCase {
             node.select();
             node.performPopupAction("Open");
         }
-        
+
         EditorOperator ep = new EditorOperator(fileName);
         ep.setCaretPositionToEndOfLine(1);
         type(ep, " ");
