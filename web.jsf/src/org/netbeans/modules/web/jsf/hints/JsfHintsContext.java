@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.hints;
 
-package org.netbeans.modules.web.jsfapi.api;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author marekfukala
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface LibraryComponent {
+public final class JsfHintsContext {
 
-    public String getName();
+    private final FileObject fileObject;
+    private final CompilationInfo compilationInfo;
+    private final Project project;
+    private final JSFVersion jsfVersion;
 
-    public Tag getTag();
+    JsfHintsContext(FileObject fileObject, CompilationInfo compilationInfo) {
+        this.fileObject = fileObject;
+        this.compilationInfo = compilationInfo;
+        this.project = FileOwnerQuery.getOwner(fileObject);
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        this.jsfVersion = webModule != null ? JSFVersion.forWebModule(webModule, true) : null;
+    }
 
-    public Library getLibrary();
+    public FileObject getFileObject() {
+        return fileObject;
+    }
 
-    public String[][] getDescription();
-    
+    public Project getProject() {
+        return project;
+    }
+
+    public CompilationInfo getCompilationInfo() {
+        return compilationInfo;
+    }
+
+    public JSFVersion getJsfVersion() {
+        return jsfVersion;
+    }
 }

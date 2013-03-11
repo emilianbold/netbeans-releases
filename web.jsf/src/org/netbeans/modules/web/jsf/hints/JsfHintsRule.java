@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.hints;
 
-package org.netbeans.modules.web.jsfapi.api;
+import java.util.Collection;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
  *
- * @author marekfukala
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface LibraryComponent {
+public interface JsfHintsRule {
 
-    public String getName();
+    /**
+     * Checks errors for given context.
+     * @param ctx context
+     * @return list of found errors
+     */
+    Collection<ErrorDescription> check(JsfHintsContext ctx);
 
-    public Tag getTag();
-
-    public Library getLibrary();
-
-    public String[][] getDescription();
-    
 }

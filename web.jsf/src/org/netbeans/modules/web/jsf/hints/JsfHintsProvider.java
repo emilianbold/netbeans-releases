@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.hints;
 
-package org.netbeans.modules.web.jsfapi.api;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
+ * Hints provider for the JSF sources.
  *
- * @author marekfukala
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface LibraryComponent {
+public class JsfHintsProvider implements HintsProvider {
 
-    public String getName();
+    @Override
+    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public Tag getTag();
+    @Override
+    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public Library getLibrary();
+    @Override
+    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public String[][] getDescription();
-    
+    @Override
+    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void cancel() {
+    }
+
+    @Override
+    public List<Rule> getBuiltinRules() {
+        return Collections.<Rule>emptyList();
+    }
+
+    @Override
+    public RuleContext createRuleContext() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }
