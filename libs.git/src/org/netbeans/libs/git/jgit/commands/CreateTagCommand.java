@@ -42,6 +42,7 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.io.IOException;
+import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -52,11 +53,11 @@ import org.eclipse.jgit.lib.RefUpdate.Result;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevObject;
-import org.eclipse.jgit.revwalk.RevTag;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitTag;
+import org.netbeans.libs.git.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -72,9 +73,11 @@ public class CreateTagCommand extends GitCommand {
     private final String message;
     private final boolean signed;
     private GitTag tag;
+    private final ProgressMonitor monitor;
 
     public CreateTagCommand (Repository repository, GitClassFactory gitFactory, String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
+        this.monitor = monitor;
         this.tagName = tagName;
         this.taggedObject = taggedObject;
         this.message = message;
@@ -96,8 +99,11 @@ public class CreateTagCommand extends GitCommand {
                 cmd.setObjectId(obj);
                 cmd.setForceUpdate(forceUpdate);
                 cmd.setSigned(signed);
-                RevTag revTag = cmd.call();
-                tag = getClassFactory().createTag(revTag);
+                cmd.call();
+                ListTagCommand tagCmd = new ListTagCommand(repository, getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
+                tagCmd.run();
+                Map<String, GitTag> tags = tagCmd.getTags();
+                tag = tags.get(tagName);
             }
         } catch (JGitInternalException ex) {
             throw new GitException(ex);

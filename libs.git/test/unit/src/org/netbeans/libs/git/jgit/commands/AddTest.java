@@ -359,6 +359,7 @@ public class AddTest extends AbstractGitTestCase {
         clientNested.commit(new File[] { f2 }, "aaa", null, null, NULL_PROGRESS_MONITOR);
         write(f2, "change");
         
+        Thread.sleep(1000);
         client.add(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertEquals(2, statuses.size());
