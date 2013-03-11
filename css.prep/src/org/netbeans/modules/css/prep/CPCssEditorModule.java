@@ -47,8 +47,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
@@ -75,8 +77,10 @@ import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.prep.model.CPElement;
+import org.netbeans.modules.css.prep.model.CPElementHandle;
 import org.netbeans.modules.css.prep.model.CPElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
@@ -109,7 +113,7 @@ public class CPCssEditorModule extends CssEditorModule {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
         CPModel model = CPModel.getModel(context.getParserResult());
-        if(model == null) {
+        if (model == null) {
             return Collections.emptyList();
         }
         List<CompletionProposal> allVars = getVariableCompletionProposals(context, model);
@@ -192,7 +196,8 @@ public class CPCssEditorModule extends CssEditorModule {
                         handle,
                         var.getHandle(),
                         context.getAnchorOffset(),
-                        var.getFile() == null ? null : var.getFile().getNameExt());
+                        null); //no origin for current file
+//                        var.getFile() == null ? null : var.getFile().getNameExt());
 
                 proposals.add(item);
             }
@@ -201,32 +206,21 @@ public class CPCssEditorModule extends CssEditorModule {
             //now gather global vars from all linked sheets
             FileObject file = context.getFileObject();
             if (file != null) {
-                Project project = FileOwnerQuery.getOwner(file);
-                if (project != null) {
-                    CssIndex index = CssIndex.get(project);
-                    DependenciesGraph dependencies = index.getDependencies(file);
-                    Collection<FileObject> referred = dependencies.getAllReferedFiles();
-                    for (FileObject reff : referred) {
-                        if (reff.equals(file)) {
-                            //skip current file (it is included to the referred files list)
-                            continue;
-                        }
-                        CPCssIndexModel cpIndexModel = (CPCssIndexModel) index.getIndexModel(CPCssIndexModel.Factory.class, reff);
-                        if (cpIndexModel != null) {
-                            Collection<org.netbeans.modules.css.prep.model.CPElementHandle> variables = cpIndexModel.getVariables();
-                            for (org.netbeans.modules.css.prep.model.CPElementHandle var : variables) {
-                                if (var.getType() == CPElementType.VARIABLE_GLOBAL_DECLARATION) {
-                                    ElementHandle handle = new CPCslElementHandle(context.getFileObject(), var.getName());
-                                    VariableCompletionItem item = new VariableCompletionItem(
-                                            handle,
-                                            var,
-                                            context.getAnchorOffset(),
-                                            reff.getNameExt());
+                Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(file);
+                for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
+                    FileObject reff = entry.getKey();
+                    CPCssIndexModel cpIndexModel = entry.getValue();
+                    Collection<org.netbeans.modules.css.prep.model.CPElementHandle> variables = cpIndexModel.getVariables();
+                    for (org.netbeans.modules.css.prep.model.CPElementHandle var : variables) {
+                        if (var.getType() == CPElementType.VARIABLE_GLOBAL_DECLARATION) {
+                            ElementHandle handle = new CPCslElementHandle(context.getFileObject(), var.getName());
+                            VariableCompletionItem item = new VariableCompletionItem(
+                                    handle,
+                                    var,
+                                    context.getAnchorOffset(),
+                                    reff.getNameExt());
 
-                                    proposals.add(item);
-                                }
-
-                            }
+                            proposals.add(item);
                         }
 
                     }
@@ -238,6 +232,36 @@ public class CPCssEditorModule extends CssEditorModule {
         }
 
         return proposals;
+    }
+
+    /**
+     * Gets {@link CPCssIndexModel}s for all referred files (transitionally)
+     * EXCLUDING model for the given file itself.
+     *
+     * @param file
+     * @return
+     */
+    private static Map<FileObject, CPCssIndexModel> getIndexModels(FileObject file) throws IOException {
+        Map<FileObject, CPCssIndexModel> models = new HashMap<FileObject, CPCssIndexModel>();
+        Project project = FileOwnerQuery.getOwner(file);
+        if (project != null) {
+            CssIndex index = CssIndex.get(project);
+            DependenciesGraph dependencies = index.getDependencies(file);
+            Collection<FileObject> referred = dependencies.getAllReferedFiles();
+            for (FileObject reff : referred) {
+                if (reff.equals(file)) {
+                    //skip current file (it is included to the referred files list)
+                    continue;
+                }
+                CPCssIndexModel cpIndexModel = (CPCssIndexModel) index.getIndexModel(CPCssIndexModel.Factory.class, reff);
+                if (cpIndexModel != null) {
+                    models.put(reff, cpIndexModel);
+                }
+
+            }
+        }
+        return models;
+
     }
 
     @Override
@@ -316,6 +340,7 @@ public class CPCssEditorModule extends CssEditorModule {
         return null;
     }
 
+    //TODO - fix the inability to return more than one DeclarationLocation from the task - need to change the css.editor SPI
     @Override
     public Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclaration(Document document, int caretOffset) {
         //first try to find the reference span
@@ -328,45 +353,121 @@ public class CPCssEditorModule extends CssEditorModule {
         Token<CssTokenId> token = ts.token();
         int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
         OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
-        CharSequence mixinName = null;
+        CharSequence mixinName;
 
         //MIXINs go to declaration
-        if (token.id() == CssTokenId.IDENT) {
-            mixinName = token.text();
+        switch (token.id()) {
+            case IDENT:
+                mixinName = token.text();
 
-            //check if there is @import token before
-            while (ts.movePrevious() && ts.token().id() == CssTokenId.WS) {
-            }
-
-            Token t = ts.token();
-            if (t != null) {
-                if (t.id() == CssTokenId.DOT || t.id() == CssTokenId.SASS_INCLUDE) {
-                    //gotcha!
-                    //@import xxx --sass
-                    //.xxx --less
-                    foundRange = range;
+                //check if there is @import token before
+                while (ts.movePrevious() && ts.token().id() == CssTokenId.WS) {
                 }
-            }
-        }
 
-        if (foundRange == null) {
-            return null;
-        }
-
-        final CharSequence searchedMixinName = mixinName;
-        FutureParamTask<DeclarationLocation, EditorFeatureContext> callable = new FutureParamTask<DeclarationLocation, EditorFeatureContext>() {
-            @Override
-            public DeclarationLocation run(EditorFeatureContext context) {
-                CPModel model = CPModel.getModel(context.getParserResult());
-                for (CPElement mixin : model.getMixins()) {
-                    if (LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
-                        return new DeclarationLocation(context.getFileObject(), mixin.getRange().getStart());
+                Token t = ts.token();
+                if (t != null) {
+                    if (t.id() == CssTokenId.DOT || t.id() == CssTokenId.SASS_INCLUDE) {
+                        //gotcha!
+                        //@import xxx --sass
+                        //.xxx --less
+                        foundRange = range;
                     }
                 }
-                return DeclarationLocation.NONE;
-            }
-        };
+                if (foundRange == null) {
+                    return null;
+                }
+                final CharSequence searchedMixinName = mixinName;
+                FutureParamTask<DeclarationLocation, EditorFeatureContext> callable = new FutureParamTask<DeclarationLocation, EditorFeatureContext>() {
+                    @Override
+                    public DeclarationLocation run(EditorFeatureContext context) {
+                        //TODO - once the css.editor allows to return several DeclarationLocation from one task, update the following code!
+                        //first look at the current file
+                        CPModel model = CPModel.getModel(context.getParserResult());
+                        for (CPElement mixin : model.getMixins()) {
+                            if(mixin.getType() == CPElementType.MIXIN_DECLARATION) {
+                                if (LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
+                                    return new DeclarationLocation(context.getFileObject(), mixin.getRange().getStart());
+                                }
+                            }
+                        }
+                        
+                        //then look at the referred files
+                        try {
+                            Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(context.getFileObject());
+                            for(Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
+                                CPCssIndexModel im = entry.getValue();
+                                FileObject file = entry.getKey();
+                                for(CPElementHandle mixin : im.getMixins()) {
+                                    if(mixin.getType() == CPElementType.MIXIN_DECLARATION 
+                                            && LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
+                                        CPElement element = mixin.resolve(CPModel.getModel(file));
+                                        if(element != null) {
+                                            OffsetRange elementRange = element.getRange();
+                                            return new DeclarationLocation(file, elementRange.getStart());
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (ParseException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        
+                        return DeclarationLocation.NONE;
+                    }
+                };
+                return new Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>(foundRange, callable);
 
-        return new Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>(foundRange, callable);
+            case SASS_VAR:
+            case AT_IDENT: //less var //TODO - add default directives - see the css grammar file comment about that
+                //cp variable
+                final String varName = token.text().toString();
+                foundRange = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+
+                callable = new FutureParamTask<DeclarationLocation, EditorFeatureContext>() {
+                    @Override
+                    public DeclarationLocation run(EditorFeatureContext context) {
+                        //TODO - once the css.editor allows to return several DeclarationLocation from one task, update the following code!
+                        //first look at the current file
+                        CPModel model = CPModel.getModel(context.getParserResult());
+                        for (CPElement var : model.getVariables()) {
+                            if(var.getType().isOfTypes(CPElementType.VARIABLE_GLOBAL_DECLARATION, CPElementType.VARIABLE_LOCAL_DECLARATION, CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS)) {
+                                if (LexerUtils.equals(varName, var.getName(), false, false)) {
+                                    return new DeclarationLocation(context.getFileObject(), var.getRange().getStart());
+                                }
+                            }
+                        }
+                        try {
+                            //then look at the referred files
+                            Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(context.getFileObject());
+                            for(Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
+                                CPCssIndexModel im = entry.getValue();
+                                FileObject file = entry.getKey();
+                                for(CPElementHandle var : im.getVariables()) {
+                                    if(var.getType() == CPElementType.VARIABLE_GLOBAL_DECLARATION && var.getName().equals(varName)) {
+                                        CPElement element = var.resolve(CPModel.getModel(file));
+                                        if(element != null) {
+                                            OffsetRange elementRange = element.getRange();
+                                            return new DeclarationLocation(file, elementRange.getStart());
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (ParseException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        
+                        return DeclarationLocation.NONE;
+                    }
+                };
+                return new Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>(foundRange, callable);
+
+            default:
+                return null;
+        }
+
     }
 }

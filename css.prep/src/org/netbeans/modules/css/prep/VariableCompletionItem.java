@@ -125,7 +125,7 @@ public class VariableCompletionItem extends CssCompletionItem {
     public String getLhsHtml(HtmlFormatter formatter) {
         switch (handle.getType()) {
             case VARIABLE_GLOBAL_DECLARATION:
-                formatter.appendHtml("<font color=><b>"); //NOI18N
+                formatter.appendHtml("<font color=000000><b>"); //NOI18N
                 break;
         }
         
@@ -142,7 +142,14 @@ public class VariableCompletionItem extends CssCompletionItem {
 
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
-        return "<font color=999999>" + (origin == null ? "" : origin) + "</font>"; //NOI18N
+        if(origin == null) {
+            return super.getRhsHtml(formatter);
+        } else {
+            formatter.appendHtml("<font color=999999>");
+            formatter.appendText(origin);
+            formatter.appendHtml("</font>"); //NOI18N
+            return formatter.getText();
+        }
     }
     
 }
