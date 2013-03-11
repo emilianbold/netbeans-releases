@@ -288,12 +288,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                         label.setBackground (bg);
                     }
                 } else {
-                    if (swingRendering) {
-                        setBackground (isSelected ?
-                            tbl.getSelectionBackground() : tbl.getBackground());
-                    } else {
-                        label.setBackground (isSelected ?
-                            tbl.getSelectionBackground() : tbl.getBackground());
+                    if (!swingRendering) {
+                        label.setBackground(getBackground());
                     }
                 }
                 if (fg != null && !isSelected) {
@@ -303,12 +299,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                         label.setForeground (fg);
                     }
                 } else {
-                    if (swingRendering) {
-                        setForeground (isSelected ?
-                            tbl.getSelectionForeground() : tbl.getForeground());
-                    } else {
-                        label.setForeground (isSelected ?
-                            tbl.getSelectionForeground() : tbl.getForeground());
+                    if (!swingRendering) {
+                        label.setForeground(getForeground());
                     }
                 }
                 icon = rendata.getIcon(value);
