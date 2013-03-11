@@ -48,7 +48,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -271,7 +271,7 @@ public final class Utils {
      * @return 
      */
     public static Map<String, GitBranch> refsToBranches (Collection<Ref> allRefs, String prefix, GitClassFactory factory) {
-        Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
+        Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
         
         // try to find the head first - it usually is the active remote branch
         Ref head = null;
@@ -310,7 +310,7 @@ public final class Utils {
      * @return 
      */
     public static Map<String, String> refsToTags (Collection<Ref> allRefs) {
-        Map<String, String> tags = new HashMap<String, String>();
+        Map<String, String> tags = new LinkedHashMap<String, String>();
         
         // get all refs/tags
         for (final Ref ref : RefComparator.sort(allRefs)) {
