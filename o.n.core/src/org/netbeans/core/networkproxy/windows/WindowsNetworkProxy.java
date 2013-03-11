@@ -75,26 +75,30 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
             LOGGER.log(Level.FINE, "Windows system proxy resolver successfully retrieved proxy settings."); //NOI18N
             
             if (prxCnf.autoDetect) {
-                LOGGER.log(Level.FINE, "Windows system proxy resolver: auto detect"); //NOI18N
+                LOGGER.log(Level.INFO, "Windows system proxy resolver: auto detect"); //NOI18N
                 return new NetworkProxySettings();
             }
 
             Pointer pacFilePointer = prxCnf.pacFile;
             if (pacFilePointer != null) {
-                LOGGER.log(Level.FINE, "Windows system proxy resolver: PAC"); //NOI18N
-                return new NetworkProxySettings(pacFilePointer.getString(0L, true));
+                String pacFileUrl = pacFilePointer.getString(0L, true);
+                
+                LOGGER.log(Level.INFO, "Windows system proxy resolver: auto - PAC ({0})", pacFileUrl); //NOI18N                
+                return new NetworkProxySettings(pacFileUrl);
             }
 
             Pointer proxyPointer = prxCnf.proxy;
             Pointer proxyBypassPointer = prxCnf.proxyBypass;
             if (proxyPointer != null) {
-                LOGGER.log(Level.FINE, "Windows system proxy resolver: manual"); //NOI18N
+                String proxyString = proxyPointer.getString(0L, true);
+                
+                LOGGER.log(Level.INFO, "Windows system proxy resolver: manual ({0})", proxyString); //NOI18N
+                
                 String httpProxy = null;
                 String httpsProxy = null;
                 String socksProxy = null;
                 String[] noProxyHosts;
-
-                String proxyString = proxyPointer.getString(0L, true);
+                
                 if (proxyString != null) {
                     proxyString = proxyString.toLowerCase();
                 }
@@ -128,6 +132,9 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
 
                 if (proxyBypassPointer != null) {
                     String proxyBypass = proxyBypassPointer.getString(0L, true);
+                    
+                    LOGGER.log(Level.INFO, "Windows system proxy resolver: manual - no proxy hosts ({0})", proxyBypass); //NOI18N
+                    
                     noProxyHosts = proxyBypass.split(SEMI_COLON);
                 } else {
                     noProxyHosts = new String[0];

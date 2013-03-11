@@ -41,6 +41,8 @@
  */
 package org.netbeans.core.networkproxy.fallback;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.core.networkproxy.NetworkProxyResolver;
 import org.netbeans.core.networkproxy.NetworkProxySettings;
 
@@ -54,12 +56,15 @@ import org.netbeans.core.networkproxy.NetworkProxySettings;
  * @author lfischme
  */
 public class FallbackNetworkProxy implements NetworkProxyResolver {
+    
+    private final static Logger LOGGER = Logger.getLogger(FallbackNetworkProxy.class.getName());
 
     private final static String AT = "@"; //NOI18N
     private final static String COMMA = ","; //NOI18N
     private final static String SLASH = "/"; //NOI18N
     private final static String PROTOCOL_PREXIF_SEPARATOR = "://"; //NOI18N
     private final static String EMPTY_STRING = ""; //NOI18N
+    
     private final static String HTTP_PROXY_SYS_PROPERTY = "http_proxy"; //NOI18N
     private final static String HTTPS_PROXY_SYS_PROPERTY = "https_proxy"; //NOI18N
     private final static String SOCKS_PROXY_SYS_PROPERTY = "socks_proxy"; //NOI18N
@@ -67,19 +72,27 @@ public class FallbackNetworkProxy implements NetworkProxyResolver {
 
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
-        System.getenv();
-        
+        LOGGER.log(Level.FINE, "Fallback system proxy resolver started."); //NOI18N
         String httpProxyRaw = System.getenv(HTTP_PROXY_SYS_PROPERTY);
         if (httpProxyRaw != null && !httpProxyRaw.isEmpty()) {
+            String httpsProxyRaw = System.getenv(HTTPS_PROXY_SYS_PROPERTY);
+            String socksProxyRaw = System.getenv(SOCKS_PROXY_SYS_PROPERTY);
+            String noProxyRaw = System.getenv(NO_PROXY_SYS_PROPERTY);
+            
+            LOGGER.log(Level.INFO, "Fallback system proxy resolver: http_proxy={0}", httpProxyRaw); //NOI18N
+            LOGGER.log(Level.INFO, "Fallback system proxy resolver: https_proxy={0}", httpsProxyRaw); //NOI18N
+            LOGGER.log(Level.INFO, "Fallback system proxy resolver: socks_proxy={0}", socksProxyRaw); //NOI18N
+            LOGGER.log(Level.INFO, "Fallback system proxy resolver: no_proxy={0}", noProxyRaw); //NOI18N
+            
             String httpProxy = prepareVariable(httpProxyRaw);
-            String httpsProxy = prepareVariable(System.getenv(HTTPS_PROXY_SYS_PROPERTY));
-            String socksProxy = prepareVariable(System.getenv(SOCKS_PROXY_SYS_PROPERTY));
-            String noProxyHostsString = System.getenv(NO_PROXY_SYS_PROPERTY);
-            String[] noProxyHosts = noProxyHostsString == null ? new String[0] : noProxyHostsString.split(COMMA);                   
+            String httpsProxy = prepareVariable(httpsProxyRaw);
+            String socksProxy = prepareVariable(socksProxyRaw);
+            String[] noProxyHosts = noProxyRaw == null ? new String[0] : noProxyRaw.split(COMMA);                   
             
             return new NetworkProxySettings(httpProxy, httpsProxy, socksProxy, noProxyHosts);
         }
-
+        
+        LOGGER.log(Level.INFO, "Fallback system proxy resolver: no http_proxy variable found"); //NOI18N
         return new NetworkProxySettings();
     }
 

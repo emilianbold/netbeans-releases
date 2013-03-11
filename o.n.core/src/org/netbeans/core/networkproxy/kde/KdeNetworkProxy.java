@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.core.networkproxy.NetworkProxyResolver;
 import org.netbeans.core.networkproxy.NetworkProxySettings;
 
@@ -58,6 +60,8 @@ import org.netbeans.core.networkproxy.NetworkProxySettings;
  * @author lfischme
  */
 public class KdeNetworkProxy implements NetworkProxyResolver {
+    
+    private final static Logger LOGGER = Logger.getLogger(KdeNetworkProxy.class.getName());
 
     private final static String EMPTY_STRING = ""; //NOI18N
     private final static String SPACE = " "; //NOI18N
@@ -87,31 +91,44 @@ public class KdeNetworkProxy implements NetworkProxyResolver {
 
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
+        LOGGER.log(Level.FINE, "KDE system proxy resolver started."); //NOI18N
         Map<String, String> kioslavercMap = getKioslavercMap();
 
         String proxyType = kioslavercMap.get(KIOSLAVERC_PROXY_TYPE);
         if (proxyType == null) {
+            LOGGER.log(Level.WARNING, "KDE system proxy resolver: The kioslaverc key not found ({0})", KIOSLAVERC_PROXY_TYPE); //NOI18N
             return new NetworkProxySettings(false);
         }
 
         if (proxyType.equals(KIOSLAVERC_PROXY_TYPE_NONE) || proxyType.equals(KIOSLAVERC_PROXY_TYPE_AUTO)) {
+            LOGGER.log(Level.INFO, "KDE system proxy resolver: direct (proxy type: {0})", proxyType); //NOI18N
             return new NetworkProxySettings();
         }
 
         if (proxyType.equals(KIOSLAVERC_PROXY_TYPE_PAC)) {
+            LOGGER.log(Level.INFO, "KDE system proxy resolver: auto - PAC"); //NOI18N
             String pacFileUrl = kioslavercMap.get(KIOSLAVERC_PROXY_CONFIG_SCRIPT);
             if (pacFileUrl != null) {
+                LOGGER.log(Level.INFO, "KDE system proxy resolver: PAC URL ({0})", pacFileUrl); //NOI18N
                 return new NetworkProxySettings(pacFileUrl);
             } else {
+                LOGGER.log(Level.INFO, "KDE system proxy resolver: PAC URL null value"); //NOI18N
                 return new NetworkProxySettings(false);
             }
         }
 
-        if (proxyType.equals(KIOSLAVERC_PROXY_TYPE_MANUAL) || proxyType.equals(KIOSLAVERC_PROXY_TYPE_SYSTEM)) {                                  
+        if (proxyType.equals(KIOSLAVERC_PROXY_TYPE_MANUAL) || proxyType.equals(KIOSLAVERC_PROXY_TYPE_SYSTEM)) {
+            LOGGER.log(Level.INFO, "KDE system proxy resolver: manual (proxy type: {0})", proxyType); //NOI18N
+            
             String httpProxy = kioslavercMap.get(KIOSLAVERC_HTTP_PROXY);
             String httpsProxy = kioslavercMap.get(KIOSLAVERC_HTTPS_PROXY);
             String socksProxy = kioslavercMap.get(KIOSLAVERC_SOCKS_PROXY);
             String noProxyFor = kioslavercMap.get(KIOSLAVERC_NO_PROXY_FOR);
+            
+            LOGGER.log(Level.INFO, "KDE system proxy resolver: http proxy ({0})", httpProxy); //NOI18N
+            LOGGER.log(Level.INFO, "KDE system proxy resolver: https proxy ({0})", httpsProxy); //NOI18N
+            LOGGER.log(Level.INFO, "KDE system proxy resolver: socks proxy ({0})", socksProxy); //NOI18N
+            LOGGER.log(Level.INFO, "KDE system proxy resolver: no proxy ({0})", noProxyFor); //NOI18N
             
             if (proxyType.equals(KIOSLAVERC_PROXY_TYPE_MANUAL)) {
                 httpProxy = httpProxy == null ? EMPTY_STRING : httpProxy.trim().replaceAll(SPACE, COLON);
@@ -127,6 +144,13 @@ public class KdeNetworkProxy implements NetworkProxyResolver {
         return new NetworkProxySettings(false);
     }
 
+    /**
+     * Raturns map of keys and values from kioslaverc group Proxy settings.
+     * 
+     * Reads "[userhome]/.kde/share/config/kioslaverc" file. 
+     * 
+     * @return Map of keys and values from kioslaverc group Proxy settings.
+     */
     private Map<String, String> getKioslavercMap() {
         File kioslavercFile = new File(KIOSLAVERC_PATH);
         Map<String, String> map = new HashMap<String, String>();
@@ -153,16 +177,23 @@ public class KdeNetworkProxy implements NetworkProxyResolver {
                     }
                 }
                 dis.close();
-            } catch (FileNotFoundException ex) {
-                // TODO log
-            } catch (IOException ex) {
-                // TODO log
+            } catch (FileNotFoundException fnfe) {
+                LOGGER.log(Level.SEVERE, "Cannot read file: ", fnfe);
+            } catch (IOException ioe) {
+                LOGGER.log(Level.SEVERE, "Cannot read file: ", ioe);
             }
-        }
+        } else {
+            LOGGER.log(Level.WARNING, "KDE system proxy resolver: The kioslaverc file not found ({0})", KIOSLAVERC_PATH);
+        }                
 
         return map;
     }
 
+    /**
+     * Returns path of the kioslaverc config file.
+     * 
+     * @return Path of the kioslaverc config file.
+     */
     private String getKioslavercPath() {
         String homePath = System.getenv(HOME);
 
@@ -173,6 +204,12 @@ public class KdeNetworkProxy implements NetworkProxyResolver {
         }
     }
     
+    /**
+     * Returns array of Strings of no proxy hosts.
+     * 
+     * @param noProxyHostsString No proxy host in one string separated by comma.
+     * @return Array of Strings of no proxy hosts.
+     */
     private static String[] getNoProxyHosts(String noProxyHostsString) {
         if (noProxyHostsString != null && !noProxyHostsString.isEmpty()) {
             return noProxyHostsString.split(COMMA);

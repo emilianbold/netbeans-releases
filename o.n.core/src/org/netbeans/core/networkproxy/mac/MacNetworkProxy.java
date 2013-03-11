@@ -44,6 +44,8 @@ package org.netbeans.core.networkproxy.mac;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.Pointer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.core.networkproxy.NetworkProxyResolver;
 import org.netbeans.core.networkproxy.NetworkProxySettings;
 
@@ -53,8 +55,12 @@ import org.netbeans.core.networkproxy.NetworkProxySettings;
  */
 public class MacNetworkProxy implements NetworkProxyResolver {
     
+    private final static Logger LOGGER = Logger.getLogger(MacNetworkProxy.class.getName());
+    
     private final static MacNetworkProxyLibrary cfNetworkLibrary = MacNetworkProxyLibrary.LIBRARY;
-    private final static MacCoreFoundationLibrary cfLibrary = MacCoreFoundationLibrary.LIBRARY; 
+    private final static MacCoreFoundationLibrary cfLibrary = MacCoreFoundationLibrary.LIBRARY;
+    
+    private final static String COMMA = ","; //NOI18N
     
     private final static NativeLibrary NETWORK_LIBRARY = NativeLibrary.getInstance("CFNetwork"); //NOI18N
     private final static String KEY_AUTO_DISCOVERY_ENABLE = "kCFNetworkProxiesProxyAutoDiscoveryEnable"; //NOI18N
@@ -72,11 +78,13 @@ public class MacNetworkProxy implements NetworkProxyResolver {
     private final static String KEY_EXCEPTIONS_LIST = "kCFNetworkProxiesExceptionsList"; //NOI18N
     
     @Override
-    public NetworkProxySettings getNetworkProxySettings() {        
+    public NetworkProxySettings getNetworkProxySettings() {
+        LOGGER.log(Level.FINE, "Mac system proxy resolver started."); //NOI18N
         Pointer settingsDictionary = cfNetworkLibrary.CFNetworkCopySystemProxySettings(); 
 
         Pointer autoDiscoveryEnable = cfLibrary.CFDictionaryGetValue(settingsDictionary, getKeyCFStringRef(KEY_AUTO_DISCOVERY_ENABLE));
         if (getIntFromCFNumberRef(autoDiscoveryEnable) != 0) {
+            LOGGER.log(Level.INFO, "Mac system proxy resolver: auto detect"); //NOI18N
             return new NetworkProxySettings();
         }
         
@@ -84,7 +92,10 @@ public class MacNetworkProxy implements NetworkProxyResolver {
         if (getIntFromCFNumberRef(pacEnable) != 0) {
             Pointer[] pacUrlPointer = new Pointer[1];
             if (cfLibrary.CFDictionaryGetValueIfPresent(settingsDictionary, getKeyCFStringRef(KEY_PAC_URL), pacUrlPointer)) {
-                return new NetworkProxySettings(getStringFromCFStringRef(pacUrlPointer[0]));
+                String pacUrl = getStringFromCFStringRef(pacUrlPointer[0]);
+                
+                LOGGER.log(Level.INFO, "Mac system proxy resolver: auto - PAC ({0})", pacUrl); //NOI18N
+                return new NetworkProxySettings(pacUrl);
             }
         }
         
@@ -97,9 +108,16 @@ public class MacNetworkProxy implements NetworkProxyResolver {
             String httpsHost = getStringFromCFStringRef(getValueIfExists(settingsDictionary, KEY_HTTPS_HOST));
             String httpsPort = getStringFromCFNumberRef(getValueIfExists(settingsDictionary, KEY_HTTPS_PORT));
             String socksHost = getStringFromCFStringRef(getValueIfExists(settingsDictionary, KEY_SOCKS_HOST));
-            String socksPort = getStringFromCFNumberRef(getValueIfExists(settingsDictionary, KEY_SOCKS_PORT));
-            
+            String socksPort = getStringFromCFNumberRef(getValueIfExists(settingsDictionary, KEY_SOCKS_PORT));            
             String[] noProxyHosts = getNoProxyHosts(getValueIfExists(settingsDictionary, KEY_EXCEPTIONS_LIST));
+            
+            LOGGER.log(Level.INFO, "Mac system proxy resolver: manual - http host ({0})", httpHost); //NOI18N
+            LOGGER.log(Level.INFO, "Mac system proxy resolver: manual - http port ({0})", httpPort); //NOI18N
+            LOGGER.log(Level.INFO, "Mac system proxy resolver: manual - https host ({0})", httpsHost); //NOI18N
+            LOGGER.log(Level.INFO, "Mac system proxy resolver: manual - https port ({0})", httpsPort); //NOI18N
+            LOGGER.log(Level.INFO, "Mac system proxy resolver: manual - socks host ({0})", socksHost); //NOI18N
+            LOGGER.log(Level.INFO, "Mac system proxy resolver: manual - socks port ({0})", socksPort); //NOI18N
+            LOGGER.log(Level.INFO, "Mac system proxy resolver: manual - no proxy hosts ({0})", getStringFromArray(noProxyHosts)); //NOI18N
             
             return new NetworkProxySettings(httpHost, httpPort, httpsHost, httpsPort, socksHost, socksPort, noProxyHosts);
         }
@@ -107,10 +125,22 @@ public class MacNetworkProxy implements NetworkProxyResolver {
         return new NetworkProxySettings(false);
     }
     
+    /**
+     * Converts String key object to CFString key object.
+     * 
+     * @param key String key
+     * @return CFString key object pointer
+     */
     private Pointer getKeyCFStringRef(String key) {
         return NETWORK_LIBRARY.getGlobalVariableAddress(key).getPointer(0L);
     }
     
+    /**
+     * Converts CFString object to String.
+     * 
+     * @param cfStringPointer Pointer to CFString object
+     * @return String from CFString
+     */
     private String getStringFromCFStringRef(Pointer cfStringPointer) {
         if (cfStringPointer != null) {
             long lenght = cfLibrary.CFStringGetLength(cfStringPointer);
@@ -126,6 +156,12 @@ public class MacNetworkProxy implements NetworkProxyResolver {
         return null;
     }
     
+    /**
+     * Converts CFNumber to int.
+     * 
+     * @param cfNumberPointer pointer to CFNumber object
+     * @return int from CFNumber
+     */
     private int getIntFromCFNumberRef(Pointer cfNumberPointer) {
         if (cfNumberPointer != null) {
             Pointer cfNumberType = cfLibrary.CFNumberGetType(cfNumberPointer);
@@ -140,6 +176,12 @@ public class MacNetworkProxy implements NetworkProxyResolver {
         return 0;
     }
     
+    /**
+     * Converts CFNumber to String.
+     * 
+     * @param cfNumberPointer pointer to CFNumber object
+     * @return String from CFNumber
+     */
     private String getStringFromCFNumberRef(Pointer cfNumberPointer) {
         if (cfNumberPointer != null) {
             Pointer cfNumberType = cfLibrary.CFNumberGetType(cfNumberPointer);
@@ -154,6 +196,12 @@ public class MacNetworkProxy implements NetworkProxyResolver {
         return null;
     }
     
+    /**
+     * Returns array of Strings with no proxy hosts retrieved from pointer to CFArray.
+     * 
+     * @param noProxyHostsPointer Pointer to CFArray of CFStrings with no proxy hosts
+     * @return Array of Strings with no proxy hosts retrieved from pointer to CFArray.
+     */
     private String[] getNoProxyHosts(Pointer noProxyHostsPointer) {
         if (noProxyHostsPointer != null) {
             long arrayLenght = cfLibrary.CFArrayGetCount(noProxyHostsPointer);
@@ -163,7 +211,7 @@ public class MacNetworkProxy implements NetworkProxyResolver {
                 String noProxyHost = getStringFromCFStringRef(value);
                 noProxyHosts[(int) i] = noProxyHost;
             }
-            // Much more better vould be to use CFArrayGetValues method.
+            // Much more better would be to use CFArrayGetValues method.
             // But I was unsuccessful to retrieve value correctly.
             // the const void **value is problem in this case
             // also CFRange wasn't easy to create (via Structure)
@@ -174,6 +222,13 @@ public class MacNetworkProxy implements NetworkProxyResolver {
         return new String[0];
     }
     
+    /**
+     * Returns value from CFDictionary if exists.
+     * 
+     * @param settingsDictionary pointer to CFDictionary
+     * @param key Key for which value should be returned
+     * @return Value from CFDictionary if exists.
+     */
     private Pointer getValueIfExists(Pointer settingsDictionary, String key) {
         Pointer[] returnValue = new Pointer[1];
         if (cfLibrary.CFDictionaryGetValueIfPresent(settingsDictionary, getKeyCFStringRef(key), returnValue)) {
@@ -181,5 +236,23 @@ public class MacNetworkProxy implements NetworkProxyResolver {
         } else {
             return null;
         }
+    }
+    
+    /**
+     * Returns string from array of strings. Strings are sepparated by comma.
+     * 
+     * @param stringArray
+     * @return String from array of strings. Strings are sepparated by comma.
+     */
+    private static String getStringFromArray(String[] stringArray) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < stringArray.length; i++) {
+            sb.append(stringArray[i]);
+            if (i == stringArray.length - 1) {
+                sb.append(COMMA);
+            }
+        }
+        
+        return sb.toString();
     }
 }

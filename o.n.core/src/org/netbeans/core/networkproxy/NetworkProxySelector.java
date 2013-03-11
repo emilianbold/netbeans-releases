@@ -60,8 +60,10 @@ import org.openide.util.Utilities;
  */
 public class NetworkProxySelector {
     
-    private final static Logger LOGGER = Logger.getLogger(NetworkProxySelector.class.getName());                    
+    private final static Logger LOGGER = Logger.getLogger(NetworkProxySelector.class.getName());
+    
     private final static String COMMA = ","; //NOI18N
+    
     private final static String GNOME = "gnome"; //NOI18N
     private final static String KDE = "kde"; //NOI18N
     private final static String RUNNING_ENV_SYS_PROPERTY = "netbeans.running.environment"; //NOI18N
@@ -90,10 +92,11 @@ public class NetworkProxySelector {
         } else {
             LOGGER.log(Level.INFO, "System network proxy reloading succeeded."); //NOI18N
         }
-                
+                       
         switch (networkProxySettings.getProxyMode()) {
             case AUTO:
-                LOGGER.log(Level.FINE, "System network proxy MODE: auto"); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - mode: auto"); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - pac url: {0}", networkProxySettings.getPacFileUrl()); //NOI18N
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTP_HOST);
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTP_PORT);
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTPS_HOST);
@@ -104,7 +107,14 @@ public class NetworkProxySelector {
                 getPreferences().put(ProxySettings.SYSTEM_PAC, networkProxySettings.getPacFileUrl());
                 break;
             case MANUAL:
-                LOGGER.log(Level.FINE, "System network proxy MODE: manual"); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - mode: manual"); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - http host: {0}", networkProxySettings.getHttpProxyHost()); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - http port: {0}", networkProxySettings.getHttpProxyPort()); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - https host: {0}", networkProxySettings.getHttpsProxyHost()); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - https port: {0}", networkProxySettings.getHttpsProxyPort()); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - socks host: {0}", networkProxySettings.getSocksProxyHost()); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - socks port: {0}", networkProxySettings.getSocksProxyPort()); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - no prohy hosts: {0}", getStringFromArray(networkProxySettings.getNoProxyHosts())); //NOI18N
                 getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTP_HOST, networkProxySettings.getHttpProxyHost());
                 getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTP_PORT, networkProxySettings.getHttpProxyPort());
                 getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTPS_HOST, networkProxySettings.getHttpsProxyHost());
@@ -115,9 +125,9 @@ public class NetworkProxySelector {
                 getPreferences().remove(ProxySettings.SYSTEM_PAC);
                 break;
             case DIRECT:
-                LOGGER.log(Level.FINE, "System network proxy MODE: direct"); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - mode: direct"); //NOI18N
             default:
-                LOGGER.log(Level.FINE, "System network proxy MODE: falled to default (corect if direct mode went before)"); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy: falled to default (corect if direct mode went before)"); //NOI18N
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTP_HOST);
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTP_PORT);
                 getPreferences().remove(ProxySettings.SYSTEM_PROXY_HTTPS_HOST);
@@ -167,12 +177,12 @@ public class NetworkProxySelector {
     private static NetworkProxyResolver getNetworkProxyResolver() {
         if (networkProxyResolver == null) {        
             if (Utilities.isWindows()) {
-                LOGGER.log(Level.FINE, "System network proxy resolver: Windows"); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy resolver: Windows"); //NOI18N
                 return new WindowsNetworkProxy();
             } 
             
             if (Utilities.isMac()) {
-                LOGGER.log(Level.FINE, "System network proxy resolver: Mac"); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy resolver: Mac"); //NOI18N
                 return new MacNetworkProxy();
             }
             
@@ -180,12 +190,12 @@ public class NetworkProxySelector {
                 String env = System.getProperty(RUNNING_ENV_SYS_PROPERTY);
                 if (env != null) {
                     if (env.toLowerCase().equals(GNOME)) {
-                        LOGGER.log(Level.FINE, "System network proxy resolver: Gnome"); //NOI18N
+                        LOGGER.log(Level.INFO, "System network proxy resolver: Gnome"); //NOI18N
                         return new GnomeNetworkProxy();
                     }
                     
                     if (env.toLowerCase().equals(KDE)) {
-                        LOGGER.log(Level.FINE, "System network proxy resolver: KDE"); //NOI18N
+                        LOGGER.log(Level.INFO, "System network proxy resolver: KDE"); //NOI18N
                         return new KdeNetworkProxy();
                     }
                 }

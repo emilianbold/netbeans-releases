@@ -524,8 +524,6 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     private void bTestConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bTestConnectionActionPerformed
         
-        
-        //lblTestResult.setText(a + " " + b + " " + c);
     }//GEN-LAST:event_bTestConnectionActionPerformed
     
     

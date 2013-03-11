@@ -83,6 +83,7 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
 
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
+        LOGGER.log(Level.FINE, "Gnome system proxy resolver started."); //NOI18N
         Map<String, String> proxyProperties = getGconfMap(GCONF_NODE_PROXY);
                         
         String proxyMode = proxyProperties.get(GCONF_KEY_MODE);
@@ -92,11 +93,15 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
         }        
         
         if (proxyMode.equals(GCONF_VALUE_NONE)) {
+            LOGGER.log(Level.INFO, "Gnome system proxy resolver: direct connection"); //NOI18N
             return new NetworkProxySettings();
         }
         
         if (proxyMode.equals(GCONF_VALUE_AUTO)) {
             String pacUrl = proxyProperties.get(GCONF_KEY_PAC_URL);
+            
+            LOGGER.log(Level.INFO, "Gnome system proxy resolver: auto - PAC ({0})", pacUrl); //NOI18N
+            
             if (pacUrl != null) {
                 return new NetworkProxySettings(pacUrl);             
             } else {
@@ -112,13 +117,23 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
             String httpProxyPort = proxyProperties.get(GCONF_KEY_HTTP_PORT);
             String noProxyHosts = proxyProperties.get(GCONF_KEY_IGNORE_HOSTS);
             
-            if (httpProxyAll != null && Boolean.parseBoolean(httpProxyAll)) {                                               
+            LOGGER.log(Level.INFO, "Gnome system proxy resolver: manual - http for all ({0})", httpProxyAll); //NOI18N
+            LOGGER.log(Level.INFO, "Gnome system proxy resolver: manual - http host ({0})", httpProxyHost); //NOI18N
+            LOGGER.log(Level.INFO, "Gnome system proxy resolver: manual - http port ({0})", httpProxyPort); //NOI18N
+            LOGGER.log(Level.INFO, "Gnome system proxy resolver: manual - ho proxy hosts ({0})", noProxyHosts); //NOI18N
+            
+            if (httpProxyAll != null && Boolean.parseBoolean(httpProxyAll)) {
                 return new NetworkProxySettings(httpProxyHost, httpProxyPort, getNoProxyHosts(noProxyHosts));
             } else {
                 String httpsProxyHost = proxyProperties.get(GCONF_KEY_HTTPS_HOST);
                 String httpsProxyPort = proxyProperties.get(GCONF_KEY_HTTPS_PORT);
                 String socksProxyHost = proxyProperties.get(GCONF_KEY_SOCKS_HOST);
                 String socksProxyPort = proxyProperties.get(GCONF_KEY_SOCKS_PORT);
+                
+                LOGGER.log(Level.INFO, "Gnome system proxy resolver: manual - https host ({0})", httpsProxyHost); //NOI18N
+                LOGGER.log(Level.INFO, "Gnome system proxy resolver: manual - https port ({0})", httpsProxyPort); //NOI18N
+                LOGGER.log(Level.INFO, "Gnome system proxy resolver: manual - socks host ({0})", socksProxyHost); //NOI18N
+                LOGGER.log(Level.INFO, "Gnome system proxy resolver: manual - socks port ({0})", socksProxyPort); //NOI18N
                 
                 return new NetworkProxySettings(httpProxyHost, httpProxyPort, 
                         httpsProxyHost, httpsProxyPort, 
@@ -129,6 +144,14 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
         return new NetworkProxySettings(false);
     }    
     
+    /**
+     * Returns map of properties retrieved from gconftool-2.
+     * 
+     * Executes the command "/usr/bin/gconftool-2 -R [node]".
+     * 
+     * @param gconfNode Node for which the properties should be returned.
+     * @return Map of properties retrieved from gconftool-2.
+     */
     private static Map<String, String> getGconfMap(String gconfNode) {
         Map<String, String> map = new HashMap<String, String>();
         
@@ -156,14 +179,37 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
         return map;
     }
     
+    /**
+     * Returns the key for one line respons from gconftool-2.
+     * 
+     * @param line Line from gconftool-2 response.
+     * @return The key for one line respons from gconftool-2.
+     */
     private static String getKey(String line) {        
         return line.substring(0, line.indexOf(EQUALS)).trim();
     }
 
+    /**
+     * Returns the value for one line respons from gconftool-2.
+     * 
+     * @param line Line from gconftool-2 response.
+     * @return The value for one line respons from gconftool-2.
+     */
     private static String getValue(String line) {
         return line.substring(line.indexOf(EQUALS) + 1).trim();
     }
     
+    /**
+     * Returns array of Strings of no proxy hosts.
+     * 
+     * The value responding to "ignore_hosts" key.
+     * 
+     * Parses the value returned from gconftool-2.
+     * Usually [host1:host2:host3]
+     * 
+     * @param noProxyHostsString The value returned from gconftool-2.
+     * @return Array of Strings of no proxy hosts.
+     */
     private static String[] getNoProxyHosts(String noProxyHostsString) {
         if (noProxyHostsString != null && !noProxyHostsString.isEmpty()) {
             if (noProxyHostsString.startsWith(SQ_BRACKET_LEFT)) {
