@@ -738,11 +738,21 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     private void setCodeAssistanceEnabled(Lookup.Provider project, boolean enable) {
+        boolean actionPerformed = false;
         if (project != null) {
             NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
-            if (settings != null) {
+            if (settings != null) {                
                 settings.setCodeAssistanceEnabled(enable);
+                actionPerformed = true;
             }
+        }
+        if (CndUtils.isDebugMode()) {
+            String msg = "";
+            if (!actionPerformed) {
+                msg = "No settings; "; // NOI18N
+            }
+            msg += enable ? "enabling for " : "disabling for "; // NOI18N
+            CndUtils.assertTrueInConsole(false, msg, project);
         }
     }
     
