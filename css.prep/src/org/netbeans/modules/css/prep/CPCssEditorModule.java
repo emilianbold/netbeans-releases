@@ -109,6 +109,9 @@ public class CPCssEditorModule extends CssEditorModule {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
         CPModel model = CPModel.getModel(context.getParserResult());
+        if(model == null) {
+            return Collections.emptyList();
+        }
         List<CompletionProposal> allVars = getVariableCompletionProposals(context, model);
 
         //errorneous source
