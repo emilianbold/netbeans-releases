@@ -41,61 +41,26 @@
  */
 package org.netbeans.modules.css.prep.model;
 
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.openide.filesystems.FileObject;
 
 /**
- * Resolved element.
- * 
- * Can hold model and parser result!
  *
  * @author marekfukala
  */
-public class Element {
+public class VariableHandle extends ElementHandle {
 
-    private VariableHandle handle;
-    private OffsetRange range; 
-    private OffsetRange scope;
-
-    public Element(VariableHandle handle, OffsetRange range) {
-        this(handle, range, null);
+    public VariableHandle(FileObject file, String name, ElementType type) {
+        super(file, name, type);
     }
 
-    public Element(VariableHandle handle, OffsetRange range, OffsetRange scope) {
-        this.handle = handle;
-        this.range = range;
-        this.scope = scope;
+    @Override
+    public Element resolve(CPModel model) {
+        for(Element var : model.getVariables()) {
+            if(var.getType() == getType() && var.getName().equals(getName())) {
+                return var;
+            }
+        }
+        return null;
     }
     
-    public String getName() {
-        return getHandle().getName();
-    }
-    
-    public ElementType getType() {
-        return getHandle().getType();
-    }
-    
-    public FileObject getFile() {
-        return getHandle().getFile();
-    }
-
-    /**
-     * range of the element itself.
-     */
-    public OffsetRange getRange() {
-        return range;
-    }
-
-    /**
-     * range of the element scope.
-     * 
-     * null means no scope 
-     */
-    public OffsetRange getScope() {
-        return scope;
-    }
-
-    private ElementHandle getHandle() {
-        return handle;
-    }
 }

@@ -41,61 +41,53 @@
  */
 package org.netbeans.modules.css.prep.model;
 
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.openide.filesystems.FileObject;
-
 /**
- * Resolved element.
- * 
- * Can hold model and parser result!
  *
  * @author marekfukala
  */
-public class Element {
-
-    private VariableHandle handle;
-    private OffsetRange range; 
-    private OffsetRange scope;
-
-    public Element(VariableHandle handle, OffsetRange range) {
-        this(handle, range, null);
-    }
-
-    public Element(VariableHandle handle, OffsetRange range, OffsetRange scope) {
-        this.handle = handle;
-        this.range = range;
-        this.scope = scope;
-    }
-    
-    public String getName() {
-        return getHandle().getName();
-    }
-    
-    public ElementType getType() {
-        return getHandle().getType();
-    }
-    
-    public FileObject getFile() {
-        return getHandle().getFile();
-    }
+public enum ElementType {
 
     /**
-     * range of the element itself.
+     * Variable in the stylesheet body.
+     *
+     * $var: value;
      */
-    public OffsetRange getRange() {
-        return range;
-    }
-
+    VARIABLE_GLOBAL_DECLARATION,
+    
     /**
-     * range of the element scope.
+     * Variable in a rule or mixin or other code block.
+     *
+     * $var: value;
+     */
+    VARIABLE_LOCAL_DECLARATION,
+    
+    /**
+     * Variable declared as a param in a mixin declaration or for, each, while
+     * block.
+     *
+     * @mixin left($dist) { ... }
+     */
+    VARIABLE_DECLARATION_MIXIN_PARAMS,
+    
+    /**
+     * Variable usage.
+     *
+     * .clz { color: $best; }
+     */
+    VARIABLE_USAGE,
+    
+    /**
+     * Mixin declaration:
      * 
-     * null means no scope 
+     * @mixin mymixin() { ... }
      */
-    public OffsetRange getScope() {
-        return scope;
-    }
-
-    private ElementHandle getHandle() {
-        return handle;
-    }
+    MIXIN_DECLARATION,
+    
+    /**
+     * Mixin usage:
+     * 
+     * @include mymixin;
+     */
+    MIXIN_USAGE;
+    
 }
