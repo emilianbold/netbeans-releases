@@ -60,7 +60,12 @@ public class ChromeDebuggerSuite extends JavaScriptDebugger {
                 "testBreakpointRemoteFile",
                 "testDebugModifications",
                 "testDebugNoModifications",
-                "testDeleteBreakpoint");
+                "testDeleteBreakpoint")
+                .addTest(XHRDebuggerTest.class, "testOpenProjectChromeNB",
+                "testCreateBreakpointMixed",
+                "testAllXHR",
+                "testDisableAll",
+                "testDeleteXHRBreakpoint");
         return conf.suite();
 
     }
