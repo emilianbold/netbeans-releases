@@ -396,6 +396,15 @@ public class CSSStylesSelectionPanel extends JPanel {
                 list.addMouseMotionListener(adapter);
                 list.addMouseListener(adapter);
             }
+
+            @Override
+            protected void showSelection(int[] indexes) {
+                super.showSelection(indexes);
+                // Issue 226899
+                if (indexes != null && indexes.length > 0) {
+                    list.ensureIndexIsVisible(indexes[0]);
+                }
+            }
         };
         rulePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         ExplorerManagerProviderPanel rulePanePanel = new ExplorerManagerProviderPanel();
