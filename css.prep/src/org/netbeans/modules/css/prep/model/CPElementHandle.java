@@ -47,13 +47,13 @@ import org.openide.filesystems.FileObject;
  *
  * @author marekfukala
  */
-public class ElementHandle {
+public class CPElementHandle {
     
     private FileObject file;
     private String name;
-    private ElementType type;
+    private CPElementType type;
 
-    public ElementHandle(FileObject file, String name, ElementType type) {
+    public CPElementHandle(FileObject file, String name, CPElementType type) {
         this.file = file;
         this.name = name;
         this.type = type;
@@ -67,15 +67,15 @@ public class ElementHandle {
         return name;
     }
 
-    public ElementType getType() {
+    public CPElementType getType() {
         return type;
     }
     
     /**
      * Resolve to {@link Element}.
      */
-    public Element resolve(CPModel model) {
-        for(Element var : model.getElements()) {
+    public CPElement resolve(CPModel model) {
+        for(CPElement var : model.getElements()) {
             if(var.getType() == getType() && var.getName().equals(getName())) {
                 return var;
             }

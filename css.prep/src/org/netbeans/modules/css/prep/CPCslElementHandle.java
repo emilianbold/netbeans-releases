@@ -39,79 +39,72 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.model;
+package org.netbeans.modules.css.prep;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author marekfukala
  */
-public enum ElementType {
+public class CPCslElementHandle implements ElementHandle {
+      
+    private FileObject file;
+    private CharSequence name;
 
-    /**
-     * Variable in the stylesheet body.
-     *
-     * $var: value;
-     */
-    VARIABLE_GLOBAL_DECLARATION("var_gl"),
-    
-    /**
-     * Variable in a rule or mixin or other code block.
-     *
-     * $var: value;
-     */
-    VARIABLE_LOCAL_DECLARATION("var_loc"),
-    
-    /**
-     * Variable declared as a param in a mixin declaration or for, each, while
-     * block.
-     *
-     * @mixin left($dist) { ... }
-     */
-    VARIABLE_DECLARATION_MIXIN_PARAMS("var_prms"),
-    
-    /**
-     * Variable usage.
-     *
-     * .clz { color: $best; }
-     */
-    VARIABLE_USAGE("var_usg"),
-    
-    /**
-     * Mixin declaration:
-     * 
-     * @mixin mymixin() { ... }
-     */
-    MIXIN_DECLARATION("mx"),
-    
-    /**
-     * Mixin usage:
-     * 
-     * @include mymixin;
-     */
-    MIXIN_USAGE("mx_usg");
-    
-    private static Map<String, ElementType> CODES_TO_ELEMENTS;
-    
-    private String indexCode;
+    public CPCslElementHandle(CharSequence name) {
+        this(null, name);
+    }
 
-    private ElementType(String indexCode) {
-        this.indexCode = indexCode;
+    public CPCslElementHandle(FileObject file, CharSequence name) {
+        this.file = file;
+        this.name = name;
     }
-    
-    public String getIndexCode() {
-        return indexCode;
+
+    @Override
+    public String getName() {
+        return name.toString();
     }
-    
-    public static ElementType forIndexCode(String indexCode) {
-        if(CODES_TO_ELEMENTS == null) {
-            CODES_TO_ELEMENTS = new HashMap<String, ElementType>();
-            for(ElementType et : values()) {
-                CODES_TO_ELEMENTS.put(et.getIndexCode(), et);
-            }
-        }
-        return CODES_TO_ELEMENTS.get(indexCode);
+
+    @Override
+    public FileObject getFileObject() {
+        return file;
+    }
+
+    @Override
+    public String getMimeType() {
+        return "text/css";
+    }
+
+    @Override
+    public String getIn() {
+        return null;
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.FIELD;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return null;
     }
 }
