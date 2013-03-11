@@ -44,6 +44,7 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
@@ -463,6 +464,32 @@ public class OutWriterTest extends NbTestCase {
             assertEquals(OutWriter.LINE_SEPARATOR, ow.getLines().getLine(2));
             assertEquals("zzz" + OutWriter.LINE_SEPARATOR, ow.getLines().getLine(3));
             
+            ow = new OutWriter();
+            ow.write("Some \u001B[31;42mColor \u001B[32;41mText and "
+                    + "unsupported \u001B[2Ksequence");
+            ow.flush();
+            assertEquals(1, ow.getLines().getLineCount());
+            LineInfo.Segment[] segments = ow.getLines().getLineInfo(0)
+                    .getLineSegments().toArray(new LineInfo.Segment[4]);
+            assertNull(segments[0].getCustomBackground());
+            assertNull(segments[0].getCustomColor());
+            assertEquals("Some ", ow.getLines().getText(
+                    0, segments[0].getEnd()));
+
+            Color secondSegmentFg = segments[1].getCustomColor();
+            Color secondSegmentBg = segments[1].getCustomBackground();
+            assertNotNull(secondSegmentBg);
+            assertNotNull(secondSegmentFg);
+            assertEquals("Color ", ow.getLines().getText(
+                    segments[0].getEnd(), segments[1].getEnd()));
+
+            assertNotNull(segments[2].getCustomBackground());
+            assertNotNull(segments[2].getCustomColor());
+            assertNotSame(secondSegmentBg, segments[2].getCustomBackground());
+            assertNotSame(secondSegmentFg, segments[2].getCustomColor());
+            assertEquals("Text and unsupported sequence", ow.getLines().getText(
+                    segments[1].getEnd(), segments[2].getEnd()));
+            assertNull(segments[3]);
             
         } catch (Exception e) {
             e.printStackTrace();
