@@ -110,7 +110,7 @@ is the proper place.
         <change id="caret-fold-cleanup">
             <summary>Removed dependencies on Folding</summary>
             <version major="3" minor="38"/>
-            <date day="27" month="2" year="2013"/>
+            <date day="11" month="3" year="2013"/>
             <author login="sdedic"/>
             <compatibility binary="compatible" source="compatible" semantic="incompatible" deprecation="yes"/>
             <description>
@@ -125,12 +125,13 @@ is the proper place.
                 </p>
             </description>
             <class name="BaseCaret" package="org.netbeans.editor"/>
+            <class name="ActionFactory" package="org.netbeans.editor"/>
             <issue number="226368"/>
         </change>
         <change id="caret-refresh">
             <summary>Allow to refresh editor view so that caret is visible</summary>
             <version major="3" minor="37"/>
-            <date day="27" month="2" year="2013"/>
+            <date day="11" month="3" year="2013"/>
             <author login="sdedic"/>
             <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
             <description>
