@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.eclipse.jgit.JGitText;
 import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.Config;
@@ -180,13 +179,13 @@ abstract class TransportCommand extends GitCommand {
         int pos;
         if (message == null) {
             throw new GitException(e);
-        } else if ((pos = message.indexOf(": " + JGitText.get().notAuthorized)) != -1) { //NOI18N
+        } else if ((pos = message.indexOf(": not authorized")) != -1) { //NOI18N
             String repositoryUrl = message.substring(0, pos);
             throw new GitException.AuthorizationException(repositoryUrl, message, e);
         } else if ((pos = message.indexOf(": " + HttpURLConnection.HTTP_UNAUTHORIZED + " ")) != -1) { //NOI18N
             String repositoryUrl = message.substring(0, pos);
             throw new GitException.AuthorizationException(repositoryUrl, message, e);
-        } else if (message.contains(JGitText.get().notAuthorized)) { //NOI18N
+        } else if (message.contains("not authorized")) { //NOI18N
             throw new GitException.AuthorizationException(uri.toString(), message, e);
         } else if ((pos = message.toLowerCase().indexOf(": auth cancel")) != -1) { //NOI18N
             String repositoryUrl = message.substring(0, pos);

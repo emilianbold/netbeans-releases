@@ -45,6 +45,7 @@ package org.netbeans.libs.git;
 import java.util.Map;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.URIish;
@@ -85,7 +86,9 @@ public final class GitTransportUpdate {
         this.remoteName = stripRefs(update.getRemoteName());
         this.oldObjectId = update.getOldObjectId() == null || ObjectId.zeroId().equals(update.getOldObjectId()) ? null : update.getOldObjectId().getName();
         this.newObjectId = update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
-        this.result = GitRefUpdateResult.valueOf(update.getResult().name());
+        this.result = GitRefUpdateResult.valueOf((update.getResult() == null 
+                ? RefUpdate.Result.NOT_ATTEMPTED 
+                : update.getResult()).name());
         this.uri = uri.toString();
         this.type = getType(update.getLocalName());
     }
