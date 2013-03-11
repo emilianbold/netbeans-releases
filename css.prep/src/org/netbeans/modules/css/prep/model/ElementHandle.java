@@ -47,7 +47,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author marekfukala
  */
-public abstract class ElementHandle {
+public class ElementHandle {
     
     private FileObject file;
     private String name;
@@ -74,6 +74,13 @@ public abstract class ElementHandle {
     /**
      * Resolve to {@link Element}.
      */
-    public abstract Element resolve(CPModel model);
+    public Element resolve(CPModel model) {
+        for(Element var : model.getElements()) {
+            if(var.getType() == getType() && var.getName().equals(getName())) {
+                return var;
+            }
+        }
+        return null;
+    }
     
 }

@@ -203,21 +203,26 @@ public class CPCssEditorModule extends CssEditorModule {
                     DependenciesGraph dependencies = index.getDependencies(file);
                     Collection<FileObject> referred = dependencies.getAllReferedFiles();
                     for (FileObject reff : referred) {
+                        if (reff.equals(file)) {
+                            //skip current file (it is included to the referred files list)
+                            continue;
+                        }
                         CPCssIndexModel cpIndexModel = (CPCssIndexModel) index.getIndexModel(CPCssIndexModel.Factory.class, reff);
-                        
-                        //*********************************
-                        //XXX TODO XXX - index also the variable type so we can add just the global variables from the imported files
-                        //*********************************
-                        
-                        Collection<String> variableNames = cpIndexModel.getVariableNames();
-                        for(String varName : variableNames) {
-                            ElementHandle handle = new CPElementHandle(context.getFileObject(), varName);
-                            VariableCompletionItem item = new VariableCompletionItem(handle,
-                                    varName,
-                                    context.getAnchorOffset(),
-                                    reff.getNameExt());
-                            
-                            proposals.add(item);
+                        if (cpIndexModel != null) {
+                            Collection<org.netbeans.modules.css.prep.model.ElementHandle> variables = cpIndexModel.getVariables();
+                            for (org.netbeans.modules.css.prep.model.ElementHandle var : variables) {
+                                if (var.getType() == ElementType.VARIABLE_GLOBAL_DECLARATION) {
+                                    ElementHandle handle = new CPElementHandle(context.getFileObject(), var.getName());
+                                    VariableCompletionItem item = new VariableCompletionItem(
+                                            handle,
+                                            var.getName(),
+                                            context.getAnchorOffset(),
+                                            reff.getNameExt());
+
+                                    proposals.add(item);
+                                }
+
+                            }
                         }
 
                     }

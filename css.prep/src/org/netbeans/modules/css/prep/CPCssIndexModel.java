@@ -50,8 +50,12 @@ import org.netbeans.modules.css.indexing.api.CssIndexModel;
 import org.netbeans.modules.css.indexing.api.CssIndexModelFactory;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.prep.model.CPModel;
+import org.netbeans.modules.css.prep.model.Element;
+import org.netbeans.modules.css.prep.model.ElementHandle;
+import org.netbeans.modules.css.prep.model.ElementType;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -66,34 +70,38 @@ public class CPCssIndexModel extends CssIndexModel {
     private static final Collection<String> INDEX_KEYS = Arrays.asList(new String[]{MIXINS_INDEX_KEY, VARIABLES_INDEX_KEY});
     
     private static final String VALUE_SEPARATOR = ",";
+    private static final String TYPE_SEPARATOR = "/";
     
-    private Collection<String> mixinNames;
-    private Collection<String> variableNames;
+    private Collection<ElementHandle> mixins, variables;
 
-    public CPCssIndexModel(Collection<String> mixinNames, Collection<String> variableNames) {
-        this.mixinNames = mixinNames;
-        this.variableNames = variableNames;
+    public CPCssIndexModel(Collection<ElementHandle> mixins, Collection<ElementHandle> variableNames) {
+        this.mixins = mixins;
+        this.variables = variableNames;
     }
     
-    public Collection<String> getVariableNames() {
-        return variableNames;
+    public Collection<ElementHandle> getVariables() {
+        return variables;
     }
     
-    public Collection<String> getMixinNames() {
-        return mixinNames;
+    public Collection<ElementHandle> getMixins() {
+        return mixins;
     }
     
     @Override
     public void storeToIndex(IndexDocument document) {
-         storeItems(mixinNames, document, MIXINS_INDEX_KEY);
-         storeItems(variableNames, document, VARIABLES_INDEX_KEY);
+         storeItems(mixins, document, MIXINS_INDEX_KEY);
+         storeItems(variables, document, VARIABLES_INDEX_KEY);
     }
     
-    private void storeItems(Collection<String> items, IndexDocument document, String key) {
-        Iterator<String> i = items.iterator();
+    private void storeItems(Collection<? extends ElementHandle> items, IndexDocument document, String key) {
+        Iterator<? extends ElementHandle> i = items.iterator();
         StringBuilder sb = new StringBuilder();
         while (i.hasNext()) {
-            sb.append(i.next());
+            ElementHandle handle = i.next();
+            sb.append(handle.getName());
+            sb.append(TYPE_SEPARATOR);
+            sb.append(handle.getType().getIndexCode());
+            
             if (i.hasNext()) {
                 sb.append(VALUE_SEPARATOR); //NOI18N
             }
@@ -107,16 +115,22 @@ public class CPCssIndexModel extends CssIndexModel {
         @Override
         public CPCssIndexModel getModel(CssParserResult result) {
             CPModel model = CPModel.getModel(result);
-            Collection<String> mixinNames = model.getMixinNames();
-            Collection<String> varNames = model.getVarNames();
-            return new CPCssIndexModel(mixinNames, varNames);
+            Collection<Element> mixins = model.getMixins();
+            Collection<Element> vars = model.getVariables();
+            
+            return new CPCssIndexModel(
+                    Element.toHandles(mixins), 
+                    Element.toHandles(vars));
         }
 
         @Override
         public CPCssIndexModel loadFromIndex(IndexResult result) {
             String mixins = result.getValue(MIXINS_INDEX_KEY);
             String variables = result.getValue(VARIABLES_INDEX_KEY);
-            return new CPCssIndexModel(parseItems(mixins),parseItems(variables));
+
+            return new CPCssIndexModel(
+                    parseItems(mixins, result.getFile()),
+                    parseItems(variables, result.getFile()));
         }
 
         @Override
@@ -124,16 +138,23 @@ public class CPCssIndexModel extends CssIndexModel {
             return INDEX_KEYS;
         }
         
-        private Collection<String> parseItems(String value) {
-            if(value == null) {
+        private Collection<ElementHandle> parseItems(String value, FileObject file) {
+            if(value == null || value.isEmpty()) {
                 return Collections.emptyList();
             }
             String[] items = value.split(VALUE_SEPARATOR);
-            Collection<String> trimmed = new ArrayList<String>(items.length);
+            Collection<ElementHandle> handles = new ArrayList<ElementHandle>(items.length);
             for(String item : items) {
-                trimmed.add(item.trim());
+                String[] name_type_pair = item.split(TYPE_SEPARATOR);
+                String name = name_type_pair[0];
+                String typeIndexCode = name_type_pair[1];
+                
+                ElementType type = ElementType.forIndexCode(typeIndexCode);
+                ElementHandle handle = new ElementHandle(file, name, type);
+                
+                handles.add(handle);
             }
-            return trimmed;
+            return handles;
             
         }
         

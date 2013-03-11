@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.css.prep.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author marekfukala
@@ -52,14 +55,14 @@ public enum ElementType {
      *
      * $var: value;
      */
-    VARIABLE_GLOBAL_DECLARATION,
+    VARIABLE_GLOBAL_DECLARATION("var_gl"),
     
     /**
      * Variable in a rule or mixin or other code block.
      *
      * $var: value;
      */
-    VARIABLE_LOCAL_DECLARATION,
+    VARIABLE_LOCAL_DECLARATION("var_loc"),
     
     /**
      * Variable declared as a param in a mixin declaration or for, each, while
@@ -67,27 +70,48 @@ public enum ElementType {
      *
      * @mixin left($dist) { ... }
      */
-    VARIABLE_DECLARATION_MIXIN_PARAMS,
+    VARIABLE_DECLARATION_MIXIN_PARAMS("var_prms"),
     
     /**
      * Variable usage.
      *
      * .clz { color: $best; }
      */
-    VARIABLE_USAGE,
+    VARIABLE_USAGE("var_usg"),
     
     /**
      * Mixin declaration:
      * 
      * @mixin mymixin() { ... }
      */
-    MIXIN_DECLARATION,
+    MIXIN_DECLARATION("mx"),
     
     /**
      * Mixin usage:
      * 
      * @include mymixin;
      */
-    MIXIN_USAGE;
+    MIXIN_USAGE("mx_usg");
     
+    private static Map<String, ElementType> CODES_TO_ELEMENTS;
+    
+    private String indexCode;
+
+    private ElementType(String indexCode) {
+        this.indexCode = indexCode;
+    }
+    
+    public String getIndexCode() {
+        return indexCode;
+    }
+    
+    public static ElementType forIndexCode(String indexCode) {
+        if(CODES_TO_ELEMENTS == null) {
+            CODES_TO_ELEMENTS = new HashMap<String, ElementType>();
+            for(ElementType et : values()) {
+                CODES_TO_ELEMENTS.put(et.getIndexCode(), et);
+            }
+        }
+        return CODES_TO_ELEMENTS.get(indexCode);
+    }
 }

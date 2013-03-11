@@ -121,6 +121,17 @@ public class CPModel {
     }
     
     /**
+     * Gets both var and mixin elements.
+     * @return 
+     */
+    public Collection<Element> getElements() {
+        Collection<Element> all = new ArrayList<Element>();
+        all.addAll(getVariables());
+        all.addAll(getMixins());
+        return all;
+    }
+    
+    /**
      * Gets a collection of variables accessible(visible) at the given location.
      * 
      * @param offset
@@ -198,7 +209,7 @@ public class CPModel {
                         }
                         OffsetRange context = contexts.isEmpty() ? null : contexts.peek();
                         
-                        VariableHandle handle = new VariableHandle(getFile(), node.image().toString().trim(), type);
+                        ElementHandle handle = new ElementHandle(getFile(), node.image().toString().trim(), type);
                         OffsetRange variableRange = new OffsetRange(node.from(), node.to());
                         Element element = new Element(handle, variableRange, context);
                         
@@ -240,7 +251,7 @@ public class CPModel {
                         Node mixin_name = NodeUtil.getChildByType(node, NodeType.cp_mixin_name);
                         if (mixin_name != null) {
                             
-                           VariableHandle handle = new VariableHandle(getFile(), mixin_name.image().toString().trim(), ElementType.MIXIN_DECLARATION);
+                           ElementHandle handle = new ElementHandle(getFile(), mixin_name.image().toString().trim(), ElementType.MIXIN_DECLARATION);
                            OffsetRange variableRange = new OffsetRange(mixin_name.from(), mixin_name.to());
                            OffsetRange scope = null; //TODO implement!
                            Element element = new Element(handle, variableRange, scope);

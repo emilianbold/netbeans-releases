@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.prep.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.openide.filesystems.FileObject;
 
@@ -53,15 +55,15 @@ import org.openide.filesystems.FileObject;
  */
 public class Element {
 
-    private VariableHandle handle;
+    private ElementHandle handle;
     private OffsetRange range; 
     private OffsetRange scope;
 
-    public Element(VariableHandle handle, OffsetRange range) {
+    public Element(ElementHandle handle, OffsetRange range) {
         this(handle, range, null);
     }
 
-    public Element(VariableHandle handle, OffsetRange range, OffsetRange scope) {
+    public Element(ElementHandle handle, OffsetRange range, OffsetRange scope) {
         this.handle = handle;
         this.range = range;
         this.scope = scope;
@@ -98,4 +100,13 @@ public class Element {
     private ElementHandle getHandle() {
         return handle;
     }
+    
+    public static Collection<ElementHandle> toHandles(Collection<Element> elements) {
+        Collection<ElementHandle> handles = new ArrayList<ElementHandle>();
+        for(Element e : elements) {
+            handles.add(e.getHandle());
+        }
+        return handles;
+    }
+    
 }
