@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.hints;
 
-package org.netbeans.modules.web.jsfapi.api;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSourceTaskFactory;
+import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author marekfukala
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface LibraryComponent {
+@ServiceProvider(service=JavaSourceTaskFactory.class)
+public class JsfHintsFactory extends EditorAwareJavaSourceTaskFactory {
 
-    public String getName();
+    public JsfHintsFactory() {
+        super(Phase.RESOLVED, JavaSource.Priority.BELOW_NORMAL);
+    }
 
-    public Tag getTag();
+    @Override
+    protected CancellableTask<CompilationInfo> createTask(FileObject file) {
+        return new JsfHintsFinder(file);
+    }
 
-    public Library getLibrary();
-
-    public String[][] getDescription();
-    
 }

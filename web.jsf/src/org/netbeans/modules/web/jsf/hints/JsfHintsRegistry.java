@@ -39,56 +39,30 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.actions;
+package org.netbeans.modules.web.jsf.hints;
 
-import javax.swing.Action;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.modules.web.jsf.hints.rules.FlowScopedBeanWithoutCdi;
+import org.netbeans.modules.web.jsf.hints.rules.JavaxFacesBeanIsGonnaBeDeprecated;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
  *
- * @author mtishkov
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class BuildPackageAction extends MakeProjectContextAwareAction {
+class JsfHintsRegistry {
 
-    private final Action deligate;
-    
-    BuildPackageAction() {
-        super();
-        deligate = MakeProjectActionsSupport.buildPackageAction();
-    }
+    private static final Collection<? extends JsfHintsRule> RULES = Arrays.asList(
+            new FlowScopedBeanWithoutCdi(),
+            new JavaxFacesBeanIsGonnaBeDeprecated());
 
-   
-    
-    
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        deligate.actionPerformed(null);
-    }
-    
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        Project p = getProject(activatedNodes);
-        if (p == null) {
-            return false;
+    public static Collection<ErrorDescription> check(JsfHintsContext ctx) {
+        Collection<ErrorDescription> hints = new ArrayList<ErrorDescription>();
+        for (JsfHintsRule rule : RULES) {
+            hints.addAll(rule.check(ctx));
         }
-        ConfigurationDescriptorProvider pdp = p.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp.gotDescriptor() && pdp.getConfigurationDescriptor().getActiveConfiguration() != null
-                && pdp.getConfigurationDescriptor().getActiveConfiguration().isMakefileConfiguration()) {
-            return false;
-        }
-        return true;
-    }
-    
-    @Override
-    public String getName() {
-        return deligate.getValue(Action.SHORT_DESCRIPTION) + "";//NOI18N
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return null;
+        return hints;
     }
 }
