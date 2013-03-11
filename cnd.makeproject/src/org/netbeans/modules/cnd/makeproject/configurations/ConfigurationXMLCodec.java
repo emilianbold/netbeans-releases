@@ -1046,12 +1046,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (makeConfiguration.getAssemblerRequired().getValue() != makeConfiguration.getAssemblerRequired().getDefault()) {
             xes.element(ASSEMBLER_REQUIRED_ELEMENT, "" + makeConfiguration.getAssemblerRequired().getValue());
         }
-        if (makeConfiguration.getDependencyChecking().getModified()) {
+        // A default value depend on global properties. Store value always.
+        //if (makeConfiguration.getDependencyChecking().getModified()) {
             xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N
-        }
-        if (makeConfiguration.getRebuildPropChanged().getModified()) {
+        //}
+        // A default value depend on global properties. Store value always.
+        //if (makeConfiguration.getRebuildPropChanged().getModified()) {
             xes.element(REBUILD_PROP_CHANGED, "" + makeConfiguration.getRebuildPropChanged().getValue()); // NOI18N
-        }
+        //}
         xes.elementClose(TOOLS_SET_ELEMENT);
     }
 }
