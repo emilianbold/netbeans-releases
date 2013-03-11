@@ -69,6 +69,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.OnStop;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -494,6 +495,24 @@ public final class RecentFiles {
             }
             if (TopComponent.Registry.PROP_TC_OPENED.equals(name)) {
                 removeFile((TopComponent) evt.getNewValue());
+            }
+        }
+    }
+
+    /**
+     * {@link Runnable} that will be invoked during shutdown sequence and that
+     * will add non-persistent {@link TopComponent}s to the list of recent
+     * files. See bug #218695.
+     */
+    @OnStop
+    public static final class NonPersistentDocumentsAdder implements Runnable {
+
+        @Override
+        public void run() {
+            for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+                if (TopComponent.PERSISTENCE_NEVER == tc.getPersistenceType()) {
+                    addFile(tc);
+                }
             }
         }
     }
