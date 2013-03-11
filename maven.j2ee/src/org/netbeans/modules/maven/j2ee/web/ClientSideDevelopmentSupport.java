@@ -109,7 +109,7 @@ public final class ClientSideDevelopmentSupport implements
     @Override
     public void showURL(URL applicationRootURL, URL urlToOpenInBrowser, FileObject context) {
         projectRootURL = WebUtils.urlToString(applicationRootURL);
-        if (projectRootURL != null && !projectRootURL.endsWith("/")) {
+        if (projectRootURL != null && !projectRootURL.contains(".") && !projectRootURL.endsWith("/")) {
             projectRootURL += "/";
         }
         BrowserSupport bs = getBrowserSupport();
