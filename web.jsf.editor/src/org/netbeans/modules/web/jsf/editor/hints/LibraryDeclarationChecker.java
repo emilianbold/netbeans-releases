@@ -78,8 +78,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
-import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
+import org.netbeans.modules.web.jsfapi.api.Library;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -112,9 +112,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-        final Collection<AbstractFaceletsLibrary> declaredLibraries = new ArrayList<AbstractFaceletsLibrary>();
+        final Collection<Library> declaredLibraries = new ArrayList<Library>();
         JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
-        Map<String, AbstractFaceletsLibrary> libs = Collections.emptyMap();
+        Map<String, Library> libs = Collections.emptyMap();
         if (jsfSupport != null) {
             libs = jsfSupport.getLibraries();
         }
@@ -182,8 +182,8 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
                     //3. check for undeclared components
                     List<HintFix> fixes = new ArrayList<HintFix>();
-                    Set<AbstractFaceletsLibrary> libs = getLibsByPrefixes(context, getUndeclaredNamespaces(undeclaredNodes));
-                    for (AbstractFaceletsLibrary lib : libs) {
+                    Set<Library> libs = getLibsByPrefixes(context, getUndeclaredNamespaces(undeclaredNodes));
+                    for (Library lib : libs) {
                         FixLibDeclaration fix = new FixLibDeclaration(context.doc, lib.getDefaultPrefix(), lib);
                         fixes.add(fix);
                     }
@@ -214,7 +214,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         for (String namespace : declaredNamespaces) {
-            AbstractFaceletsLibrary lib = libs.get(namespace);
+            Library lib = libs.get(namespace);
             if (lib != null) {
                 // http://java.sun.com/jsf/passthrough usage needs to be resolved on base of all declared libraries
                 if (!DefaultFaceletLibraries.JSF_PASSTHROUGH_NS.equals(lib.getNamespace())) {
@@ -240,7 +240,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 || declaredNamespaces.contains(DefaultFaceletLibraries.JSF_NS);
         final boolean[] passthroughUsage = new boolean[1];
         final Collection<OffsetRange> ranges = new ArrayList<OffsetRange>();
-        for (AbstractFaceletsLibrary lib : declaredLibraries) {
+        for (Library lib : declaredLibraries) {
             Node rootNode = result.root(lib.getNamespace());
             if (rootNode == null) {
                 continue; //no parse result for this namespace, the namespace is not declared
@@ -330,7 +330,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
     }
 
     private void addUnusedLibrary(Collection<OffsetRange> ranges, Map<String, Attribute> namespace2Attribute,
-            AbstractFaceletsLibrary lib, Snapshot snapshot, CharSequence docText) {
+            Library lib, Snapshot snapshot, CharSequence docText) {
         Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
         if (declAttr != null) {
             int from = declAttr.nameOffset();
@@ -385,13 +385,13 @@ public class LibraryDeclarationChecker extends HintsProvider {
         return ranges;
     }
     
-    private static Set<AbstractFaceletsLibrary> getLibsByPrefixes(RuleContext context, Set<String> prefixes){
-        Set<AbstractFaceletsLibrary> libs = new HashSet<AbstractFaceletsLibrary>();
+    private static Set<Library> getLibsByPrefixes(RuleContext context, Set<String> prefixes){
+        Set<Library> libs = new HashSet<Library>();
         JsfSupportImpl sup = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
 
         if (sup != null){
             //eliminate the library duplicities - see the sup.getLibraries() doc
-            for (AbstractFaceletsLibrary lib : new HashSet<AbstractFaceletsLibrary>(sup.getLibraries().values())){
+            for (Library lib : new HashSet<Library>(sup.getLibraries().values())){
                 if (prefixes.contains(lib.getDefaultPrefix())){
                     libs.add(lib);
                 }
@@ -403,7 +403,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
     //find all embedded EL token sequences in the source code and check if the
     //prefix is used in any of them
-    private static boolean isFunctionLibraryPrefixUsedInEL(RuleContext context, AbstractFaceletsLibrary lib, CharSequence sourceText) {
+    private static boolean isFunctionLibraryPrefixUsedInEL(RuleContext context, Library lib, CharSequence sourceText) {
         String libraryPrefix = ((HtmlParserResult)context.parserResult).getNamespaces().get(lib.getNamespace());
 
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(sourceText, Language.find("text/xhtml"));

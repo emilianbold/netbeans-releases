@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.hints;
 
-package org.netbeans.modules.web.jsfapi.api;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.modules.web.jsf.hints.rules.FlowScopedBeanWithoutCdi;
+import org.netbeans.modules.web.jsf.hints.rules.JavaxFacesBeanIsGonnaBeDeprecated;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
  *
- * @author marekfukala
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface LibraryComponent {
+class JsfHintsRegistry {
 
-    public String getName();
+    private static final Collection<? extends JsfHintsRule> RULES = Arrays.asList(
+            new FlowScopedBeanWithoutCdi(),
+            new JavaxFacesBeanIsGonnaBeDeprecated());
 
-    public Tag getTag();
-
-    public Library getLibrary();
-
-    public String[][] getDescription();
-    
+    public static Collection<ErrorDescription> check(JsfHintsContext ctx) {
+        Collection<ErrorDescription> hints = new ArrayList<ErrorDescription>();
+        for (JsfHintsRule rule : RULES) {
+            hints.addAll(rule.check(ctx));
+        }
+        return hints;
+    }
 }
