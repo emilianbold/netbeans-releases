@@ -41,13 +41,6 @@
  */
 package org.netbeans.modules.javascript2.extjs.model;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
 
 /**
@@ -62,20 +55,5 @@ public class ExtModelTest extends ModelTestBase {
     
     public void testExtDefineMethod() throws Exception {
         checkModel("testfiles/completion/defineMethod/defineMethod.js");
-//        assertNotNull(model);
-//        JsObject  global = model.getGlobalObject();
-//        assertEquals(3, global.getProperties().size());
-//        JsObject jsObject = global.getProperty("NetBeans");
-//        assertNotNull(jsObject);
-//        jsObject = jsObject.getProperty("stuff");
-//        assertNotNull(jsObject);
-//        jsObject = jsObject.getProperty("engineer");
-//        assertNotNull(jsObject);
-//        JsObject developer = jsObject.getProperty("developer");
-//        assertNotNull(developer);
-//        assertFalse(developer.getModifiers().contains(Modifier.PRIVATE));
-//        assertEquals(1, developer.getAssignments().size());
-//        TypeUsage type = developer.getAssignments().iterator().next();
-//        assertEquals("Anonym$0", type.getType());
     }
 }
