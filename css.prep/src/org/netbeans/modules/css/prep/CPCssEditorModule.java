@@ -74,8 +74,8 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.css.prep.model.Element;
-import org.netbeans.modules.css.prep.model.Variable;
+import org.netbeans.modules.css.prep.model.CPElement;
+import org.netbeans.modules.css.prep.model.CPElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -182,11 +182,12 @@ public class CPCssEditorModule extends CssEditorModule {
     private static List<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        for (Variable var : model.getVariables(context.getCaretOffset())) {
-            if (var.getType() != Variable.Type.USAGE && !var.getRange().containsInclusive(context.getCaretOffset())) {
-                ElementHandle handle = new CPElementHandle(context.getFileObject(), var.getName());
-                VariableCompletionItem item = new VariableCompletionItem(handle,
-                        var.getName().toString(),
+        for (CPElement var : model.getVariables(context.getCaretOffset())) {
+            if (var.getType() != CPElementType.VARIABLE_USAGE && !var.getRange().containsInclusive(context.getCaretOffset())) {
+                ElementHandle handle = new CPCslElementHandle(context.getFileObject(), var.getName());
+                VariableCompletionItem item = new VariableCompletionItem(
+                        handle,
+                        var.getHandle(),
                         context.getAnchorOffset(),
                         var.getFile() == null ? null : var.getFile().getNameExt());
 
@@ -201,23 +202,28 @@ public class CPCssEditorModule extends CssEditorModule {
                 if (project != null) {
                     CssIndex index = CssIndex.get(project);
                     DependenciesGraph dependencies = index.getDependencies(file);
-                    Collection<FileObject> referingFiles = dependencies.getAllReferingFiles();
-                    for (FileObject reff : referingFiles) {
+                    Collection<FileObject> referred = dependencies.getAllReferedFiles();
+                    for (FileObject reff : referred) {
+                        if (reff.equals(file)) {
+                            //skip current file (it is included to the referred files list)
+                            continue;
+                        }
                         CPCssIndexModel cpIndexModel = (CPCssIndexModel) index.getIndexModel(CPCssIndexModel.Factory.class, reff);
-                        
-                        //*********************************
-                        //XXX TODO XXX - index also the variable type so we can add just the global variables from the imported files
-                        //*********************************
-                        
-                        Collection<String> variableNames = cpIndexModel.getVariableNames();
-                        for(String varName : variableNames) {
-                            ElementHandle handle = new CPElementHandle(context.getFileObject(), varName);
-                            VariableCompletionItem item = new VariableCompletionItem(handle,
-                                    varName,
-                                    context.getAnchorOffset(),
-                                    reff.getNameExt());
-                            
-                            proposals.add(item);
+                        if (cpIndexModel != null) {
+                            Collection<org.netbeans.modules.css.prep.model.CPElementHandle> variables = cpIndexModel.getVariables();
+                            for (org.netbeans.modules.css.prep.model.CPElementHandle var : variables) {
+                                if (var.getType() == CPElementType.VARIABLE_GLOBAL_DECLARATION) {
+                                    ElementHandle handle = new CPCslElementHandle(context.getFileObject(), var.getName());
+                                    VariableCompletionItem item = new VariableCompletionItem(
+                                            handle,
+                                            var,
+                                            context.getAnchorOffset(),
+                                            reff.getNameExt());
+
+                                    proposals.add(item);
+                                }
+
+                            }
                         }
 
                     }
@@ -349,7 +355,7 @@ public class CPCssEditorModule extends CssEditorModule {
             @Override
             public DeclarationLocation run(EditorFeatureContext context) {
                 CPModel model = CPModel.getModel(context.getParserResult());
-                for (Element mixin : model.getMixins()) {
+                for (CPElement mixin : model.getMixins()) {
                     if (LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
                         return new DeclarationLocation(context.getFileObject(), mixin.getRange().getStart());
                     }

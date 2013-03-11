@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,62 +34,84 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.prep.model;
 
-package org.openide.util.lookup;
+import java.util.HashMap;
+import java.util.Map;
 
-import java.util.concurrent.Executor;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+/**
+ *
+ * @author marekfukala
+ */
+public enum CPElementType {
 
-public class AbstractLookupExecutorTest extends AbstractLookupBaseHid 
-implements AbstractLookupBaseHid.Impl, Executor, LookupListener {
-    Lookup.Result<?> res;
-    
-    
-    public AbstractLookupExecutorTest(java.lang.String testName) {
-        super(testName, null);
-    }
-
-    //
-    // Impl of AbstractLookupBaseHid.Impl
-    //
-
-    /** Creates the initial abstract lookup.
+    /**
+     * Variable in the stylesheet body.
+     *
+     * $var: value;
      */
-    public Lookup createInstancesLookup (InstanceContent ic) {
-        ic.attachExecutor(this);
-        Lookup l = new AbstractLookup (ic, new InheritanceTree ());
-        return l;
+    VARIABLE_GLOBAL_DECLARATION("var_gl"),
+    
+    /**
+     * Variable in a rule or mixin or other code block.
+     *
+     * $var: value;
+     */
+    VARIABLE_LOCAL_DECLARATION("var_loc"),
+    
+    /**
+     * Variable declared as a param in a mixin declaration or for, each, while
+     * block.
+     *
+     * @mixin left($dist) { ... }
+     */
+    VARIABLE_DECLARATION_MIXIN_PARAMS("var_prms"),
+    
+    /**
+     * Variable usage.
+     *
+     * .clz { color: $best; }
+     */
+    VARIABLE_USAGE("var_usg"),
+    
+    /**
+     * Mixin declaration:
+     * 
+     * @mixin mymixin() { ... }
+     */
+    MIXIN_DECLARATION("mx"),
+    
+    /**
+     * Mixin usage:
+     * 
+     * @include mymixin;
+     */
+    MIXIN_USAGE("mx_usg");
+    
+    private static Map<String, CPElementType> CODES_TO_ELEMENTS;
+    
+    private String indexCode;
+
+    private CPElementType(String indexCode) {
+        this.indexCode = indexCode;
     }
     
-    /** Creates an lookup for given lookup. This class just returns 
-     * the object passed in, but subclasses can be different.
-     * @param lookup in lookup
-     * @return a lookup to use
-     */
-    public Lookup createLookup (Lookup lookup) {
-        res = lookup.lookupResult(Object.class);
-        res.addLookupListener(this);
-        return lookup;
+    public String getIndexCode() {
+        return indexCode;
     }
-
-    public void clearCaches () {
-    }    
-
-    ThreadLocal<Object> ME = new ThreadLocal<Object>();
-    public void execute(Runnable command) {
-        assertEquals("Not yet set", null, ME.get());
-        ME.set(this);
-        try {
-            command.run();
-        } finally {
-            ME.set(null);
+    
+    public static CPElementType forIndexCode(String indexCode) {
+        if(CODES_TO_ELEMENTS == null) {
+            CODES_TO_ELEMENTS = new HashMap<String, CPElementType>();
+            for(CPElementType et : values()) {
+                CODES_TO_ELEMENTS.put(et.getIndexCode(), et);
+            }
         }
-    }
-
-    public void resultChanged(LookupEvent ev) {
-        assertEquals("Changes delivered only from execute method", this, ME.get());
+        return CODES_TO_ELEMENTS.get(indexCode);
     }
 }

@@ -54,16 +54,16 @@ import org.openide.filesystems.FileObject;
  *
  * @author marekfukala
  */
-public class CPElementHandle implements ElementHandle {
+public class CPCslElementHandle implements ElementHandle {
       
     private FileObject file;
     private CharSequence name;
 
-    public CPElementHandle(CharSequence name) {
+    public CPCslElementHandle(CharSequence name) {
         this(null, name);
     }
 
-    public CPElementHandle(FileObject file, CharSequence name) {
+    public CPCslElementHandle(FileObject file, CharSequence name) {
         this.file = file;
         this.name = name;
     }

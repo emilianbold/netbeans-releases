@@ -127,9 +127,9 @@ public final class WebClientLibraryManager {
     public static final String PROPERTY_VERSION = "version"; // NOI18N
 
     /**
-     * Property that is fired if libraries change.
+     * Property that is fired if libraries change. It delegates on {@link LibraryProvider#PROP_LIBRARIES}.
      */
-    public static final String PROPERTY_LIBRARIES = "libraries"; // NOI18N
+    public static final String PROPERTY_LIBRARIES = LibraryProvider.PROP_LIBRARIES;
 
     /**
      * Default relative path for libraries folder.
@@ -141,7 +141,9 @@ public final class WebClientLibraryManager {
     private final PropertyChangeListener libraryChangeListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            resetLibraries();
+            if (LibraryProvider.PROP_LIBRARIES.equals(evt.getPropertyName())) {
+                resetLibraries();
+            }
         }
     };
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -170,7 +172,7 @@ public final class WebClientLibraryManager {
     /**
      * Adds property change listener.
      * <p>
-     * All listeners are hold as {@link WeakListeners#propertyChange(PropertyChangeListener, Object) weak listeners}.
+     * <b>All listeners are held as {@link org.openide.util.WeakListeners#propertyChange(PropertyChangeListener, Object) weak listeners}.</b>
      * @param listener listener to be added, can be {@code null}
      */
     public void addPropertyChangeListener(@NullAllowed PropertyChangeListener listener) {

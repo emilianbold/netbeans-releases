@@ -180,38 +180,38 @@ public class CPModelTest extends CssTestBase {
         CPModel model = CPModel.getModel(result);
         assertNotNull(model);
 
-        Collection<Variable> variables = model.getVariables();
+        Collection<CPElement> variables = model.getVariables();
         assertNotNull(variables);
 
-        Iterator<Variable> vars = variables.iterator();
+        Iterator<CPElement> vars = variables.iterator();
 
-//        for(Variable v : variables) {
+//        for(Element v : variables) {
 //            System.out.println(v.getName() + "; " + v.getRange() + "; " + v.getType());
 //        }
         
         assertTrue(vars.hasNext());
-        Variable v = vars.next();
+        CPElement v = vars.next();
         assertNotNull(v);
         assertEquals("$global", v.getName().toString());
-        assertEquals(Variable.Type.GLOBAL_DECLARATION, v.getType());
+        assertEquals(CPElementType.VARIABLE_GLOBAL_DECLARATION, v.getType());
 
         assertTrue(vars.hasNext());
         v = vars.next();
         assertNotNull(v);
         assertEquals("$arg", v.getName().toString());
-        assertEquals(Variable.Type.METHOD_PARAM_DECLARATION, v.getType());
+        assertEquals(CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS, v.getType());
 
         assertTrue(vars.hasNext());
         v = vars.next();
         assertNotNull(v);
         assertEquals("$local", v.getName().toString());
-        assertEquals(Variable.Type.LOCAL_DECLARATION, v.getType());
+        assertEquals(CPElementType.VARIABLE_LOCAL_DECLARATION, v.getType());
 
         assertTrue(vars.hasNext());
         v = vars.next();
         assertNotNull(v);
         assertEquals("$usage", v.getName().toString());
-        assertEquals(Variable.Type.USAGE, v.getType());
+        assertEquals(CPElementType.VARIABLE_USAGE, v.getType());
 
         assertFalse(vars.hasNext());
         

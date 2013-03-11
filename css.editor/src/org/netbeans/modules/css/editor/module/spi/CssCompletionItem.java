@@ -206,7 +206,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
     @Override
     public String getInsertPrefix() {
-        return getName();
+        return getName(); //XXX should be return value properly...
     }
 
     @Override

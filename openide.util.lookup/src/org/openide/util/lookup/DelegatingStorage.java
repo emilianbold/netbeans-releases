@@ -47,6 +47,7 @@ import org.openide.util.Lookup;
 
 import java.io.*;
 
+import java.lang.ref.WeakReference;
 
 import java.util.*;
 import org.openide.util.lookup.AbstractLookup.Pair;
@@ -178,10 +179,5 @@ implements Serializable, AbstractLookup.Storage<Transaction> {
         org.openide.util.lookup.AbstractLookup.ReferenceToResult newRef
     ) {
         return delegate.registerReferenceToResult(newRef);
-    }
-
-    @Override
-    public <T> Lookup.Result<T> findResult(Lookup.Template<T> template) {
-        return delegate.findResult(template);
     }
 }

@@ -182,7 +182,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         index = 0;
         extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
         panels = wizard.createPanels();
-        
+
         // Make sure list of steps is accurate.
         ArrayList<String> steps = new ArrayList<String>();
         steps.addAll(Arrays.asList(wizard.createSteps()));
@@ -198,7 +198,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         extenderPanels = extenderPanelsCol.toArray(new Panel[0]);
-       
+
+        // XXX should be lazy
         //Regular panels
         int i = 0;
         for (; i < panels.length; i++) {
@@ -210,10 +211,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[0]));
+                // name
+                jc.setName(steps.get(i));
             }
         }
 
-        
+        // XXX should be lazy
         //Extenders
         for (; i < extenderPanels.length + panels.length; i++) {
             Component c = extenderPanels[i-panels.length].getComponent();
@@ -224,9 +227,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray());
+                // name
+                jc.setName(steps.get(i));
             }
         }
-        
+
     }
 
     @Override
