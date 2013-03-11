@@ -2466,7 +2466,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                     controller.toPhase(Phase.RESOLVED);
                     TypeMirror tm = last.token().id() == JavaTokenId.AMP
                             ? controller.getTrees().getTypeMirror(new TreePath(path, bi.getLeftOperand())) : null;
-                    if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.INTERSECTION)) {
+                    if (tm != null && tm.getKind() == TypeKind.DECLARED) {
+                        env.addToExcludes(((DeclaredType)tm).asElement());
+                        addTypes(env, EnumSet.of(INTERFACE, ANNOTATION_TYPE), null);
+                    } else if (tm != null && tm.getKind() == TypeKind.INTERSECTION) {
+                        for (TypeMirror bound : ((IntersectionType)tm).getBounds()) {
+                            if (bound.getKind() == TypeKind.DECLARED) {
+                                env.addToExcludes(((DeclaredType)bound).asElement());
+                            }
+                        }
                         addTypes(env, EnumSet.of(INTERFACE, ANNOTATION_TYPE), null);
                     } else {
                         localResult(env);
