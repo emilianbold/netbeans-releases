@@ -50,9 +50,9 @@ import org.netbeans.modules.css.indexing.api.CssIndexModel;
 import org.netbeans.modules.css.indexing.api.CssIndexModelFactory;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.prep.model.CPModel;
-import org.netbeans.modules.css.prep.model.Element;
-import org.netbeans.modules.css.prep.model.ElementHandle;
-import org.netbeans.modules.css.prep.model.ElementType;
+import org.netbeans.modules.css.prep.model.CPElement;
+import org.netbeans.modules.css.prep.model.CPElementHandle;
+import org.netbeans.modules.css.prep.model.CPElementType;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.openide.filesystems.FileObject;
@@ -72,18 +72,18 @@ public class CPCssIndexModel extends CssIndexModel {
     private static final String VALUE_SEPARATOR = ",";
     private static final String TYPE_SEPARATOR = "/";
     
-    private Collection<ElementHandle> mixins, variables;
+    private Collection<CPElementHandle> mixins, variables;
 
-    public CPCssIndexModel(Collection<ElementHandle> mixins, Collection<ElementHandle> variableNames) {
+    public CPCssIndexModel(Collection<CPElementHandle> mixins, Collection<CPElementHandle> variableNames) {
         this.mixins = mixins;
         this.variables = variableNames;
     }
     
-    public Collection<ElementHandle> getVariables() {
+    public Collection<CPElementHandle> getVariables() {
         return variables;
     }
     
-    public Collection<ElementHandle> getMixins() {
+    public Collection<CPElementHandle> getMixins() {
         return mixins;
     }
     
@@ -93,11 +93,11 @@ public class CPCssIndexModel extends CssIndexModel {
          storeItems(variables, document, VARIABLES_INDEX_KEY);
     }
     
-    private void storeItems(Collection<? extends ElementHandle> items, IndexDocument document, String key) {
-        Iterator<? extends ElementHandle> i = items.iterator();
+    private void storeItems(Collection<? extends CPElementHandle> items, IndexDocument document, String key) {
+        Iterator<? extends CPElementHandle> i = items.iterator();
         StringBuilder sb = new StringBuilder();
         while (i.hasNext()) {
-            ElementHandle handle = i.next();
+            CPElementHandle handle = i.next();
             sb.append(handle.getName());
             sb.append(TYPE_SEPARATOR);
             sb.append(handle.getType().getIndexCode());
@@ -115,12 +115,12 @@ public class CPCssIndexModel extends CssIndexModel {
         @Override
         public CPCssIndexModel getModel(CssParserResult result) {
             CPModel model = CPModel.getModel(result);
-            Collection<Element> mixins = model.getMixins();
-            Collection<Element> vars = model.getVariables();
+            Collection<CPElement> mixins = model.getMixins();
+            Collection<CPElement> vars = model.getVariables();
             
             return new CPCssIndexModel(
-                    Element.toHandles(mixins), 
-                    Element.toHandles(vars));
+                    CPElement.toHandles(mixins), 
+                    CPElement.toHandles(vars));
         }
 
         @Override
@@ -138,19 +138,19 @@ public class CPCssIndexModel extends CssIndexModel {
             return INDEX_KEYS;
         }
         
-        private Collection<ElementHandle> parseItems(String value, FileObject file) {
+        private Collection<CPElementHandle> parseItems(String value, FileObject file) {
             if(value == null || value.isEmpty()) {
                 return Collections.emptyList();
             }
             String[] items = value.split(VALUE_SEPARATOR);
-            Collection<ElementHandle> handles = new ArrayList<ElementHandle>(items.length);
+            Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>(items.length);
             for(String item : items) {
                 String[] name_type_pair = item.split(TYPE_SEPARATOR);
                 String name = name_type_pair[0];
                 String typeIndexCode = name_type_pair[1];
                 
-                ElementType type = ElementType.forIndexCode(typeIndexCode);
-                ElementHandle handle = new ElementHandle(file, name, type);
+                CPElementType type = CPElementType.forIndexCode(typeIndexCode);
+                CPElementHandle handle = new CPElementHandle(file, name, type);
                 
                 handles.add(handle);
             }

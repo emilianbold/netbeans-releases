@@ -39,72 +39,74 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep;
+package org.netbeans.modules.css.prep.model;
 
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Resolved element.
+ * 
+ * Can hold model and parser result!
  *
  * @author marekfukala
  */
-public class CPElementHandle implements ElementHandle {
-      
-    private FileObject file;
-    private CharSequence name;
+public class CPElement {
 
-    public CPElementHandle(CharSequence name) {
-        this(null, name);
+    private CPElementHandle handle;
+    private OffsetRange range; 
+    private OffsetRange scope;
+
+    public CPElement(CPElementHandle handle, OffsetRange range) {
+        this(handle, range, null);
     }
 
-    public CPElementHandle(FileObject file, CharSequence name) {
-        this.file = file;
-        this.name = name;
+    public CPElement(CPElementHandle handle, OffsetRange range, OffsetRange scope) {
+        this.handle = handle;
+        this.range = range;
+        this.scope = scope;
     }
-
-    @Override
+    
     public String getName() {
-        return name.toString();
+        return getHandle().getName();
+    }
+    
+    public CPElementType getType() {
+        return getHandle().getType();
+    }
+    
+    public FileObject getFile() {
+        return getHandle().getFile();
     }
 
-    @Override
-    public FileObject getFileObject() {
-        return file;
+    /**
+     * range of the element itself.
+     */
+    public OffsetRange getRange() {
+        return range;
     }
 
-    @Override
-    public String getMimeType() {
-        return "text/css";
+    /**
+     * range of the element scope.
+     * 
+     * null means no scope 
+     */
+    public OffsetRange getScope() {
+        return scope;
     }
 
-    @Override
-    public String getIn() {
-        return null;
+    public CPElementHandle getHandle() {
+        return handle;
     }
-
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.FIELD;
+    
+    public static Collection<CPElementHandle> toHandles(Collection<CPElement> elements) {
+        Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>();
+        for(CPElement e : elements) {
+            handles.add(e.getHandle());
+        }
+        return handles;
     }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public boolean signatureEquals(ElementHandle handle) {
-        return false;
-    }
-
-    @Override
-    public OffsetRange getOffsetRange(ParserResult result) {
-        return null;
-    }
+    
 }
