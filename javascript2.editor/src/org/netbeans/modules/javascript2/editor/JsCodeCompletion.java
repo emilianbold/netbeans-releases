@@ -741,21 +741,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
             lastResolvedObjects.add(jsObject);
         }
 
-        JsObject localObject = null;
         for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
-            for (JsObject object : libGlobal.getProperties().values()) {
-                if (object.getName().equals(type.getType())) {
-                    localObject = object;
-                    lastResolvedObjects.add(localObject);
-                    break;
-                }
-            }
-            if (localObject != null) {
+            JsObject found = ModelUtils.findJsObjectByName(libGlobal, type.getType());
+            if (found != null && found != libGlobal) {
+                jsObject = found;
+                lastResolvedObjects.add(jsObject);
                 break;
             }
-        }
-        if (localObject != null) {
-            jsObject = localObject;
         }
 
         if (jsObject == null || !jsObject.isDeclared()) {
