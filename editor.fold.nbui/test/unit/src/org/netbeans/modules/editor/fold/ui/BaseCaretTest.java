@@ -45,6 +45,7 @@ import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
@@ -59,19 +60,20 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
+import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.TextAction;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.editor.BaseCaret;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
@@ -85,6 +87,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.xml.sax.SAXException;
 
 import org.netbeans.modules.editor.fold.FoldHierarchyTestEnv;
+import org.netbeans.spi.editor.fold.FoldHierarchyMonitor;
 
 /**
  * Checks that the folding succeeds in plugging into BaseCaret's operation.
@@ -171,6 +174,8 @@ public class BaseCaretTest extends NbTestCase {
     public void setUp() throws Exception {
         super.setUp();
         Lookup.getDefault();
+        // hack:
+        MimeLookup.getLookup("").lookup(FoldHierarchyMonitor.class);
         env = new FoldHierarchyTestEnv(new FoldManagerFactory() {
             @Override
             public FoldManager createFoldManager() {
@@ -184,11 +189,11 @@ public class BaseCaretTest extends NbTestCase {
         },
         new Object[0]);
         pane = env.getPane();
-        env.getPane().setEditorKit(new NbEditorKit());
+        env.getPane().setEditorKit(new Kit());
         env.getDocument().insertString(0, "123456789-123456789-123 aa 89-123456789-1234567890", null);
         
         // ensure initialized
-        env.getHierarchy();
+        env.getHierarchy(); 
         // cannot be done in FoldManager, as setEditorKit() will replace document and reinitialize folds in 2nd thread, which may
         // complete even faster than insertString(), so BLE could be thrown.
         FoldHierarchyTransaction tran = fm.op.openTransaction();
@@ -221,6 +226,7 @@ public class BaseCaretTest extends NbTestCase {
             }
         });
         pane.requestFocus();
+        selectWordCalled = false;
     }
 
     public void tearDown() throws Exception {
@@ -234,12 +240,34 @@ public class BaseCaretTest extends NbTestCase {
     }
     
     private boolean retValue;
+    
+    private static boolean selectWordCalled;
+    
+    private static class Kit extends ExtKit {
+        @Override
+        protected Action[] getDeclaredActions() {
+            Action swa = new TextAction("") {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    selectWordCalled = true;
+                }
+            };
+            swa.putValue(Action.NAME, BaseKit.selectWordAction);
+            
+            Action[] actions = new Action[] {
+                swa
+            };
+            return TextAction.augmentList(super.createActions(), actions);
+        }
+        
+    }
 
     /**
      * Folded region is double-clicked; it should be unfolded, rather than word-selected.
      */
     public void testSelectFoldedRegion() throws Exception {
         env.getHierarchy().collapse(fold);
+        Thread.sleep(300);
         Rectangle r = pane.modelToView(25);
         
         // 1st mouseclick on the pane, to position the caret, as if the 1st click in doubleclick was done:
@@ -253,15 +281,16 @@ public class BaseCaretTest extends NbTestCase {
         processEvent(secondPress);
         
         // check that no selection is present:
-        assertEquals(pane.getSelectionEnd(), pane.getSelectionStart());
+        assertFalse(selectWordCalled);
         assertNull(pane.getSelectedText());
         // check that even the callable did the job:
         assertFalse(fold.isCollapsed());
     }
     
     public void testSelectUnfoldedRegion() throws Exception {
+        env.getHierarchy().expand(fold);
+        Thread.sleep(300);
         Rectangle r = pane.modelToView(25);
-        
         // 1st mouseclick on the pane, to position the caret, as if the 1st click in doubleclick was done:
         MouseEvent firstPress = new MouseEvent(pane, MouseEvent.MOUSE_PRESSED, System.currentTimeMillis(), 
                 InputEvent.BUTTON1_MASK, r.x, r.y, 1, false);
@@ -270,12 +299,11 @@ public class BaseCaretTest extends NbTestCase {
         // second press of the doubleclick
         MouseEvent secondPress = new MouseEvent(pane, MouseEvent.MOUSE_PRESSED, System.currentTimeMillis(), 
                 InputEvent.BUTTON1_MASK, r.x, r.y, 2, false);
-        
+        env.getPane().requestFocus();
         processEvent(secondPress);
         
-        int start = pane.getSelectionStart();
-        int end = pane.getSelectionEnd();
-        assertTrue(start < end);
+        assertFalse(retValue);
+        assertTrue(this.toString(), selectWordCalled);
     }
     
     private static final FoldType FT = new FoldType("test");
