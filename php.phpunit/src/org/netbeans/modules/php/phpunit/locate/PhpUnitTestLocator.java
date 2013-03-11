@@ -59,9 +59,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
-/**
- *
- */
 public class PhpUnitTestLocator implements TestLocator {
 
     private final PhpModule phpModule;
