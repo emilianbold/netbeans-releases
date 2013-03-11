@@ -118,9 +118,11 @@ public class CompileLineService {
         int i = 0;
         while ((line=out.readLine())!= null){
             line = line.trim();
-            if (line.length() == 0) {
-                continue;
-            }
+//            Below condition is commented because extended information can contain empty lines,
+//            like compilation line for GNU.
+//            if (line.length() == 0) {
+//                continue;
+//            }
             switch (i%7) {
                 case 0:
                     compileDir = line;
