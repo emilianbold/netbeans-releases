@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.css.prep;
 
+import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
+import org.netbeans.modules.css.prep.model.CPElementHandle;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -52,16 +55,89 @@ import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
  */
 public class VariableCompletionItem extends CssCompletionItem {
 
+    private static final int LOCAL_VAR_SORT_IMPORTANCE = 200;
+    private static final int GLOBAL_VAR_SORT_IMPORTANCE = 100;
+    
     private String origin;
+    private CPElementHandle handle;
+    private static final ImageIcon LOCAL_VAR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/prep/resources/localVariable.gif")); //NOI18N
 
-    public VariableCompletionItem(ElementHandle elementHandle, String value, int anchorOffset, String origin) {
-        super(elementHandle, value, anchorOffset, false);
+    /**
+     * 
+     * @param elementHandle
+     * @param handle
+     * @param anchorOffset
+     * @param origin Origin is null for current file. File displayname otherwise.
+     */
+    public VariableCompletionItem(ElementHandle elementHandle, CPElementHandle handle, int anchorOffset, String origin) {
+        super(elementHandle, handle.getName(), anchorOffset, false);
+        this.handle = handle;
         this.origin = origin;
     }
 
     @Override
     public ElementKind getKind() {
         return ElementKind.VARIABLE;
+    }
+
+    @Override
+    public int getSortPrioOverride() {
+        int prio = 1000;
+        if(origin == null) {
+            prio -= 500; //current file items have precedence
+        }
+        
+        switch(handle.getType()) {
+            case VARIABLE_GLOBAL_DECLARATION:
+                prio -= GLOBAL_VAR_SORT_IMPORTANCE;
+                break;
+            case VARIABLE_DECLARATION_MIXIN_PARAMS:
+            case VARIABLE_LOCAL_DECLARATION:
+                prio -= LOCAL_VAR_SORT_IMPORTANCE;
+                break;
+            default:
+        }
+        return prio;
+    }
+    
+    @Override
+    public ImageIcon getIcon() {
+        switch (handle.getType()) {
+            case VARIABLE_LOCAL_DECLARATION:
+            case VARIABLE_DECLARATION_MIXIN_PARAMS:
+                return LOCAL_VAR_ICON;
+            default:
+                return super.getIcon();
+        }
+    }
+
+    @Override
+    public String getInsertPrefix() {
+        return handle.getName();
+    }
+
+    @Override
+    public String getName() {
+        return handle.getName().substring(1); //strip off the leading $ or @ sign
+    }
+    
+    @Override
+    public String getLhsHtml(HtmlFormatter formatter) {
+        switch (handle.getType()) {
+            case VARIABLE_GLOBAL_DECLARATION:
+                formatter.appendHtml("<font color=><b>"); //NOI18N
+                break;
+        }
+        
+        formatter.appendText(getName());
+        
+        switch (handle.getType()) {
+            case VARIABLE_GLOBAL_DECLARATION:
+                formatter.appendHtml("</b></font>"); //NOI18N);
+                break;
+        }
+        
+        return formatter.getText();
     }
 
     @Override

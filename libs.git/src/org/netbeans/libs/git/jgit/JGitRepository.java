@@ -45,7 +45,6 @@ package org.netbeans.libs.git.jgit;
 import org.netbeans.libs.git.GitException;
 import java.io.File;
 import java.io.IOException;
-import org.eclipse.jgit.JGitText;
 import org.eclipse.jgit.lib.Repository;
 
 /**
@@ -78,7 +77,7 @@ public final class JGitRepository {
         } catch (IOException ex) {
             throw new GitException(ex);
         } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().matches(JGitText.get().repositoryConfigFileInvalid.replaceAll("\\{[0-9]?}", "\\(\\.\\*)"))) { //NOI18N
+            if (ex.getMessage().matches("Repository config file (.*) invalid (.*)")) { //NOI18N
                 throw new GitException("It seems the config file for the repository at [" + workDir.getAbsolutePath() + "] is corrupted.\nEnsure it ends with empty line.", ex); //NOI18N
             } else {
                 throw new GitException(ex);

@@ -42,7 +42,7 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.CannotDeleteCurrentBranchException;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.api.errors.NotMergedException;
 import org.eclipse.jgit.lib.Constants;
@@ -78,7 +78,7 @@ public class DeleteBranchCommand extends GitCommand {
             throw new GitException(ex);
         } catch (NotMergedException ex) {
             throw new GitException.NotMergedException(branchName);
-        } catch (CannotDeleteCurrentBranchException ex) {
+        } catch (GitAPIException ex) {
             throw new GitException(ex);
         }
     }

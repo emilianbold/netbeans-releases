@@ -41,61 +41,46 @@
  */
 package org.netbeans.modules.css.prep.model;
 
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.openide.filesystems.FileObject;
 
 /**
- * xxx: temporary
  *
  * @author marekfukala
  */
-public class Variable extends Element {
+public class CPElementHandle {
     
-    public enum Type {
-        /**
-         * Variable in the stylesheet body.
-         * 
-         * $var: value;
-         */
-        GLOBAL_DECLARATION,
-        
-        /**
-         * Variable in a rule or mixin or other code block.
-         * 
-         * $var: value; 
-         */
-        LOCAL_DECLARATION, 
-        
-        /**
-         * Variable declared as a param in a mixin declaration or for, each, while block.
-         * 
-         * @mixin left($dist) { ... } 
-         */
-        METHOD_PARAM_DECLARATION, 
-        
-        /**
-         * Variable usage.
-         * 
-         * .clz { color: $best; } 
-         */
-        USAGE; 
-    }
+    private FileObject file;
+    private String name;
+    private CPElementType type;
 
-    private Type type;
-    private OffsetRange context; //context of the variable
-    
-    public Variable(String name, OffsetRange range, FileObject file, Type type, OffsetRange context) {
-        super(name, range, file);
+    public CPElementHandle(FileObject file, String name, CPElementType type) {
+        this.file = file;
+        this.name = name;
         this.type = type;
-        this.context = context;
     }
 
-    public Type getType() {
+    public FileObject getFile() {
+        return file;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public CPElementType getType() {
         return type;
     }
-
-    public OffsetRange getContext() {
-        return context;
+    
+    /**
+     * Resolve to {@link Element}.
+     */
+    public CPElement resolve(CPModel model) {
+        for(CPElement var : model.getElements()) {
+            if(var.getType() == getType() && var.getName().equals(getName())) {
+                return var;
+            }
+        }
+        return null;
     }
     
 }

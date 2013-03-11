@@ -347,7 +347,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                     PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF,
                     PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,
                     PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_TOKEN,
-                    PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_CASE, PHPTokenId.PHP_OPENTAG);
+                    PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_CASE, PHPTokenId.PHP_OPENTAG, PHPTokenId.PHP_DEFAULT);
             Token<? extends PHPTokenId> keyToken = LexUtilities.findPreviousToken(ts, lookFor);
             while (keyToken.id() == PHPTokenId.PHP_TOKEN) {
                 if ("?".equals(keyToken.text().toString())) { //NOI18N
@@ -356,7 +356,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 ts.movePrevious();
                 keyToken = LexUtilities.findPreviousToken(ts, lookFor);
             }
-            if (keyToken.id() == PHPTokenId.PHP_CASE) {
+            if (keyToken.id() == PHPTokenId.PHP_CASE || keyToken.id() == PHPTokenId.PHP_DEFAULT) {
                 return null;
             }
             if (bracketColumnToken.id() == PHPTokenId.PHP_CURLY_OPEN) {

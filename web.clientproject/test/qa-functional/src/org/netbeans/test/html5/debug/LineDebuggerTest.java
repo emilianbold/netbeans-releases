@@ -168,7 +168,11 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         vo = new VariablesOperator("Variables");
         evt.waitNoEvent(1000);
         waitForVariable("step");
-        assertEquals("Step variable is unexpected", "5", ((Map<String, Variable>) vo.getVariables()).get("step").value);
+        if(GeneralHTMLProject.inEmbeddedBrowser){ // embedded browser stops on line with function(){
+            assertEquals("Step variable is unexpected", "5", ((Map<String, Variable>) vo.getVariables()).get("step").value);
+        }else{
+            assertEquals("Step variable is unexpected", "6", ((Map<String, Variable>) vo.getVariables()).get("step").value);    
+        }
 
         endTest();
     }

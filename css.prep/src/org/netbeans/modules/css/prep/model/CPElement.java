@@ -41,36 +41,72 @@
  */
 package org.netbeans.modules.css.prep.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Resolved element.
+ * 
+ * Can hold model and parser result!
  *
  * @author marekfukala
  */
-public class Element {
-    
-    private FileObject file;
-    private OffsetRange range;
-    private CharSequence name;
+public class CPElement {
 
-    public Element(String name, OffsetRange range, FileObject file) {
-        this.name = name;
+    private CPElementHandle handle;
+    private OffsetRange range; 
+    private OffsetRange scope;
+
+    public CPElement(CPElementHandle handle, OffsetRange range) {
+        this(handle, range, null);
+    }
+
+    public CPElement(CPElementHandle handle, OffsetRange range, OffsetRange scope) {
+        this.handle = handle;
         this.range = range;
-        this.file = file;
+        this.scope = scope;
     }
-
+    
+    public String getName() {
+        return getHandle().getName();
+    }
+    
+    public CPElementType getType() {
+        return getHandle().getType();
+    }
+    
     public FileObject getFile() {
-        return file;
+        return getHandle().getFile();
     }
 
+    /**
+     * range of the element itself.
+     */
     public OffsetRange getRange() {
         return range;
     }
 
-    public CharSequence getName() {
-        return name;
+    /**
+     * range of the element scope.
+     * 
+     * null means no scope 
+     */
+    public OffsetRange getScope() {
+        return scope;
+    }
+
+    public CPElementHandle getHandle() {
+        return handle;
     }
     
+    public static Collection<CPElementHandle> toHandles(Collection<CPElement> elements) {
+        Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>();
+        for(CPElement e : elements) {
+            handles.add(e.getHandle());
+        }
+        return handles;
+    }
     
 }

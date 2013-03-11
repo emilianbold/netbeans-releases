@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,81 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.prep.model;
 
-package org.netbeans.libs.git;
-
-import java.io.IOException;
-import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.lib.RefUpdate;
-import org.eclipse.jgit.lib.RepositoryState;
-import org.eclipse.jgit.transport.RemoteRefUpdate;
-import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
- * @author ondra
+ * @author marekfukala
  */
-public class GitEnumsStateTest extends AbstractGitTestCase {
+public enum CPElementType {
 
-    public GitEnumsStateTest (String testName) throws IOException {
-        super(testName);
-    }
+    /**
+     * Variable in the stylesheet body.
+     *
+     * $var: value;
+     */
+    VARIABLE_GLOBAL_DECLARATION("var_gl"),
+    
+    /**
+     * Variable in a rule or mixin or other code block.
+     *
+     * $var: value;
+     */
+    VARIABLE_LOCAL_DECLARATION("var_loc"),
+    
+    /**
+     * Variable declared as a param in a mixin declaration or for, each, while
+     * block.
+     *
+     * @mixin left($dist) { ... }
+     */
+    VARIABLE_DECLARATION_MIXIN_PARAMS("var_prms"),
+    
+    /**
+     * Variable usage.
+     *
+     * .clz { color: $best; }
+     */
+    VARIABLE_USAGE("var_usg"),
+    
+    /**
+     * Mixin declaration:
+     * 
+     * @mixin mymixin() { ... }
+     */
+    MIXIN_DECLARATION("mx"),
+    
+    /**
+     * Mixin usage:
+     * 
+     * @include mymixin;
+     */
+    MIXIN_USAGE("mx_usg");
+    
+    private static Map<String, CPElementType> CODES_TO_ELEMENTS;
+    
+    private String indexCode;
 
-    public void testUpdateResult () {
-        for (RefUpdate.Result result : RefUpdate.Result.values()) {
-            assertNotNull(GitRefUpdateResult.valueOf(result.name()));
-        }
+    private CPElementType(String indexCode) {
+        this.indexCode = indexCode;
     }
     
-    public void testMergeStatus () {
-        for (MergeResult.MergeStatus status : MergeResult.MergeStatus.values()) {
-            assertNotNull(GitMergeResult.parseMergeStatus(status));
-        }
+    public String getIndexCode() {
+        return indexCode;
     }
-
-    public void testRemoteUpdateStatus () {
-        for (RemoteRefUpdate.Status status : RemoteRefUpdate.Status.values()) {
-            assertNotNull(GitRefUpdateResult.valueOf(status.name()));
+    
+    public static CPElementType forIndexCode(String indexCode) {
+        if(CODES_TO_ELEMENTS == null) {
+            CODES_TO_ELEMENTS = new HashMap<String, CPElementType>();
+            for(CPElementType et : values()) {
+                CODES_TO_ELEMENTS.put(et.getIndexCode(), et);
+            }
         }
-    }
-
-    public void testRepositoryState () {
-        for (RepositoryState state : RepositoryState.values()) {
-            assertNotNull(GitRepositoryState.getStateFor(state));
-        }
+        return CODES_TO_ELEMENTS.get(indexCode);
     }
 }
