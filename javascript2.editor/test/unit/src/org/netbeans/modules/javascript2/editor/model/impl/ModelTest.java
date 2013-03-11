@@ -171,7 +171,8 @@ public class ModelTest extends ModelTestBase {
         FileObject fo = getTestFile("testfiles/model/person.js.model");
         BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));
         try {
-            JsObject obj = Model.readModel(reader);
+            Collection<JsObject> obj = Model.readModel(reader);
+            assertEquals(1, obj.size());
 
             final StringWriter sw = new StringWriter();
             Model.Printer p = new Model.Printer() {
@@ -180,7 +181,7 @@ public class ModelTest extends ModelTestBase {
                     sw.append(str).append("\n");
                 }
             };
-            Model.writeObject(p, obj);
+            Model.writeObject(p, obj.iterator().next());
             assertDescriptionMatches(fo, sw.toString(), false, ".revert", true);
         } finally {
             reader.close();

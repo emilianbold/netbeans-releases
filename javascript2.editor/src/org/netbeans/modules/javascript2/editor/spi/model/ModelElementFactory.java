@@ -89,15 +89,11 @@ public final class ModelElementFactory {
     }
 
     public JsObject loadGlobalObject(FileObject fileObject, int length) throws IOException {
-        JsFunctionImpl global = JsFunctionImpl.createGlobal(fileObject, length);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(fileObject.getInputStream()));
+        InputStream is = fileObject.getInputStream();
         try {
-            JsObject object = Model.readModel(reader);
-            global.addProperty(object.getName(), object);
-
-            return global;
+            return loadGlobalObject(is);
         } finally {
-            reader.close();
+            is.close();
         }
     }
 
@@ -105,9 +101,9 @@ public final class ModelElementFactory {
         JsFunctionImpl global = JsFunctionImpl.createGlobal(null, Integer.MAX_VALUE);
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {
-            JsObject object = Model.readModel(reader);
-            global.addProperty(object.getName(), object);
-
+            for (JsObject object : Model.readModel(reader)) {
+                global.addProperty(object.getName(), object);
+            }
             return global;
         } finally {
             reader.close();

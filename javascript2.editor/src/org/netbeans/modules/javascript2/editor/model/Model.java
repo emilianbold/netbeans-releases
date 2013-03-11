@@ -101,6 +101,16 @@ public final class Model {
         }
     };
 
+    private static final Pattern OBJECT_PATTERN = Pattern.compile(
+            "(FUNCTION|OBJECT) (\\S+) \\[ANONYMOUS: (true|false), DECLARED: (true|false)( - (\\S+))?" // NOI18N
+            + "(, MODIFIERS: ((PUBLIC|STATIC|PROTECTED|PRIVATE|DEPRECATED|ABSTRACT)" // NOI18N
+            + "(, (PUBLIC|STATIC|PROTECTED|PRIVATE|DEPRECATED|ABSTRACT))*))?" // NOI18N
+            + ", (FUNCTION|METHOD|CONSTRUCTOR|OBJECT|PROPERTY|VARIABLE|FIELD|FILE|PARAMETER|ANONYMOUS_OBJECT|PROPERTY_GETTER|PROPERTY_SETTER|OBJECT_LITERAL|CATCH_BLOCK)\\]"); // NOI18N
+
+    private static enum ParsingState {
+        RETURN, PARAMETER, PROPERTY
+    }
+
     private final JsParserResult parserResult;
 
     private final OccurrencesSupport occurrencesSupport;
@@ -205,25 +215,19 @@ public final class Model {
         }
     }
 
-    private static Pattern OBJECT_PATTERN = Pattern.compile(
-            "(FUNCTION|OBJECT) (\\S+) \\[ANONYMOUS: (true|false), DECLARED: (true|false)( - (\\S+))?"
-            + "(, MODIFIERS: ((PUBLIC|STATIC|PROTECTED|PRIVATE|DEPRECATED|ABSTRACT)"
-            + "(, (PUBLIC|STATIC|PROTECTED|PRIVATE|DEPRECATED|ABSTRACT))*))?"
-            + ", (FUNCTION|METHOD|CONSTRUCTOR|OBJECT|PROPERTY|VARIABLE|FIELD|FILE|PARAMETER|ANONYMOUS_OBJECT|PROPERTY_GETTER|PROPERTY_SETTER|OBJECT_LITERAL|CATCH_BLOCK)\\]");
-
-    private static enum State {
-        RETURN, PARAMETER, PROPERTY
-    }
-
-    public static JsObject readModel(BufferedReader reader) throws IOException {
-        String line = reader.readLine();
-        if (line == null) {
-            throw new IOException("No objects to read");
-        }
+    public static Collection<JsObject> readModel(BufferedReader reader) throws IOException {
+        String line = null;
         StringBuilder pushback = new StringBuilder();
-        JsObject ret = readObject(null, line, 0, reader, pushback, false);
-        if (pushback.length() > 0) {
-            throw new IOException("Unexpected line: " + pushback);
+        List<JsObject> ret = new ArrayList<JsObject>();
+        while (pushback.length() > 0 || (line = reader.readLine()) != null) {
+            if (pushback.length() > 0) {
+                line = pushback.toString();
+                pushback.setLength(0);
+            }
+            if (line.trim().isEmpty()) {
+                continue;
+            }
+            ret.add(readObject(null, line, 0, reader, pushback, false));
         }
         return ret;
     }
@@ -233,7 +237,7 @@ public final class Model {
 
         JsObject object = readObject(parent, firstLine, parameter);
 
-        State state = null;
+        ParsingState state = null;
         String line = null;
         StringBuilder innerPushback = new StringBuilder();
 
@@ -248,15 +252,17 @@ public final class Model {
                 break;
             }
 
-            if ("# RETURN TYPES".equals(line.trim())) {
-                state = State.RETURN;
+            if ("# RETURN TYPES".equals(line.trim())) { // NOI18N
+                state = ParsingState.RETURN;
                 continue;
-            } else if ("# PARAMETERS".equals(line.trim())) {
-                state = State.PARAMETER;
+            } else if ("# PARAMETERS".equals(line.trim())) { // NOI18N
+                state = ParsingState.PARAMETER;
                 continue;
-            } else if ("# PROPERTIES".equals(line.trim())) {
-                state = State.PROPERTY;
+            } else if ("# PROPERTIES".equals(line.trim())) { // NOI18N
+                state = ParsingState.PROPERTY;
                 continue;
+            } else if ("# SEPARATOR".equals(line.trim())) { // NOI18N
+                break;
             } else {
                 if (state == null) {
                     pushback.append(line);
@@ -347,31 +353,31 @@ public final class Model {
             StringBuilder sb, String ident, Set<JsObject> path) {
 
         if (jsObject instanceof JsFunction) {
-            sb.append("FUNCTION ");
+            sb.append("FUNCTION "); // NOI18N
         } else {
-            sb.append("OBJECT ");
+            sb.append("OBJECT "); // NOI18N
         }
         sb.append(jsObject.getName());
-        sb.append(" [");
-        sb.append("ANONYMOUS: ");
+        sb.append(" ["); // NOI18N
+        sb.append("ANONYMOUS: "); // NOI18N
         sb.append(jsObject.isAnonymous());
-        sb.append(", DECLARED: ");
+        sb.append(", DECLARED: "); // NOI18N
         sb.append(jsObject.isDeclared());
         if (jsObject.getDeclarationName() != null) {
             sb.append(" - ").append(jsObject.getDeclarationName().getName());
         }
         if (!jsObject.getModifiers().isEmpty()) {
-            sb.append(", MODIFIERS: ");
+            sb.append(", MODIFIERS: "); // NOI18N
             for (Modifier m : jsObject.getModifiers()) {
                 sb.append(m.toString());
-                sb.append(", ");
+                sb.append(", "); // NOI18N
             }
             sb.setLength(sb.length() - 2);
         }
 
-        sb.append(", ");
+        sb.append(", "); // NOI18N
         sb.append(jsObject.getJSKind());
-        sb.append("]");
+        sb.append("]"); // NOI18N
 
         path.add(jsObject);
 
@@ -379,7 +385,7 @@ public final class Model {
             JsFunction function = ((JsFunction) jsObject);
             if (!function.getReturnTypes().isEmpty()) {
                 newLine(printer, sb, ident);
-                sb.append("# RETURN TYPES");
+                sb.append("# RETURN TYPES"); // NOI18N
 
                 List<TypeUsage> returnTypes = new ArrayList<TypeUsage>(function.getReturnTypes());
                 Collections.sort(returnTypes, RETURN_TYPES_COMPARATOR);
@@ -391,7 +397,7 @@ public final class Model {
             }
             if (!function.getParameters().isEmpty()) {
                 newLine(printer, sb, ident);
-                sb.append("# PARAMETERS");
+                sb.append("# PARAMETERS"); // NOI18N
 
 
                 for (JsObject param : function.getParameters()) {
@@ -423,7 +429,7 @@ public final class Model {
                 new ArrayList<Entry<String, ? extends JsObject>>(jsObject.getProperties().entrySet());
         if (!entries.isEmpty()) {
             newLine(printer, sb, ident);
-            sb.append("# PROPERTIES");
+            sb.append("# PROPERTIES"); // NOI18N
 
             Collections.sort(entries, PROPERTIES_COMPARATOR);
             for (Map.Entry<String, ? extends JsObject> entry : entries) {
