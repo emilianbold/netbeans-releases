@@ -1953,17 +1953,17 @@ public abstract class CslTestBase extends NbTestCase {
                     for (OffsetRange range : ranges) {
                         int beginIndex = Collections.binarySearch(begins, range.getStart());
                         if (beginIndex < 0) {
-                            beginIndex = -(beginIndex+2);
+                            beginIndex = -(beginIndex+2); 
                         }
                         int endIndex = Collections.binarySearch(ends, range.getEnd());
                         if (endIndex < 0) {
-                            endIndex = -(endIndex+2);
+                            endIndex = -(endIndex+1);
                         }
                         for (int i = beginIndex; i <= endIndex; i++) {
                             char c = margin.get(i);
                             if (i == beginIndex) {
                                 c = '+';
-                            } else if (c != '+') {
+                            } else if (c != '+' && c != '-') {
                                 if (i == endIndex) {
                                     c = '-';
                                 } else {
