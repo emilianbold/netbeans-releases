@@ -124,6 +124,14 @@ public final class Composer {
         return PhpExecutableValidator.validateCommand(composerPath, Bundle.Composer_script_label());
     }
 
+    public static boolean isValidOutput(String output) {
+        if (output.startsWith("Warning:") // NOI18N
+                || output.startsWith("No composer.json found")) { // NOI18N
+            return false;
+        }
+        return true;
+    }
+
     public Future<Integer> initIfNotPresent(PhpModule phpModule) {
         FileObject configFile = getComposerConfigFile(phpModule);
         if (configFile != null && configFile.isValid()) {
@@ -267,7 +275,11 @@ public final class Composer {
                         return new OutputProcessorImpl(new OutputParser() {
                             @Override
                             public void parse(char[] chars) {
-                                outputProcessor.process(new String(chars));
+                                String chunk = new String(chars);
+                                if (!isValidOutput(chunk)) {
+                                    return;
+                                }
+                                outputProcessor.process(chunk);
                             }
                         });
                     }
