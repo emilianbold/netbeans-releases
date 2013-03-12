@@ -63,6 +63,12 @@ public class JDKBundleJFXRuntimeProvider implements WebBrowserImplProvider.JFXRu
             if( rtJar.exists() && rtJar.isFile() && rtJar.canRead() ) {
                 return jreFolder.getAbsolutePath();
             }
+
+            //try 'jre/lib/ext when running on JDK 1.8
+            rtJar = new File( new File( new File( jreFolder, "lib" ), "ext" ), "jfxrt.jar" ); //NOI18N
+            if( rtJar.exists() && rtJar.isFile() && rtJar.canRead() ) {
+                return jreFolder.getAbsolutePath();
+            }
         }
         return null;
     }
