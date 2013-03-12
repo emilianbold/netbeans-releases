@@ -586,6 +586,15 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
+                <api type="export" group="systemproperty" name="org.netbeans.CLIHandler.server" category="devel">
+                    <p>
+                        One can disable the CLI server (listening on commands
+                        from subsequent invocations) by setting property
+                        <code>org.netbeans.CLIHandler.server</code> to <code>false</code>.
+                    </p>
+                </api>
+            </li>
+            <li>
                 <api type="export" group="systemproperty" name="org.netbeans.core.systemfilesystem.custom" category="friend">
                     <p>
                         Contains class name of a class that can serve as provider of the writable layer of the
