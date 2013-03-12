@@ -81,6 +81,7 @@ public class ModelHandle2 {
     public static final String PANEL_LIBRARIES = "LIBRARIES"; //NOI18N
     public static final String PANEL_SOURCES = "SOURCES"; //NOI18N
     public static final String PANEL_COMPILE = "COMPILE"; //NOI18N
+    public static final String PANEL_HEADERS = "LICENSE_HEADERS"; //NOI18N
 
     
     private final MavenProjectPropsImpl auxiliaryProps;
