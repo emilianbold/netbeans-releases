@@ -116,6 +116,11 @@ public class ScssCompletionTest extends CssModuleTestBase {
         checkCC("@mix| ", arr("@mixin"), Match.EXACT);
     }
     
+    public void testContentKeywordsCompletion() throws ParseException {
+        checkCC("@| ", arr("@content"), Match.CONTAINS);
+        checkCC("@cont| ", arr("@content"), Match.EXACT);
+    }
+    
     public void testMixinsCompletion() throws ParseException {
         checkCC("@mixin mymixin() {}\n @include | ", arr("mymixin"), Match.EXACT);
         checkCC("@mixin mymixin() {}\n @include mymi| ", arr("mymixin"), Match.EXACT);

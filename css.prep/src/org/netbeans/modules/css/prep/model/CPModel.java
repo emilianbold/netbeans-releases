@@ -74,12 +74,15 @@ public class CPModel {
 
     public static String topLevelSnapshotMimetype; //set by unit tests
     private static final Collection<String> SASS_DIRECTIVES = Arrays.asList(new String[]{
+        "@content",
         "@debug",
         "@each",
         "@extend",
         "@if",
         "@include",
         "@for",
+        "@else",
+        "@else if",
         "@function",
         "@mixin",
         "@return",
