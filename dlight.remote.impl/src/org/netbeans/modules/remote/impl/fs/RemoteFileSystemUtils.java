@@ -273,7 +273,7 @@ public class RemoteFileSystemUtils {
         RemoteFileObjectBase candidate = fileObject;
         for(int i = 0; i < MAXSYMLINKS; i++) {
             if (candidate instanceof RemoteLinkBase) {
-                RemoteFileObjectBase delegate = ((RemoteLinkBase) candidate).getCanonicalDelegate();
+                RemoteFileObjectBase delegate = ((RemoteLinkBase) candidate).getDelegateImpl();
                 if (delegate == null) {
                     throw new FileNotFoundException("Null delegate for remote link " + candidate); //NOI18N
                 }
