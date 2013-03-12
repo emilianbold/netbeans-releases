@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -83,6 +84,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.Lines;
 import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
@@ -233,7 +235,7 @@ public class CPCssEditorModule extends CssEditorModule {
 
         return proposals;
     }
-    
+
     private static List<CompletionProposal> getMixinsCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
@@ -432,24 +434,24 @@ public class CPCssEditorModule extends CssEditorModule {
                         //first look at the current file
                         CPModel model = CPModel.getModel(context.getParserResult());
                         for (CPElement mixin : model.getMixins()) {
-                            if(mixin.getType() == CPElementType.MIXIN_DECLARATION) {
+                            if (mixin.getType() == CPElementType.MIXIN_DECLARATION) {
                                 if (LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
                                     return new DeclarationLocation(context.getFileObject(), mixin.getRange().getStart());
                                 }
                             }
                         }
-                        
+
                         //then look at the referred files
                         try {
                             Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(context.getFileObject());
-                            for(Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
+                            for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                                 CPCssIndexModel im = entry.getValue();
                                 FileObject file = entry.getKey();
-                                for(CPElementHandle mixin : im.getMixins()) {
-                                    if(mixin.getType() == CPElementType.MIXIN_DECLARATION 
+                                for (CPElementHandle mixin : im.getMixins()) {
+                                    if (mixin.getType() == CPElementType.MIXIN_DECLARATION
                                             && LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
                                         CPElement element = mixin.resolve(CPModel.getModel(file));
-                                        if(element != null) {
+                                        if (element != null) {
                                             OffsetRange elementRange = element.getRange();
                                             return new DeclarationLocation(file, elementRange.getStart());
                                         }
@@ -461,7 +463,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
-                        
+
                         return DeclarationLocation.NONE;
                     }
                 };
@@ -480,7 +482,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         //first look at the current file
                         CPModel model = CPModel.getModel(context.getParserResult());
                         for (CPElement var : model.getVariables()) {
-                            if(var.getType().isOfTypes(CPElementType.VARIABLE_GLOBAL_DECLARATION, CPElementType.VARIABLE_LOCAL_DECLARATION, CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS)) {
+                            if (var.getType().isOfTypes(CPElementType.VARIABLE_GLOBAL_DECLARATION, CPElementType.VARIABLE_LOCAL_DECLARATION, CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS)) {
                                 if (LexerUtils.equals(varName, var.getName(), false, false)) {
                                     return new DeclarationLocation(context.getFileObject(), var.getRange().getStart());
                                 }
@@ -489,13 +491,13 @@ public class CPCssEditorModule extends CssEditorModule {
                         try {
                             //then look at the referred files
                             Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(context.getFileObject());
-                            for(Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
+                            for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                                 CPCssIndexModel im = entry.getValue();
                                 FileObject file = entry.getKey();
-                                for(CPElementHandle var : im.getVariables()) {
-                                    if(var.getType() == CPElementType.VARIABLE_GLOBAL_DECLARATION && var.getName().equals(varName)) {
+                                for (CPElementHandle var : im.getVariables()) {
+                                    if (var.getType() == CPElementType.VARIABLE_GLOBAL_DECLARATION && var.getName().equals(varName)) {
                                         CPElement element = var.resolve(CPModel.getModel(file));
-                                        if(element != null) {
+                                        if (element != null) {
                                             OffsetRange elementRange = element.getRange();
                                             return new DeclarationLocation(file, elementRange.getStart());
                                         }
@@ -507,7 +509,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
-                        
+
                         return DeclarationLocation.NONE;
                     }
                 };
@@ -516,6 +518,40 @@ public class CPCssEditorModule extends CssEditorModule {
             default:
                 return null;
         }
+
+    }
+
+    @Override
+    public <T extends Map<String, List<OffsetRange>>> NodeVisitor<T> getFoldsNodeVisitor(FeatureContext context, T result) {
+        final Snapshot snapshot = context.getSnapshot();
+        final Lines lines = new Lines(snapshot.getText());
+
+        return new NodeVisitor<T>(result) {
+            @Override
+            public boolean visit(Node node) {
+                switch (node.type()) {
+                    case sass_control_block:
+                        //find the ruleSet curly brackets and create the fold between them inclusive
+                        int from = node.from();
+                        int to = node.to();
+                        try {
+                            //do not creare one line folds
+                            if (lines.getLineIndex(from) < lines.getLineIndex(to)) {
+                                List<OffsetRange> codeblocks = getResult().get("codeblocks"); //NOI18N
+                                if (codeblocks == null) {
+                                    codeblocks = new ArrayList<OffsetRange>();
+                                    getResult().put("codeblocks", codeblocks); //NOI18N
+                                }
+
+                                codeblocks.add(new OffsetRange(from, to));
+                            }
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                }
+                return false;
+            }
+        };
 
     }
 }
