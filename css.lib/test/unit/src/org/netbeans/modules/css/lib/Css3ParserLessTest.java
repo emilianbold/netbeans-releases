@@ -261,7 +261,7 @@ public class Css3ParserLessTest extends CssTestBase {
                 ".class {\n"
                 + "  .mixin(@switch, #888);\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
         NodeUtil.dumpTree(result.getParseTree());
