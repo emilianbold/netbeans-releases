@@ -325,7 +325,8 @@ public final class TreeUtilities {
                 case GTGTGT:
                 case GTGT:
                 case GT:
-                    if (path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT || TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) || path.getLeaf().getKind() == Tree.Kind.GREATER_THAN)
+                    if (path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT || TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) ||
+                            path.getLeaf().getKind() == Tree.Kind.MEMBER_REFERENCE || path.getLeaf().getKind() == Tree.Kind.GREATER_THAN)
                         break;
                 case RPAREN:
                     if (path.getLeaf().getKind() == Tree.Kind.ENHANCED_FOR_LOOP || path.getLeaf().getKind() == Tree.Kind.FOR_LOOP ||

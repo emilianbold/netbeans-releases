@@ -1851,17 +1851,39 @@ public class JavaCompletionProvider implements CompletionProvider {
             TreePath path = env.getPath();
             MemberReferenceTree mr = (MemberReferenceTree)path.getLeaf();
             TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, mr, env.getOffset());
-            if (ts != null && ts.token().id() == JavaTokenId.COLONCOLON) {
-                CompilationController controller = env.getController();
-                controller.toPhase(Phase.RESOLVED);
-                ExpressionTree exp = mr.getQualifierExpression();
-                TreePath expPath = new TreePath(path, exp);
-                Trees trees = controller.getTrees();
-                TypeMirror type = trees.getTypeMirror(expPath);
-                if (type != null && type.getKind() == TypeKind.DECLARED) {
-                    Element e = trees.getElement(path);
-                    addMethodReferences(env, type, e);
-                    addKeyword(env, NEW_KEYWORD, SPACE, false);
+            if (ts != null) {
+                switch (ts.token().id()) {
+                    case COLONCOLON:
+                    case GT:
+                    case GTGT:
+                    case GTGTGT:
+                        CompilationController controller = env.getController();
+                        controller.toPhase(Phase.RESOLVED);
+                        ExpressionTree exp = mr.getQualifierExpression();
+                        TreePath expPath = new TreePath(path, exp);
+                        Trees trees = controller.getTrees();
+                        TypeMirror type = trees.getTypeMirror(expPath);
+                        if (type != null && type.getKind() == TypeKind.TYPEVAR) {
+                            while(type != null && type.getKind() == TypeKind.TYPEVAR) {
+                                type = ((TypeVariable)type).getUpperBound();
+                            }
+                            if (type != null) {
+                                type = controller.getTypes().capture(type);
+                            }
+                        }
+                        if (type != null && (type.getKind() == TypeKind.DECLARED
+                                || type.getKind() == TypeKind.ARRAY || type.getKind() == TypeKind.TYPEVAR)) {
+                            Element e = trees.getElement(expPath);
+                            addMethodReferences(env, type, e);
+                            if (e == null || e.getKind().isClass() || e.getKind().isInterface()) {
+                                addKeyword(env, NEW_KEYWORD, SPACE, false);
+                            }
+                        }
+                        break;
+                    case LT:
+                    case COMMA:
+                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                        break;
                 }
             }
         }
@@ -3100,7 +3122,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
-            final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface()) && elem.asType().getKind() != TypeKind.ERROR;
+            final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER) && elem.asType().getKind() != TypeKind.ERROR;
             final boolean isThisCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(THIS_KEYWORD);
             final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
             final Scope scope = env.getScope();
@@ -3124,7 +3146,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 switch (e.getKind()) {
                     case METHOD:
                         ExecutableType et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), false, false, isOfSmartType(env, et.getReturnType(), smartTypes), env.assignToVarPos(), true, env.getWhiteList()));
+                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), false, false, isOfSmartType(env, et, smartTypes), env.assignToVarPos(), true, env.getWhiteList()));
                         break;
                 }
             }
@@ -3140,8 +3162,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
             final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER) && elem.asType().getKind() != TypeKind.ERROR;
-            if (isStatic && elem.getKind() == ElementKind.TYPE_PARAMETER)
-                return;
             final boolean isThisCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(THIS_KEYWORD);
             final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
             final Scope scope = env.getScope();
@@ -3168,7 +3188,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 return false;
                             }
                             if (isStatic) {
-                                if (!e.getModifiers().contains(STATIC))
+                                if (!e.getModifiers().contains(STATIC)
+                                        || e.getSimpleName().contentEquals(CLASS_KEYWORD) && elem.getKind() == ElementKind.TYPE_PARAMETER)
                                     return false;
                             } else {
                                 if (queryType == COMPLETION_QUERY_TYPE && e.getModifiers().contains(STATIC)) {
@@ -4235,6 +4256,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                 } else {
                     return false;
                 }
+            } else if (type.getKind() == TypeKind.EXECUTABLE) {
+                Types types = env.getController().getTypes();
+                TypeUtilities tu = env.getController().getTypeUtilities();
+                for (TypeMirror smartType : smartTypes) {
+                    if (smartType.getKind() == TypeKind.DECLARED) {
+                        ExecutableType descriptorType = tu.getDescriptorType((DeclaredType)smartType);
+                        if (descriptorType != null && types.isSubsignature((ExecutableType)type, descriptorType)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
             for (TypeMirror smartType : smartTypes) {
                 if (SourceUtils.checkTypesAssignable(env.getController(), type, smartType))
