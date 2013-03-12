@@ -41,11 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.core;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -54,52 +52,53 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Locale;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.NetworkSettings;
-import org.openide.util.lookup.ServiceProvider;
 
-/** Check whether we can proxy to localhost.
+/**
+ * Check whether we can proxy to localhost.
  */
 public class CanProxyToLocalhostTest extends NbTestCase {
+
     private static String USER_PROXY_HOST = "my.webcache";
     private static int USER_PROXY_PORT = 8080;
-
     private ProxySelector selector;
     private static URI TO_LOCALHOST;
     private static URI TO_NB;
     private MyPS myPS;
 
-    public CanProxyToLocalhostTest (String name) {
-        super (name);
+    public CanProxyToLocalhostTest(String name) {
+        super(name);
     }
-    
+
     @Override
-    protected void setUp () throws Exception {
+    protected void setUp() throws Exception {
         myPS = new MyPS();
         selector = NbProxySelector.create(myPS);
-        TO_LOCALHOST = new URI ("http://localhost");
-        TO_NB = new URI ("http://netbeans.org");
+        TO_LOCALHOST = new URI("http://localhost");
+        TO_NB = new URI("http://netbeans.org");
     }
-    
+
     public void testNoProxyForLocalhost() {
         Locale.setDefault(Locale.US);
-        assertEquals ("Connect TO_LOCALHOST DIRECT.", "DIRECT", selector.select (TO_LOCALHOST).get(0).toString());
+        assertEquals("Connect TO_LOCALHOST DIRECT.", "DIRECT", selector.select(TO_LOCALHOST).get(0).toString());
     }
+
     public void testProxyForLocalhost() {
         Locale.setDefault(new Locale("te", "ST"));
-        assertEquals ("Connect TO_LOCALHOST provided by MyPS", "HTTP @ my.webcache:8080", selector.select (TO_LOCALHOST).get(0).toString());
+        assertEquals("Connect TO_LOCALHOST provided by MyPS", "HTTP @ my.webcache:8080", selector.select(TO_LOCALHOST).get(1).toString());
         assertEquals("One call to my ps", 1, myPS.called);
     }
+
     public void testAlwaysProxyForNonLocalhost() {
         Locale.setDefault(Locale.US);
-        assertEquals ("Connect TO_LOCALHOST DIRECT.", "HTTP @ my.webcache:8080", selector.select (TO_NB).get(0).toString());
+        assertEquals("Connect TO_NB provided by MyPS", "HTTP @ my.webcache:8080", selector.select(TO_NB).get(1).toString());
         assertEquals("One call to my ps", 1, myPS.called);
     }
-    
+
     private static class MyPS extends ProxySelector {
+
         int called;
-        
+
         @Override
         public List<Proxy> select(URI uri) {
             called++;

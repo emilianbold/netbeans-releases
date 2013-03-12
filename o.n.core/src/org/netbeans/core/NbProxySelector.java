@@ -70,7 +70,9 @@ public final class NbProxySelector extends ProxySelector {
     private NbProxySelector(ProxySelector delegate) {
         original = delegate;
         LOG.log(Level.FINE, "java.net.useSystemProxies has been set to {0}", useSystemProxies());
-        NetworkProxySelector.reloadNetworkProxy();
+        if (delegate == null) {
+            NetworkProxySelector.reloadNetworkProxy();
+        }
         ProxySettings.addPreferenceChangeListener(new ProxySettingsListener());
         copySettingsToSystem();
     }
@@ -98,11 +100,7 @@ public final class NbProxySelector extends ProxySelector {
                 res = Collections.singletonList (Proxy.NO_PROXY);
                 break;
             case ProxySettings.AUTO_DETECT_PROXY:
-                if (useSystemProxies ()) {
-                    if (original != null) {
-                        res = original.select (uri);                   
-                    }
-                } else {
+                if (!useSystemProxies ()) {                    
                     String protocol = uri.getScheme ();
                     assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
                     if (dontUseProxy (ProxySettings.getSystemNonProxyHosts(), uri.getHost ())) {
@@ -171,11 +169,7 @@ public final class NbProxySelector extends ProxySelector {
                 res.add (Proxy.NO_PROXY);
                 break;
             case ProxySettings.AUTO_DETECT_PAC:
-                if (useSystemProxies ()) {
-                    if (original != null) {
-                        res = original.select (uri);                   
-                    }
-                } else {
+                if (!useSystemProxies ()) {
                     // handling nonProxyHosts first
                     if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
                         res.add (Proxy.NO_PROXY);
@@ -197,9 +191,14 @@ public final class NbProxySelector extends ProxySelector {
                     } else {
                         LOG.log(Level.FINEST, "Identifying proxy for URI {0}---{1}, PAC URI: {2}---{3}", //NOI18N
                                 new Object[] { uri.toString(), uri.getHost(), pac.getPacURI().toString(), pac.getPacURI().getHost() });
-                        res.addAll(pac.findProxyForURL(uri)); // NOI18N
-                    }
+                        res.addAll(pac.findProxyForURL(uri));
+                    }                    
                 }
+                
+                if (original != null) {
+                    res.addAll (original.select (uri));
+                }
+                
                 res.add (Proxy.NO_PROXY);
                 break;
             case ProxySettings.MANUAL_SET_PAC:
