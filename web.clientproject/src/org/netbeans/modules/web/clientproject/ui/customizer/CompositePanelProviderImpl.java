@@ -71,7 +71,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     @NbBundle.Messages({
         "CompositePanelProviderImpl.sources.title=Sources",
-        "CompositePanelProviderImpl.run.title=Run",
+        "CompositePanelProviderImpl.run.title=Run"
     })
     @Override
     public Category createCategory(Lookup context) {

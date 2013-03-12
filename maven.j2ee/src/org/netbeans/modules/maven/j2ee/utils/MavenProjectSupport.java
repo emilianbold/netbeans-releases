@@ -46,9 +46,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -79,6 +83,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  * Provides a various methods to help with typical Maven Projects requirements
@@ -419,6 +424,51 @@ public class MavenProjectSupport {
     private static void setSettings(Project project, String key, String value, boolean shared) {
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         props.put(key, value, shared);
+    }
+    
+    /**
+     * Set browser ID for the given {@link Project}.
+     * 
+     * @param project project for which we want to set new browser
+     * @param browerID browser that we want to set or null if we want to remove current browser
+     */
+    public static void setBrowserID(@NonNull Project project, @NullAllowed String browerID) {
+        Parameters.notNull("project", project);
+
+        Preferences preferences = getPreferences(project, false);
+        
+        if (browerID == null || "".equals(browerID)) {
+            preferences.remove(MavenJavaEEConstants.SELECTED_BROWSER);
+        } else {
+            preferences.put(MavenJavaEEConstants.SELECTED_BROWSER, browerID);
+        }
+        try {
+            preferences.flush();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    /**
+     * Returns selected browser ID for the given {@link Project}.
+     * 
+     * @param project project for which we want to know browserID
+     * @return browserID for the given project or null if the project doesn't have browser
+     */
+    public static String getBrowserID(@NonNull Project project) {
+        Parameters.notNull("project", project);
+        
+        return getPreferences(project, false).get(MavenJavaEEConstants.SELECTED_BROWSER, null);
+    }
+    
+    /**
+     * Returns preferences for the given {@link Project}.
+     * 
+     * @param project for which we want to find {@link Preferences}
+     * @return {@link Preferences} for the given project
+     */
+    private static Preferences getPreferences(@NonNull Project project, boolean shared) {
+        return ProjectUtils.getPreferences(project, MavenProjectSupport.class, shared);
     }
     
     private static class AddServerAction extends AbstractAction {
