@@ -169,7 +169,7 @@ public class CPCssEditorModule extends CssEditorModule {
             //@include |
             case cp_mixin_name:
                 //@include mymi|
-                proposals.addAll(Utilities.createRAWCompletionProposals(model.getMixinNames(), ElementKind.METHOD, context.getAnchorOffset()));
+                proposals.addAll(getMixinsCompletionProposals(context, model));
                 break;
 
             case cp_variable:
@@ -217,6 +217,54 @@ public class CPCssEditorModule extends CssEditorModule {
                             VariableCompletionItem item = new VariableCompletionItem(
                                     handle,
                                     var,
+                                    context.getAnchorOffset(),
+                                    reff.getNameExt());
+
+                            proposals.add(item);
+                        }
+
+                    }
+
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return proposals;
+    }
+    
+    private static List<CompletionProposal> getMixinsCompletionProposals(final CompletionContext context, CPModel model) {
+        //filter the variable at the current location (being typed)
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        for (CPElement mixin : model.getMixins()) {
+            if (mixin.getType() == CPElementType.MIXIN_DECLARATION) {
+                ElementHandle handle = new CPCslElementHandle(context.getFileObject(), mixin.getName());
+                MixinCompletionItem item = new MixinCompletionItem(
+                        handle,
+                        mixin.getHandle(),
+                        context.getAnchorOffset(),
+                        null); //no origin for current file
+//                        var.getFile() == null ? null : var.getFile().getNameExt());
+
+                proposals.add(item);
+            }
+        }
+        try {
+            //now gather global vars from all linked sheets
+            FileObject file = context.getFileObject();
+            if (file != null) {
+                Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(file);
+                for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
+                    FileObject reff = entry.getKey();
+                    CPCssIndexModel cpIndexModel = entry.getValue();
+                    Collection<org.netbeans.modules.css.prep.model.CPElementHandle> mixins = cpIndexModel.getMixins();
+                    for (org.netbeans.modules.css.prep.model.CPElementHandle mixin : mixins) {
+                        if (mixin.getType() == CPElementType.MIXIN_DECLARATION) {
+                            ElementHandle handle = new CPCslElementHandle(context.getFileObject(), mixin.getName());
+                            MixinCompletionItem item = new MixinCompletionItem(
+                                    handle,
+                                    mixin,
                                     context.getAnchorOffset(),
                                     reff.getNameExt());
 
