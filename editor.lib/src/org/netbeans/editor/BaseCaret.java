@@ -78,6 +78,7 @@ import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -101,16 +102,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.EventListenerList;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
-import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
-import org.netbeans.api.editor.fold.FoldStateChange;
-import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -279,7 +275,6 @@ AtomicLockListener, FoldHierarchyListener {
      * its relative visual position on the screen.
      */
     private boolean updateAfterFoldHierarchyChange;
-    private FoldHierarchyListener weakFHListener;
     
     /**
      * Whether at least one typing change occurred during possibly several atomic operations.
@@ -529,13 +524,6 @@ AtomicLockListener, FoldHierarchyListener {
         
         EditorUI editorUI = Utilities.getEditorUI(c);
         editorUI.removePropertyChangeListener(this);
-
-        if (weakFHListener != null) {
-            FoldHierarchy hierarchy = FoldHierarchy.get(c);
-            if (hierarchy != null) {
-                hierarchy.removeFoldHierarchyListener(weakFHListener);
-            }
-        }
 
         modelChanged(listenDoc, null);
     }
@@ -1231,27 +1219,20 @@ AtomicLockListener, FoldHierarchyListener {
                         caretPos = doc.createPosition(offset);
                         markPos = doc.createPosition(offset);
 
-                        FoldHierarchy hierarchy = FoldHierarchy.get(c);
-                        // hook the listener if not already done
-                        if (weakFHListener == null) {
-                            weakFHListener = WeakListeners.create(FoldHierarchyListener.class, this, hierarchy);
-                            hierarchy.addFoldHierarchyListener(weakFHListener);
-                        }
-
-                        // Unfold fold
-                        hierarchy.lock();
-                        try {
-                            Fold collapsed = null;
-                            while (expandFold && (collapsed = FoldUtilities.findCollapsedFold(hierarchy, offset, offset)) != null && collapsed.getStartOffset() < offset &&
-                                collapsed.getEndOffset() > offset) {
-                                hierarchy.expand(collapsed);
+                        Callable<Boolean> cc = (Callable<Boolean>)c.getClientProperty("org.netbeans.api.fold.expander");
+                        if (cc != null && expandFold) {
+                            // the caretPos/markPos were already called.
+                            // nothing except the document is locked at this moment.
+                            try {
+                                cc.call();
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
                             }
-                        } finally {
-                            hierarchy.unlock();
                         }
                         if (rectangularSelection) {
                             setRectangularSelectionToDotAndMark();
                         }
+                        
                     } catch (BadLocationException e) {
                         throw new IllegalStateException(e.toString());
                         // setting the caret to wrong position leaves it at current position
@@ -1510,37 +1491,25 @@ AtomicLockListener, FoldHierarchyListener {
                     // Disable drag which would otherwise occur when mouse would be over text
                     c.setDragEnabled(false);
                     // Check possible fold expansion
-                    FoldHierarchy hierarchy = FoldHierarchy.get(c);
-                    Document doc = c.getDocument();
-                    if (doc instanceof AbstractDocument) {
-                        AbstractDocument adoc = (AbstractDocument) doc;
-                        adoc.readLock();
-                        try {
-                            hierarchy.lock();
-                            try {
-                                Fold collapsed = FoldUtilities.findCollapsedFold(
-                                        hierarchy, offset, offset);
-                                if (collapsed != null && collapsed.getStartOffset() <= offset
-                                        && collapsed.getEndOffset() >= offset) {
-                                    hierarchy.expand(collapsed);
-                                } else {
-                                    if (selectWordAction == null) {
-                                        selectWordAction = ((BaseKit) c.getUI().getEditorKit(
-                                                c)).getActionByName(BaseKit.selectWordAction);
-                                    }
-                                    if (selectWordAction != null) {
-                                        selectWordAction.actionPerformed(null);
-                                    }
-                                    // Select word action selects forward i.e. dot > mark
-                                    minSelectionStartOffset = getMark();
-                                    minSelectionEndOffset = getDot();
-                                }
-                            } finally {
-                                hierarchy.unlock();
+                    try {
+                        // hack, to get knowledge of possible expansion. Editor depends on Folding, so it's not really possible
+                        // to have Folding depend on BaseCaret (= a cycle). If BaseCaret moves to editor.lib2, this contract
+                        // can be formalized as an interface.
+                        Callable<Boolean> cc = (Callable<Boolean>)c.getClientProperty("org.netbeans.api.fold.expander");
+                        if (cc == null || !cc.equals(this)) {
+                            if (selectWordAction == null) {
+                                selectWordAction = ((BaseKit) c.getUI().getEditorKit(
+                                        c)).getActionByName(BaseKit.selectWordAction);
                             }
-                        } finally {
-                            adoc.readUnlock();
+                            if (selectWordAction != null) {
+                                selectWordAction.actionPerformed(null);
+                            }
+                            // Select word action selects forward i.e. dot > mark
+                            minSelectionStartOffset = getMark();
+                            minSelectionEndOffset = getDot();
                         }
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                     break;
                     
@@ -1617,37 +1586,48 @@ AtomicLockListener, FoldHierarchyListener {
         JTextComponent c = component;
         if (c != null) {
             if (isMiddleMouseButtonExt(evt)) {
-		if (evt.getClickCount() == 1) {
-		    if (c == null) return;
+                if (evt.getClickCount() == 1) {
+                    if (c == null) {
+                        return;
+                    }
                     Clipboard buffer = getSystemSelection();
-                    
-                    if (buffer == null) return;
+
+                    if (buffer == null) {
+                        return;
+                    }
 
                     Transferable trans = buffer.getContents(null);
-                    if (trans == null) return;
+                    if (trans == null) {
+                        return;
+                    }
 
-                    final BaseDocument doc = (BaseDocument)c.getDocument();
-                    if (doc == null) return;
-                    
-                    final int offset = ((BaseTextUI)c.getUI()).viewToModel(c,
-                                    evt.getX(), evt.getY());
+                    final BaseDocument doc = (BaseDocument) c.getDocument();
+                    if (doc == null) {
+                        return;
+                    }
 
-                    try{
-                        final String pastingString = (String)trans.getTransferData(DataFlavor.stringFlavor);
-                        if (pastingString == null) return;
-                        doc.runAtomicAsUser (new Runnable () {
-                            public @Override void run () {
-                                 try {
-                                     doc.insertString(offset, pastingString, null);
-                                     setDot(offset+pastingString.length());
-                                 } catch( BadLocationException exc ) {
-                                 }
+                    final int offset = ((BaseTextUI) c.getUI()).viewToModel(c,
+                            evt.getX(), evt.getY());
+
+                    try {
+                        final String pastingString = (String) trans.getTransferData(DataFlavor.stringFlavor);
+                        if (pastingString == null) {
+                            return;
+                        }
+                        doc.runAtomicAsUser(new Runnable() {
+                            public @Override
+                            void run() {
+                                try {
+                                    doc.insertString(offset, pastingString, null);
+                                    setDot(offset + pastingString.length());
+                                } catch (BadLocationException exc) {
+                                }
                             }
                         });
-                    }catch(UnsupportedFlavorException ufe){
-                    }catch(IOException ioe){
+                    } catch (UnsupportedFlavorException ufe) {
+                    } catch (IOException ioe) {
                     }
-		}
+                }
             }
         }
     }
@@ -2109,68 +2089,19 @@ AtomicLockListener, FoldHierarchyListener {
             }
         }
     }
-
-    public @Override void foldHierarchyChanged(FoldHierarchyEvent evt) {
-        int caretOffset = getDot();
-        final int addedFoldCnt = evt.getAddedFoldCount();
-        final boolean scrollToView;
-        LOG.finest("Received fold hierarchy change");
-        if (addedFoldCnt > 0) {
-            FoldHierarchy hierarchy = (FoldHierarchy) evt.getSource();
-            Fold collapsed = null;
-            boolean wasExpanded = false;
-            while ((collapsed = FoldUtilities.findCollapsedFold(hierarchy, caretOffset, caretOffset)) != null && collapsed.getStartOffset() < caretOffset &&
-                    collapsed.getEndOffset() > caretOffset) {
-                        hierarchy.expand(collapsed);
-                        wasExpanded = true;
-                    }
-                    // prevent unneeded scrolling; the user may have scrolled out using mouse already
-                    // so scroll only if the added fold may affect Y axis. Actually it's unclear why
-                    // we should reveal the current position on fold events except when caret is positioned in now-collapsed fold
-                    scrollToView = wasExpanded;
-        } else {
-            int startOffset = Integer.MAX_VALUE;
-            // Set the caret's offset to the end of just collapsed fold if necessary
-            if (evt.getAffectedStartOffset() <= caretOffset && evt.getAffectedEndOffset() >= caretOffset) {
-                for (int i = 0; i < evt.getFoldStateChangeCount(); i++) {
-                    FoldStateChange change = evt.getFoldStateChange(i);
-                    if (change.isCollapsedChanged()) {
-                        Fold fold = change.getFold();
-                        if (fold.isCollapsed() && fold.getStartOffset() <= caretOffset && fold.getEndOffset() >= caretOffset) {
-                            if (fold.getStartOffset() < startOffset) {
-                                startOffset = fold.getStartOffset();
-                            }
-                        }
-                    }
-                }
-                if (startOffset != Integer.MAX_VALUE) {
-                    setDot(startOffset, false);
-                }
-            }
-            scrollToView = false;
-        }
-        // Update caret's visual position
-        // Post the caret update asynchronously since the fold hierarchy is updated before
-        // the view hierarchy and the views so the dispatchUpdate() could be picking obsolete
-        // view information.
-        SwingUtilities.invokeLater(new Runnable() {
-            public @Override void run() {
-                LOG.finest("Updating after fold hierarchy change");
-                if (component == null) {
-                    return;
-                }
-                // see #217867
-                Rectangle b = caretBounds;
-                updateAfterFoldHierarchyChange = b != null;
-                boolean wasInView = b != null && component.getVisibleRect().intersects(b);
-                // scroll if:
-                // a/ a fold was added and the caret was originally in the view
-                // b/ scrollToView is true (= caret was positioned within a new now collapsed fold)
-                dispatchUpdate((addedFoldCnt > 1 && wasInView) || scrollToView);
-            }
-        });
-    }
     
+    /**
+     * This method is an implementation detail.
+     * Please do not use it.
+     * 
+     * @param evt
+     * @deprecated
+     */
+    @Deprecated
+    public @Override void foldHierarchyChanged(FoldHierarchyEvent evt) {
+        
+    }
+
     void scheduleCaretUpdate() {
         if (!caretUpdatePending) {
             caretUpdatePending = true;
@@ -2304,5 +2235,22 @@ AtomicLockListener, FoldHierarchyListener {
         DRAG_SELECTION  // Drag is being done (text selection existed at the mouse press)
         
     }
-    
+
+    /**
+     * Refreshes caret display on the screen.
+     * Some height or view changes may result in the caret going off the screen. In some cases, this is not desirable,
+     * as the user's work may be interrupted by e.g. an automatic refresh. This method repositions the view so the
+     * caret remains visible.
+     * <p/>
+     * The method has two modes: it can reposition the view just if it originally displayed the caret and the caret became
+     * invisible, and it can scroll the caret into view unconditionally.
+     * @param retainInView true to scroll only if the caret was visible. False to refresh regardless of visibility.
+     */
+    public void refresh(boolean retainInView) {
+        Rectangle b = caretBounds;
+        updateAfterFoldHierarchyChange = b != null;
+        boolean wasInView = b != null && component.getVisibleRect().intersects(b);
+        update(!retainInView || wasInView);
+    }
+
 }

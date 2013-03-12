@@ -197,7 +197,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         if (panel == null) {
             String name = oldName;
             String suffix = "";
-            if(handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+            if(handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
                 suffix = getString("LBL_Label");
             } else if (handle != null && handle.getElementHandle() !=null) {
                 ElementKind kind = handle.getElementHandle().getKind();

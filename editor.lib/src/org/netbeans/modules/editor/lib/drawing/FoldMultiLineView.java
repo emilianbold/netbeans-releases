@@ -46,14 +46,10 @@ package org.netbeans.modules.editor.lib.drawing;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
-import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.view.GapMultiLineView;
 
 /**
@@ -109,40 +105,7 @@ import org.netbeans.lib.editor.view.GapMultiLineView;
             //   begining of the first line
             int lastViewEndOffset = lineElem.getStartOffset();
 
-            int cnt = foldAndEndLineElemList.size();
             List childViews = new ArrayList();
-            for (int i = 0; i < cnt; i++) {
-                Fold fold = (Fold)foldAndEndLineElemList.get(i);
-                int foldStartOffset = fold.getStartOffset();
-                int foldEndOffset = fold.getEndOffset();
-
-                BaseDocument doc = (BaseDocument) lineElem.getDocument();
-                try {
-                    if (foldStartOffset > lastViewEndOffset) { // need to insert intra-line fragment
-                        View lineView = f.create(lineElem); // normal line view
-                        View intraFrag = lineView.createFragment(lastViewEndOffset, foldStartOffset);
-                        childViews.add(intraFrag);
-                        lastViewEndOffset = foldStartOffset;
-                    }
-
-                    // Create collapsed view
-                    Position viewStartPos = doc.createPosition(foldStartOffset);
-                    Position viewEndPos = doc.createPosition(foldEndOffset);
-                    CollapsedView collapsedView = new CollapsedView(lineElem,
-                        viewStartPos, viewEndPos, fold.getDescription());
-                    childViews.add(collapsedView);
-                    lastViewEndOffset = foldEndOffset;
-
-                } catch (BadLocationException e) {
-                    throw new IllegalStateException("Failed to create view boundary positions"); // NOI18N
-                }
-
-                // Fetch line element where the fold ends
-                i++;
-                lineElem = (Element)foldAndEndLineElemList.get(i);
-                lineElemEndOffset = lineElem.getEndOffset();
-            }
-
             // Append ending fragment if necessary
             // asserted non-empty list => foldEndOffset populated
             if (lastViewEndOffset < lineElemEndOffset) { // need ending fragment

@@ -236,33 +236,6 @@ The example can be generalized to any fold type.
 
 
 <h3>
-Force Fold Expansion for Caret Moving Into Collapsed Fold
-</h3>
-
-<p>
-In the given fold hierarchy expand the fold into which the caret
-is going to be moved by <code>Caret.setDot(offset)</code>.
-<br/>
-The hierarchy must be locked and this example assumes that the underlying
-document is already read-locked e.g. by <code>Document.render()</code>.
-</p>
-
-<pre>
-    FoldHierarchy hierarchy = FoldHierarchy.get(caretComponent);
-    hierarchy.lock();
-    try {
-        Fold collapsed = FoldUtilities.findCollapsedFold(hierarchy, offset, offset);
-        if (collapsed != null &amp;&amp; collapsed.getStartOffset() &lt; offset &amp;&amp;
-            collapsed.getEndOffset() &gt; offset) {
-            hierarchy.expand(collapsed);
-        }
-    } finally {
-        hierarchy.unlock();
-    }
-</pre>
-
-
-<h3>
 Start Listening on Fold Hierarchy Changes
 </h3>
 
@@ -786,9 +759,9 @@ No.
             </hint>
         </question>
 -->
-<answer id="exec-property">
+        <answer id="exec-property">
 No.
-</answer>
+        </answer>
 
 
 

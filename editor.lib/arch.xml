@@ -632,6 +632,15 @@ A test is included in commit validation that checks the editor code changes.
         To specify modifiers for which the hyperlinking should be enabled, or to switch the hyperlinking off.
         Valid values are "[CSMA]+" (to specify combination of modifiers) or "off" (to switch hyperlinking off).
     </api>
+    <api type="import" group="property" name="org.netbeans.api.fold.expander" category="friend">
+        The client property must be defined on JTextComponent managed by the NetBeans editor.
+        <p/>
+        Mouse gestures require to determine whether the point at caret is folded or not. Plain text is then selected.
+        The client property org.netbeans.api.fold.expander (if defined) should contains a Callable&lt;Boolean> that
+        returns false, if the point is a plaintext, true otherwise. Fold expansion should be handled by the Callable.
+        <p/>
+        editor.fold module uses this client property to hook into BaseCaret processing.
+    </api>
 </answer>
 
 
