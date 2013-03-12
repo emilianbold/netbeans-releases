@@ -183,8 +183,6 @@ public class EditorSupportImpl implements EditorSupport {
                     scope.getName(),
                     scope.getNamespaceName().append(scope.getName()).toFullyQualified().toString(),
                     scope.getOffset());
-        } else if (scope instanceof VariableScope) {
-            phpBaseElement = new PhpVariable(scope.getName(), scope.getName(), scope.getOffset());
         }
         return phpBaseElement;
     }
