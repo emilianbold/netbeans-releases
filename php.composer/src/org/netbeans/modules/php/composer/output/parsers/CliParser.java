@@ -44,6 +44,7 @@ package org.netbeans.modules.php.composer.output.parsers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.php.composer.commands.Composer;
 import org.netbeans.modules.php.composer.output.model.SearchResult;
 
 /**
@@ -56,7 +57,7 @@ class CliParser implements Parser {
 
     @Override
     public List<SearchResult> parseSearch(String chunk) {
-        if (chunk.startsWith("Warning:")) { // NOI18N
+        if (!Composer.isValidOutput(chunk)) {
             // ignore warnings
             return Collections.emptyList();
         }

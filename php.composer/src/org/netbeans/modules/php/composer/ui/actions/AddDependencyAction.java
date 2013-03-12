@@ -45,20 +45,20 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.util.NbBundle;
 
-public class SearchAction extends BaseComposerAction {
+public class AddDependencyAction extends BaseComposerAction {
 
     private static final long serialVersionUID = 8974514465465464L;
 
 
-    @NbBundle.Messages("SearchAction.name=Search...")
+    @NbBundle.Messages("AddDependencyAction.name=Add Dependency...")
     @Override
     protected String getName() {
-        return Bundle.SearchAction_name();
+        return Bundle.AddDependencyAction_name();
     }
 
     @Override
     protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
-        SearchPanel.open(phpModule);
+        AddDependencyPanel.open(phpModule);
     }
 
 }
