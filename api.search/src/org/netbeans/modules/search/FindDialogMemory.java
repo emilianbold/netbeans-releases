@@ -496,7 +496,7 @@ public final class FindDialogMemory {
 
     public void setReplaceResultsDivider(int splitDividerLocation) {
         this.replaceResultsDivider = splitDividerLocation;
-        prefs.putDouble(PROP_REPLACE_RESULTS_DIVIDER, splitDividerLocation);
+        prefs.putInt(PROP_REPLACE_RESULTS_DIVIDER, splitDividerLocation);
     }
 
     public String getResultsViewMode() {
