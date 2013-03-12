@@ -270,14 +270,23 @@ public class RemoteFileSystemUtils {
     }
 
     public static RemoteFileObjectBase getCanonicalFileObject(RemoteFileObjectBase fileObject) throws IOException {
-        if (fileObject instanceof RemoteLinkBase) {
-            RemoteFileObjectBase delegate = ((RemoteLinkBase) fileObject).getCanonicalDelegate();
-            if (delegate == null) {
-                throw new FileNotFoundException("Null delegate for remote link " + fileObject); //NOI18N
+        RemoteFileObjectBase candidate = fileObject;
+        for(int i = 0; i < MAXSYMLINKS; i++) {
+            if (candidate instanceof RemoteLinkBase) {
+                RemoteFileObjectBase delegate = ((RemoteLinkBase) candidate).getCanonicalDelegate();
+                if (delegate == null) {
+                    throw new FileNotFoundException("Null delegate for remote link " + candidate); //NOI18N
+                }
+                if (delegate instanceof RemoteLinkBase) {
+                    candidate = delegate;
+                    continue;
+                }
+                return delegate;
+            } else {
+                return candidate;
             }
-            return delegate;
-        }                 
-        return fileObject;
+        }
+        throw new FileNotFoundException("Remote link "+fileObject+" contains more then "+MAXSYMLINKS+" links in a chain."); //NOI18N
     }
 
     public static RemoteDirectory getCanonicalParent(RemoteFileObjectBase fo) throws IOException {
