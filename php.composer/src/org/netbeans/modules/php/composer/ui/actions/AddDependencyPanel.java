@@ -65,9 +65,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -81,6 +83,7 @@ import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -112,7 +115,6 @@ public final class AddDependencyPanel extends JPanel {
 
     private static final SearchResult SEARCHING_SEARCH_RESULT = new SearchResult(null, null);
     private static final SearchResult NO_RESULTS_SEARCH_RESULT = new SearchResult(null, null);
-    private static final String DEFAULT_PACKAGE_VERSION = ":*"; // NOI18N
 
     // @GuardedBy("EDT")
     private static boolean keepOpened = true;
@@ -122,6 +124,8 @@ public final class AddDependencyPanel extends JPanel {
     // @GuardedBy("EDT")
     private final ResultsListModel resultsModel = new ResultsListModel(searchResults);
     private final ConcurrentMap<String, String> resultDetails = new ConcurrentHashMap<String, String>();
+    // @GuardedBy("EDT")
+    private final VersionComboBoxModel versionsModel = new VersionComboBoxModel();
     // tasks
     private final RequestProcessor postSearchRequestProcessor = new RequestProcessor(AddDependencyPanel.class.getName() + " (POST SEARCH)"); // NOI18N
     private final RequestProcessor postShowRequestProcessor = new RequestProcessor(AddDependencyPanel.class.getName() + " (POST SHOW)"); // NOI18N
@@ -214,6 +218,7 @@ public final class AddDependencyPanel extends JPanel {
     private void init() {
         initSearch();
         initResults();
+        initVersions();
         initActionButons();
     }
 
@@ -244,13 +249,12 @@ public final class AddDependencyPanel extends JPanel {
         resultsList.setModel(resultsModel);
         resultsList.setCellRenderer(new ResultListCellRenderer(resultsList.getCellRenderer()));
         // details
-        updateResultDetails(false);
+        updateResultDetailsAndVersions(false);
         // listeners
         resultsList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                enableRequireButtons();
-                updateResultDetails(false);
+                resultsChanged();
             }
         });
         resultsModel.addListDataListener(new ListDataListener() {
@@ -267,8 +271,35 @@ public final class AddDependencyPanel extends JPanel {
                 processChange();
             }
             private void processChange() {
-                enableRequireButtons();
-                updateResultDetails(false);
+                resultsChanged();
+            }
+        });
+    }
+
+    private void initVersions() {
+        versionComboBox.setModel(versionsModel);
+        // listeners
+        versionComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                versionChanged();
+            }
+        });
+        versionsModel.addListDataListener(new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                processChange();
+            }
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                processChange();
+            }
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                processChange();
+            }
+            private void processChange() {
+                versionChanged();
             }
         });
     }
@@ -287,6 +318,15 @@ public final class AddDependencyPanel extends JPanel {
                 keepOpened = e.getStateChange() == ItemEvent.SELECTED;
             }
         });
+    }
+
+    void resultsChanged() {
+        enableRequireButtons();
+        updateResultDetailsAndVersions(false);
+    }
+
+    void versionChanged() {
+        enableRequireButtons();
     }
 
     void enableSearchButton() {
@@ -342,23 +382,35 @@ public final class AddDependencyPanel extends JPanel {
 
     void enableRequireButtons() {
         assert EventQueue.isDispatchThread();
-        boolean valueSelected = !getSelectedSearchResults().isEmpty();
-        requireButton.setEnabled(valueSelected);
-        requireDevButton.setEnabled(valueSelected);
+        boolean validResultSelected = false;
+        if (getSelectedSearchResult() != null
+                && getSelectedResultVersion() != null) {
+            validResultSelected = true;
+        }
+        requireButton.setEnabled(validResultSelected);
+        requireDevButton.setEnabled(validResultSelected);
     }
 
-    void updateResultDetails(boolean fetchDetails) {
+    void updateResultDetailsAndVersions(boolean fetchDetails) {
         assert EventQueue.isDispatchThread();
         String msg = ""; // NOI18N
-        List<SearchResult> selectedSearchResults = getSelectedSearchResults();
-        if (selectedSearchResults.size() == 1) {
-            String details = getResultsDetails(selectedSearchResults.get(0).getName(), fetchDetails);
+        List<String> versions = null;
+        SearchResult selectedSearchResult = getSelectedSearchResult();
+        if (selectedSearchResult != null) {
+            String name = selectedSearchResult.getName();
+            String details = getResultsDetails(name, fetchDetails);
             if (details != null) {
                 msg = details;
             }
+            versions = getResultVersions(name);
         }
         detailsTextPane.setText(msg);
         detailsTextPane.setCaretPosition(0);
+        if (versions == null) {
+            versionsModel.setNoVersions();
+        } else {
+            versionsModel.setVersions(versions);
+        }
     }
 
     @NbBundle.Messages("AddDependencyPanel.details.loading=Loading package details...")
@@ -399,7 +451,7 @@ public final class AddDependencyPanel extends JPanel {
                                 @Override
                                 public void run() {
                                     resultDetails.put(resultName, buffer.toString());
-                                    updateResultDetails(false);
+                                    updateResultDetailsAndVersions(false);
                                 }
                             });
                         }
@@ -410,30 +462,47 @@ public final class AddDependencyPanel extends JPanel {
         return loading;
     }
 
-    List<SearchResult> getSelectedSearchResults() {
-        assert EventQueue.isDispatchThread();
-        Object[] selectedValues = resultsList.getSelectedValues();
-        if (selectedValues.length == 0) {
-            return Collections.emptyList();
+    @CheckForNull
+    private List<String> getResultVersions(String resultName) {
+        if (resultName == null) {
+            return null;
         }
-        List<SearchResult> selectedResults = new ArrayList<SearchResult>(selectedValues.length);
-        for (Object selectedValue : selectedValues) {
-            if (selectedValue != null
-                    && selectedValue != SEARCHING_SEARCH_RESULT
-                    && selectedValue != NO_RESULTS_SEARCH_RESULT) {
-                selectedResults.add((SearchResult) selectedValue);
-            }
+        String details = resultDetails.get(resultName);
+        if (details == null) {
+            // not fetched yet
+            return null;
         }
-        return selectedResults;
+        return VersionsParser.parse(details);
     }
 
-    List<String> getSelectedNamesWithDefaultVersion() {
-        List<SearchResult> selectedSearchResults = getSelectedSearchResults();
-        List<String> names = new ArrayList<String>(selectedSearchResults.size());
-        for (SearchResult searchResult : selectedSearchResults) {
-            names.add(searchResult.getName() + DEFAULT_PACKAGE_VERSION);
+    @CheckForNull
+    SearchResult getSelectedSearchResult() {
+        assert EventQueue.isDispatchThread();
+        Object selectedValue = resultsList.getSelectedValue();
+        if (selectedValue == null
+                || selectedValue == SEARCHING_SEARCH_RESULT
+                || selectedValue == NO_RESULTS_SEARCH_RESULT) {
+            return null;
         }
-        return names;
+        return (SearchResult) selectedValue;
+    }
+
+    @CheckForNull
+    String getSelectedResultVersion() {
+        assert EventQueue.isDispatchThread();
+        String selectedVersion = versionsModel.getSelectedItem();
+        if (selectedVersion == VersionComboBoxModel.NO_VERSIONS_AVAILABLE) {
+            return null;
+        }
+        return selectedVersion;
+    }
+
+    String getSelectedNameWithVersion() {
+        SearchResult selectedSearchResult = getSelectedSearchResult();
+        assert selectedSearchResult != null;
+        String selectedVersion = getSelectedResultVersion();
+        assert selectedVersion != null;
+        return selectedSearchResult.getName() + ":" + selectedVersion; // NOI18N
     }
 
     @NbBundle.Messages("AddDependencyPanel.error.composer.notValid=Composer is not valid.")
@@ -510,7 +579,8 @@ public final class AddDependencyPanel extends JPanel {
         resultsList = new JList();
         detailsScrollPane = new JScrollPane();
         detailsTextPane = new JTextPane();
-        noteLabel = new JLabel();
+        versionLabel = new JLabel();
+        versionComboBox = new JComboBox();
 
         Mnemonics.setLocalizedText(requireDevButton, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.requireDevButton.text")); // NOI18N
         requireDevButton.addActionListener(new ActionListener() {
@@ -543,7 +613,9 @@ public final class AddDependencyPanel extends JPanel {
         Mnemonics.setLocalizedText(packagesLabel, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.packagesLabel.text")); // NOI18N
 
         outputSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        outputSplitPane.setResizeWeight(0.5);
 
+        resultsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         resultsList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 resultsListMouseClicked(evt);
@@ -559,7 +631,8 @@ public final class AddDependencyPanel extends JPanel {
 
         outputSplitPane.setBottomComponent(detailsScrollPane);
 
-        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.noteLabel.text")); // NOI18N
+        versionLabel.setLabelFor(versionComboBox);
+        Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.versionLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -568,7 +641,7 @@ public final class AddDependencyPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(outputSplitPane, GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE)
+                    .addComponent(outputSplitPane, GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(tokenLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -581,11 +654,13 @@ public final class AddDependencyPanel extends JPanel {
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(searchButton))))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(packagesLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(packagesLabel)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(versionLabel)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(versionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -601,9 +676,11 @@ public final class AddDependencyPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(packagesLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(outputSplitPane, GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                .addComponent(outputSplitPane, GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(versionLabel)
+                    .addComponent(versionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -632,7 +709,7 @@ public final class AddDependencyPanel extends JPanel {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            updateResultDetails(true);
+                            updateResultDetailsAndVersions(true);
                         }
                     });
                 } else {
@@ -677,13 +754,12 @@ public final class AddDependencyPanel extends JPanel {
         if (composer == null) {
             return;
         }
-        final List<String> selectedNames = getSelectedNamesWithDefaultVersion();
-        assert !selectedNames.isEmpty();
+        final String selectedName = getSelectedNameWithVersion();
         initComposer(composer, new Runnable() {
             @Override
             public void run() {
                 assert EventQueue.isDispatchThread();
-                composer.require(phpModule, selectedNames.toArray(new String[selectedNames.size()]));
+                composer.require(phpModule, selectedName);
             }
         });
     }//GEN-LAST:event_requireButtonActionPerformed
@@ -694,26 +770,24 @@ public final class AddDependencyPanel extends JPanel {
         if (composer == null) {
             return;
         }
-        final List<String> selectedNames = getSelectedNamesWithDefaultVersion();
-        assert !selectedNames.isEmpty();
+        final String selectedName = getSelectedNameWithVersion();
         initComposer(composer, new Runnable() {
             @Override
             public void run() {
                 assert EventQueue.isDispatchThread();
-                composer.requireDev(phpModule, selectedNames.toArray(new String[selectedNames.size()]));
+                composer.requireDev(phpModule, selectedName);
             }
         });
     }//GEN-LAST:event_requireDevButtonActionPerformed
 
     private void resultsListMouseClicked(MouseEvent evt) {//GEN-FIRST:event_resultsListMouseClicked
-        updateResultDetails(true);
+        updateResultDetailsAndVersions(true);
     }//GEN-LAST:event_resultsListMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JScrollPane detailsScrollPane;
     private JTextPane detailsTextPane;
     private JCheckBox keepOpenCheckBox;
-    private JLabel noteLabel;
     private JCheckBox onlyNameCheckBox;
     private JSplitPane outputSplitPane;
     private JLabel packagesLabel;
@@ -724,6 +798,8 @@ public final class AddDependencyPanel extends JPanel {
     private JButton searchButton;
     private JLabel tokenLabel;
     private JTextField tokenTextField;
+    private JComboBox versionComboBox;
+    private JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -793,6 +869,108 @@ public final class AddDependencyPanel extends JPanel {
                 label = Bundle.AddDependencyPanel_results_result(result.getName(), result.getDescription());
             }
             return originalRenderer.getListCellRendererComponent(list, label.toString(), index, isSelected, cellHasFocus);
+        }
+
+    }
+
+    private static final class VersionComboBoxModel extends AbstractListModel implements ComboBoxModel {
+
+        private static final long serialVersionUID = -46861432132123L;
+
+        @NbBundle.Messages("VersionComboBoxModel.noVersions=<no versions available>")
+        static final String NO_VERSIONS_AVAILABLE = Bundle.VersionComboBoxModel_noVersions();
+
+
+        // @GuardedBy("EDT")
+        private final List<String> versions = new ArrayList<String>();
+
+        private volatile String selectedVersion = null;
+
+
+        public VersionComboBoxModel() {
+            setNoVersions();
+        }
+
+        @Override
+        public int getSize() {
+            assert EventQueue.isDispatchThread();
+            return versions.size();
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            assert EventQueue.isDispatchThread();
+            return versions.get(index);
+        }
+
+        @Override
+        public void setSelectedItem(Object anItem) {
+            selectedVersion = (String) anItem;
+        }
+
+        @CheckForNull
+        @Override
+        public String getSelectedItem() {
+            return selectedVersion;
+        }
+
+        public void setNoVersions() {
+            assert EventQueue.isDispatchThread();
+            this.versions.clear();
+            versions.add(NO_VERSIONS_AVAILABLE);
+            selectedVersion = NO_VERSIONS_AVAILABLE;
+            fireContentsChanged();
+        }
+
+        public void setVersions(List<String> versions) {
+            assert EventQueue.isDispatchThread();
+            this.versions.clear();
+            this.versions.addAll(versions);
+            if (!versions.isEmpty()) {
+                selectedVersion = versions.get(0);
+            }
+            fireContentsChanged();
+        }
+
+        private void fireContentsChanged() {
+            fireContentsChanged(this, 0, Integer.MAX_VALUE);
+        }
+
+    }
+
+    private static final class VersionsParser  {
+
+        private static final String VERSIONS_PREFIX = "versions : "; // NOI18N
+        private static final String VERSIONS_DELIMITER = ", "; // NOI18N
+
+
+        private VersionsParser() {
+        }
+
+        @CheckForNull
+        public static List<String> parse(String details) {
+            String versionsLine = getVersionLine(details);
+            if (versionsLine == null) {
+                return null;
+            }
+            return getVersions(versionsLine);
+        }
+
+        @CheckForNull
+        private static String getVersionLine(String details) {
+            for (String line : details.split("\n")) { // NOI18N
+                line = line.trim();
+                if (line.startsWith(VERSIONS_PREFIX)) {
+                    return line.substring(VERSIONS_PREFIX.length());
+                }
+            }
+            return null;
+        }
+
+        private static List<String> getVersions(String versionsLine) {
+            List<String> versions = new ArrayList<String>(StringUtils.explode(versionsLine, VERSIONS_DELIMITER));
+            versions.add("*"); // NOI18N
+            return versions;
         }
 
     }
