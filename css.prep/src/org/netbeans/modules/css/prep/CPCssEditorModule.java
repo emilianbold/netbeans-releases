@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -64,6 +65,7 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
@@ -554,4 +556,40 @@ public class CPCssEditorModule extends CssEditorModule {
         };
 
     }
+    
+    @Override
+    public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
+
+        final Set<StructureItem> vars = new HashSet<StructureItem>();
+        final Set<StructureItem> mixins = new HashSet<StructureItem>();
+
+        result.add(new CPCategoryStructureItem.Variables(vars));
+        result.add(new CPCategoryStructureItem.Mixins(mixins, context));
+
+        CPModel model = CPModel.getModel(context.getParserResult());
+        for(CPElement element : model.getElements()) {
+            switch(element.getType()) {
+                case MIXIN_DECLARATION:
+                    mixins.add(new CPStructureItem.Mixin(element));
+                    break;
+                case VARIABLE_DECLARATION_MIXIN_PARAMS:
+                case VARIABLE_GLOBAL_DECLARATION:
+                case VARIABLE_LOCAL_DECLARATION:
+                    vars.add(new CPStructureItem.Variable(element));
+                    break;
+            }
+        }
+
+        //XXX ugly - we need no visitor, but still forced to return one
+        return new NodeVisitor<T>() {
+            @Override
+            public boolean visit(Node node) {
+                return true;
+            }
+        };
+        
+
+    }
+
+    
 }
