@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.maven.j2ee.web;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -58,7 +57,7 @@ import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
@@ -90,8 +89,7 @@ import org.openide.util.Exceptions;
 public final class ClientSideDevelopmentSupport implements
         ServerURLMappingImplementation,
         URLDisplayerImplementation,
-        PageInspectorCustomizer,
-        PropertyChangeListener {
+        PageInspectorCustomizer {
 
     private final Project project;
     private volatile String projectRootURL;
@@ -188,7 +186,7 @@ public final class ClientSideDevelopmentSupport implements
     }
 
     public boolean canReload() {
-        return WebBrowserSupport.isIntegratedBrowser(getSelectedBrowser());
+        return WebBrowserSupport.isIntegratedBrowser(MavenProjectSupport.getBrowserID(project));
     }
 
     public void reload(FileObject fo) {
@@ -210,14 +208,7 @@ public final class ClientSideDevelopmentSupport implements
         }
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CustomizerRunWeb.PROP_SELECTED_BROWSER.equals(evt.getPropertyName())) {
-            resetBrowserSupport();
-        }
-    }
-
-    private synchronized void resetBrowserSupport() {
+    public synchronized void resetBrowserSupport() {
         if (browserSupport != null) {
             browserSupport.close(false);
         }
@@ -230,7 +221,7 @@ public final class ClientSideDevelopmentSupport implements
             return browserSupport;
         }
         browserSupportInitialized = true;
-        String selectedBrowser = getSelectedBrowser();
+        String selectedBrowser = MavenProjectSupport.getBrowserID(project);
         WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
         if (browser == null) {
             browserSupport = null;
@@ -241,10 +232,6 @@ public final class ClientSideDevelopmentSupport implements
         return browserSupport;
     }
 
-    private String getSelectedBrowser() {
-        return (String) project.getProjectDirectory().getAttribute(CustomizerRunWeb.PROP_SELECTED_BROWSER);
-    }
-    
     /*
      * EASEL support --> Move to web.common together with almost identical Web Project implementation
      */
