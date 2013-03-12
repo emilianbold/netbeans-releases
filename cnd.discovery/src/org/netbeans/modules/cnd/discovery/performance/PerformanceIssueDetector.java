@@ -242,6 +242,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long time = event.getTime();
         if (event.getAttrs().length == 0) {
             LOG.log(timeOutLevel, "Timeout {0}s of directory list {1}", new Object[]{time/NANO_TO_SEC, dirName}); //NOI18N
+            lock.writeLock().lock();
             try {
                 createFileTimeOut.put(fo, event);
             } finally {
@@ -283,6 +284,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         long time = event.getTime();
         if (event.getAttrs().length == 0) {
             LOG.log(timeOutLevel, "Timeout {0}s of create project item {1}", new Object[]{time/NANO_TO_SEC, path}); //NOI18N
+            lock.writeLock().lock();
             try {
                 createItemTimeOut.put(path, event);
             } finally {
