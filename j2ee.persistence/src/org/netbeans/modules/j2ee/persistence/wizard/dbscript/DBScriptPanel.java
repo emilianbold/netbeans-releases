@@ -463,7 +463,7 @@ public class DBScriptPanel extends javax.swing.JPanel {
             }
             if(deepVerify) {
                 PersistenceEnvironment pe = project.getLookup().lookup(PersistenceEnvironment.class);
-                List<String> problems = DBScriptWizard.run(project, null, pe, true);
+                List<String> problems = DBScriptWizard.run(project, null, pe, null, true);
                 if(problems != null && !problems.isEmpty()){
                     setErrorMessage(problems.get(0));
                     return false;

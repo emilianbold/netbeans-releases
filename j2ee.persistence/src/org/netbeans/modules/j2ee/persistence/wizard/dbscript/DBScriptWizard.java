@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
@@ -72,7 +73,7 @@ import org.openide.util.NbBundle;
 
 /**
  */
-public final class DBScriptWizard implements WizardDescriptor.InstantiatingIterator {
+public final class DBScriptWizard implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
@@ -107,17 +108,28 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
     }
 
     @Override
-    public Set instantiate() throws IOException {
+    public Set instantiate() throws java.io.IOException {
+        assert true : "should never be called, instantiate(ProgressHandle) should be called instead";
+        return null;
+    }
+
+    @Override
+    public Set instantiate(ProgressHandle handle) throws IOException {
         Project project = Templates.getProject(wiz);
         FileObject tFolder = Templates.getTargetFolder(wiz);
-        FileObject sqlFile = tFolder.createData(Templates.getTargetName(wiz), EXTENSION);//NOI18N
-        PersistenceEnvironment pe = project.getLookup().lookup(PersistenceEnvironment.class);
-        if (sqlFile != null) {
-            //execution
-            run(project, sqlFile, pe, false);
+        try {
+            handle.start(100);
+            handle.progress(NbBundle.getMessage(DBScriptWizard.class, "MSG_CreateFile"),5);
+            FileObject sqlFile = tFolder.createData(Templates.getTargetName(wiz), EXTENSION);//NOI18N
+            PersistenceEnvironment pe = project.getLookup().lookup(PersistenceEnvironment.class);
+            if (sqlFile != null) {
+                //execution
+                run(project, sqlFile, pe, handle, false);
+            }
+            return Collections.singleton(sqlFile);
+        } finally {
+            handle.finish();
         }
-
-        return Collections.singleton(sqlFile);
     }
 
     @Override
@@ -159,13 +171,16 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
         return panels[index];
     }
 
-    static List<String> run(final Project project, final FileObject sFile, final PersistenceEnvironment pe, final boolean validateOnly) {
+    static List<String> run(final Project project, final FileObject sFile, final PersistenceEnvironment pe, final ProgressHandle handle, final boolean validateOnly) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
         //
         final HashMap<String, String> props = new HashMap<String, String>();
         final List<String> initialProblems = new ArrayList<String>();
         PersistenceUnit[] pus = null;
+        if(handle!=null) {
+            handle.progress(NbBundle.getMessage(DBScriptWizard.class, "MSG_CollectConfig"),10);
+        }
         try {
             pus = Util.getPersistenceUnits(project);
         } catch (IOException ex) {
@@ -208,7 +223,7 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
                 @Override
                 public void run() {
                     if (initialProblems.isEmpty()) {
-                        new GenerateScriptExecutor().execute(project, sFile, pe, pu, initialProblems, validateOnly);
+                        new GenerateScriptExecutor().execute(project, sFile, pe, pu, initialProblems, handle, validateOnly);
                     }
                     if (!initialProblems.isEmpty()) {
                         StringBuilder sb = new StringBuilder();
@@ -222,7 +237,7 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
             };
             t.setContextClassLoader(customClassLoader);
             t.start();
-            t.join();
+            t.join(30000);//I don't want to block forever even if in some cases empty file will be opened
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         } finally {
