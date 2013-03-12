@@ -120,7 +120,9 @@ public class EditorSupportImpl implements EditorSupport {
         }
         final List<Pair<FileObject, Integer>> retval = new ArrayList<Pair<FileObject, Integer>>();
         Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(sourceRoot));
-        Set<ClassElement> classes = indexQuery.getClasses(NameKind.exact(phpClass.getFullyQualifiedName()));
+        String fullyQualifiedName = phpClass.getFullyQualifiedName();
+        NameKind kind = fullyQualifiedName == null ? NameKind.prefix(phpClass.getName()) : NameKind.exact(fullyQualifiedName);
+        Set<ClassElement> classes = indexQuery.getClasses(kind);
         for (ClassElement indexedClass : classes) {
             FileObject fo = indexedClass.getFileObject();
             if (fo != null && fo.isValid()) {
@@ -181,8 +183,6 @@ public class EditorSupportImpl implements EditorSupport {
                     scope.getName(),
                     scope.getNamespaceName().append(scope.getName()).toFullyQualified().toString(),
                     scope.getOffset());
-        } else if (scope instanceof VariableScope) {
-            phpBaseElement = new PhpVariable(scope.getName(), scope.getName(), scope.getOffset());
         }
         return phpBaseElement;
     }
