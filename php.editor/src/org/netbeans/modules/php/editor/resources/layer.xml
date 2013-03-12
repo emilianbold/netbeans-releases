@@ -117,10 +117,12 @@
                 </folder>
                 <folder name="FoldManager">
                     <file name="CustomFoldManager.instance">
+                	<attr name="position" intvalue="1000"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.fold.FoldManagerFactory"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.api.editor.fold.FoldingSupport.userFoldManagerFactory"/>
                     </file>
                     <file name="PHPDocReader.instance">
+                	<attr name="position" intvalue="1100"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.fold.ContentReader$Factory"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.api.editor.fold.FoldingSupport.contentReaderFactory"/>
                         <attr name="start" stringvalue="*"/>

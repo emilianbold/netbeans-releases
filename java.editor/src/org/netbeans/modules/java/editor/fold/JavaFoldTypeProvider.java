@@ -52,7 +52,7 @@ import org.netbeans.spi.editor.fold.FoldTypeProvider;
  *
  * @author sdedic
  */
-@MimeRegistration(mimeType = "text/x-java", service = FoldTypeProvider.class)
+@MimeRegistration(mimeType = "text/x-java", service = FoldTypeProvider.class, position = 1000)
 public class JavaFoldTypeProvider implements FoldTypeProvider {
     private Collection<FoldType>   types = new ArrayList<FoldType>(5);
 
