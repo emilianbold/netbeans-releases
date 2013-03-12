@@ -286,7 +286,7 @@ public class RemoteFileSystemUtils {
                 return candidate;
             }
         }
-        throw new FileNotFoundException("Remote link "+fileObject+" contains more then "+MAXSYMLINKS+" links in a chain."); //NOI18N
+        throw new FileNotFoundException("Remote link "+fileObject+" contains more than "+MAXSYMLINKS+" links in a chain."); //NOI18N
     }
 
     public static RemoteDirectory getCanonicalParent(RemoteFileObjectBase fo) throws IOException {
