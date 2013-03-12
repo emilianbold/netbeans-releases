@@ -56,6 +56,10 @@ class CliParser implements Parser {
 
     @Override
     public List<SearchResult> parseSearch(String chunk) {
+        if (chunk.startsWith("Warning:")) { // NOI18N
+            // ignore warnings
+            return Collections.emptyList();
+        }
         String[] lines = chunk.split("\n"); // NOI18N
         if (lines.length == 0) {
             return Collections.emptyList();
