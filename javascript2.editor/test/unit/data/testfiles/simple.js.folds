@@ -10,16 +10,16 @@
 |     
 - }
   
-  /* Method 3 */
++ /* Method 3 */
 + function method2() {
 - }
   
 + /*
--  * some comment
-   */
+|  * some comment
+-  */
   
   var global1 = new Foo.Bar();   
-  /** my global */
++ /** my global */
   var global2 = new Array();
 + if (true) {
 |    var global3 = new org.foo.bar.Baz();
