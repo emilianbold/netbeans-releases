@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.editor.fold.ui;
 
-import java.awt.Rectangle;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.Fold;
@@ -92,6 +92,7 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
             foldHierarchy.lock();
             try {
                 int offset = component.getCaret().getDot();
+                res = false;
                 Fold f = FoldUtilities.findCollapsedFold(foldHierarchy, offset, offset);
                 if (f != null) {
                     if (sharp) {
@@ -109,6 +110,9 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
         }
         
         public boolean equals(Object whatever) {
+            if (!(whatever instanceof Caret)) {
+                return super.equals(whatever);
+            }
             sharp = false;
             final Document doc = component.getDocument();
             doc.render(this);
