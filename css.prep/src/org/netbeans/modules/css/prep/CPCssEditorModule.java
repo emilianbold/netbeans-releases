@@ -48,10 +48,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -63,6 +65,7 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
@@ -83,6 +86,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.Lines;
 import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
@@ -169,7 +173,7 @@ public class CPCssEditorModule extends CssEditorModule {
             //@include |
             case cp_mixin_name:
                 //@include mymi|
-                proposals.addAll(Utilities.createRAWCompletionProposals(model.getMixinNames(), ElementKind.METHOD, context.getAnchorOffset()));
+                proposals.addAll(getMixinsCompletionProposals(context, model));
                 break;
 
             case cp_variable:
@@ -217,6 +221,54 @@ public class CPCssEditorModule extends CssEditorModule {
                             VariableCompletionItem item = new VariableCompletionItem(
                                     handle,
                                     var,
+                                    context.getAnchorOffset(),
+                                    reff.getNameExt());
+
+                            proposals.add(item);
+                        }
+
+                    }
+
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return proposals;
+    }
+
+    private static List<CompletionProposal> getMixinsCompletionProposals(final CompletionContext context, CPModel model) {
+        //filter the variable at the current location (being typed)
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        for (CPElement mixin : model.getMixins()) {
+            if (mixin.getType() == CPElementType.MIXIN_DECLARATION) {
+                ElementHandle handle = new CPCslElementHandle(context.getFileObject(), mixin.getName());
+                MixinCompletionItem item = new MixinCompletionItem(
+                        handle,
+                        mixin.getHandle(),
+                        context.getAnchorOffset(),
+                        null); //no origin for current file
+//                        var.getFile() == null ? null : var.getFile().getNameExt());
+
+                proposals.add(item);
+            }
+        }
+        try {
+            //now gather global vars from all linked sheets
+            FileObject file = context.getFileObject();
+            if (file != null) {
+                Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(file);
+                for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
+                    FileObject reff = entry.getKey();
+                    CPCssIndexModel cpIndexModel = entry.getValue();
+                    Collection<org.netbeans.modules.css.prep.model.CPElementHandle> mixins = cpIndexModel.getMixins();
+                    for (org.netbeans.modules.css.prep.model.CPElementHandle mixin : mixins) {
+                        if (mixin.getType() == CPElementType.MIXIN_DECLARATION) {
+                            ElementHandle handle = new CPCslElementHandle(context.getFileObject(), mixin.getName());
+                            MixinCompletionItem item = new MixinCompletionItem(
+                                    handle,
+                                    mixin,
                                     context.getAnchorOffset(),
                                     reff.getNameExt());
 
@@ -384,24 +436,24 @@ public class CPCssEditorModule extends CssEditorModule {
                         //first look at the current file
                         CPModel model = CPModel.getModel(context.getParserResult());
                         for (CPElement mixin : model.getMixins()) {
-                            if(mixin.getType() == CPElementType.MIXIN_DECLARATION) {
+                            if (mixin.getType() == CPElementType.MIXIN_DECLARATION) {
                                 if (LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
                                     return new DeclarationLocation(context.getFileObject(), mixin.getRange().getStart());
                                 }
                             }
                         }
-                        
+
                         //then look at the referred files
                         try {
                             Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(context.getFileObject());
-                            for(Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
+                            for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                                 CPCssIndexModel im = entry.getValue();
                                 FileObject file = entry.getKey();
-                                for(CPElementHandle mixin : im.getMixins()) {
-                                    if(mixin.getType() == CPElementType.MIXIN_DECLARATION 
+                                for (CPElementHandle mixin : im.getMixins()) {
+                                    if (mixin.getType() == CPElementType.MIXIN_DECLARATION
                                             && LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
                                         CPElement element = mixin.resolve(CPModel.getModel(file));
-                                        if(element != null) {
+                                        if (element != null) {
                                             OffsetRange elementRange = element.getRange();
                                             return new DeclarationLocation(file, elementRange.getStart());
                                         }
@@ -413,7 +465,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
-                        
+
                         return DeclarationLocation.NONE;
                     }
                 };
@@ -432,7 +484,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         //first look at the current file
                         CPModel model = CPModel.getModel(context.getParserResult());
                         for (CPElement var : model.getVariables()) {
-                            if(var.getType().isOfTypes(CPElementType.VARIABLE_GLOBAL_DECLARATION, CPElementType.VARIABLE_LOCAL_DECLARATION, CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS)) {
+                            if (var.getType().isOfTypes(CPElementType.VARIABLE_GLOBAL_DECLARATION, CPElementType.VARIABLE_LOCAL_DECLARATION, CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS)) {
                                 if (LexerUtils.equals(varName, var.getName(), false, false)) {
                                     return new DeclarationLocation(context.getFileObject(), var.getRange().getStart());
                                 }
@@ -441,13 +493,13 @@ public class CPCssEditorModule extends CssEditorModule {
                         try {
                             //then look at the referred files
                             Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(context.getFileObject());
-                            for(Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
+                            for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                                 CPCssIndexModel im = entry.getValue();
                                 FileObject file = entry.getKey();
-                                for(CPElementHandle var : im.getVariables()) {
-                                    if(var.getType() == CPElementType.VARIABLE_GLOBAL_DECLARATION && var.getName().equals(varName)) {
+                                for (CPElementHandle var : im.getVariables()) {
+                                    if (var.getType() == CPElementType.VARIABLE_GLOBAL_DECLARATION && var.getName().equals(varName)) {
                                         CPElement element = var.resolve(CPModel.getModel(file));
-                                        if(element != null) {
+                                        if (element != null) {
                                             OffsetRange elementRange = element.getRange();
                                             return new DeclarationLocation(file, elementRange.getStart());
                                         }
@@ -459,7 +511,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
-                        
+
                         return DeclarationLocation.NONE;
                     }
                 };
@@ -470,4 +522,74 @@ public class CPCssEditorModule extends CssEditorModule {
         }
 
     }
+
+    @Override
+    public <T extends Map<String, List<OffsetRange>>> NodeVisitor<T> getFoldsNodeVisitor(FeatureContext context, T result) {
+        final Snapshot snapshot = context.getSnapshot();
+        final Lines lines = new Lines(snapshot.getText());
+
+        return new NodeVisitor<T>(result) {
+            @Override
+            public boolean visit(Node node) {
+                switch (node.type()) {
+                    case sass_control_block:
+                        //find the ruleSet curly brackets and create the fold between them inclusive
+                        int from = node.from();
+                        int to = node.to();
+                        try {
+                            //do not creare one line folds
+                            if (lines.getLineIndex(from) < lines.getLineIndex(to)) {
+                                List<OffsetRange> codeblocks = getResult().get("codeblocks"); //NOI18N
+                                if (codeblocks == null) {
+                                    codeblocks = new ArrayList<OffsetRange>();
+                                    getResult().put("codeblocks", codeblocks); //NOI18N
+                                }
+
+                                codeblocks.add(new OffsetRange(from, to));
+                            }
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                }
+                return false;
+            }
+        };
+
+    }
+    
+    @Override
+    public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
+
+        final Set<StructureItem> vars = new HashSet<StructureItem>();
+        final Set<StructureItem> mixins = new HashSet<StructureItem>();
+
+        result.add(new CPCategoryStructureItem.Variables(vars));
+        result.add(new CPCategoryStructureItem.Mixins(mixins, context));
+
+        CPModel model = CPModel.getModel(context.getParserResult());
+        for(CPElement element : model.getElements()) {
+            switch(element.getType()) {
+                case MIXIN_DECLARATION:
+                    mixins.add(new CPStructureItem.Mixin(element));
+                    break;
+                case VARIABLE_DECLARATION_MIXIN_PARAMS:
+                case VARIABLE_GLOBAL_DECLARATION:
+                case VARIABLE_LOCAL_DECLARATION:
+                    vars.add(new CPStructureItem.Variable(element));
+                    break;
+            }
+        }
+
+        //XXX ugly - we need no visitor, but still forced to return one
+        return new NodeVisitor<T>() {
+            @Override
+            public boolean visit(Node node) {
+                return true;
+            }
+        };
+        
+
+    }
+
+    
 }
