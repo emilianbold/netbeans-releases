@@ -240,8 +240,13 @@ public class RemoteFileUtil {
 
     public static String getCanonicalPath(FileObject fo) throws IOException {
         //XXX:fullRemote
-        File file = FileUtil.toFile(fo);
-        return (file == null) ? fo.getPath() : file.getCanonicalPath();
+        if (FileSystemProvider.getExecutionEnvironment(fo).isLocal()) {
+            File file = FileUtil.toFile(fo);
+            return (file == null) ? fo.getPath() : file.getCanonicalPath();
+        } else {
+            FileObject file = FileSystemProvider.getCanonicalFileObject(fo);
+            return (file == null) ? fo.getPath() : file.getPath();
+        }
     }
 
     public static JFileChooser createFileChooser(RemoteProject.Mode remoteMode, ExecutionEnvironment execEnv,
