@@ -52,6 +52,8 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.fold.FoldHierarchyMonitor;
 import org.openide.util.Lookup;
 
@@ -82,7 +84,7 @@ public abstract class ApiPackageAccessor {
         }
         INSTANCE = accessor;
         // this is a HACK; forces registration of the view.
-        Lookup.getDefault().lookup(FoldHierarchyMonitor.class);
+        MimeLookup.getLookup(MimePath.EMPTY).lookup(FoldHierarchyMonitor.class);
     }
     
     public abstract FoldHierarchy createFoldHierarchy(FoldHierarchyExecution execution);
@@ -145,5 +147,7 @@ public abstract class ApiPackageAccessor {
     
     public abstract void foldStateChangeEndOffsetChanged(FoldStateChange fsc,
     int originalEndOffset);
+    
+    public abstract FoldHierarchyExecution foldGetExecution(FoldHierarchy fh);
 
 }

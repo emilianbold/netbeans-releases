@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,65 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.editor.fold;
-
-import javax.swing.JEditorPane;
-import javax.swing.text.AbstractDocument;
-import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.spi.editor.fold.FoldManagerFactory;
-
-/*
- * FoldHierarchyExecutionTest.java
- * JUnit based test
  *
- * Created on June 27, 2004, 1:03 AM
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
+package org.netbeans.modules.editor.fold.ui;
 
 /**
  *
- * @author mmetelka
+ * @author
+ * sdedic
  */
-public class FoldHierarchyTestEnv {
+public class FoldUtilitiesImpl {
+    /**
+     * Prefix used for initial-collapse folding preferences.
+     */
+    public static final String PREF_COLLAPSE_PREFIX = "code-folding-collapse-";
     
-    private JEditorPane pane;
+    /**
+     * Preference key name for "use defaults" (default: true)
+     */
+    public static final String PREF_OVERRIDE_DEFAULTS = "code-folding-use-defaults"; // NOI18N
     
-    public FoldHierarchyTestEnv(FoldManagerFactory factory) {
-        this(new FoldManagerFactory[] { factory });
-    }
+    /**
+     * Preference key name for enable code folding (default: true)
+     */
+    public static final String PREF_CODE_FOLDING_ENABLED = "code-folding-enable"; // NOI18N
+    
+    /**
+     * Preference key for "Content preview" display option (default: true).
+     */
+    public static final String PREF_CONTENT_PREVIEW = "code-folding-content.preview"; // NOI18N
 
-    public FoldHierarchyTestEnv(FoldManagerFactory... factories) {
-        pane = new JEditorPane();
-        assert (getMimeType() != null);
-
-        FoldManagerFactoryProvider.setForceCustomProvider(true);
-        FoldManagerFactoryProvider provider = FoldManagerFactoryProvider.getDefault();
-        assert (provider instanceof CustomProvider)
-            : "setForceCustomProvider(true) did not ensure CustomProvider use"; // NOI18N
-
-        CustomProvider customProvider = (CustomProvider)provider;
-        customProvider.removeAllFactories(); // cleanup all registered factories
-        customProvider.registerFactories(getMimeType(), factories);
-    }
-
-    public JEditorPane getPane() {
-        return pane;
-    }
-    
-    public AbstractDocument getDocument() {
-        return (AbstractDocument)getPane().getDocument();
-    }
-    
-    public String getMimeType() {
-        return pane.getEditorKit().getContentType();
-    }
-    
-    public FoldHierarchy getHierarchy() {
-        FoldHierarchy hierarchy = FoldHierarchy.get(getPane());
-        FoldHierarchyExecution.waitHierarchyInitialized(getPane());
-        assert (hierarchy != null);
-        return hierarchy;
-    }
+    /**
+     * Preference key for "Show summary" display option (default: true).
+     */
+    public static final String PREF_CONTENT_SUMMARY = "code-folding-content.summary"; // NOI18N
     
 }
