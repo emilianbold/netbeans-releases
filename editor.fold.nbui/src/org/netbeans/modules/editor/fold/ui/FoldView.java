@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.fold.ui;
 
+import org.netbeans.modules.editor.fold.ui.FoldViewFactory;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
@@ -68,11 +69,18 @@ import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
 import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.api.editor.fold.FoldTemplate;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.lib2.view.EditorView;
 import org.netbeans.modules.editor.lib2.view.ViewRenderContext;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
+import org.openide.util.NbBundle;
+
+import static org.netbeans.modules.editor.fold.ui.Bundle.*;
+
 
 /**
  * View with highlights. This is the most used view.
@@ -80,7 +88,7 @@ import org.netbeans.modules.editor.lib2.view.ViewUtils;
  * @author Miloslav Metelka
  */
 
-public class FoldView extends EditorView {
+final class FoldView extends EditorView {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsView.level=FINE
     private static final Logger LOG = Logger.getLogger(FoldView.class.getName());
@@ -103,8 +111,10 @@ public class FoldView extends EditorView {
     private TextLayout collapsedTextLayout; // 40 + 4 = 44 bytes
     
     private AttributeSet    foldingColors;
+    
+    private int options;
 
-    public FoldView(JTextComponent textComponent, Fold fold, FontColorSettings colorSettings) {
+    public FoldView(JTextComponent textComponent, Fold fold, FontColorSettings colorSettings, int options) {
         super(null);
         int offset = fold.getStartOffset();
         int len = fold.getEndOffset() - offset;
@@ -113,18 +123,22 @@ public class FoldView extends EditorView {
         this.textComponent = textComponent;
         this.fold = fold;
         this.foldingColors = colorSettings.getFontColors(FontColorNames.CODE_FOLDING_COLORING);
+        this.options = options;
     }
 
     @Override
     public float getPreferredSpan(int axis) {
-        TextLayout textLayout = getTextLayout();
-        if (textLayout == null) {
-            return 0f;
-        }
-        String desc = fold.getDescription(); // For empty desc a single-space text layout is returned
         if (axis == View.X_AXIS) {
-            return ((desc.length() > 0) ? textLayout.getAdvance() : 0) 
-                + (2 * EXTRA_MARGIN_WIDTH);
+            String desc = fold.getDescription(); // For empty desc a single-space text layout is returned
+            float advance = 0;
+            if (desc.length() > 0) {
+                TextLayout textLayout = getTextLayout();
+                if (textLayout == null) {
+                    return 0f;
+                }
+                advance = textLayout.getAdvance();
+            }
+            return advance + (2 * EXTRA_MARGIN_WIDTH);
         } else {
             EditorView.Parent parent = (EditorView.Parent) getParent();
             return (parent != null) ? parent.getViewRenderContext().getDefaultRowHeight() : 0f;
@@ -167,6 +181,59 @@ public class FoldView extends EditorView {
     public AttributeSet getAttributes() {
         return null;
     }
+    
+    @NbBundle.Messages({
+        "# {0} - number of lines",
+        "FMT_contentSummary={0} line(s)"
+    })
+    private String resolvePlaceholder(String text, int at) {
+        if ((options & 3) == 0) {
+            return text;
+        }
+        Document d = getDocument();
+        if (!(d instanceof BaseDocument)) {
+            return null;
+        }
+        BaseDocument bd = (BaseDocument)d;
+        CharSequence contentSeq = ""; // NOI18N
+        String summary = ""; // NOI18N
+        
+        int mask = options;
+        try {
+            if ((options & 1) > 0) {
+                    contentSeq = FoldContentReaders.get().readContent(
+                           org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(textComponent),
+                           d, 
+                           fold, 
+                           fold.getType().getTemplate());
+                    if (contentSeq == null) {
+                        mask &= ~1;
+                    }
+            }
+            if ((options & 2) > 0) {
+                int start = fold.getStartOffset();
+                int end = fold.getEndOffset();
+                int startLine = Utilities.getLineOffset(bd, start);
+                int endLine = Utilities.getLineOffset(bd, end) + 1;
+                
+                if (endLine <= startLine + 1) {
+                    mask &= ~2;
+                } else {
+                    summary = FMT_contentSummary((endLine - startLine));
+                }
+            }
+        } catch (BadLocationException ex) {
+        }
+        if (mask == 0) {
+            return text;
+        }
+        String replacement = NbBundle.getMessage(FoldView.class, "FMT_ContentPlaceholder_" + (mask & 3), contentSeq, summary); // NOI18N
+        StringBuilder sb = new StringBuilder(text.length() + replacement.length());
+        sb.append(text.subSequence(0, at));
+        sb.append(replacement);
+        sb.append(text.subSequence(at + FoldTemplate.CONTENT_PLACEHOLDER.length(), text.length()));
+        return sb.toString();
+    }
 
     private TextLayout getTextLayout() {
         if (collapsedTextLayout == null) {
@@ -178,6 +245,10 @@ public class FoldView extends EditorView {
             String text = fold.getDescription();
             if (text.length() == 0) {
                 text = " "; // Use single space (mainly for height measurement etc.
+            }
+            int placeIndex = text.indexOf(FoldTemplate.CONTENT_PLACEHOLDER);
+            if (placeIndex > -1) {
+                text = resolvePlaceholder(text, placeIndex);
             }
             collapsedTextLayout = new TextLayout(text, font, frc);
         }
@@ -238,7 +309,7 @@ public class FoldView extends EditorView {
             case SOUTH:
                 break;
             default:
-                throw new IllegalArgumentException("Bad direction: " + direction);
+                throw new IllegalArgumentException("Bad direction: " + direction); // NOI18N
         }
         return retOffset;
     }
@@ -260,13 +331,13 @@ public class FoldView extends EditorView {
                     Position pos = doc.createPosition(
                             lineRootElement.getElement(lineIndex).getStartOffset());
                     // DocumentView.START_POSITION_PROPERTY
-                    tooltipPane.putClientProperty("document-view-start-position", pos);
+                    tooltipPane.putClientProperty("document-view-start-position", pos); // NOI18N
                     // End-offset of the fold => line end => position
                     lineIndex = lineRootElement.getElementIndex(fold.getEndOffset());
                     pos = doc.createPosition(lineRootElement.getElement(lineIndex).getEndOffset());
                     // DocumentView.END_POSITION_PROPERTY
-                    tooltipPane.putClientProperty("document-view-end-position", pos);
-                    tooltipPane.putClientProperty("document-view-accurate-span", true);
+                    tooltipPane.putClientProperty("document-view-end-position", pos); // NOI18N
+                    tooltipPane.putClientProperty("document-view-accurate-span", true); // NOI18N
                     // Set the same kit and document
                     tooltipPane.setEditorKit(kit);
                     tooltipPane.setDocument(doc);
@@ -347,12 +418,12 @@ public class FoldView extends EditorView {
 
     @Override
     protected String getDumpName() {
-        return "FV";
+        return "FV"; // NOI18N
     }
 
     @Override
     public String toString() {
-        return appendViewInfo(new StringBuilder(200), 0, "", -1).toString();
+        return appendViewInfo(new StringBuilder(200), 0, "", -1).toString(); // NOI18N
     }
 
 }

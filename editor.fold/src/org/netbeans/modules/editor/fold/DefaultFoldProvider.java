@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,65 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.editor.fold;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.AbstractDocument;
-import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.spi.editor.fold.FoldManagerFactory;
-
-/*
- * FoldHierarchyExecutionTest.java
- * JUnit based test
- *
- * Created on June 27, 2004, 1:03 AM
- */
-
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.spi.editor.fold.FoldTypeProvider;
 
 /**
- *
- * @author mmetelka
+ * Default folds, provided by the infrastructure.
+ * These fold types do not propagate to individual languages, only serve as
+ * a common base for "all languages" configuration.
+ * 
+ * @author sdedic
  */
-public class FoldHierarchyTestEnv {
+@MimeRegistration(mimeType = "", service = FoldTypeProvider.class)
+public class DefaultFoldProvider implements FoldTypeProvider {
+    private final Collection<FoldType>  defaultTypes;
     
-    private JEditorPane pane;
-    
-    public FoldHierarchyTestEnv(FoldManagerFactory factory) {
-        this(new FoldManagerFactory[] { factory });
-    }
-
-    public FoldHierarchyTestEnv(FoldManagerFactory... factories) {
-        pane = new JEditorPane();
-        assert (getMimeType() != null);
-
-        FoldManagerFactoryProvider.setForceCustomProvider(true);
-        FoldManagerFactoryProvider provider = FoldManagerFactoryProvider.getDefault();
-        assert (provider instanceof CustomProvider)
-            : "setForceCustomProvider(true) did not ensure CustomProvider use"; // NOI18N
-
-        CustomProvider customProvider = (CustomProvider)provider;
-        customProvider.removeAllFactories(); // cleanup all registered factories
-        customProvider.registerFactories(getMimeType(), factories);
-    }
-
-    public JEditorPane getPane() {
-        return pane;
+    public DefaultFoldProvider() {
+        defaultTypes = new ArrayList<FoldType>(7);
+        defaultTypes.add(FoldType.CODE_BLOCK);
+        defaultTypes.add(FoldType.COMMENT);
+        defaultTypes.add(FoldType.DOCUMENTATION);
+        defaultTypes.add(FoldType.INITIAL_COMMENT);
+        defaultTypes.add(FoldType.MEMBER);
+        defaultTypes.add(FoldType.NESTED);
+        defaultTypes.add(FoldType.TAG);
+        defaultTypes.add(FoldType.USER);
     }
     
-    public AbstractDocument getDocument() {
-        return (AbstractDocument)getPane().getDocument();
+    @Override
+    public Collection getValues(Class type) {
+        return type == FoldType.class ? defaultTypes : null;
     }
     
-    public String getMimeType() {
-        return pane.getEditorKit().getContentType();
-    }
-    
-    public FoldHierarchy getHierarchy() {
-        FoldHierarchy hierarchy = FoldHierarchy.get(getPane());
-        FoldHierarchyExecution.waitHierarchyInitialized(getPane());
-        assert (hierarchy != null);
-        return hierarchy;
+    @Override
+    public boolean inheritable() {
+        return false;
     }
     
 }

@@ -44,6 +44,16 @@
 
 package org.netbeans.modules.editor.fold;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
@@ -52,8 +62,12 @@ import javax.swing.text.Document;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.spi.editor.fold.FoldInfo;
+import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -204,6 +218,9 @@ public final class FoldOperationImpl {
     throws BadLocationException {
         checkFoldOperation(fold);
         int origEndOffset = fold.getEndOffset();
+        if (origEndOffset == endOffset) {
+            return;
+        }
         ApiPackageAccessor api = getAccessor();
         api.foldSetEndOffset(fold, getDocument(), endOffset);
         api.foldStateChangeEndOffsetChanged(transaction.getFoldStateChange(fold), origEndOffset);
@@ -235,7 +252,16 @@ public final class FoldOperationImpl {
     public boolean isReleased() {
         return released;
     }
-
+    
+    /**
+     * Enumerates all folds contributed by this Operation, whether blocked or active.
+     * 
+     * @return 
+     */
+    public Iterator<Fold>   foldIterator() {
+        return new BI(new DFSI(execution.getRootFold()));
+    }
+    
     private void checkFoldOperation(Fold fold) {
         FoldOperationImpl foldOperation = getAccessor().foldGetOperation(fold);
         if (foldOperation != this) {
@@ -250,5 +276,446 @@ public final class FoldOperationImpl {
     private static ApiPackageAccessor getAccessor() {
         return ApiPackageAccessor.get();
     }
+    
+    /**
+     * Compares two folds A, B. Fold "A" precedes "B", if and only if:
+     * <ul>
+     * <li>A fully encloses B, or
+     * <li>A starts before B, or
+     * <li>A and B occupy the same range, and A's priority is lower
+     * </ul>
+     * 
+     * @param a fold to compare
+     * @param b fold to compare
+     * @return -1, 1, 0 as appropriate for a Comparator
+     */
+    private static final Comparator<Fold> FOLD_COMPARATOR = new Comparator<Fold>() {
+        @Override
+        public int compare(Fold a, Fold b) {
+            int diff = a.getStartOffset() - b.getStartOffset();
+            if (diff < 0) {
+                return -1;
+            }
+            int diff2 = b.getEndOffset() - a.getEndOffset();
+            if (diff2 != 0 || diff != 0) {
+                return 1;
+            }
+            ApiPackageAccessor accessor = getAccessor();
+            return accessor.foldGetOperation(a).getPriority() - accessor.foldGetOperation(b).getPriority();
+        }
+    };
 
+    /**
+     * Level of depth-first traversal
+     */
+    static class PS {
+        private Fold    parent;
+        private int     childIndex = -1;
+        private PS      next;
+        
+        PS(Fold parent, PS next) {
+            this.parent = parent;
+            this.next = next;
+        }
+    }
+    
+    /**
+     * Implmentation of depth-first pre-order traversal through Fold hierarchy.
+     * Each level is iterated in the fold order = start offset order.
+     */
+    private class DFSI implements Iterator<Fold> {
+        PS  level;
+        
+        private DFSI(Fold root) {
+            level = new PS(root, null);
+        }
+        
+        @Override
+        public Fold next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            if (level.childIndex == -1) {
+                level.childIndex++;
+                return level.parent;
+            }
+            // note that hasNext also pops levels, as necessary, so there's a
+            // level, which is not yet exhausted.
+            Fold f = level.parent.getFold(level.childIndex++);
+            if (f.getFoldCount() > 0) {
+                level = new PS(f, level);
+                level.childIndex++;
+                return level.parent;
+            }
+            return f;
+        }
+        
+        @Override
+        public boolean hasNext() {
+            while (level != null) {
+                if (level.childIndex == -1) {
+                    return true;
+                } else if (level.childIndex >= level.parent.getFoldCount()) {
+                    level = level.next;
+                } else {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public void remove() {
+            throw new IllegalArgumentException();
+        }
+    }
+    
+    /**
+     * Iterator, which processes all blocked folds along with their blocker.
+     * The blocker + blockers folds are ordered using the fold order. Results
+     * are filtered to contain just Folds produced by this Operation. Folds 
+     * owned by other operations/executions are skipped.
+     * <p/>
+     * Note that blocked folds do not form a hierarchy; they were removed from
+     * the fold hierarchy when it was decided to block those folds. So prior to
+     * iterating further in FoldHierarchy, all (recursively) blocked folds must
+     * be processed.
+     */
+    private class BI implements Iterator<Fold> {
+        private Iterator<Fold>  dfsi;
+        private Iterator<Fold>  blockedFolds;
+        private Fold ret;
+        private Stack<Object[]> blockStack = new Stack<Object[]>();
+        private Fold blocker;
+
+        public BI(Iterator<Fold> dfsi) {
+            this.dfsi = dfsi;
+        }
+        
+        /**
+         * If fold 'f' blocks some other folds, those blocked folds will b processed
+         * instead of 'f'. f will be mixed among and ordered with its blocked folds, so the
+         * entire chain will be processed in the document order.
+         * 
+         * @param f
+         * @return true, if blocked folds should be processed.
+         */
+        private boolean processBlocked(Fold f) {
+            if (f == blocker) {
+                return false;
+            }
+            Collection<Fold> blocked = execution.getBlockedFolds(f);
+            if (blocked != null && !blocked.isEmpty()) {
+                List<Fold> blockedSorted = new ArrayList<Fold>(blocked.size() + 1);
+                blockedSorted.addAll(blocked);
+                // enumerate together with blocked ones
+                blockedSorted.add(f);
+                Collections.sort(blockedSorted, FOLD_COMPARATOR);
+                blockStack.push(new Object[] { blockedFolds, blocker});
+                blockedFolds = blockedSorted.iterator();
+                blocker = f;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        public Fold next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            Fold f = ret;
+            ret = null;
+            return f;
+        }
+        
+        @Override
+        public boolean hasNext() {
+            if (ret != null) {
+                return true;
+            }
+            if (blockedFolds != null) {
+                while (blockedFolds.hasNext()) {
+                    Fold f = blockedFolds.next();
+                    if (processBlocked(f)) {
+                        // continue with a different level of blocking
+                        continue;
+                    }
+                    if (operation.owns(f)) {
+                        ret = f;
+                        return true;
+                    }
+                }
+                blockedFolds = null;
+            }
+            if (!blockStack.isEmpty()) {
+                Object[] o = blockStack.pop();
+                blocker = (Fold)o[1];
+                blockedFolds = (Iterator<Fold>)o[0];
+                return hasNext();
+            }
+            
+            while (dfsi.hasNext()) {
+                Fold f = dfsi.next();
+                if (processBlocked(f)) {
+                    return hasNext();
+                }
+                if (operation.owns(f)) {
+                    ret = f;
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    
+    public Map<FoldInfo, Fold> update(Collection<FoldInfo> fi, Collection<Fold> removed, Collection<FoldInfo> created) throws BadLocationException {
+        Refresher r = new Refresher(fi);
+        if (!isReleased()) {
+            if (!execution.isLockedByCaller()) {
+                throw new IllegalStateException("Update must run under FoldHierarchy lock");
+            }
+            r.run();
+        } else {
+            return null;
+        }
+        if (removed != null) {
+            removed.addAll(r.toRemove);
+        }
+        if (created != null) {
+            created.addAll(r.toAdd);
+        }
+        return r.currentFolds;
+    }
+    
+    public boolean getInitialState(FoldType ft) {
+        return execution.getInitialFoldState(ft);
+    }
+
+    private class Refresher implements Comparator<FoldInfo> {
+        private Collection<FoldInfo>    foldInfos;
+        private Collection<Fold>        toRemove = new ArrayList<Fold>();
+        private Collection<FoldInfo>    toAdd = new ArrayList<FoldInfo>();
+        private Map<FoldInfo, Fold>     currentFolds = new HashMap<FoldInfo, Fold>();
+
+        /**
+         * Transaction which covers the update
+         */
+        private FoldHierarchyTransactionImpl tran;
+
+        public Refresher(Collection<FoldInfo> foldInfos) {
+            this.foldInfos = foldInfos;
+        }
+        
+        @Override
+        public int compare(FoldInfo a, FoldInfo b) {
+            int diff = a.getStart() - b.getStart();
+            if (diff < 0) {
+                return -1;
+            }
+            int diff2 = b.getEnd() - a.getEnd();
+            if (diff2 != 0 || diff != 0) {
+                return 1;
+            }
+            return 0;
+        }
+        
+            
+        private int compare(FoldInfo info, Fold f) {
+            if (info == null) {
+                if (f == null) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            } else if (f == null) {
+                return -1;
+            }
+
+            int diff = info.getStart() - f.getStartOffset();
+            if (diff != 0) {
+                return diff;
+            }
+            diff = f.getEndOffset() - info.getEnd();
+            if (diff != 0) {
+                return diff;
+            }
+            if (info.getType() == f.getType()) {
+                return 0;
+            }
+            return info.getType().code().compareToIgnoreCase(f.getType().code());
+        }
+        
+        private Iterator<Fold>  foldIt;
+        private Iterator<FoldInfo>  infoIt;
+        private FoldInfo nextInfo;
+        
+        private FoldInfo ni() {
+            if (nextInfo != null) {
+                FoldInfo f = nextInfo;
+                nextInfo = null;
+                return f;
+            }
+            return infoIt.hasNext() ? infoIt.next() : null;
+        }
+        
+        private FoldInfo peek() {
+            FoldInfo f = ni();
+            nextInfo = f;
+            return f;
+        }
+        
+        private boolean containsOneAnother(FoldInfo i, Fold f) {
+            int s1 = i.getStart();
+            int s2 = f.getStartOffset();
+            int e1 = i.getEnd();
+            int e2 = f.getEndOffset();
+            
+            return ((s1 >= s2 && e2 >= e1)  ||
+                (s2 >= s1 && e1 >= e2));
+        }
+        
+        private boolean nextSameRange(FoldInfo i, Fold f) {
+            if (i == null || f == null) {
+                return false;
+            }
+            if (i.getType() != f.getType() || !containsOneAnother(i, f)) {
+                return false;
+            }
+            FoldInfo next = peek();
+            if (next == null) {
+                return true;
+            }
+            return next.getStart() != f.getStartOffset() || next.getEnd() != f.getEndOffset();
+        }
+        
+        private boolean containsSame(FoldInfo i, Fold f) {
+            if (i == null || f == null || i.getType() != f.getType()) {
+                return false;
+            }
+            return containsOneAnother(i, f);
+        }
+        
+        public void run() throws BadLocationException {
+            // first order the supplied folds:
+            List ll = new ArrayList<FoldInfo>(foldInfos);
+            Collections.sort(ll, this);
+            
+            foldIt = foldIterator();
+            infoIt = ll.iterator();
+            
+            Fold f = foldIt.hasNext() ? foldIt.next() : null;
+            FoldInfo i = infoIt.hasNext() ? infoIt.next() : null;
+            
+            tran = openTransaction();
+
+            
+            try {
+                while (f != null || i != null) {
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest("Fold = " + f + ", FoldInfo = " + i);
+                    }
+                    int action = compare(i, f);
+                    if (action < 0 && !nextSameRange(i, f)) {
+                        // create a new fold from the FoldInfo
+                        toAdd.add(i);
+                        i = ni();
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.finest("Advanced info, next = " + i);
+                        }
+                        continue;
+                    } else if (action > 0 && !containsSame(i, f)) {
+                        toRemove.add(f);
+                        f = foldIt.hasNext() ? foldIt.next() : null;
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.finest("Advanced fold, next = " + f);
+                        }
+                        continue;
+                    }
+
+                    update(f, i);
+                    currentFolds.put(i, f);
+                    i = ni();
+                    f = foldIt.hasNext() ? foldIt.next() : null;
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest("Advanced both info & fold");
+                    }
+                }
+                for (Fold fold : toRemove) {
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest("Removing: " + f);
+                    }
+                    if (fold.getParent() != null) {
+                        removeFromHierarchy(fold, tran);
+                    }
+                }
+                for (FoldInfo info : toAdd) {
+                    try {
+                        currentFolds.put(info, getOperation().addToHierarchy(
+                                info.getType(), 
+                                info.getStart(), info.getEnd(),
+                                info.getCollapsed(), 
+                                info.getTemplate(),
+                                info.getDescriptionOverride(),
+                                info.getExtraInfo(),
+                                tran.getTransaction()));
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.finest("Adding: " + i);
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            } finally {
+                tran.commit();
+            }
+        }
+        
+        public Fold update(Fold f, FoldInfo info) throws BadLocationException {
+            this.fsch = null;
+            int offs = f.getStartOffset();
+            ApiPackageAccessor acc = getAccessor();
+            if (info.getStart() != offs) {
+                acc.foldSetStartOffset(f, getDocument(), info.getStart());
+                acc.foldStateChangeStartOffsetChanged(getFSCH(f), offs);
+            }
+            offs = f.getEndOffset();
+            if (info.getEnd() != offs) {
+                acc.foldSetEndOffset(f, getDocument(), info.getEnd());
+                acc.foldStateChangeEndOffsetChanged(getFSCH(f), offs);
+            }
+            String desc = info.getDescriptionOverride();
+            if (desc == null) {
+                desc = info.getTemplate().getDescription();
+            }
+            if (!f.getDescription().equals(desc)) {
+                acc.foldSetDescription(f, desc);
+                acc.foldStateChangeDescriptionChanged(getFSCH(f));
+            }
+            if (info.getCollapsed() != null && f.isCollapsed() != info.getCollapsed()) {
+                getAccessor().foldSetCollapsed(f, info.getCollapsed());
+                getAccessor().foldStateChangeCollapsedChanged(getFSCH(f));
+            }
+            return f;
+        }
+
+        /**
+         * FoldStateChange for the current fold being updated;
+         * just an optimization.
+         */
+        private FoldStateChange fsch;
+
+        private FoldStateChange getFSCH(Fold f) {
+            if (fsch != null) {
+                return fsch;
+            }
+            return fsch = tran.getFoldStateChange(f);
+        }
+
+    }
 }

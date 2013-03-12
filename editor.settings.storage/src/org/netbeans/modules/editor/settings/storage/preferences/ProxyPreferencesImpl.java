@@ -152,10 +152,13 @@ public final class ProxyPreferencesImpl extends Preferences implements Preferenc
     public void remove(String key) {
         EventBag<PreferenceChangeListener, PreferenceChangeEvent> bag = null;
         
+        // do not try to remove a non-existent key; it could lead to ugly 'remove' entries persisted in settings.
+        if (get(key, null) == null) {
+            return;
+        }
         synchronized (tree.treeLock()) {
             checkNotNull(key, "key"); //NOI18N
             checkRemoved();
-            
             if (removedKeys.add(key)) {
                 data.remove(key);
                 bag = new EventBag<PreferenceChangeListener, PreferenceChangeEvent>();
@@ -693,7 +696,14 @@ public final class ProxyPreferencesImpl extends Preferences implements Preferenc
 
     @Override
     public boolean isOverriden(String key) {
-        return data.containsKey(key);
+        if (data.containsKey(key)) {
+            return true;
+        }
+        // if the storage delegate overrides the key, return also true.
+        if (delegate instanceof OverridePreferences) {
+            return ((OverridePreferences)delegate).isOverriden(key) && !removedKeys.contains(key);
+        }
+        return false;
     }
     
     // ------------------------------------------------------------------------

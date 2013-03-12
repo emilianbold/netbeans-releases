@@ -48,13 +48,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldStateChange;
+import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 
 /**
  * Implementations of methods from {@link org.netbeans.api.editor.fold.FoldUtilities}.
@@ -64,9 +67,55 @@ import org.netbeans.api.editor.fold.FoldUtilities;
  */
 
 public final class FoldUtilitiesImpl {
+    /**
+     * Prefix used for initial-collapse folding preferences.
+     */
+    public static final String PREF_COLLAPSE_PREFIX = "code-folding-collapse-";
+    
+    /**
+     * Preference key name for "use defaults" (default: true)
+     */
+    public static final String PREF_OVERRIDE_DEFAULTS = "code-folding-use-defaults"; // NOI18N
+    
+    /**
+     * Preference key name for enable code folding (default: true)
+     */
+    public static final String PREF_CODE_FOLDING_ENABLED = "code-folding-enable"; // NOI18N
+    
+    /**
+     * Preference key for "Content preview" display option (default: true).
+     */
+    public static final String PREF_CONTENT_PREVIEW = "code-folding-content.preview"; // NOI18N
+
+    /**
+     * Preference key for "Show summary" display option (default: true).
+     */
+    public static final String PREF_CONTENT_SUMMARY = "code-folding-content.summary"; // NOI18N
     
     private FoldUtilitiesImpl() {
         // No instances
+    }
+    
+    public static boolean isFoldingEnabled(String mime) {
+        Preferences prefs = MimeLookup.getLookup(mime).lookup(Preferences.class);
+        return prefs == null ? false : prefs.getBoolean(PREF_CODE_FOLDING_ENABLED, false);
+    }
+    
+    public static boolean isFoldingEnabled(FoldHierarchy h) {
+        Preferences p = ApiPackageAccessor.get().foldGetExecution(h).getFoldPreferences();
+        return p.getBoolean(PREF_CODE_FOLDING_ENABLED, false);
+    }
+
+    public static boolean isAutoCollapsed(FoldType ft, FoldHierarchy h) {
+        Preferences p = ApiPackageAccessor.get().foldGetExecution(h).getFoldPreferences();
+        FoldType parent = ft.parent();
+        return p.getBoolean(
+            PREF_COLLAPSE_PREFIX + ft.code(),
+            parent == null ? 
+                false : 
+                // search for the parent, if parent is defined.
+                p.getBoolean(PREF_COLLAPSE_PREFIX + parent.code(), false)
+        );
     }
     
     public static void collapseOrExpand(FoldHierarchy hierarchy, Collection foldTypes,

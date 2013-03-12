@@ -47,6 +47,9 @@ package org.netbeans.modules.editor.fold.ui;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.text.View;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
@@ -54,7 +57,6 @@ import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.view.EditorView;
@@ -73,7 +75,7 @@ import org.openide.util.WeakListeners;
  */
 
 @SuppressWarnings("ClassWithMultipleLoggers")
-public final class FoldViewFactory extends EditorViewFactory implements FoldHierarchyListener, LookupListener {
+public final class FoldViewFactory extends EditorViewFactory implements FoldHierarchyListener, LookupListener, PreferenceChangeListener {
 
     /**
      * Component's client property which can be set to view folds expanded for tooltip fold preview.
@@ -81,7 +83,7 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     static final String VIEW_FOLDS_EXPANDED_PROPERTY = "view-folds-expanded"; // NOI18N
 
     // -J-Dorg.netbeans.editor.view.change.level=FINE
-    static final Logger CHANGE_LOG = Logger.getLogger("org.netbeans.editor.view.change");
+    static final Logger CHANGE_LOG = Logger.getLogger("org.netbeans.editor.view.change"); // NOI18N
 
     // -J-Dorg.netbeans.modules.editor.fold.FoldViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(FoldViewFactory.class.getName());
@@ -111,6 +113,10 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
      * Lookup results for color settings, being listened for changes.
      */
     private Lookup.Result       colorSource;
+    
+    private Preferences         prefs;
+    
+    private int viewFlags = 0;
 
     public FoldViewFactory(View documentView) {
         super(documentView);
@@ -124,11 +130,37 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
         colorSource = lkp.lookupResult(FontColorSettings.class);
         colorSource.addLookupListener(WeakListeners.create(LookupListener.class, this, colorSource));
         colorSettings = (FontColorSettings)colorSource.allInstances().iterator().next();
+        prefs = lkp.lookup(Preferences.class);
+        prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
+        
+        initViewFlags();
+    }
+    
+    private void initViewFlags() {
+        viewFlags =
+                (prefs.getBoolean(FoldUtilitiesImpl.PREF_CONTENT_PREVIEW, true) ? 1 : 0) |
+                (prefs.getBoolean(FoldUtilitiesImpl.PREF_CONTENT_SUMMARY, true) ? 2 : 0);
     }
 
     @Override
     public void resultChanged(LookupEvent ev) {
         refreshColors();
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        String k = evt.getKey();
+        if (FoldUtilitiesImpl.PREF_CONTENT_PREVIEW.equals(k) ||
+            FoldUtilitiesImpl.PREF_CONTENT_SUMMARY.equals(k)) {
+            initViewFlags();
+            document().render(new Runnable() {
+                @Override
+                public void run() {
+                    int end = document().getLength();
+                    fireEvent(EditorViewFactoryChange.createList(0, end, EditorViewFactoryChange.Type.CHARACTER_CHANGE));
+                }
+            });
+        }
     }
 
     private void refreshColors() {
@@ -180,7 +212,7 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     EditorView origView, int nextOrigViewOffset) {
         assert (startOffset == foldStartOffset) : "startOffset=" + startOffset + " != foldStartOffset=" + foldStartOffset; // NOI18N
         if (fold.getEndOffset() <= limitOffset || !forcedLimit) {
-            return new FoldView(textComponent(), fold, colorSettings);
+            return new FoldView(textComponent(), fold, colorSettings, viewFlags);
         } else {
             return null;
         }

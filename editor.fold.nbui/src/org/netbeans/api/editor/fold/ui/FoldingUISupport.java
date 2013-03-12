@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,65 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.editor.fold;
-
-import javax.swing.JEditorPane;
-import javax.swing.text.AbstractDocument;
-import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.spi.editor.fold.FoldManagerFactory;
-
-/*
- * FoldHierarchyExecutionTest.java
- * JUnit based test
  *
- * Created on June 27, 2004, 1:03 AM
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.api.editor.fold.ui;
 
+import javax.swing.JComponent;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.editor.fold.ui.CodeFoldingSideBar;
+import org.netbeans.spi.editor.SideBarFactory;
 
 /**
  *
- * @author mmetelka
+ * @author
+ * sdedic
  */
-public class FoldHierarchyTestEnv {
+public class FoldingUISupport {
+    private FoldingUISupport() {}
     
-    private JEditorPane pane;
-    
-    public FoldHierarchyTestEnv(FoldManagerFactory factory) {
-        this(new FoldManagerFactory[] { factory });
+    /**
+     * Creates a component for the code folding sidebar.
+     * Returns a standard folding sidebar component, which displays code folds. This sidebar implementation 
+     * can be created only once per text component.
+     *
+     * @param textComponent the text component which should work with the Sidebar
+     * @return Sidebar instance.
+     */
+    public static JComponent sidebarComponent(JTextComponent textComponent) {
+        return new CodeFoldingSideBar(textComponent);
     }
 
-    public FoldHierarchyTestEnv(FoldManagerFactory... factories) {
-        pane = new JEditorPane();
-        assert (getMimeType() != null);
+    private static SideBarFactory FACTORY = null;
 
-        FoldManagerFactoryProvider.setForceCustomProvider(true);
-        FoldManagerFactoryProvider provider = FoldManagerFactoryProvider.getDefault();
-        assert (provider instanceof CustomProvider)
-            : "setForceCustomProvider(true) did not ensure CustomProvider use"; // NOI18N
-
-        CustomProvider customProvider = (CustomProvider)provider;
-        customProvider.removeAllFactories(); // cleanup all registered factories
-        customProvider.registerFactories(getMimeType(), factories);
+    /**
+     * Obtains an instance of folding sidebar factory. This method should
+     * be used in layer, in the MIME lookup area, to register a sidebar with
+     * an editor for a specific MIMEtype.
+     * <p/>
+     * There's a default sidebar instance registered for all MIME types. 
+     *
+     * @return shared sidebar factory instance
+     */
+    public static SideBarFactory foldingSidebarFactory() {
+        if (FACTORY != null) {
+            return FACTORY;
+        }
+        return FACTORY = new CodeFoldingSideBar.Factory();
     }
 
-    public JEditorPane getPane() {
-        return pane;
+    public static void disableCodeFoldingSidebar(JTextComponent text) {
+        text.putClientProperty(CodeFoldingSideBar.PROP_SIDEBAR_MARK, true);
     }
-    
-    public AbstractDocument getDocument() {
-        return (AbstractDocument)getPane().getDocument();
-    }
-    
-    public String getMimeType() {
-        return pane.getEditorKit().getContentType();
-    }
-    
-    public FoldHierarchy getHierarchy() {
-        FoldHierarchy hierarchy = FoldHierarchy.get(getPane());
-        FoldHierarchyExecution.waitHierarchyInitialized(getPane());
-        assert (hierarchy != null);
-        return hierarchy;
-    }
-    
 }

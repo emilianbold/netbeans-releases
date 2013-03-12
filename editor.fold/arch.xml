@@ -423,6 +423,41 @@ Remove the existing fold from the hierarchy
     }
 </pre>
 
+<h3>Updating Fold hierarchy</h3>
+In the preceding cases, maintaining Folds was the FoldManager's responsibility. The FoldManager typically
+held a copy of the Folds added to the hierarchy, and during the refresh, it compared them to the new data
+and decided what folds to remove.
+For simple cases, which only create/remove folds based on text positions, part of the work can be offloaded to the
+FoldOperation:
+
+<pre>
+    // create new fold positional information for all folds.
+    Collection&lt;FoldInfo> newInfos = ...;
+    
+    // create FoldInfo for each of the fold
+    newInfos.add(
+        FoldInfo.range(start, end, type).
+            withTemplate(customTemplate).
+            withDescription(veryCustomDescription).
+            collapse(true)
+    );
+    
+    // the hierarchy must be locked prior to update
+    
+    doc.readLock();
+    hierarchy.lock();
+    try {
+        operation.update(newInfos, null, null);
+    } finally {
+    }
+</pre>
+
+The <code>update()</code> operation performs a diff, creates new folds, discards old ones, and updates the folds, which
+prevailed.
+
+<h3>Accessing folds</h3>
+Instead of keeping a copy of created folds, the FoldManager may call <code>operation.foldIterator</code>. The iterator
+will enumerate all folds, including (recursively) blocked ones.
 
 </answer>
 
@@ -1176,5 +1211,86 @@ No.
 <answer id="security-policy">
 No.
 </answer>
+
+
+
+
+<!--
+        <question id="arch-where" when="impl">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the Hg web client at
+                http://hg.netbeans.org/
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
+-->
+ <answer id="arch-where">
+  <defaultanswer generate='here' />
+ </answer>
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   XXX no answer for compat-deprecation
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="exec-ant-tasks" when="impl">
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
+-->
+ <answer id="exec-ant-tasks">
+  <p>
+   XXX no answer for exec-ant-tasks
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                    &lt;api type="export" group="preferences"
+                    name="preference node name" category="private"&gt;
+                    description of individual keys, where it is used, what it
+                    influences, whether the module reads/write it, etc.
+                    &lt;/api&gt;
+                Due to XML ID restrictions, rather than /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo.
+                Note that if you use NbPreferences this name will then be the same as the code name base of the module.
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+  <p>
+   XXX no answer for resources-preferences
+  </p>
+ </answer>
 
 </api-answers>
