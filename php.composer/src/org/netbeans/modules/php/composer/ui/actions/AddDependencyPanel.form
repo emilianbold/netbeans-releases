@@ -5,7 +5,7 @@
     <Component class="javax.swing.JButton" name="requireDevButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="SearchPanel.requireDevButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="AddDependencyPanel.requireDevButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -15,7 +15,7 @@
     <Component class="javax.swing.JButton" name="requireButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="SearchPanel.requireButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="AddDependencyPanel.requireButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -26,7 +26,7 @@
       <Properties>
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="SearchPanel.keepOpenCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="AddDependencyPanel.keepOpenCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -49,7 +49,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="outputSplitPane" pref="605" max="32767" attributes="0"/>
+                  <Component id="outputSplitPane" pref="622" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tokenLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -66,12 +66,15 @@
                       </Group>
                   </Group>
                   <Group type="102" attributes="0">
-                      <Component id="resultsLabel" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="packagesLabel" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="versionLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="versionComboBox" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="noteLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -90,11 +93,14 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="onlyNameCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="resultsLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="packagesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="outputSplitPane" pref="309" max="32767" attributes="0"/>
+              <Component id="outputSplitPane" pref="282" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="noteLabel" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="versionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -104,7 +110,7 @@
     <Component class="javax.swing.JLabel" name="tokenLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="SearchPanel.tokenLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="AddDependencyPanel.tokenLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -113,30 +119,31 @@
     <Component class="javax.swing.JCheckBox" name="onlyNameCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="SearchPanel.onlyNameCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="AddDependencyPanel.onlyNameCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="searchButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="SearchPanel.searchButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="AddDependencyPanel.searchButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="resultsLabel">
+    <Component class="javax.swing.JLabel" name="packagesLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="SearchPanel.resultsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="AddDependencyPanel.packagesLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Container class="javax.swing.JSplitPane" name="outputSplitPane">
       <Properties>
         <Property name="orientation" type="int" value="0"/>
+        <Property name="resizeWeight" type="double" value="0.5"/>
       </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
@@ -154,6 +161,9 @@
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
             <Component class="javax.swing.JList" name="resultsList">
+              <Properties>
+                <Property name="selectionMode" type="int" value="0"/>
+              </Properties>
               <Events>
                 <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="resultsListMouseClicked"/>
               </Events>
@@ -184,12 +194,17 @@
         </Container>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="noteLabel">
+    <Component class="javax.swing.JLabel" name="versionLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="versionComboBox"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="SearchPanel.noteLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/composer/ui/actions/Bundle.properties" key="AddDependencyPanel.versionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="versionComboBox">
     </Component>
   </SubComponents>
 </Form>
