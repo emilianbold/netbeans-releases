@@ -100,6 +100,11 @@ public final class FindDialogMemory {
     private boolean textPatternSpecified;
 
     /**
+     * whether a replace pattern was specified, or empty string was used
+     */
+    private boolean replacePatternSpecified;
+
+    /**
      * ID of seach scope type.
      */
     private String scopeTypeId;
@@ -357,6 +362,14 @@ public final class FindDialogMemory {
 
     void setTextPatternSpecified(boolean specified) {
         textPatternSpecified = specified;
+    }
+
+    public boolean isReplacePatternSpecified() {
+        return replacePatternSpecified;
+    }
+
+    public void setReplacePatternSpecified(boolean replacePatternSpecified) {
+        this.replacePatternSpecified = replacePatternSpecified;
     }
 
     boolean isFileNamePatternSpecified() {
