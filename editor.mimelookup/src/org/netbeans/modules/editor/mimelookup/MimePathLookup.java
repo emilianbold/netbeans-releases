@@ -138,20 +138,8 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
         // See also http://www.netbeans.org/issues/show_bug.cgi?id=118099
 
         // Add lookups from deprecated MimeLookupInitializers
-        List<String> paths;
-        try {
-            Method m = MimePath.class.getDeclaredMethod("getInheritedPaths", String.class, String.class); //NOI18N
-            m.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            List<String> ret = (List<String>) m.invoke(mimePath, null, null);
-            paths = ret;
-        } catch (Exception e) {
-            LOG.log(Level.WARNING, "Can't call org.netbeans.api.editor.mimelookup.MimePath.getInheritedPaths method.", e); //NOI18N
-            paths = Collections.singletonList(mimePath.getPath());
-        }
-
-        for(String path : paths) {
-            MimePath mp = MimePath.parse(path);
+        List<MimePath> paths = mimePath.getIncludedPaths();
+        for(MimePath mp : paths) {
             Collection<? extends MimeLookupInitializer> initializers = mimeInitializers.allInstances();
 
             for(int i = 0; i < mp.size(); i++) {
@@ -166,7 +154,7 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
 
             for(MimeLookupInitializer mli : initializers) {
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("- Querying MimeLookupInitializer(" + path + "): " + mli); //NOI18N
+                    LOG.fine("- Querying MimeLookupInitializer(" + mp.getPath() + "): " + mli); //NOI18N
                 }
                 Lookup mimePathLookup = mli.lookup();
                 if (mimePathLookup != null) {

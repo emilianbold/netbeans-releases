@@ -50,6 +50,8 @@ import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.spi.editor.fold.FoldTypeProvider;
 
 /**
  * Given a parse tree, scan its structure and produce a flat list of
@@ -69,8 +71,20 @@ public interface StructureScanner {
     @NonNull List<? extends StructureItem> scan(@NonNull ParserResult info);
     
     /**
-     * @todo Do this in the same pass as the structure scan?
      * Compute a list of foldable regions, named "codeblocks", "comments", "imports", "initial-comment", ...
+     * The returned Map must be keyed by {@link FoldType#code}. For backward compatibility, the following
+     * tokens are temporarily supported although no FoldType is registered explicitly.
+     * <ul>
+     * <li>codeblocks
+     * <li>comments
+     * <li>initial-comment
+     * <li>imports
+     * <li>tags
+     * <li>inner-classes
+     * <li>othercodeblocks
+     * </ul>
+     * This additional support will cease to exist after NB-8.0. Language owners are required to register
+     * their {@link FoldTypeProvider} and define their own folding.
      */
     @NonNull Map<String,List<OffsetRange>> folds(@NonNull ParserResult info);
 

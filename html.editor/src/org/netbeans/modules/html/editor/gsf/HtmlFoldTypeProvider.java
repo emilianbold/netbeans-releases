@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,49 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.editor.fold;
+package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.JavaSource.Priority;
-import org.netbeans.api.java.source.JavaSourceTaskFactory;
-import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
-import org.netbeans.modules.parsing.spi.TaskIndexingMode;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.spi.editor.fold.FoldTypeProvider;
 
 /**
- *
- * @author Jan Lahoda
+ * @author sdedic
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
-public class JavaElementFoldManagerTaskFactory extends EditorAwareJavaSourceTaskFactory {
+@MimeRegistrations({
+        @MimeRegistration(mimeType = "text/html", service = FoldTypeProvider.class),
+        @MimeRegistration(mimeType = "text/xhtml", service = FoldTypeProvider.class)
+})
+public class HtmlFoldTypeProvider  implements FoldTypeProvider {
+    private Collection<FoldType> TYPES = Arrays.asList(new FoldType[] {
+        HtmlStructureScanner.TYPE_TAG,
+        HtmlStructureScanner.TYPE_COMMENT
+    });
 
-    public JavaElementFoldManagerTaskFactory() {
-        super(Phase.PARSED, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
+    @Override
+    public Collection getValues(Class type) {
+        return type == FoldType.class ? TYPES : null;
     }
 
-    public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        final CancellableTask<CompilationInfo> t = JavaElementFoldManager.JavaElementFoldTask.getTask(file);
-
-        return new CancellableTask<CompilationInfo>() {
-            @Override public void cancel() {
-                t.cancel();
-            }
-            @Override public void run(CompilationInfo parameter) throws Exception {
-                t.run(parameter);
-            }
-        };
+    @Override
+    public boolean inheritable() {
+        return false;
     }
-
-    public static void doRefresh(FileObject file) {
-        for (JavaSourceTaskFactory f : Lookup.getDefault().lookupAll(JavaSourceTaskFactory.class)) {
-            if (f instanceof JavaElementFoldManagerTaskFactory) {
-                ((JavaElementFoldManagerTaskFactory) f).reschedule(file);
-            }
-        }
-    }
+    
 }
