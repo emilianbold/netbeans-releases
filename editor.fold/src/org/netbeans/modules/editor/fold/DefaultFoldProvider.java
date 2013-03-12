@@ -54,7 +54,7 @@ import org.netbeans.spi.editor.fold.FoldTypeProvider;
  * 
  * @author sdedic
  */
-@MimeRegistration(mimeType = "", service = FoldTypeProvider.class)
+@MimeRegistration(mimeType = "", service = FoldTypeProvider.class, position = 950)
 public class DefaultFoldProvider implements FoldTypeProvider {
     private final Collection<FoldType>  defaultTypes;
     

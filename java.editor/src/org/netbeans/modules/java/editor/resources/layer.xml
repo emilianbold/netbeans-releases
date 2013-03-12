@@ -142,11 +142,15 @@ made subject to such option by the copyright holder.
                 
                 <folder name="FoldManager">
                     <file name="CustomFoldManager.instance">
+                	<attr name="position" intvalue="1100"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.fold.FoldManagerFactory"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.api.editor.fold.FoldingSupport.userFoldManagerFactory"/>
                     </file>
-                    <file name="org-netbeans-modules-java-editor-fold-JavaElementFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-java-editor-fold-JavaElementFoldManagerFactory.instance">
+                	<attr name="position" intvalue="1200"/>
+                    </file>
                     <file name="JavadocReader.instance">
+                	<attr name="position" intvalue="1300"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.fold.ContentReader$Factory"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.api.editor.fold.FoldingSupport.contentReaderFactory"/>
                         <attr name="start" stringvalue="*"/>

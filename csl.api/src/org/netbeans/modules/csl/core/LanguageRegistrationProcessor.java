@@ -276,7 +276,8 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
     }
 
     private static void registerCodeFolding(LayerBuilder b, String mimeType) {
-        instanceFile(b, "Editors/" + mimeType + "/FoldManager", null, GsfFoldManagerFactory.class, null).write(); //NOI18N
+        instanceFile(b, "Editors/" + mimeType + "/FoldManager", null, GsfFoldManagerFactory.class, null).
+                intvalue("position", 900).write(); //NOI18N
 //
 //        // Code Folding
 //        if (hasStructureScanner) {

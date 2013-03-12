@@ -52,8 +52,8 @@ import org.netbeans.spi.editor.fold.FoldTypeProvider;
  * @author sdedic
  */
 @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/html", service = FoldTypeProvider.class),
-        @MimeRegistration(mimeType = "text/xhtml", service = FoldTypeProvider.class)
+        @MimeRegistration(mimeType = "text/html", service = FoldTypeProvider.class, position = 1400),
+        @MimeRegistration(mimeType = "text/xhtml", service = FoldTypeProvider.class, position = 1400)
 })
 public class HtmlFoldTypeProvider  implements FoldTypeProvider {
     private Collection<FoldType> TYPES = Arrays.asList(new FoldType[] {

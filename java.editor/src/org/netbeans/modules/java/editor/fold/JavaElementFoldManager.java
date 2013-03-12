@@ -132,12 +132,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
     }
 
     public void removeDamagedNotify(Fold damagedFold) {
-        if (importsFold == damagedFold) {
-            importsFold = null;//not sure if this is correct...
-        }
-        if (initialCommentFold == damagedFold) {
-            initialCommentFold = null;//not sure if this is correct...
-        }
     }
 
     public void expandNotify(Fold expandedFold) {
@@ -149,8 +143,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
         
         task         = null;
         file         = null;
-        importsFold  = null;
-        initialCommentFold = null;
     }
     
     static final class JavaElementFoldTask extends ScanningCancellableTask<CompilationInfo> {
@@ -273,7 +265,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
     }
     
     private CommitFolds createCommit(Document doc, JavaElementFoldVisitor v) {
-        return new CommitFolds(doc, v.folds, v.initialCommentInfo, v.importsInfo);
+        return new CommitFolds(doc, v.folds);
     }
     
     private class CommitFolds implements Runnable {
@@ -282,27 +274,10 @@ public class JavaElementFoldManager extends JavaFoldManager {
         private Document doc;
         private List<FoldInfo> infos;
         private long startTime;
-        private FoldInfo initComment;
-        private FoldInfo imports;
         
-        public CommitFolds(Document doc, List<FoldInfo> infos, FoldInfo initComment, FoldInfo imports) {
+        public CommitFolds(Document doc, List<FoldInfo> infos) {
             this.doc = doc;
             this.infos = infos;
-            this.imports = imports;
-            this.initComment = initComment;
-        }
-        
-        /**
-         * For singular folds, if they exist in the FoldManager already
-         * ignores the default state, and takes it from the actual state of
-         * existing fold.
-         */
-        private void setSpecialFoldState(FoldInfo info, Fold f) {
-            if (info == null || f == null) {
-                return;
-            } else {
-                info.collapsed(f.isCollapsed());
-            }
         }
         
         public void run() {
@@ -311,8 +286,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 insideRender = true;
                 
                 // retain import & initial comment states
-                setSpecialFoldState(imports, importsFold);
-                setSpecialFoldState(initComment, initialCommentFold);
                 Document d = operation.getHierarchy().getComponent().getDocument();
                 if (d != doc) {
                     return;
@@ -329,16 +302,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     // manager has been released.
                     return;
                 }
-                if (initComment != null) {
-                    initialCommentFold = folds.get(initComment);
-                } else {
-                    initialCommentFold = null;
-                }
-                if (imports != null) {
-                    importsFold = folds.get(imports);
-                } else {
-                    importsFold = null;
-                }
             } catch (BadLocationException e) {
                 Exceptions.printStackTrace(e);
             } finally {
@@ -352,10 +315,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
         }
     }
 
-    //@GuardedBy(FoldOperation.openTransaction())
-    private Fold initialCommentFold;
-    private Fold importsFold;
-    
     private static final class JavaElementFoldVisitor extends CancellableTreePathScanner<Object, Object> {
         
         private List<FoldInfo> folds = new ArrayList<FoldInfo>();
@@ -365,8 +324,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
         private boolean stopped;
         private int initialCommentStopPos = Integer.MAX_VALUE;
         private Document doc;
-        private FoldInfo    initialCommentInfo;
-        private FoldInfo    importsInfo;
         
         public JavaElementFoldVisitor(CompilationInfo info, CompilationUnitTree cu, SourcePositions sp, Document doc) {
             this.info = info;
@@ -388,7 +345,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     
                     if (token.id() == JavaTokenId.BLOCK_COMMENT || token.id() == JavaTokenId.JAVADOC_COMMENT) {
                         int startOffset = ts.offset();
-                        folds.add(initialCommentInfo = FoldInfo.range(startOffset, startOffset + token.length(), INITIAL_COMMENT_FOLD_TYPE));
+                        folds.add(FoldInfo.range(startOffset, startOffset + token.length(), INITIAL_COMMENT_FOLD_TYPE));
                         break;
                     }
                 }
@@ -527,7 +484,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 importsStart += 7/*"import ".length()*/;
 
                 if (importsStart < importsEnd) {
-                    folds.add(importsInfo = FoldInfo.range(importsStart , importsEnd, IMPORTS_FOLD_TYPE));
+                    folds.add(FoldInfo.range(importsStart , importsEnd, IMPORTS_FOLD_TYPE));
                 }
             }
             return super.visitCompilationUnit(node, p);
