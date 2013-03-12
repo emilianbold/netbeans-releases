@@ -78,7 +78,6 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -241,9 +240,8 @@ public class MavenProjectSupport {
             return new String[] {sc.getServerInstanceId(), null};
         }
 
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        String serverID = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
-        String serverType = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
+        String serverID = readServerInstanceID(project);
+        String serverType = readServerID(project);
         
         return new String[]{serverID, serverType};
     }
@@ -380,7 +378,7 @@ public class MavenProjectSupport {
      * @return server ID
      */
     public static String readServerID(Project project) {
-        return readSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
+        return getPreferences(project, true).get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
     }
     
     /**
@@ -390,7 +388,7 @@ public class MavenProjectSupport {
      * @return server ID
      */
     public static String readServerInstanceID(Project project) {
-        return readSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
+        return getPreferences(project, false).get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, null);
     }
 
     /**
@@ -400,14 +398,8 @@ public class MavenProjectSupport {
      * @return J2EE version
      */
     public static String readJ2eeVersion(Project project)  {
-        return readSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, true);
+        return getPreferences(project, true).get(MavenJavaEEConstants.HINT_J2EE_VERSION, null);
     }
-    
-    private static String readSettings(Project project, String propertyName, boolean shared) {
-        return project.getLookup().lookup(AuxiliaryProperties.class).get(propertyName, shared);
-    }
-    
-    
     
     public static void setJ2eeVersion(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
@@ -422,8 +414,7 @@ public class MavenProjectSupport {
     }
     
     private static void setSettings(Project project, String key, String value, boolean shared) {
-        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        props.put(key, value, shared);
+        getPreferences(project, shared).put(key, value);
     }
     
     /**
@@ -503,7 +494,7 @@ public class MavenProjectSupport {
                             }
                         }
                     }));
-                    prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, false);
+                    MavenProjectSupport.setServerInstanceID(prj, newOne);
                 }
             });
         }
