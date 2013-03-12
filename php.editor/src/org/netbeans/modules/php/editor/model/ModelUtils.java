@@ -209,12 +209,17 @@ public final class ModelUtils {
 
     @NonNull
     public static Collection<? extends TypeScope> resolveType(Model model, VariableBase varBase) {
+        return resolveType(model, varBase, true);
+    }
+
+    @NonNull
+    public static Collection<? extends TypeScope> resolveType(Model model, VariableBase varBase, boolean justDispatcher) {
         Collection<? extends TypeScope> retval = Collections.emptyList();
         VariableScope scp = model.getVariableScope(varBase.getStartOffset());
         if (scp != null) {
             String vartype = VariousUtils.extractTypeFroVariableBase(varBase);
             if (vartype != null) {
-                retval = VariousUtils.getType(scp, vartype, varBase.getStartOffset(), true);
+                retval = VariousUtils.getType(scp, vartype, varBase.getStartOffset(), justDispatcher);
             }
         }
         return retval;
