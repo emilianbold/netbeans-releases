@@ -94,7 +94,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Less Css Editor Module implementation.
+ * CSS preprocessor {@link CssEditorModule} implementation.
  *
  * TODO fix the instant rename and the mark occurrences - they are pretty naive
  * - not scoped at all :-)

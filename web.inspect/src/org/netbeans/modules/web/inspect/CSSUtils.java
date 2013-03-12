@@ -170,17 +170,45 @@ public class CSSUtils {
     }
 
     /**
-     * Opens the specified file at the given offset. This method has been
-     * copied (with minor modifications) from UiUtils class in csl.api module.
-     * This method is not CSS-specific. It was placed into this file just
-     * because there was no better place.
+     * Opens the specified file at the given offset.
      * 
      * @param fob file that should be opened.
      * @param offset offset where the caret should be placed.
      * @return {@code true} when the file was opened successfully,
      * returns {@code false} otherwise.
      */
-    public static boolean open(FileObject fob, int offset) {
+    public static boolean openAtOffset(FileObject fob, int offset) {
+        return openAt(fob, offset, true);
+    }
+
+    /**
+     * Opens the specified file at the given line.
+     * 
+     * @param fob file that should be opened.
+     * @param lineNo line where the caret should be placed.
+     * @return {@code true} when the file was opened successfully,
+     * returns {@code false} otherwise.
+     */
+    public static boolean openAtLine(FileObject fob, int lineNo) {
+        return openAt(fob, lineNo, false);
+    }
+
+    /**
+     * Opens the specified file at the given position. The position is either
+     * offset (when {@code offset} is {@code true}) or line number otherwise.
+     * This method has been copied (with minor modifications) from UiUtils
+     * class in csl.api module. This method is not CSS-specific. It was placed
+     * into this file just because there was no better place.
+     * 
+     * @param fob file that should be opened.
+     * @param position position where the caret should be placed (either
+     * offset of line number).
+     * @param offset determines whether the {@code position} should be
+     * interpreted as offset or line number.
+     * @return {@code true} when the file was opened successfully,
+     * returns {@code false} otherwise.
+     */
+    private static boolean openAt(FileObject fob, int position, boolean offset) {
         try {
             DataObject dob = DataObject.find(fob);
             Lookup dobLookup = dob.getLookup();
@@ -188,7 +216,7 @@ public class CSSUtils {
             LineCookie lc = dobLookup.lookup(LineCookie.class);
             OpenCookie oc = dobLookup.lookup(OpenCookie.class);
 
-            if ((ec != null) && (lc != null) && (offset != -1)) {
+            if ((ec != null) && (lc != null) && (position != -1)) {
                 StyledDocument doc;
                 try {
                     doc = ec.openDocument();
@@ -208,9 +236,8 @@ public class CSSUtils {
                 }
 
                 if (doc != null) {
-                    int line = NbDocument.findLineNumber(doc, offset);
-                    int lineOffset = NbDocument.findLineOffset(doc, line);
-                    int column = offset - lineOffset;
+                    int line = offset ? NbDocument.findLineNumber(doc, position) : position;
+                    int column = offset ? position - NbDocument.findLineOffset(doc, line) : 0;
                     if (line != -1) {
                         Line l = lc.getLineSet().getCurrent(line);
                         if (l != null) {

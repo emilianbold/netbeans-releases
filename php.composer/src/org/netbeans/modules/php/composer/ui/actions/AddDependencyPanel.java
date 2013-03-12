@@ -65,9 +65,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -81,6 +83,7 @@ import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -106,13 +109,12 @@ import org.openide.util.RequestProcessor;
 /**
  * UI for Composer search command.
  */
-public final class SearchPanel extends JPanel {
+public final class AddDependencyPanel extends JPanel {
 
     private static final long serialVersionUID = -4572187014657456L;
 
     private static final SearchResult SEARCHING_SEARCH_RESULT = new SearchResult(null, null);
     private static final SearchResult NO_RESULTS_SEARCH_RESULT = new SearchResult(null, null);
-    private static final String DEFAULT_PACKAGE_VERSION = ":*"; // NOI18N
 
     // @GuardedBy("EDT")
     private static boolean keepOpened = true;
@@ -122,14 +124,16 @@ public final class SearchPanel extends JPanel {
     // @GuardedBy("EDT")
     private final ResultsListModel resultsModel = new ResultsListModel(searchResults);
     private final ConcurrentMap<String, String> resultDetails = new ConcurrentHashMap<String, String>();
+    // @GuardedBy("EDT")
+    private final VersionComboBoxModel versionsModel = new VersionComboBoxModel();
     // tasks
-    private final RequestProcessor postSearchRequestProcessor = new RequestProcessor(SearchPanel.class.getName() + " (POST SEARCH)"); // NOI18N
-    private final RequestProcessor postShowRequestProcessor = new RequestProcessor(SearchPanel.class.getName() + " (POST SHOW)"); // NOI18N
+    private final RequestProcessor postSearchRequestProcessor = new RequestProcessor(AddDependencyPanel.class.getName() + " (POST SEARCH)"); // NOI18N
+    private final RequestProcessor postShowRequestProcessor = new RequestProcessor(AddDependencyPanel.class.getName() + " (POST SHOW)"); // NOI18N
     private final List<Future<Integer>> searchTasks = new CopyOnWriteArrayList<Future<Integer>>();
     private final List<Future<Integer>> showTasks = new CopyOnWriteArrayList<Future<Integer>>();
 
 
-    private SearchPanel(PhpModule phpModule) {
+    private AddDependencyPanel(PhpModule phpModule) {
         assert phpModule != null;
 
         this.phpModule = phpModule;
@@ -140,14 +144,14 @@ public final class SearchPanel extends JPanel {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "SearchPanel.panel.title=Composer Search ({0})",
-        "SearchPanel.panel.require.label=Require",
-        "SearchPanel.panel.requireDev.label=Require (dev)"
+        "AddDependencyPanel.panel.title=Composer Packages ({0})",
+        "AddDependencyPanel.panel.require.label=Require",
+        "AddDependencyPanel.panel.requireDev.label=Require (dev)"
     })
     public static void open(PhpModule phpModule) {
         assert EventQueue.isDispatchThread();
 
-        SearchPanel searchPanel = new SearchPanel(phpModule);
+        AddDependencyPanel searchPanel = new AddDependencyPanel(phpModule);
         Object[] options = new Object[] {
             searchPanel.requireButton,
             searchPanel.requireDevButton,
@@ -156,7 +160,7 @@ public final class SearchPanel extends JPanel {
 
         final DialogDescriptor descriptor = new DialogDescriptor(
                 searchPanel,
-                Bundle.SearchPanel_panel_title(phpModule.getDisplayName()),
+                Bundle.AddDependencyPanel_panel_title(phpModule.getDisplayName()),
                 false,
                 options,
                 searchPanel.requireButton,
@@ -169,7 +173,7 @@ public final class SearchPanel extends JPanel {
         dialog.setVisible(true);
     }
 
-    private static void setDefaultButton(Dialog dialog, final SearchPanel searchPanel) {
+    private static void setDefaultButton(Dialog dialog, final AddDependencyPanel searchPanel) {
         if (dialog instanceof JDialog) {
             JRootPane rootPane = ((JDialog) dialog).getRootPane();
             rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); // NOI18N
@@ -191,7 +195,7 @@ public final class SearchPanel extends JPanel {
         }
     }
 
-    private static void handleKeepOpen(final Dialog dialog, final SearchPanel searchPanel) {
+    private static void handleKeepOpen(final Dialog dialog, final AddDependencyPanel searchPanel) {
         ActionListener keepOpenActionListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -214,6 +218,7 @@ public final class SearchPanel extends JPanel {
     private void init() {
         initSearch();
         initResults();
+        initVersions();
         initActionButons();
     }
 
@@ -244,13 +249,12 @@ public final class SearchPanel extends JPanel {
         resultsList.setModel(resultsModel);
         resultsList.setCellRenderer(new ResultListCellRenderer(resultsList.getCellRenderer()));
         // details
-        updateResultDetails(false);
+        updateResultDetailsAndVersions(false);
         // listeners
         resultsList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                enableRequireButtons();
-                updateResultDetails(false);
+                resultsChanged();
             }
         });
         resultsModel.addListDataListener(new ListDataListener() {
@@ -267,8 +271,35 @@ public final class SearchPanel extends JPanel {
                 processChange();
             }
             private void processChange() {
-                enableRequireButtons();
-                updateResultDetails(false);
+                resultsChanged();
+            }
+        });
+    }
+
+    private void initVersions() {
+        versionComboBox.setModel(versionsModel);
+        // listeners
+        versionComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                versionChanged();
+            }
+        });
+        versionsModel.addListDataListener(new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                processChange();
+            }
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                processChange();
+            }
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                processChange();
+            }
+            private void processChange() {
+                versionChanged();
             }
         });
     }
@@ -287,6 +318,15 @@ public final class SearchPanel extends JPanel {
                 keepOpened = e.getStateChange() == ItemEvent.SELECTED;
             }
         });
+    }
+
+    void resultsChanged() {
+        enableRequireButtons();
+        updateResultDetailsAndVersions(false);
+    }
+
+    void versionChanged() {
+        enableRequireButtons();
     }
 
     void enableSearchButton() {
@@ -311,12 +351,19 @@ public final class SearchPanel extends JPanel {
     }
 
     void addSearchResult(final SearchResult searchResult) {
+        addSearchResult(searchResult, false);
+    }
+
+    void addSearchResult(final SearchResult searchResult, final boolean select) {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
                 assert EventQueue.isDispatchThread();
                 searchResults.add(searchResult);
                 resultsModel.fireContentsChanged();
+                if (select) {
+                    resultsList.setSelectedValue(searchResult, true);
+                }
             }
         });
     }
@@ -335,27 +382,38 @@ public final class SearchPanel extends JPanel {
 
     void enableRequireButtons() {
         assert EventQueue.isDispatchThread();
-        boolean valueSelected = !getSelectedSearchResults().isEmpty();
-        requireButton.setEnabled(valueSelected);
-        requireDevButton.setEnabled(valueSelected);
+        boolean validResultSelected = false;
+        if (getSelectedSearchResult() != null
+                && getSelectedResultVersion() != null) {
+            validResultSelected = true;
+        }
+        requireButton.setEnabled(validResultSelected);
+        requireDevButton.setEnabled(validResultSelected);
     }
 
-    @NbBundle.Messages("SearchPanel.details.nothing=Double click result to see its details.")
-    void updateResultDetails(boolean fetchDetails) {
+    void updateResultDetailsAndVersions(boolean fetchDetails) {
         assert EventQueue.isDispatchThread();
-        String msg = Bundle.SearchPanel_details_nothing();
-        List<SearchResult> selectedSearchResults = getSelectedSearchResults();
-        if (selectedSearchResults.size() == 1) {
-            String details = getResultsDetails(selectedSearchResults.get(0).getName(), fetchDetails);
+        String msg = ""; // NOI18N
+        List<String> versions = null;
+        SearchResult selectedSearchResult = getSelectedSearchResult();
+        if (selectedSearchResult != null) {
+            String name = selectedSearchResult.getName();
+            String details = getResultsDetails(name, fetchDetails);
             if (details != null) {
                 msg = details;
             }
+            versions = getResultVersions(name);
         }
         detailsTextPane.setText(msg);
         detailsTextPane.setCaretPosition(0);
+        if (versions == null) {
+            versionsModel.setNoVersions();
+        } else {
+            versionsModel.setVersions(versions);
+        }
     }
 
-    @NbBundle.Messages("SearchPanel.details.loading=Loading result details...")
+    @NbBundle.Messages("AddDependencyPanel.details.loading=Loading package details...")
     private String getResultsDetails(final String resultName, boolean fetchDetails) {
         if (resultName == null) {
             return null;
@@ -371,7 +429,7 @@ public final class SearchPanel extends JPanel {
         if (composer == null) {
             return null;
         }
-        String loading = Bundle.SearchPanel_details_loading();
+        String loading = Bundle.AddDependencyPanel_details_loading();
         String prev = resultDetails.putIfAbsent(resultName, loading);
         assert prev == null : "Previous message found?!: " + prev;
         postShowRequestProcessor.post(new Runnable() {
@@ -393,7 +451,7 @@ public final class SearchPanel extends JPanel {
                                 @Override
                                 public void run() {
                                     resultDetails.put(resultName, buffer.toString());
-                                    updateResultDetails(false);
+                                    updateResultDetailsAndVersions(false);
                                 }
                             });
                         }
@@ -404,38 +462,56 @@ public final class SearchPanel extends JPanel {
         return loading;
     }
 
-    List<SearchResult> getSelectedSearchResults() {
+    @CheckForNull
+    private List<String> getResultVersions(String resultName) {
+        if (resultName == null) {
+            return null;
+        }
+        String details = resultDetails.get(resultName);
+        if (details == null) {
+            // not fetched yet
+            return null;
+        }
+        return VersionsParser.parse(details);
+    }
+
+    @CheckForNull
+    SearchResult getSelectedSearchResult() {
         assert EventQueue.isDispatchThread();
-        Object[] selectedValues = resultsList.getSelectedValues();
-        if (selectedValues.length == 0) {
-            return Collections.emptyList();
+        Object selectedValue = resultsList.getSelectedValue();
+        if (selectedValue == null
+                || selectedValue == SEARCHING_SEARCH_RESULT
+                || selectedValue == NO_RESULTS_SEARCH_RESULT) {
+            return null;
         }
-        List<SearchResult> selectedResults = new ArrayList<SearchResult>(selectedValues.length);
-        for (Object selectedValue : selectedValues) {
-            if (selectedValue != null
-                    && selectedValue != SEARCHING_SEARCH_RESULT
-                    && selectedValue != NO_RESULTS_SEARCH_RESULT) {
-                selectedResults.add((SearchResult) selectedValue);
-            }
-        }
-        return selectedResults;
+        return (SearchResult) selectedValue;
     }
 
-    List<String> getSelectedNamesWithDefaultVersion() {
-        List<SearchResult> selectedSearchResults = getSelectedSearchResults();
-        List<String> names = new ArrayList<String>(selectedSearchResults.size());
-        for (SearchResult searchResult : selectedSearchResults) {
-            names.add(searchResult.getName() + DEFAULT_PACKAGE_VERSION);
+    @CheckForNull
+    String getSelectedResultVersion() {
+        assert EventQueue.isDispatchThread();
+        String selectedVersion = versionsModel.getSelectedItem();
+        if (selectedVersion == VersionComboBoxModel.NO_VERSIONS_AVAILABLE) {
+            return null;
         }
-        return names;
+        return selectedVersion;
     }
 
+    String getSelectedNameWithVersion() {
+        SearchResult selectedSearchResult = getSelectedSearchResult();
+        assert selectedSearchResult != null;
+        String selectedVersion = getSelectedResultVersion();
+        assert selectedVersion != null;
+        return selectedSearchResult.getName() + ":" + selectedVersion; // NOI18N
+    }
+
+    @NbBundle.Messages("AddDependencyPanel.error.composer.notValid=Composer is not valid.")
     @CheckForNull
     Composer getComposer() {
         try {
             return Composer.getDefault();
         } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(Bundle.SearchPanel_error_composer_notValid(), ComposerOptionsPanelController.OPTIONS_SUBPATH);
+            UiUtils.invalidScriptProvided(Bundle.AddDependencyPanel_error_composer_notValid(), ComposerOptionsPanelController.OPTIONS_SUBPATH);
         }
         return null;
     }
@@ -497,22 +573,23 @@ public final class SearchPanel extends JPanel {
         tokenTextField = new JTextField();
         onlyNameCheckBox = new JCheckBox();
         searchButton = new JButton();
-        resultsLabel = new JLabel();
+        packagesLabel = new JLabel();
         outputSplitPane = new JSplitPane();
         resultsScrollPane = new JScrollPane();
         resultsList = new JList();
         detailsScrollPane = new JScrollPane();
         detailsTextPane = new JTextPane();
-        noteLabel = new JLabel();
+        versionLabel = new JLabel();
+        versionComboBox = new JComboBox();
 
-        Mnemonics.setLocalizedText(requireDevButton, NbBundle.getMessage(SearchPanel.class, "SearchPanel.requireDevButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(requireDevButton, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.requireDevButton.text")); // NOI18N
         requireDevButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 requireDevButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(requireButton, NbBundle.getMessage(SearchPanel.class, "SearchPanel.requireButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(requireButton, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.requireButton.text")); // NOI18N
         requireButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 requireButtonActionPerformed(evt);
@@ -520,23 +597,25 @@ public final class SearchPanel extends JPanel {
         });
 
         keepOpenCheckBox.setSelected(true);
-        Mnemonics.setLocalizedText(keepOpenCheckBox, NbBundle.getMessage(SearchPanel.class, "SearchPanel.keepOpenCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(keepOpenCheckBox, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.keepOpenCheckBox.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(tokenLabel, NbBundle.getMessage(SearchPanel.class, "SearchPanel.tokenLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(tokenLabel, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.tokenLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(onlyNameCheckBox, NbBundle.getMessage(SearchPanel.class, "SearchPanel.onlyNameCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(onlyNameCheckBox, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.onlyNameCheckBox.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(SearchPanel.class, "SearchPanel.searchButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.searchButton.text")); // NOI18N
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(resultsLabel, NbBundle.getMessage(SearchPanel.class, "SearchPanel.resultsLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(packagesLabel, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.packagesLabel.text")); // NOI18N
 
         outputSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        outputSplitPane.setResizeWeight(0.5);
 
+        resultsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         resultsList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 resultsListMouseClicked(evt);
@@ -552,7 +631,8 @@ public final class SearchPanel extends JPanel {
 
         outputSplitPane.setBottomComponent(detailsScrollPane);
 
-        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(SearchPanel.class, "SearchPanel.noteLabel.text")); // NOI18N
+        versionLabel.setLabelFor(versionComboBox);
+        Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.versionLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -561,7 +641,7 @@ public final class SearchPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(outputSplitPane, GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE)
+                    .addComponent(outputSplitPane, GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(tokenLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -574,11 +654,13 @@ public final class SearchPanel extends JPanel {
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(searchButton))))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(resultsLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(packagesLabel)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(versionLabel)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(versionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -592,16 +674,17 @@ public final class SearchPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(onlyNameCheckBox)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(resultsLabel)
+                .addComponent(packagesLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(outputSplitPane, GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                .addComponent(outputSplitPane, GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(versionLabel)
+                    .addComponent(versionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    @NbBundle.Messages("SearchPanel.error.composer.notValid=Composer is not valid.")
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         final Composer composer = getComposer();
         if (composer == null) {
@@ -620,10 +703,18 @@ public final class SearchPanel extends JPanel {
             @Override
             public void process(SearchResult item) {
                 if (first) {
-                    clearSearchResults();
                     first = false;
+                    clearSearchResults();
+                    addSearchResult(item, true);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateResultDetailsAndVersions(true);
+                        }
+                    });
+                } else {
+                    addSearchResult(item);
                 }
-                addSearchResult(item);
             }
         });
         if (task == null) {
@@ -663,13 +754,12 @@ public final class SearchPanel extends JPanel {
         if (composer == null) {
             return;
         }
-        final List<String> selectedNames = getSelectedNamesWithDefaultVersion();
-        assert !selectedNames.isEmpty();
+        final String selectedName = getSelectedNameWithVersion();
         initComposer(composer, new Runnable() {
             @Override
             public void run() {
                 assert EventQueue.isDispatchThread();
-                composer.require(phpModule, selectedNames.toArray(new String[selectedNames.size()]));
+                composer.require(phpModule, selectedName);
             }
         });
     }//GEN-LAST:event_requireButtonActionPerformed
@@ -680,38 +770,36 @@ public final class SearchPanel extends JPanel {
         if (composer == null) {
             return;
         }
-        final List<String> selectedNames = getSelectedNamesWithDefaultVersion();
-        assert !selectedNames.isEmpty();
+        final String selectedName = getSelectedNameWithVersion();
         initComposer(composer, new Runnable() {
             @Override
             public void run() {
                 assert EventQueue.isDispatchThread();
-                composer.requireDev(phpModule, selectedNames.toArray(new String[selectedNames.size()]));
+                composer.requireDev(phpModule, selectedName);
             }
         });
     }//GEN-LAST:event_requireDevButtonActionPerformed
 
     private void resultsListMouseClicked(MouseEvent evt) {//GEN-FIRST:event_resultsListMouseClicked
-        if (evt.getClickCount() == 2) {
-            updateResultDetails(true);
-        }
+        updateResultDetailsAndVersions(true);
     }//GEN-LAST:event_resultsListMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JScrollPane detailsScrollPane;
     private JTextPane detailsTextPane;
     private JCheckBox keepOpenCheckBox;
-    private JLabel noteLabel;
     private JCheckBox onlyNameCheckBox;
     private JSplitPane outputSplitPane;
+    private JLabel packagesLabel;
     private JButton requireButton;
     private JButton requireDevButton;
-    private JLabel resultsLabel;
     private JList resultsList;
     private JScrollPane resultsScrollPane;
     private JButton searchButton;
     private JLabel tokenLabel;
     private JTextField tokenTextField;
+    private JComboBox versionComboBox;
+    private JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -765,22 +853,124 @@ public final class SearchPanel extends JPanel {
         @NbBundle.Messages({
             "# {0} - name",
             "# {1} - description",
-            "SearchPanel.results.result=<html><b>{0}</b>: {1}",
-            "SearchPanel.results.searching=<html><i>Searching...</i>",
-            "SearchPanel.results.noResults=<html><i>No results found.</i>"
+            "AddDependencyPanel.results.result=<html><b>{0}</b>: {1}",
+            "AddDependencyPanel.results.searching=<html><i>Searching...</i>",
+            "AddDependencyPanel.results.noResults=<html><i>No results found.</i>"
         })
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String label;
             SearchResult result = (SearchResult) value;
             if (result == SEARCHING_SEARCH_RESULT) {
-                label = Bundle.SearchPanel_results_searching();
+                label = Bundle.AddDependencyPanel_results_searching();
             } else if (result == NO_RESULTS_SEARCH_RESULT) {
-                label = Bundle.SearchPanel_results_noResults();
+                label = Bundle.AddDependencyPanel_results_noResults();
             } else {
-                label = Bundle.SearchPanel_results_result(result.getName(), result.getDescription());
+                label = Bundle.AddDependencyPanel_results_result(result.getName(), result.getDescription());
             }
             return originalRenderer.getListCellRendererComponent(list, label.toString(), index, isSelected, cellHasFocus);
+        }
+
+    }
+
+    private static final class VersionComboBoxModel extends AbstractListModel implements ComboBoxModel {
+
+        private static final long serialVersionUID = -46861432132123L;
+
+        @NbBundle.Messages("VersionComboBoxModel.noVersions=<no versions available>")
+        static final String NO_VERSIONS_AVAILABLE = Bundle.VersionComboBoxModel_noVersions();
+
+
+        // @GuardedBy("EDT")
+        private final List<String> versions = new ArrayList<String>();
+
+        private volatile String selectedVersion = null;
+
+
+        public VersionComboBoxModel() {
+            setNoVersions();
+        }
+
+        @Override
+        public int getSize() {
+            assert EventQueue.isDispatchThread();
+            return versions.size();
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            assert EventQueue.isDispatchThread();
+            return versions.get(index);
+        }
+
+        @Override
+        public void setSelectedItem(Object anItem) {
+            selectedVersion = (String) anItem;
+        }
+
+        @CheckForNull
+        @Override
+        public String getSelectedItem() {
+            return selectedVersion;
+        }
+
+        public void setNoVersions() {
+            assert EventQueue.isDispatchThread();
+            this.versions.clear();
+            versions.add(NO_VERSIONS_AVAILABLE);
+            selectedVersion = NO_VERSIONS_AVAILABLE;
+            fireContentsChanged();
+        }
+
+        public void setVersions(List<String> versions) {
+            assert EventQueue.isDispatchThread();
+            this.versions.clear();
+            this.versions.addAll(versions);
+            if (!versions.isEmpty()) {
+                selectedVersion = versions.get(0);
+            }
+            fireContentsChanged();
+        }
+
+        private void fireContentsChanged() {
+            fireContentsChanged(this, 0, Integer.MAX_VALUE);
+        }
+
+    }
+
+    private static final class VersionsParser  {
+
+        private static final String VERSIONS_PREFIX = "versions : "; // NOI18N
+        private static final String VERSIONS_DELIMITER = ", "; // NOI18N
+
+
+        private VersionsParser() {
+        }
+
+        @CheckForNull
+        public static List<String> parse(String details) {
+            String versionsLine = getVersionLine(details);
+            if (versionsLine == null) {
+                return null;
+            }
+            return getVersions(versionsLine);
+        }
+
+        @CheckForNull
+        private static String getVersionLine(String details) {
+            for (String line : details.split("\n")) { // NOI18N
+                line = line.trim();
+                if (line.startsWith(VERSIONS_PREFIX)) {
+                    return line.substring(VERSIONS_PREFIX.length());
+                }
+            }
+            return null;
+        }
+
+        private static List<String> getVersions(String versionsLine) {
+            List<String> versions = new ArrayList<String>(StringUtils.explode(versionsLine, VERSIONS_DELIMITER));
+            versions.add("*"); // NOI18N
+            return versions;
         }
 
     }
