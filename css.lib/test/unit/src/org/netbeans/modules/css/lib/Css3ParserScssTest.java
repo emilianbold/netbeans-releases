@@ -43,6 +43,7 @@ package org.netbeans.modules.css.lib;
 
 import java.io.IOException;
 import javax.swing.text.BadLocationException;
+import junit.framework.AssertionFailedError;
 import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -975,12 +976,142 @@ public class Css3ParserScssTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-        
+
         //the "$width: 1000px;" is supposed to be parsed as variable declaration, not property declaration!
         assertNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration"));
         assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/cp_variable_declaration"));
+
+    }
+
+    public void testMixinCallWithWSBeforeFirstArgument() {
+        String source =
+                "@mixin a {\n"
+                + "  @include b( linear-gradient(\n"
+                + "      lighten($bg-color, 5%),\n"
+                + "      darken($bg-color, 5%)\n"
+                + "    )\n"
+                + "  );\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testUnexpectedANDInMedia() {
+        String source =
+                "@media screen and ($width-name : $target-width) {\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testIf_Else() {
+        String source =
+                "$type: monster;\n"
+                + "p {\n"
+                + "  @if $type == ocean {\n"
+                + "    color: blue;\n"
+                + "  } @else if $type == matador {\n"
+                + "    color: red;\n"
+                + "  } @else if $type == monster {\n"
+                + "    color: green;\n"
+                + "  } @else {\n"
+                + "    color: black;\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+        //only 'if' is allowed as the ident after @else keyword
+        source =
+                "p {\n"
+                + "  @if $type == ocean {\n"
+                + "    color: blue;\n"
+                + "  } @else Yf $type == matador {\n"
+                + "    color: red;\n"
+                + "  }\n"
+                + "}";
+
+        result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertTrue(result.getDiagnostics().size() > 0);
+
+    }
+
+    public void testContentDirective() {
+        String source =
+                "@mixin apply-to-ie6-only {\n"
+                + "  * html {\n"
+                + "    @content;\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testContentDirectiveInMedia() {
+        String source =
+                "@mixin respond-to($media) {\n"
+                + "  @if $media == handhelds {\n"
+                + "    @media only screen and (max-width: $break-small) { @content; }\n"
+                + "  } @else if $media == medium-screens {\n"
+                + "    @media only screen and (min-width: $break-small + 1) and (max-width:\n"
+                + "$break-large - 1) { @content; }\n"
+                + "  }\n"
+                + "  @else if $media == wide-screens {\n"
+                + "    @media only screen and (min-width: $break-large) { @content; }\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testMixinCallArgWithPropertyName_fails() {
+        String source =
+                "@mixin border-radius($radius: 5px, $moz: true, $webkit: true, $ms: true) {\n"
+                + "}\n"
+                + "div{\n"
+                + "    @include border-radius($webkit:false);\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testMixinCallArgWithValueSeparatedByWS_fails_FIX() {
+        String source =
+                "#id {\n"
+                + "    @include border-radius(5px, -moz -webkit);\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
 
     }
 }

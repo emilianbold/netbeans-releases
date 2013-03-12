@@ -377,6 +377,7 @@ media
                 | {isScssSource()}? sass_extend ws?
                 | {isScssSource()}? sass_debug ws?
                 | {isScssSource()}? sass_control ws?
+                | {isScssSource()}? sass_content ws?
                 
                 | rule  ws?
                 | page  ws?
@@ -410,7 +411,7 @@ mediaExpression
     ;
  
 mediaFeature
- : IDENT
+ : IDENT | GEN | {isCssPreprocessorSource()}? cp_variable
  ;
  
  body	:	
@@ -619,6 +620,8 @@ declarations
                 {isCssPreprocessorSource()}? media ws?
                 |
                 {isCssPreprocessorSource()}? cp_mixin_call ws?
+                |
+                {isScssSource()}? sass_content ws?
                 |
                 (~SEMI* SEMI)=>syncTo_SEMI //doesn't work :-(
             )*
@@ -1001,7 +1004,7 @@ cp_mixin_call
         |
         {isScssSource()}? SASS_INCLUDE ws cp_mixin_name
     )
-    (ws? LPAREN cp_mixin_call_args? RPAREN)? ws? SEMI
+    (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? ws? SEMI
     ;
         
 cp_mixin_name
@@ -1013,7 +1016,14 @@ cp_mixin_call_args
     : 
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    term ( (COMMA | SEMI) ws? term)*     
+    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*     
+    ;
+    
+cp_mixin_call_arg
+    :
+    term
+//    cp_arg | term
+//    cp_arg | cp_expression /*term*/
     ;
 
 //.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
@@ -1208,9 +1218,16 @@ sass_control
 
 sass_if
     :
-    SASS_IF ws sass_control_expression sass_control_block
+    SASS_IF ws sass_control_expression sass_control_block (ws? sass_else)?
     ;
     
+sass_else
+    :
+    SASS_ELSE ws? sass_control_block 
+    |
+    SASS_ELSE ws? {"if".equalsIgnoreCase(input.LT(1).getText())}? IDENT /* if */ ws? sass_control_expression sass_control_block (ws? sass_else)?
+    ;
+
 sass_control_expression
     :
     cp_expression (( CP_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
@@ -1257,6 +1274,12 @@ sass_function_return
     :
     SASS_RETURN ws cp_expression SEMI
     ;
+    
+sass_content
+    :
+    SASS_CONTENT ws? SEMI
+    ;
+
 //*** END OF LESS SYNTAX ***
 
 // ==============================================================
@@ -1653,12 +1676,15 @@ MOZ_DOCUMENT_SYM      : '@-MOZ-DOCUMENT';
 WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 
 //this generic at rule must be after the last of the specific at rule tokens
+SASS_CONTENT        : '@CONTENT';
 SASS_MIXIN          : '@MIXIN';
 SASS_INCLUDE        : '@INCLUDE';
 SASS_EXTEND         : '@EXTEND';
 SASS_DEBUG          : '@DEBUG';
 SASS_WARN           : '@WARN';
 SASS_IF             : '@IF';
+SASS_ELSE           : '@ELSE';
+//SASS_ELSEIF         : '@ELSE' WS? 'IF'; //@elseif, @else if, @else    if 
 SASS_FOR            : '@FOR';
 SASS_FUNCTION       : '@FUNCTION';
 SASS_RETURN         : '@RETURN';
