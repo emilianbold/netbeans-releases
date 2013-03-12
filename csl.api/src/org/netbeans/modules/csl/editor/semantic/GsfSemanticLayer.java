@@ -278,6 +278,8 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
         private SequenceElement element;
         private final GsfSemanticLayer layer;
         private final int endOffset;
+        private SequenceElement nextElement;
+        private int nextElementStartOffset = Integer.MAX_VALUE;
 
         GsfHighlightSequence(GsfSemanticLayer layer, Document doc, 
                 int startOffset, int endOffset, 
@@ -290,19 +292,43 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
             iterator = subMap.iterator();
         }
 
-        @Override
-        public boolean moveNext() {
+        private SequenceElement fetchElementFromIterator(boolean updateNextElementStartOffset) {
+            int seStartOffset;
+            SequenceElement se;
             if (iterator != null && iterator.hasNext()) {
-                element = iterator.next();
-                if (element.range.getStart() < endOffset) {
-                    return true;
-                } else {
+                se = iterator.next();
+                seStartOffset = se.range.getStart();
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Fetched highlight <{0},{1}>\n", // NOI18N
+                            new Object[]{seStartOffset, se.range.getEnd()});
+                }
+                if (seStartOffset >= endOffset) {
+                    se = null;
+                    seStartOffset = Integer.MAX_VALUE;
                     iterator = null;
-                    return false;
                 }
             } else {
-                return false;
+                se = null;
+                seStartOffset = Integer.MAX_VALUE;
+                iterator = null;
             }
+            if (updateNextElementStartOffset) {
+                nextElementStartOffset = seStartOffset;
+            }
+            return se;
+        }
+
+        @Override
+        public boolean moveNext() {
+            if (nextElement != null) {
+                element = nextElement;
+                nextElement = fetchElementFromIterator(true);
+            } else {
+                if ((element = fetchElementFromIterator(false)) != null) {
+                    nextElement = fetchElementFromIterator(true);
+                }
+            }
+            return (element != null);
         }
 
         @Override
@@ -312,7 +338,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
 
         @Override
         public int getEndOffset() {
-            return layer.getShiftedPos(element.range.getEnd());
+            return Math.min(layer.getShiftedPos(element.range.getEnd()), nextElementStartOffset);
         }
 
         @Override
