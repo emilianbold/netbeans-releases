@@ -145,7 +145,7 @@ public final class Model {
                     if (fncCalls != null && !fncCalls.isEmpty()) {
                         for (ModelVisitor.FunctionCall call : fncCalls) {
                             entry.getKey().intercept(call.getName(),
-                                    visitor.getGlobalObject(), elementFactory, call.getArguments());
+                                    visitor.getGlobalObject(), call.getScope(), elementFactory, call.getArguments());
                         }
                     }
                 }
