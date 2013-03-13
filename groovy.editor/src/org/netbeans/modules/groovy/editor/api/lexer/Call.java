@@ -260,11 +260,6 @@ public class Call {
                 token = ts.token();
                 id = token.id();
 
-                String tokenText = null;
-                if (id == GroovyTokenId.ANY_KEYWORD) {
-                    tokenText = token.text().toString();
-                }
-
                 if (id == GroovyTokenId.WHITESPACE) {
                     break;
                 } else if (id == GroovyTokenId.STRING_LITERAL) {
@@ -291,12 +286,6 @@ public class Call {
 //                    return new Call("Symbol", null, false, methodExpected);
 //                } else if (id == GroovyTokenId.RANGE_INCLUSIVE) {
 //                    return new Call("Range", null, false, methodExpected);
-//                } else if ((id == GroovyTokenId.ANY_KEYWORD) && "nil".equals(tokenText)) { // NOI18N
-//                    return new Call("NilClass", null, false, methodExpected);
-//                } else if ((id == GroovyTokenId.ANY_KEYWORD) && "true".equals(tokenText)) { // NOI18N
-//                    return new Call("TrueClass", null, false, methodExpected);
-//                } else if ((id == GroovyTokenId.ANY_KEYWORD) && "false".equals(tokenText)) { // NOI18N
-//                    return new Call("FalseClass", null, false, methodExpected);
                 } else if (((id == GroovyTokenId.GLOBAL_VAR) || (id == GroovyTokenId.INSTANCE_VAR) ||
                         (id == GroovyTokenId.CLASS_VAR) || (id == GroovyTokenId.IDENTIFIER)) ||
                         id.primaryCategory().equals("keyword") || (id == GroovyTokenId.DOT) ||

@@ -308,7 +308,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
     private GroovyTokenId getTokenId(int token) {
         switch (token) {
             case GroovyTokenTypes.ABSTRACT:
-                    return GroovyTokenId.ABSTRACT;
+                    return GroovyTokenId.LITERAL_abstract;
             case GroovyTokenTypes.ANNOTATION_ARRAY_INIT:
                     return GroovyTokenId.ANNOTATION_ARRAY_INIT;
             case GroovyTokenTypes.ANNOTATION_DEF:
@@ -404,7 +404,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
             case GroovyTokenTypes.EXTENDS_CLAUSE:
                     return GroovyTokenId.EXTENDS_CLAUSE;
             case GroovyTokenTypes.FINAL:
-                    return GroovyTokenId.FINAL;
+                    return GroovyTokenId.LITERAL_final;
             case GroovyTokenTypes.FLOAT_SUFFIX:
                     return GroovyTokenId.FLOAT_SUFFIX;
             case GroovyTokenTypes.FOR_CONDITION:
