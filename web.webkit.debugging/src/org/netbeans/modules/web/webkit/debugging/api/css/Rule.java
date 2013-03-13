@@ -225,4 +225,24 @@ public class Rule {
         return json.toString();
     }
 
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Rule)) {
+            return false;
+        }
+        RuleId ruleId = getId();
+        if (ruleId == null) {
+            return (this == object);
+        } else {
+            Rule other = (Rule)object;
+            return ruleId.equals(other.getId());
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        RuleId ruleId = getId();
+        return (ruleId == null) ? super.hashCode() : ruleId.hashCode();
+    }
+
 }
