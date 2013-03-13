@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.grammar.spi;
 import java.util.Enumeration;
 import java.util.List;
 import org.jdom.Element;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 
@@ -54,7 +55,7 @@ import org.netbeans.modules.xml.api.model.HintContext;
  */
 public interface GrammarExtensionProvider {
 
-    List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, Element parent);
+    @NonNull List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, Element parent);
 
     Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el);
 

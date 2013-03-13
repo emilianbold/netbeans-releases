@@ -118,13 +118,6 @@ public class RemoteMenu extends DynamicMenu implements Presenter.Popup {
             
             menu.add(new JSeparator());
             item = new JMenuItem();
-            action = SystemAction.get(FetchAction.class);
-            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
-            Actions.connect(item, action, false);
-            menu.add(item);
-            
-            menu.add(new JSeparator());
-            item = new JMenuItem();
             action = SystemAction.get(PullOtherAction.class);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
@@ -159,6 +152,13 @@ public class RemoteMenu extends DynamicMenu implements Presenter.Popup {
             
             menu.add(new JSeparator());
             item = new JMenuItem();
+            action = SystemAction.get(FetchAction.class);
+            Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            
+            menu.add(new JSeparator());
+            item = new JMenuItem();
             action = SystemAction.get(IncomingAction.class);
             Utils.setAcceleratorBindings(MercurialAnnotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
@@ -170,10 +170,6 @@ public class RemoteMenu extends DynamicMenu implements Presenter.Popup {
             menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CloneAction.class), Bundle.CTL_PopupMenuItem_Clone(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            
-            menu.add(new JSeparator());
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(FetchAction.class), Bundle.CTL_PopupMenuItem_Fetch(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             
             menu.add(new JSeparator());
@@ -190,6 +186,10 @@ public class RemoteMenu extends DynamicMenu implements Presenter.Popup {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(PushAction.class), Bundle.CTL_PopupMenuItem_Push(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(PushCurrentBranchAction.class), Bundle.CTL_PopupMenuItem_PushBranch(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            
+            menu.add(new JSeparator());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(FetchAction.class), Bundle.CTL_PopupMenuItem_Fetch(), lkp, MercurialAnnotator.ACTIONS_PATH_PREFIX));
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             
             menu.add(new JSeparator());
