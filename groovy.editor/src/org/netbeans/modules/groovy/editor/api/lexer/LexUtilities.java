@@ -215,7 +215,7 @@ public final class LexUtilities {
     }
 
     @SuppressWarnings("unchecked")
-    private static TokenSequence<GroovyTokenId> getGroovyTokenSequence(TokenHierarchy<Document> th, int offset) {
+    public static TokenSequence<GroovyTokenId> getGroovyTokenSequence(TokenHierarchy<Document> th, int offset) {
         TokenSequence<GroovyTokenId> ts = th.tokenSequence(GroovyTokenId.language());
 
         if (ts == null) {

@@ -50,8 +50,6 @@ import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
  */
 public class TypedBreakInterceptorTest extends GroovyTestBase {
 
-    private static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("groovy.cont.comment");
-    
     public TypedBreakInterceptorTest(String testName) {
         super(testName);
     }
@@ -81,13 +79,12 @@ public class TypedBreakInterceptorTest extends GroovyTestBase {
         insertBreak("function foo() {^\n}", "function foo() {\n    ^\n}");
     }
 
-    
     public void testInsertIf1() throws Exception {
         insertBreak("    if (true) {^", "    if (true) {\n        ^\n    }");
     }
     
     public void testContComment() throws Exception {
-        if (CONTINUE_COMMENTS) {
+        if (GroovyTypedBreakInterceptor.CONTINUE_COMMENTS) {
             insertBreak("// ^", "// \n// ^");
         } else {
             insertBreak("// ^", "// \n^");
@@ -96,7 +93,7 @@ public class TypedBreakInterceptorTest extends GroovyTestBase {
 
     public void testContComment2() throws Exception {
         // No auto-# on new lines
-        if (CONTINUE_COMMENTS) {
+        if (GroovyTypedBreakInterceptor.CONTINUE_COMMENTS) {
             insertBreak("   //  ^", "   //  \n   //  ^");
         } else {
             insertBreak("   //  ^", "   //  \n   ^");
@@ -105,7 +102,7 @@ public class TypedBreakInterceptorTest extends GroovyTestBase {
 
     public void testContComment3() throws Exception {
         // No auto-# on new lines
-        if (CONTINUE_COMMENTS) {
+        if (GroovyTypedBreakInterceptor.CONTINUE_COMMENTS) {
             insertBreak("   //\t^", "   //\t\n   //\t^");
         } else {
             insertBreak("   //\t^", "   //\t\n   ^");
@@ -118,7 +115,7 @@ public class TypedBreakInterceptorTest extends GroovyTestBase {
 
     public void testContComment5() throws Exception {
         // No auto-# on new lines
-        if (CONTINUE_COMMENTS) {
+        if (GroovyTypedBreakInterceptor.CONTINUE_COMMENTS) {
             insertBreak("      // ^", "      // \n      // ^");
         } else {
             insertBreak("      // ^", "      // \n      ^");
