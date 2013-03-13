@@ -100,7 +100,6 @@ import org.openide.util.lookup.Lookups;
  */
 final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
-    private static final RequestProcessor RP = new RequestProcessor("LogicalFolderNode", 1); //NOI18N
     private static final MessageFormat FOLDER_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd-folder; class=org.netbeans.modules.cnd.makeproject.ui.LogicalFolderNode; mask={0}"); // NOI18N
     private final Folder folder;
     private final MakeLogicalViewProvider provider;
@@ -108,7 +107,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     private RequestProcessor.Task updateTask;
 
     public LogicalFolderNode(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
-        super(new LogicalViewChildren(folder, provider), createLFNLookup(folderNode, folder, provider), MakeLogicalViewProvider.ANNOTATION_RP);
+        super(new LogicalViewChildren(folder, provider), createLFNLookup(folderNode, folder, provider), provider.getAnnotationRP());
         this.folder = folder;
         this.provider = provider;
         String postfix = "";
@@ -157,7 +156,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     private void updateAnnotationFiles() {
         if (updateTask == null) {
-            updateTask = MakeLogicalViewProvider.ANNOTATION_RP.create(new FileAnnotationUpdater(this));
+            updateTask = provider.getAnnotationRP().create(new FileAnnotationUpdater(this));
         }
         updateTask.schedule(BaseMakeViewChildren.WAIT_DELAY); // batch by 50 ms
     }
@@ -288,7 +287,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public void setName(final String newName) {
-        RP.post(new Runnable() {
+        provider.getAnnotationRP().post(new Runnable() {
 
             @Override
             public void run() {
@@ -374,7 +373,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public void destroy() throws IOException {
-        RP.post(new Runnable() {
+        provider.getAnnotationRP().post(new Runnable() {
 
             @Override
             public void run() {
