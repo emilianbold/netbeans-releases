@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.groovy.editor.language;
 
-import org.netbeans.modules.groovy.editor.language.GroovyBracketCompleter;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import org.netbeans.editor.BaseDocument;
@@ -150,27 +149,6 @@ public class BracketCompleterTest extends GroovyTestBase {
         insertChar("x = '\\^'", '\'', "x = '\\'^'");
     }
 
-    // TODO fix and uncomment
-//    public void testInsertBrokenQuote() throws Exception {
-//        insertChar("System.out.prinlnt(\"pavel^)", '"',
-//                "System.out.prinlnt(\"pavel\"^)");
-//    }
-//
-//    public void testInsertBrokenQuote2() throws Exception {
-//        insertChar("System.out.prinlnt(\"pavel^\n", '"',
-//                "System.out.prinlnt(\"pavel\"^\n");
-//    }
-//
-//    public void testInsertBrokenQuote3() throws Exception {
-//        insertChar("System.out.prinlnt(\"^\n", '"',
-//                "System.out.prinlnt(\"\"^\n");
-//    }
-//
-//    public void testInsertBrokenQuote4() throws Exception {
-//        insertChar("System.out.prinlnt(\"pavel^", '"',
-//                "System.out.prinlnt(\"pavel\"^");
-//    }
-
     public void testDoubleQuotes1() throws Exception {
         insertChar("x = ^", '"', "x = \"^\"");
     }
@@ -187,15 +165,6 @@ public class BracketCompleterTest extends GroovyTestBase {
         insertChar("x = \"\\^\"", '"', "x = \"\\\"^\"");
     }
 
-    // TODO fix and uncomment
-//    public void testInsertBrace1() throws Exception {
-//        insertBreak("foobar({^});", "foobar({\n    ^\n});");
-//    }
-//
-//    public void testInsertBrace2() throws Exception {
-//        insertBreak("foobar([^]);", "foobar([\n    ^\n]);");
-//    }
-
     public void testInsertBrace3() throws Exception {
         insertBreak("x = {^}", "x = {\n    ^\n}");
     }
@@ -204,79 +173,9 @@ public class BracketCompleterTest extends GroovyTestBase {
         insertBreak("x^", "x\n^");
     }
 
-    // TODO fix and uncomment
-//    public void testInsertBlockComment() throws Exception {
-//        insertBreak("/**^", "/**\n * ^\n */");
-//    }
-//
-//    public void testInsertBlockComment2() throws Exception {
-//        insertBreak("    /**^", "    /**\n     * ^\n     */");
-//    }
-//
-//    public void testInsertBlockComment3() throws Exception {
-//        insertBreak("/*^\n", "/*\n * ^\n */\n");
-//    }
-//
-//    public void testInsertBlockComment4() throws Exception {
-//        insertBreak("/*^\nfunction foo() {}", "/*\n * ^\n */\nfunction foo() {}");
-//    }
-
     public void testInsertBlockComment5() throws Exception {
         insertBreak("^/*\n*/\n", "\n^/*\n*/\n");
     }
-
-// These tests no longer apply -- I'm doing the string-literal insertion differently now
-//    public void testSplitStrings() throws Exception {
-//        insertBreak("  x = 'te^st'", "  x = 'te' +\n  '^st'");
-//    }
-//
-//    public void testSplitStrings2() throws Exception {
-//        insertBreak("  x = 'test^'", "  x = 'test' +\n  '^'");
-//    }
-//
-//    public void testSplitStrings3() throws Exception {
-//        insertBreak("  x = \"te^st\"", "  x = \"te\" +\n  \"^st\"");
-//    }
-//
-//    public void testSplitRegexps1() throws Exception {
-//        insertBreak("  x = /te^st/", "  x = /te/ +\n  /^st/");
-//    }
-//
-//    public void testSplitRegexps2() throws Exception {
-//        insertBreak("  x = /test^/", "  x = /test/ +\n  /^/");
-//    }
-//
-
-//    public void testSplitStrings1() throws Exception {
-//        insertBreak("  x = 'te^st'", "  x = 'te\\n\\\n^st'");
-//    }
-
-    // TODO fix and uncomment
-//    public void testSplitStrings1b() throws Exception {
-//        insertBreak("  x = '^test'", "  x = '\\\n^test'");
-//    }
-
-//    public void testSplitStrings2() throws Exception {
-//        insertBreak("  x = 'test^'", "  x = 'test\\n\\\n^'");
-//    }
-//
-//    public void testSplitStrings3() throws Exception {
-//        insertBreak("  x = \"te^st\"", "  x = \"te\\n\\\n^st\"");
-//    }
-//
-//    public void testSplitRegexps1() throws Exception {
-//        insertBreak("  x = /te^st/", "  x = /te\\n\\\n^st/");
-//    }
-
-
-    // TODO fix and uncomment
-//    public void testSplitRegexps1b() throws Exception {
-//        insertBreak("  x = /^test/", "  x = /\\\n^test/");
-//    }
-
-//    public void testSplitRegexps2() throws Exception {
-//        insertBreak("  x = /test^/", "  x = /test\\n\\\n^/");
-//    }
 
     public void testInsertEnd2() throws Exception {
         insertBreak("function foo() {^", "function foo() {\n    ^\n}");
@@ -286,11 +185,7 @@ public class BracketCompleterTest extends GroovyTestBase {
         insertBreak("function foo() {^\n}", "function foo() {\n    ^\n}");
     }
 
-    // THIS IS BROKEN!!!
-    //public void testInsertEnd5() throws Exception {
-    //    insertBreak("if (a_condition) ^thing() {", "if (a_condition) \n  ^thing()\n}");
-    //}
-
+    
     public void testInsertIf1() throws Exception {
         insertBreak("    if (true) {^", "    if (true) {\n        ^\n    }");
     }
@@ -343,11 +238,6 @@ public class BracketCompleterTest extends GroovyTestBase {
         insertChar("x = (()^)", ')', "x = (())^");
     }
 
-    // TODO fix and uncomment
-//    public void testRegexp1() throws Exception {
-//        insertChar("x = ^", '/', "x = /^/");
-//    }
-
     public void testRegexp2() throws Exception {
         insertChar("x = /^/", '/', "x = //^");
     }
@@ -369,11 +259,6 @@ public class BracketCompleterTest extends GroovyTestBase {
         insertChar("    regexp = /fofo^\n", '/',
                 "    regexp = /fofo/^\n");
     }
-
-    // TODO fix and uncomment
-//    public void testRegexp7() throws Exception {
-//        insertChar("x = ^\n", '/', "x = /^/\n");
-//    }
 
     public void testRegexp8() throws Exception {
         insertChar("x = /^/\n", '/', "x = //^\n");
@@ -399,13 +284,6 @@ public class BracketCompleterTest extends GroovyTestBase {
     public void testNotRegexp2() throws Exception {
         insertChar("x = 3.14 ^", '/', "x = 3.14 /^");
     }
-
-    // This test doesn't work; the lexer identifies x = y / as the
-    // beginning of a regular expression. Without the space it DOES
-    // work (see regexp4)
-    //public void testNotRegexp3() throws Exception {
-    //    insertChar("x = y ^", '/', "x = y /^");
-    //}
 
     public void testNotRegexp4() throws Exception {
         insertChar("x = y^", '/', "x = y/^");
@@ -503,11 +381,6 @@ public class BracketCompleterTest extends GroovyTestBase {
         insertBreak("   // foo^bar", "   // foo\n   // ^bar");
     }
 
-    // TODO fix and uncomment
-//    public void testContComment7() throws Exception {
-//        insertBreak("   // foo^\n   // bar", "   // foo\n   // ^\n   // bar");
-//    }
-
     public void testContComment8() throws Exception {
         insertBreak("   // foo^bar", "   // foo\n   // ^bar");
     }
@@ -562,13 +435,6 @@ public class BracketCompleterTest extends GroovyTestBase {
         deleteChar("\n// ^  ", "\n//^  ");
     }
 
-    // TODO fix and uncomment
-//    public void testNoDeleteContComment() throws Exception {
-//        deleteChar("//  ^", "// ^");
-//        deleteChar("//^", "^");
-//        deleteChar("puts ('// ^')", "puts ('//^')");
-//    }
-
     public void testNoInsertPercentElsewhere() throws Exception {
         insertChar("x = ^", '#', "x = #^");
     }
@@ -592,16 +458,6 @@ public class BracketCompleterTest extends GroovyTestBase {
     public void testReplaceSelection6() throws Exception {
         insertChar("'position^:absolute;'", '{', "'pos{^:absolute;'", "ition");
     }
-
-    // TODO fix and uncomment
-//    public void testReplaceSelectionChangeType1() throws Exception {
-//        insertChar("x = \"foo\"^", '\'', "x = 'foo'^", "\"foo\"");
-//    }
-//
-//    public void testReplaceSelectionChangeType2() throws Exception {
-//        insertChar("x = \"foo\"^", '{', "x = {foo}^", "\"foo\"");
-//    }
-
     public void testReplaceSelectionNotInTemplateMode1() throws Exception {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
     }
@@ -675,54 +531,6 @@ public class BracketCompleterTest extends GroovyTestBase {
         assertLogicalRange(next, false, code);
     }
 
-    // TODO fix and uncomment
-//    public void testLogicalRange2() throws Exception {
-//        String code = "if (true) {\n  %<%fo^o%>%\n}";
-//        String next = "if (true) %<%{\n  fo^o\n}%>%";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRange2b() throws Exception {
-//        String code = "if (true) %<%{\n  fo^o\n}%>%";
-//        String next = "%<%if (true) {\n  fo^o\n}%>%";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRange3() throws Exception {
-//        String code = "function foo() {\nif (true) {\n  %<%fo^o%>%\n}\n}";
-//        String next = "function foo() {\nif (true) %<%{\n  fo^o\n}%>%\n}";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRange3b() throws Exception {
-//        String code = "function foo() {\nif (true) %<%{\n  fo^o\n}%>%\n}";
-//        String next = "function foo() {\n%<%if (true) {\n  fo^o\n}%>%\n}";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRange3c() throws Exception {
-//        String code = "function foo() {\n%<%if (true) {\n  fo^o\n}%>%\n}";
-//        // Weird AST offset error - doesn't include the correct endpoint, just
-//        // end of last statement in the method
-//        //String next = "function foo() %<%{\nif (true) {\n  fo^o\n}\n}%>%";
-//        String next = "function foo() %<%{\nif (true) {\n  fo^o\n}\n%>%}";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRange3d() throws Exception {
-//        String code = "function foo() %<%{\nif (true) {\n  fo^o\n}\n%>%}";
-//        // Weird AST offset error - doesn't include the correct endpoint, just
-//        // end of last statement in the method
-//        String next = "%<%function foo() {\nif (true) {\n  fo^o\n}\n}%>%";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-
     public void testLogicalRangeComment1() throws Exception {
         String code = "foo\n  // Foo Bar\n  // Foo^y Baary\n  // Bye\nfunction foo() {\n}\n";
         String next = "foo\n  // Foo Bar\n  %<%// Foo^y Baary%>%\n  // Bye\nfunction foo() {\n}\n";
@@ -730,76 +538,10 @@ public class BracketCompleterTest extends GroovyTestBase {
         assertLogicalRange(next, false, code);
     }
 
-    // TODO fix and uncomment
-//    public void testLogicalRangeComment2() throws Exception {
-//        String code = "foo\n  // Foo Bar\n  %<%// Foo^y Baary%>%\n  // Bye\nfunction foo() {\n}\n";
-//        String next = "foo\n  %<%// Foo Bar\n  // Foo^y Baary\n  // Bye%>%\nfunction foo() {\n}\n";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-
     public void testLogicalRangeCommentBlocks() throws Exception {
         String code = "foo\n  /* Foo Bar\n  * Foo^y Baary\n  * Bye */\nfunction foo() {\n}\n";
         String next = "foo\n  %<%/* Foo Bar\n  * Foo^y Baary\n  * Bye */%>%\nfunction foo() {\n}\n";
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
-
-    // TODO fix and uncomment
-//    public void testLogicalRangeComment3() throws Exception {
-//        String code = "foo\n  // Foo Bar\n\n  %<%// Foo^y Baary%>%\n  // Bye\nfunction foo() {\n}\n";
-//        String next = "foo\n  // Foo Bar\n\n  %<%// Foo^y Baary\n  // Bye%>%\nfunction foo() {\n}\n";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//    public void testLogicalRangeComment5() throws Exception {
-//        String code = "foo\n  foo // Foo Bar\n  %<%// Foo^y Baary%>%\n  // Bye\nfunction foo() {\n}\n";
-//        String next = "foo\n  foo // Foo Bar\n  %<%// Foo^y Baary\n  // Bye%>%\nfunction foo() {\n}\n";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeStrings1() throws Exception {
-//        String code = "x = 'foo b^ar baz', y = \"whatever\"";
-//        String next = "x = %<%'foo b^ar baz'%>%, y = \"whatever\"";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeStrings3() throws Exception {
-//        String code = "function foo() {\nif (true) {\nx = %<%'foo b^ar baz'%>%\n}\n}";
-//        String next = "function foo() {\nif (true) {\n%<%x = 'foo b^ar baz'%>%\n}\n}";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeStrings4() throws Exception {
-//        String code = "function foo() {\nif (true) {\n%<%x = 'foo b^ar baz'%>%\n}\n}";
-//        String next = "function foo() {\nif (true) %<%{\nx = 'foo b^ar baz'\n}%>%\n}";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeStrings5() throws Exception {
-//        String code = "function test() {\n 'return^ me'\n}";
-//        String next = "function test() {\n %<%'return^ me'%>%\n}";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    // THIS IS BROKEN - THERE IS AN EXTRA BLOCK IN THERE WITH BAD OFFSETS!
-//    //public void testLogicalRangeStrings6() throws Exception {
-//    //    String code = "function test() {\n %<%'return^ me'%>%\n}";
-//    //    String next = "%<%function test() {\n 'return^ me'\n}%>%";
-//    //    assertLogicalRange(code, true, next);
-//    //    assertLogicalRange(next, false, code);
-//    //}
-//
-//    public void testLogicalRangeRegexps1() throws Exception {
-//        String code = "x = /foo b^ar baz/, y = \"whatever\"";
-//        String next = "x = %<%/foo b^ar baz/%>%, y = \"whatever\"";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-
 }
