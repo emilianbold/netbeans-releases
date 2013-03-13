@@ -64,6 +64,8 @@ import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
 import org.netbeans.spi.java.hints.*;
 import org.netbeans.spi.java.hints.Hint.Options;
 
+import org.netbeans.modules.java.hints.errors.Utilities;
+
 /**
  *
  * @author lahvac
