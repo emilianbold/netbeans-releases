@@ -70,6 +70,7 @@ final class RegexpUtils {
     static final String TESTSUITE_STATS_REGEX
         = "Tests run: +([0-9]+)," +                                     //NOI18N
           " +Failures: +([0-9]+), +Errors: +([0-9]+)," +                //NOI18N
+          "( +Skipped: +([0-9]+),)?" +                                     //NOI18N
           " +Time elapsed: +(.+)" + SECONDS_REGEX;                      //NOI18N
     /** */
     static final String OUTPUT_DELIMITER_PREFIX = "--------";           //NOI18N

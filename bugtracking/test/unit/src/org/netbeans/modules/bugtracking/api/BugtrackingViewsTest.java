@@ -53,7 +53,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author tomas
  */
-public class ButrackingViewsTestCase extends NbTestCase {
+public class BugtrackingViewsTest extends NbTestCase {
 
     public static junit.framework.Test suite() {
         NbTestSuite suite = new NbTestSuite();
@@ -64,7 +64,7 @@ public class ButrackingViewsTestCase extends NbTestCase {
     }
 
     
-    public ButrackingViewsTestCase(String arg0) {
+    public BugtrackingViewsTest(String arg0) {
         super(arg0);
     }
 
