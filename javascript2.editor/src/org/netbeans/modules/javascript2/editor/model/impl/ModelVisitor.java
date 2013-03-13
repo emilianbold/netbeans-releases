@@ -58,13 +58,14 @@ import jdk.nashorn.internal.ir.ReturnNode;
 import jdk.nashorn.internal.ir.TernaryNode;
 import jdk.nashorn.internal.ir.UnaryNode;
 import jdk.nashorn.internal.ir.VarNode;
-import jdk.nashorn.internal.parser.Token;
 import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -74,16 +75,18 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
 
@@ -100,6 +103,10 @@ public class ModelVisitor extends PathNodeVisitor {
     private final List<List<FunctionNode>> functionStack;
     private final JsParserResult parserResult;
 
+    // keeps objects that are created as arguments of a function call
+    private Collection<JsObjectImpl> functionArguments = new ArrayList<JsObjectImpl>();
+    private Map<FunctionInterceptor, Collection<FunctionCall>> functionCalls = null;
+    
     private JsObjectImpl fromAN = null;
 
     public ModelVisitor(JsParserResult parserResult) {
@@ -283,7 +290,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         IdentNode rhs = (IdentNode)binaryNode.rhs();
                         JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationFunction();
                         if(/*function.getProperty(rhs.getName()) == null &&*/ function.getParameter(rhs.getName()) != null) {
-                            parameter = "@param;" + ModelUtils.createFQN(function) + ":" + rhs.getName();
+                            parameter = "@param;" + function.getFullyQualifiedName() + ":" + rhs.getName();
                         }
                     }
                     Collection<TypeUsage> types; 
@@ -361,6 +368,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(CallNode callNode) {
+        functionArguments.clear();
         if (callNode.getFunction() instanceof IdentNode) {
             IdentNode iNode = (IdentNode)callNode.getFunction();
             addOccurence(iNode, false, true, callNode.getArgs().size());
@@ -371,6 +379,96 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         return super.enter(callNode);
+    }
+
+    @Override
+    public Node leave(CallNode callNode) {
+        if(callNode.getFunction() instanceof AccessNode) {
+                List<Identifier> funcName = getName((AccessNode)callNode.getFunction(), parserResult);
+                if (funcName != null) {
+                    StringBuilder sb = new StringBuilder();
+                    for (Identifier identifier : funcName) {
+                        sb.append(identifier.getName());
+                        sb.append(".");
+                    }
+                    if (functionCalls == null) {
+                        functionCalls = new LinkedHashMap<FunctionInterceptor, Collection<FunctionCall>>();
+                    }
+
+                    String name = sb.substring(0, sb.length() - 1);
+                    FunctionInterceptor interceptorToUse = null;
+                    for (FunctionInterceptor interceptor : ModelExtender.getDefault().getFunctionInterceptors()) {
+                        if (interceptor.getNamePattern().matcher(name).matches()) {
+                            interceptorToUse = interceptor;
+                            break;
+                        }
+                    }
+
+
+                    if (interceptorToUse != null) {
+                        Collection<FunctionArgument> funcArg = new ArrayList<FunctionArgument>();
+                        for (int i = 0; i < callNode.getArgs().size(); i++) {
+                            Node argument = callNode.getArgs().get(i);
+                            if (argument instanceof LiteralNode) {
+                                LiteralNode ln = (LiteralNode)argument;
+                                if (ln.isString()) {
+                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForString(i, argument.getStart(), ln.getString()));
+                                }
+                            } else if (argument instanceof ObjectNode) {
+                                for (JsObjectImpl jsObject: functionArguments) {
+                                    if (jsObject.getOffset() == argument.getStart()) {
+                                        funcArg.add(FunctionArgumentAccessor.getDefault().createForAnonymousObject(i, jsObject.getOffset(), jsObject));
+                                        break;
+                                    }
+                                }
+                            } else if (argument instanceof AccessNode) {
+                                AccessNode an = (AccessNode) argument;
+                                List<Identifier> fqn = getName(an, parserResult);
+                                JsObject current = modelBuilder.getCurrentObject();
+                                while (current != null && current.getDeclarationName() != null) {
+                                    if (current != modelBuilder.getGlobal()) {
+                                        fqn.add(0, current.getDeclarationName());
+                                    }
+                                    current = current.getParent();
+                                }
+
+                                funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(i, argument.getStart(), fqn));
+                            } else if (argument instanceof IdentNode) {
+                                IdentNode in = (IdentNode) argument;
+                                String inName = in.getName();
+                                List<Identifier> fqn = new ArrayList<Identifier>();
+                                if ("this".equals(inName)) { // NOI18N
+                                    fqn.add(modelBuilder.getCurrentDeclarationFunction().getDeclarationName());
+                                } else {
+                                    fqn.add(new IdentifierImpl(in.getName(),
+                                            ModelUtils.documentOffsetRange(parserResult, in.getStart(), in.getFinish())));
+                                }
+                                JsObject current = modelBuilder.getCurrentObject();
+                                if ("this".equals(inName) && current.equals(modelBuilder.getCurrentDeclarationFunction())) { // NOI18N
+                                    current = current.getParent();
+                                }
+                                while (current != null && current.getDeclarationName() != null) {
+                                    if (current != modelBuilder.getGlobal()) {
+                                        fqn.add(0, current.getDeclarationName());
+                                    }
+                                    current = current.getParent();
+                                }
+                                funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(i, argument.getStart(), fqn));
+                            } else {
+                                funcArg.add(FunctionArgumentAccessor.getDefault().createForUnknown(i));
+                            }
+                        }
+                        Collection<FunctionCall> calls = functionCalls.get(interceptorToUse);
+                        if (calls == null) {
+                            calls = new ArrayList<FunctionCall>();
+                            functionCalls.put(interceptorToUse, calls);
+                        }
+                        calls.add(new FunctionCall(name, funcArg));
+
+                    }
+                }
+            }
+        return super.leave(callNode); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -682,6 +780,7 @@ public class ModelVisitor extends PathNodeVisitor {
             JsObjectImpl object = ModelElementFactory.createAnonymousObject(parserResult, objectNode,  modelBuilder);
             modelBuilder.setCurrentObject(object);
             object.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+            functionArguments.add(object);
             return super.enter(objectNode);
         } else if (previousVisited instanceof ReturnNode) {
             JsObjectImpl objectScope = ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
@@ -992,6 +1091,10 @@ public class ModelVisitor extends PathNodeVisitor {
 
 //--------------------------------End of visit methods--------------------------------------
 
+    public Map<FunctionInterceptor, Collection<FunctionCall>> getCallsForProcessing() {
+        return functionCalls;
+    }
+    
     private List<Identifier> getName(PropertyNode propertyNode) {
         List<Identifier> name = new ArrayList(1);
         if (propertyNode.getGetter() != null || propertyNode.getSetter() != null) {
@@ -1238,13 +1341,31 @@ public class ModelVisitor extends PathNodeVisitor {
         }
     }
 
-
-
     private Node getPreviousFromPath(int back) {
         int size = getPath().size();
         if (size >= back) {
             return getPath().get(size - back);
         }
         return null;
-    }    
+    }
+
+    public static class FunctionCall {
+
+        private final String name;
+
+        private final Collection<FunctionArgument> arguments;
+
+        public FunctionCall(String name, Collection<FunctionArgument> arguments) {
+            this.name = name;
+            this.arguments = arguments;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Collection<FunctionArgument> getArguments() {
+            return arguments;
+        }
+    }
 }
