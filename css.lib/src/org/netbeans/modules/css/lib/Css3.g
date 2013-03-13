@@ -383,7 +383,11 @@ media
                 | page  ws?
                 | fontFace  ws?
                 | vendorAtRule  ws?
-                | {isScssSource()}? media ws?
+                
+                //Just a partial hotfix for nested MQ
+                //complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
+                | media ws?
+//                | {isScssSource()}? media ws?
                 
             )*
          RBRACE
