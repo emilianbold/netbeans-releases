@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.JTable;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.annotations.common.NonNull;
@@ -71,8 +72,10 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
         String.class, String.class, String.class, Boolean.class
     };
     private List<String> parameterTypes;
+    private List<Boolean> parameterTypeVars;
 
-    public ReplaceConstructorWithBuilderPanel(final @NonNull ChangeListener parent, String initialFQN, List<String> paramaterNames, List<String> parameterTypes) {
+    public ReplaceConstructorWithBuilderPanel(final @NonNull ChangeListener parent, String initialFQN,
+            List<String> paramaterNames, List<String> parameterTypes, List<Boolean> parameterTypeVars) {
         initComponents();
         this.parameterTypes = parameterTypes;
         nameField.setText(initialFQN);
@@ -105,6 +108,7 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
                 parent.stateChanged(new ChangeEvent(ReplaceConstructorWithBuilderPanel.this));
             }
         });
+        this.parameterTypeVars = parameterTypeVars;
     }
 
     /**
@@ -119,7 +123,16 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
         builderName = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
         paramScrollPane = new javax.swing.JScrollPane();
-        paramTable = new javax.swing.JTable();
+        paramTable = new JTable() {
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                if(column == 2 || column == 3) {
+                    return !parameterTypeVars.get(row);
+                }
+                return super.isCellEditable(row, column);
+            }
+        };
 
         org.openide.awt.Mnemonics.setLocalizedText(builderName, org.openide.util.NbBundle.getMessage(ReplaceConstructorWithBuilderPanel.class, "ReplaceConstructorWithBuilder.jLabel1.text")); // NOI18N
 

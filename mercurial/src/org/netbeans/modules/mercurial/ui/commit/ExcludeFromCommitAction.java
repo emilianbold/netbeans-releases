@@ -75,7 +75,7 @@ public final class ExcludeFromCommitAction extends ContextAction {
         if (!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
             return false;
         }
-        return true;
+        return !HgUtils.onlyProjects(nodes) && !HgUtils.onlyFolders(ctxFiles);
     }
 
     protected String getBaseName(Node[] nodes) {

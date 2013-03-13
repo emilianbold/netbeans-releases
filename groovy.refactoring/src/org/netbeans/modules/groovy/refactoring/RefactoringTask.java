@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.groovy.refactoring;
 
-import java.util.Collection;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
@@ -55,6 +54,7 @@ import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
@@ -65,7 +65,6 @@ import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.findusages.model.ClassRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.MethodRefactoringElement;
-//import org.netbeans.modules.groovy.refactoring.findusages.model.PackageRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.VariableRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.FindMethodUtils;
@@ -78,7 +77,6 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 
@@ -98,7 +96,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
     public abstract boolean isValid();
 
 
-    protected static abstract class TextComponentTask extends RefactoringTask {
+    protected abstract static class TextComponentTask extends RefactoringTask {
 
         private final FileObject fileObject;
         private JTextComponent textC;
@@ -161,6 +159,10 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             switch (kind) {
                 case CLASS:
                 case INTERFACE:
+                    if (currentNode instanceof VariableExpression) {
+                        return new ClassRefactoringElement(fileObject, TypeResolver.resolveType(path, fileObject));
+                    }
+
                     return new ClassRefactoringElement(fileObject, currentNode);
                 case METHOD:
                 case CONSTRUCTOR:
@@ -209,7 +211,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
                     assert false; // Should never happened!
                 case VARIABLE:
-                    final ClassNode variableType = TypeResolver.resolveType(path);
+                    final ClassNode variableType = TypeResolver.resolveType(path, fileObject);
                     return new VariableRefactoringElement(fileObject, variableType, currentNode.getText());
                 case PROPERTY:
                 case FIELD:
@@ -240,10 +242,10 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             UI.openRefactoringUI(ui, TopComponent.getRegistry().getActivated());
         }
 
-        protected abstract RefactoringUI createRefactoringUI(RefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult info);
+        protected abstract RefactoringUI createRefactoringUI(RefactoringElement selectedElement, int startOffset, int endOffset, GroovyParserResult info);
     }
 
-    protected static abstract class NodeToElementTask extends RefactoringTask {
+    protected abstract static class NodeToElementTask extends RefactoringTask {
 
         private final FileObject fileObject;
         private RefactoringUI ui;
@@ -272,7 +274,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             }
 
             final RefactoringElement element = new ClassRefactoringElement(fileObject, root);
-            if (element != null && element.getName() != null) {
+            if (element.getName() != null) {
                 ui = createRefactoringUI(element, parserResult);
             }
 

@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_Javac_canUseLambda", description = "#DESC_Javac_canUseLambda", id = ConvertToLambda.ID, category = "rules15")
+@Hint(displayName = "#DN_Javac_canUseLambda", description = "#DESC_Javac_canUseLambda", id = ConvertToLambda.ID, category = "rules15", suppressWarnings="Convert2Lambda")
 public class ConvertToLambda {
 
     public static final String ID = "Javac_canUseLambda";

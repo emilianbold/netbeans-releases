@@ -1152,7 +1152,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         } else {
             // put directly into parser queue if needed
             if (lwm == null || !lwm.fill(fileAndHandler.fileImpl)){
-                ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                boolean addToQueue = true;
+                if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                    addToQueue = fileAndHandler.fileImpl.isSourceFile();
+                }
+                if (addToQueue) {
+                    ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                }
             }
         }
         return fileAndHandler.fileImpl;
@@ -1691,134 +1697,57 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     private static final boolean TRACE_FILE = (TraceFlags.TRACE_FILE_NAME != null);
-    /**
-     * called to inform that file was #included from another file with specific preprocHandler
-     *
-     * @param file included file path
-     * @param preprocHandler preprocHandler with which the file is including
-     * @param mode of walker forced onFileIncluded for #include directive
-     * @return true if it's first time of file including
-     *          false if file was included before
-     */
-    public final FileImpl onFileIncluded(ProjectBase startProject, FileImpl csmFile, CharSequence file, APTPreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
-        assert preprocHandler != null: "null preprocHandler for " + file;
-        assert csmFile != null: "null FileImpl for " + file;
-
-        if (isDisposing() || startProject.isDisposing()) {
-            if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
-                System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project\n", file, this.getName());
-            }
-            return csmFile;
-        }
-        APTPreprocHandler.State newState = preprocHandler.getState();
-        PreprocessorStatePair cachedOut = null;
-        APTFileCacheEntry aptCacheEntry = null;
-        FilePreprocessorConditionState pcState = null;
-        boolean foundInCache = false;
-        // check post include cache
-        if (postIncludeState != null && postIncludeState.hasDeadBlocks()) {
-            assert postIncludeState.hasPostIncludeMacroState() : "how could it be? " + file;
-            pcState = FilePreprocessorConditionState.Builder.build(file, postIncludeState.getDeadBlocks());
-            preprocHandler.getMacroMap().setState(postIncludeState.getPostIncludeMacroState());
-            foundInCache = true;
-        }
-        // check visited file cache
-        boolean isFileCacheApplicable = (mode == ProjectBase.GATHERING_TOKENS) && (APTHandlersSupport.getIncludeStackDepth(newState) != 0);
-        if (!foundInCache && isFileCacheApplicable) {
-            cachedOut = csmFile.getCachedVisitedState(newState);
-            if (cachedOut != null) {
-                preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut.state));
-                pcState = cachedOut.pcState;
-                foundInCache = true;
-            }
-        }
-        // if not found in caches => visit include file
-        if (!foundInCache) {
-            APTFile aptLight = null;
-            try {
-                aptLight = getAPTLight(csmFile);
-            } catch (IOException ex) {
-                Utils.LOG.log(Level.INFO, "can''t get apt for {0}\nreason: {1}", new Object[]{file, ex.getMessage()});//NOI18N
-            }
-            if (aptLight == null) {
-                // in the case file was just removed
-                Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", file); //NOI18N
-                return csmFile;
-            }
-
-            // gather macro map from all includes and fill preprocessor conditions state
-            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(csmFile.getAbsolutePath());
-            // ask for exclusive entry if absent
-            aptCacheEntry = csmFile.getAPTCacheEntry(preprocHandler, Boolean.TRUE);
-            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
-            walker.visit();
-            pcState = pcBuilder.build();
-        }
-        // updated caches
-        // update post include cache
-        if (postIncludeState != null && !postIncludeState.hasDeadBlocks()) {
-            // cache info
-            postIncludeState.setDeadBlocks(FilePreprocessorConditionState.Builder.getDeadBlocks(pcState));
-        }
-        // updated visited file cache
-        if (cachedOut == null && isFileCacheApplicable) {
-            csmFile.cacheVisitedState(newState, preprocHandler, pcState);
-        }
+    public void postIncludeFile(ProjectBase startProject, FileImpl csmFile, CharSequence file, PreprocessorStatePair newStatePair, APTFileCacheEntry aptCacheEntry) {
         boolean thisProjectUpdateResult = false;
         boolean startProjectUpdateResult = false;
         try {
             if (isDisposing() || startProject.isDisposing()) {
-                return csmFile;
+                return;
             }
-            if (triggerParsingActivity) {
-                FileContainer.FileEntry
-                entry = getFileContainer().getEntry(csmFile.getAbsolutePath());
-                if (entry == null) {
-                    entryNotFoundMessage(file);
-                    return csmFile;
-                }
-                synchronized (entry.getLock()) {
-                    PreprocessorStatePair newStatePair = new PreprocessorStatePair(newState, pcState);
+            FileContainer.FileEntry entry = getFileContainer().getEntry(csmFile.getAbsolutePath());
+            if (entry == null) {
+                entryNotFoundMessage(file);
+                return;
+            }
+            synchronized (entry.getLock()) {
 //                    Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> includedStatesToDebug = startProject.getIncludedPreprocStatePairs(csmFile);
 //                    Collection<PreprocessorStatePair> statePairsToDebug = entry.getStatePairs();
-                    // register included file and it's states in start project under current included file lock
-                    AtomicBoolean newStateFoundInStartProject = new AtomicBoolean();
-                    startProjectUpdateResult = startProject.updateFileEntryForIncludedFile(entry, this, file, csmFile, newStatePair, newStateFoundInStartProject);
-                    
-                    // decide if parse is needed
-                    List<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>(4);
-                    statesToParse.add(newState);
-                    AtomicBoolean clean = new AtomicBoolean(false);
-                    AtomicBoolean newStateFoundInFileContainer = new AtomicBoolean();
-                    thisProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(entry, newStatePair, file, csmFile, clean, statesToParse, newStateFoundInFileContainer);
-                    if (thisProjectUpdateResult) {
-                        // start project can be this project or another project, but
-                        // we found the "best from the bests" for the current lib;
-                        // it have to be considered as the best in start project lib storage as well
-                        if (!startProjectUpdateResult) {
-                            // except the situation when "best from the bests" collection
-                            // contains PARSING-marked entry which is not comparable with newStatePair,
-                            // so newStatePair was accepted as candidate as well, but in this case we 
-                            // expect that startProject have seen newStatePair
-                            if (!newStateFoundInStartProject.get()) {
-                                CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
-                            }
+                // register included file and it's states in start project under current included file lock
+                AtomicBoolean newStateFoundInStartProject = new AtomicBoolean();
+                startProjectUpdateResult = startProject.updateFileEntryForIncludedFile(entry, this, file, csmFile, newStatePair, newStateFoundInStartProject);
+
+                // decide if parse is needed
+                List<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>(4);
+                statesToParse.add(newStatePair.state);
+                AtomicBoolean clean = new AtomicBoolean(false);
+                AtomicBoolean newStateFoundInFileContainer = new AtomicBoolean();
+                thisProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(entry, newStatePair, file, csmFile, clean, statesToParse, newStateFoundInFileContainer);
+                if (thisProjectUpdateResult) {
+                    // start project can be this project or another project, but
+                    // we found the "best from the bests" for the current lib;
+                    // it have to be considered as the best in start project lib storage as well
+                    if (!startProjectUpdateResult) {
+                        // except the situation when "best from the bests" collection
+                        // contains PARSING-marked entry which is not comparable with newStatePair,
+                        // so newStatePair was accepted as candidate as well, but in this case we 
+                        // expect that startProject have seen newStatePair
+                        if (!newStateFoundInStartProject.get()) {
+                            CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
                         }
                     }
-                    if (thisProjectUpdateResult) {
-                        // TODO: think over, what if we aready changed entry,
-                        // but now deny parsing, because base, but not this project, is disposing?!
-                        if (!isDisposing() && !startProject.isDisposing()) {
-                            csmFile.setAPTCacheEntry(preprocHandler, aptCacheEntry, clean.get());
-                            if (!TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-                                ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean.get(),
-                                        clean.get() ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
-                            }
+                }
+                if (thisProjectUpdateResult) {
+                    // TODO: think over, what if we aready changed entry,
+                    // but now deny parsing, because base, but not this project, is disposing?!
+                    if (!isDisposing() && !startProject.isDisposing()) {
+                        csmFile.setAPTCacheEntry(newStatePair.state, aptCacheEntry, clean.get());
+                        if (!TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                            ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean.get(),
+                                    clean.get() ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
                         }
                     }
                 }
             }
-            return csmFile;
         } finally {
             if (thisProjectUpdateResult) {
                 getFileContainer().put();
@@ -1826,9 +1755,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (startProjectUpdateResult) {
                 startProject.putIncludedFileStorage(this);
             }
-        }
+        }        
     }
-
     /**
      * Called after project is restored from repository.
      * Checks if dependent libraries has enough content needed by this project.
@@ -3332,7 +3260,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
             int stackSize = inclStack.size();
             // create concurrent entry if absent
-            APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, Boolean.FALSE);
+            APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(state, Boolean.FALSE);
             APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false).toString(), cacheEntry);
             walker.visit();
             // we do not remember cache entry because it is stopped before end of file
@@ -3413,7 +3341,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out;
     }
 
-    public final APTFile getAPTLight(CsmFile csmFile) throws IOException {
+    final APTFile getAPTLight(CsmFile csmFile) throws IOException {
         FileImpl fileImpl = (FileImpl) csmFile;
         APTFile aptLight = fileImpl.getFileAPT(false);
         if (aptLight != null && APTUtils.LOG.isLoggable(Level.FINE)) {
@@ -3426,7 +3354,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return aptLight;
     }
 
-    public final GraphContainer getGraph() {
+    final GraphContainer getGraph() {
         return getGraphStorage();
     }
     

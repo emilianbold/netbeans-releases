@@ -693,8 +693,11 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
     
     boolean isSlidedTabTransparent() {
         boolean res = false;
-        if( null != getSlidedComp() ) {
-            res = ((TabbedContainer)getSlidedComp()).isTransparent();
+        Component c = getSlidedComp();
+        if( c instanceof TabbedContainer ) {
+            res = ((TabbedContainer)c).isTransparent();
+        } else {
+            res = tabbed.isTransparent();
         }
         return res;
     }

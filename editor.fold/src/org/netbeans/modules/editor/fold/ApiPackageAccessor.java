@@ -52,6 +52,8 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.spi.editor.fold.FoldHierarchyMonitor;
+import org.openide.util.Lookup;
 
 /**
  * Accessor for the package-private functionality in org.netbeans.api.editor.fold.
@@ -79,7 +81,8 @@ public abstract class ApiPackageAccessor {
             throw new IllegalStateException("Already registered"); // NOI18N
         }
         INSTANCE = accessor;
-        FoldViewFactory.register();
+        // this is a HACK; forces registration of the view.
+        Lookup.getDefault().lookup(FoldHierarchyMonitor.class);
     }
     
     public abstract FoldHierarchy createFoldHierarchy(FoldHierarchyExecution execution);

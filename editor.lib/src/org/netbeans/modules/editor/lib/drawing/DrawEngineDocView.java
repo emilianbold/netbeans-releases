@@ -48,20 +48,12 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
-import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.api.editor.fold.FoldHierarchyEvent;
-import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.lib.editor.view.GapDocumentView;
@@ -73,19 +65,15 @@ import org.netbeans.editor.view.spi.LockView;
  * @author Miloslav Metelka
  */
 public class DrawEngineDocView extends GapDocumentView
-implements FoldHierarchyListener, PropertyChangeListener {
+implements PropertyChangeListener {
     
     private static final boolean debugRebuild
         = Boolean.getBoolean("netbeans.debug.editor.view.rebuild"); // NOI18N
 
-    private FoldHierarchy foldHierarchy;
     /** Editor UI listening to */
     private EditorUI editorUI;
     
-    private Iterator collapsedFoldIterator;
-    private Fold collapsedFold;
     private int collapsedFoldStartOffset;
-    private int collapsedFoldEndOffset;
     
     private boolean collapsedFoldsInPresentViews;
     
@@ -104,8 +92,6 @@ implements FoldHierarchyListener, PropertyChangeListener {
     public @Override void setParent(View parent) {
         if (parent != null) { // start listening
             JTextComponent component = (JTextComponent)parent.getContainer();
-            foldHierarchy = FoldHierarchy.get(component);
-            foldHierarchy.addFoldHierarchyListener(this);
             TextUI tui = component.getUI();
             if (tui instanceof BaseTextUI){
                 editorUI = ((BaseTextUI)tui).getEditorUI();
@@ -118,8 +104,6 @@ implements FoldHierarchyListener, PropertyChangeListener {
         super.setParent(parent);
         
         if (parent == null) {
-            foldHierarchy.removeFoldHierarchyListener(this);
-            foldHierarchy = null;
             if (editorUI!=null){
                 editorUI.removePropertyChangeListener(this);
                 editorUI = null;
@@ -128,111 +112,12 @@ implements FoldHierarchyListener, PropertyChangeListener {
     }
     
     protected void attachListeners(){
-        if (foldHierarchy != null) {
-        }
-    }
-    
-    private FoldHierarchy getFoldHierarchy() {
-        return foldHierarchy;
     }
     
     protected @Override boolean useCustomReloadChildren() {
         return true;
     }
 
-    /**
-     * Find next collapsed fold in the given offset range.
-     * @param lastCollapsedFold last collapsed fold returned by this method.
-     * @param startOffset starting offset of the area in which the collapsed folds
-     *  should be searched.
-     * @param endOffset ending offset of the area in which the collapsed folds
-     *  should be searched.
-     */
-    protected Fold nextCollapsedFold() {
-        while (true) {
-            Fold fold = collapsedFoldIterator.hasNext() ? (Fold)collapsedFoldIterator.next() : null;
-
-            // Check whether the fold is not past the doc
-            if (fold != null) {
-                collapsedFoldStartOffset = fold.getStartOffset();
-                collapsedFoldEndOffset = fold.getEndOffset();
-                /* Ignore the empty folds as they would make up
-                 * no visible view anyway.
-                 * Although the fold hierarchy removes the empty views
-                 * automatically it may happen that the document listener
-                 * that the fold hierarchy attaches may not be notified yet.
-                 */
-                if (collapsedFoldStartOffset == collapsedFoldEndOffset) {
-                    if (debugRebuild) {
-                        /*DEBUG*/System.err.println(
-                            "GapBoxView.nextCollapsedFold(): ignored empty fold " // NOI18N
-                            + fold
-                        );
-                    }
-                    continue; // skip empty fold
-                }
-
-                if (collapsedFoldEndOffset > getDocument().getLength()) {
-                    /* The fold is past the end of the document.
-                     * If a document is going to be switched in the component
-                     * the view hierarchy may be notified sooner
-                     * than fold hierarchy about that change which
-                     * can lead to this state.
-                     * That fold is ignored together with the rest of the folds
-                     * that would follow it.
-                     */
-                    fold = null;
-                }
-            }
-
-            if (fold != null) {
-                collapsedFoldsInPresentViews = true;
-            }
-
-            return fold;
-        }
-    }
-    
-    /**
-     * Extra initialization for custom reload of children.
-     */
-    protected void initCustomReloadChildren(FoldHierarchy hierarchy,
-    int startOffset, int endOffset) {
-        collapsedFoldIterator = FoldUtilities.collapsedFoldIterator(hierarchy, startOffset, endOffset);
-        collapsedFold = nextCollapsedFold();
-    }
-
-    /**
-     * Free any resources required for custom reload of children.
-     */
-    protected void finishCustomReloadChildren(FoldHierarchy hierarchy) {
-        collapsedFoldIterator = null;
-        collapsedFold = null;
-    }
-
-    protected @Override void customReloadChildren(int index, int removeLength, int startOffset, int endOffset) {
-        // if removing all the views reset the flag
-        if (index == 0 && removeLength == getViewCount()) {
-            collapsedFoldsInPresentViews = false; // suppose there will be no folds in line views
-        }
-
-        FoldHierarchy hierarchy = getFoldHierarchy();
-        // Assuming the document lock was already acquired
-        if (hierarchy != null) {
-            hierarchy.lock();
-            try {
-                initCustomReloadChildren(hierarchy, startOffset, endOffset);
-
-                super.customReloadChildren(index, removeLength, startOffset, endOffset);
-
-                finishCustomReloadChildren(hierarchy);
-
-            } finally {
-                hierarchy.unlock();
-            }
-        }
-    }
-        
     protected @Override View createCustomView(ViewFactory f,
     int startOffset, int maxEndOffset, int elementIndex) {
         if (elementIndex == -1) {
@@ -243,93 +128,9 @@ implements FoldHierarchyListener, PropertyChangeListener {
 
         Element elem = getElement();
         Element lineElem = elem.getElement(elementIndex);
-        boolean createCollapsed = (collapsedFold != null);
-
-        if (createCollapsed) { // collapsedFold != null
-            int lineElemEndOffset = lineElem.getEndOffset();
-            createCollapsed = (collapsedFoldStartOffset < lineElemEndOffset);
-            if (createCollapsed) { // need to find end of collapsed area
-                Element firstLineElem = lineElem;
-                List foldAndEndLineElemList = new ArrayList();
-
-                while (true) {
-                    int _collapsedFoldEndOffset = collapsedFold.getEndOffset();
-                    // Find line element index of the line in which the collapsed fold ends
-                    while (_collapsedFoldEndOffset > lineElemEndOffset) {
-                        elementIndex++;
-                        lineElem = elem.getElement(elementIndex);
-                        lineElemEndOffset = lineElem.getEndOffset();
-                    }
-
-                    foldAndEndLineElemList.add(collapsedFold);
-                    foldAndEndLineElemList.add(lineElem);
-
-                    collapsedFold = nextCollapsedFold();
-
-                    // No more collapsed or next collapsed does not start on current line
-                    if (collapsedFold == null || collapsedFoldStartOffset >= lineElemEndOffset) {
-                        break;
-                    }
-                }
-                
-                // Create the multi-line-view with collapsed fold(s)
-                view = new FoldMultiLineView(firstLineElem, foldAndEndLineElemList);
-            }
-        }
-        
-        if (!createCollapsed) {
-            view = f.create(lineElem);
-        }
-     
+        view = f.create(lineElem);
         return view;
     }            
-
-    public void foldHierarchyChanged(FoldHierarchyEvent evt) {
-        LockView lockView = LockView.get(this);
-        lockView.lock();
-        try {
-            layoutLock();
-            try {
-                FoldHierarchy hierarchy = (FoldHierarchy)evt.getSource();
-                if (hierarchy.getComponent().getDocument() != lockView.getDocument()) {
-                    // Comonent already has a different document assigned
-                    // so this view will be abandoned anyway => do not rebuild
-                    // the current chilren because of this change
-                    return;
-                }
-
-                boolean rebuildViews = true;
-                int affectedStartOffset = evt.getAffectedStartOffset();
-                int affectedEndOffset = evt.getAffectedEndOffset();
-
-                // Check whether it is not a case when there were
-                // no collapsed folds before and no collapsed folds now
-                if (!collapsedFoldsInPresentViews) { // no collapsed folds previously
-                    // TODO Could Integer.MAX_VALUE be used?
-                    if (FoldUtilities.findCollapsedFold(hierarchy,
-                        affectedStartOffset, affectedEndOffset) == null
-                    ) { // no collapsed folds => no need to rebuild
-                        rebuildViews = false;
-                    }
-                }
-
-                if (rebuildViews) {
-                    /**
-                     * Check the affected offsets against the current document boundaries
-                     */
-                    int docLength = getDocument().getLength();
-                    int rebuildStartOffset = Math.min(affectedStartOffset, docLength);
-                    int rebuildEndOffset = Math.min(affectedEndOffset, docLength);
-                    offsetRebuild(rebuildStartOffset, rebuildEndOffset);
-                }
-            } finally {
-                updateLayout();
-                layoutUnlock();
-            }
-        } finally {
-            lockView.unlock();
-        }
-    }
 
     public @Override void paint(Graphics g, Shape allocation) {
         java.awt.Component c = getContainer();

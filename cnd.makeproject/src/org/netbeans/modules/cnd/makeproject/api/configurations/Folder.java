@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
@@ -97,7 +98,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
     public static final String DEFAULT_TEST_FOLDER_DISPLAY_NAME = getString("NewTestFolderName");
-    public static final int FS_TIME_OUT = 15;
+    public static final int FS_TIME_OUT = 30;
     public static final String LS_FOLDER_PERFORMANCE_EVENT = "LS_FOLDER_PERFORMANCE_EVENT"; //NOI18N
     public static final String CREATE_ITEM_PERFORMANCE_EVENT = "CREATE_ITEM_PERFORMANCE_EVENT"; //NOI18N
     public static final String GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT = "GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT"; //NOI18N
@@ -166,21 +167,24 @@ public class Folder implements FileChangeListener, ChangeListener {
         return root;
     }
 
-    public void refreshDiskFolderAfterRestoringOldScheme() {
+    public void refreshDiskFolderAfterRestoringOldScheme(Interrupter interrupter) {
         if (!UNCHANGED_PROJECT_MODE) {
-            refreshDiskFolder(new LinkedList<String>(), true);
+            refreshDiskFolder(new LinkedList<String>(), true, interrupter);
         }
     }
 
-    public void refreshDiskFolder() {
+    public void refreshDiskFolder(Interrupter interrupter) {
         if (!UNCHANGED_PROJECT_MODE) {
-            refreshDiskFolder(new LinkedList<String>(), false);
+            refreshDiskFolder(new LinkedList<String>(), false, interrupter);
         }
     }
 
-    private void refreshDiskFolder(LinkedList<String> antiLoop, boolean useOldSchemeBehavior) {
+    private void refreshDiskFolder(LinkedList<String> antiLoop, boolean useOldSchemeBehavior, Interrupter interrupter) {
         if (log.isLoggable(Level.FINEST)) {
             log.log(Level.FINEST, "----------refreshDiskFolder {0}", getPath()); // NOI18N
+        }
+        if (interrupter != null && interrupter.cancelled()) {
+            return;
         }
         String rootPath = getRootPath();
         FileObject folderFile = getThisFolder();
@@ -199,6 +203,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         // Items to be removed
         for (Item item : getItemsAsArray()) {
+            if (interrupter != null && interrupter.cancelled()) {
+                return;
+            }
             FileObject fo = item.getFileObject();
             if (fo == null) {
                 log.log(Level.INFO, "Null file object for {0}", item.getAbsolutePath()); //NOI18N
@@ -232,6 +239,9 @@ public class Folder implements FileChangeListener, ChangeListener {
             List<FileObject> fileList = new ArrayList<FileObject>();
             ArrayList<CharSequence> otherFileList = new ArrayList<CharSequence>();
             for (int i = 0; i < files.length; i++) {
+                if (interrupter != null && interrupter.cancelled()) {
+                    break;
+                }
                 if (!VisibilityQuery.getDefault().isVisible(files[i])) {
                     continue;
                 }
@@ -252,6 +262,9 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
             MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
             for (FileObject file : fileList) {
+                if (interrupter != null && interrupter.cancelled()) {
+                    break;
+                }
                 if (file.isFolder()) {
                     try {
                         String canonicalPath = RemoteFileUtil.getCanonicalPath(file);
@@ -294,11 +307,15 @@ public class Folder implements FileChangeListener, ChangeListener {
                     }
                 }
             }
-
-            // Repeast for all sub folders
-            List<Folder> subFolders = getFolders();
-            for (Folder f : subFolders) {
-                f.refreshDiskFolder(antiLoop, useOldSchemeBehavior);
+            if (interrupter == null || !interrupter.cancelled()) {
+                // Repeast for all sub folders
+                List<Folder> subFolders = getFolders();
+                for (Folder f : subFolders) {
+                    if (interrupter != null && interrupter.cancelled()) {
+                        break;
+                    }
+                    f.refreshDiskFolder(antiLoop, useOldSchemeBehavior, interrupter);
+                }
             }
         }
         antiLoop.removeLast();
@@ -313,7 +330,10 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
     private static final boolean UNCHANGED_PROJECT_MODE = Boolean.getBoolean("cnd.unchanged.project"); // NOI18N
 
-    public void attachListeners() {
+    public void attachListeners(Interrupter interrupter) {
+        if (interrupter != null && interrupter.cancelled()) {
+            return;
+        }
         if (configurationDescriptor == null) {
             CndUtils.assertTrueInConsole(false, "null configurationDescriptor for " + this.name);
             return;
@@ -357,11 +377,16 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
             return;
         }
-
+        if (interrupter != null && interrupter.cancelled()) {
+            return;
+        }
         // Repeast for all sub folders
         List<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
-            f.attachListeners();
+            if (interrupter != null && interrupter.cancelled()) {
+                return;
+            }
+            f.attachListeners(interrupter);
         }
     }
 
@@ -1353,7 +1378,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         // Happens when filter has changed
         if (isDiskFolder()) {
-            refreshDiskFolder();
+            refreshDiskFolder(null);
             fireChangeEvent();
         }
     }

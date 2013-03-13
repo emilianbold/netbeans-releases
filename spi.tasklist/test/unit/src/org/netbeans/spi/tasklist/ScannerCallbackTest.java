@@ -165,6 +165,16 @@ public class ScannerCallbackTest extends NbTestCase {
         public void clearAllTasks(PushTaskScanner scanner) {
             clearedScanner = scanner;
         }
+
+        @Override
+        public boolean isObserved() {
+            return true;
+        }
+
+        @Override
+        public boolean isCurrentEditorScope() {
+            return false;
+        }
         
     }
     

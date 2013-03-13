@@ -60,6 +60,7 @@ import org.netbeans.test.j2ee.persistence.PersistenceUnitTest;
 import org.netbeans.test.j2ee.wizard.MultiSrcRootModsWizardsTest;
 import org.netbeans.test.j2ee.wizard.NewProjectWizardsTest;
 import org.netbeans.test.j2ee.wizard.WizardsJavaEE5Test;
+import org.netbeans.test.j2ee.wizard.WizardsJavaEE7Test;
 import org.netbeans.test.j2ee.wizard.WizardsTest;
 
 /**
@@ -180,14 +181,16 @@ public class J2EESuite extends J2eeTestCase {
                 "testPUProviders",
                 "testPUDataSource");
         // wizard/NewProjectWizardsTest
-        conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest4.class);
         conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest5.class);
         conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest6.class);
-        conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest4.class, "closeProjects");        
+        conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest7.class);
+        conf = conf.addTest(NewProjectWizardsTest.NewProjectWizardsTest5.class, "closeProjects");        
         // wizard/WizardsTest
         conf = conf.addTest(WizardsTest.Suite.class);
         // wizard/WizardsJavaEE5Test
         conf = conf.addTest(WizardsJavaEE5Test.Suite.class);
+        // wizard/WizardsJavaEE7Test
+        conf = conf.addTest(WizardsJavaEE7Test.Suite.class);
         // wizard/MultiSrcRootModsWizardsTest
         conf = conf.addTest(MultiSrcRootModsWizardsTest.Suite.class);
         return conf.suite();

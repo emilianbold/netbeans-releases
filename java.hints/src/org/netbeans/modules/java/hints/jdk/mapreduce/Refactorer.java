@@ -64,11 +64,11 @@ public class Refactorer {
 
     private boolean untrasformable;
 
-    private boolean isOneStatementBlock(StatementTree then) {
+    private boolean isOneStatementBlock( StatementTree then) {
         return then.getKind() == Tree.Kind.BLOCK && ((BlockTree) then).getStatements().size() == 1;
     }
 
-    private boolean isReturningIf(IfTree ifTree) {
+    private boolean isReturningIf( IfTree ifTree) {
         StatementTree then = ifTree.getThenStatement();
         if (then.getKind() == Tree.Kind.RETURN) {
             return true;
@@ -85,13 +85,13 @@ public class Refactorer {
     private TreeMaker treeMaker;
     private PreconditionsChecker preconditionsChecker;
 
-    public Refactorer(EnhancedForLoopTree loop, WorkingCopy workingCopy, PreconditionsChecker scanner) {
+    public Refactorer( EnhancedForLoopTree loop,  WorkingCopy workingCopy,  PreconditionsChecker scanner) {
         this.loop = loop;
         this.workingCopy = workingCopy;
         this.treeMaker = workingCopy.getTreeMaker();
         this.preconditionsChecker = scanner;
     }
-    List<ProspectiveOperation> prospectives;
+     List<ProspectiveOperation> prospectives;
 
     public Boolean isRefactorable() {
         prospectives = this.getListRepresentation(loop.getStatement());
@@ -100,7 +100,7 @@ public class Refactorer {
             if (this.untrasformable) {
                 return false;
             }
-            for (int i = 0; i < prospectives.size() - 1; i++) {
+            for ( int i = 0; i < prospectives.size() - 1; i++) {
                 if (!prospectives.get(i).isLazy()) {
                     return false;
                 }
@@ -114,36 +114,23 @@ public class Refactorer {
 
     }
 
-    public StatementTree refactor(TreeMaker treeMaker) {
+    public StatementTree refactor( TreeMaker treeMaker) {
 
         StatementTree loopBody = loop.getStatement();
         VariableTree var = loop.getVariable();
+        ExpressionTree expr = loop.getExpression();
 
-        MethodInvocationTree mi = treeMaker.MethodInvocation(new ArrayList<ExpressionTree>(), treeMaker.MemberSelect(loop.getExpression(), "stream"), new ArrayList<ExpressionTree>());
-        for (ProspectiveOperation prospective : prospectives) {
-            mi = treeMaker.MethodInvocation(new ArrayList<ExpressionTree>(), treeMaker.MemberSelect(mi, prospective.getSuitableMethod()), prospective.getArguments());
-        }
+        MethodInvocationTree mi = chainAllProspectives(treeMaker, expr);
+
         ProspectiveOperation lastOperation = prospectives.get(prospectives.size() - 1);
-        if (lastOperation.shouldReturn()) {
-            ReturnTree returnExpre = null;
-            ExpressionTree pred = null;
-            if ("anyMatch".equals(lastOperation.getSuitableMethod())) {
-                pred = mi;
-                returnExpre = treeMaker.Return(treeMaker.Literal(true));
-            } else if ("noneMatch".equals(lastOperation.getSuitableMethod())) {
-                pred = treeMaker.Unary(Tree.Kind.LOGICAL_COMPLEMENT, mi);
-                returnExpre = treeMaker.Return(treeMaker.Literal(false));
-            }
-            return treeMaker.If(pred, returnExpre, null);
-        } else if (lastOperation.shouldAssign()) {
-            return treeMaker.ExpressionStatement(treeMaker.Assignment(this.preconditionsChecker.getVariableToAssign(), mi));
-        }
-        return treeMaker.ExpressionStatement(mi);
+        StatementTree returnValue = propagateSideEffects(lastOperation, mi, treeMaker);
+
+        return returnValue;
 
 
     }
 
-    private Boolean isIfWithContinue(IfTree ifTree) {
+    private Boolean isIfWithContinue( IfTree ifTree) {
         StatementTree then = ifTree.getThenStatement();
         if (then.getKind() == Tree.Kind.CONTINUE) {
             return true;
@@ -157,70 +144,122 @@ public class Refactorer {
         return false;
     }
 
-    private List<ProspectiveOperation> getListRepresentation(StatementTree tree) {
+    private List<ProspectiveOperation> getListRepresentation( StatementTree tree) {
         List<ProspectiveOperation> ls = new ArrayList<ProspectiveOperation>();
         if (tree.getKind() == Tree.Kind.BLOCK) {
-            BlockTree blockTree = (BlockTree) tree;
-            List<? extends StatementTree> statements = blockTree.getStatements();
-            for (int i = 0; i < statements.size(); i++) {
-                StatementTree statement = statements.get(i);
-                if (statement.getKind() == Tree.Kind.IF) {
-                    IfTree ifTree = (IfTree) statement;
-                    if (isIfWithContinue(ifTree)) {
-                        ifTree = refactorContinuingIf(ifTree, statements.subList(i + 1, statements.size()));
-                        ls.addAll(this.getListRepresentation(ifTree));
-                        return ls;
-                    } else if (i == statements.size() - 1) {
-                        ls.addAll(this.getListRepresentation(ifTree));
-                    } else {
-                        if (this.isReturningIf(ifTree)) {
-                            this.untrasformable = true;
-                        }
-                        ls.add(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.MAP, preconditionsChecker, workingCopy));
-                    }
-                } else {
-                    ls.addAll(getListRepresentation(statement));
-                }
-            }
+            ls.addAll(getBlockListRepresentation(tree));
         } else if (tree.getKind() == Tree.Kind.IF) {
-            IfTree ifTree = (IfTree) tree;
-            if (ifTree.getElseStatement() == null) {
-
-                StatementTree then = ifTree.getThenStatement();
-                if (isOneStatementBlock(then)) {
-                    then = ((BlockTree) then).getStatements().get(0);
-                }
-                if (then.getKind() == Tree.Kind.RETURN) {
-                    ReturnTree returnTree = (ReturnTree) then;
-                    ExpressionTree returnExpression = returnTree.getExpression();
-                    if (returnExpression.getKind() == Tree.Kind.BOOLEAN_LITERAL && ((LiteralTree) returnExpression).getValue().equals(true)) {
-                        ls.add(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.ANYMATCH, this.preconditionsChecker, this.workingCopy));
-                    } else if (returnExpression.getKind() == Tree.Kind.BOOLEAN_LITERAL && ((LiteralTree) returnExpression).getValue().equals(false)) {
-                        ls.add(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.NONEMATCH, this.preconditionsChecker, this.workingCopy));
-                    }
-                } else {
-                    ls.add(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.FILTER, this.preconditionsChecker, this.workingCopy));
-                    ls.addAll(getListRepresentation(ifTree.getThenStatement()));
-                }
-            } else {
-
-                ls.add(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.MAP, this.preconditionsChecker, this.workingCopy));
-            }
+            ls.addAll(getIfListRepresentation(tree));
 
         } else {
-            if (this.preconditionsChecker.isReducer() && this.preconditionsChecker.getReducer().equals(tree)) {
-                ls.add(ProspectiveOperation.createOperator(tree, ProspectiveOperation.OperationType.REDUCE, this.preconditionsChecker, this.workingCopy));
-            } else {
-                ls.add(ProspectiveOperation.createOperator(tree, ProspectiveOperation.OperationType.MAP, this.preconditionsChecker, this.workingCopy));
-            }
+            ls.addAll(getSingleStatementListRepresentation(tree));
         }
 
         return ls;
     }
 
-    private IfTree refactorContinuingIf(IfTree ifTree, List<? extends StatementTree> newStatements) {
+    private IfTree refactorContinuingIf( IfTree ifTree,  List<? extends StatementTree> newStatements) {
         ExpressionTree newPredicate = treeMaker.Unary(Tree.Kind.LOGICAL_COMPLEMENT, ifTree.getCondition());
         BlockTree newThen = treeMaker.Block(newStatements, false);
         return treeMaker.If(newPredicate, newThen, null);
+    }
+
+    private MethodInvocationTree chainAllProspectives( TreeMaker treeMaker,  ExpressionTree expr) {
+        MethodInvocationTree mi = treeMaker.MethodInvocation(new ArrayList<ExpressionTree>(), treeMaker.MemberSelect(expr, "stream"), new ArrayList<ExpressionTree>());
+        //mi = treeMaker.MethodInvocation(new ArrayList<ExpressionTree>(), treeMaker.MemberSelect(mi, "parallel"), new ArrayList<ExpressionTree>());
+        for ( ProspectiveOperation prospective : prospectives) {
+            mi = treeMaker.MethodInvocation(new ArrayList<ExpressionTree>(), treeMaker.MemberSelect(mi, prospective.getSuitableMethod()), prospective.getArguments());
+        }
+        return mi;
+    }
+
+    private StatementTree propagateSideEffects( ProspectiveOperation lastOperation,  MethodInvocationTree mi,  TreeMaker treeMaker) {
+        StatementTree returnValue;
+        if (lastOperation.shouldReturn()) {
+            returnValue = propagateReturn(lastOperation, mi, treeMaker);
+        } else if (lastOperation.shouldAssign()) {
+            returnValue = treeMaker.ExpressionStatement(treeMaker.Assignment(this.preconditionsChecker.getVariableToAssign(), mi));
+        } else {
+            returnValue = treeMaker.ExpressionStatement(mi);
+        }
+        return returnValue;
+    }
+
+    private StatementTree propagateReturn( ProspectiveOperation lastOperation,  MethodInvocationTree mi,  TreeMaker treeMaker) {
+        ReturnTree returnExpre = null;
+        ExpressionTree pred = null;
+        if ("anyMatch".equals(lastOperation.getSuitableMethod())) {
+            pred = mi;
+            returnExpre = treeMaker.Return(treeMaker.Literal(true));
+        } else if ("noneMatch".equals(lastOperation.getSuitableMethod())) {
+            pred = treeMaker.Unary(Tree.Kind.LOGICAL_COMPLEMENT, mi);
+            returnExpre = treeMaker.Return(treeMaker.Literal(false));
+        }
+        return treeMaker.If(pred, returnExpre, null);
+    }
+
+    private List<ProspectiveOperation> getBlockListRepresentation( StatementTree tree) {
+        List<ProspectiveOperation> ls = new ArrayList<ProspectiveOperation>();
+        BlockTree blockTree = (BlockTree) tree;
+        List<? extends StatementTree> statements = blockTree.getStatements();
+        for ( int i = 0; i < statements.size(); i++) {
+            StatementTree statement = statements.get(i);
+            if (statement.getKind() == Tree.Kind.IF) {
+                IfTree ifTree = (IfTree) statement;
+                if (isIfWithContinue(ifTree)) {
+                    ifTree = refactorContinuingIf(ifTree, statements.subList(i + 1, statements.size()));
+                    ls.addAll(this.getListRepresentation(ifTree));
+                    break;
+                } else if (i == statements.size() - 1) {
+                    ls.addAll(this.getListRepresentation(ifTree));
+                } else {
+                    if (this.isReturningIf(ifTree)) {
+                        this.untrasformable = true;
+                    }
+                    ls.addAll(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.MAP, preconditionsChecker, workingCopy));
+                }
+            } else {
+                ls.addAll(getListRepresentation(statement));
+            }
+        }
+        return ls;
+    }
+
+    private List<ProspectiveOperation> getIfListRepresentation( StatementTree tree) {
+        IfTree ifTree = (IfTree) tree;
+        List<ProspectiveOperation> ls = new ArrayList<ProspectiveOperation>();
+        if (ifTree.getElseStatement() == null) {
+
+            StatementTree then = ifTree.getThenStatement();
+            if (isOneStatementBlock(then)) {
+                then = ((BlockTree) then).getStatements().get(0);
+            }
+            if (then.getKind() == Tree.Kind.RETURN) {
+                ReturnTree returnTree = (ReturnTree) then;
+                ExpressionTree returnExpression = returnTree.getExpression();
+                if (returnExpression.getKind() == Tree.Kind.BOOLEAN_LITERAL && ((LiteralTree) returnExpression).getValue().equals(true)) {
+                    ls.addAll(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.ANYMATCH, this.preconditionsChecker, this.workingCopy));
+                } else if (returnExpression.getKind() == Tree.Kind.BOOLEAN_LITERAL && ((LiteralTree) returnExpression).getValue().equals(false)) {
+                    ls.addAll(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.NONEMATCH, this.preconditionsChecker, this.workingCopy));
+                }
+            } else {
+                ls.addAll(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.FILTER, this.preconditionsChecker, this.workingCopy));
+                ls.addAll(getListRepresentation(ifTree.getThenStatement()));
+            }
+        } else {
+
+            ls.addAll(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.MAP, this.preconditionsChecker, this.workingCopy));
+        }
+        return ls;
+    }
+
+    private List<ProspectiveOperation> getSingleStatementListRepresentation( StatementTree tree) {
+        List<ProspectiveOperation> ls = new ArrayList<ProspectiveOperation>();
+        if (this.preconditionsChecker.isReducer() && this.preconditionsChecker.getReducer().equals(tree)) {
+            ls.addAll(ProspectiveOperation.createOperator(tree, ProspectiveOperation.OperationType.REDUCE, this.preconditionsChecker, this.workingCopy));
+        } else {
+            ls.addAll(ProspectiveOperation.createOperator(tree, ProspectiveOperation.OperationType.MAP, this.preconditionsChecker, this.workingCopy));
+        }
+        return ls;
     }
 }

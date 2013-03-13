@@ -61,14 +61,13 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_StringBuilderAppend", description = "#DESC_StringBuilderAppend", id="StringBuilderAppend", category="performance")
+@Hint(displayName = "#DN_StringBuilderAppend", description = "#DESC_StringBuilderAppend", id="StringBuilderAppend", category="performance", suppressWarnings="StringConcatenationInsideStringBufferAppend")
 public class StringBuilderAppend {
 
     @TriggerPattern(value="$build.append($app)",

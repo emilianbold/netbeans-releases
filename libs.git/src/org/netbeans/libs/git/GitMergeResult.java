@@ -111,7 +111,7 @@ public final class GitMergeResult {
     }
     
     GitMergeResult (MergeResult result, File workDir) {
-        this.mergeStatus = GitMergeResult.MergeStatus.valueOf(result.getMergeStatus().name());
+        this.mergeStatus = parseMergeStatus(result.getMergeStatus());
         this.workDir = workDir;
         this.newHead = result.getNewHead() == null ? null : result.getNewHead().getName();
         this.base = result.getBase() == null ? null : result.getBase().getName();
@@ -167,6 +167,19 @@ public final class GitMergeResult {
      */
     public Collection<File> getFailures () {
         return failures;
+    }
+
+    static MergeStatus parseMergeStatus (MergeResult.MergeStatus mergeStatus) {
+        if (mergeStatus == MergeResult.MergeStatus.FAST_FORWARD_SQUASHED) {
+            mergeStatus = MergeResult.MergeStatus.FAST_FORWARD;
+        } else if (mergeStatus == MergeResult.MergeStatus.MERGED_SQUASHED) {
+            mergeStatus = MergeResult.MergeStatus.MERGED;
+        } else if (mergeStatus == MergeResult.MergeStatus.ABORTED) {
+            mergeStatus = MergeResult.MergeStatus.FAILED;
+        } else if (mergeStatus == MergeResult.MergeStatus.CHECKOUT_CONFLICT) {
+            mergeStatus = MergeResult.MergeStatus.CONFLICTING;
+        }
+        return GitMergeResult.MergeStatus.valueOf(mergeStatus.name());
     }
 
     private String[] getMergedCommits (MergeResult result) {

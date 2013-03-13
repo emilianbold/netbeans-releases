@@ -69,7 +69,7 @@ import org.netbeans.spi.java.hints.Hint.Options;
  *
  * @author lahvac
  */
-@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY, suppressWarnings = {"null", "ConstantConditions"})
+@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY, suppressWarnings = {"null", "", "NullableProblems"})
 public class NPECheck {
 
     static final boolean DEF_ENABLE_FOR_FIELDS = false;
@@ -212,7 +212,7 @@ public class NPECheck {
         String key = null;
 
         switch (returnState) {
-            case NULL: case NOT_NULL_HYPOTHETICAL:
+            case NULL: case NULL_HYPOTHETICAL:
                 if (expected.isNotNull()) key = "ERR_ReturningNullFromNonNull";
                 break;
             case POSSIBLE_NULL_REPORT:
@@ -580,7 +580,16 @@ public class NPECheck {
 
         @Override
         public State visitNewClass(NewClassTree node, Void p) {
-            super.visitNewClass(node, p);
+            scan(node.getEnclosingExpression(), p);
+            scan(node.getIdentifier(), p);
+            scan(node.getTypeArguments(), p);
+            
+            for (Tree param : node.getArguments()) {
+                scan(param, p);
+                clearHypothetical();
+            }
+            
+            scan(node.getClassBody(), p);
             
             Element invoked = info.getTrees().getElement(getCurrentPath());
 
@@ -598,6 +607,7 @@ public class NPECheck {
             
             for (Tree param : node.getArguments()) {
                 scan(param, p);
+                clearHypothetical();
             }
             
             Element e = info.getTrees().getElement(getCurrentPath());
@@ -731,6 +741,7 @@ public class NPECheck {
         @Override
         public State visitAssert(AssertTree node, Void p) {
             scan(node.getCondition(), p);
+            //XXX: todo clear hypothetical, evaluate negation?
             scan(node.getDetail(), p);
             return null;
         }
@@ -778,6 +789,11 @@ public class NPECheck {
         }
         
         public State visitTry(TryTree node, Void p) {
+            Map<TypeMirror, Collection<Map<VariableElement, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+
+            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
+            
+            try {
             if (node.getFinallyBlock() != null) {
                 pendingFinally.add(0, new TreePath(getCurrentPath(), node.getFinallyBlock()));
             }
@@ -826,7 +842,11 @@ public class NPECheck {
                 
                 scan(ct, null);
 
-                mergeIntoVariable2State(variable2StateBeforeCatch);
+                if (Utilities.exitsFromAllBranchers(info, new TreePath(getCurrentPath(), ct))) {
+                    variable2State = variable2StateBeforeCatch;
+                } else {
+                    mergeIntoVariable2State(variable2StateBeforeCatch);
+                }
             }
 
             if (node.getFinallyBlock() != null) {
@@ -835,6 +855,15 @@ public class NPECheck {
                 mergeIntoVariable2State(afterBlockVariable2State);
 
                 scan(node.getFinallyBlock(), null);
+            }
+            } finally {
+                Map<TypeMirror, Collection<Map<VariableElement, State>>> remainingException = resumeOnExceptionHandler;
+                resumeOnExceptionHandler = oldResumeOnExceptionHandler;
+                for (Entry<TypeMirror, Collection<Map<VariableElement, State>>> e : remainingException.entrySet()) {
+                    for (Map<VariableElement, State> v2s : e.getValue()) {
+                        recordResumeOnExceptionHandler(e.getKey(), v2s);
+                    }
+                }
             }
             
             return null;
@@ -858,6 +887,10 @@ public class NPECheck {
         }
 
         private void recordResumeOnExceptionHandler(TypeMirror thrown) {
+            recordResumeOnExceptionHandler(thrown, variable2State);
+        }
+        
+        private void recordResumeOnExceptionHandler(TypeMirror thrown, Map<VariableElement, State> variable2State) {
             if (thrown == null || thrown.getKind() == TypeKind.ERROR) return;
             
             Collection<Map<VariableElement, State>> r = resumeOnExceptionHandler.get(thrown);
@@ -933,6 +966,16 @@ public class NPECheck {
         
         private boolean isVariableElement(Element ve) {
             return NPECheck.isVariableElement(ctx, ve);
+        }
+        
+        private void clearHypothetical() {
+            for (Iterator<Entry<VariableElement, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
+                Entry<VariableElement, State> e = it.next();
+                
+                if (e.getValue() == State.NOT_NULL_HYPOTHETICAL || e.getValue() == State.NULL_HYPOTHETICAL) {
+                    it.remove();
+                }
+            }
         }
     }
     

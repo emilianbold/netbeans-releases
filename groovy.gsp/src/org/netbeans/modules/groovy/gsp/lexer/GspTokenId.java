@@ -121,6 +121,17 @@ public enum GspTokenId implements TokenId {
     public String primaryCategory() {
         return primaryCategory;
     }
+    
+    /**
+     * Finds out if the parameter is a token representing embedded Groovy content.
+     * Typically that code might be between ${ ..some code.. }
+     *
+     * @param tokenID tokenID we want to check
+     * @return true if the tokenID is Groovy content, false otherwise
+     */
+    public boolean isGroovyContent() {
+        return checkPrimaryCategory("groovy"); // NOI18N
+    }
 
     public boolean isComment() {
         return checkPrimaryCategory("comment"); // NOI18N

@@ -78,6 +78,17 @@ public class CssParser extends Parser {
     private CssParserResult result;
 
     public static CssParserResult parse(Snapshot snapshot) throws ParseException {
+        //#calling "ParserManager.parseWhenScanFinished("text/css",someTask)" results into null snapshot passed here
+        if(snapshot == null) {
+            return null; 
+        }
+        
+        FileObject fo = snapshot.getSource().getFileObject();        
+        String fileMimetype = fo == null ? null : fo.getMIMEType();
+        return parse(snapshot, fileMimetype);
+    }
+    
+    public static CssParserResult parse(Snapshot snapshot, String topLevelSnapshotMimetype) throws ParseException {
         if(snapshot == null) {
             return null;
         }
@@ -90,7 +101,7 @@ public class CssParser extends Parser {
             ExtCss3Lexer lexer = new ExtCss3Lexer(source);
             TokenStream tokenstream = new CommonTokenStream(lexer);
             NbParseTreeBuilder builder = new NbParseTreeBuilder(source);
-            ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder);
+            ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder, topLevelSnapshotMimetype);
             parser.styleSheet();
 
             AbstractParseTreeNode tree = builder.getTree();

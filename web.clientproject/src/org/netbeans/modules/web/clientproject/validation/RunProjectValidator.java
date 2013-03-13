@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject.validation;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 

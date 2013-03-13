@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -237,7 +238,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     }
     
     @Override
-    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
+    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         String set = (String)getProperty(MAKE_LOG_KEY).getValue();
         if (set == null || set.length() == 0) {
             set = detectMakeLog(project);
@@ -264,22 +265,23 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
 
     }
     
-    /* package-local */ List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage){
+    private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage){
         FileSystem fileSystem = getFileSystem(project);
-        LogReader clrf = new LogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
-        List<SourceFileProperties> list = clrf.getResults(progress, isStoped, storage);
-        buildArtifacts.addAll(clrf.getArtifacts(progress, isStoped, storage));
+        LogReader reader = new LogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
+        List<SourceFileProperties> list = reader.getResults(progress, getStopInterrupter(), storage);
+        buildArtifacts.addAll(reader.getArtifacts(progress, getStopInterrupter(), storage));
         return list;
     }
 
     private Progress progress;
+
     @Override
-    public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
-        isStoped.set(false);
+    public List<Configuration> analyze(final ProjectProxy project, Progress progress, Interrupter interrupter) {
+        resetStopInterrupter(interrupter);
         List<Configuration> confs = new ArrayList<Configuration>();
         init(project);
         this.progress = progress;
-        if (!isStoped.get()){
+        if (!getStopInterrupter().cancelled()){
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myBuildArtifacts;
@@ -304,6 +306,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                         if (set != null && set.length() > 0) {
                             myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
                             myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, new CompileLineStorage());
+                            store(project);
                         }
                     }
                     return myBuildArtifacts;
@@ -319,6 +322,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                         if (set != null && set.length() > 0) {
                             myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
                             myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, new CompileLineStorage());
+                            store(project);
                         }
                     }
                     return myFileProperties;
@@ -329,7 +333,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();
                         for(SourceFileProperties source : getSourcesConfiguration()){
-                            if (isStoped.get()) {
+                            if (getStopInterrupter().cancelled()) {
                                 break;
                             }
                             if (source instanceof DwarfSource) {
@@ -339,7 +343,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                         }
                         HashSet<String> unique = new HashSet<String>();
                         for(String path : set){
-                            if (isStoped.get()) {
+                            if (getStopInterrupter().cancelled()) {
                                 break;
                             }
                             File file = new File(path);

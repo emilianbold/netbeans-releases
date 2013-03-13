@@ -67,13 +67,14 @@ import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 
 /**
  * Customizer panel for setting source level and encoding.
  * in future possibly also source roots and resource roots.
  * @author mkleint
  */
-public class SourcesPanel extends JPanel {
+public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     
     
     private String oldEncoding;
@@ -260,6 +261,10 @@ public class SourcesPanel extends JPanel {
         }
     }
     
+    @Override
+    public HelpCtx getHelpCtx() {
+        return CustomizerProviderImpl.HELP_CTX;
+    }    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

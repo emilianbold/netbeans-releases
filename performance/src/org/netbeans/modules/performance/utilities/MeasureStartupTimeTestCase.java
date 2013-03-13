@@ -115,6 +115,8 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         {"Windows_Vista,amd64",WINDOWS},
         {"Windows_7,x86",WINDOWS},
         {"Windows_7,amd64",WINDOWS},
+        {"Windows_8,x86",WINDOWS},
+        {"Windows_8,amd64",WINDOWS},
         {"Mac_OS_X,ppc",MAC}
     };
     

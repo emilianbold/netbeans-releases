@@ -424,7 +424,7 @@ public class StatusCommand extends GitCommand {
             ByteBuffer buf = IO.readWholeStream(s1 = fti.openEntryStream(), (int) fti.getEntryLength());
             ObjectId hash1 = oi.idFor(Constants.OBJ_BLOB, buf.array());
             ObjectLoader loader = getRepository().getObjectDatabase().open(objectId);
-            ByteBuffer buf2 = IO.readWholeStream(s2 = new EolCanonicalizingInputStream(loader.openStream()), (int) fti.getEntryLength());
+            ByteBuffer buf2 = IO.readWholeStream(s2 = new EolCanonicalizingInputStream(loader.openStream(), true), (int) fti.getEntryLength());
             ObjectId hash2 = oi.idFor(Constants.OBJ_BLOB, buf2.array());
             return !hash1.equals(hash2);
         } finally {

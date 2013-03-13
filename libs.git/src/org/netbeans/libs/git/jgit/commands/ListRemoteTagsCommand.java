@@ -42,7 +42,7 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.jgit.GitClassFactory;
@@ -53,7 +53,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  * @author ondra
  */
 public class ListRemoteTagsCommand extends ListRemoteObjectsCommand {
-    private HashMap<String, String> remoteTags;
+    private Map<String, String> remoteTags;
     private final String remoteUrl;
 
     public ListRemoteTagsCommand (Repository repository, GitClassFactory gitFactory, String remoteRepositoryUrl, ProgressMonitor monitor) {
@@ -63,7 +63,7 @@ public class ListRemoteTagsCommand extends ListRemoteObjectsCommand {
 
     @Override
     protected void processRefs () {
-        remoteTags = new HashMap<String, String>();
+        remoteTags = new LinkedHashMap<String, String>();
         remoteTags.putAll(Utils.refsToTags(getRefs()));
     }
 

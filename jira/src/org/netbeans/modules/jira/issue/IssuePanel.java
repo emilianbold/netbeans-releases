@@ -130,6 +130,7 @@ import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -196,6 +197,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         initDefaultButton();
         attachFieldStatusListeners();
         attachHideStatusListener();
+        if( "Metal".equals( UIManager.getLookAndFeel().getID() ) || "Nimbus".equals( UIManager.getLookAndFeel().getID() ) )
+            actionPanel.setBackground( UIUtils.getSectionPanelBackground() );
     }
 
     private void initDefaultButton() {
@@ -217,7 +220,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
             field.setUI(new BasicTextFieldUI());
         }
-        field.setBackground(getBackground());
+        Color bkColor = getBackground();
+        if( null != bkColor )
+            bkColor = new Color( bkColor.getRGB() );
+        field.setBackground(bkColor);
     }
 
     NbJiraIssue getIssue() {
@@ -1026,16 +1032,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (evt.getSource() != issue) {
                 return;
             }
-            if (IssueCache.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+            if (IssueStatusProvider.EVENT_SEEN_CHANGED.equals(evt.getPropertyName())) {
                 updateFieldStatuses();
             }
         }
     };
 
     private void attachIssueListener(final NbJiraIssue issue) {
-        final IssueCache<NbJiraIssue, TaskData> cache = issue.getRepository().getIssueCache();
-        cache.removePropertyChangeListener(issue, cacheListener);
-        cache.addPropertyChangeListener(issue, cacheListener);
+        issue.removePropertyChangeListener(cacheListener);
+        issue.addPropertyChangeListener(cacheListener);
     }
 
     private static void fixPrefSize(JTextField textField) {

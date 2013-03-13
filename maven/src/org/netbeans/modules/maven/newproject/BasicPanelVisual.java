@@ -179,6 +179,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         getAccessibleContext().setAccessibleDescription(LBL_CreateProjectStep2());
 
         txtGroupId.setText(MavenSettings.getDefault().getLastArchetypeGroupId());
+        txtVersion.setText(MavenSettings.getDefault().getLastArchetypeVersion());
         vg = ValidationGroup.create();
         vg.add(txtGroupId, MavenValidators.createGroupIdValidators());
         vg.add(txtArtifactId, MavenValidators.createArtifactIdValidators());
@@ -539,6 +540,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         d.putProperty("groupId", txtGroupId.getText().trim()); //NOI18N
         MavenSettings.getDefault().setLastArchetypeGroupId(txtGroupId.getText().trim());
         d.putProperty("version", txtVersion.getText().trim()); //NOI18N
+        MavenSettings.getDefault().setLastArchetypeVersion(txtVersion.getText().trim());
         d.putProperty("package", txtPackage.getText().trim()); //NOI18N
         if (tblAdditionalProps.isVisible()) {
             if (tblAdditionalProps.isEditing()) {

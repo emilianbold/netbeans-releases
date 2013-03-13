@@ -81,6 +81,12 @@ public class QDiffAction extends ContextAction {
     }
 
     @Override
+    @NbBundle.Messages({
+        "# {0} - number of selected files",
+        "LBL_DiffView.name.files={0} files",
+        "# {0} - label for the selected context",
+        "LBL_DiffView.name=QDiff - {0}"
+    })
     protected void performContextAction (Node[] nodes) {
         VCSContext ctx = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(ctx);
@@ -99,17 +105,17 @@ public class QDiffAction extends ContextAction {
                         NotifyDescriptor.Message e = new NotifyDescriptor.Message(NbBundle.getMessage(QDiffAction.class, "MSG_DiffAction.error.notAtTip"), NotifyDescriptor.ERROR_MESSAGE); //NOI18N
                         DialogDisplayer.getDefault().notifyLater(e);
                     } else {
-                        final HgLogMessage.HgRevision parent = HgCommand.getParent(root, null, QPatch.TAG_QTIP);
-                        if (parent != null && parent != HgLogMessage.HgRevision.EMPTY) {
-                            EventQueue.invokeLater(new Runnable() {
-                                @Override
-                                public void run () {
-                                    SystemAction.get(DiffAction.class).diff(roots, parent, HgLogMessage.HgRevision.CURRENT,
-                                            NbBundle.getMessage(QDiffAction.class, "LBL_DiffView.name", //NOI18N
-                                            roots.length == 1 ? roots[0].getName() : NbBundle.getMessage(QDiffAction.class, "LBL_DiffView.name.files", roots.length)), false); //NOI18N
-                                }
-                            });
-                        }
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                SystemAction.get(DiffAction.class).diff(roots, HgLogMessage.HgRevision.QDIFF_BASE,
+                                        HgLogMessage.HgRevision.CURRENT,
+                                        Bundle.LBL_DiffView_name(roots.length == 1 
+                                        ? roots[0].getName() 
+                                        : Bundle.LBL_DiffView_name_files(roots.length)),
+                                        true, false);
+                            }
+                        });
                     }
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing

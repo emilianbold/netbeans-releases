@@ -47,29 +47,40 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
+import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.api.Progress;
+import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel.MyProgress;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConfigurationFactory;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -92,7 +103,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     @Override
     public void discoverArtifacts(Map<String, Object> map) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
-        Applicable applicable = isApplicable(descriptor, false);
+        Applicable applicable = isApplicable(descriptor, null, false);
         if (applicable != null) {
             if (applicable.isApplicable()) {
                 descriptor.setCompilerName(applicable.getCompilerName());
@@ -113,13 +124,18 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
 
     @Override
     public void apply(Map<String, Object> map, Project project) throws IOException {
+        apply(map, project, null);
+    }
+    
+    @Override
+    public void apply(Map<String, Object> map, Project project, Interrupter interrupter) throws IOException {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
         DiscoveryProjectGeneratorImpl generator = new DiscoveryProjectGeneratorImpl(descriptor);
         generator.makeProject();
     }
 
-    public DiscoveryExtensionInterface.Applicable isApplicable(DiscoveryDescriptor descriptor, boolean findMain) {
+    public DiscoveryExtensionInterface.Applicable isApplicable(DiscoveryDescriptor descriptor, Interrupter interrupter, boolean findMain) {
         Progress progress = new MyProgress();
         progress.start(0);
         try {
@@ -143,7 +159,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             if (applicable.getErrors() != null) {
                 errors.addAll(applicable.getErrors());
             }
-            applicable = isApplicableDwarfFolder(descriptor);
+            applicable = isApplicableDwarfFolder(descriptor, interrupter);
             if (applicable.isApplicable()){
                 return applicable;
             }
@@ -187,7 +203,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
                     property.setValue(Boolean.FALSE);
                 }
             }
-            Applicable canAnalyze = provider.canAnalyze(proxy);
+            Applicable canAnalyze = provider.canAnalyze(proxy, null);
             if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
                 return canAnalyze;
@@ -202,7 +218,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundDiscoveryProvider"))); // NOI18N
     }
     
-    private DiscoveryExtensionInterface.Applicable  isApplicableDwarfFolder(DiscoveryDescriptor descriptor){
+    private DiscoveryExtensionInterface.Applicable  isApplicableDwarfFolder(DiscoveryDescriptor descriptor, Interrupter interrupter){
         String rootFolder = descriptor.getRootFolder();
         if (rootFolder == null) {
             return ApplicableImpl.getNotApplicable(null);
@@ -211,7 +227,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("dwarf-folder"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("folder").setValue(rootFolder); // NOI18N
-            Applicable canAnalyze = provider.canAnalyze(proxy);
+            Applicable canAnalyze = provider.canAnalyze(proxy, interrupter);
             if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
                 return canAnalyze;
@@ -236,7 +252,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("make-log"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("make-log-file").setValue(logFile); // NOI18N
-            Applicable canAnalyze = provider.canAnalyze(proxy);
+            Applicable canAnalyze = provider.canAnalyze(proxy, null);
             if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
                 return canAnalyze;
@@ -262,7 +278,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         if (provider != null) {
             provider.getProperty("exec-log-file").setValue(logFile); // NOI18N
             if (provider.isApplicable(proxy)){
-                Applicable canAnalyze = provider.canAnalyze(proxy);
+                Applicable canAnalyze = provider.canAnalyze(proxy, null);
                 if (canAnalyze.isApplicable()){
                     descriptor.setProvider(provider);
                     return canAnalyze;
@@ -280,11 +296,11 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     
     public DiscoveryExtensionInterface.Applicable isApplicable(Map<String,Object> map, Project project, boolean findMain) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
-        return isApplicable(descriptor, findMain);
+        return isApplicable(descriptor, null, findMain);
     }
     
-    public boolean canApply(DiscoveryDescriptor descriptor) {
-        if (!isApplicable(descriptor, false).isApplicable()){
+    boolean canApply(DiscoveryDescriptor descriptor, Interrupter interrupter) {
+        if (!isApplicable(descriptor, interrupter, false).isApplicable()){
             return false;
         }
         String level = descriptor.getLevel();
@@ -325,17 +341,116 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         } else {
             return false;
         }
-        SelectConfigurationPanel.buildModel(descriptor);
+        buildModel(descriptor, interrupter);
+        if (interrupter != null && interrupter.cancelled()) {
+            return false;
+        }
         return !descriptor.isInvokeProvider()
             && descriptor.getConfigurations() != null && descriptor.getConfigurations().size() > 0
             && descriptor.getIncludedFiles() != null;
     }
     
+    public static void buildModel(final DiscoveryDescriptor wizardDescriptor, Interrupter interrupter){
+        String rootFolder = wizardDescriptor.getRootFolder();
+        DiscoveryProvider provider = wizardDescriptor.getProvider();
+        String consolidation = wizardDescriptor.getLevel();
+        assert consolidation != null;
+        List<Configuration> configs = provider.analyze(new ProjectProxy() {
+            @Override
+            public boolean createSubProjects() {
+                return false;
+            }
+            @Override
+            public Project getProject() {
+                return wizardDescriptor.getProject();
+            }
+
+            @Override
+            public String getMakefile() {
+                return null;
+            }
+
+            @Override
+            public String getSourceRoot() {
+                return wizardDescriptor.getRootFolder();
+            }
+
+            @Override
+            public String getExecutable() {
+                return wizardDescriptor.getBuildResult();
+            }
+
+            @Override
+            public String getWorkingFolder() {
+                return null;
+            }
+
+            @Override
+            public boolean mergeProjectProperties() {
+                return wizardDescriptor.isIncrementalMode();
+            }
+        }, new MyProgress(), interrupter);
+        if (interrupter != null && interrupter.cancelled()) {
+            return;
+        }
+        List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
+        List<String> includedFiles = new ArrayList<String>();
+        wizardDescriptor.setIncludedFiles(includedFiles);
+        Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
+        Set<String> dep = new HashSet<String>();
+        Set<String> buildArtifacts = new HashSet<String>();
+        for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
+            Configuration conf = it.next();
+            includedFiles.addAll(conf.getIncludedFiles());
+            List<ProjectProperties> langList = conf.getProjectConfiguration();
+            for (Iterator<ProjectProperties> it2 = langList.iterator(); it2.hasNext();) {
+                ProjectConfiguration project = ConfigurationFactory.makeRoot(it2.next(), rootFolder);
+                ConsolidationStrategy.consolidateModel(project, consolidation);
+                projectConfigurations.add(project);
+            }
+            for (SourceFileProperties source : conf.getSourcesConfiguration()) {
+                String compiler = source.getCompilerName();
+                if (compiler != null) {
+                    AtomicInteger count = compilers.get(compiler);
+                    if (count == null) {
+                        count = new AtomicInteger();
+                        compilers.put(compiler, count);
+                    }
+                    count.incrementAndGet();
+                }
+            }
+            if (conf.getDependencies() != null) {
+                dep.addAll(conf.getDependencies());
+            }
+            if (conf.getBuildArtifacts() != null) {
+                buildArtifacts.addAll(conf.getBuildArtifacts());
+            }
+        }
+        wizardDescriptor.setInvokeProvider(false);
+        wizardDescriptor.setDependencies(new ArrayList<String>(dep));
+        wizardDescriptor.setBuildArtifacts(new ArrayList<String>(buildArtifacts));
+        wizardDescriptor.setConfigurations(projectConfigurations);
+        int max = 0;
+        String top = "";
+        for(Map.Entry<String, AtomicInteger> entry : compilers.entrySet()){
+            if (entry.getValue().get() > max) {
+                max = entry.getValue().get();
+                top = entry.getKey();
+            }
+        }
+        wizardDescriptor.setCompilerName(top);
+    }
+
     @Override
     public boolean canApply(Map<String, Object> map, Project project) {
+        return canApply(map, project, null);
+    }
+    
+    @Override
+    public boolean canApply(Map<String, Object> map, Project project, Interrupter interrupter) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
-        return canApply(descriptor);
+        return canApply(descriptor, interrupter);
     }
     
     @Override

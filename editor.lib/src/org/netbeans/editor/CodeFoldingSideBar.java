@@ -108,7 +108,11 @@ import org.openide.util.WeakListeners;
  *  on user fold/unfold action.
  *
  *  @author  Martin Roskanin
+ *  @deprecated You should use {@link FoldUtilities#createSidebarComponent(javax.swing.text.JTextComponent)} or
+ *  {@link FoldUtilities#getFoldingSidebarFactory()} instead. Subclassing CodeFoldingSidebar
+ *  is no longer actively supported, though still working.
  */
+@Deprecated
 public class CodeFoldingSideBar extends JComponent implements Accessible {
 
     private static final Logger LOG = Logger.getLogger(CodeFoldingSideBar.class.getName());
@@ -222,6 +226,8 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     private static Stroke LINE_DASHED = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 
             1f, new float[] { 1f, 1f }, 0f);
     
+    private boolean alreadyPresent;
+    
     /**
      * Stroke used to draw outlines for 'active' fold
      */
@@ -271,6 +277,17 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         super();
         this.component = component;
 
+        // The same property tag is used by migrated implementation of the SideBar.
+        // The new implementation is registered with weight higher than CF used to have, so if a
+        // legacy client registers subclass of this CFSB, it will register the client property first and win.
+        if (component.getClientProperty("org.netbeans.editor.CodeFoldingSidebar") == null) {  // NOI18N
+            component.putClientProperty("org.netbeans.editor.CodeFoldingSidebar", Boolean.TRUE); // NOI18N
+        } else {
+            alreadyPresent = true;
+            prefs = null;
+            return;
+        }
+
         addMouseListener(listener);
         addMouseMotionListener(listener);
 
@@ -296,7 +313,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     }
     
     private void updatePreferredSize() {
-        if (enabled) {
+        if (enabled && !alreadyPresent) {
             setPreferredSize(new Dimension(getColoring().getFont().getSize(), component.getHeight()));
             setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         }else{

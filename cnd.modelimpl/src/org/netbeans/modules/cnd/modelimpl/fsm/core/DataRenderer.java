@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
@@ -55,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.fsm.ModuleImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.ProgramImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.SubroutineImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.FortranParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  *
@@ -65,8 +67,8 @@ public class DataRenderer {
     private final FileImpl file;
     private final FileContent fileContent;
 
-    public DataRenderer(FileImpl.ParseDescriptor params) {
-        this.fileContent = params.getFileContent();
+    public DataRenderer(CsmParserProvider.CsmParserParameters params) {
+        this.fileContent = CsmCorePackageAccessor.get().getFileContent(params);
         this.file = fileContent.getFile();
     }
 

@@ -290,9 +290,9 @@ public abstract class CCCCompiler extends AbstractCompiler {
             }
             if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
                 compilerPath = getDefaultPath();
-            }
-            if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
-                return;
+                if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+                    return;
+                }
             }
 
             List<String> argsList = new ArrayList<String>();

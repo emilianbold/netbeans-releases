@@ -61,7 +61,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public class CCCompilerConfiguration extends CCCCompilerConfiguration implements Cloneable {
-    
+
     public static final int STANDARD_DEFAULT = 0;
     public static final int STANDARD_CPP98 = 1;
     public static final int STANDARD_CPP11 = 2;
@@ -341,7 +341,9 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
                     set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
                     sheet.put(set2);
                 } else {
-                    bset.put(standardProp);
+                    if (STANDARDS_SUPPORT) {
+                        bset.put(standardProp);
+                    }
                 }
                 if (getMaster() != null) {
                     sheet.put(getInputSet());
@@ -383,14 +385,18 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         }  
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
             if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
-                set0.put(standardProp);
+                if (STANDARDS_SUPPORT) {
+                    set0.put(standardProp);
+                }
             }
         }
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION || 
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB || 
            conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
             if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
-                set0.put(standardProp);
+                if (STANDARDS_SUPPORT) {
+                    set0.put(standardProp);
+                }
             }
         }
         

@@ -62,6 +62,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileAttributeEvent;
@@ -78,6 +79,7 @@ public class CachingArchive implements Archive, FileChangeListener {
     
     private final File archiveFile;
     private final boolean keepOpened;
+    private final String pathToRootInArchive;
     private ZipFile zipFile;
 
     //@GuardedBy("this")
@@ -90,10 +92,34 @@ public class CachingArchive implements Archive, FileChangeListener {
         // Constructors ------------------------------------------------------------    
     
     /** Creates a new instance of archive from zip file */
-    public CachingArchive( File archiveFile, boolean keepOpened) {
+    public CachingArchive(
+            @NonNull final File archiveFile,
+            final boolean keepOpened) {
+        this(archiveFile, null, keepOpened);
+    }
+
+    public CachingArchive(
+            @NonNull final File archiveFile,
+            @NullAllowed final String pathToRootInArchive,
+            final boolean keepOpened) {
+        Parameters.notNull("archiveFile", archiveFile); //NOI18N
+        if (pathToRootInArchive != null) {
+            if (!keepOpened) {
+                throw new UnsupportedOperationException(String.format(
+                    "FastJar not supported for relocated root of archive %s, relocation %s",    //NOI18N
+                    archiveFile.getAbsolutePath(),
+                    pathToRootInArchive));
+            }
+            if (pathToRootInArchive.charAt(pathToRootInArchive.length()-1) != FileObjects.NBFS_SEPARATOR_CHAR) {
+                throw new IllegalArgumentException(String.format(
+                    "Path to root: %s has to end with /",   //NOI18N
+                    pathToRootInArchive));
+            }
+        }
         this.archiveFile = archiveFile;
+        this.pathToRootInArchive = pathToRootInArchive;
         this.keepOpened = keepOpened;
-        
+
         FileUtil.addFileChangeListener(this, FileUtil.normalizeFile(archiveFile));
     }
         
@@ -137,7 +163,7 @@ public class CachingArchive implements Archive, FileChangeListener {
     @Override
     public JavaFileObject getFile(final @NonNull String name) {
         Map<String, Folder> folders = doInit();        
-        final int index = name.lastIndexOf('/');    //NOI18N
+        final int index = name.lastIndexOf(FileObjects.NBFS_SEPARATOR_CHAR);
         String folder, sn;
         if (index<=0) {
             folder = "";    //NOI18N
@@ -216,7 +242,7 @@ public class CachingArchive implements Archive, FileChangeListener {
                 Iterable<? extends FastJar.Entry> e = FastJar.list(file);
                 for (FastJar.Entry entry : e) {
                     String name = entry.name;
-                    int i = name.lastIndexOf('/');
+                    int i = name.lastIndexOf(FileObjects.NBFS_SEPARATOR_CHAR);
                     String dirname = i == -1 ? "" : name.substring(0, i /* +1 */);
                     String basename = name.substring(i+1);
                     if (basename.length() == 0) {
@@ -243,9 +269,22 @@ public class CachingArchive implements Archive, FileChangeListener {
                 for ( Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements(); ) {
                     ZipEntry entry = e.nextElement();
                     String name = entry.getName();
-                    int i = name.lastIndexOf('/');
-                    String dirname = i == -1 ? "" : name.substring(0, i /* +1 */);
-                    String basename = name.substring(i+1);
+                    String dirname;
+                    String basename;
+                    if (pathToRootInArchive != null) {
+                        if (!name.startsWith(pathToRootInArchive)) {
+                            continue;
+                        }
+                        final int i = name.lastIndexOf(FileObjects.NBFS_SEPARATOR_CHAR);
+                        dirname = i < pathToRootInArchive.length() ?
+                                "" :    //NOI18N
+                                name.substring(pathToRootInArchive.length(), i);
+                        basename = name.substring(i+1);
+                    } else {
+                        final int i = name.lastIndexOf(FileObjects.NBFS_SEPARATOR_CHAR);
+                        dirname = i == -1 ? "" : name.substring(0, i);
+                        basename = name.substring(i+1);
+                    }
                     if (basename.length() == 0) {
                         basename = null;
                     }
@@ -310,7 +349,7 @@ public class CachingArchive implements Archive, FileChangeListener {
                     return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime, offset);
                 }
             } else {
-                return FileObjects.zipFileObject( zipFile, pkg, baseName, mtime);
+                return FileObjects.zipFileObject( zipFile, pathToRootInArchive, pkg, baseName, mtime);
             }
         }
         return null;

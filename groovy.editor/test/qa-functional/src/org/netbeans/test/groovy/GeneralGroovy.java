@@ -49,6 +49,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
@@ -68,6 +69,8 @@ public class GeneralGroovy extends JellyTestCase {
     static final String JAVA_PROJECT_NAME = "Java Application";
     static protected final int COMPLETION_LIST_THRESHOLD = 5000;
     protected static final String GROOVY_EXTENSION = ".groovy";
+    protected static final String SAMPLES = "Samples";
+    protected static final String SAMPLES_CATEGORY = "Groovy";
     protected EventTool evt;
 
     public GeneralGroovy(String arg0) {
@@ -240,6 +243,12 @@ public class GeneralGroovy extends JellyTestCase {
         new EditorOperator(sName);
     }
 
+    /**
+     * Creates a new Groovy file
+     * @param sProject name of project
+     * @param sItem type of file ("Groovy Class" etc.)
+     * @param sName name of file
+     */
     protected void createGroovyFile(String sProject, String sItem, String sName) {
         createGroovyFile(sProject, sItem, sName, null);
     }
@@ -346,6 +355,49 @@ public class GeneralGroovy extends JellyTestCase {
             CompletionInfo jlist,
             String[] asIdeal) {
         checkCompletionItems(jlist.listItself, asIdeal);
+    }
+
+    /**
+     * Creates new sample project
+     *
+     * @param sampleName name of sample
+     * @param projectName target project name
+     */
+    public void createSampleProject(String sampleName, String projectName) {
+
+        NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke();
+        opNewProjectWizard.selectCategory(SAMPLES + "|" + SAMPLES_CATEGORY);
+        opNewProjectWizard.selectProject(sampleName);
+        opNewProjectWizard.next();
+
+        JDialogOperator jdNew = new JDialogOperator("New");
+        JTextComponentOperator jtName = new JTextComponentOperator(jdNew, sampleName.replaceAll(" ", "").replaceAll("-", ""));
+        jtName.setText(projectName);
+        opNewProjectWizard.finish();
+        waitScanFinished();
+    }
+
+    /**
+     * Opens file in editor
+     *
+     * @param pathAndFileName relative path to Site Root in Projects window,
+     * e.g. for Site Root/web/index.html it would be "web|index.html" (| is path
+     * separator)
+     * @param projectName project name
+     */
+    public void openFile(String pathAndFileName, String projectName) {
+        if (projectName == null) {
+            throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
+        }
+
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        Node node = new Node(rootNode, "Source Packages|" + pathAndFileName);
+        evt.waitNoEvent(1000);
+
+        if (node.isLeaf()) {
+            node.select();
+            node.performPopupAction("Open");
+        }
     }
 
     public class CFulltextStringComparator implements Operator.StringComparator {

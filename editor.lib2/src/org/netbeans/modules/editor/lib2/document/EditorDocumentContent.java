@@ -79,6 +79,12 @@ import org.netbeans.modules.editor.lib2.document.ContentEdit.RemoveEdit;
  *   <li> createPosition(1): pos1 is returned. </li>
  *   <li> Undo (which means Insert(1,2)) returns pos1 to offset==2 (someone might expect offset==3). </li>
  * </ul>
+ * 
+ * <br/>
+ * Content intentionally does not reference a document instance to which it belongs
+ * and the EditorPosition should also not reference document instance.
+ * Therefore one may create position and hold it strongly and wait for document instance
+ * to be released (and then e.g. release the position).
  *
  * @author Miloslav Metelka
  * @since 1.46

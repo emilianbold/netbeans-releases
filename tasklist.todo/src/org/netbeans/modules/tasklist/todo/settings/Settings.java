@@ -196,28 +196,28 @@ final public class Settings {
         return null != mime2comments.get( mimeType );
     }
   
-    public String getLineComment(String fileExtension, String mime) {
-        CommentTags ct = ext2comments.get(fileExtension.toUpperCase()).getCommentTags();
-        if (null == ct) {
-            ct = mime2comments.get(mime).getCommentTags();
+     public String getLineComment(String fileExtension, String mime) {
+        FileIdentifier identifier = ext2comments.get(fileExtension.toUpperCase());
+        if (null == identifier) {
+            identifier = mime2comments.get(mime);
         }
-        return null == ct ? null : ct.getLineComment();
+        return null == identifier ? null : identifier.getCommentTags().getLineComment();
     }
 
     public String getBlockCommentStart(String fileExtension, String mime) {
-        CommentTags ct = ext2comments.get(fileExtension.toUpperCase()).getCommentTags();
-        if (null == ct) {
-            ct = mime2comments.get(mime).getCommentTags();
+        FileIdentifier identifier = ext2comments.get(fileExtension.toUpperCase());
+        if (null == identifier) {
+            identifier = mime2comments.get(mime);
         }
-        return null == ct ? null : ct.getBlockCommentStart();
+        return null == identifier ? null : identifier.getCommentTags().getBlockCommentStart();
     }
 
     public String getBlockCommentEnd(String fileExtension, String mime) {
-        CommentTags ct = ext2comments.get(fileExtension.toUpperCase()).getCommentTags();
-        if (null == ct) {
-            ct = mime2comments.get(mime).getCommentTags();
+        FileIdentifier identifier = ext2comments.get(fileExtension.toUpperCase());
+        if (null == identifier) {
+            identifier = mime2comments.get(mime);
         }
-        return null == ct ? null : ct.getBlockCommentEnd();
+        return null == identifier ? null : identifier.getCommentTags().getBlockCommentEnd();
     }
     
     public boolean isScanCommentsOnly() {

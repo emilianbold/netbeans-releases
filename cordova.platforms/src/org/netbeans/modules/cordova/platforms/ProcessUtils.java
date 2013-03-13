@@ -47,6 +47,7 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ProcessBuilder;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -55,12 +56,26 @@ import org.netbeans.api.extexecution.ProcessBuilder;
 public class ProcessUtils {
     
     private static final Logger LOGGER = Logger.getLogger(ProcessUtils.class.getName());
+    
+    private static RequestProcessor KILLER = new RequestProcessor(ProcessUtils.class);
 
-    public static String callProcess(String executable, boolean wait, String... parameters) throws IOException {
+    public static String callProcess(String executable, boolean wait, int timeout, String... parameters) throws IOException {
         ProcessBuilder pb = ProcessBuilder.getLocal();
         pb.setExecutable(executable);
         pb.setArguments(Arrays.asList(parameters));
-        Process call = pb.call();
+        final Process call = pb.call();
+        if (timeout > 0) {
+            KILLER.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        call.exitValue();
+                    } catch (IllegalThreadStateException e) {
+                        call.destroy();
+                    }
+                }
+            }, timeout);
+        }
         if (!wait) {
             return null;
         }

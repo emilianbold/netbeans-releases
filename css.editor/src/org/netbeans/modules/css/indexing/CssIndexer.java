@@ -54,6 +54,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.indexing.api.CssIndexModel;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -132,7 +133,12 @@ public class CssIndexer extends EmbeddingIndexer {
             //this is a marker key so it's possible to find
             //all stylesheets easily
             document.addPair(CSS_CONTENT_KEY, Boolean.TRUE.toString(), true, true);
-
+            //CssIndexModel support
+            Collection<CssIndexModel> indexModels = CssIndexModelSupport.getModels(result);
+            for(CssIndexModel indexModel : indexModels) {
+                indexModel.storeToIndex(document);
+            }
+            
             support.addDocument(document);
             
         } catch (IOException ex) {
@@ -214,7 +220,7 @@ public class CssIndexer extends EmbeddingIndexer {
     public static class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "css"; //NOI18N
-        public static final int VERSION = 2;
+        public static final int VERSION = 3;
 
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {

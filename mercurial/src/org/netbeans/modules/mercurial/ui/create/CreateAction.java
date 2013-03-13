@@ -89,6 +89,8 @@ import org.openide.util.HelpCtx;
 @ActionReferences({
    @ActionReference(path="Versioning/Mercurial/Actions/Unversioned", position=2)
 })
+@NbBundle.Messages({"CTL_MenuItem_Create=I&nitialize Repository...",
+    "CTL_PopupMenuItem_Create=Initialize &Mercurial Repository..."})
 public class CreateAction implements ActionListener, HelpCtx.Provider {
     private final VCSContext ctx;
 

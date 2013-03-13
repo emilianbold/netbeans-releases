@@ -254,6 +254,12 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         break;
 
                     case property:
+                        //do not overlap with sass interpolation expression sem.coloring
+                        //xxx this needs to be solved somehow grafefully!
+                        if(NodeUtil.getChildByType(node, NodeType.token) == null || node.children().size() > 1) {
+                            break; //not "normal" property which can only have one GEN or IDENT child token node
+                        }
+                        
                         dso = snapshot.getOriginalOffset(node.from());
                         deo = snapshot.getOriginalOffset(node.to());
                         if (dso >= 0 && deo >= 0) { //filter virtual nodes
@@ -532,11 +538,12 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         break;
                     case mediaQueryList:
                         Node mediaNode = node.parent();
-                        assert mediaNode.type() == NodeType.media;
                         StringBuilder image = new StringBuilder();
-                        image.append("@media "); //NOI18N
-                        image.append(node.image());
-                        atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(file, mediaNode), snapshot));
+                        if(mediaNode.type() == NodeType.media) {
+                            image.append("@media "); //NOI18N
+                            image.append(node.image());
+                            atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(file, mediaNode), snapshot));
+                        }
                         break;
                     case page:
                         Node pageSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.PAGE_SYM);

@@ -62,8 +62,10 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
+import org.netbeans.modules.hudson.api.HudsonFolder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -107,6 +109,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     private final Task synchronization;
     
     private Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
+    private Collection<HudsonFolder> folders = new ArrayList<HudsonFolder>();
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
     private HudsonView primaryView;
     private final Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
@@ -220,6 +223,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         forbidden = false;
         version = null;
         jobs.clear();
+        folders.clear();
         views.clear();
         primaryView = null;
         
@@ -239,6 +243,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         assert !(connector instanceof HudsonConnector);
         this.builderConnector = connector;
         this.jobs.clear();
+        folders.clear();
         this.views.clear();
         synchronize(false);
     }
@@ -271,6 +276,10 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     
     @Override public synchronized Collection<HudsonJob> getJobs() {
         return jobs;
+    }
+
+    @Override public synchronized Collection<HudsonFolder> getFolders() {
+        return folders;
     }
 
     boolean isSalient(HudsonJobImpl job) {
@@ -364,6 +373,10 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         handle.set(handleObject);
             
             handle.get().start();
+
+            if (authentication) {
+                ConnectionBuilder.clearRejectedAuthentication();
+            }
             
                     synchThread.set(Thread.currentThread());
                     try {
@@ -377,6 +390,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                         configureViews(instanceData.getViewsData());
                         Collection<HudsonJob> retrieved = createJobs(
                                 instanceData.getJobsData());
+                        Collection<HudsonFolder> retrievedFolders = createFolders(instanceData.getFoldersData());
                         
                         // Exit when instance is terminated
                         if (terminated) {
@@ -405,12 +419,13 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                         }
 
                         // When there are no changes return and do not fire changes
-                        if (getJobs().equals(retrieved) && oldViews.equals(getViews())) {
+                        if (jobs.equals(retrieved) && folders.equals(retrievedFolders) && oldViews.equals(getViews())) {
                             return;
                         }
                         
                         // Update jobs
                         jobs = retrieved;
+                        folders = retrievedFolders;
 
                         // Fire all changes
                         fireContentChanges();
@@ -549,6 +564,14 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
             jobList.add(job);
         }
         return jobList;
+    }
+
+    public Collection<HudsonFolder> createFolders(Collection<BuilderConnector.FolderData> foldersData) {
+        Collection<HudsonFolder> result = new ArrayList<HudsonFolder>();
+        for (BuilderConnector.FolderData datum : foldersData) {
+            result.add(new HudsonFolderImpl(this, datum.getName(), datum.getUrl()));
+        }
+        return result;
     }
 
     private void configureViews(Collection<BuilderConnector.ViewData> viewsData) {

@@ -42,6 +42,7 @@ import java.io.File;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 
 /**
@@ -49,6 +50,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
  * @author Tomas Stupka
  */
 public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
+    private IssueStatusProvider<NbJiraIssue> statusProvider;
 
     @Override
     public String getDisplayName(NbJiraIssue data) {
@@ -115,5 +117,29 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
     public void addPropertyChangeListener(NbJiraIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
     }
-
+    
+    @Override
+    public synchronized IssueStatusProvider getStatusProvider() {
+        if(statusProvider == null) {
+            statusProvider = new IssueStatusProvider<NbJiraIssue>() {
+                @Override
+                public Status getStatus(NbJiraIssue issue) {
+                    return issue.getIssueStatus();
+                }
+                @Override
+                public void setSeen(NbJiraIssue issue, boolean uptodate) {
+                    issue.setUpToDate(uptodate);
+                }
+                @Override
+                public void addPropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
+                    issue.addPropertyChangeListener(listener);
+                }
+                @Override
+                public void removePropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
+                    issue.removePropertyChangeListener(listener);
+                }
+            };
+        }
+        return statusProvider;
+    }
 }

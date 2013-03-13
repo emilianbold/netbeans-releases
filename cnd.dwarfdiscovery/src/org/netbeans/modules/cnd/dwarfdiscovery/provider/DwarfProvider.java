@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 
@@ -128,11 +129,11 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
     }
     
     @Override
-    public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
-        isStoped.set(false);
+    public List<Configuration> analyze(final ProjectProxy project, Progress progress, Interrupter interrupter) {
+        resetStopInterrupter(interrupter);
         List<Configuration> confs = new ArrayList<Configuration>();
         init(project);
-        if (!isStoped.get()) {
+        if (!getStopInterrupter().cancelled()) {
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
@@ -157,6 +158,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                         String[] objFileNames = (String[])getProperty(EXECUTABLES_KEY).getValue();
                         if (objFileNames != null) {
                             myFileProperties = getSourceFileProperties(objFileNames,null, project, null, null, new CompileLineStorage());
+                            store(project);
                         }
                     }
                     return myFileProperties;
@@ -167,7 +169,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();
                         for(SourceFileProperties source : getSourcesConfiguration()){
-                            if (isStoped.get()) {
+                            if (getStopInterrupter().cancelled()) {
                                 break;
                             }
                             set.addAll( ((DwarfSource)source).getIncludedFiles() );
@@ -175,7 +177,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                         }
                         HashSet<String> unique = new HashSet<String>();
                         for(String path : set){
-                            if (isStoped.get()) {
+                            if (getStopInterrupter().cancelled()) {
                                 break;
                             }
                             File file = new File(path);

@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.text.MessageFormat;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -108,8 +109,11 @@ abstract public class XMLDocReader extends XMLDecoder {
      *
      * @param sourceName the name of the source of data used by error messages
      */
-
     public boolean read(InputStream inputStream, String sourceName) {
+        return read(inputStream, sourceName, null);
+    }
+
+    public final boolean read(InputStream inputStream, String sourceName, Interrupter interrupter) {
 	this.sourceName = sourceName;
 	if (sourceName == null) {
             this.sourceName = getString("UNKNOWN_sourceName"); // NOI18N
@@ -127,7 +131,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	    return false;
 	}
 
-	Parser parser = new Parser();
+	Parser parser = new Parser(interrupter);
 
 	xmlReader.setContentHandler(parser);
 	xmlReader.setEntityResolver(parser);
@@ -175,8 +179,12 @@ abstract public class XMLDocReader extends XMLDecoder {
                     }
                 }
 	    } else {
-		ErrorManager.getDefault().annotate(ex, whileMsg);
-		ErrorManager.getDefault().notify(ex);
+                if (ex instanceof CancelledException) {
+                    System.err.println("Canceled reading of "+sourceName);
+                } else {
+                    ErrorManager.getDefault().annotate(ex, whileMsg);
+                    ErrorManager.getDefault().notify(ex);
+                }
 	    }
 	    return false;
 
@@ -236,10 +244,14 @@ abstract public class XMLDocReader extends XMLDecoder {
         
     }
 
-    private class Parser
-	implements ContentHandler, EntityResolver {
+    private class Parser implements ContentHandler, EntityResolver {
+        private final Interrupter interrupter;
 
-	/**
+        private Parser(Interrupter interrupter) {
+            this.interrupter = interrupter;
+        }
+
+        /**
 	 * Set out own EntityResolver to return an "empty" stream. AFAIK this
 	 * is to bypass DTD's and errors of this sort:
 	 *
@@ -251,7 +263,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 
 	// interface EntityResolver
         @Override
-	public InputSource resolveEntity(String pubid, String sysid) {
+	public InputSource resolveEntity(String pubid, String sysid) throws SAXException, IOException {
 	    if (debug) {
 		System.out.println("SAX resolveEntity: " + pubid + " " + sysid); // NOI18N
 	    }
@@ -274,7 +286,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 
 	// interface ContentHandler
         @Override
-	public void endDocument() {
+	public void endDocument() throws SAXException {
 	    if (debug) {
 		System.out.println("SAX endDocument"); // NOI18N
 	    }
@@ -283,7 +295,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 
 	// interface ContentHandler
         @Override
-	public void characters(char[] ch, int start, int length) {
+	public void characters(char[] ch, int start, int length) throws SAXException {
 	    String s = new String(ch, start, length);
 	    currentText = currentText + s;
 	    if (debug) {
@@ -299,10 +311,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 
 	// interface ContentHandler
         @Override
-	public void startElement(String uri,
-				 String localName, String qName,
-				 org.xml.sax.Attributes atts)
-	     throws SAXException {
+	public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes atts) throws SAXException {
 
 	    if (debug) {
 		System.out.println("SAX startElement: " + // NOI18N
@@ -315,6 +324,9 @@ abstract public class XMLDocReader extends XMLDecoder {
 				       + Avalue);
 		}
 	    }
+            if (interrupter != null && interrupter.cancelled()) {
+                throw new CancelledException();
+            }
 	    currentText = "";	// NOI18N
 	    try {
 		_startElement(qName, atts);
@@ -325,22 +337,25 @@ abstract public class XMLDocReader extends XMLDecoder {
 
 	// interface ContentHandler
         @Override
-	public void endElement(String uri, String localName, String qName) {
+	public void endElement(String uri, String localName, String qName) throws SAXException {
 	    if (debug) {
 		System.out.println("SAX endElement: " + uri + " " + localName + " " + // NOI18N
 		    qName);
 	    }
+            if (interrupter != null && interrupter.cancelled()) {
+                throw new CancelledException();
+            }
 	    _endElement(qName, currentText);
 	}
 
 	// interface ContentHandler
         @Override
-	public void startPrefixMapping(String prefix, String uri) {
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 	}
 
 	// interface ContentHandler
         @Override
-	public void endPrefixMapping(String prefix) {
+	public void endPrefixMapping(String prefix) throws SAXException {
 	    if (debug) {
 		System.out.println("SAX endPrefixMapping: " + prefix); // NOI18N
 	    }
@@ -348,7 +363,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 
 	// interface ContentHandler
         @Override
-	public void ignorableWhitespace(char[] ch, int start, int length) {
+	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
 	    if (debug) {
 		System.out.println("SAX ignorableWhitespace " + length); // NOI18N
 	    }
@@ -356,7 +371,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 
 	// interface ContentHandler
         @Override
-	public void processingInstruction(String target, String data) {
+	public void processingInstruction(String target, String data) throws SAXException {
 	    if (debug) {
 		System.out.println("SAX processingInstruction: " + target + " " + // NOI18N
 		    data);
@@ -373,7 +388,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 
 	// interface ContentHandler
         @Override
-	public void skippedEntity(String name)  {
+	public void skippedEntity(String name) throws SAXException {
 	    if (debug) {
 		System.out.println("SAX skippedEntity: " + name); // NOI18N
 	    }

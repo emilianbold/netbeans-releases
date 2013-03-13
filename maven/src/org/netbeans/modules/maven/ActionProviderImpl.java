@@ -59,6 +59,8 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -340,25 +342,27 @@ public class ActionProviderImpl implements ActionProvider {
         return ActionToGoalUtils.isActionEnable(convertedAction, proj.getLookup().lookup(NbMavenProjectImpl.class), lookup);
     }
 
-    public Action createCustomMavenAction(String name, NetbeansActionMapping mapping, boolean showUI) {
-        return new CustomAction(name, mapping, showUI);
+    public Action createCustomMavenAction(String name, NetbeansActionMapping mapping, boolean showUI, Lookup context) {
+        return new CustomAction(name, mapping, showUI, context);
     }
 
     private final class CustomAction extends AbstractAction {
 
         private NetbeansActionMapping mapping;
         private boolean showUI;
+        private final Lookup context;
 
-        private CustomAction(String name, NetbeansActionMapping mapp, boolean showUI) {
+        private CustomAction(String name, NetbeansActionMapping mapp, boolean showUI, Lookup context) {
             mapping = mapp;
             putValue(Action.NAME, name);
             this.showUI = showUI;
+            this.context = context;
         }
 
         @Messages("TIT_Run_Maven=Run Maven")
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
-            Map<String,String> replacements = replacements(proj, (String) getValue(Action.NAME), /* is there ever a context? */Lookup.EMPTY);
+            Map<String,String> replacements = replacements(proj, (String) getValue(Action.NAME), context);
             for (Map.Entry<String,String> entry : mapping.getProperties().entrySet()) {
                 entry.setValue(AbstractMavenActionsProvider.dynamicSubstitutions(replacements, entry.getValue()));
             }
@@ -429,6 +433,7 @@ public class ActionProviderImpl implements ActionProvider {
     // XXX should this be an API somewhere?
     private static abstract class ConditionallyShownAction extends AbstractAction implements ContextAwareAction {
         protected boolean triggeredOnFile = false;
+        protected boolean triggeredOnPom = false;
         
         protected ConditionallyShownAction() {
             setEnabled(false);
@@ -439,10 +444,11 @@ public class ActionProviderImpl implements ActionProvider {
             assert false;
         }
 
-        protected abstract Action forProject(Project p);
+        protected abstract Action forProject(@NonNull Project p, @NullAllowed FileObject file);
 
         public final @Override Action createContextAwareInstance(Lookup actionContext) {
             triggeredOnFile = false;
+            triggeredOnPom = false;
             Collection<? extends Project> projects = actionContext.lookupAll(Project.class);
             if (projects.size() != 1) {
                 Collection<? extends FileObject> fobs = actionContext.lookupAll(FileObject.class);
@@ -451,14 +457,24 @@ public class ActionProviderImpl implements ActionProvider {
                         Project p = FileOwnerQuery.getOwner(fobs.iterator().next());
                         if (p != null) {
                              triggeredOnFile = true;
-                             Action a = forProject(p);
+                             triggeredOnPom = true;
+                             Action a = forProject(p, null);
+                             return a != null ? a : this;
+                        }
+                    } else {
+                       //other non-pom files
+                        FileObject fob = fobs.iterator().next();
+                        Project p = FileOwnerQuery.getOwner(fob);
+                        if (p != null) {
+                             triggeredOnFile = true;
+                             Action a = forProject(p, fob);
                              return a != null ? a : this;
                         }
                     }
                 }
                 return this;
             }
-            Action a = forProject(projects.iterator().next());
+            Action a = forProject(projects.iterator().next(), null);
             return a != null ? a : this;
         }
 
@@ -468,24 +484,30 @@ public class ActionProviderImpl implements ActionProvider {
     @ActionRegistration(displayName = "#LBL_Custom_Run", lazy=false)
     @ActionReferences({
         @ActionReference(position = 1400, path = "Projects/org-netbeans-modules-maven/Actions"),
-        @ActionReference(position = 250, path = "Loaders/text/x-maven-pom+xml/Actions")
+        @ActionReference(position = 250, path = "Loaders/text/x-maven-pom+xml/Actions"),
+        @ActionReference(position = 1296, path = "Loaders/text/x-java/Actions"),
+        @ActionReference(position = 1821, path = "Editors/text/x-java/Popup")
     })
     @Messages({"LBL_Custom_Run=Custom", "LBL_Custom_Run_File=Run Maven"})
     public static ContextAwareAction customPopupActions() {
         return new ConditionallyShownAction() {
             
-            protected @Override Action forProject(Project p) {
+            protected @Override Action forProject(Project p, FileObject fo) {
                 ActionProviderImpl ap = p.getLookup().lookup(ActionProviderImpl.class);
-                return ap != null ? ap.new CustomPopupActions(triggeredOnFile) : null;
+                return ap != null ? ap.new CustomPopupActions(triggeredOnFile, triggeredOnPom, fo) : null;
             }
         };
     }
     private final class CustomPopupActions extends AbstractAction implements Presenter.Popup {
         private final boolean onFile;
+        private final boolean onPom;
+        private final Lookup lookup;
 
-        private CustomPopupActions(boolean onFile) {
+        private CustomPopupActions(boolean onFile, boolean onPomFile, FileObject fo) {
             putValue(Action.NAME, onFile ? LBL_Custom_Run_File() : LBL_Custom_Run());
             this.onFile = onFile;
+            this.onPom = onPomFile;
+            this.lookup = fo != null ? Lookups.singleton(fo) : Lookup.EMPTY;
         }
 
         @Override
@@ -508,15 +530,20 @@ public class ActionProviderImpl implements ActionProvider {
 
                 @Override
                 public void run() {
-                    NetbeansActionMapping[] maps = ActionToGoalUtils.getActiveCustomMappings(proj.getLookup().lookup(NbMavenProjectImpl.class));
+                    NetbeansActionMapping[] maps;
+                    if (onFile && !onPom) {
+                      maps = ActionToGoalUtils.getActiveCustomMappingsForFile(proj.getLookup().lookup(NbMavenProjectImpl.class));
+                    } else {
+                      maps = ActionToGoalUtils.getActiveCustomMappings(proj.getLookup().lookup(NbMavenProjectImpl.class));
+                    }
                     for (int i = 0; i < maps.length; i++) {
                         NetbeansActionMapping mapp = maps[i];
-                        Action act = createCustomMavenAction(mapp.getActionName(), mapp, false);
+                        Action act = createCustomMavenAction(mapp.getActionName(), mapp, false, lookup);
                         JMenuItem item = new JMenuItem(act);
                         item.setText(mapp.getDisplayName() == null ? mapp.getActionName() : mapp.getDisplayName());
                         menu.add(item);
                     }
-                    menu.add(new JMenuItem(createCustomMavenAction(LBL_Custom_run_goals(), new NetbeansActionMapping(), true)));
+                    menu.add(new JMenuItem(createCustomMavenAction(LBL_Custom_run_goals(), new NetbeansActionMapping(), true, lookup)));
                     SwingUtilities.invokeLater(new Runnable() {
 
                         @Override
@@ -541,7 +568,7 @@ public class ActionProviderImpl implements ActionProvider {
     @Messages("ACT_CloseRequired=Close Required Projects")
     public static ContextAwareAction closeSubprojectsAction() {
         return new ConditionallyShownAction() {
-            protected @Override Action forProject(Project p) {
+            protected @Override Action forProject(Project p, FileObject fo) {
                 NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
                 if (project != null && NbMavenProject.TYPE_POM.equalsIgnoreCase(project.getProjectWatcher().getPackagingType())) {
                     return new CloseSubprojectsAction(project);

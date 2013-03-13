@@ -92,7 +92,7 @@ public class TestRepositoryProvider extends RepositoryProvider<TestRepository, T
 
     @Override
     public Collection<TestQuery> getQueries(TestRepository r) {
-        return r.getQueries();
+        return (Collection<TestQuery>) r.getQueries();
     }
 
     @Override
@@ -102,7 +102,7 @@ public class TestRepositoryProvider extends RepositoryProvider<TestRepository, T
 
     @Override
     public Collection<TestIssue> simpleSearch(TestRepository r, String criteria) {
-        return r.simpleSearch(criteria);
+        return (Collection<TestIssue>) r.simpleSearch(criteria);
     }
 
     @Override

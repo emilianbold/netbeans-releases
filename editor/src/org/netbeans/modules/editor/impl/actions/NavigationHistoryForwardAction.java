@@ -57,7 +57,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.editor.lib.NavigationHistory;
+import org.netbeans.api.editor.NavigationHistory;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;

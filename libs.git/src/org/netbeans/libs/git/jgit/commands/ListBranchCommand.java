@@ -43,7 +43,7 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Constants;
@@ -62,7 +62,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  */
 public class ListBranchCommand extends GitCommand {
     private final boolean all;
-    private HashMap<String, GitBranch> branches;
+    private Map<String, GitBranch> branches;
 
     public ListBranchCommand (Repository repository, GitClassFactory gitFactory, boolean all, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
@@ -74,7 +74,7 @@ public class ListBranchCommand extends GitCommand {
         Repository repository = getRepository();
         Map<String, Ref> refs = repository.getAllRefs();
         Ref head = refs.get(Constants.HEAD);
-        branches = new HashMap<String, GitBranch>();
+        branches = new LinkedHashMap<String, GitBranch>();
         Config cfg = repository.getConfig();
         if (head != null) {
             String current = head.getLeaf().getName();
@@ -93,7 +93,7 @@ public class ListBranchCommand extends GitCommand {
     }
 
     private Map<String, GitBranch> getRefs (Collection<Ref> allRefs, String prefix, boolean isRemote, String activeBranch, Config config) {
-        Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
+        Map<String, GitBranch> branches = new LinkedHashMap<String, GitBranch>();
         for (final Ref ref : RefComparator.sort(allRefs)) {
             String refName = ref.getLeaf().getName();
             if (refName.startsWith(prefix)) {

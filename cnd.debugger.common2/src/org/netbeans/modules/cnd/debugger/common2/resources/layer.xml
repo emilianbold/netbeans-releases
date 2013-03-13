@@ -1011,9 +1011,9 @@ made subject to such option by the copyright holder.
 	    </file>
 
 
-	    <file name="org-netbeans-modules-cnd-debugger-common2-PioWindowAction.instance">
+	    <!--file name="org-netbeans-modules-cnd-debugger-common2-PioWindowAction.instance">
 		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.debugger.common2.debugger.actions.PioWindowAction"/>
-	    </file>
+	    </file-->
 
 	    <file name="org-netbeans-modules-cnd-debugger-common2-ConsoleWindowAction.instance">
 		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.debugger.common2.debugger.actions.ConsoleWindowAction"/>
@@ -1039,12 +1039,12 @@ made subject to such option by the copyright holder.
                 <attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/common2/icons/debugger_console.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-debugger-common2-debugger-io-PioAction.instance">
+            <!--file name="org-netbeans-modules-cnd-debugger-common2-debugger-io-PioAction.instance">
                 <attr name="component" methodvalue="org.netbeans.modules.cnd.debugger.common2.debugger.io.PioTopComponent.findInstance"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.debugger.common2.debugger.io.Bundle#CTL_PioAction"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/cnd/debugger/common2/icons/process_io.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
-            </file>
+            </file-->
         </folder>
     </folder>
 
@@ -1062,7 +1062,7 @@ made subject to such option by the copyright holder.
             <file name="ConsoleTopComponent.settings" url="components/ConsoleTopComponentSettings.xml"/>
             <file name="EvaluationWindow.settings" url="components/EvaluationWindow.settings"/>
             <file name="MemoryWindow.settings" url="components/MemoryWindow.settings"/>
-            <file name="PioTopComponent.settings" url="components/PioTopComponentSettings.xml"/>
+            <!--file name="PioTopComponent.settings" url="components/PioTopComponentSettings.xml"/-->
             <file name="RegistersWindow.settings" url="components/RegistersWindow.settings"/>
             <!--<file name="DisassemblerWindow.settings" url="components/DisassemblerWindow.settings"/>-->
         </folder>
@@ -1073,9 +1073,9 @@ made subject to such option by the copyright holder.
 		<file name="ConsoleTopComponent.wstcref" url="modes/output/ConsoleTopComponentWstcref.xml">
                     <attr name="position" intvalue="114"/>
                 </file>
-                <file name="PioTopComponent.wstcref" url="modes/output/PioTopComponentWstcref.xml">
+                <!--file name="PioTopComponent.wstcref" url="modes/output/PioTopComponentWstcref.xml">
                     <attr name="position" intvalue="214"/>
-                </file>
+                </file-->
                 <file name="watches.wstcref" url="modes/output/watches.wstcref">
 		    <attr name="position" intvalue="314"/>
 		</file>

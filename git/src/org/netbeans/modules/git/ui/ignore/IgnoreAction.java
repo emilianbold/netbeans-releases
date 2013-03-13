@@ -74,6 +74,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -140,6 +141,8 @@ public class IgnoreAction extends MultipleRepositoryAction {
                             }
                         });
                         modifiedIgnores = client.ignore(toIgnore, getProgressMonitor());
+                        SystemAction.get(IgnoreAction.class).setEnabled(false);
+                        SystemAction.get(UnignoreAction.class).setEnabled(false);
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {

@@ -58,6 +58,7 @@ import org.netbeans.lib.cvsclient.event.*;
 public class AddBuilder implements Builder {
     private static final String UNKNOWN = ": nothing known about"; //NOI18N
     private static final String ADDED = " added to the repository"; //NOI18N
+    private static final String PUT = " put under version control"; //NOI18N
     private static final String WARNING = ": warning: "; //NOI18N
     private static final String ALREADY_ENTERED = " has already been entered"; //NOI18N
     private static final String SCHEDULING = ": scheduling file `"; //NOI18N
@@ -106,6 +107,10 @@ public class AddBuilder implements Builder {
         if (line.endsWith(ADDED)) {
             String directory =
                     line.substring(DIRECTORY.length(), line.indexOf(ADDED));
+            addDirectory(directory);
+        } else if (line.endsWith(PUT)) {
+            String directory = 
+                    line.substring(DIRECTORY.length(), line.indexOf(PUT));
             addDirectory(directory);
         }
         else if (line.indexOf(SCHEDULING) >= 0) {

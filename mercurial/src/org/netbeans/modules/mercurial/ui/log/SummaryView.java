@@ -239,11 +239,10 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             for (RepositoryRevision.Event event : revision.getEvents()) {
                 evts.add(new HgLogEvent(master, event));
             }
-            List<Event> oldEvents = new ArrayList<Event>(events);
             List<Event> newEvents = new ArrayList<Event>(evts);
             dummyEvents.clear();
             events = evts;
-            eventsChanged(oldEvents, newEvents);
+            eventsChanged(null, newEvents);
         }
 
         @Override

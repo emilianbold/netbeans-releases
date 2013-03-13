@@ -45,6 +45,7 @@
 package org.netbeans.modules.editor.errorstripe.caret;
 
 import java.awt.Color;
+import javax.swing.UIManager;
 import org.netbeans.modules.editor.errorstripe.AnnotationView;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.Status;
@@ -57,7 +58,14 @@ import org.openide.util.NbBundle;
  */
 public class CaretMark implements Mark {
 
-    private static final Color COLOR = new Color( 110, 110, 110 ); //new Color(0xC0B883);
+    private static final Color COLOR;
+    
+    static {
+        Color c = UIManager.getColor( "nb.editor.errorstripe.caret.color" ); //NOI18N
+        if( null == c )
+            c = new Color( 110, 110, 110 );
+        COLOR = c;
+    }
 
     private int line;
     

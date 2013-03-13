@@ -62,11 +62,6 @@ public class Parameter extends Value {
         this.impl = impl;
     }
 
-    @Override
-    public Procedure getParent() {
-        return impl.getParent();
-    }
-
     public Direction getDirection() {
         return impl.getDirection();
     }

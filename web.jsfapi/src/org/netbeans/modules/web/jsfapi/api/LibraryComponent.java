@@ -52,6 +52,8 @@ public interface LibraryComponent {
 
     public Tag getTag();
 
+    public Library getLibrary();
+
     public String[][] getDescription();
     
 }

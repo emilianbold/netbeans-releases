@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -116,8 +118,14 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
         if (getContainingFile() == null) {
             error = "<NO CONTAINER INFO> "; // NOI18N
         }
-        return error + beg + getIncludeName() + end + 
-                (getIncludeFile() == null ? " <FAILED inclusion>" : "") + // NOI18N
+        IncludeState includeState = getIncludeState();
+        String state = "";
+        if (includeState == IncludeState.Recursive) {
+            state = " <RECURSIVE inclusion>";// NOI18N
+        } else if (includeState == IncludeState.Fail) {
+            state = " <FAILED inclusion>";// NOI18N
+        }
+        return error + beg + getIncludeName() + end + state + 
                 " [" + getStartPosition() + "-" + getEndPosition() + "]"; // NOI18N
     }
 
@@ -163,7 +171,8 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
                         System.out.println("File "+container.getAbsolutePath()); // NOI18N
                         ProjectImpl impl = (ProjectImpl) prj;
                         boolean find = false;
-                        for(CsmFile top : impl.getGraph().getTopParentFiles(container).getCompilationUnits()){
+                        GraphContainer graph = CsmCorePackageAccessor.get().getGraph(impl);
+                        for(CsmFile top : graph.getTopParentFiles(container).getCompilationUnits()){
                             if (container != top) {
                                 System.out.println("  icluded from "+top.getAbsolutePath()); //NOI18N
                                 find = true;

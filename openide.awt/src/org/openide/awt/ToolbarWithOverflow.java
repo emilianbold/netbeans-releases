@@ -59,6 +59,7 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 
 /**
  * ToolbarWithOverflow provides a component which is useful for displaying commonly used
@@ -214,6 +215,20 @@ public class ToolbarWithOverflow extends JToolBar {
         if (awtEventListener != null) {
             Toolkit.getDefaultToolkit().removeAWTEventListener(awtEventListener);
         }
+    }
+
+    @Override
+    public void updateUI() {
+	Mutex.EVENT.readAccess(new Runnable() {
+	    @Override
+	    public void run() {
+		superUpdateUI();
+	    }
+	});
+    }
+
+    final void superUpdateUI() {
+        super.updateUI();
     }
 
     /**

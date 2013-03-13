@@ -38,8 +38,6 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import org.netbeans.modules.bugtracking.*;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
@@ -86,41 +84,36 @@ public final class BugtrackingFactory<R, Q, I> {
     }
     
     public boolean isOpen(Repository repository, Q q) {
-        Query query = getQuery(repository, q);
-        return BugtrackingUtil.isOpened(APIAccessor.IMPL.getImpl(query));
+        QueryImpl query = getQueryImpl(repository, q);
+        return BugtrackingUtil.isOpened(query);
     }
     
     public void openQuery(Repository repository, Q q) {
-        Query query = getQuery(repository, q);
+        QueryImpl query = getQueryImpl(repository, q);
         if(query != null) {
-            query.open(Query.QueryMode.SHOW_ALL);
+            query.openShowAll(false);
         }
     }
     
     public void openIssue(Repository repository, I i) {
-        Issue issue = getIssue(repository, i);
+        IssueImpl issue = getIssueImpl(repository, i);
         if (issue != null) {
             issue.open();
-        } 
+        }
     }
     
     public UndoRedoSupport getUndoRedoSupport(Repository repository, I i) {
         return UndoRedoSupport.getSupport(getIssueImpl(repository, i));
     }
     
-    private Query getQuery(Repository repository, Q q) {
+    private QueryImpl getQueryImpl(Repository repository, Q q) {
         RepositoryImpl<R, Q, I> repositoryImpl = APIAccessor.IMPL.getImpl(repository);
         QueryImpl impl = repositoryImpl.getQuery(q);
         if(impl == null) {
             return null;
         }
-        return impl.getQuery();
+        return impl;
     }
-    
-    private Issue getIssue(Repository repository, I i) {
-        IssueImpl impl = getIssueImpl(repository, i);
-        return impl != null ? impl.getIssue() : null;
-    }   
     
     private IssueImpl getIssueImpl(Repository repository, I i) {
         RepositoryImpl<R, Q, I> repositoryImpl = APIAccessor.IMPL.getImpl(repository);

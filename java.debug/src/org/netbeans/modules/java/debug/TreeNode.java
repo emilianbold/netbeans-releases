@@ -69,6 +69,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -783,6 +784,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingType(below);
             addCorrespondingComments(below);
             super.visitTypeCast(tree, below);
+            
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitIntersectionType(IntersectionTypeTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+            
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitIntersectionType(tree, below);
             
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;
