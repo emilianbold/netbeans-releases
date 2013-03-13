@@ -47,10 +47,16 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
+import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -68,6 +74,7 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
     private static final String JAVADOC = "Javadoc";
     public static final String RUN = "Run";
     private static final String APPLICATION = "Application";
+    private static final String LICENSE = "License";
 
     private String name;
     
@@ -75,6 +82,7 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
         this.name = name;
     }
 
+    @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
         ResourceBundle bundle = NbBundle.getBundle( CustomizerProviderImpl.class );
         ProjectCustomizer.Category toReturn = null;
@@ -103,6 +111,11 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
                     JAVADOC,
                     bundle.getString( "LBL_Config_Javadoc" ), // NOI18N
                     null);
+        } else if (LICENSE.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    LICENSE,
+                    bundle.getString("LBL_Config_License"), // NOI18N
+                    null);
         } else if (RUN.equals(name)) {
             boolean fxOverride = false;
             final Project project = context.lookup(Project.class);
@@ -123,9 +136,10 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
         return toReturn;
     }
 
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+    @Override
+    public JComponent createComponent(ProjectCustomizer.Category category, final Lookup context) {
         String nm = category.getName();
-        J2SEProjectProperties uiProps = context.lookup(J2SEProjectProperties.class);
+        final J2SEProjectProperties uiProps = context.lookup(J2SEProjectProperties.class);
         if (SOURCES.equals(nm)) {
             return new CustomizerSources(uiProps);
         } else if (LIBRARIES.equals(nm)) {
@@ -142,6 +156,48 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
             return new CustomizerRun(uiProps);
         } else if (APPLICATION.equals(nm)) {
             return new CustomizerApplication(uiProps);
+        } else if (LICENSE.equals(nm)) {
+            CustomizerUtilities.LicensePanelContentHandler handler =
+            new CustomizerUtilities.LicensePanelContentHandler() {
+                @Override
+                public String getProjectLicenseLocation() {
+                    return uiProps.LICENSE_PATH_VALUE;
+                }
+
+                @Override
+                public String getGlobalLicenseName() {
+                    return uiProps.LICENSE_NAME_VALUE;
+                }
+
+                @Override
+                public FileObject resolveProjectLocation(@NonNull String path) {
+                    final J2SEProject project = context.lookup(J2SEProject.class);
+                    String evaluated = uiProps.getEvaluator().evaluate(path);
+                    return project.getAntProjectHelper().resolveFileObject(evaluated);
+                }
+
+                @Override
+                public void setProjectLicenseLocation(@NullAllowed String newLocation) {
+                    uiProps.LICENSE_PATH_VALUE = newLocation;
+                }
+
+                @Override
+                public void setGlobalLicenseName(@NullAllowed String newName) {
+                    uiProps.LICENSE_NAME_VALUE = newName;
+                }
+
+                @Override
+                public String getDefaultProjectLicenseLocation() {
+                    return "./nbproject/licenseheader.txt";
+                }
+
+                @Override
+                public void setProjectLicenseContent(@NullAllowed String text) {
+                    uiProps.CHANGED_LICENSE_PATH_CONTENT = text;
+                }
+            };
+            
+            return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, handler);
         }
         return new JPanel();
 
@@ -207,4 +263,13 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
     public static J2SECompositePanelProvider createApplication() {
         return new J2SECompositePanelProvider(APPLICATION);
     }
+    
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType="org-netbeans-modules-java-j2seproject",
+        position=600
+    )
+    public static J2SECompositePanelProvider createLicense() {
+        return new J2SECompositePanelProvider(LICENSE);
+    }
+    
 }

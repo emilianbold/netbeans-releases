@@ -135,6 +135,10 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
     }
 
     private void initSplitDividerLocationHandling() {
+        int location = FindDialogMemory.getDefault().getReplaceResultsDivider();
+        if (location > 0) {
+            splitPane.setDividerLocation(location);
+        }
         splitPane.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -144,10 +148,6 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
                 }
             }
         });
-        int location = FindDialogMemory.getDefault().getReplaceResultsDivider();
-        if (location > 0) {
-            splitPane.setDividerLocation(location);
-        }
     }
 
     private class ModelListener implements PropertyChangeListener {
