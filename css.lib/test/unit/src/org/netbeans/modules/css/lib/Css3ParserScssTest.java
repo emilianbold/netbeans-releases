@@ -1087,7 +1087,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
-    public void testMixinCallArgWithPropertyName_fails() {
+    public void testMixinCallArgWithPropertyName() {
         String source =
                 "@mixin border-radius($radius: 5px, $moz: true, $webkit: true, $ms: true) {\n"
                 + "}\n"
@@ -1102,7 +1102,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
-    public void testMixinCallArgWithValueSeparatedByWS_fails_FIX() {
+    public void testMixinCallArgWithValueSeparatedByWS() {
         String source =
                 "#id {\n"
                 + "    @include border-radius(5px, -moz -webkit);\n"
