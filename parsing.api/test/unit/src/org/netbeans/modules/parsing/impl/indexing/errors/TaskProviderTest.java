@@ -186,6 +186,14 @@ public class TaskProviderTest extends NbTestCase {
         public void clearAllTasks(PushTaskScanner scanner) {
             tasklist.clear();
         }
+
+        public boolean isObserved() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        public boolean isCurrentEditorScope() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
         
     }
     

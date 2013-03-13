@@ -59,13 +59,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectManager.Result;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectLife;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -123,7 +121,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
                     if (type != null) {
                         MakeProjectTypeImpl provider = findMakeProjectType(type);
                         if (provider != null) {
-                            return new ProjectManager.Result(provider.getIcon());
+                            return new ProjectManager.Result(provider.getIcon(projectXml.getDocumentElement()));
                         }
                     }
                 }

@@ -173,6 +173,30 @@ public class RegexpUtilsTest extends TestCase {
                         pattern.matcher(string).matches());
         }
     }
+
+    public void testTestsuiteStatsRegex() throws Exception {
+        Pattern pattern = getPattern("TESTSUITE_STATS_REGEX");
+
+        final String[] matchingStrings = new String[] {
+            "Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.066 sec",
+            "Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.066 sec",
+        };
+        final String[] nonMatchingStrings = new String[] {
+            "Tests run: 1, Failures: 0, Errors: 0, Time elapse: 0.066 sec",
+            "Tests run: 1, Failures: 0, Errors: 0, Skippe: 0, Time elapsed: 0.066 sec",
+        };
+
+        for (int i = 0; i < matchingStrings.length; i++) {
+            String string = matchingStrings[i];
+            assertTrue("should match: " + string,
+                       pattern.matcher(string).matches());
+        }
+        for (int i = 0; i < nonMatchingStrings.length; i++) {
+            String string = nonMatchingStrings[i];
+            assertFalse("should not match: " + string,
+                        pattern.matcher(string).matches());
+        }
+    }
     
     public void testTestcaseHeaderPlainRegex() throws Exception {
         Pattern pattern = getPattern("TESTCASE_HEADER_PLAIN_REGEX");
