@@ -70,6 +70,7 @@ import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
@@ -1211,33 +1212,65 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     public VariableScope getVariableScope(int offset) {
-        return getVariableScope(getFileScope().getElements(), offset);
+        return getVariableScope(offset, Model.ScopeRangeAcceptor.BLOCK);
     }
 
-    private VariableScope getVariableScope(List<? extends ModelElement> elements, int offset) {
-        VariableScope retval = null;
+    public VariableScope getVariableScope(int offset, Model.ScopeRangeAcceptor scopeRangeAcceptor) {
+        return getVariableScope(getFileScope().getElements(), offset, scopeRangeAcceptor).getVariableScope();
+    }
+
+    private Model.VariableScopeWrapper getVariableScope(List<? extends ModelElement> elements, int offset, Model.ScopeRangeAcceptor scopeRangeAcceptor) {
+        Model.VariableScopeWrapper retval = Model.VariableScopeWrapper.NONE;
         List<ModelElement> subElements = new LinkedList<ModelElement>();
         for (ModelElement modelElement : elements) {
             if (modelElement instanceof VariableScope) {
                 VariableScope varScope = (VariableScope) modelElement;
-                final OffsetRange blockRange = varScope.getBlockRange();
-                if (blockRange != null) {
-                    boolean possibleScope = true;
-                    if (modelElement instanceof FunctionScope || modelElement instanceof ClassScope) {
-                        if (blockRange.getEnd() == offset) {
-                            possibleScope = false;
-                        }
-                    }
-                    if (possibleScope && blockRange.containsInclusive(offset)
-                            && (retval == null || retval.getBlockRange().overlaps(varScope.getBlockRange()))) {
-                        retval = varScope;
-                        subElements.addAll(varScope.getElements());
-                    }
+                Model.VariableScopeWrapper varScopeWrapper = new VariableScopeWrapperImpl(varScope, scopeRangeAcceptor);
+                if (scopeRangeAcceptor.accept(varScopeWrapper, offset) && scopeRangeAcceptor.overlaps(retval, varScopeWrapper)) {
+                    retval = varScopeWrapper;
+                    subElements.addAll(varScopeWrapper.getElements());
                 }
             }
         }
-        VariableScope subResult = subElements.isEmpty() ? null : getVariableScope(subElements, offset);
-        return subResult == null ? retval : subResult;
+        Model.VariableScopeWrapper subResult = subElements.isEmpty() ? Model.VariableScopeWrapper.NONE : getVariableScope(subElements, offset, scopeRangeAcceptor);
+        return subResult == Model.VariableScopeWrapper.NONE ? retval : subResult;
+    }
+
+    private static final class VariableScopeWrapperImpl implements Model.VariableScopeWrapper {
+        private final VariableScope variableScope;
+        private final Model.ScopeRangeAcceptor scopeRangeAcceptor;
+
+        private VariableScopeWrapperImpl(VariableScope variableScope, Model.ScopeRangeAcceptor scopeRangeAcceptor) {
+            assert variableScope != null;
+            this.variableScope = variableScope;
+            this.scopeRangeAcceptor = scopeRangeAcceptor;
+        }
+
+        @Override
+        public VariableScope getVariableScope() {
+            return variableScope;
+        }
+
+        @Override
+        public boolean overlaps(Model.VariableScopeWrapper variableScopeWrapper) {
+            return scopeRangeAcceptor.overlaps(this, variableScopeWrapper);
+        }
+
+        @Override
+        public List<? extends ModelElement> getElements() {
+            return getVariableScope().getElements();
+        }
+
+        @Override
+        public OffsetRange getNameRange() {
+            return getVariableScope().getNameRange();
+        }
+
+        @Override
+        public OffsetRange getBlockRange() {
+            return getVariableScope().getBlockRange();
+        }
+
     }
 
     private void buildCodeMarks(final int offset) {

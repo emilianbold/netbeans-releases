@@ -56,7 +56,6 @@ import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpFunction;
-import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
@@ -73,7 +72,6 @@ import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -144,7 +142,7 @@ public class EditorSupportImpl implements EditorSupport {
                         Parser.Result pr = resultIterator.getParserResult();
                         if (pr != null && pr instanceof PHPParseResult) {
                             Model model = ModelFactory.getModel((PHPParseResult) pr);
-                            retval.add(getPhpBaseElement(model.getVariableScope(offset)));
+                            retval.add(getPhpBaseElement(model.getVariableScope(offset, Model.ScopeRangeAcceptor.NAME_START_BLOCK_END)));
                         }
                     }
                 });
