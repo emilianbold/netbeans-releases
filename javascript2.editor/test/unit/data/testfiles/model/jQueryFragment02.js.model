@@ -20,7 +20,7 @@ _L1    : FUNCTION _L1 [ANONYMOUS: true, DECLARED: true - _L1, MODIFIERS: PUBLIC,
        jQuery    : OBJECT jQuery [ANONYMOUS: false, DECLARED: true - jQuery, MODIFIERS: PRIVATE, VARIABLE]
        location  : OBJECT location [ANONYMOUS: false, DECLARED: true - location, MODIFIERS: PRIVATE, VARIABLE]
        navigator : OBJECT navigator [ANONYMOUS: false, DECLARED: true - navigator, MODIFIERS: PRIVATE, VARIABLE]
-_L8    : FUNCTION _L8 [ANONYMOUS: true, DECLARED: true - _L8, MODIFIERS: PUBLIC, METHOD]
+_L8    : FUNCTION _L8 [ANONYMOUS: true, DECLARED: true - _L8, MODIFIERS: PUBLIC, FUNCTION]
        # RETURN TYPES
        undefined
        # PROPERTIES
