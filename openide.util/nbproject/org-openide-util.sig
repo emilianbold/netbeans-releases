@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.25.2
+#Version 8.29.1
 
 CLSS public java.awt.datatransfer.Clipboard
 cons public init(java.lang.String)
@@ -739,7 +739,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds defaultLookup
+hfds LOG,defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract static org.openide.util.Lookup$Item<%0 extends java.lang.Object>
@@ -1230,7 +1230,7 @@ meth public static javax.swing.KeyStroke[] stringToKeys(java.lang.String)
 meth public static org.openide.util.Lookup actionsGlobalContext()
 meth public static void attachInitJob(java.awt.Component,org.openide.util.AsyncGUIJob)
 supr java.lang.Object
-hfds ALT_WILDCARD_MASK,CTRL_WILDCARD_MASK,LOG,TRANS_LOCK,TYPICAL_MACOSX_MENU_HEIGHT,clearIntrospector,doClear,fileToPath,global,namesAndValues,operatingSystem,pathToFile,pathToUri,pathsGet,transExp,transLoader
+hfds ALT_WILDCARD_MASK,CTRL_WILDCARD_MASK,LOG,TRANS_LOCK,TYPICAL_MACOSX_MENU_HEIGHT,clearIntrospector,doClear,fileToPath,global,namesAndValues,operatingSystem,pathToFile,pathToUri,pathsGet,screenBoundsCache,transExp,transLoader
 hcls NamesAndValues,RE
 
 CLSS public static org.openide.util.Utilities$UnorderableException

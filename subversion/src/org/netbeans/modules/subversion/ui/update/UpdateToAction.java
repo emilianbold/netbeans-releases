@@ -60,17 +60,13 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class UpdateToAction extends UpdateAction {
 
+    public UpdateToAction () {
+        super(null);
+    }
+    
     @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_UpdateTo"; //NOI18N
-    }
-
-    @Override
-    protected void performContextAction(Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {
-            return;
-        }
-        performUpdate(nodes);
     }
 
     @Override

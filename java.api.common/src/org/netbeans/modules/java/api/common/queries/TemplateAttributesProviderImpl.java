@@ -39,6 +39,8 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
+import java.io.File;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,9 +54,11 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Utilities;
 
 /**
  * Default implementation of {@link CreateFromTemplateAttributesProvider}.
@@ -65,6 +69,8 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
 
     private final AntProjectHelper helper;
     private final FileEncodingQueryImplementation encodingQuery;
+    private static final Logger LOG = Logger.getLogger(TemplateAttributesProviderImpl.class.getName());
+    
 
     public TemplateAttributesProviderImpl(AntProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
         super();
@@ -77,6 +83,23 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
         Map<String, String> values = new HashMap<String, String>();
         EditableProperties priv  = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String licensePath = priv.getProperty("project.licensePath");
+        if (licensePath == null) {
+            licensePath = props.getProperty("project.licensePath");
+        }
+        if (licensePath != null) {
+            licensePath = helper.getStandardPropertyEvaluator().evaluate(licensePath);
+            if (licensePath != null) {
+                File path = FileUtil.normalizeFile(helper.resolveFile(licensePath));
+                if (path.exists() && path.isAbsolute()) { //is this necessary? should prevent failed license header inclusion
+                    URI uri = Utilities.toURI(path);
+                    licensePath = uri.toString();
+                    values.put("licensePath", licensePath);
+                } else {
+                    LOG.log(Level.INFO, "project.licensePath value not accepted - " + licensePath);
+                }
+            }
+        }
         String license = priv.getProperty("project.license"); // NOI18N
         if (license == null) {
             license = props.getProperty("project.license"); // NOI18N

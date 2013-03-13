@@ -140,7 +140,11 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
         DefaultTableModel model = (DefaultTableModel)table.getModel();
         ArrayList<String> patterns = new ArrayList<String>( model.getRowCount() );
         for( int i=0; i<model.getRowCount(); i++ ) {
-            patterns.add( model.getValueAt(i, 0).toString() );
+            String pattern = model.getValueAt(i, 0).toString();
+            //remove empty patterns
+            if (!pattern.trim().isEmpty()) {
+                patterns.add(pattern);
+            }
         }
         Settings.getDefault().setPatterns( patterns );
         Settings.getDefault().setScanCommentsOnly( checkScanCommentsOnly.isSelected() );

@@ -71,6 +71,9 @@ public class KeyringSupport {
             }
             Keyring.delete(getKeyringKey(keyPrefix, key));
         } else {
+            if (description == null) {
+                description = key;
+            }
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "Saving password for {0}:{1}", new String[] {keyPrefix, key}); //NOI18N
                 if (PRINT_PASSWORDS) {

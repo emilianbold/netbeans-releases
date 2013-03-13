@@ -41,6 +41,8 @@ package org.netbeans.modules.editor.search;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
@@ -53,12 +55,12 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.GuardedException;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
-public final class ReplaceBar extends JPanel {
+public final class ReplaceBar extends JPanel implements PropertyChangeListener {
 
     private static ReplaceBar replacebarInstance = null;
     private static final Logger LOG = Logger.getLogger(ReplaceBar.class.getName());
-    private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     private SearchBar searchBar;
     private final JComboBox replaceComboBox;
     private final JTextComponent replaceTextField;
@@ -66,10 +68,9 @@ public final class ReplaceBar extends JPanel {
     private final JButton replaceAllButton;
     private final JLabel replaceLabel;
     private final JCheckBox preserveCaseCheckBox;
-    private ActionListener actionListenerForPreserveCase;
     private final JCheckBox backwardsCheckBox;
     private final FocusTraversalPolicy searchBarFocusTraversalPolicy;
-    private List<Component> focusList = new ArrayList<Component>();
+    private final List<Component> focusList = new ArrayList<Component>();
     private boolean popupMenuWasCanceled = false;
 
     public static ReplaceBar getInstance(SearchBar searchBar) {
@@ -81,7 +82,6 @@ public final class ReplaceBar extends JPanel {
         }
         return replacebarInstance;
     }
-    private final SearchExpandMenu expandMenu;
 
     private ReplaceBar(SearchBar searchBar) {
         setSearchBar(searchBar);
@@ -118,10 +118,8 @@ public final class ReplaceBar extends JPanel {
         leftSeparator.setOrientation(SwingConstants.VERTICAL);
         add(leftSeparator);
 
-        replaceButton = new JButton();
-        Mnemonics.setLocalizedText(replaceButton, NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceNext")); // NOI18N
+        replaceButton = SearchButton.createButton("org/netbeans/modules/editor/search/resources/replace.png", "CTL_ReplaceNext"); // NOI18N
         replaceButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceText")); // NOI18N
-        replaceButton.setMargin(BUTTON_INSETS);
         replaceButton.setEnabled(!getSearchBar().getIncSearchTextField().getText().isEmpty());
         replaceButton.addActionListener(new ActionListener() {
 
@@ -132,10 +130,8 @@ public final class ReplaceBar extends JPanel {
         });
         add(replaceButton);
 
-        replaceAllButton = new JButton();
-        Mnemonics.setLocalizedText(replaceAllButton, NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceAll"));
+        replaceAllButton = SearchButton.createButton("org/netbeans/modules/editor/search/resources/replace_all.png", "CTL_ReplaceAll"); // NOI18N
         replaceAllButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceText")); // NOI18N
-        replaceAllButton.setMargin(BUTTON_INSETS);
         replaceAllButton.setEnabled(!getSearchBar().getIncSearchTextField().getText().isEmpty());
         replaceAllButton.addActionListener(new ActionListener() {
 
@@ -147,6 +143,7 @@ public final class ReplaceBar extends JPanel {
         add(replaceAllButton);
 
         changeButtonsSizeAsSearchBarButtons();
+        searchBar.addCheckBoxesActions(replaceTextField);
 
         final JToolBar.Separator rightSeparator = new JToolBar.Separator();
         rightSeparator.setOrientation(SwingConstants.VERTICAL);
@@ -161,23 +158,17 @@ public final class ReplaceBar extends JPanel {
         backwardsCheckBox.setSelected(searchBar.getFindSupportValue(EditorFindSupport.FIND_BACKWARD_SEARCH));
         preserveCaseCheckBox.setSelected(searchBar.getFindSupportValue(EditorFindSupport.FIND_PRESERVE_CASE));
         preserveCaseCheckBox.setEnabled(!searchBar.getRegExp() && !searchBar.getFindSupportValue(EditorFindSupport.FIND_MATCH_CASE));
-
-        expandMenu = new SearchExpandMenu(backwardsCheckBox.getHeight());
-        JButton expButton = expandMenu.getExpandButton();
-        expButton.setMnemonic(NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceExpandButton_Mnemonic").charAt(0)); // NOI18N
-        expButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceExpandButton")); // NOI18N
-        add(expButton);
-
+        
         // padding at the end of the toolbar
-        add(expandMenu.getPadding());
+        add(Box.createHorizontalGlue());
 
         focusList.clear();
         focusList.add(searchBar.getIncSearchTextField());
         focusList.add(replaceTextField);
         searchBarFocusTraversalPolicy = new ListFocusTraversalPolicy(focusList);
 
+        EditorFindSupport.getInstance().addPropertyChangeListener(WeakListeners.propertyChange(this, EditorFindSupport.getInstance()));
         setVisible(false);
-        makeBarExpandable(expandMenu);
     }
 
     private SearchBar getSearchBar() {
@@ -196,17 +187,8 @@ public final class ReplaceBar extends JPanel {
         return replaceAllButton;
     }
 
-    private void makeBarExpandable(SearchExpandMenu expMenu) {
-        expMenu.addToInbar(backwardsCheckBox);
-        expMenu.addToInbar(preserveCaseCheckBox);
-        expMenu.addAllToBarOrder(Arrays.asList(this.getComponents()));
-        remove(expMenu.getExpandButton());
-        expMenu.getExpandButton().setVisible(false);
-    }
-
     @Override
     public Dimension getPreferredSize() {
-        expandMenu.computeLayout(this);
         return super.getPreferredSize();
     }
 
@@ -288,20 +270,6 @@ public final class ReplaceBar extends JPanel {
         replaceComboBox.setSelectedIndex(0);
     }
 
-    private ActionListener getActionListenerForPreserveCase() {
-        if (actionListenerForPreserveCase == null) {
-            return new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    preserveCaseCheckBox.setEnabled(!searchBar.getRegexpCheckBox().isSelected() && !searchBar.getMatchCaseCheckBox().isSelected());
-
-                }
-            };
-        } else {
-            return actionListenerForPreserveCase;
-        }
-    }
     private ActionListener closeButtonListener;
 
     private ActionListener getCloseButtonListener() {
@@ -324,8 +292,6 @@ public final class ReplaceBar extends JPanel {
         searchBar.getFindLabel().setMinimumSize(oldDimensionForFindLabel);
         searchBar.getFindLabel().setPreferredSize(oldDimensionForFindLabel);
         searchBar.addEscapeKeystrokeFocusBackTo(searchBar);
-        searchBar.getRegexpCheckBox().removeActionListener(getActionListenerForPreserveCase());
-        searchBar.getMatchCaseCheckBox().removeActionListener(getActionListenerForPreserveCase());
         searchBar.setFocusTraversalPolicy(null);
         searchBar.looseFocus();
         searchBar.setSearchProperties(SearchPropertiesSupport.getSearchProperties());
@@ -338,8 +304,6 @@ public final class ReplaceBar extends JPanel {
         searchBar.getFindLabel().setMinimumSize(newDimensionForFindLabel);
         searchBar.getFindLabel().setPreferredSize(newDimensionForFindLabel);
         this.addEscapeKeystrokeFocusBackTo(searchBar);
-        searchBar.getRegexpCheckBox().addActionListener(getActionListenerForPreserveCase());
-        searchBar.getMatchCaseCheckBox().addActionListener(getActionListenerForPreserveCase());
         searchBar.setFocusTraversalPolicy(searchBarFocusTraversalPolicy);
         setFocusTraversalPolicy(searchBarFocusTraversalPolicy);
         searchBar.getPreferredSize();
@@ -406,6 +370,13 @@ public final class ReplaceBar extends JPanel {
             } catch (BadLocationException ble) {
                 LOG.log(Level.WARNING, null, ble);
             }
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (isShowing()) {
+            preserveCaseCheckBox.setEnabled(!(Boolean) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_REG_EXP) && !(Boolean) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_MATCH_CASE));
         }
     }
 

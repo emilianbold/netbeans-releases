@@ -123,11 +123,11 @@ public class TokenizerTest extends CssTestBase {
     }
 
     public void testFillList() {
-        Tokenizer t = new Tokenizer("bla , ble bli,blo,,blu bly,oh/eh//uh");
+        Tokenizer t = new Tokenizer("bla , ble bli,blo,,blu bly,oh/eh");
 
         assertTokens(t,
                 "bla", ",", "ble", "bli", ",", "blo", ",", ",", "blu", "bly",
-                ",", "oh", "/", "eh", "/", "/", "uh");
+                ",", "oh", "/", "eh");
     }
 
     public void testFillListWithQuotedValues() {

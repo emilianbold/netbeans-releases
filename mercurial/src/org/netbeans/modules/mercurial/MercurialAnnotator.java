@@ -43,15 +43,10 @@
  */
 package org.netbeans.modules.mercurial;
 
-import org.netbeans.modules.mercurial.ui.menu.ShowMenu;
-import org.netbeans.modules.mercurial.ui.menu.MergeMenu;
-import org.netbeans.modules.mercurial.ui.menu.ShareMenu;
 import org.netbeans.modules.mercurial.ui.menu.RecoverMenu;
-import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.api.project.Project;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.Utils;
@@ -70,23 +65,20 @@ import org.netbeans.modules.mercurial.ui.add.AddAction;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
-import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
-import org.netbeans.modules.mercurial.ui.diff.DiffAction;
-import org.netbeans.modules.mercurial.ui.menu.ExportMenu;
-import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
-import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
+import org.netbeans.modules.mercurial.ui.menu.PatchesMenu;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.menu.BranchMenu;
+import org.netbeans.modules.mercurial.ui.menu.ConflictsMenu;
+import org.netbeans.modules.mercurial.ui.menu.DiffMenu;
+import org.netbeans.modules.mercurial.ui.menu.IgnoreMenu;
 import org.netbeans.modules.mercurial.ui.menu.QueuesMenu;
-import org.netbeans.modules.mercurial.ui.menu.TagMenu;
+import org.netbeans.modules.mercurial.ui.menu.RemoteMenu;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
-import org.netbeans.modules.mercurial.ui.pull.FetchAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
-import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
-import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
+import org.netbeans.modules.mercurial.ui.view.ViewAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.awt.Actions;
@@ -166,11 +158,6 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             format = new MessageFormat(string);
             emptyFormat = format.format(new String[] {"", "", ""} , new StringBuffer(), null).toString().trim(); // NOI18N
         }
-    }
-
-    private static MessageFormat getFormat(String key) {
-        String format = NbBundle.getMessage(MercurialAnnotator.class, key);
-        return new MessageFormat(format);
     }
     
     @Override
@@ -320,65 +307,42 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         // TODO: get resource strings for all actions:
         ResourceBundle loc = NbBundle.getBundle(MercurialAnnotator.class);
         Node [] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
-        File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
+        Set<File> files = ctx.getRootFiles();
         Set<File> roots = HgUtils.getRepositoryRoots(ctx);
         boolean noneVersioned = (roots == null || roots.isEmpty());
-        boolean onlyFolders = onlyFolders(files);
-        boolean onlyProjects = onlyProjects(nodes);
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             // XXX use Actions.forID
-            Action a = Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance");
-            if(a instanceof ContextAwareAction) {
-                a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
-            }            
-            if(a != null) actions.add(a);
+            Action a;
             if (noneVersioned) {
+                a = Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance");
+                if(a instanceof ContextAwareAction) {
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+                }
+                if(a != null) actions.add(a);
                 a = (Action) Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance");
                 if(a != null) actions.add(a);
             } else {
-                actions.add(null);
                 actions.add(SystemAction.get(StatusAction.class));
-                actions.add(SystemAction.get(DiffAction.class));
-                actions.add(SystemAction.get(UpdateAction.class));
-                actions.add(SystemAction.get(CommitAction.class));
+                actions.add(new DiffMenu(null));
                 actions.add(SystemAction.get(AddAction.class));
-                actions.add(null);
-                actions.add(new ExportMenu());
-                actions.add(SystemAction.get(ImportDiffAction.class));
-
-                actions.add(null);
-                actions.add(SystemAction.get(CloneAction.class));
-                a = (Action) Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance");
-                if(a != null) actions.add(a);
-
-                actions.add(SystemAction.get(FetchAction.class));
-                actions.add(new ShareMenu());
-                actions.add(new MergeMenu(false));
-                actions.add(null);
-                actions.add(SystemAction.get(LogAction.class));
-                if (!onlyProjects  && !onlyFolders) {
-                    AnnotateAction tempA = SystemAction.get(AnnotateAction.class);
-                    if (tempA.visible(nodes)) {
-                        actions.add(new ShowMenu(true, true));
-                    } else {
-                        actions.add(new ShowMenu(true, false));
-                    }
-                }else{
-                    actions.add(new ShowMenu(false, false));
-                }
-                actions.add(null);
+                actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(RevertModificationsAction.class));
-                actions.add(new RecoverMenu());
-                if (!onlyProjects) {
-                    actions.add(SystemAction.get(IgnoreAction.class));
-                }
+                actions.add(SystemAction.get(AnnotateAction.class));
+                actions.add(SystemAction.get(LogAction.class));                
+                actions.add(SystemAction.get(UpdateAction.class));
+                actions.add(new ConflictsMenu(null));
+                actions.add(null);
+                actions.add(new IgnoreMenu(null, null));
+                actions.add(new PatchesMenu(null));
                 actions.add(null);
                 actions.add(new BranchMenu(null));
-                actions.add(new TagMenu(null));
                 actions.add(new QueuesMenu(null));
+                actions.add(new RemoteMenu(null));
+                actions.add(new RecoverMenu(null));
                 actions.add(null);
+                actions.add(SystemAction.get(ViewAction.class));
                 actions.add(SystemAction.get(PropertiesAction.class));
             }
             Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
@@ -390,41 +354,27 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            
                 if(a != null) actions.add(a);
-            }else{
+            } else {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context)); //NOI18N
+                actions.add(new DiffMenu(context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "CTL_PopupMenuItem_Add"), context)); //NOI18N
-                actions.add(null);
-                actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_Resolve"), context)); //NOI18N
-                if (!onlyProjects  && !onlyFolders) {
-                    actions.add(SystemActionBridge.createAction(SystemAction.get(ConflictResolvedAction.class), loc.getString("CTL_PopupMenuItem_MarkResolved"), context)); // NOI18N
-                }
-                actions.add(null);
-
-                if (!onlyProjects  && !onlyFolders) {
-                    actions.add(SystemActionBridge.createAction(SystemAction.get(AnnotateAction.class),
-                                                                ((AnnotateAction)SystemAction.get(AnnotateAction.class)).visible(nodes) ?
-                                                                        loc.getString("CTL_PopupMenuItem_HideAnnotations") : //NOI18N
-                                                                        loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context)); //NOI18N
-                }
-                actions.add(SystemActionBridge.createAction(SystemAction.get(LogAction.class), loc.getString("CTL_PopupMenuItem_Log"), context)); //NOI18N
-                actions.add(null);
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_Revert"), context)); //NOI18N
-                if (!onlyProjects) {
-                    actions.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), loc.getString("CTL_PopupMenuItem_Ignore"), context)); //NOI18N
-                }
-                if (!onlyProjects && !onlyFolders) {
-                    ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
-                    actions.add(SystemActionBridge.createAction(exclude, exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING
-                            ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N
-                            : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
-                }
+                actions.add(SystemActionBridge.createAction(SystemAction.get(AnnotateAction.class),
+                        ((AnnotateAction)SystemAction.get(AnnotateAction.class)).visible(nodes)
+                        ? loc.getString("CTL_PopupMenuItem_HideAnnotations") //NOI18N
+                        : loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(LogAction.class), loc.getString("CTL_PopupMenuItem_Log"), context)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context)); //NOI18N
+                actions.add(new ConflictsMenu(context));
                 actions.add(null);
-                actions.add(new ShareMenu(context));
-                actions.add(new BranchMenu(context, ctx));
-                actions.add(new TagMenu(context));
+                actions.add(new IgnoreMenu(context, ctx));
+                actions.add(new PatchesMenu(context));
+                actions.add(null);
+                actions.add(new BranchMenu(context));
                 actions.add(new QueuesMenu(context));
+                actions.add(new RemoteMenu(context));
+                actions.add(new RecoverMenu(context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PropertiesAction.class), loc.getString("CTL_PopupMenuItem_Properties"), context)); //NOI18N
             }
@@ -689,26 +639,6 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
-    }
-    
-    private static boolean onlyProjects(Node[] nodes) {
-        if (nodes == null) return false;
-        for (Node node : nodes) {
-            if (node.getLookup().lookup(Project.class) == null) return false;
-        }
-        return true;
-    }
-    
-    private boolean onlyFolders(File[] files) {
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].isFile()) return false;
-            FileInformation status = cache.getCachedStatus(files[i]);
-            if (status == null // be optimistic, this can be a file
-                    || (!files[i].exists() && !status.isDirectory())) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private AnnotationColorProvider getAnnotationProvider() {

@@ -54,7 +54,7 @@ public class ImmutableVariablesHintTest extends PHPHintsTestBase {
     }
 
     public void testWith1AllowedAssignments() throws Exception {
-        checkHintsInStartEndFile(new ImmutablevariablesHintStub(1), "testImmutableVariablesHint.php");
+        checkHints(new ImmutablevariablesHintStub(1), "testImmutableVariablesHint.php");
     }
 
     private class ImmutablevariablesHintStub extends ImmutableVariablesHint {

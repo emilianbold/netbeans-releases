@@ -41,9 +41,10 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.GroupLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -55,9 +56,8 @@ import org.openide.util.NbBundle;
 
 public final class CustomizerBrowser extends JPanel {
 
-    private static final long serialVersionUID = -416876421321L;
+    private static final long serialVersionUID = -8744546565465456L;
 
-    private final ProjectCustomizer.Category category;
     private final PhpProjectProperties uiProps;
     private final WebBrowserSupport.BrowserComboBoxModel browserModel;
 
@@ -66,7 +66,6 @@ public final class CustomizerBrowser extends JPanel {
         assert category != null;
         assert uiProps != null;
 
-        this.category = category;
         this.uiProps = uiProps;
         browserModel = WebBrowserSupport.createBrowserModel(uiProps.getBrowserId());
 
@@ -75,18 +74,34 @@ public final class CustomizerBrowser extends JPanel {
     }
 
     private void init() {
+        // browser
         browserComboBox.setModel(browserModel);
         browserComboBox.setRenderer(WebBrowserSupport.createBrowserRenderer());
-        browserComboBox.addActionListener(new ActionListener() {
+        browserComboBox.addItemListener(new ItemListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void itemStateChanged(ItemEvent e) {
+                storeData();
+                setReloadVisible();
+            }
+        });
+        // reload
+        reloadOnSaveCheckBox.setSelected(Boolean.valueOf(uiProps.getBrowserReloadOnSave()));
+        reloadOnSaveCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
                 storeData();
             }
         });
+        setReloadVisible();
     }
 
     void storeData() {
         uiProps.setBrowserId(browserModel.getSelectedBrowserId());
+        uiProps.setBrowserReloadOnSave(String.valueOf(reloadOnSaveCheckBox.isSelected()));
+    }
+
+    void setReloadVisible() {
+        reloadOnSaveCheckBox.setVisible(WebBrowserSupport.isIntegratedBrowser(browserModel.getSelectedBrowserId()));
     }
 
     /**
@@ -98,8 +113,11 @@ public final class CustomizerBrowser extends JPanel {
 
         browserLabel = new JLabel();
         browserComboBox = new JComboBox();
+        reloadOnSaveCheckBox = new JCheckBox();
 
         Mnemonics.setLocalizedText(browserLabel, NbBundle.getMessage(CustomizerBrowser.class, "CustomizerBrowser.browserLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(reloadOnSaveCheckBox, NbBundle.getMessage(CustomizerBrowser.class, "CustomizerBrowser.reloadOnSaveCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -109,18 +127,25 @@ public final class CustomizerBrowser extends JPanel {
                 .addComponent(browserLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(browserComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(reloadOnSaveCheckBox))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                .addComponent(browserLabel)
-                .addComponent(browserComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(browserLabel)
+                    .addComponent(browserComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(reloadOnSaveCheckBox))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JComboBox browserComboBox;
     private JLabel browserLabel;
+    private JCheckBox reloadOnSaveCheckBox;
     // End of variables declaration//GEN-END:variables
 
 }

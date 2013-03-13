@@ -229,9 +229,10 @@ public final class Setup extends AbstractDiffSetup {
         if (info != null && info.getStatus(null) != null && info.getStatus(null).getOriginalFile() != null) {
             firstSourceBaseFile = info.getStatus(null).getOriginalFile();
         }
-        firstSource = new DiffStreamSource(firstSourceBaseFile, firstRevision, firstRevision.getRevisionNumber());
+        firstSource = new DiffStreamSource(firstSourceBaseFile, firstRevision, 
+                firstRevision.toString());
         // XXX delete when UndoAction works correctly
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision.getRevisionNumber()) {
+        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision.toString()) {
             @Override
             public boolean isEditable() {
                 return !forceNonEditable && super.isEditable();

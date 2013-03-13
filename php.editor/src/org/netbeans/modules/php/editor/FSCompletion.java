@@ -153,7 +153,9 @@ public class FSCompletion implements CompletionProvider {
                                 }
                                 final String prefix = parameter.getSnapshot().getText().subSequence(startOffset, caretOffset).toString();
                                 List<FileObject> relativeTo = new LinkedList<FileObject>();
-                                relativeTo.addAll(includePath);
+                                if (!prefix.startsWith("../")) { //NOI18N
+                                    relativeTo.addAll(includePath);
+                                }
                                 final PHPIncludesFilter filter = new PHPIncludesFilter(parameter.getSnapshot().getSource().getFileObject());
                                 final FileObject parent = parameter.getSnapshot().getSource().getFileObject().getParent();
                                 if (parent != null) {

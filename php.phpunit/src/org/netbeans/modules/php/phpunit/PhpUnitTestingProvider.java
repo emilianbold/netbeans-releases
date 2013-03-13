@@ -44,6 +44,7 @@ package org.netbeans.modules.php.phpunit;
 import java.io.File;
 import java.util.List;
 import java.util.regex.Matcher;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.phpunit.coverage.CoverageProvider;
@@ -51,7 +52,6 @@ import org.netbeans.modules.php.phpunit.create.TestCreator;
 import org.netbeans.modules.php.phpunit.locate.PhpUnitTestLocator;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.phpunit.run.TestRunner;
-import org.netbeans.modules.php.phpunit.run.TestSessionImpl;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
@@ -90,7 +90,7 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
     }
 
     @Override
-    public String getCustomizerCategoryName() {
+    public String getCustomizerCategoryIdent() {
         return IDENTIFIER;
     }
 
@@ -118,20 +118,24 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
     }
 
     @Override
+    public boolean isTestCase(PhpModule phpModule, PhpClass.Method method) {
+        if (!PhpUnit.isTestClass(method.getPhpClass().getName())) {
+            return false;
+        }
+        return PhpUnit.isTestMethod(method.getName());
+    }
+
+    @Override
     public CreateTestsResult createTests(PhpModule phpModule, List<FileObject> files) {
         return new TestCreator(phpModule).createTests(files);
     }
 
     @Override
-    public TestSession runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
-        TestSessionImpl testSession = new TestRunner(phpModule).runTests(runInfo);
-        if (testSession == null) {
-            return null;
-        }
+    public void runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
+        new TestRunner(phpModule).runTests(runInfo, testSession);
         if (runInfo.isCoverageEnabled()) {
             testSession.setCoverage(new CoverageProvider().getCoverage());
         }
-        return testSession;
     }
 
     @Override

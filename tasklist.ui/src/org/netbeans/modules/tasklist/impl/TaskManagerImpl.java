@@ -240,11 +240,13 @@ public class TaskManagerImpl extends TaskManager {
         setWorkingStatus( false );
     }
     
-    boolean isObserved() {
+    @Override
+    public boolean isObserved() {
         return !Accessor.getEmptyScope().equals( getScope() );
     }
 
-    boolean isCurrentEditorScope(){
+    @Override
+    public boolean isCurrentEditorScope(){
         return scope instanceof CurrentEditorScanningScope;
     }
     

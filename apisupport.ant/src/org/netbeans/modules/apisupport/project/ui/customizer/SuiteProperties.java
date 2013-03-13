@@ -221,7 +221,7 @@ public final class SuiteProperties extends ModuleProperties {
         return enabledClusters;
     }
     
-    String[] getDisabledModules() {
+    public String[] getDisabledModules() {
         return disabledModules;
     }
     

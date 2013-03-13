@@ -100,6 +100,11 @@ public final class FindDialogMemory {
     private boolean textPatternSpecified;
 
     /**
+     * whether a replace pattern was specified, or empty string was used
+     */
+    private boolean replacePatternSpecified;
+
+    /**
      * ID of seach scope type.
      */
     private String scopeTypeId;
@@ -240,6 +245,9 @@ public final class FindDialogMemory {
                 fileNamePatterns.add(fileNamePattern);
             }
         }
+        if (fileNamePatterns.isEmpty()) {
+            addDefaultFileNamePatterns(fileNamePatterns);
+        }
         int i = 0;
         while (true) {
             String item = prefs.get(PROP_IGNORE_LIST_PREFIX + i, null);
@@ -288,6 +296,19 @@ public final class FindDialogMemory {
     public List<String> getFileNamePatterns() {
         return (fileNamePatterns != null) ? fileNamePatterns
                                           : Collections.<String>emptyList();
+    }
+
+    /**
+     * If there is some free space in the list of file name patterns, add some
+     * default values.
+     */
+    private static void addDefaultFileNamePatterns(List<String> l) {
+        String[] patterns = {"*.properties", "*.txt", "*.php", "*.xml", //NOI18N
+            "*.java"};                                                  //NOI18N
+        int free = maxFileNamePatternCount - l.size();
+        for (int i = 0; i < free && i < patterns.length; i++) {
+            l.add(patterns[i]);
+        }
     }
 
     public boolean isWholeWords() {
@@ -341,6 +362,14 @@ public final class FindDialogMemory {
 
     void setTextPatternSpecified(boolean specified) {
         textPatternSpecified = specified;
+    }
+
+    public boolean isReplacePatternSpecified() {
+        return replacePatternSpecified;
+    }
+
+    public void setReplacePatternSpecified(boolean replacePatternSpecified) {
+        this.replacePatternSpecified = replacePatternSpecified;
     }
 
     boolean isFileNamePatternSpecified() {
@@ -467,7 +496,7 @@ public final class FindDialogMemory {
 
     public void setReplaceResultsDivider(int splitDividerLocation) {
         this.replaceResultsDivider = splitDividerLocation;
-        prefs.putDouble(PROP_REPLACE_RESULTS_DIVIDER, splitDividerLocation);
+        prefs.putInt(PROP_REPLACE_RESULTS_DIVIDER, splitDividerLocation);
     }
 
     public String getResultsViewMode() {

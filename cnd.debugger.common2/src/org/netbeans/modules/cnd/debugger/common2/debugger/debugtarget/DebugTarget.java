@@ -177,18 +177,16 @@ public final class DebugTarget implements Record {
     public DebugTarget( String name) {
         this.engine = EngineTypeManager.getFallbackEnineType();
 	this.name = name; 
-	configuration = new MakeConfiguration (baseDir,
-					       "Default", // NOI18N
-					       MakeConfiguration.TYPE_MAKEFILE);
+	configuration = MakeConfiguration.createDefaultHostMakefileConfiguration(baseDir,
+					       "Default"); // NOI18N
 	configuration.getMakefileConfiguration().
 			getOutput().setValue(name);
     }
 
     public DebugTarget() {
         this.engine = EngineTypeManager.getFallbackEnineType();
-	configuration = new MakeConfiguration (baseDir,
-					       "Default", // NOI18N
-					       MakeConfiguration.TYPE_MAKEFILE);
+	configuration = MakeConfiguration.createDefaultHostMakefileConfiguration(baseDir,
+					       "Default");//NOI18N
     }
 
     public DebugTarget(MakeConfiguration f) {

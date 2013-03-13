@@ -63,6 +63,7 @@ import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
@@ -75,6 +76,7 @@ import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.diff.MultiDiffPanelController;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
@@ -245,7 +247,9 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
         public void perform() {
             try {
                 loadFiles();
-                loadHeadLogMessage();
+                if (RepositoryInfo.getInstance(repository).getActiveBranch() != GitBranch.NO_BRANCH_INSTANCE) {
+                    loadHeadLogMessage();
+                }
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, true);
             } finally {
@@ -442,7 +446,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
 
             DiffProvider diffProvider = new DiffProvider();
 
-            return new GitCommitPanelMerged(new GitCommitTable(false), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
+            return new GitCommitPanelMerged(new GitCommitTable(false, true), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
         }
 
         private GitCommitPanelMerged(GitCommitTable gitCommitTable, File[] roots, File repository, DefaultCommitParameters parameters,

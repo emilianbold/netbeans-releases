@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.maven.api;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Various constants used across the integration, Maven property names with a meaning in the IDE,
  * plugin groupIds, artifactIds etc.
@@ -56,6 +59,11 @@ public interface Constants {
      * Maven property that hints netbeans to use a given license template.
      */ 
     public static final String HINT_LICENSE = "netbeans.hint.license"; //NOI18N
+    
+    /**
+     * Maven property that hints netbeans to use a given license template file in project space, rather than the IDE's user space
+     */ 
+    public static final String HINT_LICENSE_PATH = "netbeans.hint.licensePath"; //NOI18N
 
     /**
      * Maven property that designates the jdk platform to use in the IDE on classpath for project.
@@ -65,6 +73,10 @@ public interface Constants {
      */
     public static final String HINT_JDK_PLATFORM = "netbeans.hint.jdkPlatform"; //NOI18N
 
+    /**
+     * maven property disabling whitelist processing in netbeans module projects.
+     */
+//    public static final String HINT_WHITELIST = "netbeans.hint.disable.whitelist";
     
     /**
      * Maven property that hints netbeans to handle the project as if it were of given packaging..
@@ -139,4 +151,42 @@ public interface Constants {
      */
     public static final String HINT_CHECKSTYLE_FORMATTING = "netbeans.checkstyle.format"; //NOI18N
 
+    
+    /**
+     * list of phase names in default lifecycle
+     */
+    public static final List<String> DEFAULT_PHASES = Arrays.asList(new String[] {
+        "validate",
+        "initialize",       
+        "generate-sources",       
+        "process-sources",       
+        "generate-resources",       
+        "process-resources",       
+        "compile",       
+        "process-classes",       
+        "generate-test-sources",       
+        "process-test-sources",       
+        "generate-test-resources",       
+        "process-test-resources",       
+        "test-compile",       
+        "process-test-classes",       
+        "test",       
+        "prepare-package",       
+        "package",       
+        "pre-integration-test",   
+        "integration-test",
+        "post-integration-test",
+        "verify",
+        "install",
+        "deploy"
+    });
+    
+    /**
+     * list of phase names in clean lifecycle
+     */
+     public static final List<String> CLEAN_PHASES = Arrays.asList(new String[] {
+         "pre-clean",
+         "clean",
+         "post-clean"
+     });
 }

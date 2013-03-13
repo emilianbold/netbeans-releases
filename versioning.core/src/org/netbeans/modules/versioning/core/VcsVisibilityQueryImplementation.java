@@ -80,7 +80,7 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
     private static RequestProcessor rp = new RequestProcessor(VcsVisibilityQueryImplementation.class.getName(), 1, false, false);
     private RequestProcessor.Task refreshTask = rp.create(new RefreshTask());
     private VisibilityChangedTask vsChangedTask = new VisibilityChangedTask();
-    private final HashMap<VCSFileProxy, Boolean> refreshedFiles = new HashMap<VCSFileProxy, Boolean>(20);
+    private final HashMap<VCSFileProxy, Boolean> refreshedFiles = new LinkedHashMap<VCSFileProxy, Boolean>(20);
     private static final int MAX_CACHE_SIZE = 500;
 
     private static final Logger LOG = Logger.getLogger(VcsVisibilityQueryImplementation.class.getName());

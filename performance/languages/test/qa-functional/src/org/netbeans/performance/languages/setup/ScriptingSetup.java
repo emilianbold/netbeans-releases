@@ -85,10 +85,4 @@ public class ScriptingSetup extends PerformanceTestCase2 {
             Exceptions.printStackTrace(ex);
         }
     }
-
-    /* No longer needed in 7.2
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }*/
-
 }

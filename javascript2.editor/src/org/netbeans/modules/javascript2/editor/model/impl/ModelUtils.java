@@ -60,14 +60,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.StringTokenizer;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -363,9 +361,8 @@ public class ModelUtils {
         return new HashSet<TypeUsage>();
     }
     
-    public static Collection<TypeUsage> resolveTypeFromSemiType(JsObject object, TypeUsage uType) {
+    public static Collection<TypeUsage> resolveTypeFromSemiType(JsObject object, TypeUsage type) {
         Set<TypeUsage> result = new HashSet<TypeUsage>();
-        TypeUsageImpl type = (TypeUsageImpl)uType;
         if (type.isResolved()) {
             result.add(type);
         } else if (Type.UNDEFINED.equals(type.getType())) {
@@ -388,17 +385,18 @@ public class ModelUtils {
                 }
             } 
             if (parent != null && (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD)) {
-                if (parent.getParent().getJSKind() == JsElement.Kind.FILE) {
-                    result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), 0, true)); //NOI18N
-                } else {
+                if (parent.getParent().getJSKind() != JsElement.Kind.FILE) {
                     JsObject grandParent = parent.getParent();
                     if ( grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
-                        result.add(new TypeUsageImpl(ModelUtils.createFQN(grandParent), type.getOffset(), true));
-                    } else {
-                        result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
-                    }
+                        parent = grandParent;
+                    } 
                 }
-            } else if (parent != null) {
+            }
+            // if the parent is priviliged the this refers the constructor => find the constructor
+            while (parent != null && parent.getParent() != null && parent.getModifiers().contains(Modifier.PROTECTED)) {
+                parent = parent.getParent();
+            }
+            if (parent != null) {
                 result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
             }
         } else if (type.getType().startsWith("@this.")) {
@@ -590,15 +588,14 @@ public class ModelUtils {
                             } else {
                                 // just property
                                 Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
-                                if (lastTypeAssignment.isEmpty()) {
-                                    // no assignments for the local object, we need to process the object later.
-                                    lastResolvedObjects.add(lObject);
-                                } else {
+                                // we need to process the object later anyway. To get learning cc, see issue #224453
+                                lastResolvedObjects.add(lObject);
+                                if (!lastTypeAssignment.isEmpty()) {
                                     // go through the assignments and find the last object / type in the assignment chain
                                     // it solve assignements like a = b; b = c; c = d;. the result for a should be d.
                                     resolveAssignments(model, lObject, offset, lastResolvedObjects, lastResolvedTypes);
-                                    break;
-                                }
+                                    break;  
+                                } 
                             }
                             
                         }
@@ -722,8 +719,8 @@ public class ModelUtils {
             cycle++;
             resolvedAll = true;
             Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
-            for (Type typeUsage : types) {
-                if (!((TypeUsageImpl) typeUsage).isResolved()) {
+            for (TypeUsage typeUsage : types) {
+                if (!typeUsage.isResolved()) {
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
                     if (sexp.startsWith("@exp;")) {

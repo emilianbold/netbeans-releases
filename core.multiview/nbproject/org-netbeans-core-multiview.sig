@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.29.1
+#Version 1.32.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -230,7 +230,7 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,docFilter,documentReloading,documentStatus,inUserQuestionExceptionHandler,isStrongSet,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,undoRedo,warnedClasses
+hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_NOTIFY_MODIFIED,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,docFilter,documentReloading,documentStatus,inUserQuestionExceptionHandler,isStrongSet,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,undoRedo,warnedClasses
 hcls DelegateIOExc,DocFilter,Listener,PlainEditorKit,StrongRef
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Pane

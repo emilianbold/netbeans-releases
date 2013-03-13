@@ -336,7 +336,7 @@ final class CallHierarchyTasks {
                 Set<FileObject> relevantFiles = null;
                 if (!isCanceled()) {
                     relevantFiles = JavaWhereUsedQueryPlugin.getRelevantFiles(
-                            sourceToQuery, cpInfo, false, false, false, true, null, isCanceled);
+                            sourceToQuery, cpInfo, false, false, false, false, true, null, isCanceled);
                     if (SourceUtils.isScanInProgress()) {
                         elmDesc.setIncomplete(true);
                     }
@@ -360,7 +360,7 @@ final class CallHierarchyTasks {
                 // XXX log it
                 return;
             }
-            FindUsagesVisitor findVisitor = new FindUsagesVisitor(javac, isCanceled, false);
+            FindUsagesVisitor findVisitor = new FindUsagesVisitor(javac, isCanceled, false, false);
             findVisitor.scan(javac.getCompilationUnit(), wanted);
             Collection<TreePath> usages = findVisitor.getUsages();
             Map<Element, OccurrencesDesc> refs = new HashMap<Element, OccurrencesDesc>();

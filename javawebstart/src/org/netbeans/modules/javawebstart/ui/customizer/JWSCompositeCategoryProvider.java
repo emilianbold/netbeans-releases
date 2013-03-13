@@ -98,8 +98,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                     if(project != null) {
                         JWSProjectProperties prop = projectProperties.get(project.getProjectDirectory().getPath());
                         if(prop != null) {
-                            JWSProjectPropertiesUtils.updateMasterFiles(prop, project);
-                            JWSProjectPropertiesUtils.savePropsAndUpdateMetaFiles(prop, project);
+                            JWSProjectPropertiesUtils.updateJnlpExtensionAndSave(prop, project);
                         }
                         projectProperties.remove(project.getProjectDirectory().getPath());
                     }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.cordova.platforms;
 
 import org.netbeans.api.project.Project;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -57,8 +58,8 @@ public interface BuildPerformer {
     
     public void perform(String target, Project p);
     
-    public String getUrl(Project p);
-
+    public String getUrl(Project p, Lookup context);
+    
     public boolean isPhoneGapBuild(Project p);
     
     public void startDebugging(Device device, Project p);

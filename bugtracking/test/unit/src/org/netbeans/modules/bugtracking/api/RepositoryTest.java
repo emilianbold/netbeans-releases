@@ -42,30 +42,20 @@
 
 package org.netbeans.modules.bugtracking.api;
 
-import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.Collection;
+import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Level;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.TestQuery;
-import org.netbeans.modules.bugtracking.TestRepository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.RepositoryController;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author tomas
  */
 public class RepositoryTest extends NbTestCase {
-    private static final String ID_REPO = "RepositoryTestRepo";
-    private static final String ID_CONNECTOR = "RepositoryTestConector";
 
     public RepositoryTest(String arg0) {
         super(arg0);
@@ -78,127 +68,124 @@ public class RepositoryTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {    
+        MockLookup.setLayersAndInstances();
+        APITestConnector.init();
     }
 
     @Override
     protected void tearDown() throws Exception {   
     }
 
+    public void testAttributes() {
+        Repository repo = getRepo();
+        assertEquals(APITestRepository.DISPLAY_NAME, repo.getDisplayName());
+        assertEquals(APITestRepository.TOOLTIP, repo.getTooltip());
+        assertEquals(APITestRepository.URL, repo.getUrl());
+        assertEquals(APITestRepository.ID, repo.getId());
+        assertEquals(APITestRepository.ICON, repo.getIcon());
+    }
+    
+    public void testGetQueries() {
+        APITestRepository apiRepo = getApiRepo();
+        Repository repo = getRepo();
+        assertEquals(apiRepo.getQueries().size(), repo.getQueries().size());
+    }
+    
+    public void testGetIssues() {
+        APITestRepository apiRepo = getApiRepo();
+        Repository repo = getRepo();
+        String[] ids = new String[] {APITestIssue.ID_1, APITestIssue.ID_2};
+        assertEquals(apiRepo.getIssues(ids).length, repo.getIssues(ids).length);
+    }
+    
+//    public void testSimpleSearch() {
+//        APITestRepository apiRepo = getApiRepo();
+//        Repository repo = getRepo();
+//        assertEquals(apiRepo.simpleSearch(APITestIssue.ID_1).size(), repo.(APITestIssue.ID_1).);
+//    }
+    
+    public void testIsMutable() {
+        Repository repo = getRepo();
+        String[] ids = new String[] {APITestIssue.ID_1, APITestIssue.ID_2};
+        assertEquals(true, repo.isMutable());
+    }
+    
     public void testQueryListChanged() {
-        MyRepository myRepo = new MyRepository(new RepositoryInfo(ID_REPO, ID_CONNECTOR, "http://test", "test", "test"));
-        Repository repo = TestKit.getRepository(myRepo).getRepository();
+        Repository repo = getRepo();
+        APITestRepository apiTestRepo = getApiRepo();
         
         final boolean[] received = new boolean[] {false};
-        repo.addPropertyChangeListener(new PropertyChangeListener() {
+        final PropertyChangeListener l = new PropertyChangeListener() {
+              @Override
+              public void propertyChange(PropertyChangeEvent pce) {
+                  if(Repository.EVENT_QUERY_LIST_CHANGED.equals(pce.getPropertyName())) {
+                      received[0] = true;
+                  }
+              }
+          };
+        repo.addPropertyChangeListener(l);
+        apiTestRepo.fireQueryChangeEvent();
+        assertTrue(received[0]);
+        
+        repo.removePropertyChangeListener(l);
+        received[0] = false;
+        apiTestRepo.fireQueryChangeEvent();
+        assertFalse(received[0]);
+    }
+
+    public void testDisplayNameChanged() throws IOException {
+        final String newDisplayName = "newDisplayName";
+        APITestRepository apiTestRepo = getApiRepo();
+        apiTestRepo.getController().setDisplayName(newDisplayName);
+        testAttributeChange(Repository.ATTRIBUTE_DISPLAY_NAME, APITestRepository.DISPLAY_NAME, newDisplayName);
+    }
+    
+    public void testUrlChanged() throws IOException {
+        final String newURL = "http://test/newUrl/";
+        APITestRepository apiTestRepo = getApiRepo();
+        apiTestRepo.getController().setURL(newURL);
+        testAttributeChange(Repository.ATTRIBUTE_URL, APITestRepository.URL, newURL);
+    }
+    
+    private void testAttributeChange(final String key, final String expectedOldValue, final String expectedNewValue) throws IOException {
+        final Repository repo = getRepo();
+        
+        final boolean[] received = new boolean[] {false};
+        final PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
-                if(Repository.EVENT_QUERY_LIST_CHANGED.equals(pce.getPropertyName())) {
-                    received[0] = true;
+                if(Repository.EVENT_ATTRIBUTES_CHANGED.equals(pce.getPropertyName())) {
+                    try {
+                        received[0] = true;
+
+                        Map<String, String> oldM = (Map<String, String>) pce.getOldValue();
+                        Map<String, String> newM = (Map<String, String>) pce.getNewValue();
+                        String oldValue = oldM.get(key);
+                        String newValue = newM.get(key);
+
+                        assertEquals(expectedOldValue, oldValue);
+                        assertEquals(expectedNewValue, newValue);
+                    } catch (Exception e) {
+                        repo.removePropertyChangeListener(this);
+                    }
                 }
             }
-        });
-        myRepo.fireQueryChangeEvent();
+        };
+        repo.addPropertyChangeListener(propertyChangeListener);
+        try {
+            APIAccessorImpl.IMPL.getImpl(repo).applyChanges();
+        } finally {
+            repo.removePropertyChangeListener(propertyChangeListener);
+        }
         assertTrue(received[0]);
     }
 
-    private static class MyRepository extends TestRepository {
-        private RepositoryInfo info;
-
-        public MyRepository(RepositoryInfo info) {
-            this.info = info;
-        }
-
-        public MyRepository(String id) {
-            this(id, ID_CONNECTOR);
-        }
-        
-        public MyRepository(String id, String cid) {
-            this.info = new RepositoryInfo(id, cid, "http://test", null, null, null, null, null, null);
-        }
-        
-        @Override
-        public RepositoryInfo getInfo() {
-            return info;
-        }
-
-        @Override
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-
-        @Override
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public TestIssue[] getIssues(String[] id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public RepositoryController getController() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public TestQuery createQuery() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public TestIssue createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Collection<TestQuery> getQueries() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public Collection<TestIssue> simpleSearch(String criteria) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        private PropertyChangeSupport support = new PropertyChangeSupport(this);
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) { 
-            support.removePropertyChangeListener(listener);
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) { 
-            support.addPropertyChangeListener(listener);
-        }
-        
-        void fireQueryChangeEvent() {
-            support.firePropertyChange(new PropertyChangeEvent(this, Repository.EVENT_QUERY_LIST_CHANGED, null, null));
-        }
+    private APITestRepository getApiRepo() {
+        return APITestKit.getAPIRepo(APITestRepository.ID);
     }
-    
-    @BugtrackingConnector.Registration (id=ID_CONNECTOR,displayName=ID_CONNECTOR,tooltip=ID_CONNECTOR)    
-    public static class MyConnector extends BugtrackingConnector {
-        public MyConnector() {
-        }
 
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-
-        @Override
-        public Repository createRepository(RepositoryInfo info) {
-            return TestKit.getRepository(new MyRepository(info)).getRepository();
-        }
-
-        @Override
-        public Repository createRepository() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }        
+    private Repository getRepo() {
+        return APITestKit.getRepo(APITestRepository.ID);
+    }
     
 }

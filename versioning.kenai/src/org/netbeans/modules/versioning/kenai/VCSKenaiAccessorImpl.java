@@ -70,7 +70,6 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
-import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.openide.filesystems.FileObject;
@@ -83,12 +82,10 @@ import org.openide.filesystems.FileUtil;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSKenaiAccessor.class)
 public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyChangeListener {
 
-    private static final Logger LOG = Logger.getLogger(VCSKenaiAccessorImpl.class.getName());
-
     private static final String KENAI_WEB_SOURCES_REVISION_PATH = "{0}/sources/{1}/revision/{2}"; //NOI18N
     private static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation"; // NOI18N
 
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     private final Set<KenaiProjectListener> registeredKenaiListenres = new HashSet<KenaiProjectListener>();
 
@@ -429,7 +426,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             } else if (serviceName.equals(KenaiService.Names.MERCURIAL)) {
                 return Service.VCS_HG;
             } else {
-                LOG.warning("Unknown kenai scm service name " + serviceName);
+                LOG.log(Level.WARNING, "Unknown kenai scm service name {0}", serviceName); // NOI18N
                 return Service.UNKNOWN;
             }
         }
@@ -456,13 +453,13 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append("[");
+            sb.append("["); // NOI18N
             sb.append(projectDir);
-            sb.append(",");
+            sb.append(","); // NOI18N
             sb.append(getUri());
-            sb.append(",");
+            sb.append(","); // NOI18N
             sb.append(getService());
-            sb.append(",");
+            sb.append(","); // NOI18N
             sb.append(getStamp());
             return sb.toString();
         }
@@ -548,7 +545,6 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
                 }
             }
         }
-        return;
     }
     
 }

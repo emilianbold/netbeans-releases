@@ -2,7 +2,7 @@
 <#assign licenseFirst = "<!--">
 <#assign licensePrefix = "">
 <#assign licenseLast = "-->">
-<#include "../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 
 <coherence xml-override="{tangosol.coherence.override /tangosol-coherence-override-{mode}.xml}">
   <cluster-config>

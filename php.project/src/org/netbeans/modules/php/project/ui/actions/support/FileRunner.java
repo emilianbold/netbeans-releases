@@ -213,7 +213,7 @@ public final class FileRunner {
         "FileRunner.debug.displayName={0} (debug)"
     })
     private void debugInternal() {
-        DebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+        DebugStarter dbgStarter =  DebugStarterFactory.getInstance();
         assert dbgStarter != null;
         if (dbgStarter.isAlreadyRunning()) {
             if (CommandUtils.warnNoMoreDebugSession()) {

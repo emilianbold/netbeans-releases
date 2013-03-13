@@ -129,11 +129,11 @@ public class MethodRedeclarationHintError extends HintErrorRule {
         Set<String> declaredMethodNames = new HashSet<String>();
         for (FunctionScope functionScope : declaredFunctions) {
             if (!isInConditionStatament(functionScope)) {
-                String methodName = functionScope.getName();
-                if (declaredMethodNames.contains(methodName)) {
-                    hints.add(new Hint(this, Bundle.MethodRedeclarationCustom(methodName), fileObject, functionScope.getNameRange(), null, 500));
+                String fullyQualifiedFunctionName = functionScope.getFullyQualifiedName().toString();
+                if (declaredMethodNames.contains(fullyQualifiedFunctionName)) {
+                    hints.add(new Hint(this, Bundle.MethodRedeclarationCustom(functionScope.getName()), fileObject, functionScope.getNameRange(), null, 500));
                 } else {
-                    declaredMethodNames.add(methodName);
+                    declaredMethodNames.add(fullyQualifiedFunctionName);
                 }
             }
         }

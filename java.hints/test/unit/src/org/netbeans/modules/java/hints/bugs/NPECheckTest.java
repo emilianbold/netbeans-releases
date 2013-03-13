@@ -1015,6 +1015,27 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testTry226184() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private String str() throws Exception {\n" +
+                       "        return \"\";\n" +
+                       "    }\n" +
+                       "    public int process() {\n" +
+                       "        String builder = null;\n" +
+                       "        try {\n" +
+                       "            builder = str();\n" +
+                       "        } catch (Exception ex) {\n" +
+                       "            return 0;\n" +
+                       "        }\n" +
+                       "        return builder.length();\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     public void testFields1() throws Exception {
         HintTest.create()
                 .input("package test;\n" +
@@ -1061,6 +1082,84 @@ public class NPECheckTest extends NbTestCase {
                        "        System.err.println(str.length());\n" +
                        "    }\n" +
                        "    @interface Nullable {}\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test226421a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    static String hashOfToString(Object p) {\n" +
+                       "        try {\n" +
+                       "            return p.toString();\n" +
+                       "        } catch (RuntimeException e) {\n" +
+                       "            if (p != null) {\n" +
+                       "                System.err.println();\n" +
+                       "            }\n" +
+                       "            throw e;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test226421b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    static String hashOfToString(Object p) {\n" +
+                       "        if (p == null) throw new IllegalStateException();\n" +
+                       "        try {\n" +
+                       "            return p.toString();\n" +
+                       "        } catch (RuntimeException e) {\n" +
+                       "            if (p != null) {\n" +
+                       "                System.err.println();\n" +
+                       "            }\n" +
+                       "            throw e;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings("7:16-7:25:verifier:ERR_NotNull");
+    }
+    
+    public void test226558() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    @NotNull\n" +
+                       "    public List<String> n(@Nullable List<String> l) {\n" +
+                       "        if (l == null) {\n" +
+                       "            return Collections.emptyList();\n" +
+                       "        }\n" +
+                       "        return l;\n" +
+                       "    }\n" +
+                       "    @interface Nullable {}\n" +
+                       "    @interface NotNull {}\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test226923() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    private static void test(String str) {\n" +
+                       "        System.err.println(str != null);\n" +
+                       "        if ((str != null) && (str.length() == 0)) {\n" +
+                       "            System.err.println(0);\n" +
+                       "        }\n" +
+                       "    }\n" +
                        "}")
                 .sourceLevel("1.7")
                 .run(NPECheck.class)

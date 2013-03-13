@@ -278,8 +278,7 @@ public class Commit extends GeneralPHP {
                     "ibase_wait_event",
                     "mysql_error",
                     "openssl_pkcs12_export_to_file",
-                    "str_word_count",
-                    "ZendAPI_Queue"
+                    "str_word_count"
                 };
                 CheckCompletionItems(completionInfo.listItself, asCompletions);
                 //jCompl.clickOnItem( "$GLOBALS" );

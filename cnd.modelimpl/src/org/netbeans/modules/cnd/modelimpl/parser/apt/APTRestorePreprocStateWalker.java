@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
@@ -111,11 +112,11 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 if (!inclStack.isEmpty()) {
                     // this is not the target
                     // need to continue restoring in sub-#includes
-                    APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
+                    APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(csmFile, false);
                     if (aptLight != null) {
                         APTPreprocHandler preprocHandler = getPreprocHandler();
                         // only ask for cached entry
-                        APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, null);
+                        APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler.getState(), null);
                         APTWalker walker = new APTRestorePreprocStateWalker(getStartProject(), aptLight, csmFile, preprocHandler, inclStack, interestedFile, cacheEntry);
                         walker.visit();
                         // we do not remember cache entry as serial because stopped before #include directive
@@ -127,11 +128,11 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 }
             } else {
                 // usual gathering macro map without check on #include directives
-                APTFile aptLight = inclFileOwner.getAPTLight(csmFile);
+                APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(csmFile, false);
                 if (aptLight != null) {
                     APTPreprocHandler preprocHandler = getPreprocHandler();
                     // only ask for cached entry and visit with it #include directive
-                    APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler, null);
+                    APTFileCacheEntry cacheEntry = csmFile.getAPTCacheEntry(preprocHandler.getState(), null);
                     APTWalker walker = new APTSelfWalker(aptLight, preprocHandler, cacheEntry);
                     walker.visit();
                     // does not remember walk info to safe memory

@@ -45,6 +45,7 @@
 package org.netbeans.lib.ddl;
 
 import java.sql.Connection;
+import java.util.Properties;
 
 /**
 * Connection information.
@@ -143,4 +144,22 @@ public interface DBConnection extends java.io.Serializable
     * driver or database does not exist or is inaccessible.
     */
     public Connection createJDBCConnection() throws DDLException;
+
+    /**
+     * Set additional (besides "user" and "password") properties of the
+     * connection. Use {@link #setUser(String)} and {@link #setPassword(String)}
+     * for setting user and password.
+     *
+     * @param connectionProperties Additional connection properties.
+     */
+    public void setConnectionProperties(Properties connectionProperties);
+
+    /**
+     * Get additional (besides "user" and "password") connection properties. Use
+     * {@link #getUser()} and {@link #getPassword()} to get user and password.
+     *
+     * @return Object containing additional connection properties, or null if it
+     * is not available.
+     */
+    public Properties getConnectionProperties();
 }

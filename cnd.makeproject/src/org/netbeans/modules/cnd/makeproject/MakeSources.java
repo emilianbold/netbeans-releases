@@ -175,7 +175,7 @@ public final class MakeSources implements Sources, MakeProjectListener {
         }
         if (sourceRootList == null) {
             sourceRootList = new LinkedHashSet<String>();
-            MakeConfigurationDescriptor pd = pdp.getConfigurationDescriptor(true);
+            MakeConfigurationDescriptor pd = pdp.getConfigurationDescriptor();
             if (pd != null) {
                 // mark source info as valid
                 completeSouces.set(true);

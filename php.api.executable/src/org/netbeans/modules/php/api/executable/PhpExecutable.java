@@ -834,7 +834,7 @@ public final class PhpExecutable {
 
     //~ Inner classes
 
-    private static final class InfoInputProcessor implements InputProcessor {
+    static final class InfoInputProcessor implements InputProcessor {
 
         private final InputProcessor defaultProcessor;
         private char lastChar;
@@ -842,8 +842,9 @@ public final class PhpExecutable {
 
         public InfoInputProcessor(InputProcessor defaultProcessor, List<String> fullCommand) {
             this.defaultProcessor = defaultProcessor;
+            String infoCommand = colorize(getInfoCommand(fullCommand)) + "\n"; // NOI18N
             try {
-                defaultProcessor.processInput(getFullCommand(fullCommand).toCharArray());
+                defaultProcessor.processInput(infoCommand.toCharArray());
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
             }
@@ -873,15 +874,19 @@ public final class PhpExecutable {
             defaultProcessor.processInput(msg.toString().toCharArray());
         }
 
-        private String getFullCommand(List<String> fullCommand) {
-            return colorize(StringUtils.implode(fullCommand, " ")) + "\n"; // NOI18N
+        public static String getInfoCommand(List<String> fullCommand) {
+            List<String> escapedCommand = new ArrayList<String>(fullCommand.size());
+            for (String command : fullCommand) {
+                escapedCommand.add("\"" + command.replace("\"", "\\\"") + "\""); // NOI18N
+            }
+            return StringUtils.implode(escapedCommand, " "); // NOI18N
         }
 
-        private String colorize(String msg) {
+        private static String colorize(String msg) {
             return "\033[1;30m" + msg + "\033[0m"; // NOI18N
         }
 
-        private boolean isNewLine(char ch) {
+        private static boolean isNewLine(char ch) {
             return ch == '\n' || ch == '\r' || ch == '\u0000'; // NOI18N
         }
 

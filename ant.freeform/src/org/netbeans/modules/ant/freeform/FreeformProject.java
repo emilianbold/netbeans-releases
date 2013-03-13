@@ -133,6 +133,7 @@ public final class FreeformProject implements Project {
             new View(this), // LogicalViewProvider
             new ProjectCustomizerProvider(this), // CustomizerProvider
             aux, // AuxiliaryConfiguration
+            helper().createAuxiliaryProperties(),
             helper().createCacheDirectoryProvider(), // CacheDirectoryProvider
             new Subprojects(this), // SubprojectProvider
             new ArtifactProvider(this), // AntArtifactProvider

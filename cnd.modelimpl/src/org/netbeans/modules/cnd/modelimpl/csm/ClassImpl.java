@@ -525,15 +525,24 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 }
                 for (InheritanceBuilder inheritanceBuilder : getInheritanceBuilders()) {
                     inheritanceBuilder.setScope(cls);
-                    cls.addInheritance(inheritanceBuilder.create(), isGlobal());
+                    InheritanceImpl inst = inheritanceBuilder.create();
+                    if(inst != null) {
+                        cls.addInheritance(inst, isGlobal());
+                    }
                 }
                 for (MemberBuilder builder : getMemberBuilders()) {
                     builder.setScope(cls);
-                    cls.addMember(builder.create(), isGlobal());
+                    CsmMember inst = builder.create();
+                    if(inst != null) {
+                        cls.addMember(inst, isGlobal());
+                    }
                 }                
                 for (FriendClassBuilder builder : getFriendBuilders()) {
                     builder.setScope(cls);
-                    cls.addFriend(builder.create(), isGlobal());
+                    FriendClassImpl inst = builder.create();
+                    if(inst != null) {
+                        cls.addFriend(inst, isGlobal());
+                    }
                 }                
                 getNameHolder().addReference(getFileContent(), cls);
                 addDeclaration(cls);

@@ -54,7 +54,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationListener;
-import org.netbeans.modules.versioning.core.util.Utils;
+import org.openide.modules.Places;
 
 /**
  * Plugs into IDE filesystem and delegates file operations to registered versioning systems.
@@ -78,8 +78,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     static FileSystem getRootFilesystem() {
         try {
-            String userDir = System.getProperty("netbeans.user"); // NOI18N
-            FileObject fo = FileUtil.toFileObject(new File(userDir));
+            FileObject fo = FileUtil.toFileObject(Places.getUserDirectory());
             return fo.getFileSystem();
         } catch (FileStateInvalidException ex) {
             throw new IllegalStateException(ex);

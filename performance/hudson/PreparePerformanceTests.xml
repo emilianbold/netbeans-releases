@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="TestRunner" default="all-master-check" basedir="../../../../..">
 
-    <property name="script.version" value="1.0.3"/>
+    <property name="script.version" value="1.0.4"/>
     <property name="btd.repo.dir" value="${ide.repo.dir}"/>
 	
    <!-- Properties for internal purpose-->
@@ -50,37 +50,17 @@
         <delete dir="${ide.dest.dir}"/>
     </target>
 
- <!-- CHANGE 6.9rc1 => trunk-nightly AFTER RELEASE  -->
-
     <target name="download-ide" unless="build.ide.exist">
         <mkdir dir="${ide.dest.dir}"/>
-      <!--  <get src="${ide.repo.dir}${ide.repo.file}"  -->
           <get src="${ide.repo.dir}${ide.repo.file}"
             dest="${ide.dest.dir}/${ide.repo.file}"/>
     </target>
-    
-    
+
     <target name="unzip-ide" unless="installer">
         <antcall target="download-ide"/>
         <unzip src="${ide.dest.dir}/${ide.repo.file}" dest="${basedir}"/>
-
-<!--
- <exec executable="ls" outputproperty="filename">
-    <arg value="zip"/>
-  </exec>
-
- <exec executable="gawk" outputproperty="pnum">
-    <arg value="-v"/>
-    <arg value="s=${filename}" />
-    <arg value="BEGIN { print substr(s,24,12)  }"/>
-  </exec>
-
-<propertyfile file="build.number">
-  <entry  key="perftestrun.buildnumber" value="${pnum}"/>
-</propertyfile>-->  
     </target>
   
-   
     <target name="init">
         <condition property="testtype.unit">
             <equals arg1="${test.types}" arg2="unit"/>

@@ -69,6 +69,11 @@ import org.openide.util.NbBundle;
  * @author John Rice
  */
 public class UpdateAction extends ContextAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/update.png"; //NOI18N
+    
+    public UpdateAction () {
+        super(ICON_RESOURCE);
+    }
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -87,7 +92,7 @@ public class UpdateAction extends ContextAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/mercurial/resources/icons/update.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     public static void update(final VCSContext ctx, HgLogMessage rev){

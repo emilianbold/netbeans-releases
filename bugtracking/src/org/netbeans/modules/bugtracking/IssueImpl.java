@@ -49,6 +49,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiIssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 
 /**
@@ -56,7 +57,10 @@ import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
  * @author Tomas Stupka
  */
 public final class IssueImpl<I> {
-    private static final int SHORT_DISP_NAME_LENGTH = 15;
+    /** 
+     * public for testing purposes
+     */
+    public static final int SHORT_DISP_NAME_LENGTH = 15;
     
     private Issue issue;
     private final RepositoryImpl repo;
@@ -187,4 +191,40 @@ public final class IssueImpl<I> {
     public BugtrackingController getController() {
         return issueProvider.getController(data);
     }    
+    
+    public boolean isData(Object obj) {
+        return data == obj;
+    }
+
+    public IssueStatusProvider.Status getStatus() {
+        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        if(sp == null) {
+            return null;
+        }
+        return sp.getStatus(data);
+    }
+
+    public void addIssueStatusListener(PropertyChangeListener l) {
+        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        if(sp == null) {
+            return;
+        }
+        sp.addPropertyChangeListener(data, l);
+    }
+
+    public void removeIssueStatusListener(PropertyChangeListener l) {
+        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        if(sp == null) {
+            return;
+        }
+        sp.removePropertyChangeListener(data, l);
+    }
+
+    public void setSeen(boolean isUptodate) {
+        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        if(sp == null) {
+            return;
+        }
+        sp.setSeen(data, isUptodate);
+    }
 }

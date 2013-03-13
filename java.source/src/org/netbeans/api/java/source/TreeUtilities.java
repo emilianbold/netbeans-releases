@@ -74,6 +74,7 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenSequence;
@@ -216,8 +217,8 @@ public final class TreeUtilities {
         return Collections.unmodifiableList(comments);
     }
 
-    static void ensureCommentsMapped(CompilationInfo info, Tree tree, CommentSetImpl set) {
-        if (!set.areCommentsMapped()) {
+    static void ensureCommentsMapped(CompilationInfo info, @NullAllowed Tree tree, CommentSetImpl set) {
+        if (!set.areCommentsMapped() && tree != null) {
             boolean assertsEnabled = false;
             boolean automap = true;
 
@@ -329,7 +330,8 @@ public final class TreeUtilities {
                 case RPAREN:
                     if (path.getLeaf().getKind() == Tree.Kind.ENHANCED_FOR_LOOP || path.getLeaf().getKind() == Tree.Kind.FOR_LOOP ||
                             path.getLeaf().getKind() == Tree.Kind.IF || path.getLeaf().getKind() == Tree.Kind.WHILE_LOOP ||
-                            path.getLeaf().getKind() == Tree.Kind.DO_WHILE_LOOP || path.getLeaf().getKind() == Tree.Kind.TYPE_CAST)
+                            path.getLeaf().getKind() == Tree.Kind.DO_WHILE_LOOP || path.getLeaf().getKind() == Tree.Kind.TYPE_CAST ||
+                            path.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION)
                         break;
                 case SEMICOLON:
                     if (path.getLeaf().getKind() == Tree.Kind.FOR_LOOP &&

@@ -104,6 +104,7 @@ class NodeTableModel extends AbstractTableModel {
 
     /** listener on node properties changes, recreates displayed data */
     private PropertyChangeListener pcl = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
 
             assert SwingUtilities.isEventDispatchThread();
@@ -590,6 +591,7 @@ class NodeTableModel extends AbstractTableModel {
     /** Getter for row count.
      * @return row count
      */
+    @Override
     public int getRowCount() {
         return nodeRows.length;
     }
@@ -597,6 +599,7 @@ class NodeTableModel extends AbstractTableModel {
     /** Getter for column count.
      * @return column count
      */
+    @Override
     public int getColumnCount() {
         return propertyColumns.length;
     }
@@ -606,6 +609,7 @@ class NodeTableModel extends AbstractTableModel {
      * @param column table column index
      * @return property at (row, column)
      */
+    @Override
     public Object getValueAt(int row, int column) {
         return getPropertyFor(nodeRows[row], allPropertyColumns[propertyColumns[column]].getProperty());
     }
@@ -753,7 +757,7 @@ class NodeTableModel extends AbstractTableModel {
     }
     
     String getDisplayNameWithMnemonic( Property p ) {
-        String res = null;
+        String res;
         Object displayNameWithMnemonic = p.getValue(ATTR_DISPLAY_NAME_WITH_MNEMONIC);
         if( null !=displayNameWithMnemonic && displayNameWithMnemonic.toString().length() > 0 ) {
             res = displayNameWithMnemonic.toString();

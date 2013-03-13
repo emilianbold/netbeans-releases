@@ -49,10 +49,11 @@ package org.netbeans.modules.java.source.parsing;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -61,13 +62,15 @@ import org.openide.util.Utilities;
 
 /** Global cache for Archives (zip files and folders).
  *
- * XXX-Use j.net.URL rather than j.io.File
  * XXX-Perf Add swapping for lower memory usage
  *
  * @author Petr Hrebejk
  */
 public class CachingArchiveProvider {
 
+    private static final String NAME_RT_JAR = "rt.jar";         //NOI18N
+    private static final String PATH_CT_SYM = "lib/ct.sym";     //NOI18N
+    private static final String PATH_RT_JAR_IN_CT_SYM = "META-INF/sym/rt.jar/"; //NOI18N
     private static CachingArchiveProvider instance;
 
     // Names to caching zip files
@@ -90,10 +93,8 @@ public class CachingArchiveProvider {
     
     /** Gets archive for given file.
      */
-    public synchronized Archive getArchive( URL root, boolean cacheFile)  {
-                
+    public synchronized Archive getArchive( URL root, boolean cacheFile)  {                
         Archive archive = archives.get(root);
-
         if (archive == null) {
             archive = create(root, cacheFile);
             if (archive != null) {
@@ -101,38 +102,8 @@ public class CachingArchiveProvider {
             }
         }
         return archive;
-        
     }
-    
-    /** Gets archives for files
-     */
-    public synchronized Iterable<Archive> getArchives( URL[] roots, boolean cacheFile) {
-        
-        List<Archive> archives = new ArrayList<Archive>(roots.length);        
-        for( int i = 0; i < roots.length; i++ ) {
-            Archive a = getArchive( roots[i], cacheFile );
-            if (a != null) {
-                archives.add(a);
-            }            
-        }
-        return archives;
-    }       
-    
-    
-    /** Gets archives for files
-     */
-    public synchronized Iterable<Archive> getArchives( ClassPath cp, boolean cacheFile) {        
-        final List<ClassPath.Entry> entries = cp.entries();
-        final List<Archive> archives = new ArrayList<Archive> (entries.size());
-        for (ClassPath.Entry entry : entries) {
-            Archive a = getArchive(entry.getURL(), cacheFile);
-            if (a != null) {
-                archives.add (a);
-            }
-        }        
-        return archives;
-    }
-    
+                        
     public synchronized void removeArchive (final URL root) {
         final Archive archive = archives.remove(root);
         if (archive != null) {
@@ -168,7 +139,11 @@ public class CachingArchiveProvider {
             if ("file".equals(protocol)) {
                 File f = Utilities.toFile(URI.create(inner.toExternalForm()));
                 if (f.isFile()) {
-                    return new CachingArchive( f, cacheFile );
+                    final Pair<File,String> resolved = replace(f);
+                    return new CachingArchive(
+                            resolved.first,
+                            resolved.second,
+                            cacheFile);
                 }
                 else {
                     return null;
@@ -188,5 +163,26 @@ public class CachingArchiveProvider {
     void clear() {
         archives.clear();
     }
-          
+
+    @NonNull
+    private static Pair<File,String> replace(
+        @NonNull final File file) {
+        if (NAME_RT_JAR.equals(file.getName())) {
+            final FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+                    for (FileObject jdkFolder : jp.getInstallFolders()) {
+                        if (FileUtil.isParentOf(jdkFolder, fo)) {
+                            final FileObject ctSym = jdkFolder.getFileObject(PATH_CT_SYM);
+                            File ctSymFile;
+                            if (ctSym != null && (ctSymFile = FileUtil.toFile(ctSym)) != null) {
+                                return Pair.<File,String>of(ctSymFile,PATH_RT_JAR_IN_CT_SYM);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return Pair.<File,String>of(file, null);
+    }
 }

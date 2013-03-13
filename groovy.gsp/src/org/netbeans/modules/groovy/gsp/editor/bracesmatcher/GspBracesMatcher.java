@@ -173,7 +173,7 @@ public class GspBracesMatcher implements BracesMatcher {
         return false;
     }
 
-    private int[] findTagBoundaries(TokenSequence tokenSequence, Token<GspTokenId> gspTokenID) {
+    private int[] findTagBoundaries(TokenSequence<GspTokenId> tokenSequence, Token<GspTokenId> gspTokenID) {
         TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(document);
 
         int tagStart;

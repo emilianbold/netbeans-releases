@@ -68,8 +68,8 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
     
     private Kind kind;
     
-    private StandardJavacWarnings( Kind kind ) {
-        super( kind.defaultOn(), false, HintSeverity.WARNING );
+    private StandardJavacWarnings(Kind kind) {
+        super( kind.defaultOn(), false, HintSeverity.WARNING, kind.suppressWarnings );
         this.kind = kind;        
         this.getPreferences(null); // Adds listener automatically                                              ;
     }
@@ -192,45 +192,31 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
     
     private static enum Kind {
 
-        DEPRECATED,
-        UNCHECKED,
-        FALLTHROUGH,
-        SERIALIZATION,
-        FINALLY,
-        UNNECESSARY_CAST,
-        EMPTY_STATEMENT_AFTER_IF,
-        OVERRIDES,
-        DIVISION_BY_ZERO,
-        RAWTYPES;
+        DEPRECATED("enable_lint_deprecation", "deprecation"),
+        UNCHECKED("enable_lint_unchecked", "unchecked"),
+        FALLTHROUGH("enable_lint_fallthrough", "fallthrough"),
+        SERIALIZATION("enable_lint_serial", "serial"),
+        FINALLY("enable_lint_finally", "finally"),
+        UNNECESSARY_CAST("enable_lint_cast", "cast", "", "RedundantCast"),
+        EMPTY_STATEMENT_AFTER_IF("enable_lint_empty", "empty"),
+        OVERRIDES("enable_lint_overrides", "overrides"),
+        DIVISION_BY_ZERO("enable_lint_dvizero", "divzero"),
+        RAWTYPES("enable_lint_rawtypes", "rawtypes");
+        
+        private final String key;
+        private final String[] suppressWarnings;
+
+        private Kind(String key, String... suppressWarnings) {
+            this.key = key;
+            this.suppressWarnings = suppressWarnings;
+        }
         
         boolean defaultOn() {        
             return false;
         }
         
         String key() {
-            switch( this ) {
-                case DEPRECATED:
-                    return "enable_lint_deprecation"; // NOI18N
-                case UNCHECKED:    
-                    return "enable_lint_unchecked"; // NOI18N
-                case FALLTHROUGH:
-                    return "enable_lint_fallthrough"; // NOI18N
-                case SERIALIZATION:
-                    return "enable_lint_serial"; // NOI18N
-                case FINALLY:
-                    return "enable_lint_finally"; // NOI18N
-                case UNNECESSARY_CAST:
-                    return "enable_lint_cast"; // NOI18N
-                case DIVISION_BY_ZERO:
-                    return "enable_lint_dvizero"; // NOI18N
-                case EMPTY_STATEMENT_AFTER_IF:
-                    return "enable_lint_empty"; // NOI18N
-                case OVERRIDES:
-                    return "enable_lint_overrides"; // NOI18N
-                case RAWTYPES:
-                    return "enable_lint_rawtypes"; // NOI18N
-            }
-            return "unknown_kind"; // NOI18N
+            return key;
         }
     }
    

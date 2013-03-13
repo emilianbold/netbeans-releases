@@ -612,7 +612,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         if( index >= model.size() )
             minSize = new Dimension( 100, 10 );
         else
-            minSize = model.getTab(index).getComponent().getMinimumSize();
+            minSize = new Dimension(layoutModel.getW(index), layoutModel.getH(index));
         minSize.width = Math.max(minSize.width, 100);
         minSize.height = Math.max(minSize.height, 10);
         return minSize;
@@ -808,6 +808,14 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 if (i != -1 && e.getButton() == MouseEvent.BUTTON1 ) {
                     //Post a maximize request
                     shouldPerformAction(TabDisplayer.COMMAND_MAXIMIZE, i, e);
+                }
+            } else if( e.getClickCount() == 1 && !e.isPopupTrigger() && e.getButton() == MouseEvent.BUTTON2 ) {
+                //middle-button clicked
+                Point p = e.getPoint();
+                int i = getLayoutModel().indexOfPoint(p.x, p.y);
+                if( i >= 0 ) {
+                    //Post a close request
+                    shouldPerformAction(TabDisplayer.COMMAND_CLOSE, i, e);
                 }
             }
         }

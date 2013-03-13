@@ -73,9 +73,10 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Petr Kuzel
  */
 public class RevertModificationsAction extends ContextAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/get_clean.png"; //NOI18N
     
-    /** Creates a new instance of RevertModificationsAction */
-    public RevertModificationsAction() {
+    public RevertModificationsAction () {
+        super(ICON_RESOURCE);
     }
     
     @Override
@@ -95,7 +96,7 @@ public class RevertModificationsAction extends ContextAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/subversion/resources/icons/get_clean.png"; // NOI18N
+        return ICON_RESOURCE;
     }
     
     @Override

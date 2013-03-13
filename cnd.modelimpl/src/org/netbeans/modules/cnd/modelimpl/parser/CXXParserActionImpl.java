@@ -46,6 +46,7 @@ import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
@@ -56,7 +57,15 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     private final CppParserActionImpl orig;
 
     public CXXParserActionImpl(CsmParserProvider.CsmParserParameters params) {
-        orig = new CppParserActionImpl(params, this);
+        if (TraceFlags.TRACE_CPP_PARSER_ACTION) {
+            orig = new CppParserActionTracer(params, this);
+        } else {
+            orig = new CppParserActionImpl(params, this);
+        }
+    }
+    
+    public void setParser(CXXParserEx parser) {
+        orig.setParser(parser);
     }
 
     @Override

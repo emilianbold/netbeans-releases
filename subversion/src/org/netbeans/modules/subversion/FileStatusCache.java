@@ -611,6 +611,9 @@ public class FileStatusCache {
                     // - we have to list the children before the turbo.writeEntry() call 
                     //   as that unfortunatelly tends to purge them from the cache 
                     content = listFiles(new File[] {file}, ~0);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "refresh: will need recursive refresh for deleted folder {0}", file.getAbsolutePath()); //NOI18N
+                    }
                 } 
 
                 dir = FileUtil.normalizeFile(dir);
@@ -633,11 +636,18 @@ public class FileStatusCache {
 
         if(!refreshDone) {
             if(content == null && file.isDirectory() && needRecursiveRefresh(fi, current)) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "refresh: need recursive refresh for {0}", file.getAbsolutePath()); //NOI18N
+                }
                 content = listFiles(file);
             }
 
             if ( content != null ) {
                 for (int i = 0; i < content.length; i++) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "refresh: recursive refresh for {0}, child of {1}", //NOI18N
+                                new Object[] { content[i].getAbsolutePath(), file.getAbsolutePath() });
+                    }
                     refresh(content[i], REPOSITORY_STATUS_UNKNOWN);
                 }
             }

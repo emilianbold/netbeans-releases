@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.31.2
+#Version 1.35.1
 
 CLSS public abstract interface java.io.Closeable
 meth public abstract void close() throws java.io.IOException
@@ -226,6 +226,11 @@ cons protected init()
 meth public abstract org.openide.windows.InputOutput getIO(java.lang.String,boolean)
 meth public abstract org.openide.windows.OutputWriter getStdOut()
 meth public java.lang.String getName()
+meth public org.openide.windows.InputOutput getIO(java.lang.String,boolean,javax.swing.Action[],org.openide.windows.IOContainer)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NullAllowed()
 meth public org.openide.windows.InputOutput getIO(java.lang.String,javax.swing.Action[])
 meth public org.openide.windows.InputOutput getIO(java.lang.String,javax.swing.Action[],org.openide.windows.IOContainer)
 meth public static org.openide.windows.IOProvider get(java.lang.String)

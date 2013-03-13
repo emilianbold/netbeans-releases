@@ -5,7 +5,7 @@
 <#assign licenseFirst = "/* ">
 <#assign licensePrefix = " * ">
 <#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 
 var app = {
  // Create this closure to contain the cached modules

@@ -168,5 +168,22 @@ public abstract class PushTaskScanner {
         public void finished() {
             tm.finished( scanner );
         }
+
+        /**
+         * @returns true, if the framework is observed.
+         * @since spi.tasklist/1.24
+         */
+        public boolean isObserved() {
+            return tm.isObserved();
+        }
+
+        /**
+         * @returns true, if the current editor scope is set in the framework.
+         * Performance helper method.
+         * @since spi.tasklist/1.24
+         */
+        public boolean isCurrentEditorScope() {
+            return tm.isCurrentEditorScope();
+        }
     }
 }

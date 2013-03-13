@@ -46,6 +46,7 @@ package org.netbeans.modules.javascript2.editor.model;
  * @author Petr Pisl
  */
 public interface TypeUsage extends Type {
-    public int getOffset();
-    
+
+    boolean isResolved();
+
 }

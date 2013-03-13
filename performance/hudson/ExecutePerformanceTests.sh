@@ -1,40 +1,27 @@
 #!bash -x
+env
+
 echo PATH=$PATH
 export PATH="/bin:"$PATH
 echo PATH=$PATH
 
-#if test ! -e /space/hudsonserver/master 
+# kill all unwanted processes
 case $OSTYPE in
-msdos)
-ps -efW| egrep -i "junit|netbeans|test|anagram|ant|jusched"|egrep -vi system32|awk '{print $2}'| xargs /bin/kill -f;
-sleep 5;
-;;
-windows)
-ps -efW| egrep -i "junit|netbeans|test|anagram|ant|jusched"|egrep -vi system32|awk '{print $2}'| xargs /bin/kill -f;
-sleep 5;
-;;
-cygwin)
-ps -efW| egrep -i "junit|netbeans|test|anagram|ant|jusched"|egrep -vi system32|awk '{print $2}'| xargs /bin/kill -f;
-sleep 5;
-;;
-linux-gnu)
-ps -e| egrep -i "junit|netbeans|test|anagram|ant|jusched"|egrep -vi system32|awk '{print $2}'| xargs /bin/kill -9;
-sleep 5;
-export nb_perf_alt_path="/space/slowfs/ubuntu";
-;;
-linux)
-ps -e| egrep -i "junit|netbeans|test|anagram|ant|jusched"|egrep -vi system32|awk '{print $2}'| xargs /bin/kill -9;
-sleep 5;
-export nb_perf_alt_path="/space/slowfs/ubuntu";
-;;
-*)
-jps| egrep -i "junit|netbeans|test|anagram|ant|jusched"|egrep -vi system32| xargs kill;
-;;
+    msdos | windows | cygwin)
+        ps -efW| egrep -i "junit|netbeans|test|anagram|ant|jusched"|egrep -vi system32|awk '{print $2}'| xargs /bin/kill -f;
+        ;;
+    linux*)
+        ps -e| egrep -i "junit|netbeans|test|anagram|ant|jusched"|egrep -vi system32|awk '{print $2}'| xargs /bin/kill -9;
+        ;;
+    darwin11)
+        ps -e| egrep -i "junit|netbeans|test|anagram|ant|jusched"|egrep -vi system32|awk '{print $1}'| xargs /bin/kill -9;
+        ;;
+    *)
+        jps| egrep -i "junit|netbeans|test|anagram|ant|jusched"|egrep -vi system32| xargs kill;
+        ;;
 esac
-#fi
-env
-#sanitize any orphaned JUnitTestRunners
 jps | grep JUnitTestRunner | cut -d' ' -f1 | xargs kill -9
+sleep 5
 
 export ANT_OPTS=-Xmx1024m
 export j2se_enabled=1
@@ -71,17 +58,18 @@ export perfjar=`cygpath -m $perfjar`
 execdir=$netbeans_dest/bin/
 export execdir=`cygpath -m $execdir`
 
+# copy netbeans.conf to netbeans dir
 cp $performance/hudson/netbeans.conf $netbeans_dest/etc/
 
 # fix the permissions; they get reset after each hg pull ...
 chmod a+x $performance/hudson/*.sh
 chmod a+x $netbeans_dest/bin/*
 
+# clean
 cd $project_root
 rm -rf nbbuild/nbproject/private
 rm -rf performance/build
 rm -rf performance/*/build
-
 pwd
 
 $performance/hudson/setupenv.sh

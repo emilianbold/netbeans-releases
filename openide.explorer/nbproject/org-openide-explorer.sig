@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.45.1
+#Version 6.50.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -1422,6 +1422,10 @@ fld public final static java.lang.String PROPERTY_SORTING_MODE = "sortingMode"
  anno 0 java.lang.Deprecated()
 fld public final static java.lang.String PROPERTY_VALUE_COLOR = "valueColor"
  anno 0 java.lang.Deprecated()
+meth protected final boolean isExpanded(java.beans.FeatureDescriptor)
+meth protected final java.beans.FeatureDescriptor getSelection()
+meth protected final void toggleExpanded(java.beans.FeatureDescriptor)
+meth protected javax.swing.JPopupMenu createPopupMenu()
 meth public boolean getDisplayWritableOnly()
  anno 0 java.lang.Deprecated()
 meth public boolean getPlastic()
@@ -1498,6 +1502,8 @@ CLSS public abstract interface org.openide.explorer.propertysheet.editors.XMLPro
 intf java.beans.PropertyEditor
 meth public abstract org.w3c.dom.Node storeToXML(org.w3c.dom.Document)
 meth public abstract void readFromXML(org.w3c.dom.Node) throws java.io.IOException
+
+CLSS abstract interface org.openide.explorer.propertysheet.editors.package-info
 
 CLSS public org.openide.explorer.view.BeanTreeView
 cons public init()

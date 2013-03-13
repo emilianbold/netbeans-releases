@@ -45,6 +45,8 @@
 package org.netbeans.api.db.explorer;
 
 import java.sql.Connection;
+import java.sql.Driver;
+import java.util.Properties;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnectionAccessor;
@@ -148,6 +150,33 @@ public final class DatabaseConnection {
     public static DatabaseConnection create(JDBCDriver driver, String databaseURL, 
             String user, String schema, String password, boolean rememberPassword,
             String displayName) {
+        return create(driver, databaseURL, user, schema, password,
+                rememberPassword, displayName, null);
+    }
+
+    /**
+     * Creates a new DatabaseConnection instance.
+     *
+     * @param driver the JDBC driver the new connection uses; cannot be null.
+     * @param databaseURL the URL of the database to connect to; cannot be null.
+     * @param user the username.
+     * @param schema the schema to use, or null for the default schema
+     * @param password the password.
+     * @param rememberPassword whether to remember the password for the current
+     * session.
+     * @param displayName the display name of the connection as it shows under
+     * the Databases node
+     * @param connectionProperties Additional connection properties, see
+     * {@link #getConnectionProperties()}.
+     *
+     * @return the new instance.
+     *
+     * @since 1.53
+     * @throws NullPointerException if driver or database are null.
+     */
+    public static DatabaseConnection create(JDBCDriver driver, String databaseURL,
+            String user, String schema, String password, boolean rememberPassword,
+            String displayName, Properties connectionProperties) {
         if (driver == null || databaseURL == null) {
             throw new NullPointerException();
         }
@@ -160,6 +189,7 @@ public final class DatabaseConnection {
         conn.setPassword(password);
         conn.setRememberPassword(rememberPassword);
         conn.setDisplayName(displayName);
+        conn.setConnectionProperties(connectionProperties);
         return conn.getDatabaseConnection();
     }
     
@@ -236,6 +266,26 @@ public final class DatabaseConnection {
         return delegate.getDisplayName();
     }
     
+    /**
+     * Returns additional connection properties for the connection.
+     * <p>
+     * The properties can be set by the user and may be used e.g. in
+     * {@link Driver#connect(String, Properties)}. Note that properties "user"
+     * and "password" are not included in this object, use {@link #getUser()}
+     * and {@link #getPassword()}. Additional properties are usually needed to
+     * configure some database-specific connection options (e.g. charset).
+     * </p>
+     * <p>
+     * Changes made to returned object will have no effect (copy of internal
+     * properties is returned).
+     * </p>
+     * @return the connection properties (maybe null)
+     * @since db/1.53
+     */
+    public Properties getConnectionProperties() {
+        return delegate.getConnectionProperties();
+    }
+
     /**
      * Returns the {@link java.sql.Connection} instance which encapsulates 
      * the physical connection to the database if this database connection

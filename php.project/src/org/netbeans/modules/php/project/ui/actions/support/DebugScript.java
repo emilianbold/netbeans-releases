@@ -65,7 +65,7 @@ public class DebugScript  extends RunScript {
             public void run() {
                 //temporary; after narrowing deps. will be changed
                 Callable<Cancellable> callable = getCallable();
-                DebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+                DebugStarter dbgStarter =  DebugStarterFactory.getInstance();
                 assert dbgStarter != null;
                 if (dbgStarter.isAlreadyRunning()) {
                     if (CommandUtils.warnNoMoreDebugSession()) {

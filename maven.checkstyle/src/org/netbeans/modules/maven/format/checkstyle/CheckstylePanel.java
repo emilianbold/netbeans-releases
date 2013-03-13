@@ -61,6 +61,7 @@ import org.netbeans.modules.maven.model.pom.Reporting;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 /**
 http://checkstyle.sourceforge.net/config_blocks.html#LeftCurly
@@ -73,7 +74,7 @@ http://checkstyle.sourceforge.net/config_whitespace.html#ParenPad
  *
  * @author mkleint
  */
-public class CheckstylePanel extends javax.swing.JPanel {
+public class CheckstylePanel extends javax.swing.JPanel implements HelpCtx.Provider {
     private final ModelHandle2 handle;
     private final ProjectCustomizer.Category category;
     private boolean generated = false;
@@ -283,4 +284,8 @@ public class CheckstylePanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblMissing;
     // End of variables declaration//GEN-END:variables
 
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("maven_settings");
+    } 
 }

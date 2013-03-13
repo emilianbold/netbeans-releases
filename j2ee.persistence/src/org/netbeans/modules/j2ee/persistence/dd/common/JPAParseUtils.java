@@ -116,7 +116,9 @@ public class JPAParseUtils {
             }
             String resource=null;
             // return a proper input source
-            if (systemId!=null && systemId.endsWith("persistence_2_0.xsd")) {
+            if (systemId!=null && systemId.endsWith("persistence_2_1.xsd")) {
+                resource="/org/netbeans/modules/j2ee/persistence/dd/resources/persistence_2_1.xsd"; //NOI18N
+            } else if (systemId!=null && systemId.endsWith("persistence_2_0.xsd")) {
                 resource="/org/netbeans/modules/j2ee/persistence/dd/resources/persistence_2_0.xsd"; //NOI18N
             } else if (systemId!=null && systemId.endsWith("persistence_1_0.xsd")) {
                 resource="/org/netbeans/modules/j2ee/persistence/dd/resources/persistence_1_0.xsd"; //NOI18N

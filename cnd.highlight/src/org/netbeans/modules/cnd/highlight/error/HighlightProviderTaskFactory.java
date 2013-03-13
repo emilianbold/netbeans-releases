@@ -50,7 +50,7 @@ import java.util.HashSet;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.highlight.semantic.ModelUtils;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;

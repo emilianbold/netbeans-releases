@@ -51,7 +51,6 @@ import java.awt.Rectangle;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
@@ -60,13 +59,17 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.editor.view.spi.LockView;
 
 /**
  *  Component for displaying folded part of code in tooltip
  *
  *  @author  Martin Roskanin
+ *  @deprecated This is an utility class which should not have been public. It is used
+ *  only from code folding implementation and was not intended for general purpose.
+ *  This implementation is retained for backward compatibility only. The live implementation
+ *  can be found in <code>editor.fold.nbui</code> module.
  */
+@Deprecated
 public class FoldingToolTip extends JPanel {
 
     View view;

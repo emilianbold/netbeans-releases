@@ -70,6 +70,7 @@ public class JDBCSchema extends SchemaImplementation {
     protected Map<String, Table> tables;
     protected Map<String, View> views;
     protected Map<String, Procedure> procedures;
+    protected Map<String, Function> functions;
 
     public JDBCSchema(JDBCCatalog jdbcCatalog, String name, boolean _default, boolean synthetic) {
         this.jdbcCatalog = jdbcCatalog;
@@ -129,6 +130,16 @@ public class JDBCSchema extends SchemaImplementation {
     }
 
     @Override
+    public Function getFunction(String name) {
+        return initFunctions().get(name);
+    }
+
+    @Override
+    public Collection<Function> getFunctions() {
+        return initFunctions().values();
+    }
+
+    @Override
     public void refresh() {
         tables = null;
         views = null;
@@ -146,6 +157,10 @@ public class JDBCSchema extends SchemaImplementation {
 
     protected JDBCProcedure createJDBCProcedure(String procedureName) {
         return new JDBCProcedure(this, procedureName);
+    }
+
+    protected JDBCFunction createJDBCFunction(String functionName) {
+        return new JDBCFunction(this, functionName);
     }
 
     protected JDBCView createJDBCView(String viewName) {
@@ -224,6 +239,30 @@ public class JDBCSchema extends SchemaImplementation {
         procedures = Collections.unmodifiableMap(newProcedures);
     }
 
+    protected void createFunctions() {
+        LOGGER.log(Level.FINE, "Initializing functions in {0}", this); //NOI18N
+        Map<String, Function> newProcedures = new LinkedHashMap<String, Function>();
+        try {
+            ResultSet rs = MetadataUtilities.getFunctions(jdbcCatalog.getJDBCMetadata().getDmd(),
+                    jdbcCatalog.getName(), name, "%"); // NOI18N
+            try {
+                while (rs.next()) {
+                    String functionName = MetadataUtilities.trimmed(rs.getString("FUNCTION_NAME")); // NOI18N
+                    Function function = createJDBCFunction(functionName).getFunction();
+                    newProcedures.put(functionName, function);
+                    LOGGER.log(Level.FINE, "Created function {0}", function); //NOI18N
+                }
+            } finally {
+                if (rs != null) {
+                    rs.close();
+                }
+            }
+        } catch (SQLException e) {
+            throw new MetadataException(e);
+        }
+        functions = Collections.unmodifiableMap(newProcedures);
+    }
+
     private Map<String, Table> initTables() {
         if (tables != null) {
             return tables;
@@ -251,5 +290,14 @@ public class JDBCSchema extends SchemaImplementation {
 
         createProcedures();
         return procedures;
+    }
+
+    private Map<String, Function> initFunctions() {
+        if (functions != null) {
+            return functions;
+        }
+
+        createFunctions();
+        return functions;
     }
 }
