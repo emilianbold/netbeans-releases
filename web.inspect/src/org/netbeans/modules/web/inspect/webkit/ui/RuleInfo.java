@@ -57,6 +57,10 @@ public class RuleInfo {
      * it matches some parent of the selected element (i.e., is inherited).
      */
     private boolean inherited;
+    /** Meta-source file of the rule. */
+    private String metaSourceFile;
+    /** Line number of the rule in the meta-source file. */
+    private int metaSourceLine = -1;
 
     /**
      * Marks the specified property as overriden by other rules.
@@ -98,6 +102,42 @@ public class RuleInfo {
      */
     public boolean isInherited() {
         return inherited;
+    }
+
+    /**
+     * Sets the meta-source file of the rule.
+     * 
+     * @param metaSourceFile meta-source file of the rule.
+     */
+    void setMetaSourceFile(String metaSourceFile) {
+        this.metaSourceFile = metaSourceFile;
+    }
+
+    /**
+     * Returns the meta-source file of the rule.
+     * 
+     * @return meta-source file of the rule.
+     */
+    public String getMetaSourceFile() {
+        return metaSourceFile;
+    }
+
+    /**
+     * Sets the line number of the rule in the meta-source file.
+     * 
+     * @param metaSourceLine line number of the rule.
+     */
+    void setMetaSourceLine(int metaSourceLine) {
+        this.metaSourceLine = metaSourceLine;
+    }
+
+    /**
+     * Returns the line number of the rule in the meta-source file.
+     * 
+     * @return line number of the rule in the meta-source file.
+     */
+    public int getMetaSourceLine() {
+        return metaSourceLine;
     }
 
 }
