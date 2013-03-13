@@ -53,12 +53,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -84,7 +84,7 @@ import org.openide.filesystems.FileUtil;
  * @author jungi, Jiri Skrivanek
  * @see <a href="http://qa.netbeans.org/modules/j2ee/promo-f/testspec/j2ee-wizards-testspec.html">J2EE Wizards Test Specification</a>
  */
-public class NewFileWizardsTest extends JellyTestCase {
+public class NewFileWizardsTest extends J2eeTestCase {
 
 //    private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("org.netbeans.test.j2ee.wizard.golden");
     private static boolean CREATE_GOLDEN_FILES = false;

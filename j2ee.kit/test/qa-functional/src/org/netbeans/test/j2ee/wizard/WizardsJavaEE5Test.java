@@ -44,7 +44,6 @@
 package org.netbeans.test.j2ee.wizard;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 
@@ -52,11 +51,11 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author jungi, Jiri Skrivanek
  */
-public class WizardsJavaEE5Test extends J2eeTestCase {
+public class WizardsJavaEE5Test extends NewFileWizardsTest {
 
     /** Creates a new instance of WizardsJavaEE5Test */
     public WizardsJavaEE5Test(String testName) {
-        super(testName);
+        super(testName, "5");
     }
 
     public static Test suite() {
@@ -72,25 +71,25 @@ public class WizardsJavaEE5Test extends J2eeTestCase {
 
         public Suite() {
             super();
-            addTest(new NewFileWizardsTest("testLocalSessionBean", "5"));
-            addTest(new NewFileWizardsTest("testRemoteSessionBean", "5"));
-            addTest(new NewFileWizardsTest("testLocalRemoteSessionBean", "5"));
-            addTest(new NewFileWizardsTest("testLocalStatefulSessionBean", "5"));
-            addTest(new NewFileWizardsTest("testRemoteStatefulSessionBean", "5"));
-            addTest(new NewFileWizardsTest("testLocalRemoteStatefulSessionBean", "5"));
-            addTest(new NewFileWizardsTest("testPersistenceUnitInEjb", "5"));
-            addTest(new NewFileWizardsTest("testEntityClassInEjb", "5"));
-            addTest(new NewFileWizardsTest("testQueueMdbBean", "5"));
-            addTest(new NewFileWizardsTest("testTopicMdbBean", "5"));
-            addTest(new NewFileWizardsTest("testServiceLocatorInEjb", "5"));
-            addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb", "5"));
-            addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod", "5"));
+            addTest(new WizardsJavaEE5Test("testLocalSessionBean"));
+            addTest(new WizardsJavaEE5Test("testRemoteSessionBean"));
+            addTest(new WizardsJavaEE5Test("testLocalRemoteSessionBean"));
+            addTest(new WizardsJavaEE5Test("testLocalStatefulSessionBean"));
+            addTest(new WizardsJavaEE5Test("testRemoteStatefulSessionBean"));
+            addTest(new WizardsJavaEE5Test("testLocalRemoteStatefulSessionBean"));
+            addTest(new WizardsJavaEE5Test("testPersistenceUnitInEjb"));
+            addTest(new WizardsJavaEE5Test("testEntityClassInEjb"));
+            addTest(new WizardsJavaEE5Test("testQueueMdbBean"));
+            addTest(new WizardsJavaEE5Test("testTopicMdbBean"));
+            addTest(new WizardsJavaEE5Test("testServiceLocatorInEjb"));
+            addTest(new WizardsJavaEE5Test("testCachingServiceLocatorInEjb"));
+            addTest(new WizardsJavaEE5Test("testBuildDefaultNewEJBMod"));
             // web project
-            addTest(new NewFileWizardsTest("testServiceLocatorInWeb", "5"));
-            addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "5"));
-            addTest(new NewFileWizardsTest("testPersistenceUnitInWeb", "5"));
-            addTest(new NewFileWizardsTest("testEntityClassInWeb", "5"));
-            addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod", "5"));
+            addTest(new WizardsJavaEE5Test("testServiceLocatorInWeb"));
+            addTest(new WizardsJavaEE5Test("testCachingServiceLocatorInWeb"));
+            addTest(new WizardsJavaEE5Test("testPersistenceUnitInWeb"));
+            addTest(new WizardsJavaEE5Test("testEntityClassInWeb"));
+            addTest(new WizardsJavaEE5Test("testBuildDefaultNewWebMod"));
             addTest(new NewProjectWizardsTest("closeProjects", "5"));
         }
     }
