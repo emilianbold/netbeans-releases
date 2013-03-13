@@ -81,6 +81,7 @@ import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
@@ -377,10 +378,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             }
         }
         if (path.endsWith("executions/execution/phase")) { //NOI18N
-            MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
-            @SuppressWarnings("unchecked")
-            List<String> phases = embedder.getLifecyclePhases();
-            return super.createTextValueList(phases.toArray(new String[phases.size()]), virtualTextCtx);
+            return super.createTextValueList(Constants.DEFAULT_PHASES.toArray(new String[Constants.DEFAULT_PHASES.size()]), virtualTextCtx);
         }
         if (path.endsWith("dependencies/dependency/version") || //NOI18N
             path.endsWith("plugins/plugin/version") || //NOI18N
