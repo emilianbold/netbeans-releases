@@ -42,6 +42,7 @@
 
 package org.netbeans.spi.java.hints;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -55,6 +56,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
@@ -198,6 +200,16 @@ public class ErrorDescriptionFactory {
                 return span;
             case METHOD_INVOCATION:
                 return computeNameSpan(((MethodInvocationTree) tree).getMethodSelect(), context);
+            case BLOCK:
+                Collection<? extends TreePath> prefix = context.getMultiVariables().get("$$1$");
+                
+                if (prefix != null) {
+                    BlockTree bt = (BlockTree) tree;
+                    
+                    if (bt.getStatements().size() > prefix.size()) {
+                        return computeNameSpan(bt.getStatements().get(prefix.size()), context);
+                    }
+                }
             default:
                 int start = (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree);
                 if (    StatementTree.class.isAssignableFrom(tree.getKind().asInterface())
