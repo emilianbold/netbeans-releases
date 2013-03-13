@@ -223,7 +223,7 @@ public final class DBScriptWizard implements WizardDescriptor.ProgressInstantiat
                 @Override
                 public void run() {
                     if (initialProblems.isEmpty()) {
-                        new GenerateScriptExecutor().execute(project, sFile, pe, pu, initialProblems, handle, validateOnly);
+                        new GenerateScriptExecutor().execute(project, sFile, pe, pu, props, initialProblems, handle, validateOnly);
                     }
                     if (!initialProblems.isEmpty()) {
                         StringBuilder sb = new StringBuilder();
