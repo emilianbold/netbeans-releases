@@ -463,7 +463,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             calls = new ArrayList<FunctionCall>();
                             functionCalls.put(interceptorToUse, calls);
                         }
-                        calls.add(new FunctionCall(name, funcArg));
+                        calls.add(new FunctionCall(name, modelBuilder.getCurrentDeclarationScope(), funcArg));
 
                     }
                 }
@@ -1353,15 +1353,23 @@ public class ModelVisitor extends PathNodeVisitor {
 
         private final String name;
 
+        private final DeclarationScope scope;
+
         private final Collection<FunctionArgument> arguments;
 
-        public FunctionCall(String name, Collection<FunctionArgument> arguments) {
+        public FunctionCall(String name, DeclarationScope scope,
+                Collection<FunctionArgument> arguments) {
             this.name = name;
+            this.scope = scope;
             this.arguments = arguments;
         }
 
         public String getName() {
             return name;
+        }
+
+        public DeclarationScope getScope() {
+            return scope;
         }
 
         public Collection<FunctionArgument> getArguments() {

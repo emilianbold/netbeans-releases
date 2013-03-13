@@ -497,4 +497,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     public void setDeprecated(boolean depreceted) {
         this.deprecated = depreceted;
     }
+
+    @Override
+    public String toString() {
+        return "JsObjectImpl{" + "declarationName=" + declarationName + ", parent=" + parent + ", kind=" + kind + '}';
+    }
 }

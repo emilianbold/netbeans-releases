@@ -47,6 +47,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -64,7 +65,8 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String functionName, JsObject globalObject, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public void intercept(String functionName, JsObject globalObject, DeclarationScope scope,
+            ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (args.size() == 2) {
             Iterator<FunctionArgument> iterator = args.iterator();
             FunctionArgument arg1 = iterator.next();
