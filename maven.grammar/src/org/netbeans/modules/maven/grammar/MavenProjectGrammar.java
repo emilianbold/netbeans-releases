@@ -133,9 +133,18 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         return getClass().getResourceAsStream("/org/netbeans/modules/maven/grammar/maven-4.0.0.xsd"); //NOI18N
     }
     
+    private List<GrammarResult> hardwiredProperty(HintContext hintCtx, String name, String htmlDesc) {
+        if (name.startsWith(hintCtx.getCurrentPrefix())) {
+            MyElement el = new MyElement(name);
+            el.setDescription(htmlDesc);
+            return Collections.singletonList((GrammarResult)el);
+        }        
+        return Collections.emptyList();
+    }
+    
     @Override
     protected List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, org.jdom.Element parent) {
-        List<GrammarResult> result = null;
+        List<GrammarResult> result = new ArrayList<GrammarResult>();
         if (path.endsWith("plugins/plugin/configuration") || //NOI18N
             path.endsWith("plugins/plugin/executions/execution/configuration")) { //NOI18N
             // assuming we have the configuration node as parent..
@@ -145,24 +154,30 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 : hintCtx.getParentNode().getPreviousSibling();
             MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
             ArtifactInfoHolder info = findPluginInfo(previous, embedder, true);
-            result = collectPluginParams(info, hintCtx);
-            if (result == null) { //let the local processing geta changce
+            List<GrammarResult> res = collectPluginParams(info, hintCtx);
+            if (res == null) { //let the local processing geta changce
                                //once the index failed.
                 Document pluginDoc = loadDocument(info, embedder);
                 if (pluginDoc != null) {
-                    result = collectPluginParams(pluginDoc, hintCtx);
+                    res = collectPluginParams(pluginDoc, hintCtx);
                 }
+            } 
+            if (res != null) {
+                result.addAll(res);
             }
+        }
+        
+        if (path.endsWith("project/properties") || path.endsWith("profile/properties")) {
+            result.addAll(hardwiredProperty(hintCtx, "netbeans.hint.license", "<html><h4>netbeans.hint.license</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Used by NetBeans to select a license header template from the IDE's default set.</html>"));
+            result.addAll(hardwiredProperty(hintCtx, "netbeans.hint.licensePath", "<html><h4>netbeans.hint.licensePath</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Used by NetBeans to find license header template from project's space in the filesystem. <br/>Value is an absolute or relative path to the template file.</html>"));
+            result.addAll(hardwiredProperty(hintCtx, "netbeans.hint.jdkPlatform", "<html><h4>netbeans.hint.jdkPlatform</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Used by NetBeans to determine which JDK platform defined in Tools/Java Platforms should be used to run the Maven builds.</html>"));
+            result.addAll(hardwiredProperty(hintCtx, "netbeans.compile.on.save", "<html><h4>netbeans.compile.on.save</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Used by NetBeans to determine if Compile on Save feature should be enabled for the project or not.<br/>Allowed values are: true/false</html>"));
+            result.addAll(hardwiredProperty(hintCtx, "netbeans.checkstyle.format", "<html><h4>netbeans.checkstyle.format</h4><p>A NetBeans specific property, only applicable within the IDE.</p><br/>Allowed values are: true/false</html>"));
         }
 
         GrammarExtensionProvider extProvider = Lookup.getDefault().lookup(GrammarExtensionProvider.class);
         if (extProvider != null) {
-            List<GrammarResult> extResult = extProvider.getDynamicCompletion(path, hintCtx, parent);
-            if (result == null) {
-                result = extResult;
-            } else {
-                result.addAll(extResult);
-            }
+            result.addAll(extProvider.getDynamicCompletion(path, hintCtx, parent));
         }
 
         return result;
