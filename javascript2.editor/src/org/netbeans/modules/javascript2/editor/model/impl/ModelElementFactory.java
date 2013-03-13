@@ -71,7 +71,16 @@ class ModelElementFactory {
         }
         JsObjectImpl inObject = modelBuilder.getCurrentObject();
         JsObject globalObject = modelBuilder.getGlobal();
-        JsObject parentObject = isAnnonymous ? globalObject : inObject;
+        JsObject parentObject;
+        if (isAnnonymous) {
+            DeclarationScopeImpl decScope = modelBuilder.getCurrentDeclarationScope();
+            while (decScope != null && decScope.isAnonymous()) {
+                decScope = (DeclarationScopeImpl)decScope.getInScope();
+            }
+            parentObject = decScope == null ? globalObject : decScope;
+        } else {
+            parentObject = inObject;
+        }
         while(parentObject.getParent() != null && parentObject.getModifiers().contains(Modifier.PROTECTED)) {
             parentObject = parentObject.getParent();
         }
@@ -96,7 +105,7 @@ class ModelElementFactory {
             } 
         } else {
             result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationFunction(),
-                    inObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
+                    parentObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
         }
         String propertyName = result.getDeclarationName().getName();
         if (parentObject == null) {
