@@ -94,10 +94,11 @@ public class RemoteFXService {
     
     final private static Thread accessThread = new Thread(new FXAccessLoop(), "FX Access Thread (Visual Debugger)"); // NOI18N
     
-    public static void startAccessLoop() {
+    public static boolean startAccessLoop() {
         accessThread.setDaemon(true);
         accessThread.setPriority(Thread.MIN_PRIORITY);
         accessThread.start();
+        return true;
     }
     
     private static void access() {

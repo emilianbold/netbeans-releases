@@ -51,6 +51,7 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
@@ -92,6 +93,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.PrimitiveValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
@@ -288,10 +290,17 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(cor);//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
 
             InvocationExceptionTranslated iextr = null;
-            Method startMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startAccessLoop", "()V");
+            Method startMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startAccessLoop", "()Z");
             try {
                 t.notifyMethodInvoking();
-                ClassTypeWrapper.invokeMethod(serviceClass, tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                Value ret = ClassTypeWrapper.invokeMethod(serviceClass, tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                if (ret instanceof PrimitiveValue) {
+                    boolean success = PrimitiveValueWrapper.booleanValue((PrimitiveValue) ret);
+                    RemoteServices.setAccessLoopStarted(t.getDebugger(), success);
+                    if (!success) {
+                        return ;
+                    }
+                }
                 boolean trackComponentChanges = properties.getBoolean(PROPERTIES_TCC, true);
                 isTrackComponentChanges = trackComponentChanges;
                 if (trackComponentChanges && RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
