@@ -167,7 +167,28 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/import.html"/>
             </folder>
         </folder>        
+        <folder name="Other">
+            <folder name="Folder">
+                <attr name="template" boolvalue="true"/>
+                <attr
+                    bundlevalue="org.netbeans.modules.project.ui.Bundle#folderIterator" name="displayName"/>
+                <attr name="iconBase" stringvalue="org/openide/loaders/defaultFolder.gif"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/templatesFolder.html"/>
+                <attr
+                    methodvalue="org.netbeans.modules.project.ui.NewFileIterator.folderIterator" name="instantiatingIterator"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>                
+            </folder>
+        </folder>
+
+        <!-- Licenses folder -->
         <folder name="Licenses">
+            <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Licenses"/>
+            <attr name="templateCategory" stringvalue="invisible"/> <!-- simple=false would hide from New File but also from Template Manager -->
+            <attr name="position" intvalue="0"/>
+            <file name="license-default.txt" url="license-default.txt">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Licenses/license-default.txt"/>
+                <attr name="template" boolvalue="true"/>
+            </file>
             <!-- XXX these ought to have displayName bundlevalues set on them -->
             <file name="license-apache20.txt" url="apache20-license.txt">
                 <attr name="displayName" stringvalue="Apache License 2.0"/>
@@ -204,31 +225,7 @@ made subject to such option by the copyright holder.
                 <attr name="mavenLicenseURL" stringvalue="http://opensource.org/licenses/bsd-license.php"/>
                 <attr name="template" boolvalue="true"/>
             </file>            
-        </folder>
-        
-
-        <folder name="Other">
-            <folder name="Folder">
-                <attr name="template" boolvalue="true"/>
-                <attr
-                    bundlevalue="org.netbeans.modules.project.ui.Bundle#folderIterator" name="displayName"/>
-                <attr name="iconBase" stringvalue="org/openide/loaders/defaultFolder.gif"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/templatesFolder.html"/>
-                <attr
-                    methodvalue="org.netbeans.modules.project.ui.NewFileIterator.folderIterator" name="instantiatingIterator"/>
-                <attr name="templateCategory" stringvalue="simple-files"/>                
-            </folder>
-        </folder>
-
-        <!-- Licenses folder -->
-        <folder name="Licenses">
-            <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Licenses"/>
-            <attr name="templateCategory" stringvalue="invisible"/> <!-- simple=false would hide from New File but also from Template Manager -->
-            <attr name="position" intvalue="0"/>
-            <file name="license-default.txt" url="license-default.txt">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Licenses/license-default.txt"/>
-                <attr name="template" boolvalue="true"/>
-            </file>
+            
         </folder>
     </folder>
     
