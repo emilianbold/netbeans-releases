@@ -1068,17 +1068,26 @@ public class CSSStylesSelectionPanel extends JPanel {
                 String matchedNode = node.getDisplayName();
                 matchedNodeLabel.setText("<html>"+matchedNode); // NOI18N
                 String ruleLocation = null;
-                Resource ruleOrigin = node.getLookup().lookup(Resource.class);
-                if (ruleOrigin != null) {
-                    FileObject fob = ruleOrigin.toFileObject();
-                    if (fob == null) {
-                        ruleLocation = rule.getSourceURL();
-                    } else {
-                        ruleLocation = fob.getNameExt();
+                RuleInfo ruleInfo = node.getLookup().lookup(RuleInfo.class);
+                if (ruleInfo != null && ruleInfo.getMetaSourceFile() != null && ruleInfo.getMetaSourceLine() != -1) {
+                    ruleLocation = ruleInfo.getMetaSourceFile();
+                    int slashIndex = ruleLocation.lastIndexOf('/');
+                    ruleLocation = ruleLocation.substring(slashIndex+1);
+                    ruleLocation = ruleLocation.replaceAll("\\\\", ""); // NOI18N
+                    ruleLocation += ":" + ruleInfo.getMetaSourceLine(); // NOI18N
+                } else {
+                    Resource ruleOrigin = node.getLookup().lookup(Resource.class);
+                    if (ruleOrigin != null) {
+                        FileObject fob = ruleOrigin.toFileObject();
+                        if (fob == null) {
+                            ruleLocation = rule.getSourceURL();
+                        } else {
+                            ruleLocation = fob.getNameExt();
+                        }
+                        // Source line seems to be 0-based (i.e. is 0 for the first line).    
+                        int sourceLine = rule.getSourceLine() + 1;
+                        ruleLocation += ":" + sourceLine; // NOI18N
                     }
-                    // Source line seems to be 0-based (i.e. is 0 for the first line).    
-                    int sourceLine = rule.getSourceLine() + 1;
-                    ruleLocation += ":" + sourceLine; // NOI18N
                 }
                 ruleLocationLabel.setVisible(ruleLocation != null);
                 if (ruleLocation != null) {

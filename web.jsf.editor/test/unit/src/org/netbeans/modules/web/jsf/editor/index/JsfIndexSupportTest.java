@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor.index;
 
-import org.openide.filesystems.FileObject;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * The need for this class seems strange to me since I would expect such functionality
- * (providing timestamp for each index result) being part of the indexing support itself.
- *
- * Possibly remove if there's a standard way of doing this.
  *
  * @author marekfukala
  */
-public class IndexedFile {
-
-    private long timestamp;
-    private String md5checksum;
-    private FileObject file;
-
-    public IndexedFile(long timestamp, String md5checksum, FileObject file) {
-        this.timestamp = timestamp;
-        this.md5checksum = md5checksum;
-        this.file = file;
+public class JsfIndexSupportTest extends NbTestCase {
+    
+    public JsfIndexSupportTest(String name) {
+        super(name);
     }
 
-    public FileObject getFile() {
-        return file;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
+    public void testGetMD5Checksum() {
+        assertEquals("d41d8cd98f00b204e9800998ecf8427e", JsfIndexSupport.getMD5Checksum(getIS("")));
+        assertEquals("79c2b46ce2594ecbcb5b73e928345492", JsfIndexSupport.getMD5Checksum(getIS("ahoj")));
+        assertEquals("6fb29c803e127d5686c77ee3cdd76115", JsfIndexSupport.getMD5Checksum(getIS("ahoj2")));
     }
     
-    public String getMD5Checksum() {
-        return md5checksum;
+    private InputStream getIS(String content) {
+        return new ByteArrayInputStream(content.getBytes());
     }
-
-    
 }

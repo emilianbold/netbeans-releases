@@ -261,7 +261,8 @@ public class JsfIndex {
                 "true", //NOI18N
                 QuerySupport.Kind.EXACT,
                 JsfIndexSupport.FACELETS_LIBRARY_MARK_KEY,
-                JsfIndexSupport.TIMESTAMP_KEY);
+                JsfIndexSupport.TIMESTAMP_KEY,
+                JsfIndexSupport.FILE_CONTENT_CHECKSUM);
 
         convertToFiles(results, files);
     }
@@ -283,7 +284,8 @@ public class JsfIndex {
                 namespace, //NOI18N
                 QuerySupport.Kind.EXACT,
                 JsfIndexSupport.TLD_LIBRARY_MARK_KEY,
-                JsfIndexSupport.TIMESTAMP_KEY);
+                JsfIndexSupport.TIMESTAMP_KEY,
+                JsfIndexSupport.FILE_CONTENT_CHECKSUM);
 
         //filter TLD descriptors since the query returns even facelets library descriptors
         for (IndexResult result : results) {
@@ -293,7 +295,8 @@ public class JsfIndex {
             FileObject file = result.getFile();
             if (file != null) {
                 long timestamp = Long.parseLong(result.getValue(JsfIndexSupport.TIMESTAMP_KEY));
-                return new IndexedFile(timestamp, file);
+                String md5checksum = result.getValue(JsfIndexSupport.FILE_CONTENT_CHECKSUM);
+                return new IndexedFile(timestamp, md5checksum, file);
             }
         }
 
@@ -306,7 +309,8 @@ public class JsfIndex {
             FileObject file = result.getFile();
             if (file != null) {
                 long timestamp = Long.parseLong(result.getValue(JsfIndexSupport.TIMESTAMP_KEY));
-                files.add(new IndexedFile(timestamp, file));
+                String md5checksum = result.getValue(JsfIndexSupport.FILE_CONTENT_CHECKSUM);
+                files.add(new IndexedFile(timestamp, md5checksum, file));
             }
         }
     }
