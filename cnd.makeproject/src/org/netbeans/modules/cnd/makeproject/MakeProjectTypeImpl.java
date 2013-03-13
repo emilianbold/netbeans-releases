@@ -107,7 +107,7 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     }
 
     public Icon getIcon(Element element) {
-        Element conf = XMLUtil.findElement(element, "configuration", MakeBasedProjectFactorySingleton.PROJECT_NS);
+        Element conf = XMLUtil.findElement(element, "configuration", MakeBasedProjectFactorySingleton.PROJECT_NS); // NOI18N
         if (conf != null) {
             NodeList type = conf.getElementsByTagName(CONFIGURATION_TYPE_ELEMENT);
             if (type != null && type.getLength() > 0) {
@@ -116,7 +116,7 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
                     try {
                         switch (Integer.valueOf(item.getTextContent())) {
                             case MakeConfiguration.TYPE_MAKEFILE:
-                                return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_MAKEFILE_ICON, false); // NOI18N
+                                return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_MAKEFILE_ICON, false);
                             case MakeConfiguration.TYPE_APPLICATION:
                                 return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_APPLICATION_ICON, false);
                             case MakeConfiguration.TYPE_DB_APPLICATION:
