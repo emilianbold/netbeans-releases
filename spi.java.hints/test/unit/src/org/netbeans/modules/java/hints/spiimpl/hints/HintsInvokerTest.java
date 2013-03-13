@@ -203,7 +203,7 @@ public class HintsInvokerTest extends TestBase {
                        "\n" +
                        "public class Test {\n" +
                        "     private int test(java.io.File f) {\n" +
-                       "         if (!true)\n" +
+                       "         if (false)\n" +
                        "             System.err.println(2);\n" +
                        "         else\n" +
                        "             System.err.println(1);\n" +
@@ -229,7 +229,7 @@ public class HintsInvokerTest extends TestBase {
                        "\n" +
                        "public class Test {\n" +
                        "     private int test(java.io.File f) {\n" +
-                       "         if (!true)\n" +
+                       "         if (false)\n" +
                        "             return 2;\n" +
                        "         else\n" +
                        "             return 1;\n" +
@@ -335,7 +335,7 @@ public class HintsInvokerTest extends TestBase {
                        "\n" +
                        "public class Test {\n" +
                        "     private void test() {" +
-                       "         if (!true) {\n" +
+                       "         if (false) {\n" +
                        "             System.err.println();\n" +
                        "         }\n" +
                        "     }\n" +

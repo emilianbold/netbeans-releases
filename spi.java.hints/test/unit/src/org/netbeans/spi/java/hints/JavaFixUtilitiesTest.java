@@ -899,6 +899,154 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
     
+    public void testOptimizeNegExpression() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(int i) {\n" +
+                           "        if (i == 0) {\n" +
+                           "            System.err.println(1);\n" +
+                           "        } else {\n" +
+                           "            System.err.println(2);\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if ($cond) $then; else $else; => if (!$cond) $else; else $then;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(int i) {\n" +
+                           "        if (i != 0) {\n" +
+                           "            System.err.println(2);\n" +
+                           "        } else {\n" +
+                           "            System.err.println(1);\n" +
+                           "        }\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testDontOptimizeNegExpression() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(int i) {\n" +
+                           "        if (!(i == 0)) {\n" +
+                           "            System.err.println(1);\n" +
+                           "        } else {\n" +
+                           "            System.err.println(2);\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if (!$cond) $then; else $else; => if (!$cond) $else; else $then;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(int i) {\n" +
+                           "        if (!(i == 0)) {\n" +
+                           "            System.err.println(2);\n" +
+                           "        } else {\n" +
+                           "            System.err.println(1);\n" +
+                           "        }\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testCannotOptimizeNegExpression() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(String str) {\n" +
+                           "        if (str.isEmpty()) {\n" +
+                           "            System.err.println(1);\n" +
+                           "        } else {\n" +
+                           "            System.err.println(2);\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if ($cond) $then; else $else; => if (!$cond) $else; else $then;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(String str) {\n" +
+                           "        if (!str.isEmpty()) {\n" +
+                           "            System.err.println(2);\n" +
+                           "        } else {\n" +
+                           "            System.err.println(1);\n" +
+                           "        }\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testOptimizeNegExpressionNeg() throws Exception {
+        performOptimizeNegExpressionTest("!s.isEmpty()", "s.isEmpty()");
+    }
+    
+    public void testOptimizeNegExpressionParens() throws Exception {
+        performOptimizeNegExpressionTest("(!(a.length == 0))", "a.length == 0");
+    }
+    
+    public void testOptimizeNegExpressionEquals() throws Exception {
+        performOptimizeNegExpressionTest("i == 0", "i != 0");
+    }
+    
+    public void testOptimizeNegExpressionNotEquals() throws Exception {
+        performOptimizeNegExpressionTest("i != 0", "i == 0");
+    }
+    
+    public void testOptimizeNegExpressionTrue() throws Exception {
+        performOptimizeNegExpressionTest("true", "false");
+    }
+    
+    public void testOptimizeNegExpressionFalse() throws Exception {
+        performOptimizeNegExpressionTest("false", "true");
+    }
+    
+    public void testOptimizeNegExpressionDeMorganAnd() throws Exception {
+        performOptimizeNegExpressionTest("a.length != 0 && true", "a.length == 0 || false");
+    }
+    
+    public void testOptimizeNegExpressionDeMorganOr() throws Exception {
+        performOptimizeNegExpressionTest("args.length != 0 || false", "args.length == 0 && true");
+    }
+    
+    public void testOptimizeNegExpressionLess() throws Exception {
+        performOptimizeNegExpressionTest("i < 0", "i >= 0");
+    }
+    
+    public void testOptimizeNegExpressionLessEq() throws Exception {
+        performOptimizeNegExpressionTest("i <= 0", "i > 0");
+    }
+    
+    public void testOptimizeNegExpressionGreater() throws Exception {
+        performOptimizeNegExpressionTest("i > 0", "i <= 0");
+    }
+    
+    public void testOptimizeNegExpressionGreaterEq() throws Exception {
+        performOptimizeNegExpressionTest("i >= 0", "i < 0");
+    }
+    
+    public void testOptimizeNegExpressionAnd() throws Exception {
+        performOptimizeNegExpressionTest("b1 && b2", "!b1 || !b2");
+    }
+    
+    private void performOptimizeNegExpressionTest(String origExpr, String newExpr) throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(String s, int i, boolean b1, boolean b2, String... a) {\n" +
+                           "        if (" + origExpr + ") {\n" +
+                           "            System.err.println(1);\n" +
+                           "        } else {\n" +
+                           "            System.err.println(2);\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if ($cond) $then; else $else; => if (!$cond) $else; else $then;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(String s, int i, boolean b1, boolean b2, String... a) {\n" +
+                           "        if (" + newExpr + ") {\n" +
+                           "            System.err.println(2);\n" +
+                           "        } else {\n" +
+                           "            System.err.println(1);\n" +
+                           "        }\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
 
