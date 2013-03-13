@@ -73,7 +73,9 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="FoldManager">
-                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance">
+                	<attr name="position" intvalue="1100"/>
+                    </file>
                 </folder>
 
                 <folder name="SideBar">
