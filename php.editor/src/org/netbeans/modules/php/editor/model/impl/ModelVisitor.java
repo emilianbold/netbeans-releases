@@ -70,7 +70,6 @@ import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
-import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;

@@ -317,7 +317,7 @@ public class GroovyFormatter implements Formatter {
             TokenId id = token.id();
 
             // http://www.netbeans.org/issues/show_bug.cgi?id=115279
-            boolean isContinuationOperator = (id == GroovyTokenId.NONUNARY_OP || id == GroovyTokenId.DOT);
+            boolean isContinuationOperator = id == GroovyTokenId.DOT;
 
             if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
                 // Continued lines have different token types
@@ -345,17 +345,12 @@ public class GroovyFormatter implements Formatter {
                 token = LexUtilities.getToken(doc, Utilities.getRowFirstNonWhite(doc, offset));
                 if (token != null) {
                     id = token.id();
-                    if (id == GroovyTokenId.LBRACE || id == GroovyTokenId.ANY_KEYWORD && token.text().toString().equals("alias")) { // NOI18N
+                    if (id == GroovyTokenId.LBRACE) {
                         return false;
                     }
                 }
 
                 return true;
-            } else if (id == GroovyTokenId.ANY_KEYWORD) {
-                String text = token.text().toString();
-                if ("or".equals(text) || "and".equals(text)) { // NOI18N
-                    return true;
-                }
             }
         }
 
