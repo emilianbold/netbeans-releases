@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -119,8 +120,25 @@ public final class Model {
     }
 
     public VariableScope getVariableScope(final int offset) {
+        return getVariableScope(offset, VariableScopeFinder.ScopeRangeAcceptor.BLOCK);
+    }
+
+    /**
+     * Tries to find the variable scope even when the caret is not directly in scope (block) ranges.
+     *
+     * E.g.: One has a caret inside a method name, so then the method Scope should be returned
+     * even though it starts after the method name ends.
+     *
+     * @param offset
+     * @return
+     */
+    public VariableScope getVariableScopeForNamedElement(final int offset) {
+        return getVariableScope(offset, VariableScopeFinder.ScopeRangeAcceptor.NAME_START_BLOCK_END);
+    }
+
+    private VariableScope getVariableScope(final int offset, final VariableScopeFinder.ScopeRangeAcceptor scopeRangeAcceptor) {
         final ModelVisitor visitor = getModelVisitor();
-        return visitor.getVariableScope(offset);
+        return visitor.getVariableScope(offset, scopeRangeAcceptor);
     }
 
     public ModelElement findDeclaration(final PhpElement element) {
@@ -141,4 +159,5 @@ public final class Model {
         }
         return modelVisitor;
     }
+
 }

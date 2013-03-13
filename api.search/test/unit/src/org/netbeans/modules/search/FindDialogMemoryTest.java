@@ -160,6 +160,13 @@ public class FindDialogMemoryTest extends NbTestCase {
 
     }
 
+    public void testReplacePatternSpecified() {
+        memory.setReplacePatternSpecified(true);
+        assertTrue(memory.isReplacePatternSpecified());
+        memory.setReplacePatternSpecified(false);
+        assertFalse(memory.isReplacePatternSpecified());
+    }
+
     private static int getMaxFileNameCount() throws Exception {
         Field field = FindDialogMemory.class
                       .getDeclaredField("maxFileNamePatternCount");
