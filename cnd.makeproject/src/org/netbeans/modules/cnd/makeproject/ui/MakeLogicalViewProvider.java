@@ -98,12 +98,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
     static final String SUBTYPE_FOLDER = "x-org-netbeans-modules-cnd-makeproject-uidnd-folder"; // NOI18N
     static final String MASK = "mask"; // NOI18N
-    final static RequestProcessor ANNOTATION_RP = new RequestProcessor("MakeLogicalViewProvider.AnnotationUpdater", 10); // NOI18N
+    private final RequestProcessor annotationRP;
     private final MakeProject project;
     private MakeLogicalViewRootNode projectRootNode;
 
     public MakeLogicalViewProvider(MakeProject project) {
         this.project = project;
+        // it is important to have RP with capacity "1", due to bug #223587 which races between
+        // runners: BaseMakeViewChildren.refreshKeysTask & MakeLogicalViewProvider.setVisible
+        annotationRP = new RequestProcessor("MakeLogicalViewProvider.AnnotationUpdater " + project, 1); // NOI18N
         assert project != null;
     }
 
@@ -121,6 +124,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             createLoadingRoot();
             return projectRootNode;
         }
+    }
+    
+    RequestProcessor getAnnotationRP() {
+        return annotationRP;
     }
 
     private void createRoot(MakeConfigurationDescriptor configurationDescriptor) {
@@ -361,7 +368,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         // is executed after update loop is performed.
         // Unfortunately this approach uses static metod (as there is no access
         // to the needed children refresher...
-        BaseMakeViewChildren.postSetVisibleAction(runnable);
+        MakeLogicalViewProvider provider = project.getLookup().lookup(MakeLogicalViewProvider.class);
+        if (provider != null) {
+            provider.getAnnotationRP().post(runnable, BaseMakeViewChildren.WAIT_DELAY);
+        }
     }
 
     public static void checkForChangedName(final Project project) {
