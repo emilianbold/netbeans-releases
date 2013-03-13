@@ -773,7 +773,7 @@ propertyValue
 	:
         //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
         //(the IE allows also just ident as its content)
-        (~(HASH_SYMBOL|SEMI)* HASH_SYMBOL LBRACE)=>scss_declaration_property_value_interpolation_expression
+        (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>scss_declaration_property_value_interpolation_expression
         | (expressionPredicate)=>expression
         | 
         
@@ -866,7 +866,9 @@ function
 	: 	functionName ws?
 		LPAREN ws?
 		(
-			expression
+                    {isCssPreprocessorSource()}? cp_variable_value
+                    |
+                    expression
 		| 
 		  	(
 				fnAttribute (COMMA ws? fnAttribute )*				

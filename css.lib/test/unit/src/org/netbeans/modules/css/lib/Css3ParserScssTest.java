@@ -1114,4 +1114,33 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
+
+    public void testPropertyValueSyntacticPredicateBoundary() {
+        //the scss_declaration_property_value_interpolation_expression synt. predicate
+        //was terminated just by colon so it seen the interpolation expression
+        //few lines below and caused bad parsing
+        String source =
+                "#test2 { \n"
+                + "    background-color: cyan\n"
+                + "}\n"
+                + "#test#{$i} { }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testMultiplicityOperatorInPropertyValueFunction() {
+        String source =
+                ".c {\n"
+                + "    background-color: darken(orange, $i*5);\n"
+                + "}\n"
+                + "";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
 }
