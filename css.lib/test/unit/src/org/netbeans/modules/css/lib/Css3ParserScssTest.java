@@ -1087,7 +1087,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
-    public void testMixinCallArgWithPropertyName_fails() {
+    public void testMixinCallArgWithPropertyName() {
         String source =
                 "@mixin border-radius($radius: 5px, $moz: true, $webkit: true, $ms: true) {\n"
                 + "}\n"
@@ -1102,7 +1102,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
-    public void testMixinCallArgWithValueSeparatedByWS_fails_FIX() {
+    public void testMixinCallArgWithValueSeparatedByWS() {
         String source =
                 "#id {\n"
                 + "    @include border-radius(5px, -moz -webkit);\n"
@@ -1113,5 +1113,34 @@ public class Css3ParserScssTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
+    }
+
+    public void testPropertyValueSyntacticPredicateBoundary() {
+        //the scss_declaration_property_value_interpolation_expression synt. predicate
+        //was terminated just by colon so it seen the interpolation expression
+        //few lines below and caused bad parsing
+        String source =
+                "#test2 { \n"
+                + "    background-color: cyan\n"
+                + "}\n"
+                + "#test#{$i} { }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testMultiplicityOperatorInPropertyValueFunction() {
+        String source =
+                ".c {\n"
+                + "    background-color: darken(orange, $i*5);\n"
+                + "}\n"
+                + "";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
     }
 }

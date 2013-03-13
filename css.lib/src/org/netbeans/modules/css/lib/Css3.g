@@ -383,7 +383,11 @@ media
                 | page  ws?
                 | fontFace  ws?
                 | vendorAtRule  ws?
-                | {isScssSource()}? media ws?
+                
+                //Just a partial hotfix for nested MQ
+                //complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
+                | media ws?
+//                | {isScssSource()}? media ws?
                 
             )*
          RBRACE
@@ -420,14 +424,16 @@ mediaFeature
  
 bodyItem
     : 
-    	rule
+        //following combination of semantic and syntactic predicated doesn't work
+//        | {isCssPreprocessorSource()}? (cp_mixin_call)=>cp_mixin_call
+        (cp_mixin_call)=>cp_mixin_call
+    	| rule
         | media
         | page
         | counterStyle
         | fontFace
         | vendorAtRule
         | {isCssPreprocessorSource()}? cp_variable_declaration
-        | {isCssPreprocessorSource()}? cp_mixin_call
         | {isCssPreprocessorSource()}? importItem //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
         | {isScssSource()}? sass_debug
         | {isScssSource()}? sass_control
@@ -576,9 +582,11 @@ property
     
 rule 
     :   ( 
-            ( {isCssPreprocessorSource()}? cp_mixin_declaration )
+             
+//            ( {isCssPreprocessorSource()}? (cp_mixin_declaration)=>cp_mixin_declaration )
+            (cp_mixin_declaration)=>cp_mixin_declaration 
             | 
-            ( selectorsGroup )
+            selectorsGroup 
         )
 //        LBRACE ws? syncToDeclarationsRule
         LBRACE ws? syncToFollow
@@ -769,7 +777,7 @@ propertyValue
 	:
         //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
         //(the IE allows also just ident as its content)
-        (~(HASH_SYMBOL|SEMI)* HASH_SYMBOL LBRACE)=>scss_declaration_property_value_interpolation_expression
+        (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>scss_declaration_property_value_interpolation_expression
         | (expressionPredicate)=>expression
         | 
         
@@ -862,7 +870,9 @@ function
 	: 	functionName ws?
 		LPAREN ws?
 		(
-			expression
+                    {isCssPreprocessorSource()}? cp_variable_value
+                    |
+                    expression
 		| 
 		  	(
 				fnAttribute (COMMA ws? fnAttribute )*				
@@ -1021,8 +1031,10 @@ cp_mixin_call_args
     
 cp_mixin_call_arg
     :
-    term
-//    cp_arg | term
+//    term
+    cp_arg
+    | cp_expression
+//    | term
 //    cp_arg | cp_expression /*term*/
     ;
 
@@ -1039,7 +1051,7 @@ cp_args_list
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
 cp_arg
     :
-    cp_variable ( COLON ws? cp_expression )?
+    cp_variable ( ws? COLON ws? cp_expression )?
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {

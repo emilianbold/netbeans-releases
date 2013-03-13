@@ -110,7 +110,7 @@ public class Rule {
         } else {
             media = Collections.EMPTY_LIST;
         }
-        if (isRuleMatch) {
+        if (rule.containsKey("selectorList")) { // NOI18N
             JSONObject selectorList = (JSONObject)rule.get("selectorList"); // NOI18N
             selector = (String)selectorList.get("text"); // NOI18N
             if (selectorList.containsKey("range")) { // NOI18N
@@ -223,6 +223,26 @@ public class Rule {
     @Override
     public String toString() {
         return json.toString();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Rule)) {
+            return false;
+        }
+        RuleId ruleId = getId();
+        if (ruleId == null) {
+            return (this == object);
+        } else {
+            Rule other = (Rule)object;
+            return ruleId.equals(other.getId());
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        RuleId ruleId = getId();
+        return (ruleId == null) ? super.hashCode() : ruleId.hashCode();
     }
 
 }
