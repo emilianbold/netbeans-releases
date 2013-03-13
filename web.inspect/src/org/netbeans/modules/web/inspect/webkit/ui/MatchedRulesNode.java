@@ -51,7 +51,10 @@ import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.InheritedStyleEntry;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
+import org.netbeans.modules.web.webkit.debugging.api.css.Media;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
+import org.netbeans.modules.web.webkit.debugging.api.css.Style;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -142,6 +145,7 @@ public class MatchedRulesNode extends AbstractNode {
      */
     private MatchedRuleNode createMatchedRuleNode(Node node, Rule rule, List<String> properties, boolean matched) {
         RuleInfo ruleInfo = new RuleInfo();
+        fillMetaSourceInfo(ruleInfo, rule);
         List<org.netbeans.modules.web.webkit.debugging.api.css.Property> ruleProperties = rule.getStyle().getProperties();
         List<String> active = new ArrayList<String>(); // Names of active properties in this rule
         for (int i=ruleProperties.size()-1; i>=0; i--) {
@@ -162,6 +166,77 @@ public class MatchedRulesNode extends AbstractNode {
             Logger.getLogger(MatchedRuleNode.class.getName()).log(Level.INFO, "Matched rule with null ID: {0}", rule); // NOI18N
         }
         return new MatchedRuleNode(node, rule, new Resource(project, rule.getSourceURL()), ruleInfo);
+    }
+
+    /**
+     * Fills information about the meta-source of the specified rule
+     * into the given {@code RuleInfo} object.
+     * 
+     * @param info object to fill with the meta-source information.
+     * @param rule rule whose meta-source information should be filled.
+     */
+    private void fillMetaSourceInfo(RuleInfo info, Rule rule) {
+        StyleSheetBody body = rule.getParentStyleSheet();
+        if (body != null) {
+            List<Rule> rules = body.getRules();
+            int index = rules.indexOf(rule);
+            if (index != -1) {
+                while (index > 0) {
+                    index--;
+                    Rule previousRule = rules.get(index);
+                    List<Media> medias = previousRule.getMedia();
+                    if (medias.isEmpty()) {
+                        break;
+                    } else {
+                        Media media = medias.get(0);
+                        String mediaText = media.getText();
+                        if ("-sass-debug-info".equals(mediaText)) { // NOI18N
+                             String selector = previousRule.getSelector();
+                             if ("filename".equals(selector)) { // NOI18N
+                                 String file = propertyValue(previousRule, "font-family"); // NOI18N
+                                 info.setMetaSourceFile(file);
+                             } else if ("line".equals(selector)) { // NOI18N
+                                 String lineTxt = propertyValue(previousRule, "font-family"); // NOI18N
+                                 String prefix = "0003"; // NOI18N
+                                 int prefixIndex = lineTxt.indexOf(prefix);
+                                 if (prefixIndex != -1) {
+                                     lineTxt = lineTxt.substring(prefixIndex + prefix.length());
+                                     try {
+                                        int lineNo = Integer.parseInt(lineTxt);
+                                        info.setMetaSourceLine(lineNo);
+                                     } catch (NumberFormatException nfex) {
+                                         Logger.getLogger(MatchedRulesNode.class.getName()).log(Level.INFO, null, nfex);
+                                     }
+                                 }
+                             }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the value of the specified property of the given rule.
+     * 
+     * @param rule rule whose property value should be returned.
+     * @param propertyName name of the property whose value should be returned.
+     * @return value of the specified property or {@code null} when
+     * there is no property with the specified name in the given rule.
+     */
+    private String propertyValue(Rule rule, String propertyName) {
+        String value = null;
+        Style style = rule.getStyle();
+        for (org.netbeans.modules.web.webkit.debugging.api.css.Property property : style.getProperties()) {
+            String name = property.getName();
+            if (propertyName.equals(name)) {
+                 value = property.getValue();
+                 break;
+            }
+        }
+        return value;
     }
 
 }

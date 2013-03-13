@@ -377,22 +377,7 @@ public class JFXProjectGenerator {
                     FileUtil.copyFile(swingTemplateFO3, templatesFO, "FXSwingTemplateApplication"); // NOI18N
                 }
             }
-            AntBuildExtender extender = p.getLookup().lookup(AntBuildExtender.class);
-            if (extender != null) {
-                assert jfxBuildFile != null;
-                if (extender.getExtension("jfx") == null) { // NOI18N
-                    AntBuildExtender.Extension ext = extender.addExtension("jfx", jfxBuildFile); // NOI18N
-                    ext.addDependency("-init-check", "-check-javafx"); // NOI18N
-                    ext.addDependency("jar", "-jfx-copylibs"); // NOI18N
-                    ext.addDependency("jar", "-rebase-libs"); //NOI18N
-                    ext.addDependency("-post-jar", "-jfx-copylibs"); //NOI18N
-                    ext.addDependency("-post-jar", "-rebase-libs"); //NOI18N
-                    ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
-                    ext.addDependency("run", "jar"); //NOI18N
-                    ext.addDependency("debug", "jar");//NOI18N
-                    ext.addDependency("profile", "jar");//NOI18N
-                }
-            }
+            JFXProjectUtils.addExtension(p);
         }
     }
 

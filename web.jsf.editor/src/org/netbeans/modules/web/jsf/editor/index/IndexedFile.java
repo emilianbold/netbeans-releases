@@ -55,10 +55,12 @@ import org.openide.filesystems.FileObject;
 public class IndexedFile {
 
     private long timestamp;
+    private String md5checksum;
     private FileObject file;
 
-    public IndexedFile(long timestamp, FileObject file) {
+    public IndexedFile(long timestamp, String md5checksum, FileObject file) {
         this.timestamp = timestamp;
+        this.md5checksum = md5checksum;
         this.file = file;
     }
 
@@ -68,6 +70,10 @@ public class IndexedFile {
 
     public long getTimestamp() {
         return timestamp;
+    }
+    
+    public String getMD5Checksum() {
+        return md5checksum;
     }
 
     

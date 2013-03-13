@@ -48,8 +48,10 @@ import java.io.OutputStream;
 import javax.swing.JComponent;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.TemplateAttrProvider;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -140,7 +142,11 @@ public class LicenseHeaderPanelProvider implements ProjectCustomizer.CompositeCa
 
         @Override
         public String getGlobalLicenseName() {
-            return props.get(Constants.HINT_LICENSE, true);
+            String s =  props.get(Constants.HINT_LICENSE, true);
+            if (s == null) {
+                s = TemplateAttrProvider.findLicenseByMavenProjectContent(project.getLookup().lookup(NbMavenProject.class).getMavenProject());
+            }
+            return s;
         }
 
         @Override

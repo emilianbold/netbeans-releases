@@ -63,13 +63,17 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.project.*;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.cookies.CloseCookie;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -77,6 +81,12 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Utility class for JavaFX 2.0+ Project
@@ -89,12 +99,37 @@ public final class JFXProjectUtils {
     private static Set<SearchScope> scopes = new HashSet<SearchScope>(Arrays.asList(SearchScope.SOURCE));
     
     private static final String JFX_BUILD_TEMPLATE = "Templates/JFX/jfx-impl.xml"; //NOI18N
+    private static final String CURRENT_EXTENSION = "jfx";  //NOI18N
+    private static final String[] OLD_EXTENSIONS = new String[0]; // NOI18N
+    private static final String NBPROJECT = "nbproject"; // NOI18N
+    private static final String JFX_BUILD_IMPL_NAME = "jfx-impl"; // NOI18N
+    private static final String JFX_BUILD_IMPL_PATH = NBPROJECT + "/" + JFX_BUILD_IMPL_NAME + ".xml";   //NOI18N
     private static volatile String currentJfxImplCRCCache;
     private static final String JFXRT_JAR_NAME = "jfxrt.jar"; // NOI18N
     private static final String JFXRT_RELATIVE_LOCATIONS[] = new String[]{"lib", "lib" + File.separatorChar + "ext"}; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     
+    /**
+     * Return current name (version) of build-impl.xml "extension spi"
+     * where the spi consists of target dependency points between build-impl
+     * and jfx-impl.
+     * @return name as string
+     */
+    public static String getCurrentExtensionName() {
+        return CURRENT_EXTENSION;
+    }
+
+    /**
+     * Return list of old names (versions) of build-impl.xml "extension spis". 
+     * Used to search for spi version when jfx-impl and build-impl do not match
+     * and correct update needs to be determined.
+     * @return names as strings
+     */
+    public static Iterable<? extends String> getOldExtensionNames() {
+        return Arrays.asList(OLD_EXTENSIONS);
+    }    
+
     /**
      * Returns list of JavaFX 2.0 JavaScript callback entries.
      * In future should read the list from the current platform
@@ -480,22 +515,179 @@ public final class JFXProjectUtils {
     }
 
     /**
-     * Checks whether file nbproject/jfx-impl.xml equals current template. 
-     * If not, the file is backed up and regenerated to the current state
-     * and textual commentary is generated to UPDATED.TXT.
-     * 
-     * @param prj the project to check
-     * @return FileObject pointing at generated UPDATED.TXT or null
+     * Adds dependencies of build-impl targets on jfx-impl targets
+     * @param proj
+     * @return true if success
+     * @throws IOException 
+     */
+    static boolean addExtension(@NonNull Project proj) throws IOException {
+        boolean res = false;
+        FileObject projDir = proj.getProjectDirectory();
+        FileObject jfxBuildFile = projDir.getFileObject(JFX_BUILD_IMPL_PATH);
+        AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
+        if (extender != null) {
+            assert jfxBuildFile != null;
+            if (extender.getExtension(CURRENT_EXTENSION) == null) { // NOI18N                
+                AntBuildExtender.Extension ext = extender.addExtension(CURRENT_EXTENSION, jfxBuildFile); // NOI18N
+                // NOTE: change in dependencies = change of metafile updates API;
+                //       do not forget to update CURRENT_EXTENSION and add the old one to OLD_EXTENSIONS
+                // TODO: remove
+                ext.addDependency("-init-check", "-check-javafx"); // NOI18N
+                ext.addDependency("jar", "-jfx-copylibs"); // NOI18N
+                ext.addDependency("jar", "-rebase-libs"); //NOI18N
+                // TODO: remove
+                ext.addDependency("-post-jar", "-jfx-copylibs"); //NOI18N
+                // TODO: remove
+                ext.addDependency("-post-jar", "-rebase-libs"); //NOI18N
+                ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
+                ext.addDependency("run", "jar"); //NOI18N
+                ext.addDependency("debug", "jar");//NOI18N
+                ext.addDependency("profile", "jar");//NOI18N
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * Update dependencies of build-impl targets on jfx-impl targets
+     * @param project
+     * @return
+     * @throws IOException 
+     */
+    public static boolean updateJFXExtension(final Project project) throws IOException {
+        boolean changed = modifyBuildXml(project);
+        return changed;
+    }
+
+    /**
+     * Update SE buildscript dependencies on FX buildscript
+     * @param proj
+     * @return
+     * @throws IOException 
+     */
+    private static boolean modifyBuildXml(Project proj) throws IOException {
+        boolean res = false;
+        final FileObject buildXmlFO = getBuildXml(proj);
+        if (buildXmlFO == null) {
+            LOGGER.warning("The project build script does not exist, the project cannot be extended by JFX.");     //NOI18N
+            return res;
+        }
+        Document xmlDoc = null;
+        try {
+            xmlDoc = XMLUtil.parse(new InputSource(buildXmlFO.toURL().toExternalForm()), false, true, null, null);
+        } catch (SAXException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if(!addExtension(proj)) {
+            LOGGER.log(Level.INFO,
+                    "Trying to include JFX build snippet in project type that doesn't support AntBuildExtender API contract."); // NOI18N
+        }
+
+        //TODO this piece shall not proceed when the upgrade to j2se-project/4 was cancelled.
+        //how to figure..
+        Element docElem = xmlDoc.getDocumentElement();
+        NodeList nl = docElem.getElementsByTagName("target"); // NOI18N
+        boolean changed = false;
+        nl = docElem.getElementsByTagName("import"); // NOI18N
+        for (int i = 0; i < nl.getLength(); i++) {
+            Element e = (Element) nl.item(i);
+            if (e.getAttribute("file") != null && JFX_BUILD_IMPL_PATH.equals(e.getAttribute("file"))) { // NOI18N
+                e.getParentNode().removeChild(e);
+                changed = true;
+                break;
+            }
+        }
+
+        if (changed) {
+            final Document fdoc = xmlDoc;
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        FileLock lock = buildXmlFO.lock();
+                        try {
+                            OutputStream os = buildXmlFO.getOutputStream(lock);
+                            try {
+                                XMLUtil.write(fdoc, os, "UTF-8"); // NOI18N
+                            } finally {
+                                os.close();
+                            }
+                        } finally {
+                            lock.releaseLock();
+                        }
+                        return null;
+                    }
+                });
+            } catch (MutexException mex) {
+                throw (IOException) mex.getException();
+            }
+        }
+        return res;
+    }
+
+    /**
+     * Get build.xml
+     * @param prj
+     * @return 
+     */
+    private static FileObject getBuildXml(final Project prj) {
+        final J2SEPropertyEvaluator j2sepe = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
+        assert j2sepe != null;
+        final PropertyEvaluator eval = j2sepe.evaluator();
+        String buildScriptPath = eval.getProperty(JFXProjectProperties.BUILD_SCRIPT);
+        if (buildScriptPath == null) {
+            buildScriptPath = GeneratedFilesHelper.BUILD_XML_PATH;
+        }
+        return prj.getProjectDirectory().getFileObject (buildScriptPath);
+    }
+
+    /**
+     * Update FX build script.
+     * @param proj
+     * @return
+     * @throws IOException 
      */
     static FileObject updateJfxImpl(final @NonNull Project proj) throws IOException {
-        FileObject returnFO = null;
+        final FileObject projDir = proj.getProjectDirectory();
+        final List<FileObject> updates = new ArrayList<FileObject>();
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {        
+                    projDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                        public void run() throws IOException {        
+                            if(!JFXProjectUtils.isJFXImplCurrent(proj)) {
+                                FileObject updated = JFXProjectUtils.doUpdateJfxImpl(proj);
+                                if(updated != null) {
+                                    updates.add(updated);
+                                }
+                            }
+                        }
+                    });
+                    return null;
+                }
+            });
+        } catch (MutexException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return updates.isEmpty() ? null : updates.get(0);
+    }
+    
+    /**
+     * Checks whether file nbproject/jfx-impl.xml equals current template. 
+     * @param proj
+     * @return
+     * @throws IOException 
+     */
+    static boolean isJFXImplCurrent(final @NonNull Project proj) throws IOException {
         Boolean isJfxCurrent = true;
         final FileObject projDir = proj.getProjectDirectory();
         try {
             isJfxCurrent = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
                 @Override
                 public Boolean run() throws Exception {
-                    FileObject jfxBuildFile = projDir.getFileObject("nbproject/jfx-impl.xml"); // NOI18N
+                    FileObject jfxBuildFile = projDir.getFileObject(JFX_BUILD_IMPL_PATH); // NOI18N
                     Boolean isCurrent = false;
                     if (jfxBuildFile != null) {
                         final InputStream in = jfxBuildFile.getInputStream();
@@ -512,85 +704,95 @@ public final class JFXProjectUtils {
             });
         } catch (MutexException mux) {
             isJfxCurrent = false;
-            LOGGER.log(Level.INFO, "Problem reading nbproject/jfx-impl.xml.", mux.getException()); // NOI18N
+            LOGGER.log(Level.INFO, "Problem reading " + JFX_BUILD_IMPL_PATH, mux.getException()); // NOI18N
         }
+        return isJfxCurrent;
+    }    
 
-        if (!isJfxCurrent) {
-            try {
-                returnFO = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>() {
-                    @Override
-                    public FileObject run() throws Exception {
-                        FileObject returnFO = null;
-                        FileObject jfxBuildFile = projDir.getFileObject("nbproject/jfx-impl.xml"); // NOI18N
-                        if (jfxBuildFile != null) {
-                            // try to close the file just in case the file is already opened in editor
-                            DataObject dobj = DataObject.find(jfxBuildFile);
-                            CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
-                            if (closeCookie != null) {
-                                closeCookie.close();
+    /**
+     * The file nbproject/jfx-impl.xml is backed up and regenerated to the current state
+     * and textual commentary is generated to UPDATED.TXT.
+     * 
+     * @param prj the project to check
+     * @return FileObject pointing at generated UPDATED.TXT or null
+     */
+    static FileObject doUpdateJfxImpl(final @NonNull Project proj) throws IOException {
+        FileObject returnFO = null;
+        final FileObject projDir = proj.getProjectDirectory();
+        try {
+            returnFO = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>() {
+                @Override
+                public FileObject run() throws Exception {
+                    FileObject returnFO = null;
+                    FileObject jfxBuildFile = projDir.getFileObject(JFX_BUILD_IMPL_PATH); // NOI18N
+                    if (jfxBuildFile != null) {
+                        // try to close the file just in case the file is already opened in editor
+                        DataObject dobj = DataObject.find(jfxBuildFile);
+                        CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
+                        if (closeCookie != null) {
+                            closeCookie.close();
+                        }
+                        closeCookie = null;
+                        dobj = null;
+
+                        final FileObject nbproject = projDir.getFileObject(NBPROJECT); //NOI18N
+                        final String backupName = FileUtil.findFreeFileName(nbproject, JFX_BUILD_IMPL_NAME + "_backup", "xml"); //NOI18N
+                        FileUtil.moveFile(jfxBuildFile, nbproject, backupName);
+                        LOGGER.log(Level.INFO, "Old build script file " + JFX_BUILD_IMPL_NAME + ".xml has been renamed to: {0}.xml", backupName); // NOI18N
+                        jfxBuildFile = null;
+
+                        try {
+                            final File readme = new File (FileUtil.toFile(nbproject), NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_NAME")); //NOI18N
+                            if (!readme.exists()) {
+                                readme.createNewFile();
                             }
-                            closeCookie = null;
-                            dobj = null;
-                            
-                            final FileObject nbproject = projDir.getFileObject("nbproject"); //NOI18N
-                            final String backupName = FileUtil.findFreeFileName(nbproject, "jfx-impl_backup", "xml"); //NOI18N
-                            FileUtil.moveFile(jfxBuildFile, nbproject, backupName);
-                            LOGGER.log(Level.INFO, "Old build script file jfx-impl.xml has been renamed to: {0}.xml", backupName); // NOI18N
-                            jfxBuildFile = null;
-
+                            final FileObject readmeFO = FileUtil.toFileObject(readme);
+                            returnFO = readmeFO;
+                            OutputStream os = null;
+                            FileLock lock = null;
                             try {
-                                final File readme = new File (FileUtil.toFile(nbproject), NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_NAME")); //NOI18N
-                                if (!readme.exists()) {
-                                    readme.createNewFile();
-                                }
-                                final FileObject readmeFO = FileUtil.toFileObject(readme);
-                                returnFO = readmeFO;
-                                OutputStream os = null;
-                                FileLock lock = null;
+                                lock = readmeFO.lock();
+                                os = readmeFO.getOutputStream(lock);
+                                final PrintWriter out = new PrintWriter ( os );
                                 try {
-                                    lock = readmeFO.lock();
-                                    os = readmeFO.getOutputStream(lock);
-                                    final PrintWriter out = new PrintWriter ( os );
-                                    try {
-                                        final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT_HEADER"); //NOI18N
-                                        final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(proj).getDisplayName()});
-                                        char[] underline = new char[header.length()];
-                                        Arrays.fill(underline, '='); // NOI18N
-                                        final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT"); //NOI18N
-                                        out.println(underline);
-                                        out.println(header);
-                                        out.println(underline);
-                                        out.println (MessageFormat.format(content, new Object[] {backupName + ".xml"})); //NOI18N
-                                    } finally {
-                                        if(out != null) {
-                                            out.close ();
-                                        }
-                                    }
+                                    final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT_HEADER"); //NOI18N
+                                    final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(proj).getDisplayName()});
+                                    char[] underline = new char[header.length()];
+                                    Arrays.fill(underline, '='); // NOI18N
+                                    final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT"); //NOI18N
+                                    out.println(underline);
+                                    out.println(header);
+                                    out.println(underline);
+                                    out.println (MessageFormat.format(content, new Object[] {backupName + ".xml"})); //NOI18N
                                 } finally {
-                                    if (lock != null) {
-                                        lock.releaseLock();
-                                    }
-                                    if (os != null) {
-                                        os.close();
+                                    if(out != null) {
+                                        out.close ();
                                     }
                                 }
-                            } catch (IOException ioe) {
-                                LOGGER.log(Level.INFO, "Cannot create file readme file. ", ioe); // NOI18N
-                            }        
-                        }
-                        if (jfxBuildFile == null) {
-                            FileObject templateFO = FileUtil.getConfigFile(JFX_BUILD_TEMPLATE);
-                            if (templateFO != null) {
-                                FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "jfx-impl"); // NOI18N
-                                LOGGER.log(Level.INFO, "Build script jfx-impl.xml has been updated to the latest version supported by this NetBeans installation."); // NOI18N
-                            } 
-                        }
-                        return returnFO;
-                    } //run()
-                });
-            } catch(MutexException mux) {
-                throw (IOException) mux.getException();
-            }
+                            } finally {
+                                if (lock != null) {
+                                    lock.releaseLock();
+                                }
+                                if (os != null) {
+                                    os.close();
+                                }
+                            }
+                        } catch (IOException ioe) {
+                            LOGGER.log(Level.INFO, "Cannot create file readme file. ", ioe); // NOI18N
+                        }        
+                    }
+                    if (jfxBuildFile == null) {
+                        FileObject templateFO = FileUtil.getConfigFile(JFX_BUILD_TEMPLATE);
+                        if (templateFO != null) {
+                            FileUtil.copyFile(templateFO, projDir.getFileObject(NBPROJECT), JFX_BUILD_IMPL_NAME); // NOI18N
+                            LOGGER.log(Level.INFO, "Build script " + JFX_BUILD_IMPL_NAME + ".xml has been updated to the latest version supported by this NetBeans installation."); // NOI18N
+                        } 
+                    }
+                    return returnFO;
+                } //run()
+            });
+        } catch(MutexException mux) {
+            throw (IOException) mux.getException();
         }
         return returnFO;
     }

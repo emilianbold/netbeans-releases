@@ -266,7 +266,7 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
     
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
         projectType="org-netbeans-modules-java-j2seproject",
-        position=600
+        position=605
     )
     public static J2SECompositePanelProvider createLicense() {
         return new J2SECompositePanelProvider(LICENSE);

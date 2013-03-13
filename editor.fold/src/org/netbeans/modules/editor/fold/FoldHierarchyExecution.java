@@ -59,8 +59,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -69,12 +70,15 @@ import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldStateChange;
+import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
@@ -88,6 +92,7 @@ import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
+import org.openide.util.WeakListeners;
 
 /**
  * Class backing the <code>FoldHierarchy</code> in one-to-one relationship.
@@ -122,7 +127,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     private static final String PROPERTY_FOLD_HIERARCHY_MUTEX = "foldHierarchyMutex"; //NOI18N
 
-    private static final String PROPERTY_FOLDING_ENABLED = "code-folding-enable"; //NOI18N
+    private static final String PROPERTY_FOLDING_ENABLED = FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED; //NOI18N
     
     private static final boolean DEFAULT_CODE_FOLDING_ENABLED = true;
 
@@ -179,9 +184,10 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     private PropertyChangeListener componentChangesListener;
     
-    private Task initTask;
+    private RequestProcessor.Task initTask;
     
     private volatile boolean active;
+    private volatile Preferences foldPreferences;
     
     public static synchronized FoldHierarchy getOrCreateFoldHierarchy(JTextComponent component) {
         return getOrCreateFoldExecution(component).getHierarchy();
@@ -256,8 +262,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         // initialize conservatively the active flag
         active = !FoldManagerFactoryProvider.getDefault().getFactoryList(hierarchy).isEmpty();
 
-        this.initTask = RP.post(this);
-        
+        this.initTask = RP.create(this);
+        this.initTask.schedule(500);
     }
     
     private void updateRootFold(Document doc) {
@@ -343,6 +349,10 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
      */
     public final void lock() {
         mutex.lock();
+    }
+    
+    public final boolean isLockedByCaller() {
+        return mutex.getLockThread() == Thread.currentThread();
     }
     
     /**
@@ -483,6 +493,10 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         return (blocked2block.size() > 0)
             ? (Fold)blocked2block.get(fold)
             : null;
+    }
+    
+    Set<Fold> getBlockedFolds(Fold f) {
+        return (Set<Fold>)block2blockedSet.get(f);
     }
     
     /**
@@ -723,6 +737,18 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         }
     }
     
+    private String getMimeType() {
+        EditorKit ek = component.getUI().getEditorKit(component);
+        String mimeType;
+
+        if (ek != null) {
+            mimeType = ek.getContentType();
+        } else {
+            mimeType = "";
+        }
+        return mimeType;
+    }
+        
     /**
      * Rebuild (or release) the root folds of the hierarchy in the event dispatch thread.
      *
@@ -751,11 +777,21 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         boolean ok = false;
         try {
             operations = new FoldOperationImpl[factoryListLength];
-            for (int i = 0; i < factoryListLength; i++) {
+            int i;
+            for (i = 0; i < factoryListLength; i++) {
                 FoldManagerFactory factory = (FoldManagerFactory)factoryList.get(i);
                 FoldManager manager = factory.createFoldManager();
+                if (manager == null) {
+                    continue;
+                }
                 operations[i] = new FoldOperationImpl(this, manager, priority);
                 priority--;
+            }
+            // trim the array in the unlikely case
+            if (i < factoryListLength) {
+                FoldOperationImpl[] ops = new FoldOperationImpl[i];
+                System.arraycopy(operations, 0, ops, 0, i);
+                operations = ops;
             }
             ok = true;
         } finally {
@@ -798,7 +834,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                     String propName = evt.getPropertyName();
                     if ("document".equals(propName)) { //NOI18N
                         foldingEnabled = getFoldingEnabledSetting();
-                        RP.post(FoldHierarchyExecution.this);
+                        initTask.schedule(0);
                     } else if (PROPERTY_FOLDING_ENABLED.equals(propName)) {
                         foldingEnabledSettingChange();
                     }
@@ -914,7 +950,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         if (b == null && component.getDocument() != null) {
             String mime = DocumentUtilities.getMimeType(component.getDocument());
             if (mime != null) {
-                Preferences prefs = MimeLookup.getLookup(mime).lookup(Preferences.class);
+                Preferences prefs = getFoldPreferences();
                 b = prefs.getBoolean(PROPERTY_FOLDING_ENABLED, true);
             }
         }
@@ -927,7 +963,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         boolean origFoldingEnabled = foldingEnabled;
         foldingEnabled = getFoldingEnabledSetting(false);
         if (origFoldingEnabled != foldingEnabled) {
-            RP.post(this);
+            initTask.schedule(100);
         }
     }
     
@@ -1033,6 +1069,75 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         }
         
         return sb.toString();
+    }
+    
+    /**
+     * Cache for initial states for individual FoldTypes. 
+     * The cache is invalidated iff the Preferences change in a key which starts with the collapse- prefix.
+     * The cache is NOT invalidated on the FoldType set change, as if the foldtype set changes, either new FoldTypes
+     * appear (they will enter the cache eventually), or the obsolete FoldTypes will not be used in the future,
+     * so they may rote in the cache until the Component is closed.
+     */
+    private volatile Map<FoldType, Boolean>  initialFoldState = new HashMap<FoldType, Boolean>();
+    
+    /**
+     * Listener on fold preferences.
+     */
+    private PreferenceChangeListener weakPrefL;
+    
+    /**
+     * Returns the cached value for initial folding state of the specific type. The method may be only
+     * called under a lock, since it populates the cache; no concurrency is permitted.
+     * 
+     * @param ft the FoldType to inspect
+     * @return true, if the fold should be collapsed initially.
+     */
+    public boolean getInitialFoldState(FoldType ft) {
+        if (!isLockedByCaller()) {
+            throw new IllegalStateException("Must be called under FH lock");
+        }
+        Boolean b = initialFoldState.get(ft);
+        if (b != null) {
+            return b;
+        }
+        b = FoldUtilities.isAutoCollapsed(ft, hierarchy);
+        initialFoldState.put(ft, b);
+        return b;
+    }
+    
+    /**
+     * Obtains Preferences that control folding for this Hierarchy.
+     * 
+     * @return Preferences object
+     */
+    public Preferences getFoldPreferences() {
+        if (foldPreferences == null) {
+            synchronized (this) {
+                if (foldPreferences != null) {
+                    return foldPreferences;
+                }
+                String mimeType = getMimeType();
+                // internally does MimeLookup lookup(Preferences.class)
+                Preferences prefs = LegacySettingsSync.get().processMime(mimeType);
+                if ("".equals(mimeType)) {
+                    // do not cache; typically the editor kit will be changed to something other
+                    return prefs;
+                }
+                foldPreferences = prefs;
+                weakPrefL = WeakListeners.create(PreferenceChangeListener.class, new PreferenceChangeListener() {
+                    @Override
+                    public void preferenceChange(PreferenceChangeEvent evt) {
+                        if (evt.getKey().startsWith(FoldUtilitiesImpl.PREF_COLLAPSE_PREFIX)) {
+                            if (!initialFoldState.isEmpty()) {
+                                initialFoldState = new HashMap<FoldType, Boolean>();
+                            }
+                        }
+                    }
+                }, foldPreferences);
+                foldPreferences.addPreferenceChangeListener(weakPrefL);
+            }
+        }
+        return foldPreferences;
     }
 
 }

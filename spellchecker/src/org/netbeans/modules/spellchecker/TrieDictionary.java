@@ -333,7 +333,8 @@ public class TrieDictionary implements Dictionary {
 
         for (URL u : sources) {
             FileObject f = URLMapper.findFileObject(u);
-            BufferedReader in = new BufferedReader(new InputStreamReader(f != null ? f.getInputStream() : u.openStream(), "UTF-8"));
+            u = f != null ? URLMapper.findURL(f, URLMapper.EXTERNAL) : u;
+            BufferedReader in = new BufferedReader(new InputStreamReader(u.openStream(), "UTF-8"));
             
             try {
                 String line;

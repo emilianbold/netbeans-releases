@@ -240,7 +240,7 @@ public final class FoldHierarchyTransactionImpl {
                 updateAffectedOffsets(fold);
                 int startOffset = change.getOriginalStartOffset();
                 int endOffset = change.getOriginalEndOffset();
-                assert (startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N;
+                assert (endOffset < 0 || startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N;
                 if (startOffset != -1) {
                     updateAffectedStartOffset(startOffset);
                 }

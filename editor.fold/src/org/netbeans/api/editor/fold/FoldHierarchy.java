@@ -122,7 +122,7 @@ public final class FoldHierarchy {
     static {
         ensureApiAccessorRegistered();
     }
-    
+
     private static void ensureApiAccessorRegistered() {
         if (!apiPackageAccessorRegistered) {
             apiPackageAccessorRegistered = true;
@@ -472,6 +472,10 @@ public final class FoldHierarchy {
         public void foldStateChangeEndOffsetChanged(FoldStateChange fsc,
         int originalEndOffset) {
             fsc.endOffsetChanged(originalEndOffset);
+        }
+        
+        public FoldHierarchyExecution foldGetExecution(FoldHierarchy h) {
+            return h.execution;
         }
         
     }

@@ -268,7 +268,7 @@ public class BaseCaretTest extends NbTestCase {
     public void testSelectFoldedRegion() throws Exception {
         env.getHierarchy().collapse(fold);
         Thread.sleep(300);
-        Rectangle r = pane.modelToView(25);
+        Rectangle r = pane.modelToView(10);
         
         // 1st mouseclick on the pane, to position the caret, as if the 1st click in doubleclick was done:
         MouseEvent firstPress = new MouseEvent(pane, MouseEvent.MOUSE_PRESSED, System.currentTimeMillis(), 

@@ -132,7 +132,18 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="FoldManager">
-                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance">
+                	<attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="HTMLDocReader.instance">
+                	<attr name="position" intvalue="1200"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.fold.ContentReader$Factory"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.api.editor.fold.FoldingSupport.contentReaderFactory"/>
+                        <attr name="start" stringvalue="&lt;"/>
+                        <attr name="terminator" stringvalue="[\s/>]"/>
+                        <attr name="type" stringvalue="tags"/>
+                        <attr name="prefix" stringvalue=""/>
+                    </file>
                 </folder>
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
@@ -267,7 +278,18 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="FoldManager">
-                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance">
+                	<attr name="position" intvalue="1000"/>
+            	    </file>
+                    <file name="HTMLDocReader.instance">
+                	<attr name="position" intvalue="1100"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.fold.ContentReader$Factory"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.api.editor.fold.FoldingSupport.contentReaderFactory"/>
+                        <attr name="start" stringvalue="&lt;"/>
+                        <attr name="terminator" stringvalue="[\s/>]"/>
+                        <attr name="type" stringvalue="tags"/>
+                        <attr name="prefix" stringvalue=""/>
+                    </file>
                 </folder>
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">

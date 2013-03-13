@@ -68,7 +68,7 @@ public class FoldHierarchyTestEnv {
         this(new FoldManagerFactory[] { factory });
     }
 
-    public FoldHierarchyTestEnv(FoldManagerFactory[] factories) {
+    public FoldHierarchyTestEnv(FoldManagerFactory... factories) {
         pane = new JEditorPane();
         assert (getMimeType() != null);
 

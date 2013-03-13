@@ -1877,6 +1877,7 @@
             <echo message="deploy_deploy: pp_deploy_fs1 = ${pp_deploy_fs1}" level="verbose"/>
             <echo message="deploy_deploy: pp_deploy_fs2 = ${pp_deploy_fs2}" level="verbose"/>
             <echo message="JavaScript: deploy-deploy" level="verbose"/>
+            <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
             <script language="javascript">
                 <![CDATA[
                     function isTrue(prop) {
@@ -2115,11 +2116,40 @@
                         if(icon != null && icon.length() > 0) {
                             if(isTrue(fx_ant_api_1_2) && !isTrue(have_jdk_pre7u14)) {
                                 var dicon = derelativizePath(icon);
+                                // create temporary icon copy renamed to application name (required by native packager)
+                                var baseDir = project.getProperty("basedir");
+                                var buildDir = project.getProperty("build.dir");
+                                var deployBase = project.getProperty("jfx.deployment.base");
+                                var copyTask = project.createTask("copy");
+                                var source = new java.io.File(dicon);
+                                var sourceName = source.getName();
+                                var lastDot = sourceName.lastIndexOf(".");
+                                if(lastDot >=0) {
+                                    var sourceExt = sourceName.substr(lastDot);
+                                } else {
+                                    var sourceExt = "";
+                                }
+                                var target = new java.io.File(baseDir + S + buildDir + S + "icon" + S + deployBase + sourceExt);
+                                copyTask.setFile(source);
+                                copyTask.setTofile(target);
+                                copyTask.setFlatten(true);
+                                copyTask.setFailOnError(false);
+                                copyTask.perform();
+                                if(target.exists()) {
+                                    try {
+                                        var tempicon = target.getCanonicalPath();
+                                    } catch(err) {
+                                        var tempicon = dicon;
+                                    }
+                                } else {
+                                    var tempicon = dicon;
+                                }
                                 var nicon = info.createIcon();
-                                nicon.setHref(dicon);
-                                println("Adding native icon reference: " + dicon);
+                                nicon.setHref(tempicon);
+                                println("Source native icon reference: " + dicon);
+                                println("Processed native icon reference: " + tempicon);
                             } else {
-                                println("Warning: Native Package icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade to JDK7u14 or higher.");
+                                println("Warning: Native Package icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade to JDK7u14.");
                             }
                         }
                     } else {

@@ -1531,6 +1531,74 @@ public class Reformatter implements ReformatTask {
         }
 
         @Override
+        public Boolean visitMemberReference(MemberReferenceTree node, Void p) {
+            scan(node.getQualifierExpression(), p);
+            spaces(cs.spaceAroundMethodReferenceDoubleColon() ? 1 : 0); 
+            accept(COLONCOLON);
+            spaces(cs.spaceAroundMethodReferenceDoubleColon() ? 1 : 0); 
+            int index = tokens.index();
+            int c = col;
+            Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+            boolean ltRead;
+            if (LT == accept(LT)) {
+                tpLevel++;
+                ltRead = true;
+            } else {
+                rollback(index, c, d);
+                ltRead = false;
+            }
+            List<? extends Tree> targs = node.getTypeArguments();
+            if (targs != null && !targs.isEmpty()) {
+                Iterator<? extends Tree> it = targs.iterator();
+                Tree targ = it.hasNext() ? it.next() : null;
+                while (true) {
+                    scan(targ, p);
+                    targ = it.hasNext() ? it.next() : null;
+                    if (targ == null)
+                        break;
+                    if (targ.getKind() != Tree.Kind.ERRONEOUS || !((ErroneousTree)targ).getErrorTrees().isEmpty() || it.hasNext()) {
+                        spaces(cs.spaceBeforeComma() ? 1 : 0);
+                        accept(COMMA);
+                        spaces(cs.spaceAfterComma() ? 1 : 0);
+                    } else {
+                        scan(targ, p);
+                        return true;
+                    }
+                }
+            }
+            JavaTokenId accepted;
+            if (ltRead && tpLevel > 0 && (accepted = accept(GT, GTGT, GTGTGT)) != null) {
+                switch (accepted) {
+                    case GTGTGT:
+                        tpLevel -= 3;
+                        break;
+                    case GTGT:
+                        tpLevel -= 2;
+                        break;
+                    case GT:
+                        tpLevel--;
+                        break;
+                }
+            }
+            if (ERROR.contentEquals(node.getName())) {
+                do {
+                    if (tokens.offset() >= endPos)
+                        break;
+                    int len = tokens.token().length();
+                    if (tokens.token().id() == WHITESPACE && tokens.offset() + len >= endPos)
+                        break;
+                    col += len;
+                } while (tokens.moveNext());
+                lastBlankLines = -1;
+                lastBlankLinesTokenIndex = -1;
+                lastBlankLinesDiff = null;
+            } else {
+                accept(IDENTIFIER, NEW);
+            }
+            return true;
+        }
+        
+        @Override
         public Boolean visitLambdaExpression(LambdaExpressionTree node, Void p) {
             List<? extends VariableTree> params = node.getParameters();
             JavaTokenId accepted = params != null && params.size() == 1 ? accept(LPAREN, IDENTIFIER) : accept(LPAREN);

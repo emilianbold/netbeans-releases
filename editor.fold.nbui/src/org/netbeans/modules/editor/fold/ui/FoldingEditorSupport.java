@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.editor.fold.ui;
 
-import java.awt.Rectangle;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.Fold;
@@ -92,6 +92,7 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
             foldHierarchy.lock();
             try {
                 int offset = component.getCaret().getDot();
+                res = false;
                 Fold f = FoldUtilities.findCollapsedFold(foldHierarchy, offset, offset);
                 if (f != null) {
                     if (sharp) {
@@ -109,6 +110,9 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
         }
         
         public boolean equals(Object whatever) {
+            if (!(whatever instanceof Caret)) {
+                return super.equals(whatever);
+            }
             sharp = false;
             final Document doc = component.getDocument();
             doc.render(this);
@@ -129,21 +133,14 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
         }
         int caretOffset = component.getCaret().getDot();
         final int addedFoldCnt = evt.getAddedFoldCount();
-        final boolean scrollToView;
+        boolean scrollToView = false;
         LOG.finest("Received fold hierarchy change"); // NOI18N
+        boolean expand = false;
+        boolean includeEnd = false;
+        
+        FoldHierarchy hierarchy = (FoldHierarchy) evt.getSource();
         if (addedFoldCnt > 0) {
-            FoldHierarchy hierarchy = (FoldHierarchy) evt.getSource();
-            Fold collapsed = null;
-            boolean wasExpanded = false;
-            while ((collapsed = FoldUtilities.findCollapsedFold(hierarchy, caretOffset, caretOffset)) != null && collapsed.getStartOffset() < caretOffset &&
-                    collapsed.getEndOffset() > caretOffset) {
-                        hierarchy.expand(collapsed);
-                        wasExpanded = true;
-            }
-            // prevent unneeded scrolling; the user may have scrolled out using mouse already
-            // so scroll only if the added fold may affect Y axis. Actually it's unclear why
-            // we should reveal the current position on fold events except when caret is positioned in now-collapsed fold
-            scrollToView = wasExpanded;
+            expand = true;
         } else {
             int startOffset = Integer.MAX_VALUE;
             // Set the caret's offset to the end of just collapsed fold if necessary
@@ -157,26 +154,71 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
                                 startOffset = fold.getStartOffset();
                             }
                         }
+                    } else if (change.isStartOffsetChanged()) {
+                        // schedule expand iff the caret is in the NEWLY included prefix of the fold
+                        Fold fold = change.getFold();
+                        int ostart = change.getOriginalStartOffset();
+                        int nstart = fold.getStartOffset();
+                        int nend = fold.getEndOffset();
+                        int to = Math.max(ostart, nstart);
+                        int from = Math.min(ostart, nstart);
+                        
+                        expand |= caretOffset >= from && caretOffset <= to && caretOffset >= nstart && caretOffset < nend;
+                    } else if (change.isEndOffsetChanged()) {
+                        // ... the same check for suffix.
+                        Fold fold = change.getFold();
+                        int oend = change.getOriginalEndOffset();
+                        int nend = fold.getEndOffset();
+                        int nstart = fold.getStartOffset();
+                        
+                        int to = Math.max(oend, nend);
+                        int from = Math.min(oend, nend);
+                        
+                        expand |= caretOffset >= from && caretOffset <= to && caretOffset >= nstart && caretOffset <= nend;
+                        // the search for collapsed fold uses < not <= to compare fold end. Adjust caretOffset so the fold is found.
+                        includeEnd = caretOffset == nend && (nend - nstart) > 1;
                     }
                 }
                 if (startOffset != Integer.MAX_VALUE) {
                     ((BaseCaret)component.getCaret()).setDot(startOffset, false);
+                    expand = false;
                 }
             }
             scrollToView = false;
         }
+        
+        if (expand) {
+            Fold collapsed = null;
+            boolean wasExpanded = false;
+            if (includeEnd) {
+                // compensate so findCollapsedFold finds something.
+                caretOffset--;
+            }
+            while ((collapsed = FoldUtilities.findCollapsedFold(hierarchy, caretOffset, caretOffset)) != null && 
+                    collapsed.getStartOffset() < caretOffset &&
+                    (collapsed.getEndOffset() > caretOffset)) {
+                        hierarchy.expand(collapsed);
+                        wasExpanded = true;
+            }
+            // prevent unneeded scrolling; the user may have scrolled out using mouse already
+            // so scroll only if the added fold may affect Y axis. Actually it's unclear why
+            // we should reveal the current position on fold events except when caret is positioned in now-collapsed fold
+            scrollToView = wasExpanded;
+        }
+        
         // Update caret's visual position
         // Post the caret update asynchronously since the fold hierarchy is updated before
         // the view hierarchy and the views so the dispatchUpdate() could be picking obsolete
         // view information.
         if (addedFoldCnt > 1 || scrollToView) {
+            final boolean scroll = scrollToView;
             SwingUtilities.invokeLater(new Runnable() {
                 public @Override void run() {
                     LOG.finest("Updating after fold hierarchy change"); // NOI18N
                     if (component == null) {
                         return;
                     }
-                    ((BaseCaret)component.getCaret()).refresh(addedFoldCnt > 1 && !scrollToView);
+                    ((BaseCaret)component.getCaret()).refresh(addedFoldCnt > 1 && !scroll);
                 }
             });
         }
