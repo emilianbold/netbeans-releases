@@ -49,6 +49,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.jsf.hints.JsfHintsContext;
 import org.netbeans.modules.web.jsf.hints.JsfHintsRule;
@@ -75,11 +76,16 @@ public class FlowScopedBeanWithoutCdi implements JsfHintsRule {
         CompilationInfo info = ctx.getCompilationInfo();
         List<ErrorDescription> hints = new ArrayList<ErrorDescription>();
 
+        Project project = ctx.getProject();
+        if (project == null) {
+            return hints;
+        }
+
         for (TypeElement typeElement : info.getTopLevelElements()) {
             for (AnnotationMirror annotationMirror : typeElement.getAnnotationMirrors()) {
                 if (FLOW_SCOPED.equals(annotationMirror.getAnnotationType().toString())) {
                     // it's FlowScoped bean -> check the CDI
-                    CdiUtil cdiUtil = ctx.getProject().getLookup().lookup(CdiUtil.class);
+                    CdiUtil cdiUtil = project.getLookup().lookup(CdiUtil.class);
                     if (cdiUtil == null || !cdiUtil.isCdiEnabled()) {
                         Tree tree = info.getTrees().getTree(typeElement, annotationMirror);
                         hints.add(JsfHintsUtils.createProblem(
@@ -87,7 +93,7 @@ public class FlowScopedBeanWithoutCdi implements JsfHintsRule {
                                 info,
                                 Bundle.FlowScopedBeanWithoutCdi_lbl_flow_scoped_without_cdi(),
                                 Severity.WARNING,
-                                Arrays.<Fix>asList(new FixCdiAvailability(ctx.getProject()))));
+                                Arrays.<Fix>asList(new FixCdiAvailability(project))));
                     }
                 }
             }
