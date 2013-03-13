@@ -73,7 +73,7 @@ public class JavaxFacesBeanIsGonnaBeDeprecated implements JsfHintsRule {
     @Override
     public Collection<ErrorDescription> check(JsfHintsContext ctx) {
         List<ErrorDescription> hints = new ArrayList<ErrorDescription>();
-        if (!ctx.getJsfVersion().isAtLeast(JSFVersion.JSF_2_2)) {
+        if (ctx.getJsfVersion() == null || !ctx.getJsfVersion().isAtLeast(JSFVersion.JSF_2_2)) {
             return hints;
         }
 

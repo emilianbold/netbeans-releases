@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.j2ee.persistence.wizard.dbscript;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  */
 public class GenerateScriptExecutor {
 
-    public void execute(Project project, FileObject file, PersistenceEnvironment pe, PersistenceUnit pu, List<String> problems, boolean validateOnly) {
+    public void execute(Project project, FileObject file, PersistenceEnvironment pe, PersistenceUnit pu, List<String> problems, ProgressHandle handle, boolean validateOnly) {
         try {
 
             Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");//NOI18N
@@ -75,7 +75,9 @@ public class GenerateScriptExecutor {
                     problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_File", file.getPath()));
                 }
                 //
+                handle.progress(NbBundle.getMessage(DBScriptWizard.class, "MSG_ScriptGeneration"),15);
                 p.generateSchema(pu.getName(), map);
+                handle.progress(95);
             }
         } catch (ClassNotFoundException ex) {
                 problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getPath()));
