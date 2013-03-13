@@ -121,7 +121,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
                     if (type != null) {
                         MakeProjectTypeImpl provider = findMakeProjectType(type);
                         if (provider != null) {
-                            return new ProjectManager.Result(provider.getIcon());
+                            return new ProjectManager.Result(provider.getIcon(projectXml.getDocumentElement()));
                         }
                     }
                 }
