@@ -51,9 +51,9 @@ import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public class BracketCompleterTest extends GroovyTestBase {
+public class LogicalRangesTest extends GroovyTestBase {
 
-    public BracketCompleterTest(String testName) {
+    public LogicalRangesTest(String testName) {
         super(testName);
     }
 
