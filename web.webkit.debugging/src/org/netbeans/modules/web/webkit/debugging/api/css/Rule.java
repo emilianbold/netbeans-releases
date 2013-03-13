@@ -110,7 +110,7 @@ public class Rule {
         } else {
             media = Collections.EMPTY_LIST;
         }
-        if (isRuleMatch) {
+        if (rule.containsKey("selectorList")) { // NOI18N
             JSONObject selectorList = (JSONObject)rule.get("selectorList"); // NOI18N
             selector = (String)selectorList.get("text"); // NOI18N
             if (selectorList.containsKey("range")) { // NOI18N
