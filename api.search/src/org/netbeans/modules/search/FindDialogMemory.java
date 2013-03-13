@@ -100,6 +100,11 @@ public final class FindDialogMemory {
     private boolean textPatternSpecified;
 
     /**
+     * whether a replace pattern was specified, or empty string was used
+     */
+    private boolean replacePatternSpecified;
+
+    /**
      * ID of seach scope type.
      */
     private String scopeTypeId;
@@ -359,6 +364,14 @@ public final class FindDialogMemory {
         textPatternSpecified = specified;
     }
 
+    public boolean isReplacePatternSpecified() {
+        return replacePatternSpecified;
+    }
+
+    public void setReplacePatternSpecified(boolean replacePatternSpecified) {
+        this.replacePatternSpecified = replacePatternSpecified;
+    }
+
     boolean isFileNamePatternSpecified() {
         return fileNamePatternSpecified;
     }
@@ -483,7 +496,7 @@ public final class FindDialogMemory {
 
     public void setReplaceResultsDivider(int splitDividerLocation) {
         this.replaceResultsDivider = splitDividerLocation;
-        prefs.putDouble(PROP_REPLACE_RESULTS_DIVIDER, splitDividerLocation);
+        prefs.putInt(PROP_REPLACE_RESULTS_DIVIDER, splitDividerLocation);
     }
 
     public String getResultsViewMode() {
