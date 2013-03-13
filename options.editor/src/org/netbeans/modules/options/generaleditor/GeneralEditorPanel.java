@@ -76,18 +76,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     public GeneralEditorPanel () {
         initComponents ();
 
-        loc (lCodeFolding, "Code_Folding");
-        loc (lUseCodeFolding, "Code_Folding_Section");
-        loc (lCollapseByDefault, "Fold_by_Default");
-            
-        loc (cbUseCodeFolding, "Use_Folding");
-        loc (cbFoldMethods, "Fold_Methods");
-        loc (cbFoldInnerClasses, "Fold_Classes");
-        loc (cbFoldImports, "Fold_Imports");
-        loc (cbFoldJavadocComments, "Fold_JavaDoc");
-        loc (cbFoldInitialComments, "Fold_Licence");
-        loc (cbFoldTags, "Fold_Tags");
-
         loc (lCamelCaseBehavior, "Camel_Case_Behavior");
         loc (cbCamelCaseBehavior, "Enable_Camel_Case_In_Java");
         loc (lCamelCaseBehaviorExample, "Camel_Case_Behavior_Example");
@@ -99,7 +87,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         loc (cbBraceTooltip, "Brace_First_Tooltip");
         loc (cbShowBraceOutline, "Brace_Show_Outline");
                 
-        cbUseCodeFolding.setMnemonic(NbBundle.getMessage (GeneralEditorPanel.class, "MNEMONIC_Use_Folding").charAt(0));
         cboEditorSearchType.setRenderer(new EditorSearchTypeRenderer(cboEditorSearchType.getRenderer()));
         cboEditorSearchType.setModel(new DefaultComboBoxModel(new Object [] { "default", "closing"})); //NOI18N
         cboEditorSearchType.addActionListener( new ActionListener() {
@@ -123,17 +110,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lCodeFolding = new javax.swing.JLabel();
-        lUseCodeFolding = new javax.swing.JLabel();
-        lCollapseByDefault = new javax.swing.JLabel();
-        cbUseCodeFolding = new javax.swing.JCheckBox();
-        cbFoldMethods = new javax.swing.JCheckBox();
-        cbFoldInnerClasses = new javax.swing.JCheckBox();
-        cbFoldImports = new javax.swing.JCheckBox();
-        cbFoldJavadocComments = new javax.swing.JCheckBox();
-        cbFoldInitialComments = new javax.swing.JCheckBox();
-        cbFoldTags = new javax.swing.JCheckBox();
-        jSeparator1 = new javax.swing.JSeparator();
         lBracesMatching = new javax.swing.JLabel();
         cbShowBraceOutline = new javax.swing.JCheckBox();
         cbBraceTooltip = new javax.swing.JCheckBox();
@@ -149,25 +125,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         lSearchtypeTooltip = new javax.swing.JLabel();
 
         setForeground(new java.awt.Color(99, 130, 191));
-
-        lCodeFolding.setText("Code Folding");
-
-        lUseCodeFolding.setLabelFor(cbUseCodeFolding);
-        lUseCodeFolding.setText("Use Code Folding:");
-
-        lCollapseByDefault.setText("Collapse by Default:");
-
-        cbFoldMethods.setText("Methods");
-
-        cbFoldInnerClasses.setText("Inner Classes");
-
-        cbFoldImports.setText("Imports");
-
-        cbFoldJavadocComments.setText("Javadoc Comments");
-
-        cbFoldInitialComments.setText("Initial Comments");
-
-        cbFoldTags.setText("Tags and Other Code Blocks");
 
         lBracesMatching.setText(org.openide.util.NbBundle.getMessage(GeneralEditorPanel.class, "BRACES_MATCHING")); // NOI18N
 
@@ -200,29 +157,16 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(lCollapseByDefault)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(163, 163, 163)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbUseCodeFolding)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cbFoldMethods)
-                                    .addComponent(cbFoldInnerClasses)
-                                    .addComponent(cbFoldImports))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cbFoldJavadocComments)
-                                    .addComponent(cbFoldInitialComments)
-                                    .addComponent(cbFoldTags)
-                                    .addComponent(cbBraceTooltip)))
+                                .addGap(175, 175, 175)
+                                .addComponent(cbBraceTooltip))
                             .addComponent(cbCamelCaseBehavior)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(21, 21, 21)
-                                .addComponent(lCamelCaseBehaviorExample, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(lUseCodeFolding))
+                                .addComponent(lCamelCaseBehaviorExample, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(26, 26, 26))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(lEditorSearchType)
@@ -231,10 +175,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                             .addComponent(lSearchtypeTooltip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(cboEditorSearchType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(0, 12, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(lCodeFolding)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(lBracesMatching)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -248,34 +188,9 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jSeparator3)))
         );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {cbFoldImports, cbFoldInitialComments, cbFoldInnerClasses, cbFoldJavadocComments, cbFoldMethods});
-
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(lCodeFolding)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbUseCodeFolding)
-                    .addComponent(lUseCodeFolding))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lCollapseByDefault)
-                    .addComponent(cbFoldMethods)
-                    .addComponent(cbFoldJavadocComments))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cbFoldInnerClasses)
-                    .addComponent(cbFoldInitialComments))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cbFoldImports)
-                    .addComponent(cbFoldTags))
-                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(lBracesMatching)
                     .addComponent(jSeparator6, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -301,7 +216,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                     .addComponent(cboEditorSearchType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lSearchtypeTooltip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(0, 12, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -309,28 +224,17 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbBraceTooltip;
     private javax.swing.JCheckBox cbCamelCaseBehavior;
-    private javax.swing.JCheckBox cbFoldImports;
-    private javax.swing.JCheckBox cbFoldInitialComments;
-    private javax.swing.JCheckBox cbFoldInnerClasses;
-    private javax.swing.JCheckBox cbFoldJavadocComments;
-    private javax.swing.JCheckBox cbFoldMethods;
-    private javax.swing.JCheckBox cbFoldTags;
     private javax.swing.JCheckBox cbShowBraceOutline;
-    private javax.swing.JCheckBox cbUseCodeFolding;
     private javax.swing.JComboBox cboEditorSearchType;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JLabel lBracesMatching;
     private javax.swing.JLabel lCamelCaseBehavior;
     private javax.swing.JLabel lCamelCaseBehaviorExample;
-    private javax.swing.JLabel lCodeFolding;
-    private javax.swing.JLabel lCollapseByDefault;
     private javax.swing.JLabel lEditorSearchType;
     private javax.swing.JLabel lSearch;
     private javax.swing.JLabel lSearchtypeTooltip;
-    private javax.swing.JLabel lUseCodeFolding;
     // End of variables declaration//GEN-END:variables
     
     
@@ -362,28 +266,12 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         listen = false;
         if (model == null) {
             model = new Model ();
-            cbUseCodeFolding.addActionListener (this);
-            cbFoldMethods.addActionListener (this);
-            cbFoldInnerClasses.addActionListener (this);
-            cbFoldImports.addActionListener (this);
-            cbFoldJavadocComments.addActionListener (this);
-            cbFoldInitialComments.addActionListener (this);
             cbCamelCaseBehavior.addActionListener (this);
-            cbFoldTags.addActionListener (this);
             cboEditorSearchType.addActionListener(this);
             cbBraceTooltip.addActionListener(this);
             cbShowBraceOutline.addActionListener(this);
         }
         
-        // init code folding
-        cbUseCodeFolding.setSelected (model.isShowCodeFolding ());
-        cbFoldImports.setSelected (model.isFoldImports ());
-        cbFoldInitialComments.setSelected (model.isFoldInitialComment ());
-        cbFoldInnerClasses.setSelected (model.isFoldInnerClasses ());
-        cbFoldJavadocComments.setSelected (model.isFoldJavaDocComments ());
-        cbFoldMethods.setSelected (model.isFoldMethods ());
-        cbFoldTags.setSelected (model.isFoldTag());
-
         // Java Camel Case Navigation
         Boolean ccJava = model.isCamelCaseJavaNavigation();
         if ( ccJava == null ) {
@@ -400,25 +288,12 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbBraceTooltip.setSelected(model.isBraceTooltip());
         cbShowBraceOutline.setSelected(model.isBraceOutline());
 
-        updateEnabledState ();
-        
         listen = true;
     }
     
     void applyChanges () {
         
         if (model == null || !changed) return;
-        
-        // code folding options
-        model.setFoldingOptions (
-            cbUseCodeFolding.isSelected (),
-            cbFoldImports.isSelected (),
-            cbFoldInitialComments.isSelected (),
-            cbFoldInnerClasses.isSelected (),
-            cbFoldJavadocComments.isSelected (),
-            cbFoldMethods.isSelected (),
-            cbFoldTags.isSelected ()
-        );
         
         // java camel case navigation
         model.setCamelCaseNavigation(cbCamelCaseBehavior.isSelected());
@@ -446,25 +321,12 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed (ActionEvent e) {
         if (!listen) return;
-        if (e.getSource () == cbUseCodeFolding) {
-            updateEnabledState ();
-        }
         changed = true;
     }
     
     
     // other methods ...........................................................
     
-    private void updateEnabledState () {
-        boolean useCodeFolding = cbUseCodeFolding.isSelected ();
-        cbFoldImports.setEnabled (useCodeFolding);
-        cbFoldInitialComments.setEnabled (useCodeFolding);
-        cbFoldInnerClasses.setEnabled (useCodeFolding);
-        cbFoldJavadocComments.setEnabled (useCodeFolding);
-        cbFoldMethods.setEnabled (useCodeFolding);
-        cbFoldTags.setEnabled(useCodeFolding);
-    }
-
     private static final class EditorSearchTypeRenderer implements ListCellRenderer {
 
         private final ListCellRenderer defaultRenderer;

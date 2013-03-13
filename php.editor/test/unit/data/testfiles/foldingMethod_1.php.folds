@@ -6,12 +6,12 @@
 |     function __construct()
 +     {
 | 
-|     }
+-     }
 | 
 |     public function functionName($param)
 +     {
 | 
-|     }
+-     }
 | 
 - }
   
@@ -21,7 +21,7 @@
 |     function traitFunctionName($param)
 +     {
 | 
-|     }
+-     }
 | 
 - }
   

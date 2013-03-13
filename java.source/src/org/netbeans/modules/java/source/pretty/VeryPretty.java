@@ -1706,7 +1706,7 @@ public final class VeryPretty extends JCTree.Visitor {
     @Override
     public void visitReference(JCMemberReference tree) {
         printExpr(tree.expr);
-        print("::");
+        print(cs.spaceAroundMethodReferenceDoubleColon() ? " :: " : "::");
         if (tree.typeargs != null && !tree.typeargs.isEmpty()) {
             print("<");
             printExprs(tree.typeargs);

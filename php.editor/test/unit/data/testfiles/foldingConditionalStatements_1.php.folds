@@ -13,21 +13,21 @@
 | 
 |         if (true)
 +         {
-- 
-|         } elseif (true)
+| 
+-         } elseif (true)
 +         {
 | 
 -         }
 | 
 |         if (true)
 +         {
-- 
-|         } else
+| 
+-         } else
 +         {
 | 
 -         }
 | 
-|     }
+-     }
 | 
 - }
   
@@ -38,16 +38,16 @@
   
   if (true)
 + {
-- 
-  } elseif (true)
+| 
+- } elseif (true)
 + {
 | 
 - }
   
   if (true)
 + {
-- 
-  } else
+| 
+- } else
 + {
 | 
 - }
