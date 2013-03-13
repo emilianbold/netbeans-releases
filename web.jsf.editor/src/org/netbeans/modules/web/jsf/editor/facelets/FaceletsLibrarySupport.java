@@ -64,6 +64,7 @@ import javax.servlet.ServletContext;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.web.jsf.api.editor.JsfFacesComponentsProvider;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
@@ -157,9 +158,11 @@ public class FaceletsLibrarySupport {
 
     private synchronized void invalidateLibrariesCache() {
         faceletsLibraries = null;
-//        
-//        //refresh tasklist indexer
-//        IndexingManager.getDefault().refreshAllIndices(getJsfSupport().getClassPathRoots());
+        
+        //nasty workaround for Bug 226968 - Correct file need to be re-saved to make error badge disappear
+        //http://netbeans.org/bugzilla/show_bug.cgi?id=226968
+        //refresh all indexers including the tasklist indexer
+        IndexingManager.getDefault().refreshAllIndices(getJsfSupport().getClassPathRoots());
     }
     
     /*
@@ -168,17 +171,13 @@ public class FaceletsLibrarySupport {
      * the libraries up-to-date status next time when one calls getLibraries().
      */
     public void indexedContentPossiblyChanged() {
-        checkLibrariesUpToDate = true;
+        checkLibraryDescriptorsUpToDate();
     }
 
     /** @return URI -> library map */
     public synchronized Map<String, Library> getLibraries() {
-        if(checkLibrariesUpToDate) {
-            checkLibraryDescriptorsUpToDate();
-            checkLibrariesUpToDate = false;
-        }
-        
         if (faceletsLibraries == null) {
+            //not initialized yet, or invalidated by checkLibraryDescriptorsUpToDate()
             faceletsLibraries = findLibraries();
 
             if (faceletsLibraries == null) {
@@ -197,8 +196,8 @@ public class FaceletsLibrarySupport {
         //check whether the library descriptors have changes since the last time
         long hash = 7;
         for (IndexedFile indexedFile : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
-            long timestamp = indexedFile.getTimestamp();
-            hash = 79 * hash + timestamp;
+            String md5checksum = indexedFile.getMD5Checksum();
+            hash = 79 * hash + md5checksum.hashCode();
         }
 
         //Check whether a new composite component library has been created or removed.
