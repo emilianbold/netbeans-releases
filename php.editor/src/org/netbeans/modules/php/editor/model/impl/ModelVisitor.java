@@ -79,6 +79,7 @@ import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.VariableScopeFinder;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
@@ -1208,69 +1209,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     public VariableScope getNearestVariableScope(int offset) {
-        return findNearestVarScope((FileScopeImpl) getFileScope(), offset, null);
+        return VariableScopeFinder.create().findNearestVarScope((FileScopeImpl) getFileScope(), offset, null);
     }
 
     public VariableScope getVariableScope(int offset) {
-        return getVariableScope(offset, Model.ScopeRangeAcceptor.BLOCK);
+        return getVariableScope(offset, VariableScopeFinder.ScopeRangeAcceptor.BLOCK);
     }
 
-    public VariableScope getVariableScope(int offset, Model.ScopeRangeAcceptor scopeRangeAcceptor) {
-        return getVariableScope(getFileScope().getElements(), offset, scopeRangeAcceptor).getVariableScope();
-    }
-
-    private Model.VariableScopeWrapper getVariableScope(List<? extends ModelElement> elements, int offset, Model.ScopeRangeAcceptor scopeRangeAcceptor) {
-        Model.VariableScopeWrapper retval = Model.VariableScopeWrapper.NONE;
-        List<ModelElement> subElements = new LinkedList<ModelElement>();
-        for (ModelElement modelElement : elements) {
-            if (modelElement instanceof VariableScope) {
-                VariableScope varScope = (VariableScope) modelElement;
-                Model.VariableScopeWrapper varScopeWrapper = new VariableScopeWrapperImpl(varScope, scopeRangeAcceptor);
-                if (scopeRangeAcceptor.accept(varScopeWrapper, offset) && scopeRangeAcceptor.overlaps(retval, varScopeWrapper)) {
-                    retval = varScopeWrapper;
-                    subElements.addAll(varScopeWrapper.getElements());
-                }
-            }
-        }
-        Model.VariableScopeWrapper subResult = subElements.isEmpty() ? Model.VariableScopeWrapper.NONE : getVariableScope(subElements, offset, scopeRangeAcceptor);
-        return subResult == Model.VariableScopeWrapper.NONE ? retval : subResult;
-    }
-
-    private static final class VariableScopeWrapperImpl implements Model.VariableScopeWrapper {
-        private final VariableScope variableScope;
-        private final Model.ScopeRangeAcceptor scopeRangeAcceptor;
-
-        private VariableScopeWrapperImpl(VariableScope variableScope, Model.ScopeRangeAcceptor scopeRangeAcceptor) {
-            assert variableScope != null;
-            this.variableScope = variableScope;
-            this.scopeRangeAcceptor = scopeRangeAcceptor;
-        }
-
-        @Override
-        public VariableScope getVariableScope() {
-            return variableScope;
-        }
-
-        @Override
-        public boolean overlaps(Model.VariableScopeWrapper variableScopeWrapper) {
-            return scopeRangeAcceptor.overlaps(this, variableScopeWrapper);
-        }
-
-        @Override
-        public List<? extends ModelElement> getElements() {
-            return getVariableScope().getElements();
-        }
-
-        @Override
-        public OffsetRange getNameRange() {
-            return getVariableScope().getNameRange();
-        }
-
-        @Override
-        public OffsetRange getBlockRange() {
-            return getVariableScope().getBlockRange();
-        }
-
+    public VariableScope getVariableScope(int offset, VariableScopeFinder.ScopeRangeAcceptor scopeRangeAcceptor) {
+        return VariableScopeFinder.create().find(getFileScope(), offset, scopeRangeAcceptor);
     }
 
     private void buildCodeMarks(final int offset) {
@@ -1280,41 +1227,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
     }
 
-    private VariableScope findNearestVarScope(Scope scope, int offset, VariableScope atOffset) {
-        Collection<? extends ModelElement> elements = scope.getElements();
-        for (ModelElement varScope : elements) {
-            if (varScope instanceof ClassScope || varScope instanceof NamespaceScope) {
-                atOffset = findNearestVarScope((Scope) varScope, offset, atOffset);
-            }
-            if (varScope instanceof VariableScope) {
-                if (varScope.getNameRange().getStart() <= offset) {
-                    if (atOffset == null || atOffset.getOffset() < varScope.getOffset()) {
-                        FileObject fileObject = varScope.getFileObject();
-                        if (fileObject == scope.getFileObject()) {
-                            VariableScope variableScope = (VariableScope) varScope;
-                            OffsetRange blockRange = variableScope.getBlockRange();
-                            if (blockRange == null || blockRange.containsInclusive(offset)) {
-                                atOffset = variableScope;
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-        if (atOffset == null) {
-            while (scope != null && !(scope instanceof VariableScope)) {
-                scope = scope.getInScope();
-            }
-            if (scope != null) {
-                OffsetRange blockRange = scope.getBlockRange();
-                if (blockRange == null || blockRange.containsInclusive(offset)) {
-                    atOffset = (VariableScope) scope;
-                }
-            }
-        }
-        return atOffset;
-    }
     private OffsetRange getBlockRange(Scope currentScope) {
         ASTNode conditionalNode = findConditionalStatement(getPath());
         return getBlockRange(conditionalNode, currentScope);

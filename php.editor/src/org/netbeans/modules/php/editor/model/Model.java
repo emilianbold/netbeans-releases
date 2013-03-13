@@ -120,10 +120,23 @@ public final class Model {
     }
 
     public VariableScope getVariableScope(final int offset) {
-        return getVariableScope(offset, ScopeRangeAcceptor.BLOCK);
+        return getVariableScope(offset, VariableScopeFinder.ScopeRangeAcceptor.BLOCK);
     }
 
-    public VariableScope getVariableScope(final int offset, final ScopeRangeAcceptor scopeRangeAcceptor) {
+    /**
+     * Tries to find the variable scope even when the caret is not directly in scope (block) ranges.
+     *
+     * E.g.: One has a caret inside a method name, so then the method Scope should be returned
+     * even though it starts after the method name ends.
+     *
+     * @param offset
+     * @return
+     */
+    public VariableScope getVariableScopeForNamedElement(final int offset) {
+        return getVariableScope(offset, VariableScopeFinder.ScopeRangeAcceptor.NAME_START_BLOCK_END);
+    }
+
+    private VariableScope getVariableScope(final int offset, final VariableScopeFinder.ScopeRangeAcceptor scopeRangeAcceptor) {
         final ModelVisitor visitor = getModelVisitor();
         return visitor.getVariableScope(offset, scopeRangeAcceptor);
     }
@@ -145,109 +158,6 @@ public final class Model {
             LOGGER.log(Level.FINE, "Building model took: {0}", (end - start));
         }
         return modelVisitor;
-    }
-
-    public interface ScopeRangeAcceptor {
-        ScopeRangeAcceptor BLOCK = new ScopeRangeAcceptor() {
-
-            @Override
-            public boolean accept(VariableScopeWrapper variableScopeWrapper, int offset) {
-                boolean result = false;
-                OffsetRange blockRange = variableScopeWrapper.getBlockRange();
-                if (blockRange != null && blockRange != OffsetRange.NONE) {
-                    boolean possibleScope = true;
-                    VariableScope variableScope = variableScopeWrapper.getVariableScope();
-                    if (variableScope instanceof FunctionScope || variableScope instanceof ClassScope) {
-                        if (blockRange.getEnd() == offset) {
-                            possibleScope = false;
-                        }
-                    }
-                    result = possibleScope && blockRange.containsInclusive(offset);
-                }
-                return result;
-            }
-
-            @Override
-            public boolean overlaps(VariableScopeWrapper old, VariableScopeWrapper young) {
-                OffsetRange oldBlockRange = old.getBlockRange();
-                OffsetRange youngBlockRange = young.getBlockRange();
-                return old == VariableScopeWrapper.NONE || (oldBlockRange != null && youngBlockRange != null && oldBlockRange.overlaps(youngBlockRange));
-            }
-        };
-
-        ScopeRangeAcceptor NAME_START_BLOCK_END = new ScopeRangeAcceptor() {
-
-            @Override
-            public boolean accept(VariableScopeWrapper variableScopeWrapper, int offset) {
-                boolean result = BLOCK.accept(variableScopeWrapper, offset);
-                if (!result) {
-                    OffsetRange nameRange = variableScopeWrapper.getNameRange();
-                    OffsetRange blockRange = variableScopeWrapper.getBlockRange();
-                    if (nameRange != null & blockRange != null) {
-                        OffsetRange allRange = new OffsetRange(nameRange.getStart(), blockRange.getStart());
-                        result = allRange.containsInclusive(offset);
-                    }
-                }
-                return result;
-            }
-
-            @Override
-            public boolean overlaps(VariableScopeWrapper old, VariableScopeWrapper young) {
-                OffsetRange oldNameRange = old.getNameRange();
-                OffsetRange oldBlockRange = old.getBlockRange();
-                OffsetRange oldRange = null;
-                if (oldNameRange != null && oldBlockRange != null) {
-                    oldRange = new OffsetRange(oldNameRange.getStart(), oldBlockRange.getStart());
-                }
-                OffsetRange youngNameRange = young.getNameRange();
-                OffsetRange youngBlockRange = young.getBlockRange();
-                OffsetRange youngRange = null;
-                if (youngNameRange != null && youngBlockRange != null) {
-                    youngRange = new OffsetRange(youngNameRange.getStart(), youngBlockRange.getStart());
-                }
-                return old == VariableScopeWrapper.NONE || BLOCK.overlaps(old, young)
-                        || (oldRange != null && youngRange != null && oldRange.overlaps(youngRange));
-            }
-        };
-
-        boolean accept(VariableScopeWrapper variableScopeWrapper, int offset);
-        boolean overlaps(VariableScopeWrapper old, VariableScopeWrapper young);
-    }
-
-    public interface VariableScopeWrapper {
-        VariableScopeWrapper NONE = new VariableScopeWrapper() {
-
-            @Override
-            public VariableScope getVariableScope() {
-                return null;
-            }
-
-            @Override
-            public boolean overlaps(VariableScopeWrapper variableScopeWrapper) {
-                return true;
-            }
-
-            @Override
-            public List<? extends ModelElement> getElements() {
-                return Collections.EMPTY_LIST;
-            }
-
-            @Override
-            public OffsetRange getNameRange() {
-                return null;
-            }
-
-            @Override
-            public OffsetRange getBlockRange() {
-                return null;
-            }
-        };
-
-        VariableScope getVariableScope();
-        boolean overlaps(VariableScopeWrapper variableScopeWrapper);
-        List<? extends ModelElement> getElements();
-        OffsetRange getNameRange();
-        OffsetRange getBlockRange();
     }
 
 }

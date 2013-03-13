@@ -142,7 +142,7 @@ public class EditorSupportImpl implements EditorSupport {
                         Parser.Result pr = resultIterator.getParserResult();
                         if (pr != null && pr instanceof PHPParseResult) {
                             Model model = ModelFactory.getModel((PHPParseResult) pr);
-                            retval.add(getPhpBaseElement(model.getVariableScope(offset, Model.ScopeRangeAcceptor.NAME_START_BLOCK_END)));
+                            retval.add(getPhpBaseElement(model.getVariableScopeForNamedElement(offset)));
                         }
                     }
                 });
