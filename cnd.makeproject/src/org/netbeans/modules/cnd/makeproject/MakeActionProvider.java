@@ -542,8 +542,13 @@ public final class MakeActionProvider implements ActionProvider {
                     
                     conf = conf.clone();    //  Replacing output path with test output path
                     StringConfiguration sc = new StringConfiguration(null, "OutputPath"); // NOI18N
-                    sc.setValue(path);
-                    conf.getLinkerConfiguration().setOutput(sc);
+                    sc.setValue(path);                    
+                    
+                    if (conf.isLinkerConfiguration()) {             // Binary or dynamic lib
+                        conf.getLinkerConfiguration().setOutput(sc);
+                    } else if (conf.isArchiverConfiguration()) {    // Static lib 
+                        conf.getArchiverConfiguration().setOutput(sc);
+                    }
                 }
             }
             RunProfile runProfile = createRunProfile(conf, cancelled);
