@@ -45,9 +45,15 @@
 package org.netbeans.modules.exceptions;
 
 import java.awt.Cursor;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.net.MalformedURLException;
+import javax.swing.AbstractButton;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.lib.uihandler.PasswdEncryption;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,6 +63,7 @@ import org.openide.awt.HtmlBrowser;
 
 public class ReportPanel extends javax.swing.JPanel {
     private final ExceptionsSettings exSettings;
+    private AbstractButton sendButton;
     
     public ReportPanel(boolean isOOM, ExceptionsSettings exSettings) {
         this.exSettings = exSettings;
@@ -68,6 +75,8 @@ public class ReportPanel extends javax.swing.JPanel {
         }
         jLabel10.setVisible(false);
         asAGuestCheckBoxActionPerformed(null);
+        commentArea.getDocument().addDocumentListener(new CommentListener());
+        commentArea.addFocusListener(new CommentFocusListener());
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -126,6 +135,7 @@ public class ReportPanel extends javax.swing.JPanel {
         commentArea.setColumns(20);
         commentArea.setLineWrap(true);
         commentArea.setRows(5);
+        commentArea.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.commentArea.text")); // NOI18N
         commentArea.setWrapStyleWord(true);
         jScrollPane1.setViewportView(commentArea);
         commentArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.commentArea.AccessibleContext.accessibleName")); // NOI18N
@@ -166,7 +176,6 @@ public class ReportPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel3)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
@@ -182,11 +191,6 @@ public class ReportPanel extends javax.swing.JPanel {
                             .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel8)
-                            .addComponent(oomInfo))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel6))
@@ -195,8 +199,14 @@ public class ReportPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(summaryField))
                     .addComponent(jSeparator1)
-                    .addComponent(jLabel4)
-                    .addComponent(jScrollPane1))
+                    .addComponent(jScrollPane1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel8)
+                            .addComponent(oomInfo)
+                            .addComponent(jLabel4))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -270,7 +280,11 @@ public class ReportPanel extends javax.swing.JPanel {
             }
         }//GEN-LAST:event_asAGuestCheckBoxActionPerformed
         
-       public  void saveUserData() {
+       public void setSendButton(AbstractButton sendBtn){
+           sendButton = sendBtn;
+       }
+       
+        public  void saveUserData() {
             if (asAGuestCheckBox.isSelected()){
                 exSettings.setGuest(true);
                 return;
@@ -358,4 +372,51 @@ public class ReportPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox rememberCheckBox;
     private javax.swing.JTextField summaryField;
     // End of variables declaration//GEN-END:variables
+    
+    public boolean hasUserEnetredComment(){
+        return (commentArea.getText() != null) && !"".equals(commentArea.getText().trim()) && 
+                !NbBundle.getMessage(ReportPanel.class, "ReportPanel.commentArea.text").equals(commentArea.getText()); //NOI18N
+    }
+            
+    private class CommentFocusListener implements FocusListener {
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            if(!hasUserEnetredComment()){
+                commentArea.selectAll();
+            }
+        }
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            if (!hasUserEnetredComment()) {
+                commentArea.setText(NbBundle.getMessage(ReportPanel.class, "ReportPanel.commentArea.text")); //NOI18N
+            }
+        }
+    }
+    
+    private class CommentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            checkComment();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            checkComment();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            checkComment();
+        }
+
+        private void checkComment() {
+            if(sendButton !=null){
+                //disable if comment text area is empty or contains prefedined prompt
+                sendButton.setEnabled(hasUserEnetredComment());
+            }
+        }
+    }
 }
