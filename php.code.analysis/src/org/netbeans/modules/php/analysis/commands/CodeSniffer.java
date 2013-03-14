@@ -60,9 +60,9 @@ public final class CodeSniffer {
     }
 
     /**
-     * Get the default, <b>valid only</b> Composer.
-     * @return the default, <b>valid only</b> Composer.
-     * @throws InvalidPhpExecutableException if Composer is not valid.
+     * Get the default, <b>valid only</b> Code Sniffer.
+     * @return the default, <b>valid only</b> Code Sniffer.
+     * @throws InvalidPhpExecutableException if Code Sniffer is not valid.
      */
     public static CodeSniffer getDefault() throws InvalidPhpExecutableException {
         String codeSnifferPath = AnalysisOptions.getInstance().getCodeSnifferPath();
