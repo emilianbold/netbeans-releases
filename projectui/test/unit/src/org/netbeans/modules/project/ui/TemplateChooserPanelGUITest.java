@@ -127,9 +127,11 @@ public class TemplateChooserPanelGUITest extends NbTestCase {
         gui.finished();
         gui.readValues(new P(), null, null);
         FileChooserBuilder builder = gui.new FileChooserBuilder();
-        assertChildren("Main, Samples[Main]", builder.createCategoriesChildren(DataFolder.findFolder(r)));
-        assertChildren("t1, t2", builder.createTemplatesChildren(DataFolder.findFolder(r.getFileObject("Main"))));
-        assertChildren("t5", builder.createTemplatesChildren(DataFolder.findFolder(r.getFileObject("Samples/Main"))));
+        assertChildren("Main, Samples[Main]", builder.createCategoriesChildren(DataFolder.findFolder(r), null));
+        assertChildren("t1, t2", builder.createTemplatesChildren(DataFolder.findFolder(r.getFileObject("Main")), null));
+        assertChildren("t5", builder.createTemplatesChildren(DataFolder.findFolder(r.getFileObject("Samples/Main")), null));
+        assertChildren("t1, t2", builder.createTemplatesChildren(DataFolder.findFolder(r.getFileObject("Main")), "t"));
+        assertChildren("t2", builder.createTemplatesChildren(DataFolder.findFolder(r.getFileObject("Main")), "2"));
     }
 
     private static void assertChildren(String repn, Children c) {

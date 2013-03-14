@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -63,9 +65,11 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -83,6 +87,7 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.QuickSearch;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
@@ -112,9 +117,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     
     public static interface Builder extends ActionListener {
 
-        public Children createCategoriesChildren (DataFolder folder);
+        public Children createCategoriesChildren (DataFolder folder, String filterText);
         
-        public Children createTemplatesChildren (DataFolder folder);
+        public Children createTemplatesChildren (DataFolder folder, String filterText);
         
         public String getCategoriesName ();
         
@@ -135,6 +140,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private Node pleaseWait;
     private WizardDescriptor wiz;
 
+    private String filterText;
+
     @Messages("TXT_SelectTemplate=Select Project")
     public TemplatesPanelGUI (Builder firer) {
         assert firer != null : "Builder can not be null";  //NOI18N
@@ -142,6 +149,15 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         initComponents();
         postInitComponents ();
         setName(TXT_SelectTemplate());
+
+        QuickSearch quickSearch = QuickSearch.attach( panelFilter, BorderLayout.CENTER, createQuickSearchCallback(), true );
+        adjustQuickSearch( quickSearch );
+//                    @Override
+//                    public void run() {
+//                    }
+//                });
+//            }
+//        });
     }
 
     public void setTemplatesFolder (final FileObject folder) {
@@ -156,7 +172,19 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             }
         });
         ((ExplorerProviderPanel)this.categoriesPanel).setRootNode(new FilterNode (
-            dobj.getNodeDelegate(), this.firer.createCategoriesChildren(dobj)));
+            dobj.getNodeDelegate(), this.firer.createCategoriesChildren(dobj, filterText)));
+    }
+
+    private FileObject getCurrentTemplatesFolder() {
+        FileObject res = null;
+        Node rootNode = ((ExplorerProviderPanel)categoriesPanel).getExplorerManager().getRootContext();
+        if( null != rootNode ) {
+            DataObject dob = rootNode.getLookup().lookup( DataObject.class );
+            if( null != dob ) {
+                res = dob.getPrimaryFile();
+            }
+        }
+        return res;
     }
 
     public void setSelectedCategoryByName (final String categoryName) {
@@ -267,7 +295,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                             }
                         }
                         ((ExplorerProviderPanel)this.projectsPanel).setRootNode(
-                            new FilterNode (selectedNodes[0], this.firer.createTemplatesChildren((DataFolder)template)));
+                            new FilterNode (selectedNodes[0], this.firer.createTemplatesChildren((DataFolder)template, filterText)));
                         // after change of root select the first template to make easy move in wizard
                         this.setSelectedTemplateByName (presetTemplateName);
                         if (wiz != null) {
@@ -375,6 +403,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         description = new javax.swing.JEditorPane();
+        panelFilter = new javax.swing.JPanel();
 
         setPreferredSize(new java.awt.Dimension(500, 230));
         setLayout(new java.awt.GridBagLayout());
@@ -383,7 +412,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(TemplatesPanelGUI.class, "CTL_Categories")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.4;
@@ -393,6 +422,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         jLabel2.setLabelFor(projectsPanel);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(TemplatesPanelGUI.class, "CTL_Templates")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -400,6 +431,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(jLabel2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.4;
         gridBagConstraints.weighty = 0.8;
@@ -407,7 +440,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         add(categoriesPanel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.6;
@@ -418,6 +451,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         jLabel3.setLabelFor(description);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(TemplatesPanelGUI.class, "CTL_Description")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -430,7 +465,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -438,6 +473,16 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.weighty = 0.2;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
+
+        panelFilter.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(panelFilter, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private static final class ClickHyperlinks implements HyperlinkListener {
@@ -695,6 +740,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel panelFilter;
     private javax.swing.JPanel projectsPanel;
     // End of variables declaration//GEN-END:variables
 
@@ -791,5 +837,72 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         
         return txt.substring (charset + "CHARSET=".length (), charend); // NOI18N
     }
-    
+
+    private QuickSearch.Callback createQuickSearchCallback() {
+        return new QuickSearch.Callback() {
+
+            @Override
+            public void quickSearchUpdate( String searchText ) {
+                if( null != searchText )
+                    searchText = searchText.toLowerCase();
+                filterText = searchText;
+                refreshContent();
+            }
+
+            @Override
+            public void showNextSelection( boolean forward ) {
+            }
+
+            @Override
+            public String findMaxPrefix( String prefix ) {
+                return prefix;
+            }
+
+            @Override
+            public void quickSearchConfirmed() {
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        ((CategoriesPanel)categoriesPanel).btv.requestFocus();
+                    }
+                });
+            }
+
+            @Override
+            public void quickSearchCanceled() {
+                filterText = null;
+                refreshContent();
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        ((CategoriesPanel)categoriesPanel).btv.requestFocus();
+                    }
+                });
+            }
+        };
+    }
+
+    private void refreshContent() {
+        FileObject folder = getCurrentTemplatesFolder();
+        if( null != folder ) {
+            setTemplatesFolder( folder );
+            setSelectedCategoryByName( null );
+        }
+    }
+
+    private void adjustQuickSearch( QuickSearch qs ) {
+        qs.setAlwaysShown( true );
+        JTextField textField = null;
+        Component qsComponent = panelFilter.getComponent( 0 );
+        if( qsComponent instanceof JComponent ) {
+            ((JComponent)qsComponent).setBorder( BorderFactory.createEmptyBorder() );
+            for( Component c : ((JComponent)qsComponent).getComponents() ) {
+                if( c instanceof JTextField ) {
+                    textField = ( JTextField ) c;
+                }
+            }
+        }
+        if( null != textField )
+            textField.setMaximumSize( null );
+    }
 }
