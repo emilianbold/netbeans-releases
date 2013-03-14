@@ -75,6 +75,8 @@ public final class ClassNodeCache {
     private static final int NON_EXISTENT_CACHE_SIZE = Integer.getInteger(
             "groovy.editor.ClassNodeCache.nonExistent.size",
             DEFAULT_NON_EXISTENT_CACHE_SIZE);
+    private static final char INNER_SEPARATOR = '$';    //NOI18N
+    private static final char PKG_SEPARATOR = '.';      //NOI18N
     
     private final Map<CharSequence,ClassNode> cache;
     private final Map<CharSequence,Void> nonExistent;
@@ -86,7 +88,7 @@ public final class ClassNodeCache {
     
     private ClassNodeCache() {
         this.cache = new HashMap<CharSequence, ClassNode>();
-        this.nonExistent = new LinkedHashMap<CharSequence, Void>() {
+        this.nonExistent = new LinkedHashMap<CharSequence, Void>(16,0.75f,true) {
             @Override
             protected boolean removeEldestEntry(Entry<CharSequence, Void> eldest) {
                 if (size() > NON_EXISTENT_CACHE_SIZE) {
@@ -124,7 +126,10 @@ public final class ClassNodeCache {
     }
     
     public boolean isNonExistent (@NonNull final CharSequence name) {
-        final boolean res = nonExistent.containsKey(name);
+        if (!isValidClassName(name)) {
+            return true;
+        }
+        final boolean res = getNonExistent(name) != null;
         if (LOG.isLoggable(Level.FINER)) {
             invocationCount++;
             if (res) {
@@ -153,11 +158,15 @@ public final class ClassNodeCache {
                 name);
             cache.put(name,node);
         } else {
+            final CharSequence parentName = getNonExistent(name);
             LOG.log(
                 Level.FINE,
                 "Added nonexistent class: {0}",    //NOI18N
                 name);
-            nonExistent.put(name, null);
+            nonExistent.put(
+                parentName != null ?
+                    parentName : name,
+                    null);
         }
     }
     
@@ -223,6 +232,17 @@ public final class ClassNodeCache {
         }
         return resolveLoader;
     }
+
+    @CheckForNull
+    private CharSequence getNonExistent(@NonNull final CharSequence name) {
+        for (int index = name.length(); index > 0; index = getNextPoint(name,index)) {
+            final CharSequence subName = name.subSequence(0, index);
+            if (nonExistent.containsKey(subName)) {
+                return subName;
+            }
+        }
+        return null;
+    }
     
     @NonNull
     public static ClassNodeCache get() {
@@ -249,5 +269,32 @@ public final class ClassNodeCache {
             Level.FINE,
             "ClassNodeCache removed from thread: {0}",    //NOI18N
             Thread.currentThread().getId());
+    }
+
+
+    private static int getNextPoint(
+            @NonNull final CharSequence name,
+            final int currentPoint) {
+        for (int i=currentPoint-1; i>0; i--) {
+            if (name.charAt(i) == INNER_SEPARATOR) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static boolean isValidClassName(@NonNull final CharSequence name) {
+        int lastDot = -1;
+        for (int i=name.length()-1; i>=0; i--) {
+            final char c = name.charAt(i);
+            if (c == PKG_SEPARATOR) {
+                lastDot = c;
+            } else if (c == INNER_SEPARATOR) {
+                if (lastDot > c) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
