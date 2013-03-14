@@ -563,9 +563,6 @@ public class CPCssEditorModule extends CssEditorModule {
         final Set<StructureItem> vars = new HashSet<StructureItem>();
         final Set<StructureItem> mixins = new HashSet<StructureItem>();
 
-        result.add(new CPCategoryStructureItem.Variables(vars));
-        result.add(new CPCategoryStructureItem.Mixins(mixins, context));
-
         CPModel model = CPModel.getModel(context.getParserResult());
         for(CPElement element : model.getElements()) {
             switch(element.getType()) {
@@ -578,6 +575,13 @@ public class CPCssEditorModule extends CssEditorModule {
                     vars.add(new CPStructureItem.Variable(element));
                     break;
             }
+        }
+        
+        if(!vars.isEmpty()) {
+            result.add(new CPCategoryStructureItem.Variables(vars));
+        }
+        if(!mixins.isEmpty()) {
+            result.add(new CPCategoryStructureItem.Mixins(mixins, context));
         }
 
         //XXX ugly - we need no visitor, but still forced to return one
