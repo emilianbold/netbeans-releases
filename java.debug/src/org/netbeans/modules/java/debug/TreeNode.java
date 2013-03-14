@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.debug;
 
 import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -745,6 +746,20 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingComments(below);
             super.visitTry(tree, below);
             
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitAnnotatedType(AnnotatedTypeTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+            
+            addCorrespondingElement(below);
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            
+            super.visitAnnotatedType(tree, below);
+
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;
         }
