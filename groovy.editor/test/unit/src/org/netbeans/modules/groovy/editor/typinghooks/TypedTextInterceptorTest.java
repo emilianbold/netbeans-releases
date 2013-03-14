@@ -272,7 +272,16 @@ public class TypedTextInterceptorTest extends GroovyTestBase {
     public void testReplaceSelection6() throws Exception {
         insertChar("'position^:absolute;'", '{', "'pos{^:absolute;'", "ition");
     }
+    
     public void testReplaceSelectionNotInTemplateMode1() throws Exception {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
+    }
+    
+    public void testTypingSemicolon_insideForLoop1() throws Exception {
+        insertChar("for (int x = 0^)", ';', "for (int x = 0;^)");
+    }
+    
+    public void testTypingSemicolon_insideForLoop2() throws Exception {
+        insertChar("for (int x = 0; x < 10^)", ';', "for (int x = 0; x < 10;^)");
     }
 }
