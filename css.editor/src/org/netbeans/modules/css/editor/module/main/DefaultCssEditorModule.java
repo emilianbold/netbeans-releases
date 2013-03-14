@@ -485,6 +485,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
     @Override
     public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(final FeatureContext context, final T result) {
 
+        final List<StructureItem> imports = new ArrayList<StructureItem>();
         final List<StructureItem> rules = new ArrayList<StructureItem>();
         final List<StructureItem> atrules = new ArrayList<StructureItem>();
         final Set<StructureItem> classes = new HashSet<StructureItem>();
@@ -529,6 +530,13 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     result.add(new TopLevelStructureItem.Classes(classes));
                 }
                 classes.add(si);
+            }
+            
+            private void addImport(StructureItem si) {
+                if(imports.isEmpty()) {
+                    result.add(new TopLevelStructureItem.Imports(imports));
+                }
+                imports.add(si);
             }
 
             @Override
@@ -589,6 +597,12 @@ public class DefaultCssEditorModule extends CssEditorModule {
                             image.append("@counter-style "); //NOI18N
                             image.append(identNode.image());
                             addAtRule(new CssRuleStructureItem(image, CssNodeElement.createElement(file, node), snapshot));
+                        }
+                        break;
+                    case importItem:
+                        Node[] resourceIdentifiers = NodeUtil.getChildrenByType(node, NodeType.resourceIdentifier);
+                        for(Node ri : resourceIdentifiers) {
+                            addImport(new CssRuleStructureItem(WebUtils.unquotedValue(ri.image()), CssNodeElement.createElement(file, ri), snapshot));
                         }
                         break;
 
