@@ -166,8 +166,9 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         String shellCommand = shellCommandAndArgs[0];
         String shellFilePath = CndPathUtilitities.toRelativePath(buildDirObject, fileObject);
         if (shellFilePath.equals(fileObject.getNameExt())) {
-            shellFilePath = "."+File.separatorChar+shellFilePath; //NOI18N
+            shellFilePath = "./" + shellFilePath; //NOI18N
         }
+        shellFilePath = shellFilePath.replace('\\', '/');
         String[] args = bes.getArguments(); // from properties
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
