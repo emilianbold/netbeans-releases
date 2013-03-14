@@ -86,8 +86,7 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
 
     private static final Set<GroovyTokenId> COMMENT_TOKENS = EnumSet.of(
         GroovyTokenId.BLOCK_COMMENT,
-        GroovyTokenId.LINE_COMMENT,
-        GroovyTokenId.DOCUMENTATION
+        GroovyTokenId.LINE_COMMENT
     );
     
     /** Tokens which indicate that we're within a regexp string */
@@ -95,9 +94,7 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
         GroovyTokenId.REGEXP_LITERAL,
         GroovyTokenId.REGEXP_SYMBOL,
         GroovyTokenId.REGEXP_BEGIN,
-        GroovyTokenId.REGEXP_END,
-        GroovyTokenId.REGEX_MATCH,
-        GroovyTokenId.REGEX_FIND
+        GroovyTokenId.REGEXP_END
     );
 
     /** True iff we're processing bracket matching AFTER the key has been inserted rather than before  */
@@ -152,7 +149,6 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
             previousAdjustmentOffset = -1;
         }
 
-        //dumpTokens(doc, dotPos);
         switch (ch) {
         case '}':
         case '{':
@@ -400,15 +396,7 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
                 final int rowFirstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
                 // Ensure that this token is at the beginning of the line
                 if (ts.offset() > rowFirstNonWhite) {
-//                    if (RubyUtils.isRhtmlDocument(doc)) {
-//                        // Allow "<%[whitespace]*" to preceed
-//                        String s = doc.getText(rowFirstNonWhite, ts.offset()-rowFirstNonWhite);
-//                        if (!s.matches("<%\\s*")) {
-//                            return;
-//                        }
-//                    } else {
-                        return;
-//                    }
+                    return;
                 }
 
                 OffsetRange begin = OffsetRange.NONE;

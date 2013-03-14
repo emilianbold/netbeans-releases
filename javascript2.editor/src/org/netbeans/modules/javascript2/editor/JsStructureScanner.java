@@ -369,17 +369,24 @@ public class JsStructureScanner implements StructureScanner {
         }
         
         protected void appendTypeInfo(HtmlFormatter formatter, Collection<? extends Type> types) {
-            if (!types.isEmpty()) {
+            List<String> displayNames = new ArrayList<String>(types.size());
+            for (Type type : types) { 
+                String displayName = type.getDisplayName();
+                if (!displayName.isEmpty()) {
+                    displayNames.add(displayName);
+                }
+            }
+            if (!displayNames.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR);
                 formatter.appendText(" : ");
                 boolean addDelimiter = false;
-                for (Type type : types) {
+                for (String displayName : displayNames) {
                     if (addDelimiter) {
                         formatter.appendText("|");
                     } else {
                         addDelimiter = true;
                     }
-                    formatter.appendHtml(type.getType());
+                    formatter.appendHtml(displayName);
                 }
                 formatter.appendHtml(CLOSE_FONT);
             }

@@ -87,6 +87,11 @@ public interface Constants {
     public static final String HINT_PACKAGING = "netbeans.hint.packaging"; //NOI18N
     
     /**
+     * allows to customize project's display name. The global equivalent is $userhome/Preferences/org/netbeans/modules/maven.properties' property of project.displayName
+     */
+    public static final String HINT_DISPLAY_NAME = "netbeans.hint.displayName";
+    
+    /**
      * apache maven default groupid for maven plugins. 
      */ 
     public static final String GROUP_APACHE_PLUGINS = "org.apache.maven.plugins"; //NOI18N
