@@ -338,6 +338,7 @@ public class ${controllerClassName} implements Serializable {
         private static final String SEPARATOR_ESCAPED = "\\#";
 </#if>
 
+        @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
                 return null;
@@ -362,11 +363,12 @@ ${keyBody}
         }
 
         String getStringKey(${keyType} value) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 ${keyStringBody}
             return sb.toString();
         }
 
+        @Override
         public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
             if (object == null) {
                 return null;
