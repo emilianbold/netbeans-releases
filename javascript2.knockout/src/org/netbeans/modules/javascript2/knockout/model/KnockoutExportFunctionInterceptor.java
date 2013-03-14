@@ -141,8 +141,8 @@ public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
                                 levelUp--;
                                 valueParent = valueParent.getParent();
                             }
-                            boolean skip = true;
                             if (foundParent != null) {
+                                boolean skip = true;
                                 for (int i = levelUp; i < names.length; i++) {
                                     JsObject property = foundParent.getProperty(identifiers.get(i).getName());
                                     if (property == null) {
@@ -151,10 +151,11 @@ public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
                                     }
                                     foundParent = property;
                                 }
+                                if (skip) {
+                                    return;
+                                }
                             }
-                            if (skip) {
-                                return;
-                            }
+                            
                         }
 
                         OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());

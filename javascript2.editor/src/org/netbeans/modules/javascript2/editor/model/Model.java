@@ -337,7 +337,8 @@ public final class Model {
             }
         }
 
-        assert declarationName == null || declarationName.equals(ret.getDeclarationName().getName());
+        //System.out.println("===" + declarationName + ":" + ret.getDeclarationName() + " " + name);
+        //assert declarationName == null || declarationName.equals(ret.getDeclarationName().getName());
         ret.setJsKind(kind);
 
         ret.setDeclared(declared);
