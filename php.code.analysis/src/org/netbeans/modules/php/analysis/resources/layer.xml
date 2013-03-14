@@ -45,7 +45,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
     <folder name="OptionsExport">
         <folder name="PHP">
             <file name="CodeAnalysis">
-                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/analysis/analysis.properties"/>
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/code/analysis/analysis.properties"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.analysis.resources.Bundle#LBL_CodeAnalysisExportName"/>
                 <attr name="position" intvalue="220"/>
             </file>
