@@ -152,7 +152,6 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
             previousAdjustmentOffset = -1;
         }
 
-        //dumpTokens(doc, dotPos);
         switch (ch) {
         case '}':
         case '{':
@@ -400,15 +399,7 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
                 final int rowFirstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
                 // Ensure that this token is at the beginning of the line
                 if (ts.offset() > rowFirstNonWhite) {
-//                    if (RubyUtils.isRhtmlDocument(doc)) {
-//                        // Allow "<%[whitespace]*" to preceed
-//                        String s = doc.getText(rowFirstNonWhite, ts.offset()-rowFirstNonWhite);
-//                        if (!s.matches("<%\\s*")) {
-//                            return;
-//                        }
-//                    } else {
-                        return;
-//                    }
+                    return;
                 }
 
                 OffsetRange begin = OffsetRange.NONE;
