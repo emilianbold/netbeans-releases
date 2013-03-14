@@ -206,16 +206,22 @@ public class NamespacesModule extends CssEditorModule {
     }
 
     @Override
-    public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(final FeatureContext context, T result) {
+    public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(final FeatureContext context, final T result) {
         final List<StructureItem> items = new ArrayList<StructureItem>();
-        result.add(new TopLevelStructureItem.Namespaces(items));
 
         return new NodeVisitor<T>() {
+            
+            private void addItem(StructureItem si) {
+                if(items.isEmpty()) {
+                    result.add(new TopLevelStructureItem.Classes(items));
+                }
+                items.add(si);
+            }
 
             @Override
             public boolean visit(Node node) {
                 if (node.type() == NodeType.namespace) {
-                    items.add(new NamespaceStructureItem(context.getFileObject(), node));
+                    addItem(new NamespaceStructureItem(context.getFileObject(), node));
                 }
 
                 return false;
