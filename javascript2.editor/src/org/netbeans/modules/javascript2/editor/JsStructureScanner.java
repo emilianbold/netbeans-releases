@@ -140,7 +140,7 @@ public class JsStructureScanner implements StructureScanner {
 
     private boolean containsFunction(JsObject jsObject) {
         for (JsObject property: jsObject.getProperties().values()) {
-            if (property.getJSKind().isFunction() && property.isDeclared()) {
+            if (property.getJSKind().isFunction() && property.isDeclared() && !property.isAnonymous()) {
                 return true;
             }
         }

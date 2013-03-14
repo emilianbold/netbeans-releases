@@ -73,7 +73,7 @@ public class IndexedFile {
     }
     
     public String getMD5Checksum() {
-        return md5checksum;
+        return md5checksum == null ? "n/a" : md5checksum; //NOI18N
     }
 
     
