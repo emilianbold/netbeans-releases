@@ -3398,7 +3398,14 @@ statement
 		( LITERAL_typedef ) =>
 		// TODO: external_declaration is too generic here. Refactor this!
 		external_declaration
+	|
+                { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (IDENT IDENT) => pro_c_statement
+                {if (statementTrace>=1)
+			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
+		}
         |
+                // #227479 - SQL EXEC support is broken
+                // This alternative is greedy and must be after pro_c alternative
                 ( is_declaration | LITERAL_namespace | literal_inline LITERAL_namespace | LITERAL_static_assert ) =>
                 {if (statementTrace>=1) 
 			printf("statement_1[%d]: declaration\n", LT(1).getLine());
@@ -3419,11 +3426,6 @@ statement
 			printf("statement_4[%d]: default_statement\n", LT(1).getLine());
 		}	
                 default_statement
-	|
-                { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (IDENT IDENT) => pro_c_statement
-                {if (statementTrace>=1)
-			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
-		}
 	|
                 {if (statementTrace>=1) 
 			printf("statement_5[%d]: expression\n", LT(1).getLine());
