@@ -84,10 +84,11 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.VALIDATION_GROUP_PRE_PERSIST, null);
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.VALIDATION_GROUP_PRE_UPDATE, null);
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.VALIDATION_GROUP_PRE_REMOVE, null);
-        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_DRIVER, null);
-        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_URL, null);
-        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_USER, null);
-        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_PASSWORD, null);
+//in current realization jdbc properties are derived from provider properties, commented
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_DRIVER, null);
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_URL, null);
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_USER, null);
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_PASSWORD, null);
         //2.1 but in the same area as 2.0 for now
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_DATABASE_ACTION, SCHEMA_GEN_OPTIONS);
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_ACTION, SCHEMA_GEN_OPTIONS);
