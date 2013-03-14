@@ -548,10 +548,16 @@ public final class MakeActionProvider implements ActionProvider {
                     StringConfiguration sc = new StringConfiguration(null, "OutputPath"); // NOI18N
                     sc.setValue(path);                    
                     
+                    // Copied from MakeConfiguration.getOutputValue()
                     if (conf.isLinkerConfiguration()) {             // Binary or dynamic lib
                         conf.getLinkerConfiguration().setOutput(sc);
-                    } else if (conf.isArchiverConfiguration()) {    // Static lib 
+                    } else if (conf.isArchiverConfiguration()) {    // Static lib
                         conf.getArchiverConfiguration().setOutput(sc);
+                    } else if (conf.isMakefileConfiguration()) {    // Unmanaged project
+                        conf.getMakefileConfiguration().setOutput(sc);
+                    } else if (conf.isQmakeConfiguration()) {       // QT
+                    } else {
+                        assert false;
                     }
                 }
             }
