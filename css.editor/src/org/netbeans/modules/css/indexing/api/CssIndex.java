@@ -588,16 +588,53 @@ public class CssIndex {
         
         //The SASS import spec: http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#import
         //
-        //if the original reference is not resolved to an existing file
-        //so first try to append the .scss extension
-        String impliedScssExt = importedFileName + ".scss"; //NOI18N
-        resolvedReference = WebUtils.resolveToReference(source, impliedScssExt);
-        if(resolvedReference != null) {
-            return resolvedReference; 
+        //check if the importedFileName already contains an extension
+        int dotIndex = importedFileName.indexOf('.');
+        String extension = dotIndex == -1 ? null : importedFileName.substring(dotIndex + 1);
+        
+        if(extension == null) {
+            //no extension
+            
+            //if the original reference is not resolved to an existing file
+            //so first try to append the .scss extension
+            String impliedScssExt = importedFileName + ".scss"; //NOI18N
+            resolvedReference = WebUtils.resolveToReference(source, impliedScssExt);
+            if(resolvedReference != null) {
+                return resolvedReference; 
+            }
+
+            //lets try to imply the leading underscore for sass partials
+            String impliedUnderscoreAndScssExt = new StringBuilder().append("_").append(importedFileName).append(".scss").toString(); //NOI18N
+            resolvedReference = WebUtils.resolveToReference(source, impliedUnderscoreAndScssExt);
+            if(resolvedReference != null) {
+                return resolvedReference; 
+            }
+
+            //if still nothing then try .sass extension as a last resort
+            String impliedSassExt = importedFileName + ".sass"; //NOI18N
+            resolvedReference = WebUtils.resolveToReference(source, impliedSassExt);
+            if(resolvedReference != null) {
+                return resolvedReference;
+            }
+
+             //lets try to imply the leading underscore for sass partials
+            String impliedUnderscoreAndSassExt = new StringBuilder().append("_").append(importedFileName).append(".sass").toString(); //NOI18N
+            resolvedReference = WebUtils.resolveToReference(source, impliedUnderscoreAndSassExt);
+            if(resolvedReference != null) {
+                return resolvedReference; 
+            }
+            
+        } else if("sass".equalsIgnoreCase(extension) | "scss".equalsIgnoreCase(extension)) {
+            //lets try to imply the leading underscore for sass partials
+            String impliedUnderscoreAndSassExt = new StringBuilder().append("_").append(importedFileName).toString(); //NOI18N
+            resolvedReference = WebUtils.resolveToReference(source, impliedUnderscoreAndSassExt);
+            if(resolvedReference != null) {
+                return resolvedReference; 
+            }
+            
         }
-        //if still nothing then try .sass extension as a last resort
-        String impliedSassExt = importedFileName + ".sass"; //NOI18N
-        return WebUtils.resolveToReference(source, impliedSassExt);
+        
+        return null; //give up
         
     }
     
