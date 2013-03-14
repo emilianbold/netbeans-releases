@@ -1078,7 +1078,7 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                     });
                 }
             } else {
-                //showSQLError(null, NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent"));
+                //
             }
         }
     }
