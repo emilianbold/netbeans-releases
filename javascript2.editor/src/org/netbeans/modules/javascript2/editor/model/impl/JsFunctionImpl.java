@@ -275,6 +275,10 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             }
         }
     }
-    
+
+//    @Override
+//    public String toString() {
+//        return "JsFunctionImpl{" + "declarationName=" + getDeclarationName() + ", parent=" + getParent() + ", kind=" + kind + ", parameters=" + parameters + ", returnTypes=" + returnTypes + '}';
+//    }
     
 }

@@ -60,6 +60,7 @@ public class JsObjectReference extends JsObjectImpl {
     public JsObjectReference(JsObject parent, Identifier declarationName,
             JsObject original, boolean isDeclared) {
         super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
+        assert original != null;
         this.original = original;
     }
 
