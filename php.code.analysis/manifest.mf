@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.php.code.analysis
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/php/analysis/resources/Bundle.properties
+OpenIDE-Module-Specification-Version: 0.1
