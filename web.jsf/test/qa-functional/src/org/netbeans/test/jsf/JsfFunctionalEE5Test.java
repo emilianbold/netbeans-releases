@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -33,30 +33,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.test.jsf;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Run all tests in the same instance of the IDE.
+ * Test JSF support in Java EE 5 project.
  *
+ * @author Lukasz Grela
  * @author Jiri Skrivanek
+ * @author Jindrich Sedek
  */
-public class JSFSupportSuite extends J2eeTestCase {
+public class JsfFunctionalEE5Test extends JsfFunctionalTest {
 
-    public JSFSupportSuite(String name) {
+    public static final String[] TESTS = {
+        "testNewJSFWebProject",
+        "testCleanAndBuildProject",
+        "testCompileAllJSP",
+        "testRedeployProject",
+        "testManagedBeanWizard",
+        "testManagedBeanDelete",
+        "testAddJSFToProject",
+        "testShutdownDb",
+        "testFinish"
+    };
+
+    public JsfFunctionalEE5Test(String name) {
         super(name);
+        PROJECT_NAME = "WebJSFProjectEE5";
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = emptyConfiguration();
-        conf = addServerTests(Server.GLASSFISH, conf, JsfFunctionalEE5Test.class, JsfFunctionalEE5Test.TESTS);
-        conf = addServerTests(Server.GLASSFISH, conf, JsfFunctionalEE6Test.class, JsfFunctionalEE6Test.TESTS);
-        conf = addServerTests(Server.GLASSFISH, conf, JsfFunctionalTest.class, JsfFunctionalTest.TESTS);
-        return conf.suite();
+        return createAllModulesServerSuite(Server.GLASSFISH, JsfFunctionalEE5Test.class, TESTS);
+    }
+
+    @Override
+    protected String getEEVersion() {
+        return JAVA_EE_5;
     }
 }
