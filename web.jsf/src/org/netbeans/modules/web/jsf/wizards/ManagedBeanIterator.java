@@ -398,7 +398,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
                 NamedScope typedScope = (NamedScope) scope;
                 ScopeEntry se = new ScopeEntry(NAMED_SCOPE.get(typedScope), getScopeImport(typedScope));
                 if (typedScope == NamedScope.FLOW) {
-                    se.parameters = "id = \"\""; //NOI18N
+                    se.parameters = "\"\""; //NOI18N
                 }
                 return se;
             }
