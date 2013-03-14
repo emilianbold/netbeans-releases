@@ -289,10 +289,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         
         private final DataFolder folder;
         private final boolean isRoot;
+        private final String filterText;
         
-        TemplateChildren(DataFolder folder, boolean root) {
+        TemplateChildren(DataFolder folder, boolean root, String filterText) {
             this.folder = folder;
             isRoot = root;
+            this.filterText = filterText;
         }
         
         @Override protected void addNotify() {
@@ -330,14 +332,30 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
                             break;
                         }
                     }
-                    keys.add(new TemplateKey(d, leaf));
+                    if( null == filterText || hasFilteredFileTemplates(d, filterText) )
+                        keys.add(new TemplateKey(d, leaf));
                 }
             }
             return true;
         }
+
+        private boolean hasFilteredFileTemplates( DataObject root, String filterText ) {
+            boolean res = false;
+            if( root instanceof DataFolder ) {
+                for (DataObject dobj : ((DataFolder)root).getChildren()) {
+                    res = isFilteredFileTemplate( dobj, filterText, project, projectRecommendedTypes );
+                    if( !res && dobj instanceof DataFolder ) {
+                        res = hasFilteredFileTemplates( dobj, filterText );
+                    }
+                    if( res )
+                        break;
+                }
+            }
+            return res;
+        }
         
         @Override protected Node createNodeForKey(TemplateKey k) {
-            return new FilterNode(k.d.getNodeDelegate(), k.leaf ? Children.LEAF : Children.create(new TemplateChildren((DataFolder) k.d, false), true));
+            return new FilterNode(k.d.getNodeDelegate(), k.leaf ? Children.LEAF : Children.create(new TemplateChildren((DataFolder) k.d, false, filterText), true));
         }
         
         @Override public void actionPerformed (ActionEvent event) {
@@ -367,18 +385,17 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private final class FileChildren extends ChildFactory<DataObject> {
         
         private DataFolder root;
+        private final String filterText;
                 
-        public FileChildren (DataFolder folder) {
+        public FileChildren (DataFolder folder, String filterText) {
             this.root = folder;
             assert this.root != null : "Root can not be null";  //NOI18N
+            this.filterText = filterText;
         }
         
         @Override protected boolean createKeys(List<DataObject> keys) {
             for (DataObject dobj : root.getChildren()) {
-                if (isTemplate(dobj) && OpenProjectList.isRecommended(project, projectRecommendedTypes, dobj.getPrimaryFile())) {
-                    if (dobj instanceof DataShadow) {
-                        dobj = ((DataShadow) dobj).getOriginal();
-                    }
+                if( isFilteredFileTemplate( dobj, filterText, project, projectRecommendedTypes ) ) {
                     keys.add(dobj);
                 }
             }
@@ -390,16 +407,26 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
     }
-    
+
+    private static boolean isFilteredFileTemplate( DataObject dobj, String filterText, Project project, String[] projectRecommendedTypes ) {
+        boolean res = false;
+        if (isTemplate(dobj) && OpenProjectList.isRecommended(project, projectRecommendedTypes, dobj.getPrimaryFile())) {
+            if (dobj instanceof DataShadow) {
+                dobj = ((DataShadow) dobj).getOriginal();
+            }
+            res = null == filterText || dobj.getNodeDelegate().getDisplayName().toLowerCase().contains( filterText.toLowerCase() );
+        }
+        return res;
+    }
   
     final class FileChooserBuilder implements TemplatesPanelGUI.Builder {
         
-        @Override public Children createCategoriesChildren(DataFolder folder) {
-            return Children.create(new TemplateChildren(folder, true), true);
+        @Override public Children createCategoriesChildren(DataFolder folder, String filterText) {
+            return Children.create(new TemplateChildren(folder, true, filterText), true);
         }
         
-        @Override public Children createTemplatesChildren(DataFolder folder) {
-            return Children.create(new FileChildren(folder), true);
+        @Override public Children createTemplatesChildren(DataFolder folder, String filterText) {
+            return Children.create(new FileChildren(folder, filterText), true);
         }
 
         @Override public void fireChange() {
