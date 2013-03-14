@@ -109,7 +109,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
 
         if (fileType.equals(FileType.SERVLET) || fileType.equals(FileType.FILTER)) {
             deployData = new ServletData(fileType);
-            if (Utilities.isJavaEE6(wizard)) {
+            if (Utilities.isJavaEE6Plus(wizard)) {
                 deployData.setMakeEntry(false);
             }
             evaluator = new TargetEvaluator(fileType, deployData);
@@ -215,7 +215,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
         // Fix for IZ171834 - Badly generated servlet template in JavaEE6 Web Application
         initServletEmptyData( );
         
-        if (!deployData.makeEntry() && Utilities.isJavaEE6(wizard)) {
+        if (!deployData.makeEntry() && Utilities.isJavaEE6Plus(wizard)) {
             if (fileType == FileType.SERVLET) {
                 AnnotationGenerator.webServlet((ServletData)deployData, templateParameters);
             }
@@ -302,7 +302,7 @@ public class ServletIterator implements TemplateWizard.AsynchronousInstantiating
     // directory (not a web module) then we don't show the DD info
     // panel. 
     public boolean hasNext() {
-        return index < panels.length - 1 && (deployData.hasDD() || Utilities.isJavaEE6(wizard));
+        return index < panels.length - 1 && (deployData.hasDD() || Utilities.isJavaEE6Plus(wizard));
     }
     
     public boolean hasPrevious() {
