@@ -875,6 +875,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
+                        clearQuickSearchField();
                         ((CategoriesPanel)categoriesPanel).btv.requestFocus();
                     }
                 });
@@ -892,17 +893,30 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
     private void adjustQuickSearch( QuickSearch qs ) {
         qs.setAlwaysShown( true );
-        JTextField textField = null;
         Component qsComponent = panelFilter.getComponent( 0 );
         if( qsComponent instanceof JComponent ) {
             ((JComponent)qsComponent).setBorder( BorderFactory.createEmptyBorder() );
+        }
+        JTextField textField = getQuickSearchField();
+        if( null != textField )
+            textField.setMaximumSize( null );
+    }
+    
+    private JTextField getQuickSearchField() {
+        Component qsComponent = panelFilter.getComponent( 0 );
+        if( qsComponent instanceof JComponent ) {
             for( Component c : ((JComponent)qsComponent).getComponents() ) {
                 if( c instanceof JTextField ) {
-                    textField = ( JTextField ) c;
+                    return ( JTextField ) c;
                 }
             }
         }
+        return null;
+    }
+
+    private void clearQuickSearchField() {
+        JTextField textField = getQuickSearchField();
         if( null != textField )
-            textField.setMaximumSize( null );
+            textField.setText( null );
     }
 }
