@@ -394,6 +394,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                     status = Status.ERROR;
                     trouble = constructTrouble(error.getAttributeValue("type"), error.getAttributeValue("message"), error.getText(), true);
                 }
+                Element skipped = testcase.getChild("skipped"); //NOI18N
+                if (skipped != null) {
+                    status = Status.SKIPPED;
+                }
                 test.setStatus(status);
                 if (trouble != null) {
                     test.setTrouble(trouble);

@@ -115,6 +115,7 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -572,9 +573,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             Collection<? extends String> typeNames = variable.getTypeNames(caretOffset);
             if (!typeNames.isEmpty()) {
                 for (TypeResolver type : possibleTypes) {
-                    if (typeNames.contains(type.getRawTypeName()) || "mixed".equals(type.getRawTypeName())
-                            || (typeNames.contains("real") && "float".equals(type.getRawTypeName()))
-                            || (typeNames.contains("int") && "integer".equals(type.getRawTypeName()))) { // NOI18N
+                    if (typeNames.contains(type.getRawTypeName()) || Type.MIXED.equals(type.getRawTypeName())
+                            || (typeNames.contains(Type.REAL) && Type.FLOAT.equals(type.getRawTypeName()))
+                            || (typeNames.contains(Type.INT) && Type.INTEGER.equals(type.getRawTypeName()))) {
                         return true;
                     }
                 }
@@ -813,7 +814,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         protected String getTypeName() {
             Set<TypeResolver> types = getField().getInstanceTypes();
-            String typeName = types.isEmpty() ? "?" : types.size() > 1 ? "mixed" : "?"; //NOI18N
+            String typeName = types.isEmpty() ? "?" : types.size() > 1 ? Type.MIXED : "?"; //NOI18N
             if (types.size() == 1) {
                 TypeResolver typeResolver = types.iterator().next();
                 if (typeResolver.isResolved()) {
@@ -1510,7 +1511,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         protected String getTypeName() {
             Set<TypeResolver> types = getVariable().getInstanceTypes();
-            String typeName = types.isEmpty() ? "?" : types.size() > 1 ? "mixed" : "?"; //NOI18N
+            String typeName = types.isEmpty() ? "?" : types.size() > 1 ? Type.MIXED : "?"; //NOI18N
             if (types.size() == 1) {
                 TypeResolver typeResolver = types.iterator().next();
                 if (typeResolver.isResolved()) {

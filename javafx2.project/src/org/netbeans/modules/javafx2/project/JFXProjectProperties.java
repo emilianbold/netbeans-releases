@@ -182,6 +182,7 @@ public final class JFXProjectProperties {
     public static final String NATIVE_ICON_FILE = "javafx.deploy.icon.native"; // NOI18N
     public static final String SPLASH_IMAGE_FILE = "javafx.deploy.splash"; // NOI18N
     public static final String PERMISSIONS_ELEVATED = "javafx.deploy.permissionselevated"; // NOI18N
+    public static final String DISABLE_PROXY = "javafx.deploy.disable.proxy"; // NOI18N
 
     // Deployment - signing
     public static final String JAVAFX_SIGNING_ENABLED = "javafx.signing.enabled"; //NOI18N
@@ -312,6 +313,10 @@ public final class JFXProjectProperties {
     JToggleButton.ToggleButtonModel addStartMenuShortcut;
     public JToggleButton.ToggleButtonModel getAddStartMenuShortcutModel() {
         return addStartMenuShortcut;
+    }
+    JToggleButton.ToggleButtonModel disableProxy;
+    public JToggleButton.ToggleButtonModel getDisableProxyModel() {
+        return disableProxy;
     }
 
     String wsIconPath;
@@ -610,6 +615,7 @@ public final class JFXProjectProperties {
             installPermanently = fxPropGroup.createToggleButtonModel(evaluator, INSTALL_PERMANENTLY);
             addDesktopShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_DESKTOP_SHORTCUT);
             addStartMenuShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_STARTMENU_SHORTCUT);
+            disableProxy = fxPropGroup.createToggleButtonModel(evaluator, DISABLE_PROXY);
             
             // CustomizerRun
             CONFIGS = new JFXConfigs();

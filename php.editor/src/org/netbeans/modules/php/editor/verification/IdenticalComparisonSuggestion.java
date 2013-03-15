@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -200,12 +201,12 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
 
         private String resolveCastableType(String typeName) {
             String retval = ""; //NOI18N
-            if (typeName.equals("int") || typeName.equals("integer") || typeName.equals("double")
-                    || typeName.equals("float") || typeName.equals("bool") || typeName.equals("boolean")
-                    || typeName.equals("string") || typeName.equals("array")) { //NOI18N
+            if (typeName.equals(Type.INT) || typeName.equals(Type.INTEGER) || typeName.equals(Type.DOUBLE)
+                    || typeName.equals(Type.FLOAT) || typeName.equals(Type.BOOL) || typeName.equals(Type.BOOLEAN)
+                    || typeName.equals(Type.STRING) || typeName.equals(Type.ARRAY)) {
                 retval = typeName;
-            } else if (typeName.equals("real")) { //NOI18N
-                retval = "float"; //NOI18N
+            } else if (typeName.equals(Type.REAL)) {
+                retval = Type.FLOAT;
             }
             return retval;
         }
