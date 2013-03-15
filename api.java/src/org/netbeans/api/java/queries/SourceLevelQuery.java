@@ -176,7 +176,22 @@ public class SourceLevelQuery {
          *     a source level synonym e.g. "5" for "1.5" the returned value is always normalized.
          */
         public @CheckForNull String getSourceLevel() {
-            return delegate.hasFirst() ? normalize(delegate.first().getSourceLevel()) : SourceLevelQuery.getSourceLevel(delegate.second());
+            if (delegate.hasFirst()) {
+                String sourceLevel = normalize(delegate.first().getSourceLevel());
+                if (sourceLevel != null && !SOURCE_LEVEL.matcher(sourceLevel).matches()) {
+                    LOGGER.log(
+                        Level.WARNING,
+                        "#83994: Ignoring bogus source level {0} from {2}",  //NOI18N
+                        new Object[] {
+                            sourceLevel,
+                            delegate.first()
+                        });
+                    sourceLevel = null;
+                }
+                return sourceLevel;
+            } else {
+                return SourceLevelQuery.getSourceLevel(delegate.second());
+            }
         }
 
         /**

@@ -643,7 +643,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     insideModifiers(env, path);
                     break;
                 case ANNOTATION:
+                case TYPE_ANNOTATION:
                     insideAnnotation(env);
+                    break;
+                case ANNOTATED_TYPE:
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
                     break;
                 case TYPE_PARAMETER:
                     insideTypeParameter(env);
@@ -1244,7 +1248,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int typeEndPos = (int)sourcePositions.getEndPosition(root, ann.getAnnotationType());
             if (offset <= typeEndPos) {                
                 TreePath parentPath = path.getParentPath();
-                if (parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS)
+                if (parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS && parentPath.getParentPath().getLeaf().getKind() != Tree.Kind.VARIABLE)
                     addKeyword(env, INTERFACE_KEYWORD, SPACE, false);
                 if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE) {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
@@ -1632,7 +1636,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     } else if (parent.getKind() == Tree.Kind.PARAMETERIZED_TYPE && ((ParameterizedTypeTree)parent).getTypeArguments().contains(fa)) {
                         kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE);
-                    } else if (parent.getKind() == Tree.Kind.ANNOTATION) {
+                    } else if (parent.getKind() == Tree.Kind.ANNOTATION || parent.getKind() == Tree.Kind.TYPE_ANNOTATION) {
                         if (((AnnotationTree)parent).getAnnotationType() == fa) {
                             kinds = EnumSet.of(ANNOTATION_TYPE);
                         } else {
@@ -3449,15 +3453,46 @@ public class JavaCompletionProvider implements CompletionProvider {
                     excludeHandles.add(ElementHandle.create(el));
                 }
             }
-            ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
-                Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
-                Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-            Set<ElementHandle<TypeElement>> declaredTypes = controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
-            results.ensureCapacity(results.size() + declaredTypes.size());
-            for(ElementHandle<TypeElement> name : declaredTypes) {
-                if (excludeHandles != null && excludeHandles.contains(name) || isAnnonInner(name))
-                    continue;
-                results.add(LazyTypeCompletionItem.create(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
+            if (!kinds.contains(ElementKind.CLASS) && !kinds.contains(ElementKind.INTERFACE)) {
+                Set<ElementHandle<TypeElement>> declaredTypes = controller.getClasspathInfo().getClassIndex().getDeclaredTypes(EMPTY, ClassIndex.NameKind.PREFIX, EnumSet.allOf(ClassIndex.SearchScope.class));
+                Map<String, ElementHandle<TypeElement>> removed = new HashMap<String, ElementHandle<TypeElement>>(declaredTypes.size());
+                Set<String> doNotRemove = new HashSet<String>();
+                for(ElementHandle<TypeElement> name : declaredTypes) {
+                    if (excludeHandles != null && excludeHandles.contains(name) || isAnnonInner(name))
+                        continue;
+                    if (!kinds.contains(name.getKind()) && !doNotRemove.contains(name.getQualifiedName())) {
+                        removed.put(name.getQualifiedName(), name);
+                        continue;
+                    }
+                    String qName = name.getQualifiedName();
+                    String sName = null;
+                    int idx;
+                    while ((idx = qName.lastIndexOf('.')) > 0) {
+                        if (sName == null) {
+                            sName = qName.substring(idx + 1);
+                            if (sName.length() <= 0 || !startsWith(env, sName, prefix))
+                                break;
+                            results.add(LazyTypeCompletionItem.create(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
+                        }
+                        qName = qName.substring(0, idx);
+                        doNotRemove.add(qName);
+                        ElementHandle<TypeElement> r = removed.remove(qName);
+                        if (r != null) {
+                            results.add(LazyTypeCompletionItem.create(r, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));                        
+                        }
+                    }
+                }                
+            } else {
+                ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
+                    Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
+                    Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
+                Set<ElementHandle<TypeElement>> declaredTypes = controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
+                results.ensureCapacity(results.size() + declaredTypes.size());
+                for(ElementHandle<TypeElement> name : declaredTypes) {
+                    if (excludeHandles != null && excludeHandles.contains(name) || isAnnonInner(name))
+                        continue;
+                    results.add(LazyTypeCompletionItem.create(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
+                }
             }
         }
         
