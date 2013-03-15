@@ -68,6 +68,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -357,7 +358,7 @@ public final class CGSInfo {
             String result = ""; //NOI18N
             for (PHPDocTypeNode typeNode : typeTag.getTypes()) {
                 String type = typeNode.getValue();
-                if (!VariousUtils.isPrimitiveType(type) && !VariousUtils.isSpecialClassName(type)) {
+                if (!Type.isPrimitive(type) && !VariousUtils.isSpecialClassName(type)) {
                     result = type;
                     break;
                 }

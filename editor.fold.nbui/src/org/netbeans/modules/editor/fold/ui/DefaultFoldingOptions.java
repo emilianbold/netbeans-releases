@@ -307,20 +307,24 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
     
     private void updateCheckers(PreferenceChangeEvent evt) {
         String pk = evt.getKey();
-        if (pk.equals(SimpleValueNames.CODE_FOLDING_ENABLE)) {
+        if (pk != null) {
+            if (pk.equals(SimpleValueNames.CODE_FOLDING_ENABLE)) {
+                updateEnabledState();
+                return;
+            }
+            if (pk.equals(PREF_OVERRIDE_DEFAULTS)) {
+                updateOverrideChanged();
+            } else if (!pk.startsWith(COLLAPSE_PREFIX)) {
+                return;
+            }
+        } else {
             updateEnabledState();
-            return;
         }
-        if (pk.equals(PREF_OVERRIDE_DEFAULTS)) {
-            updateOverrideChanged();
-        } else if (!pk.startsWith(COLLAPSE_PREFIX)) {
-            return;
-        }
-        String c = pk.substring(COLLAPSE_PREFIX.length());
+        String c = pk == null ? null : pk.substring(COLLAPSE_PREFIX.length());
         for (JCheckBox cb : controls) {
             FoldType ft = (FoldType)cb.getClientProperty("type"); // NOI18N
             FoldType ftp = ft.parent();
-            if (ft.code().equals(c) || (ftp != null && ftp.code().equals(c))) {
+            if (c == null || ft.code().equals(c) || (ftp != null && ftp.code().equals(c))) {
                 updateChecker(pk, cb, ft);
                 return;
             }

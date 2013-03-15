@@ -104,32 +104,31 @@ public class CPModel {
 
     /**
      * Will run parsing task!.
-     * 
+     *
      * XXX CPModel shouldn't be exposed outside of the parsing task :-(
-     * 
+     *
      * @param file
-     * @return 
+     * @return
      */
     public static CPModel getModel(FileObject file) throws ParseException {
         final AtomicReference<CPModel> model_ref = new AtomicReference<CPModel>();
         Source source = Source.create(file);
         ParserManager.parse(Collections.singleton(source), new UserTask() {
-
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRI = WebUtils.getResultIterator(resultIterator, "text/css");
-                if(cssRI != null) {
-                    CssParserResult result = (CssParserResult)cssRI.getParserResult();
-                    if(result != null) {
+                if (cssRI != null) {
+                    CssParserResult result = (CssParserResult) cssRI.getParserResult();
+                    if (result != null) {
                         model_ref.set(CPModel.getModel(result));
                     }
                 }
             }
         });
-        
+
         return model_ref.get();
     }
-    
+
     private CPModel(CssParserResult result) {
         this.result = result;
     }
@@ -137,7 +136,7 @@ public class CPModel {
     public FileObject getFile() {
         return result.getSnapshot().getSource().getFileObject();
     }
-    
+
     public CPType getPreprocessorType() {
         if (cpType == null) {
             String fileMimetype = topLevelSnapshotMimetype != null
@@ -157,10 +156,11 @@ public class CPModel {
         }
         return cpType;
     }
-    
+
     /**
      * Gets both var and mixin elements.
-     * @return 
+     *
+     * @return
      */
     public Collection<CPElement> getElements() {
         Collection<CPElement> all = new ArrayList<CPElement>();
@@ -168,56 +168,71 @@ public class CPModel {
         all.addAll(getMixins());
         return all;
     }
-    
+
     /**
      * Gets a collection of variables accessible(visible) at the given location.
-     * 
+     *
      * @param offset
-     * @return 
+     * @return
      */
     public Collection<CPElement> getVariables(int offset) {
         Collection<CPElement> visible = new ArrayList<CPElement>();
-        for(CPElement var : getVariables()) {
+        for (CPElement var : getVariables()) {
             OffsetRange context = var.getScope();
-            if(context == null || context.containsInclusive(offset)) {
+            if (context == null || context.containsInclusive(offset)) {
                 visible.add(var);
             }
         }
         return visible;
     }
-        
+
+    /**
+     * Returns a variable at the given position if there's any.
+     * @param offset
+     * @return found variable or null
+     */
+    public CPElement getVariableAtOffset(int offset) {
+        for (CPElement var : getVariables()) {
+            OffsetRange context = var.getRange();
+            if (context == null || context.containsInclusive(offset)) {
+                return var;
+            }
+        }
+        return null;
+    }
+
     /**
      * Gets all variables from this file's model.
-     * 
-     * @return 
+     *
+     * @return
      */
     public Collection<CPElement> getVariables() {
         final Collection<CPElement> vars = new ArrayList<CPElement>();
         NodeVisitor visitor = new NodeVisitor() {
             private boolean in_cp_variable_declaration, in_cp_args_list, in_declarations;
             private Stack<OffsetRange> contexts = new Stack<OffsetRange>();
-            
+
             @Override
             public boolean visit(Node node) {
-                
+
                 switch (node.type()) {
                     case declarations:
                         OffsetRange range = new OffsetRange(node.from(), node.to());
                         contexts.push(range);
                         //the declarations node represents a content of a code block
                         in_declarations = true;
-                        
+
                         _visitChildren(this, node);
-                        
+
                         contexts.pop();
                         in_declarations = false;
                         break;
 
                     case cp_variable_declaration:
                         in_cp_variable_declaration = true;
-                        
+
                         _visitChildren(this, node);
-                        
+
                         in_cp_variable_declaration = false;
                         break;
 
@@ -225,7 +240,7 @@ public class CPModel {
                         in_cp_args_list = true;
 
                         _visitChildren(this, node);
-                        
+
                         in_cp_args_list = false;
                         break;
 
@@ -246,18 +261,18 @@ public class CPModel {
                             }
                         }
                         OffsetRange context = contexts.isEmpty() ? null : contexts.peek();
-                        
+
                         CPElementHandle handle = new CPElementHandle(getFile(), node.image().toString().trim(), type);
                         OffsetRange variableRange = new OffsetRange(node.from(), node.to());
                         CPElement element = new CPElement(handle, variableRange, context);
-                        
+
                         vars.add(element);
                         break;
 
                     case token:
                         //ignore toke nodes
                         break;
-                        
+
                     default:
                         _visitChildren(this, node);
 
@@ -288,12 +303,12 @@ public class CPModel {
                     case cp_mixin_declaration:
                         Node mixin_name = NodeUtil.getChildByType(node, NodeType.cp_mixin_name);
                         if (mixin_name != null) {
-                            
-                           CPElementHandle handle = new CPElementHandle(getFile(), mixin_name.image().toString().trim(), CPElementType.MIXIN_DECLARATION);
-                           OffsetRange variableRange = new OffsetRange(mixin_name.from(), mixin_name.to());
-                           OffsetRange scope = null; //TODO implement!
-                           CPElement element = new CPElement(handle, variableRange, scope);
-                           mixins.add(element);
+
+                            CPElementHandle handle = new CPElementHandle(getFile(), mixin_name.image().toString().trim(), CPElementType.MIXIN_DECLARATION);
+                            OffsetRange variableRange = new OffsetRange(mixin_name.from(), mixin_name.to());
+                            OffsetRange scope = null; //TODO implement!
+                            CPElement element = new CPElement(handle, variableRange, scope);
+                            mixins.add(element);
                         }
                         break;
                     default:

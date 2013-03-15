@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -445,13 +446,13 @@ public final class GeneratingBracketCompleter {
                                                 if (assignment.getRightHandSide() instanceof Scalar) {
                                                     switch (((Scalar) assignment.getRightHandSide()).getScalarType()) {
                                                         case INT:
-                                                            type = "integer";   //NOI18N
+                                                            type = Type.INTEGER;
                                                             break;
                                                         case REAL:
-                                                            type = "float";     //NOI18N
+                                                            type = Type.FLOAT;
                                                             break;
                                                         case STRING:
-                                                            type = "string";    //NOI18N
+                                                            type = Type.STRING;
                                                             break;
                                                         default:
                                                             //no-op

@@ -380,9 +380,18 @@ public class RequestProcessorTest extends NbTestCase {
             t[i].waitFinished();
         }
         
+        StringBuilder order = new StringBuilder();
+        boolean fail = false;
         for (int i = 0; i<5; i++) {
             R next = (R) arr[i];
-            if (next.index != i) fail("Expected at " + i + " but was " +  next.index);
+            order.append(i).append(" is ").append(next.index).append("\n");
+            if (next.index != i) {
+                order.append("Expected at ").append(i).append(" but was ").append(next.index).append("\n");
+                fail = true;
+            }
+        }
+        if (fail) {
+            fail(order.toString());
         }
     }
     

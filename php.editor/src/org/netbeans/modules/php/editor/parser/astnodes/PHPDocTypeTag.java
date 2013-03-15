@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.editor.parser.astnodes;
 
-import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -53,10 +52,6 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  * @author Petr Pisl
  */
 public class PHPDocTypeTag extends PHPDocTag {
-
-    public static final List<String> ORDINAL_TYPES = Arrays.asList(
-        "NULL", "INT", "INTEGER", "BOOL", "STRING"
-        );
 
     private final List<PHPDocTypeNode> types;
     protected String documentation;
