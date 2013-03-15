@@ -189,7 +189,8 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
 
     private ErrorDescription map(Result result, FileObject file, int[] lineMap) {
         int line = 2 * (Math.min(result.getLine(), lineMap.length / 2) - 1);
-        // XXX i18n for category and categories in Inspector view
+        // XXX i18n for category
+        // XXX categories in Inspector view
         // XXX which severity?
         // XXX fixes?
         return ErrorDescriptionFactory.createErrorDescription(ANALYZER_PREFIX + result.getCategory(), Severity.VERIFIER, result.getCategory(),
