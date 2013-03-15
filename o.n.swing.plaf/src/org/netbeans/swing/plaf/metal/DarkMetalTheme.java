@@ -127,6 +127,7 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "nb.startpage.contentheader.color2", new Color(16,24,42) ); //NOI18N
 
         UIManager.put( "nb.editor.errorstripe.caret.color", new Color(222, 222, 222) ); //NOI18N
+        UIManager.put( "nb.wizard.hideimage", Boolean.TRUE ); //NOI18N
     }
 
     @Override
