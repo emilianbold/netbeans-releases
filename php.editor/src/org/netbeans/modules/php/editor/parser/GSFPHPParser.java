@@ -137,7 +137,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     protected PHPParseResult parseBuffer(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception {
         boolean sanitizedSource = false;
-        String source = context.getSource();
         if (errorHandler == null) {
             errorHandler = new PHP5ErrorHandlerImpl(context);
         }
@@ -148,7 +147,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             if (ok) {
                 assert context.getSanitizedPart() != null;
                 sanitizedSource = true;
-                source = context.getSanitizedSource();
             } else {
                 // Try next trick
                 return sanitize(context, sanitizing, errorHandler);
@@ -157,7 +155,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
         PHPParseResult phpParserResult;
         // calling the php ast parser itself
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(context.getSanitizedSource()), shortTags, aspTags);
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
 
         parser.setErrorHandler(errorHandler);
@@ -167,8 +165,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             sanitizeSource(context, Sanitize.MISSING_CURLY, null);
             if (context.getSanitizedPart() != null) {
                 context.setSourceHolder(new StringSourceHolder(context.getSanitizedSource()));
-                source = context.getSource();
-                scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
+                scanner = new ASTPHP5Scanner(new StringReader(context.getBaseSource()), shortTags, aspTags);
                 parser = new ASTPHP5Parser(scanner);
                 rootSymbol = parser.parse();
             }
@@ -184,7 +181,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                     if (statement instanceof NamespaceDeclaration) {
                         NamespaceDeclaration ns = (NamespaceDeclaration) statement;
                         for (Statement st : ns.getBody().getStatements()) {
-                            ok = isStatementOk(st, source);
+                            ok = isStatementOk(st, context);
                             if (!ok) {
                                 break;
                             }
@@ -193,7 +190,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                             break;
                         }
                     } else {
-                        ok = isStatementOk(statement, source);
+                        ok = isStatementOk(statement, context);
                         if (!ok) {
                             break;
                         }
@@ -223,12 +220,12 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         return (sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER);
     }
 
-    private boolean isStatementOk(final Statement statement, final String source) throws IOException {
+    private boolean isStatementOk(final Statement statement, final Context context) throws IOException {
         boolean isStatementOk = true;
         if (statement instanceof ASTError) {
             // if there is an errot, try to sanitize only if there
             // is a class or function inside the error
-            String errorCode = "<?" + source.substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
+            String errorCode = "<?" + context.getSanitizedSource().substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
             ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), shortTags, aspTags);
             Symbol token = fcScanner.next_token();
             while (token.sym != ASTPHP5Symbols.EOF) {
@@ -247,7 +244,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
             if (syntaxErrors.size() > 0) {
                 PHP5ErrorHandler.SyntaxError error = syntaxErrors.get(0);
-                String source = context.getSource();
+                String source = context.getBaseSource();
                 int end = error.getCurrentToken().right;
                 int start = error.getCurrentToken().left;
                 String replace = source.substring(start, end);
@@ -262,7 +259,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
             if (syntaxErrors.size() > 0) {
                 PHP5ErrorHandler.SyntaxError error = syntaxErrors.get(0);
-                String source = context.getSource();
+                String source = context.getBaseSource();
                 int end = error.getPreviousToken().right;
                 int start = error.getPreviousToken().left;
                 if (source.substring(start, end).equals("}")) {
@@ -276,7 +273,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
             if (syntaxErrors.size() > 0) {
                 PHP5ErrorHandler.SyntaxError error = syntaxErrors.get(0);
-                String source = context.getSource();
+                String source = context.getBaseSource();
 
                 int end = Utils.getRowEnd(source, error.getPreviousToken().right);
                 int start = Utils.getRowStart(source, error.getPreviousToken().left);
@@ -297,7 +294,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         }
         if (sanitizing == Sanitize.EDITED_LINE) {
             if (context.getCaretOffset() > 0) {
-                String source = context.getSource();
+                String source = context.getBaseSource();
                 int start = context.getCaretOffset() - 1;
                 int end = context.getCaretOffset();
                 // fix until new line or }
@@ -331,8 +328,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             if (syntaxErrors.size() > 0) {
                 PHP5ErrorHandler.SyntaxError error = syntaxErrors.get(0);
 
-                int start = Utils.getRowStart(context.getSource(), error.getPreviousToken().left);
-                int end = Utils.getRowEnd(context.getSource(), error.getCurrentToken().left);
+                int start = Utils.getRowStart(context.getBaseSource(), error.getPreviousToken().left);
+                int end = Utils.getRowEnd(context.getBaseSource(), error.getCurrentToken().left);
 
                 return sanitizeRequireAndInclude(context, start, end);
             }
@@ -342,7 +339,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     protected boolean sanitizeRequireAndInclude(Context context, int start, int end) {
         try {
-            String source = context.getSource();
+            String source = context.getBaseSource();
             String phpOpenDelimiter = "<?";
             String actualSource = phpOpenDelimiter + source.substring(start, end) + "?>";
             ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(actualSource), shortTags, aspTags);
@@ -467,7 +464,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     }
 
     protected boolean sanitizeCurly(Context context) {
-        String source = context.getSource();
+        String source = context.getBaseSource();
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
         //keep index of last ?>
         Symbol lastPHPToken = null;
@@ -589,7 +586,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     }
 
     private boolean sanitizeRemoveBlock(Context context, int index) {
-        String source = context.getSource();
+        String source = context.getBaseSource();
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
         Symbol token;
         int start = -1;
@@ -632,7 +629,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             case EDITED_LINE:
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_BLOCK, errorHandler);
             default:
-                int end = context.getSource().length();
+                int end = context.getBaseSource().length();
                 // add the ast error, some features can recognized that there is something wrong.
                 // for example folding.
                 ASTError error = new ASTError(0, end);
@@ -743,7 +740,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             this.sourceHolder = sourceHolder;
         }
 
-        public String getSource() {
+        public String getBaseSource() {
             return sourceHolder.getText();
         }
 
@@ -760,10 +757,15 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         }
 
         public String getSanitizedSource() {
-            assert sanitizedPart != null;
             StringBuilder sb = new StringBuilder();
-            OffsetRange offsetRange = sanitizedPart.getOffsetRange();
-            sb.append(getSource().substring(0, offsetRange.getStart())).append(sanitizedPart.getText()).append(getSource().substring(offsetRange.getEnd()));
+            if (sanitizedPart == null) {
+                sb.append(getBaseSource());
+            } else {
+                OffsetRange offsetRange = sanitizedPart.getOffsetRange();
+                sb.append(getBaseSource().substring(0, offsetRange.getStart()))
+                        .append(sanitizedPart.getText())
+                        .append(getBaseSource().substring(offsetRange.getEnd()));
+            }
             return sb.toString();
         }
 
