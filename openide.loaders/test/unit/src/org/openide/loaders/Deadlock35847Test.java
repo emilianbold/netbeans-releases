@@ -44,15 +44,11 @@
 
 package org.openide.loaders;
 
-import junit.textui.TestRunner;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;
-import org.openide.util.Lookup;
 import java.io.IOException;
 import java.util.*;
-import org.netbeans.junit.*;
-import java.beans.PropertyChangeListener;
 
 /** Simulates the deadlock from issue 35847.
  * @author Jaroslav Tulach

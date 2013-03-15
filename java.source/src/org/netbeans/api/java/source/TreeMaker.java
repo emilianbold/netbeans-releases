@@ -146,6 +146,10 @@ public final class TreeMaker {
         return delegate.TypeAnnotation(type, arguments);
     }
     
+    AnnotatedTypeTree AnnotatedType(Tree underlyingType, List<? extends AnnotationTree> annotations) {
+        return delegate.AnnotatedType(annotations, underlyingType);
+    }
+    
     /**
      * Creates a new ArrayAccessTree.
      *

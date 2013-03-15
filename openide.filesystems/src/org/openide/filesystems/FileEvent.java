@@ -230,7 +230,8 @@ public class FileEvent extends EventObject {
         }
 
         while (currentPropID != null) {
-            if (run.equals(currentPropID.getAtomicAction())) {
+            final Object aa = currentPropID.getAtomicAction();
+            if (aa != null && aa.equals(run)) {
                 return true;
             }
 
