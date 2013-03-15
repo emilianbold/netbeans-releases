@@ -64,6 +64,7 @@ import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -71,8 +72,11 @@ import org.openide.util.lookup.ServiceProvider;
 
 public class CodeSnifferAnalyzerImpl implements Analyzer {
 
+    private static final LazyFixList EMPTY_LAZY_FIX_LIST = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
+
     private final Context context;
     private final AtomicBoolean cancelled = new AtomicBoolean();
+
 
     CodeSnifferAnalyzerImpl(Context context) {
         this.context = context;
@@ -174,7 +178,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
         int line = 2 * (Math.min(result.getLine(), lineMap.length / 2) - 1);
         // XXX
         return ErrorDescriptionFactory.createErrorDescription("ID", result.getSeverity(), result.getCategory(), result.getDescription(), // NOI18N
-                ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), file, lineMap[line], lineMap[line + 1]);
+                EMPTY_LAZY_FIX_LIST, file, lineMap[line], lineMap[line + 1]);
     }
 
     //~ Inner classes
