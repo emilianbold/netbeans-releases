@@ -295,7 +295,7 @@ public class CPModel {
 
     //XXX mixin usages!
     public Collection<CPElement> getMixins() {
-        final Collection<CPElement> mixins = new HashSet<CPElement>();
+        final Collection<CPElement> mixins = new ArrayList<CPElement>();
         NodeVisitor visitor = new NodeVisitor() {
             @Override
             public boolean visit(Node node) {
@@ -303,7 +303,6 @@ public class CPModel {
                     case cp_mixin_declaration:
                         Node mixin_name = NodeUtil.getChildByType(node, NodeType.cp_mixin_name);
                         if (mixin_name != null) {
-
                             CPElementHandle handle = new CPElementHandle(getFile(), mixin_name.image().toString().trim(), CPElementType.MIXIN_DECLARATION);
                             OffsetRange variableRange = new OffsetRange(mixin_name.from(), mixin_name.to());
                             OffsetRange scope = null; //TODO implement!
@@ -311,6 +310,18 @@ public class CPModel {
                             mixins.add(element);
                         }
                         break;
+                        
+                    case cp_mixin_call:
+                        mixin_name = NodeUtil.getChildByType(node, NodeType.cp_mixin_name);
+                        if (mixin_name != null) {
+                            CPElementHandle handle = new CPElementHandle(getFile(), mixin_name.image().toString().trim(), CPElementType.MIXIN_USAGE);
+                            OffsetRange variableRange = new OffsetRange(mixin_name.from(), mixin_name.to());
+                            OffsetRange scope = null; //TODO implement!
+                            CPElement element = new CPElement(handle, variableRange, scope);
+                            mixins.add(element);
+                        }
+                        break;
+                        
                     default:
                         //visit children
                         List<Node> children = node.children();

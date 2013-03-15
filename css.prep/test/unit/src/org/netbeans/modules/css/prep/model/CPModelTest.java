@@ -146,24 +146,31 @@ public class CPModelTest extends CssTestBase {
         String source = ""
                 + "@mixin mymixin() {\n"
                 + "    .clz {}\n"
-                + "}";
+                + "}\n"
+                + "@include mymixin;\n";
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
 
         CPModel model = CPModel.getModel(result);
         assertNotNull(model);
 
-        Collection<String> mixins = model.getMixinNames();
+        Collection<CPElement> mixins = model.getMixins();
         assertNotNull(mixins);
 
-        String[] expected = new String[]{"mymixin"};
+        assertEquals(2, mixins.size());
+        Iterator<CPElement> iterator = mixins.iterator();
 
-        Collection<String> expSet = Arrays.asList(expected);
-        assertTrue(mixins.containsAll(expSet));
-        assertFalse(mixins.retainAll(expSet));
+        CPElement m1 = iterator.next();
+        assertEquals("mymixin", m1.getName());
+        assertEquals(CPElementType.MIXIN_DECLARATION, m1.getType());
+        
+        CPElement m2 = iterator.next();
+        assertEquals("mymixin", m2.getName());
+        assertEquals(CPElementType.MIXIN_USAGE, m2.getType());
+        
 
     }
-
+    
     public void testVariablesType() {
         String source =
                 "$global: 1;\n"
