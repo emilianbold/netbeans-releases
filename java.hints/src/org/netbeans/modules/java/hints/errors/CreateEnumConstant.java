@@ -67,7 +67,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -88,13 +87,11 @@ class CreateEnumConstant implements Fix {
     private ClasspathInfo cpInfo;
     private FileObject targetFile;
     private ElementHandle<TypeElement> target;
-    private CompilationInfo info;
     private TypeMirrorHandle<TypeMirror> proposedType;
 
     public CreateEnumConstant(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror proposedType, FileObject targetFile) {
         this.name = name;
         this.inFQN = target.getQualifiedName().toString();
-        this.info = info;
         this.cpInfo = info.getClasspathInfo();
         this.targetFile = targetFile;
         this.target = ElementHandle.create(target);
@@ -127,31 +124,26 @@ class CreateEnumConstant implements Fix {
                     ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + "."); // NOI18N
                     return;
                 }
+                
                 TypeMirror proposedType = CreateEnumConstant.this.proposedType.resolve(working);
-                if (proposedType == null) {
-                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type."); // NOI18N
-                    return;
-                }
-                ClassTree oldEnumTree = info.getTrees().getTree(target.resolve(info));
-
                 TreeMaker make = working.getTreeMaker();
 
                 int mods = 1<<14; //XXX enum flag. Creation of enum constant should be part of TreeMaker
                 ModifiersTree modds = make.Modifiers(mods, Collections.<AnnotationTree>emptyList());
                 VariableTree var = make.Variable(modds, name, make.Type(proposedType), null);
 
-                List<? extends Tree> members = oldEnumTree.getMembers();
+                List<? extends Tree> members = targetTree.getMembers();
                 ArrayList<Tree> newMembers = new ArrayList<Tree>(members);
                 int pos = 0;
                 for (Iterator<? extends Tree> it = members.iterator(); it.hasNext();) {
                     Tree t = it.next();
-                    if (t.getKind() == Kind.VARIABLE && info.getTreeUtilities().isEnumConstant((VariableTree)t) ) {
+                    if (t.getKind() == Kind.VARIABLE && working.getTreeUtilities().isEnumConstant((VariableTree)t) ) {
                         pos = members.indexOf(t);
                     }
                 }
 
                 newMembers.add(pos+1, var);
-                ClassTree enumm = make.Enum(oldEnumTree.getModifiers(), oldEnumTree.getSimpleName(), oldEnumTree.getImplementsClause(), newMembers);
+                ClassTree enumm = make.Enum(targetTree.getModifiers(), targetTree.getSimpleName(), targetTree.getImplementsClause(), newMembers);
 //                ClassTree decl = GeneratorUtilities.get(working).insertClassMember(targetTree, var);
                 working.rewrite(targetTree, enumm);
             }
