@@ -1144,6 +1144,13 @@ made subject to such option by the copyright holder.
         can have the following structure
         <code>filePattern1#keyPattern1#|filePattern2|filePattern3#keyPattern3</code>.
    </api>
+   <api category="devel" group="branding" name="OPT_RestartAfterImport" type="export">
+       By default importing settings (as described by <a href="layer-OptionsExportLayers">OptionsExport</a>
+       API does not require restart. Some systems may however support complex
+       modifications to the installation structure. Then they should brand the 
+       <code>OPT_RestartAfterImport</code> to <code>true</code>. NetBeans IDE
+       does require restart after settings import.
+   </api>
   </p>
  </answer>
 

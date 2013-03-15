@@ -49,11 +49,19 @@ import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -62,6 +70,8 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.save.Reformatter;
+import org.netbeans.modules.java.ui.FmtOptions;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -577,6 +587,92 @@ public class MethodBodyTest extends GeneratorTestBase {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
+    }
+    
+    public void testChainedMethodCallsDotPlacement() throws Exception {
+        performChainedMethodCallsDotPlacementTest();
+        performChainedMethodCallsDotPlacementTest(FmtOptions.wrapChainedMethodCalls, WrapStyle.WRAP_ALWAYS.name(), FmtOptions.wrapAfterDotInChainedMethodCalls, Boolean.TRUE.toString());
+        performChainedMethodCallsDotPlacementTest(FmtOptions.wrapChainedMethodCalls, WrapStyle.WRAP_ALWAYS.name(),
+                                                  FmtOptions.wrapAfterDotInChainedMethodCalls, Boolean.FALSE.toString());
+    }
+    
+    private void performChainedMethodCallsDotPlacementTest(String... settings) throws Exception {
+        Map<String, String> originalSettings = alterSettings(settings);
+        
+        try {
+            testFile = new File(getWorkDir(), "Test.java");
+            TestUtilities.copyStringToFile(testFile, 
+                "package personal;\n" +
+                "\n" +
+                "public class Test {\n\n" +
+                "    public void method(String str) {\n" +
+                "        return 1;\n" + 
+                "    }\n" +
+                "}\n");
+
+             String golden = 
+                "package personal;\n" +
+                "\n" +
+                "public class Test {\n\n" +
+                "    public void method(String str) {\n" +
+                "        return str.toString().length();\n" + 
+                "    }\n" +
+                "}\n";
+
+            JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+            Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+                public void run(final WorkingCopy workingCopy) throws java.io.IOException {
+                    workingCopy.toPhase(Phase.RESOLVED);
+                    TreeMaker treeMaker = workingCopy.getTreeMaker();
+                    new TreeScanner<Void, Void>() {
+                        @Override public Void visitReturn(ReturnTree node, Void p) {
+                            ExpressionTree parsed = workingCopy.getTreeUtilities().parseExpression("str.toString().length()", new SourcePositions[1]);
+                            workingCopy.rewrite(node.getExpression(), parsed);
+                            return super.visitReturn(node, p);
+                        }
+                    }.scan(workingCopy.getCompilationUnit(), null);
+                }
+
+            };
+            testSource.runModificationTask(task).commit();
+            String res = TestUtilities.copyFileToString(testFile);
+            String formattedRes = Reformatter.reformat(res.replaceAll("[\\s]+", " "), CodeStyle.getDefault(FileUtil.toFileObject(testFile)));
+            System.err.println(res);
+            System.err.println(formattedRes);
+            assertEquals(formattedRes, res);
+            assertEquals(golden.replaceAll("\\s", ""), res.replaceAll("\\s", ""));
+        } finally {
+            reset(originalSettings);
+        }
+    }
+    
+    private Map<String, String> alterSettings(String... settings) {
+        Map<String, String> adjustPreferences = new HashMap<String, String>();
+        for (int i = 0; i < settings.length; i += 2) {
+            adjustPreferences.put(settings[i], settings[i + 1]);
+        }
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        Map<String, String> origValues = new HashMap<String, String>();
+        for (String key : adjustPreferences.keySet()) {
+            origValues.put(key, preferences.get(key, null));
+        }
+        setValues(preferences, adjustPreferences);
+        return origValues;
+    }
+    
+    private void reset(Map<String, String> values) {
+        setValues(MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class), values);
+    }
+    
+    private void setValues(Preferences p, Map<String, String> values) {
+        for (Entry<String, String> e : values.entrySet()) {
+            if (e.getValue() != null) {
+                p.put(e.getKey(), e.getValue());
+            } else {
+                p.remove(e.getKey());
+            }
+        }
     }
     
     String getGoldenPckg() {

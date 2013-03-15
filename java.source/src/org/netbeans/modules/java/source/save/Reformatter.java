@@ -462,6 +462,7 @@ public class Reformatter implements ReformatTask {
         private boolean eof = false;
         private boolean bof = false;
         private boolean insideAnnotation = false;
+        private boolean isLastIndentContinuation = false;
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
             this(info.getText(), info.getTokenHierarchy().tokenSequence(JavaTokenId.language()),
@@ -1621,7 +1622,7 @@ public class Reformatter implements ReformatTask {
                 }
                 if (node.getBodyKind() == BodyKind.STATEMENT) {
                     boolean oldContinuationIndent = continuationIndent;
-                    continuationIndent = false;
+                    continuationIndent = isLastIndentContinuation;
                     try {
                         scan(node.getBody(), p);
                     } finally {
@@ -1748,7 +1749,7 @@ public class Reformatter implements ReformatTask {
             if (body != null) {
                 boolean old = continuationIndent;
                 try {
-                    continuationIndent = false;
+                    continuationIndent = isLastIndentContinuation;
                     scan(body, p);
                 } finally {
                     continuationIndent = old;
@@ -3509,7 +3510,7 @@ public class Reformatter implements ReformatTask {
                                 spaces(spacesCnt);
                             }
                         } else {
-                            continuationIndent = false;
+                            continuationIndent = isLastIndentContinuation;
                         }
                         scan(tree, null);
                     } finally {
@@ -4301,6 +4302,7 @@ public class Reformatter implements ReformatTask {
                 sb.append(SPACE); //NOI18N
                 col++;
             }
+            isLastIndentContinuation = continuationIndent;
             return sb.toString();
         }
 
