@@ -56,7 +56,16 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
+ * Two interesting pages related to Groovy lexer.
+ * 
+ * http://groovy.codehaus.org/jsr/spec/Chapter18Syntax.html
+ * http://groovy.codehaus.org/jsr/spec/GroovyLexer.html
+ * 
+ * In the second one there is a grammar definition which could be used if anyone
+ * would like to know what is the meaning of some tokens.
+ * 
  * @author Martin Adamek
+ * @author Martin Janicek
  */
 public enum GroovyTokenId implements TokenId {
 
@@ -79,10 +88,10 @@ public enum GroovyTokenId implements TokenId {
     STRING_CH(null, "string"),
     STRING_NL(null, "string"),
 
-    SH_COMMENT(null, "comment"),
-    SL_COMMENT(null, "comment"),
-    LINE_COMMENT(null, "comment"),
-    BLOCK_COMMENT(null, "comment"),
+    SH_COMMENT(null, "comment"), // Special groovy single line comment #!
+    SL_COMMENT(null, "comment"), // Single line comment //
+    LINE_COMMENT(null, "comment"), // General line comment
+    BLOCK_COMMENT(null, "comment"), // Multiline comment /* ...whatever.. */
     
     LPAREN("(", "separator"),
     RPAREN(")", "separator"),
