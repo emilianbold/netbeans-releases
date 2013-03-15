@@ -39,6 +39,7 @@
  */
 package org.netbeans.test.web;
 
+import java.io.File;
 import junit.framework.Test;
 
 /**
@@ -47,7 +48,7 @@ import junit.framework.Test;
 public class WebProjectValidation14 extends WebProjectValidation {
 
     public static final String[] TESTS = new String[]{
-        "testNewWebProject",
+        "testOpenWebProject",
         "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
         "testCleanAndBuildProject", "testRedeployProject", "testRunProject",
         "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
@@ -58,7 +59,7 @@ public class WebProjectValidation14 extends WebProjectValidation {
     /** Need to be defined because of JUnit */
     public WebProjectValidation14(String name) {
         super(name);
-        PROJECT_NAME = "WebProject14"; // NOI18N
+        PROJECT_NAME = "WebApplication1.4"; // NOI18N
     }
 
     public static Test suite() {
@@ -68,5 +69,10 @@ public class WebProjectValidation14 extends WebProjectValidation {
     @Override
     protected String getEEVersion() {
         return J2EE_4;
+    }
+    
+    public void testOpenWebProject() throws Exception {
+        File projectDir = new File(getDataDir(), PROJECT_NAME);
+        openProjects(projectDir.getAbsolutePath());
     }
 }
