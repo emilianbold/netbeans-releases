@@ -219,7 +219,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         initDelegate();
         Javadoc javadoc = refactoring.getContext().lookup(Javadoc.class);
         final ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(paramTable, null, null, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle, true);
-        final ChangeParamsJavaDocTransformer changeParamsJavaDocTransformer = new ChangeParamsJavaDocTransformer(paramTable, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle);
+//        final ChangeParamsJavaDocTransformer changeParamsJavaDocTransformer = new ChangeParamsJavaDocTransformer(paramTable, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle);
         
         fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size() * 2);
         Problem p = null;
@@ -309,7 +309,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                     }
                 }
             };
-            p = JavaPluginUtils.chainProblems(p, createAndAddElements(a, new TransformTask(changeParamsJavaDocTransformer, methodHandle), elements, refactoring));
+//            p = JavaPluginUtils.chainProblems(p, createAndAddElements(a, new TransformTask(changeParamsJavaDocTransformer, methodHandle), elements, refactoring));
             p = JavaPluginUtils.chainProblems(p, createAndAddElements(a, t, elements, refactoring));
         }
 

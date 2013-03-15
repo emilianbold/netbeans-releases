@@ -44,7 +44,11 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.tree.*;
+import com.sun.source.util.DocTreePath;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
@@ -77,6 +81,7 @@ public class RenameTransformer extends RefactoringVisitor {
     private boolean renameInComments;
 
     public RenameTransformer(TreePathHandle handle, String newName, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
+        super(true);
         this.handle = handle;
         this.newName = newName;
         this.allMethods = am;
@@ -376,6 +381,23 @@ public class RenameTransformer extends RefactoringVisitor {
         return false;
     }
 
+    @Override
+    public DocTree visitReference(ReferenceTree node, Element elementToFind) {
+        DocTreePath currentDocPath = getCurrentDocPath();
+        DocTrees trees = (DocTrees) workingCopy.getTrees();
+        Element el = trees.getElement(currentDocPath.getTreePath(), node);
+        if (el != null && (el.equals(elementToFind) || isMethodMatch(el))) {
+            ReferenceTree newRef;
+            if(el.getKind().isClass() || el.getKind().isInterface()) {
+                newRef = make.Reference(make.setLabel(node.getClassReference(), newName), node.getMemberName(), node.getMethodParameters());
+            } else {
+                newRef = make.Reference(node.getClassReference(), newName, node.getMethodParameters());
+            }
+            rewrite(currentDocPath.getTreePath().getLeaf(), node, newRef);
+        }
+        return super.visitReference(node, elementToFind);
+    }
+
     /**
      * Renames the method (or constructor) parameter in comments. This method
      * considers comments before and inside the method declaration, and within
@@ -420,14 +442,14 @@ public class RenameTransformer extends RefactoringVisitor {
      * 
      * @param token the {@link Token} to check
      * @return {@code true} if {@code token} represents a line comment, block
-     *   comment or javadoc; {@code false} otherwise.
+     *          comment; {@code false} otherwise or javadoc.
      */
     private boolean isComment(final Token<JavaTokenId> token) {
         switch (token.id()) {
             case LINE_COMMENT:
             case BLOCK_COMMENT:
-            case JAVADOC_COMMENT:
                 return true;
+            case JAVADOC_COMMENT:
             default:
                 return false;
         }

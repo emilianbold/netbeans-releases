@@ -3146,8 +3146,8 @@ public final class TreeMaker {
         return delegate.Deprecated(text);
     }
 
-    public DocCommentTree DocComment(DocCommentTree comment, List<? extends DocTree> firstSentence, List<? extends DocTree> body, List<? extends DocTree> tags) {
-        return delegate.DocComment(comment, firstSentence, body, tags);
+    public DocCommentTree DocComment(List<? extends DocTree> firstSentence, List<? extends DocTree> body, List<? extends DocTree> tags) {
+        return delegate.DocComment(firstSentence, body, tags);
     }
 
     public ParamTree Param(boolean isTypeParameter, com.sun.source.doctree.IdentifierTree name, List<? extends DocTree> description) {
@@ -3166,7 +3166,7 @@ public final class TreeMaker {
         return delegate.Return(description);
     }
 
-    public ReferenceTree Reference(@NullAllowed ExpressionTree qualExpr, @NullAllowed CharSequence member, @NullAllowed List<ExpressionTree> paramTypes) {
+    public ReferenceTree Reference(@NullAllowed ExpressionTree qualExpr, @NullAllowed CharSequence member, @NullAllowed List<? extends ExpressionTree> paramTypes) {
         return delegate.Reference(qualExpr, member, paramTypes);
     }
 

@@ -1638,7 +1638,7 @@ public class TreeFactory {
         return docMake.at(NOPOS).Deprecated(txt.toList());
     }
     
-    public DocCommentTree DocComment(DocCommentTree comment, List<? extends DocTree> firstSentence, List<? extends DocTree> body, List<? extends DocTree> tags) {
+    public DocCommentTree DocComment(List<? extends DocTree> firstSentence, List<? extends DocTree> body, List<? extends DocTree> tags) {
         ListBuffer<DCTree> fs = new ListBuffer<DCTree>();
         for (DocTree t : firstSentence) {
             fs.append((DCTree) t);
@@ -1651,7 +1651,7 @@ public class TreeFactory {
         for (DocTree t : tags) {
             tg.append((DCTree) t);
         }
-        return docMake.at(NOPOS).DocComment(((DCTree.DCDocComment) comment).comment, fs.toList(), bd.toList(), tg.toList());
+        return docMake.at(NOPOS).DocComment(null, fs.toList(), bd.toList(), tg.toList());
     }
     
     public com.sun.source.doctree.ErroneousTree Erroneous(String text, DiagnosticSource diagSource, String code, Object... args) {
@@ -1820,7 +1820,7 @@ public class TreeFactory {
         return docMake.at(NOPOS).LinkPlain((DCReference)ref, lbl.toList());
     }
 
-    public ReferenceTree Reference(ExpressionTree qualExpr, CharSequence member, List<ExpressionTree> paramTypes) {
+    public ReferenceTree Reference(ExpressionTree qualExpr, CharSequence member, List<? extends ExpressionTree> paramTypes) {
         com.sun.tools.javac.util.List<JCExpression> paramTypesList = null;
         if (paramTypes != null) {
             ListBuffer<JCExpression> lbl = new ListBuffer<JCExpression>();

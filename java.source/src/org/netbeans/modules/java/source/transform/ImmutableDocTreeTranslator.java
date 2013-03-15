@@ -140,7 +140,7 @@ public class ImmutableDocTreeTranslator implements DocTreeVisitor<DocTree, Objec
         List<? extends DocTree> body = translate(tree.getBody());
         List<? extends DocTree> blockTags = translate(tree.getBlockTags());
         if (firstSentence != tree.getFirstSentence() || body != tree.getBody() || blockTags != tree.getBlockTags()) {
-            value = make.DocComment(tree, firstSentence, body, blockTags);
+            value = make.DocComment(firstSentence, body, blockTags);
         }
         return value;
     }

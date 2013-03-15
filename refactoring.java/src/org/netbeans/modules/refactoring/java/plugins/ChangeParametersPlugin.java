@@ -223,15 +223,15 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     allMethods,
                     treePathHandle);
             
-            ChangeParamsJavaDocTransformer changeJavaDocParamsTransformer = new ChangeParamsJavaDocTransformer(refactoring.getParameterInfo(),
-                    refactoring.getReturnType(),
-                    refactoring.isOverloadMethod(),
-                    refactoring.getContext().lookup(Javadoc.class),
-                    allMethods,
-                    treePathHandle);
-
-            TransformTask transformJavadoc = new TransformTask(changeJavaDocParamsTransformer, treePathHandle);
-            problem = JavaPluginUtils.chainProblems(problem, createAndAddElements(a, transformJavadoc, elements, refactoring));
+//            ChangeParamsJavaDocTransformer changeJavaDocParamsTransformer = new ChangeParamsJavaDocTransformer(refactoring.getParameterInfo(),
+//                    refactoring.getReturnType(),
+//                    refactoring.isOverloadMethod(),
+//                    refactoring.getContext().lookup(Javadoc.class),
+//                    allMethods,
+//                    treePathHandle);
+//
+//            TransformTask transformJavadoc = new TransformTask(changeJavaDocParamsTransformer, treePathHandle);
+//            problem = JavaPluginUtils.chainProblems(problem, createAndAddElements(a, transformJavadoc, elements, refactoring));
             TransformTask transform = new TransformTask(changeParamsTransformer, treePathHandle);
             problem = JavaPluginUtils.chainProblems(problem, createAndAddElements(a, transform, elements, refactoring));
             problem = JavaPluginUtils.chainProblems(problem, changeParamsTransformer.getProblem());

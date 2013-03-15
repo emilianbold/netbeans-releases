@@ -146,6 +146,8 @@ import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
+import org.netbeans.modules.java.source.pretty.VeryPretty;
+import org.netbeans.modules.java.source.query.CommentSet;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.source.save.DiffUtilities;
@@ -580,16 +582,21 @@ public class WorkingCopy extends CompilationController {
                             }
                         }
                         Map<Tree, Tree> rewrites = parent2Rewrites.get(parentPath);
+                        Map<DocTree, DocTree> rev = docChanges.remove(tree);
+                        Tree newTree = tree;
                         if(!rewrites.containsKey(tree)) {
                             Tree importComments = GeneratorUtilities.get(WorkingCopy.this).importComments(tree, getCompilationUnit());
-                            Tree newTree = importComments.accept(duplicator, null);
+                            newTree = importComments.accept(duplicator, null);
                             rewrites.put(tree, newTree);
                         }
                         
-                        Map<DocTree, DocTree> rev = docChanges.remove(tree);
                         DocCommentTree oldDoc = ((DocTrees)getTrees()).getDocCommentTree(new TreePath(parentPath, tree));
                         DocCommentTree newDoc = (DocCommentTree) getTreeUtilities().translate(oldDoc, rev);
-                        tree2Doc.put(tree, Pair.of(oldDoc, newDoc));
+                        Pair<DocCommentTree, DocCommentTree> docChange = Pair.of(oldDoc, newDoc);
+                        tree2Doc.put(tree, docChange);
+                        if(tree != newTree) {
+                            tree2Doc.put(newTree, docChange);
+                        }
                     }
                     if (changes.containsKey(tree)) {
                         boolean clearCurrentParent = false;
@@ -648,6 +655,14 @@ public class WorkingCopy extends CompilationController {
             fillImports = false;
         }
         
+        // translate all the new DocTree added to new JTrees
+        for (Map.Entry<Tree, Map<DocTree, DocTree>> entry : docChanges.entrySet()) {
+//            Map<DocTree, DocTree> rev = docChanges.remove(tree);
+            DocTree newDoc = entry.getValue().get(null);
+            if(newDoc != null && newDoc.getKind() == DocTree.Kind.DOC_COMMENT) {
+                tree2Doc.put(entry.getKey(), Pair.of((DocCommentTree)null, (DocCommentTree)newDoc));
+            }
+        }
         List<Diff> diffs = new ArrayList<Diff>();
         ImportAnalysis2 ia = new ImportAnalysis2(this);
         

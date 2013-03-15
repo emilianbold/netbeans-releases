@@ -190,9 +190,8 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 new File("t/A.java", "package t; public class A {\n"
                 + "    /**\n"
                 + "     * \n"
-                + "     * \n"
-                + "     * @param z the value of z\n"
-                + "     * @param w the value of w\n"
+                + "     * @param z the value of y\n"
+                + "     * @param w the value of x\n"
                 + "     */\n"
                 + "    public void testMethod(int z, int w) {\n"
                 + "         System.out.println(w);\n"
@@ -261,7 +260,6 @@ public class ChangeParametersTest extends RefactoringTestBase {
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    /**\n"
-                + "     * \n"
                 + "     * \n"
                 + "     * @param y the value of y\n"
                 + "     * @param x the value of x\n"
@@ -691,6 +689,7 @@ public class ChangeParametersTest extends RefactoringTestBase {
     public void test194592() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"
+                + "    /** */\n"
                 + "    public static void testMethod(int x) {\n"
                 + "         System.out.println(x);\n"
                 + "    }\n"
@@ -703,6 +702,7 @@ public class ChangeParametersTest extends RefactoringTestBase {
         performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false);
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
+                + "    /** */\n"
                 + "    public static void testMethod(String x) {\n"
                 + "         System.out.println(x);\n"
                 + "    }\n"
@@ -862,7 +862,6 @@ public class ChangeParametersTest extends RefactoringTestBase {
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    /**\n"
-                + "     * \n"
                 + "     * \n"
                 + "     * @param y the value of y\n"
                 + "     * @param x the value of x\n"

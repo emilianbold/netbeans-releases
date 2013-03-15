@@ -127,7 +127,7 @@ public class CasualDiff {
         this.tree2Tag = tree2Tag;
         this.tree2Doc = tree2Doc;
         this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
-        printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tag2Span, origText);
+        printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText);
         printer.oldTrees = oldTrees;
         this.oldTrees = oldTrees;
     }
@@ -3033,7 +3033,7 @@ public class CasualDiff {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                                 this.printer.reset(old);
                                 this.printer.oldTrees = oldTrees;
                                 int index = oldList.indexOf(oldT);
@@ -3063,7 +3063,7 @@ public class CasualDiff {
                             if(wasInFieldGroup || treesMatch(item.element, lastdel, false)) {
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                                 this.printer.reset(old);
                                 this.printer.oldTrees = oldTrees;
                                 int index = oldList.indexOf(lastdel);
@@ -3127,7 +3127,10 @@ public class CasualDiff {
         CommentSet old = comments.getComments(oldT);
         List<Comment> oldPrecedingComments = old.getComments(CommentSet.RelativePosition.PRECEDING);
         List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
-        Pair<DocCommentTree, DocCommentTree> doc = tree2Doc.get(oldT);
+        Pair<DocCommentTree, DocCommentTree> doc = tree2Doc.get(newT);
+        if(doc == null) {
+            doc = tree2Doc.get(oldT);
+        }
         if (sameComments(oldPrecedingComments, newPrecedingComments) && doc == null)
             return localPointer;
         if(doc == null) doc = Pair.of(null, null);
@@ -3259,7 +3262,9 @@ public class CasualDiff {
             }
             newC = safeNext(oldIter);
         }
-        
+        if(preceding && javadoc == null && newDoc != null) {
+            printer.print((DCTree) newDoc);
+        }
         return localPointer;
     }
     
@@ -3308,6 +3313,12 @@ public class CasualDiff {
             case RETURN:
                 localpointer = diffReturn(doc, (DCReturn) oldT, (DCReturn) newT, elementBounds);
                 break;
+            case IDENTIFIER:
+                localpointer = diffIdentifier(doc, (DCIdentifier) oldT, (DCIdentifier) newT, elementBounds);
+                break;
+            case SEE:
+                localpointer = diffSee(doc, (DCSee) oldT, (DCSee) newT, elementBounds);
+                break;
             /**
              * Used for instances of {@link LinkTree} representing an @linkplain tag.
              */
@@ -3341,8 +3352,6 @@ public class CasualDiff {
             case EXCEPTION:
             case THROWS:
                 
-            case IDENTIFIER:
-                
             case INHERIT_DOC:
             
             /**
@@ -3352,8 +3361,6 @@ public class CasualDiff {
             case LITERAL:
                 
             case REFERENCE:
-                
-            case SEE:
 
             case SERIAL:
 
@@ -3459,6 +3466,15 @@ public class CasualDiff {
         return elementBounds[1];
     }
     
+    private int diffIdentifier(DCDocComment doc, DCIdentifier oldT, DCIdentifier newT, int[] elementBounds) {
+        if(oldT.name.equals(newT.name)) {
+            copyTo(elementBounds[0], elementBounds[1]);
+        } else {
+            printer.print(newT.name);
+        }
+        return elementBounds[1];
+    }
+    
     private int diffLink(DCDocComment doc, DCLink oldT, DCLink newT, int[] elementBounds) {
         int localpointer = getOldPos(oldT.ref, doc);
         copyTo(elementBounds[0], localpointer);
@@ -3466,6 +3482,17 @@ public class CasualDiff {
         localpointer = diffDocTree(doc, oldT.ref, newT.ref, new int[] {localpointer, endPos(oldT.ref, doc)});
         localpointer = diffList(doc, oldT.label, newT.label, localpointer, Measure.TAGS);
         
+        if(localpointer < elementBounds[1]) {
+            copyTo(localpointer, elementBounds[1]);
+        }
+        return elementBounds[1];
+    }
+    
+    private int diffSee(DCDocComment doc, DCSee oldT, DCSee newT, int[] elementBounds) {
+        int localpointer;
+        localpointer = getOldPos(oldT.reference.head, doc);
+        copyTo(elementBounds[0], localpointer);
+        localpointer = diffList(doc, oldT.reference, newT.reference, localpointer, Measure.DOCTREE);
         if(localpointer < elementBounds[1]) {
             copyTo(localpointer, elementBounds[1]);
         }
@@ -3557,7 +3584,7 @@ public class CasualDiff {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                                 this.printer.reset(old);
                                 this.printer.oldTrees = oldTrees;
                                 int[] poss = getBounds(oldT, doc);

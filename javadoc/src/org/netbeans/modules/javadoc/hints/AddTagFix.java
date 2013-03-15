@@ -110,7 +110,7 @@ abstract class AddTagFix extends JavaFix {
             blockTags.add(newTree);
         }
         
-        DocCommentTree newDoc = make.DocComment(docComment, docComment.getFirstSentence(), docComment.getBody(), blockTags);
+        DocCommentTree newDoc = make.DocComment(docComment.getFirstSentence(), docComment.getBody(), blockTags);
         Tree tree = ctx.getPath().getLeaf();
         javac.rewrite(tree, docComment, newDoc);
     }

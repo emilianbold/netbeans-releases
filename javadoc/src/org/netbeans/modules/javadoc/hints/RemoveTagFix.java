@@ -90,7 +90,7 @@ final class RemoveTagFix extends JavaFix {
                 blockTags.add(docTree);
             }
         }
-        DocCommentTree newDoc = make.DocComment(docComment, docComment.getFirstSentence(), docComment.getBody(), blockTags);
+        DocCommentTree newDoc = make.DocComment(docComment.getFirstSentence(), docComment.getBody(), blockTags);
         MethodTree tree = (MethodTree) ctx.getPath().getLeaf();
         javac.rewrite(tree, docComment, newDoc);
     }

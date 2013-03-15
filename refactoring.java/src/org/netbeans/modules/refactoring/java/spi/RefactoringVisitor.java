@@ -44,7 +44,40 @@
 
 package org.netbeans.modules.refactoring.java.spi;
 
+import com.sun.source.doctree.AttributeTree;
+import com.sun.source.doctree.AuthorTree;
+import com.sun.source.doctree.CommentTree;
+import com.sun.source.doctree.DeprecatedTree;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocRootTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.DocTreeVisitor;
+import com.sun.source.doctree.EndElementTree;
+import com.sun.source.doctree.EntityTree;
+import com.sun.source.doctree.ErroneousTree;
+import com.sun.source.doctree.IdentifierTree;
+import com.sun.source.doctree.InheritDocTree;
+import com.sun.source.doctree.LinkTree;
+import com.sun.source.doctree.LiteralTree;
+import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.doctree.ReturnTree;
+import com.sun.source.doctree.SeeTree;
+import com.sun.source.doctree.SerialDataTree;
+import com.sun.source.doctree.SerialFieldTree;
+import com.sun.source.doctree.SerialTree;
+import com.sun.source.doctree.SinceTree;
+import com.sun.source.doctree.StartElementTree;
+import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.ThrowsTree;
+import com.sun.source.doctree.UnknownBlockTagTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.ValueTree;
+import com.sun.source.doctree.VersionTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.DocTreePath;
+import com.sun.source.util.DocTreePathScanner;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
@@ -59,7 +92,7 @@ import org.openide.ErrorManager;
  *
  * @author Jan Becicka
  */
-public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
+public class RefactoringVisitor extends TreePathScanner<Tree, Element> implements DocTreeVisitor<DocTree, Element> {
     /**
      * 
      */
@@ -68,6 +101,19 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
      * 
      */
     protected TreeMaker make;
+    
+    /**
+     * 
+     */
+    private final DocTreePathScannerImpl docScanner;
+
+    public RefactoringVisitor() {
+        this(false);
+    }
+    
+    public RefactoringVisitor(boolean javadoc) {
+        docScanner = javadoc ? new DocTreePathScannerImpl(this) : null;
+    }
     
     /**
      * 
@@ -99,9 +145,468 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
         } else {
             if (oldTree!=null) {
                 TreePath tp = workingCopy.getTrees().getPath(current.getCompilationUnit(), oldTree);
-                JavaRefactoringUtils.cacheTreePathInfo(current, workingCopy);
+                JavaRefactoringUtils.cacheTreePathInfo(tp, workingCopy);
             }
         }
     }
     
+    protected void rewrite(Tree tree, DocTree oldTree, DocTree newTree) {
+        workingCopy.rewrite(tree, oldTree, newTree);
+        TreePath current = getCurrentPath();
+        if (current.getLeaf() == tree) {
+            JavaRefactoringUtils.cacheTreePathInfo(current, workingCopy);
+        } else {
+            if (oldTree!=null) {
+                TreePath tp = workingCopy.getTrees().getPath(current.getCompilationUnit(), tree);
+                JavaRefactoringUtils.cacheTreePathInfo(tp, workingCopy);
+            }
+        }
+    }
+
+    @Override
+    public Tree scan(Tree tree, Element p) {
+        final TreePath currentPath = getCurrentPath();
+        if(docScanner != null && tree != null && currentPath != null) {
+            switch(tree.getKind()) {
+                case METHOD:
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                case VARIABLE:
+                    TreePath path = new TreePath(currentPath, tree);
+                    scanJavadoc(path, p);
+                default:
+                    break;
+            }
+        }
+        return super.scan(tree, p);
+    }
+    
+    public DocTreePath getCurrentDocPath() {
+        return docScanner.getCurrentPath();
+    }
+
+    @Override
+    public DocTree visitAttribute(AttributeTree node, Element p) {
+        return docScanner.visitAttribute(node, p, null);
+    }
+
+    @Override
+    public DocTree visitAuthor(AuthorTree node, Element p) {
+        return docScanner.visitAuthor(node, p, null);
+    }
+
+    @Override
+    public DocTree visitComment(CommentTree node, Element p) {
+        return docScanner.visitComment(node, p, null);
+    }
+
+    @Override
+    public DocTree visitDeprecated(DeprecatedTree node, Element p) {
+        return docScanner.visitDeprecated(node, p, null);
+    }
+
+    @Override
+    public DocTree visitDocComment(DocCommentTree node, Element p) {
+        return docScanner.visitDocComment(node, p, null);
+    }
+
+    @Override
+    public DocTree visitDocRoot(DocRootTree node, Element p) {
+        return docScanner.visitDocRoot(node, p, null);
+    }
+
+    @Override
+    public DocTree visitEndElement(EndElementTree node, Element p) {
+        return docScanner.visitEndElement(node, p, null);
+    }
+
+    @Override
+    public DocTree visitEntity(EntityTree node, Element p) {
+        return docScanner.visitEntity(node, p, null);
+    }
+
+    @Override
+    public DocTree visitErroneous(ErroneousTree node, Element p) {
+        return docScanner.visitErroneous(node, p, null);
+    }
+
+    @Override
+    public DocTree visitIdentifier(IdentifierTree node, Element p) {
+        return docScanner.visitIdentifier(node, p, null);
+    }
+
+    @Override
+    public DocTree visitInheritDoc(InheritDocTree node, Element p) {
+        return docScanner.visitInheritDoc(node, p, null);
+    }
+
+    @Override
+    public DocTree visitLink(LinkTree node, Element p) {
+        return docScanner.visitLink(node, p, null);
+    }
+
+    @Override
+    public DocTree visitLiteral(LiteralTree node, Element p) {
+        return docScanner.visitLiteral(node, p, null);
+    }
+
+    @Override
+    public DocTree visitParam(ParamTree node, Element p) {
+        return docScanner.visitParam(node, p, null);
+    }
+
+    @Override
+    public DocTree visitReference(ReferenceTree node, Element p) {
+        return docScanner.visitReference(node, p, null);
+    }
+
+    @Override
+    public DocTree visitReturn(ReturnTree node, Element p) {
+        return docScanner.visitReturn(node, p, null);
+    }
+
+    @Override
+    public DocTree visitSee(SeeTree node, Element p) {
+        return docScanner.visitSee(node, p, null);
+    }
+
+    @Override
+    public DocTree visitSerial(SerialTree node, Element p) {
+        return docScanner.visitSerial(node, p, null);
+    }
+
+    @Override
+    public DocTree visitSerialData(SerialDataTree node, Element p) {
+        return docScanner.visitSerialData(node, p, null);
+    }
+
+    @Override
+    public DocTree visitSerialField(SerialFieldTree node, Element p) {
+        return docScanner.visitSerialField(node, p, null);
+    }
+
+    @Override
+    public DocTree visitSince(SinceTree node, Element p) {
+        return docScanner.visitSince(node, p, null);
+    }
+
+    @Override
+    public DocTree visitStartElement(StartElementTree node, Element p) {
+        return docScanner.visitStartElement(node, p, null);
+    }
+
+    @Override
+    public DocTree visitText(TextTree node, Element p) {
+        return docScanner.visitText(node, p, null);
+    }
+
+    @Override
+    public DocTree visitThrows(ThrowsTree node, Element p) {
+        return docScanner.visitThrows(node, p, null);
+    }
+
+    @Override
+    public DocTree visitUnknownBlockTag(UnknownBlockTagTree node, Element p) {
+        return docScanner.visitUnknownBlockTag(node, p, null);
+    }
+
+    @Override
+    public DocTree visitUnknownInlineTag(UnknownInlineTagTree node, Element p) {
+        return docScanner.visitUnknownInlineTag(node, p, null);
+    }
+
+    @Override
+    public DocTree visitValue(ValueTree node, Element p) {
+        return docScanner.visitValue(node, p, null);
+    }
+
+    @Override
+    public DocTree visitVersion(VersionTree node, Element p) {
+        return docScanner.visitVersion(node, p, null);
+    }
+
+    @Override
+    public DocTree visitOther(DocTree node, Element p) {
+        return docScanner.visitOther(node, p, null);
+    }
+
+    private void scanJavadoc(TreePath path, Element p) {
+        DocCommentTree docCommentTree = ((DocTrees) workingCopy.getTrees()).getDocCommentTree(path);
+        if(docCommentTree != null) {
+            DocTreePath docTreePath = new DocTreePath(path, docCommentTree);
+            docScanner.scan(docTreePath, p);
+        }
+    }
+
+    private static class DocTreePathScannerImpl extends DocTreePathScanner<DocTree, Element> {
+
+        private final RefactoringVisitor instance;
+
+        public DocTreePathScannerImpl(RefactoringVisitor instance) {
+            this.instance = instance;
+        }
+
+        @Override
+        public DocTree visitAttribute(AttributeTree node, Element p) {
+            return instance.visitAttribute(node, p);
+        }
+
+        @Override
+        public DocTree visitAuthor(AuthorTree node, Element p) {
+            return instance.visitAuthor(node, p);
+        }
+
+        @Override
+        public DocTree visitComment(CommentTree node, Element p) {
+            return instance.visitComment(node, p);
+        }
+
+        @Override
+        public DocTree visitDeprecated(DeprecatedTree node, Element p) {
+            return instance.visitDeprecated(node, p);
+        }
+
+        @Override
+        public DocTree visitDocComment(DocCommentTree node, Element p) {
+            return instance.visitDocComment(node, p);
+        }
+
+        @Override
+        public DocTree visitDocRoot(DocRootTree node, Element p) {
+            return instance.visitDocRoot(node, p);
+        }
+
+        @Override
+        public DocTree visitEndElement(EndElementTree node, Element p) {
+            return instance.visitEndElement(node, p);
+        }
+
+        @Override
+        public DocTree visitEntity(EntityTree node, Element p) {
+            return instance.visitEntity(node, p);
+        }
+
+        @Override
+        public DocTree visitErroneous(ErroneousTree node, Element p) {
+            return instance.visitErroneous(node, p);
+        }
+
+        @Override
+        public DocTree visitIdentifier(IdentifierTree node, Element p) {
+            return instance.visitIdentifier(node, p);
+        }
+
+        @Override
+        public DocTree visitInheritDoc(InheritDocTree node, Element p) {
+            return instance.visitInheritDoc(node, p);
+        }
+
+        @Override
+        public DocTree visitLink(LinkTree node, Element p) {
+            return instance.visitLink(node, p);
+        }
+
+        @Override
+        public DocTree visitLiteral(LiteralTree node, Element p) {
+            return instance.visitLiteral(node, p);
+        }
+
+        @Override
+        public DocTree visitParam(ParamTree node, Element p) {
+            return instance.visitParam(node, p);
+        }
+
+        @Override
+        public DocTree visitReference(ReferenceTree node, Element p) {
+            return instance.visitReference(node, p);
+        }
+
+        @Override
+        public DocTree visitReturn(ReturnTree node, Element p) {
+            return instance.visitReturn(node, p);
+        }
+
+        @Override
+        public DocTree visitSee(SeeTree node, Element p) {
+            return instance.visitSee(node, p);
+        }
+
+        @Override
+        public DocTree visitSerial(SerialTree node, Element p) {
+            return instance.visitSerial(node, p);
+        }
+
+        @Override
+        public DocTree visitSerialData(SerialDataTree node, Element p) {
+            return instance.visitSerialData(node, p);
+        }
+
+        @Override
+        public DocTree visitSerialField(SerialFieldTree node, Element p) {
+            return instance.visitSerialField(node, p);
+        }
+
+        @Override
+        public DocTree visitSince(SinceTree node, Element p) {
+            return instance.visitSince(node, p);
+        }
+
+        @Override
+        public DocTree visitStartElement(StartElementTree node, Element p) {
+            return instance.visitStartElement(node, p);
+        }
+
+        @Override
+        public DocTree visitText(TextTree node, Element p) {
+            return instance.visitText(node, p);
+        }
+
+        @Override
+        public DocTree visitThrows(ThrowsTree node, Element p) {
+            return instance.visitThrows(node, p);
+        }
+
+        @Override
+        public DocTree visitUnknownBlockTag(UnknownBlockTagTree node, Element p) {
+            return instance.visitUnknownBlockTag(node, p);
+        }
+
+        @Override
+        public DocTree visitUnknownInlineTag(UnknownInlineTagTree node, Element p) {
+            return instance.visitUnknownInlineTag(node, p);
+        }
+
+        @Override
+        public DocTree visitValue(ValueTree node, Element p) {
+            return instance.visitValue(node, p);
+        }
+
+        @Override
+        public DocTree visitVersion(VersionTree node, Element p) {
+            return instance.visitVersion(node, p);
+        }
+
+        @Override
+        public DocTree visitOther(DocTree node, Element p) {
+            return instance.visitOther(node, p);
+        }
+
+        public DocTree visitAttribute(AttributeTree node, Element p, Void ignore) {
+            return super.visitAttribute(node, p);
+        }
+
+        public DocTree visitAuthor(AuthorTree node, Element p, Void ignore) {
+            return super.visitAuthor(node, p);
+        }
+
+        public DocTree visitComment(CommentTree node, Element p, Void ignore) {
+            return super.visitComment(node, p);
+        }
+
+        public DocTree visitDeprecated(DeprecatedTree node, Element p, Void ignore) {
+            return super.visitDeprecated(node, p);
+        }
+
+        public DocTree visitDocComment(DocCommentTree node, Element p, Void ignore) {
+            return super.visitDocComment(node, p);
+        }
+
+        public DocTree visitDocRoot(DocRootTree node, Element p, Void ignore) {
+            return super.visitDocRoot(node, p);
+        }
+
+        public DocTree visitEndElement(EndElementTree node, Element p, Void ignore) {
+            return super.visitEndElement(node, p);
+        }
+
+        public DocTree visitEntity(EntityTree node, Element p, Void ignore) {
+            return super.visitEntity(node, p);
+        }
+
+        public DocTree visitErroneous(ErroneousTree node, Element p, Void ignore) {
+            return super.visitErroneous(node, p);
+        }
+
+        public DocTree visitIdentifier(IdentifierTree node, Element p, Void ignore) {
+            return super.visitIdentifier(node, p);
+        }
+
+        public DocTree visitInheritDoc(InheritDocTree node, Element p, Void ignore) {
+            return super.visitInheritDoc(node, p);
+        }
+
+        public DocTree visitLink(LinkTree node, Element p, Void ignore) {
+            return super.visitLink(node, p);
+        }
+
+        public DocTree visitLiteral(LiteralTree node, Element p, Void ignore) {
+            return super.visitLiteral(node, p);
+        }
+
+        public DocTree visitParam(ParamTree node, Element p, Void ignore) {
+            return super.visitParam(node, p);
+        }
+
+        public DocTree visitReference(ReferenceTree node, Element p, Void ignore) {
+            return super.visitReference(node, p);
+        }
+
+        public DocTree visitReturn(ReturnTree node, Element p, Void ignore) {
+            return super.visitReturn(node, p);
+        }
+
+        public DocTree visitSee(SeeTree node, Element p, Void ignore) {
+            return super.visitSee(node, p);
+        }
+
+        public DocTree visitSerial(SerialTree node, Element p, Void ignore) {
+            return super.visitSerial(node, p);
+        }
+
+        public DocTree visitSerialData(SerialDataTree node, Element p, Void ignore) {
+            return super.visitSerialData(node, p);
+        }
+
+        public DocTree visitSerialField(SerialFieldTree node, Element p, Void ignore) {
+            return super.visitSerialField(node, p);
+        }
+
+        public DocTree visitSince(SinceTree node, Element p, Void ignore) {
+            return super.visitSince(node, p);
+        }
+
+        public DocTree visitStartElement(StartElementTree node, Element p, Void ignore) {
+            return super.visitStartElement(node, p);
+        }
+
+        public DocTree visitText(TextTree node, Element p, Void ignore) {
+            return super.visitText(node, p);
+        }
+
+        public DocTree visitThrows(ThrowsTree node, Element p, Void ignore) {
+            return super.visitThrows(node, p);
+        }
+
+        public DocTree visitUnknownBlockTag(UnknownBlockTagTree node, Element p, Void ignore) {
+            return super.visitUnknownBlockTag(node, p);
+        }
+
+        public DocTree visitUnknownInlineTag(UnknownInlineTagTree node, Element p, Void ignore) {
+            return super.visitUnknownInlineTag(node, p);
+        }
+
+        public DocTree visitValue(ValueTree node, Element p, Void ignore) {
+            return super.visitValue(node, p);
+        }
+
+        public DocTree visitVersion(VersionTree node, Element p, Void ignore) {
+            return super.visitVersion(node, p);
+        }
+
+        public DocTree visitOther(DocTree node, Element p, Void ignore) {
+            return super.visitOther(node, p);
+        }
+    }
 }

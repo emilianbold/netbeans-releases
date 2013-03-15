@@ -130,7 +130,7 @@ public class DoctreeTest extends GeneratorTestBase {
                             @Override
                             public Void visitDocComment(DocCommentTree docComment, Void p) {
                                 ParamTree param = make.Param(false, make.DocIdentifier("test"), new LinkedList<DocTree>());
-                                DocCommentTree newDoc = make.DocComment(docComment,
+                                DocCommentTree newDoc = make.DocComment(
                                         docComment.getFirstSentence(),
                                         docComment.getBody(),
                                         Collections.singletonList(param));
@@ -188,7 +188,7 @@ public class DoctreeTest extends GeneratorTestBase {
                             @Override
                             public Void visitDocComment(DocCommentTree docComment, Void p) {
                                 ParamTree param = make.Param(false, make.DocIdentifier("test"), new LinkedList<DocTree>());
-                                DocCommentTree newDoc = make.DocComment(docComment,
+                                DocCommentTree newDoc = make.DocComment(
                                         docComment.getFirstSentence(),
                                         docComment.getBody(),
                                         Collections.singletonList(param));
@@ -248,7 +248,7 @@ public class DoctreeTest extends GeneratorTestBase {
                             @Override
                             public Void visitDocComment(DocCommentTree docComment, Void p) {
                                 ParamTree param = make.Param(false, make.DocIdentifier("test"), new LinkedList<DocTree>());
-                                DocCommentTree newDoc = make.DocComment(docComment,
+                                DocCommentTree newDoc = make.DocComment(
                                         docComment.getFirstSentence(),
                                         docComment.getBody(),
                                         Collections.singletonList(param));
@@ -309,7 +309,7 @@ public class DoctreeTest extends GeneratorTestBase {
                             public Void visitDocComment(DocCommentTree docComment, Void p) {
                                 List<DocTree> params = new ArrayList<DocTree>(docComment.getBlockTags());
                                 params.add(make.Param(false, make.DocIdentifier("test"), new LinkedList<DocTree>()));
-                                DocCommentTree newDoc = make.DocComment(docComment,
+                                DocCommentTree newDoc = make.DocComment(
                                         docComment.getFirstSentence(),
                                         docComment.getBody(),
                                         params);
@@ -370,7 +370,7 @@ public class DoctreeTest extends GeneratorTestBase {
                             public Void visitDocComment(DocCommentTree docComment, Void p) {
                                 List<DocTree> params = new ArrayList<DocTree>(docComment.getBlockTags());
                                 params.add(make.Param(false, make.DocIdentifier("test"), new LinkedList<DocTree>()));
-                                DocCommentTree newDoc = make.DocComment(docComment,
+                                DocCommentTree newDoc = make.DocComment(
                                         docComment.getFirstSentence(),
                                         docComment.getBody(),
                                         params);
@@ -431,7 +431,7 @@ public class DoctreeTest extends GeneratorTestBase {
                         DocTreeScanner<Void, Void> scanner = new DocTreeScanner<Void, Void>() {
                             @Override
                             public Void visitDocComment(DocCommentTree docComment, Void p) {
-                                DocCommentTree newDoc = make.DocComment(docComment,
+                                DocCommentTree newDoc = make.DocComment(
                                         docComment.getFirstSentence(),
                                         docComment.getBody(),
                                         new LinkedList<DocTree>());

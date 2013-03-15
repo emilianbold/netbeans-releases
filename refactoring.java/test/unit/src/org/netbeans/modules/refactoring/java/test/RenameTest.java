@@ -45,7 +45,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -589,6 +588,62 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"),
                 new File("p2/A.java", "package p2;\n"
                 + "public class A {\n"
+                + "}"));
+    }
+    
+    public void testJavadocClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("p2/C.java", "package p2;\n"
+                + "public class C {\n"
+                + "}"),
+                new File("p2/A.java", "package p2;\n"
+                + "/**\n"
+                + " * @see C\n"
+                + " */\n"
+                + "public class A {\n"
+                + "    private C b;\n"
+                + "}"));
+        performRename(src.getFileObject("p2/C.java"), -1, "B", null);
+        verifyContent(src,
+                new File("p2/C.java", "package p2;\n"
+                + "public class B {\n"
+                + "}"),
+                new File("p2/A.java", "package p2;\n"
+                + "/**\n"
+                + " * @see B\n"
+                + " */\n"
+                + "public class A {\n"
+                + "    private B b;\n"
+                + "}"));
+    }
+    
+    public void testJavadocMethod() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "    }\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * @see #foo() we just call method foo()\n"
+                + "     */\n"
+                + "    public static void main() {\n"
+                + "        new A().foo();\n"
+                + "    }\n"
+                + "}"));
+        performRename(src.getFileObject("t/A.java"), 1, "fooBar", null);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void fooBar() {\n"
+                + "    }\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * @see #fooBar() we just call method foo()\n"
+                + "     */\n"
+                + "    public static void main() {\n"
+                + "        new A().fooBar();\n"
+                + "    }\n"
                 + "}"));
     }
     
