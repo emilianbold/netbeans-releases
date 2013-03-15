@@ -93,6 +93,10 @@ public class CatchBlockImpl extends DeclarationScopeImpl implements JsFunction {
     }
 
     @Override
+    public void addReturnType(TypeUsage type) {
+    }
+
+    @Override
     public Collection<? extends TypeUsage> getReturnTypes() {
         return Collections.emptyList();
     }
