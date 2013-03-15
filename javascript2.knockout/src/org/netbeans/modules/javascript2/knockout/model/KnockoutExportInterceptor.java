@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -65,10 +64,10 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
  *
  * @author Petr Hejl
  */
-@FunctionInterceptor.Registration(priority = 100)
-public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
+@FunctionInterceptor.Registration(priority = 200)
+public class KnockoutExportInterceptor implements FunctionInterceptor {
 
-    private static final Logger LOGGER = Logger.getLogger(KnockoutExportFunctionInterceptor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(KnockoutExportInterceptor.class.getName());
 
     private static final String GLOBAL_KO_OBJECT = "ko"; // NOI18N
 
