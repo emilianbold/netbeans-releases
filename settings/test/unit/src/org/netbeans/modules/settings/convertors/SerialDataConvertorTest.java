@@ -56,6 +56,7 @@ import java.io.*;
 import java.util.*;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.settings.FactoryMethod;
 
 import org.netbeans.junit.*;
 
@@ -656,5 +657,37 @@ public class SerialDataConvertorTest extends NbTestCase {
         ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
         assertNotNull("Missing InstanceCookie", ic);
         assertNotNull("the persisted object cannot be read", ic.instanceCreate());
+    }
+    
+    public void testFactoryMethod() throws IOException, ClassNotFoundException {
+        DataFolder df = DataFolder.findFolder(FileUtil.getConfigRoot().createFolder("testFactoryMethod"));
+        FileObject fo = df.getPrimaryFile().createData("test.settings");
+        OutputStream os = fo.getOutputStream();
+        os.write((
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<!DOCTYPE settings PUBLIC \"-//NetBeans//DTD Session settings 1.0//EN\" \"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd\">\n" +
+"<settings version=\"1.0\">\n" +
+"  <instance class=\"" + FactoryBase.class.getName() + "\"/>\n" +
+"</settings>\n"
+        ).getBytes("UTF-8"));
+        os.close();
+        
+        InstanceCookie ido = DataObject.find(fo).getCookie(InstanceCookie.class);
+        FactoryBase fb = (FactoryBase) ido.instanceCreate();
+        assertNotNull("Re-created OK!", fb);
+    }
+
+    @FactoryMethod("create")
+    public static class FactoryBase implements Serializable {
+        private FactoryBase() {
+            throw new IllegalStateException("Don't call my default constructor");
+        }
+        
+        FactoryBase(boolean ok) {
+        }
+        
+        static FactoryBase create() {
+            return new FactoryBase(true);
+        }
     }
 }
