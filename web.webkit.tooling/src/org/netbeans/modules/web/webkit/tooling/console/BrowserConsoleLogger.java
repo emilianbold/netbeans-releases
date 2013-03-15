@@ -40,32 +40,40 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.javascript.debugger.console;
+package org.netbeans.modules.web.webkit.tooling.console;
 
 import java.awt.Color;
 import java.awt.SystemColor;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
-import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
-import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.console.Console;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -80,7 +88,7 @@ public class BrowserConsoleLogger implements Console.Listener {
     private static final String LEVEL_ERROR = "error";      // NOI18N
     private static final String LEVEL_DEBUG = "debug";      // NOI18N
 
-    private ProjectContext pc;
+    private Lookup projectContext;
     private InputOutput io;
     private Color colorStdBrighter;
     /** The last logged message. */
@@ -88,8 +96,10 @@ public class BrowserConsoleLogger implements Console.Listener {
     //private Color colorErrBrighter;
     private final AtomicBoolean shownOnError = new AtomicBoolean(false);
 
-    public BrowserConsoleLogger(ProjectContext pc) {
-        this.pc = pc;
+    private static final Logger LOG = Logger.getLogger(BrowserConsoleLogger.class.getName());
+
+    public BrowserConsoleLogger(Lookup projectContext) {
+        this.projectContext = projectContext;
         initIO();
     }
     
@@ -107,7 +117,12 @@ public class BrowserConsoleLogger implements Console.Listener {
             //colorErrBrighter = shiftTowards(colorErr, background);
         }
     }
-    
+
+    public void close() {
+        io.getErr().close();
+        io.getOut().close();
+    }
+
     private static Color shiftTowards(Color c, Color b) {
         return new Color((c.getRed() + b.getRed())/2, (c.getGreen() + b.getGreen())/2, (c.getBlue() + b.getBlue())/2);
     }
@@ -124,13 +139,10 @@ public class BrowserConsoleLogger implements Console.Listener {
 
     @Override
     public void messagesCleared() {
-// each new page loaded in the browser send this message;
-// it is little bit too agressive - I would prefere user to decide
-// when they want to clear the log
-//        try {
-//            getOutputLogger().getOut().reset();
-//        } catch (IOException ex) {}
-        shownOnError.set(false);
+        try {
+            io.getOut().reset();
+            io.getErr().reset();
+        } catch (IOException ex) {}
     }
 
     @Override
@@ -380,7 +392,7 @@ public class BrowserConsoleLogger implements Console.Listener {
     private String getProjectPath(String urlStr) {
         try {
             URL url = new URL(urlStr);
-            Project project = pc.getProject();
+            Project project = projectContext.lookup(Project.class);
             if (project != null) {
                 FileObject fo = ServerURLMapping.fromServer(project, url);
                 if (fo != null) {
@@ -419,8 +431,8 @@ public class BrowserConsoleLogger implements Console.Listener {
             }
         }
         private Line getLine() {
-            Project project = pc.getProject();
-            return MiscEditorUtil.getLine(project, url, line-1);
+            Project project = projectContext.lookup(Project.class);
+            return BrowserConsoleLogger.getLine(project, url, line-1);
         }
 
         @Override
@@ -432,5 +444,66 @@ public class BrowserConsoleLogger implements Console.Listener {
         }
     
     }
-    
+
+    private static Line getLine(Project project, final String filePath, final int lineNumber) {
+        if (filePath == null || lineNumber < 0) {
+            return null;
+        }
+
+        FileObject fileObject = null;
+        if (filePath.startsWith("http:") || filePath.startsWith("https:")) {    // NOI18N
+            try {
+                URL url = URI.create(filePath).toURL();
+                if (project != null) {
+                    fileObject = ServerURLMapping.fromServer(project, url);
+                }
+                if (fileObject == null) {
+                    fileObject = RemoteFileCache.getRemoteFile(url);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            File file;
+            if (filePath.startsWith("file:/")) {                                // NOI18N
+                file = Utilities.toFile(URI.create(filePath));
+            } else {
+                file = new File(filePath);
+            }
+            fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        }
+        if (fileObject == null) {
+            LOG.log(Level.INFO, "Cannot resolve \"{0}\"", filePath);
+            return null;
+        }
+
+        LineCookie lineCookie = getLineCookie(fileObject);
+        if (lineCookie == null) {
+            LOG.log(Level.INFO, "No line cookie for \"{0}\"", fileObject);
+            return null;
+        }
+        try {
+            return lineCookie.getLineSet().getCurrent(lineNumber);
+        } catch (IndexOutOfBoundsException ioob) {
+            List<? extends Line> lines = lineCookie.getLineSet().getLines();
+            if (lines.size() > 0) {
+                return lines.get(lines.size() - 1);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public static LineCookie getLineCookie(final FileObject fo) {
+        LineCookie result = null;
+        try {
+            DataObject dataObject = DataObject.find(fo);
+            if (dataObject != null) {
+                result = dataObject.getCookie(LineCookie.class);
+            }
+        } catch (DataObjectNotFoundException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

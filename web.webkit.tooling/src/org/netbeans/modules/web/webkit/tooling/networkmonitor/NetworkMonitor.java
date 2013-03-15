@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.javascript.debugger.browser;
+package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerInfo;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
-import org.netbeans.modules.web.javascript.debugger.EngineDestructorProvider;
-import org.netbeans.modules.web.webkit.debugging.api.Debugger;
-import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-import org.netbeans.modules.web.webkit.debugging.spi.JavaScriptDebuggerFactory;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.TopComponent;
 
-@ServiceProvider(service=JavaScriptDebuggerFactory.class)
-public class NetBeansJavaScriptDebuggerFactoryImpl implements JavaScriptDebuggerFactory {
+/**
+ *
+ */
+public class NetworkMonitor implements Network.Listener {
 
-    @Override
-    public Session createDebuggingSession(WebKitDebugging webkit, Lookup projectContext) {
-        Debugger debugger = webkit.getDebugger();
-        ProjectContext pc = new ProjectContext(projectContext);
-        EngineDestructorProvider edp = new EngineDestructorProvider();
-        
-        DebuggerInfo di = DebuggerInfo.create(DebuggerConstants.DEBUGGER_INFO,
-                new Object[]{webkit, debugger, pc, edp});
-        DebuggerEngine engine = DebuggerManager.getDebuggerManager().startDebugging(di)[0];
-        Session session = engine.lookupFirst(null, Session.class);
-        return session;
+    private Lookup projectContext;
+    private NetworkMonitorTopComponent component;
+    private NetworkMonitorTopComponent.Model model;
+
+    public NetworkMonitor(Lookup projectContext) {
+        this.projectContext = projectContext;
+        this.model = new NetworkMonitorTopComponent.Model();
+        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+            if (tc instanceof NetworkMonitorTopComponent) {
+                component = (NetworkMonitorTopComponent)tc;
+                model = component.getModel();
+                component.resetModel();
+                break;
+            }
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (component == null) {
+                    component = new NetworkMonitorTopComponent(NetworkMonitor.this, model);
+                }
+                component.open();
+            }
+        });
+    }
+
+    public void close() {
+        // XXX: should I close the component here???
     }
 
     @Override
-    public void stopDebuggingSession(Session session) {
-        DebuggerEngine engine = session.lookupFirst(null, DebuggerEngine.class);
-        if (engine == null) {
-            return ; // No engine, nothing to stop.
-        }
-        Debugger debugger = engine.lookupFirst(null, Debugger.class);
-        if ((debugger != null) && debugger.isEnabled()) {
-            debugger.disable();
-        }
-        session.kill();
-        engine.lookupFirst(null, EngineDestructorProvider.class).getDestructor().killEngine();
+    public void networkRequest(Network.Request request) {
+        model.add(request);
+    }
+
+    @Override
+    public void webSocketRequest(Network.WebSocketRequest request) {
+        model.add(request);
+    }
+
+    void componentClosed() {
+        component = null;
     }
 
 }
