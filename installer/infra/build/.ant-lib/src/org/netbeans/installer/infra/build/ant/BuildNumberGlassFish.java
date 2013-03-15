@@ -126,20 +126,12 @@ public class BuildNumberGlassFish extends Task {
                 } else { // V3.X
                     releaseNumber = matcher.group(counter++);                       // NOMAGI
                 }
-                final String milestoneNumberReal = 
-                        matcher.group(counter++);                                   // NOMAGI
-                final String milestoneNumber = 
-                        matcher.group(counter++);                                   // NOMAGI
+                // no milestones in GF 4
+                final String milestoneNumberReal = "0";
+                final String milestoneNumber = "0";
 
-                String buildNumber = "0"; 
-
-                if(matcher.groupCount() > 3) { 
-                   buildNumber = FORMAT_OUT.format(dateFormatIn.parse(matcher.group(counter++))) ; // NOMAGI
-                } else if(!milestoneNumberReal.equals(milestoneNumber)){
-                   buildNumber = "" + (milestoneNumberReal.substring(milestoneNumber.length()).codePointAt(0) - 'a' + 1);
-                }
-
-
+                String buildNumber = matcher.group(counter++);                      // NOMAGI
+                
                 getProject().setProperty(
                         prefix + BUILD_TYPE_SUFFIX, 
                         buildType.toLowerCase());
@@ -160,8 +152,6 @@ public class BuildNumberGlassFish extends Task {
                         "Cannot parse the input file " + file); // NOI18N
             }
         } catch (IOException e) {
-            throw new BuildException(e);
-        } catch (ParseException e) {
             throw new BuildException(e);
         }
     }
