@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -246,6 +247,7 @@ public class CommonServerSupport
      * <p/>
      * @return <code>GlassfishInstance</code> object associated with this object.
      */
+    @Override
     public GlassfishInstance getInstance() {
         return this.instance;
     }
@@ -391,7 +393,6 @@ public class CommonServerSupport
         VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
         FutureTask<OperationState> task = new FutureTask<OperationState>(
                 new StartTask(this, getRecognizers(), vmi,
-                              (FileObject)null,
                               (String[])(endState == ServerState.STOPPED_JVM_PROFILER ? new String[]{""} : null),
                               startServerListener, stateListener));
         RP.post(task);
