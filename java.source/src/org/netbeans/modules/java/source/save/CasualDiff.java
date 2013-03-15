@@ -1536,7 +1536,7 @@ public class CasualDiff {
             tokenSequence.move(rhsBounds[0]);
             moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
             if (tokenSequence.token().id() != JavaTokenId.EQ) {
-                boolean spaceAroundAssignOps = parent.getKind() == Kind.ANNOTATION ? diffContext.style.spaceAroundAnnotationValueAssignOps() : diffContext.style.spaceAroundAssignOps();
+                boolean spaceAroundAssignOps = (parent.getKind() == Kind.ANNOTATION || parent.getKind() == Kind.TYPE_ANNOTATION) ? diffContext.style.spaceAroundAnnotationValueAssignOps() : diffContext.style.spaceAroundAssignOps();
                 if (spaceAroundAssignOps)
                     printer.print(" = ");
                 else
@@ -2222,7 +2222,7 @@ public class CasualDiff {
               return matchWildcard((JCWildcard)t1, (JCWildcard)t2);
           case TYPEBOUNDKIND:
               return ((TypeBoundKind)t1).kind == ((TypeBoundKind)t2).kind;
-          case ANNOTATION:
+          case ANNOTATION: case TYPE_ANNOTATION:
               return matchAnnotation((JCAnnotation)t1, (JCAnnotation)t2);
           case LETEXPR:
               return matchLetExpr((LetExpr)t1, (LetExpr)t2);
@@ -2547,7 +2547,7 @@ public class CasualDiff {
                     JCTree tree = oldList.get(oldIndex++);
                     int[] bounds = getBounds(tree);
                     tokenSequence.move(bounds[0]);
-                    if (oldIndex != 1) {
+                    if (oldIndex != 1 && !separator.isEmpty()) {
                         moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
                     }
                     tokenSequence.moveNext();
@@ -3498,7 +3498,7 @@ public class CasualDiff {
           case TYPEBOUNDKIND:
               retVal = diffTypeBoundKind((TypeBoundKind)oldT, (TypeBoundKind)newT, elementBounds);
               break;
-          case ANNOTATION:
+          case ANNOTATION: case TYPE_ANNOTATION:
               retVal = diffAnnotation((JCAnnotation)oldT, (JCAnnotation)newT, elementBounds);
               break;
           case LETEXPR:

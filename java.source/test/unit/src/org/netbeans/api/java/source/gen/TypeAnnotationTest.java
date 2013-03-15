@@ -86,7 +86,7 @@ public class TypeAnnotationTest extends GeneratorTestBase {
     }
     
 
-    public void testRemoveTypeAnnotation() throws Exception {
+    public void testAddRemoveTypeAnnotation() throws Exception {
         performAlterTypeAnnotationTest("@A @C @D", new AlterAnnotations() {
             @Override public List<? extends AnnotationTree> alter(WorkingCopy copy, List<? extends AnnotationTree> annotations) {
                 List<AnnotationTree> result = new ArrayList<AnnotationTree>(annotations);
@@ -137,6 +137,18 @@ public class TypeAnnotationTest extends GeneratorTestBase {
                 List<AnnotationTree> result = new ArrayList<AnnotationTree>(annotations);
                 TreeMaker make = copy.getTreeMaker();
                 result.add(copy.getTreeMaker().TypeAnnotation(make.Identifier("E"), Collections.<ExpressionTree>emptyList()));
+                return result;
+            }
+        });
+    }
+    
+    public void testChangeTypeAnnotation() throws Exception {
+        performAlterTypeAnnotationTest("@A @E @C @D", new AlterAnnotations() {
+            @Override public List<? extends AnnotationTree> alter(WorkingCopy copy, List<? extends AnnotationTree> annotations) {
+                List<AnnotationTree> result = new ArrayList<AnnotationTree>(annotations);
+                TreeMaker make = copy.getTreeMaker();
+                result.remove(1);
+                result.add(1, copy.getTreeMaker().TypeAnnotation(make.Identifier("E"), Collections.<ExpressionTree>emptyList()));
                 return result;
             }
         });
