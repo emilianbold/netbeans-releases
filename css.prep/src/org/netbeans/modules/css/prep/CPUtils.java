@@ -49,6 +49,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.api.DependencyType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -71,22 +72,23 @@ public class CPUtils {
         String mt = file.getMIMEType();
         return SCSS_FILE_MIMETYPE.equals(mt) || LESS_FILE_MIMETYPE.equals(mt);
     }
-    
+
     /**
-     * Gets {@link CPCssIndexModel}s for all referred files (transitionally)
-     * EXCLUDING model for the given file itself.
+     * Gets {@link CPCssIndexModel}s for all referred or related files (transitionally)
      *
-     * @param file
+     * @param allRelatedFiles if true the map will takes into account file relations regardless the direction of the imports. 
+     * if false then also referred files are taken into account.
+     * @param file the base file
      * @param excludeTheBaseFile if true, model for the file passed as argument is not added to the result map.
      * @return
      */
-    public static Map<FileObject, CPCssIndexModel> getIndexModels(FileObject file, boolean excludeTheBaseFile) throws IOException {
+    public static Map<FileObject, CPCssIndexModel> getIndexModels(FileObject file, DependencyType dependencyType, boolean excludeTheBaseFile) throws IOException {
         Map<FileObject, CPCssIndexModel> models = new HashMap<FileObject, CPCssIndexModel>();
         Project project = FileOwnerQuery.getOwner(file);
         if (project != null) {
             CssIndex index = CssIndex.get(project);
             DependenciesGraph dependencies = index.getDependencies(file);
-            Collection<FileObject> referred = dependencies.getAllReferedFiles();
+            Collection<FileObject> referred = dependencies.getFiles(dependencyType);
             for (FileObject reff : referred) {
                 if (excludeTheBaseFile && reff.equals(file)) {
                     //skip current file (it is included to the referred files list)

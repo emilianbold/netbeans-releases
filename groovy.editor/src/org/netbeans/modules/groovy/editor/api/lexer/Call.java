@@ -176,28 +176,12 @@ public class Call {
                 return Call.LOCAL;
             }
 
-            // We're within a String that has embedded Groovy. Drop into the
-            // embedded language and iterate the Groovy tokens there.
-            if (id == GroovyTokenId.EMBEDDED_GROOVY) {
-                ts = (TokenSequence)ts.embedded();
-                assert ts != null;
-                ts.move(offset);
-
-                if (!ts.moveNext() && !ts.movePrevious()) {
-                    return Call.NONE;
-                }
-
-                token = ts.token();
-                id = token.id();
-            }
-
             // See if we're in the identifier - "x" in "foo.x"
             // I could also be a keyword in case the prefix happens to currently
             // match a keyword, such as "next"
             // However, if we're at the end of the document, x. will lex . as an
             // identifier of text ".", so handle this case specially
-            if ((id == GroovyTokenId.IDENTIFIER) || (id == GroovyTokenId.CONSTANT) ||
-                    id.primaryCategory().equals("keyword")) {
+            if (id == GroovyTokenId.IDENTIFIER || id.primaryCategory().equals("keyword")) {
                 String tokenText = token.text().toString();
 
                 if (".".equals(tokenText)) {
@@ -286,11 +270,10 @@ public class Call {
 //                    return new Call("Symbol", null, false, methodExpected);
 //                } else if (id == GroovyTokenId.RANGE_INCLUSIVE) {
 //                    return new Call("Range", null, false, methodExpected);
-                } else if (((id == GroovyTokenId.GLOBAL_VAR) || (id == GroovyTokenId.INSTANCE_VAR) ||
-                        (id == GroovyTokenId.CLASS_VAR) || (id == GroovyTokenId.IDENTIFIER)) ||
+                } else if ((id == GroovyTokenId.IDENTIFIER) ||
                         id.primaryCategory().equals("keyword") || (id == GroovyTokenId.DOT) ||
-                        (id == GroovyTokenId.COLON) || (id == GroovyTokenId.CONSTANT) ||
-                        (id == GroovyTokenId.SUPER_CTOR_CALL) || (id == GroovyTokenId.CTOR_CALL)) {
+                        (id == GroovyTokenId.COLON) || (id == GroovyTokenId.SUPER_CTOR_CALL) ||
+                        (id == GroovyTokenId.CTOR_CALL)) {
 
                     // We're building up a potential expression such as "Test::Unit" so continue looking
                     beginOffset = ts.offset();

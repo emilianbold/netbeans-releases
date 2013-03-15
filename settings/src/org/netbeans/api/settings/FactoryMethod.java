@@ -39,70 +39,31 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.model;
+package org.netbeans.api.settings;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.openide.filesystems.FileObject;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.netbeans.spi.settings.Convertor;
 
-/**
- * Resolved element.
+/** Specifies an alternative factory method to use (rather than constructor)
+ * to create the instance. Use in orchestration with 
+ * {@link ConvertAsProperties} or on any class that is processed by serializing
+ * {@link Convertor}s.
  * 
- * Can hold model and parser result!
- *
- * @author marekfukala
+ * @since 1.40
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class CPElement {
-
-    private CPElementHandle handle;
-    private OffsetRange range; 
-    private OffsetRange scope;
-
-    public CPElement(CPElementHandle handle, OffsetRange range, OffsetRange scope) {
-        this.handle = handle;
-        this.range = range;
-        this.scope = scope;
-    }
-    
-    public String getName() {
-        return getHandle().getName();
-    }
-    
-    public CPElementType getType() {
-        return getHandle().getType();
-    }
-    
-    public FileObject getFile() {
-        return getHandle().getFile();
-    }
-
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface FactoryMethod {
     /**
-     * range of the element itself.
+     * Name of factory method to use instead of default constructor. Sometimes, for
+     * example when dealing with singletons, it may be desirable to control how
+     * an instance of given class is created. In such case one can create a
+     * factory method (takes no arguments and returns instance of desired type)
+     * in the class annotated by {@link ConvertAsProperties} annotation.
      */
-    public OffsetRange getRange() {
-        return range;
-    }
-
-    /**
-     * range of the element scope.
-     * 
-     * null means no scope 
-     */
-    public OffsetRange getScope() {
-        return scope;
-    }
-
-    public CPElementHandle getHandle() {
-        return handle;
-    }
-    
-    public static Collection<CPElementHandle> toHandles(Collection<CPElement> elements) {
-        Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>();
-        for(CPElement e : elements) {
-            handles.add(e.getHandle());
-        }
-        return handles;
-    }
-    
+    String value();
 }

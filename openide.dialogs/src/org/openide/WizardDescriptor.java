@@ -2379,7 +2379,8 @@ public class WizardDescriptor extends DialogDescriptor {
             }
 
             if (!isDefault) {
-                loadImage(getDefaultImage());
+                if( !UIManager.getBoolean( "nb.wizard.hideimage" ) ) //NOI18N
+                    loadImage(getDefaultImage());
                 isDefault = true;
             }
         }

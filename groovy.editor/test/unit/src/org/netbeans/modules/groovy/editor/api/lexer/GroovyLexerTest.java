@@ -121,6 +121,42 @@ public class GroovyLexerTest extends GroovyTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.STRING_LITERAL, ", how are you?\"");
     }
     
+    public void testLineComment() {
+        TokenSequence<GroovyTokenId> ts = createTokenSequenceFor("// def =\"string\"");
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.LINE_COMMENT, "// def =\"string\"");
+    }
+    
+    public void testBlockComment() {
+        TokenSequence<GroovyTokenId> ts = createTokenSequenceFor(
+                "/*"
+                + "Testing block comment\n"
+                + ".. is it work?\n"
+                + "*/");
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.BLOCK_COMMENT,
+                "/*"
+                + "Testing block comment\n"
+                + ".. is it work?\n"
+                + "*/");
+    }
+    
+    public void testDocumentation() {
+        TokenSequence<GroovyTokenId> ts = createTokenSequenceFor(
+                "/**"
+                + "Some method description.\n"
+                + "@param whatever\n"
+                + "@return whaaat?"
+                + "*/");
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.BLOCK_COMMENT,
+                "/**"
+                + "Some method description.\n"
+                + "@param whatever\n"
+                + "@return whaaat?"
+                + "*/");
+    }
+    
     public void testForLoop() {
         TokenSequence<GroovyTokenId> ts = createTokenSequenceFor("for (int i = 0; i < 10; i++) {");
         

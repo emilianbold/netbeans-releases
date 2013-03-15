@@ -39,70 +39,31 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.model;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.web.common.api;
 
 /**
- * Resolved element.
+ * Dependency type.
  * 
- * Can hold model and parser result!
+ * Used for {@link DependenciesGraph}
  *
+ * @since 1.35
  * @author marekfukala
  */
-public class CPElement {
-
-    private CPElementHandle handle;
-    private OffsetRange range; 
-    private OffsetRange scope;
-
-    public CPElement(CPElementHandle handle, OffsetRange range, OffsetRange scope) {
-        this.handle = handle;
-        this.range = range;
-        this.scope = scope;
-    }
+public enum DependencyType {
     
-    public String getName() {
-        return getHandle().getName();
-    }
-    
-    public CPElementType getType() {
-        return getHandle().getType();
-    }
-    
-    public FileObject getFile() {
-        return getHandle().getFile();
-    }
-
     /**
-     * range of the element itself.
+     * Reference from source to target.
      */
-    public OffsetRange getRange() {
-        return range;
-    }
-
-    /**
-     * range of the element scope.
-     * 
-     * null means no scope 
-     */
-    public OffsetRange getScope() {
-        return scope;
-    }
-
-    public CPElementHandle getHandle() {
-        return handle;
-    }
+    REFERRING, 
     
-    public static Collection<CPElementHandle> toHandles(Collection<CPElement> elements) {
-        Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>();
-        for(CPElement e : elements) {
-            handles.add(e.getHandle());
-        }
-        return handles;
-    }
+    /**
+     * Reference from target to source.
+     */
+    REFERRED, 
+    
+    /**
+     * Reference of either {@link #REFERRED} or {@link #REFERRING} type.
+     */
+    REFERRING_AND_REFERRED;
     
 }

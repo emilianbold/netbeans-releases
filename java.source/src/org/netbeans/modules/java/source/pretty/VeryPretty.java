@@ -1654,6 +1654,13 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
+    public void visitAnnotatedType(JCAnnotatedType tree) {
+	printExprs(tree.annotations);
+        print(' ');
+	printExpr(tree.underlyingType);
+    }
+    
+    @Override
     public void visitTypeParameter(JCTypeParameter tree) {
 	print(tree.name);
 	if (tree.bounds.nonEmpty()) {
