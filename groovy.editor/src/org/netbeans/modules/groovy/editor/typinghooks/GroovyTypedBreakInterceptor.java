@@ -185,7 +185,7 @@ public class GroovyTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
 
-        if (id == GroovyTokenId.STRING_LITERAL || id == GroovyTokenId.STRING_CH || (id == GroovyTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
+        if (id == GroovyTokenId.STRING_LITERAL || id == GroovyTokenId.STRING_CH && offset < ts.offset()+ts.token().length()) {
             String str = (id != GroovyTokenId.STRING_LITERAL || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
             context.setText(str, -1, str.length());
             return;
@@ -193,7 +193,7 @@ public class GroovyTypedBreakInterceptor implements TypedBreakInterceptor {
 
 
 
-        if (id == GroovyTokenId.REGEXP_LITERAL || (id == GroovyTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
+        if (id == GroovyTokenId.REGEXP_LITERAL && offset < ts.offset()+ts.token().length()) {
             // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
             //int indent = GsfUtilities.getLineIndent(doc, offset);
             //doc.insertString(offset, "/ + /", null);
@@ -255,7 +255,7 @@ public class GroovyTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
 
-        if ((id == GroovyTokenId.BLOCK_COMMENT || id == GroovyTokenId.DOCUMENTATION)
+        if ((id == GroovyTokenId.BLOCK_COMMENT)
                 && offset > ts.offset() && offset < ts.offset()+ts.token().length()) {
             // Continue *'s
             int begin = Utilities.getRowFirstNonWhite(doc, offset);
@@ -502,7 +502,6 @@ public class GroovyTypedBreakInterceptor implements TypedBreakInterceptor {
                 case LINE_COMMENT:
                     break;
                 case BLOCK_COMMENT:
-                case DOCUMENTATION:
                     if (first && caretOffset > ts.offset() && caretOffset < ts.offset() + ts.token().length()) {
                         // Caret contained within block comment -> do not add anything
                         return false;
