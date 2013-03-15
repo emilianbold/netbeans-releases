@@ -59,7 +59,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -69,7 +68,6 @@ import org.openide.filesystems.*;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  * Model for export/import options. It reads {@code OptionsExport/<category>/<item>}
@@ -175,45 +173,6 @@ public final class OptionsExportModel {
     void doImport(File targetUserdir) throws IOException {
         LOGGER.fine("Copying from: " + source + "\n    to: " + targetUserdir);  //NOI18N
         this.targetUserdir = targetUserdir;
-        FileUtil.getConfigRoot().addRecursiveListener(new FileChangeListener() {
-
-            @Override
-            public void fileFolderCreated(FileEvent fe) {
-                String path = fe.getFile().getPath();
-                Preferences pref = Preferences.userRoot().node(path);
-            }
-
-            @Override
-            public void fileDataCreated(FileEvent fe) {
-                String path = fe.getFile().getPath();
-                Preferences pref = NbPreferences.root().node("config").node(path);
-            }
-
-            @Override
-            public void fileChanged(FileEvent fe) {
-                String path = fe.getFile().getPath();
-                Preferences pref = NbPreferences.root().node("config").node(path);
-            }
-
-            @Override
-            public void fileDeleted(FileEvent fe) {
-                String path = fe.getFile().getPath();
-                Preferences pref = NbPreferences.root().node("config").node(path);
-                try {
-                    pref.removeNode();
-                } catch (BackingStoreException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-
-            @Override
-            public void fileRenamed(FileRenameEvent fe) {
-            }
-
-            @Override
-            public void fileAttributeChanged(FileAttributeEvent fe) {
-            }
-        });
         copyFiles();
     }
 
@@ -225,7 +184,7 @@ public final class OptionsExportModel {
         try {
             ensureParent(targetZipFile);
             // Create the ZIP file
-            zipOutputStream = new ZipOutputStream(new FileOutputStream(targetZipFile));
+            zipOutputStream = new ZipOutputStream(createOutputStream(targetZipFile));
             copyFiles();
             createProductInfo(zipOutputStream);
             // Complete the ZIP file
@@ -869,7 +828,7 @@ public final class OptionsExportModel {
             if (includeKeys.isEmpty() && excludeKeys.isEmpty()) {
                 // copy entire file
                 try {
-                    out = new FileOutputStream(targetFile);
+                    out = createOutputStream(targetFile);
                     copyFile(relativePath, out);
                 } finally {
                     if (out != null) {
@@ -915,7 +874,7 @@ public final class OptionsExportModel {
         }
         OutputStream out = null;
         try {
-            out = new FileOutputStream(targetFile);
+            out = createOutputStream(targetFile);
             targetProperties.store(out);
         } finally {
             if (out != null) {
@@ -1041,7 +1000,7 @@ public final class OptionsExportModel {
         ZipOutputStream out = null;
         try {
             // Create the ZIP file
-            out = new ZipOutputStream(new FileOutputStream(targetFile));
+            out = new ZipOutputStream(createOutputStream(targetFile));
             // Compress the files
             for (String relativePath : relativePaths) {
                 LOGGER.finest("Adding to zip: " + relativePath);  //NOI18N
@@ -1090,5 +1049,33 @@ public final class OptionsExportModel {
         writer.flush();
         // Complete the entry
         out.closeEntry();
+    }
+    
+    private static OutputStream createOutputStream(File file) throws IOException {
+        if (containsConfig(file)) {
+            file = file.getCanonicalFile();
+            File root = FileUtil.toFile(FileUtil.getConfigRoot());
+            String filePath = file.getPath();
+            String rootPath = root.getPath();
+            if (filePath.startsWith(rootPath)) {
+                String res = filePath.substring(rootPath.length()).replace(File.separatorChar, '/');
+                FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), res);
+                if (fo != null) {
+                    return fo.getOutputStream();
+                }
+            }
+        }
+        return new FileOutputStream(file);
+    }
+    private static boolean containsConfig(File file) {
+        for (;;) {
+            if (file == null) {
+                return false;
+            }
+            if (file.getName().equals("config")) {
+                return true;
+            }
+            file = file.getParentFile();
+        }
     }
 }
