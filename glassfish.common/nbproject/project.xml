@@ -206,7 +206,6 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.glassfish.eecommon</friend>
                 <friend>org.netbeans.modules.glassfish.grails</friend>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
                 <friend>org.netbeans.modules.glassfish.jruby</friend>
