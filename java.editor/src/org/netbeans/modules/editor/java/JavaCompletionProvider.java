@@ -643,7 +643,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     insideModifiers(env, path);
                     break;
                 case ANNOTATION:
+                case TYPE_ANNOTATION:
                     insideAnnotation(env);
+                    break;
+                case ANNOTATED_TYPE:
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
                     break;
                 case TYPE_PARAMETER:
                     insideTypeParameter(env);
@@ -1244,7 +1248,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int typeEndPos = (int)sourcePositions.getEndPosition(root, ann.getAnnotationType());
             if (offset <= typeEndPos) {                
                 TreePath parentPath = path.getParentPath();
-                if (parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS)
+                if (parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS && parentPath.getParentPath().getLeaf().getKind() != Tree.Kind.VARIABLE)
                     addKeyword(env, INTERFACE_KEYWORD, SPACE, false);
                 if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE) {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
@@ -1632,7 +1636,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     } else if (parent.getKind() == Tree.Kind.PARAMETERIZED_TYPE && ((ParameterizedTypeTree)parent).getTypeArguments().contains(fa)) {
                         kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE);
-                    } else if (parent.getKind() == Tree.Kind.ANNOTATION) {
+                    } else if (parent.getKind() == Tree.Kind.ANNOTATION || parent.getKind() == Tree.Kind.TYPE_ANNOTATION) {
                         if (((AnnotationTree)parent).getAnnotationType() == fa) {
                             kinds = EnumSet.of(ANNOTATION_TYPE);
                         } else {
