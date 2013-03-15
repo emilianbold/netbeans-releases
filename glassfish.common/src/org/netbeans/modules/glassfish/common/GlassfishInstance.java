@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Future;
@@ -57,6 +58,8 @@ import org.glassfish.tools.ide.data.GlassFishAdminInterface;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
@@ -99,9 +102,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public class Props implements Map<String, String> {
 
         private final Map<String, String> delegate;
-//        private transient Collection<String> values = null;
-//        private transient Set<String> keySet = null;
-//        private transient Set<Map.Entry<String, String>> entrySet = null;
 
         /**
          * Constructs a new properties map with the same mappings as the
@@ -762,7 +762,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * @return Value of <code>true</code> when this GlassFish server instance
      *         is remote or <code>false</code> otherwise.
      */
-    boolean isRemote() {
+    public boolean isRemote() {
         return properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
     }
 
@@ -856,6 +856,66 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public String getUserName() {
         return properties.get(GlassfishModule.USERNAME_ATTR);
     }
+
+    /**
+     * Returns Java SE platform home configured for GlassFfish server.
+     * <p/>
+     * @return Java SE platform configured for GlassFfish server or null
+     *         if no such platform was configured.
+     */
+    public String getJavaHome() {
+        return properties.get(GlassfishModule.JAVA_PLATFORM_ATTR);
+    }
+
+    /**
+     * Sets Java SE platform home configured for GlassFfish server.
+     * <p/>
+     * Java SE platform home value is cleared when <code>javahome</code>
+     * is <code>null</code>.
+     * <p/>
+     * @param javahome Java SE platform home to be set for GlassFfish server.
+     */
+    public void setJavaHome(String javahome) {
+        if (javahome != null)
+            properties.put(GlassfishModule.JAVA_PLATFORM_ATTR, javahome);
+        else
+            properties.remove(GlassfishModule.JAVA_PLATFORM_ATTR);
+    }
+
+    /**
+     * Returns Java SE platform {@see JavaPlatform} object configured
+     * for GlassFfish server.
+     * <p/>
+     * Current code is not optimal. It does full scan of installed platforms
+     * to search for platform installation folder matching java home folder
+     * from GlassFfish server instance object.
+     * <p/>
+     * @return Returns Java SE platform {@see JavaPlatform} object configured
+     *         for GlassFfish server or null if no such platform was configured.
+     */
+    public JavaPlatform getJavaPlatform() {
+        String javaHome = getJavaHome();
+        if (javaHome == null || javaHome.length() == 0) {
+            return null;
+        }
+        JavaPlatform[] platforms
+                = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        File javaHomeFile = new File(javaHome);
+        JavaPlatform javaPlatform = null;
+        for (JavaPlatform platform : platforms) {
+            for (FileObject fo : platform.getInstallFolders()) {
+                if (javaHomeFile.equals(FileUtil.toFile(fo))) {
+                    javaPlatform = platform;
+                    break;
+                }
+            }
+            if (javaPlatform != null) {
+                break;
+            }
+        }
+        return javaPlatform;
+    }
+    
 
     public synchronized String getDomainsRoot() {
         String retVal = getDomainsFolder();
@@ -1208,7 +1268,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         // But this should be made independent on CommonServerSupport object.
         CommonServerSupport commonSupport = getCommonSupport();
         JPanel commonCustomizer = new InstanceCustomizer(commonSupport);
-        JPanel vmCustomizer = new VmCustomizer(commonSupport);
+        JPanel vmCustomizer = new VmCustomizer(this);
 
         Collection<JPanel> pages = new LinkedList<JPanel>();
         Collection<? extends CustomizerCookie> lookupAll

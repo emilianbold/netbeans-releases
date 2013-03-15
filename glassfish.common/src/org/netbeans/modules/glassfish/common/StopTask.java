@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.admin.ResultString;

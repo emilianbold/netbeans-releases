@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.*;
 import java.net.*;
 import java.security.cert.CertificateException;
