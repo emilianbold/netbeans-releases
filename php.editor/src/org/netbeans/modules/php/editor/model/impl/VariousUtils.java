@@ -315,7 +315,7 @@ public final class VariousUtils {
             }
             return CodeUtils.extractClassName(className);
         } else if (expression instanceof ArrayCreation) {
-            return "array"; //NOI18N
+            return Type.ARRAY;
         } else if (expression instanceof VariableBase) {
             return extractTypeFroVariableBase((VariableBase) expression, allAssignments); //extractVariableTypeFromVariableBase(varBase);
         } else if (expression instanceof Scalar) {
@@ -324,10 +324,10 @@ public final class VariousUtils {
             if (scalarType.equals(Scalar.Type.STRING)) {
                 String stringValue = scalar.getStringValue().toLowerCase();
                 if (stringValue.equals("false") || stringValue.equals("true")) { //NOI18N
-                    return "boolean"; //NOI18N
+                    return Type.BOOLEAN;
                 }
-                if (stringValue.equals("null")) { //NOI18N
-                    return "null"; //NOI18N
+                if (stringValue.equals(Type.NULL)) {
+                    return Type.NULL;
                 }
             }
             return scalarType.toString().toLowerCase();

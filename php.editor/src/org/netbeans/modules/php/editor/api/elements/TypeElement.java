@@ -51,7 +51,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
  * @author Radek Matous
  */
 public interface TypeElement extends FullyQualifiedElement {
-    String MIXED_TYPE = "mixed"; //NOI18N
+
     enum PrintAs {
         SuperTypes,
         NameAndSuperTypes

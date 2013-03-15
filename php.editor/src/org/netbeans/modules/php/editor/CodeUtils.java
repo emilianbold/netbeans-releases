@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
@@ -335,7 +336,7 @@ public final class CodeUtils {
             Expression className = classInstanceCreation.getClassName().getName();
             return CodeUtils.extractUnqualifiedName(className);
         } else if (rightSideExpression instanceof ArrayCreation) {
-            return "array"; //NOI18N
+            return Type.ARRAY;
         } else if (rightSideExpression instanceof FunctionInvocation) {
             FunctionInvocation functionInvocation = (FunctionInvocation) rightSideExpression;
             String fname = extractFunctionName(functionInvocation);
