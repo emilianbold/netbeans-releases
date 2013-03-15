@@ -39,9 +39,8 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.refactoring;
+package org.netbeans.modules.css.prep.refactoring;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,10 +50,11 @@ import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.lib.api.CssParserResult;
+import static org.netbeans.modules.css.lib.api.NodeType.cp_mixin_name;
+import static org.netbeans.modules.css.lib.api.NodeType.cp_variable;
 import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.css.prep.CPUtils;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -73,7 +73,6 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
@@ -87,28 +86,14 @@ import org.openide.windows.TopComponent;
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = ActionsImplementationProvider.class, position = 1033)
-public class CssActionsImplementationProvider extends ActionsImplementationProvider {
+@ServiceProvider(service = ActionsImplementationProvider.class, position = 1050)
+public class CPActionsImplementationProvider extends ActionsImplementationProvider {
 
-    private static final Logger LOG = Logger.getLogger(CssActionsImplementationProvider.class.getName());
+    private static final Logger LOG = Logger.getLogger(CPActionsImplementationProvider.class.getName());
 
     @Override
     public boolean canRename(Lookup lookup) {
-        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        //we are able to rename only one node selection [at least for now ;-) ]
-        if (nodes.size() != 1) {
-            return false;
-        }
-
-        //check if the file is a file with .css extension or represents
-        //an opened file which code embeds a css content on the caret position
-        Node node = nodes.iterator().next();
-        if (isCssFile(node) || isRefactorableEditorElement(node)) {
-            return true;
-        }
-
-        return false; //we are not interested in refactoring this object/s
-
+        return canRefactor(lookup);
     }
 
     @Override
@@ -118,39 +103,26 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
             //editor refactoring
             new TextComponentTask(ec) {
                 @Override
-                protected RefactoringUI createRefactoringUI(CssElementContext context) {
-                    return new CssRenameRefactoringUI(context);
+                protected RefactoringUI createRefactoringUI(RefactoringElementContext context) {
+                    return new CPRenameRefactoringUI(context);
                 }
             }.run();
         } else {
-            //file or folder refactoring
-            Collection<? extends Node> nodes = selectedNodes.lookupAll(Node.class);
-            assert nodes.size() == 1;
-            Node currentNode = nodes.iterator().next();
-            new NodeToFileTask(currentNode) {
-                @Override
-                protected RefactoringUI createRefactoringUI(CssElementContext context) {
-                    return new CssRenameRefactoringUI(context);
-                }
-            }.run();
+            //file or folder refactoring - not supported
         }
     }
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
+        return canRefactor(lookup);
+    }
+
+    private static boolean canRefactor(Lookup lookup) {
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        //we are able to rename only one node selection [at least for now ;-) ]
         if (nodes.size() != 1) {
             return false;
         }
-
-        //check if the file is a file with .css extension or represents
-        //an opened file which code embeds a css content on the caret position
-        Node node = nodes.iterator().next();
-        if (isCssFile(node) || isRefactorableEditorElement(node)) {
-            return true;
-        }
-        return false;
+        return isRefactorableEditorElement(nodes.iterator().next());
     }
 
     @Override
@@ -160,43 +132,25 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
             new TextComponentTask(ec) {
                 //editor element context
                 @Override
-                protected RefactoringUI createRefactoringUI(CssElementContext context) {
+                protected RefactoringUI createRefactoringUI(RefactoringElementContext context) {
                     return new WhereUsedUI(context);
                 }
             }.run();
         } else {
-            //file context
-            Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-            assert nodes.size() == 1;
-            Node currentNode = nodes.iterator().next();
-            new NodeToFileTask(currentNode) {
-                @Override
-                protected RefactoringUI createRefactoringUI(CssElementContext context) {
-                    return new WhereUsedUI(context);
-                }
-            }.run();
+            //file context - not supported
         }
-    }
-
-    private static boolean isCssFile(Node node) {
-        //for the one thing check if the node represents a css file itself
-        FileObject fo = getFileObjectFromNode(node);
-        if (fo == null) {
-            return false;
-        }
-        return CssLanguage.CSS_MIME_TYPE.equals(fo.getMIMEType());
     }
 
     private static boolean isRefactorableEditorElement(final Node node) {
         class Context {
+
             public int caret;
             public Document document;
-            
         }
-        final Context context = Mutex.EVENT.readAccess(new Action<Context>() {
+        final Context context = Mutex.EVENT.readAccess(new Mutex.Action<Context>() {
             @Override
             public Context run() {
-                EditorCookie ec = getEditorCookie(node);
+                EditorCookie ec = node.getLookup().lookup(EditorCookie.class);
                 if (isFromEditor(ec)) {
                     Context context = new Context();
                     context.document = ec.getDocument();
@@ -208,7 +162,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
                 }
             }
         });
-        if(context == null) {
+        if (context == null) {
             return false;
         }
         Source source = Source.create(context.document);
@@ -218,15 +172,13 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, "text/css");
-                    if(cssRi != null) {
-                        CssParserResult result = (CssParserResult)cssRi.getParserResult();
+                    if (cssRi != null) {
+                        CssParserResult result = (CssParserResult) cssRi.getParserResult();
                         org.netbeans.modules.css.lib.api.Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), context.caret);
-                        if(leaf != null) {
-                            switch(leaf.type()) {
-                                case elementName:
-                                case cssClass:
-                                case cssId:
-                                case hexColor:
+                        if (leaf != null) {
+                            switch (leaf.type()) {
+                                case cp_variable:
+                                case cp_mixin_name:
                                     res.set(true);
                                     break;
                                 default:
@@ -234,14 +186,14 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
                             }
                         }
                     }
-                    
+
                 }
             });
             return res.get();
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         return false;
     }
 
@@ -258,63 +210,6 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
             }
         }
         return false;
-    }
-
-    private static EditorCookie getEditorCookie(Node node) {
-        return node.getLookup().lookup(EditorCookie.class);
-    }
-
-    public static abstract class NodeToFileTask extends UserTask implements Runnable {
-
-        private final Node node;
-        private CssElementContext context;
-        private FileObject fileObject;
-
-        public NodeToFileTask(Node node) {
-            this.node = node;
-        }
-
-        @Override
-        public void run(ResultIterator resultIterator) throws Exception {
-            Collection<CssParserResult> results = new ArrayList<CssParserResult>();
-            Snapshot snapshot = resultIterator.getSnapshot();
-            try {
-                if ("text/css".equals(snapshot.getMimeType())) { //NOI18N
-                    results.add((CssParserResult) resultIterator.getParserResult());
-                    return;
-                }
-                for (Embedding e : resultIterator.getEmbeddings()) {
-                    run(resultIterator.getResultIterator(e));
-                }
-            } finally {
-                context = new CssElementContext.File(fileObject, results);
-            }
-        }
-
-        @Override
-        public void run() {
-            DataObject dobj = node.getLookup().lookup(DataObject.class);
-            if (dobj != null) {
-                fileObject = dobj.getPrimaryFile();
-
-                if (fileObject.isFolder()) {
-                    //folder
-                    UI.openRefactoringUI(createRefactoringUI(new CssElementContext.Folder(fileObject)));
-                } else {
-                    //css file
-                    Source source = Source.create(fileObject);
-                    try {
-                        ParserManager.parse(Collections.singletonList(source), this);
-                        UI.openRefactoringUI(createRefactoringUI(context));
-                    } catch (ParseException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-
-        }
-
-        protected abstract RefactoringUI createRefactoringUI(CssElementContext context);
     }
 
     public static abstract class TextComponentTask extends UserTask implements Runnable {
@@ -336,14 +231,14 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         @Override
         public void run(ResultIterator ri) throws ParseException {
             Snapshot topLevelSnapshot = ri.getSnapshot();
-            ResultIterator cssri = WebUtils.getResultIterator(ri, CssLanguage.CSS_MIME_TYPE);
+            ResultIterator cssri = WebUtils.getResultIterator(ri, "text/css");
 
             if (cssri != null) {
                 CssParserResult result = (CssParserResult) cssri.getParserResult();
                 if (result.getParseTree() != null) {
                     //the parser result seems to be quite ok,
                     //in case of serious parse issue the parse root is null
-                    CssElementContext context = new CssElementContext.Editor(result, topLevelSnapshot, caretOffset, selectionStart, selectionEnd);
+                    RefactoringElementContext context = new RefactoringElementContext(result, topLevelSnapshot, caretOffset, selectionStart, selectionEnd);
                     ui = context.isRefactoringAllowed() ? createRefactoringUI(context) : null;
                 }
             }
@@ -364,10 +259,10 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
             if (ui != null) {
                 UI.openRefactoringUI(ui, activetc);
             } else {
-                JOptionPane.showMessageDialog(null, NbBundle.getMessage(CssActionsImplementationProvider.class, "ERR_CannotRefactorLoc"));//NOI18N
+                JOptionPane.showMessageDialog(null, NbBundle.getMessage(CPActionsImplementationProvider.class, "ERR_CannotRefactorLoc"));//NOI18N
             }
         }
 
-        protected abstract RefactoringUI createRefactoringUI(CssElementContext context);
+        protected abstract RefactoringUI createRefactoringUI(RefactoringElementContext context);
     }
 }
