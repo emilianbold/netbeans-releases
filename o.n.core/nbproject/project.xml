@@ -68,6 +68,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.jna</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.26</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.keyring</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -287,6 +296,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.beaninfo.editors</package>
                 <package>org.netbeans.core</package>
                 <package>org.netbeans.core.actions</package>
+                <package>org.netbeans.core.networkproxy</package>
             </friend-packages>
         </data>
     </configuration>
