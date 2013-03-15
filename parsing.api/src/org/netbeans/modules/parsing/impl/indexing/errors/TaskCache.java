@@ -376,7 +376,7 @@ public class TaskCache {
                     return false;
                 }
                 
-                String resourceName = cp.getResourceName(file, File.separatorChar, false);
+                String resourceName = cp.getResourceName(file, File.separatorChar, true);
                 File cacheRoot = getCacheRoot(root.getURL(), true);
                 
                 if (cacheRoot == null) {
