@@ -431,29 +431,17 @@ public class ModelVisitor extends PathNodeVisitor {
                                     }
                                     current = current.getParent();
                                 }
-
-                                funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(i, argument.getStart(), fqn));
+                                List<String> strFqn = new ArrayList<String>(fqn.size());
+                                for (Identifier ident : fqn) {
+                                    strFqn.add(ident.getName());
+                                }
+                                funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(
+                                        i, argument.getStart(), strFqn));
                             } else if (argument instanceof IdentNode) {
                                 IdentNode in = (IdentNode) argument;
                                 String inName = in.getName();
-                                List<Identifier> fqn = new ArrayList<Identifier>();
-                                if ("this".equals(inName)) { // NOI18N
-                                    fqn.add(modelBuilder.getCurrentDeclarationFunction().getDeclarationName());
-                                } else {
-                                    fqn.add(new IdentifierImpl(in.getName(),
-                                            ModelUtils.documentOffsetRange(parserResult, in.getStart(), in.getFinish())));
-                                }
-                                JsObject current = modelBuilder.getCurrentObject();
-                                if ("this".equals(inName) && current.equals(modelBuilder.getCurrentDeclarationFunction())) { // NOI18N
-                                    current = current.getParent();
-                                }
-                                while (current != null && current.getDeclarationName() != null) {
-                                    if (current != modelBuilder.getGlobal()) {
-                                        fqn.add(0, current.getDeclarationName());
-                                    }
-                                    current = current.getParent();
-                                }
-                                funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(i, argument.getStart(), fqn));
+                                funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(
+                                        i, argument.getStart(), Collections.singletonList(inName)));
                             } else {
                                 funcArg.add(FunctionArgumentAccessor.getDefault().createForUnknown(i));
                             }

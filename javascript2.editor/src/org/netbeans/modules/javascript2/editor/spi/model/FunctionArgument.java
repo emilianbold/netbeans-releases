@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor.spi.model;
 
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.impl.FunctionArgumentAccessor;
 
@@ -66,7 +65,7 @@ public final class FunctionArgument {
             }
 
             @Override
-            public FunctionArgument createForReference(int order, int offset, List<Identifier> value) {
+            public FunctionArgument createForReference(int order, int offset, List<String> value) {
                 return new FunctionArgument(Kind.REFERENCE, order, offset, value);
             }
 

@@ -83,7 +83,7 @@ public abstract class FunctionArgumentAccessor {
 
     public abstract FunctionArgument createForString(int order, int offset, String value);
 
-    public abstract FunctionArgument createForReference(int order, int offset, List<Identifier> value);
+    public abstract FunctionArgument createForReference(int order, int offset, List<String> value);
 
     public abstract FunctionArgument createForUnknown(int order);
 }

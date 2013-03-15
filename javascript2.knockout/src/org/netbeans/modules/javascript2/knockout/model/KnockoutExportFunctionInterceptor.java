@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.knockout.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -80,9 +81,50 @@ public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
     public void intercept(String functionName, JsObject globalObject, DeclarationScope scope,
             ModelElementFactory factory, Collection<FunctionArgument> args) {
 
-        if (args.size() == 2) {
-            System.out.println("===" + functionName);
+        if (args.size() == 3) {
+            Iterator<FunctionArgument> iterator = args.iterator();
+            FunctionArgument objectArgument = iterator.next();
+            FunctionArgument nameArgument = iterator.next();
+            FunctionArgument valueArgument = iterator.next();
 
+            int offset = nameArgument.getOffset();
+
+            System.out.println("---" + nameArgument.getValue());
+            
+            JsObject object = null;
+            if (objectArgument.getKind() == FunctionArgument.Kind.REFERENCE) {
+                List<String> identifiers = (List<String>) objectArgument.getValue();
+                JsObject ref = getReference(scope, identifiers, false);
+                if (ref != null) {
+                    JsObject found = findJsObjectByAssignment(globalObject, ref, offset);
+                    if (found != null) {
+                        ref = found;
+                    }
+                }
+                object = ref;
+            }
+            JsObject value = null;
+            if (valueArgument.getKind() == FunctionArgument.Kind.REFERENCE) {
+                List<String> identifiers = (List<String>) valueArgument.getValue();
+                JsObject ref = getReference(scope, identifiers, true);
+                if (ref != null) {
+                    JsObject found = findJsObjectByAssignment(globalObject, ref, offset);
+                    if (found != null) {
+                        ref = found;
+                    }
+                }
+                value = ref;
+            }
+            String name = (String) nameArgument.getValue();
+            OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
+            if (object != null && value != null) {
+                System.out.println("===" + name);
+                System.out.println("===" + object.getFullyQualifiedName());
+                System.out.println("===" + value.getFullyQualifiedName());
+                object.addProperty(name,
+                        factory.newReference(object, name, offsetRange, value, true));
+            }
+        } else if (args.size() == 2) {
             JsObject ko = globalObject.getProperty(GLOBAL_KO_OBJECT); // NOI18N
             if (ko == null) {
                 ko = factory.newObject(globalObject, GLOBAL_KO_OBJECT, OffsetRange.NONE, true);
@@ -90,15 +132,14 @@ public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
             }
 
             Iterator<FunctionArgument> iterator = args.iterator();
-            FunctionArgument arg1 = iterator.next();
-            FunctionArgument arg2 = iterator.next();
+            FunctionArgument nameArgument = iterator.next();
+            FunctionArgument valueArgument = iterator.next();
 
-            int offset = arg1.getOffset();
-            if (arg1.getKind() == FunctionArgument.Kind.STRING) { // NOI18N
+            int offset = nameArgument.getOffset();
+            if (nameArgument.getKind() == FunctionArgument.Kind.STRING) { // NOI18N
                 JsObject parent = ko;
 
-                System.out.println("===" + (String) arg1.getValue());
-                String[] names = ((String) arg1.getValue()).split("\\."); // NOI18N
+                String[] names = ((String) nameArgument.getValue()).split("\\."); // NOI18N
                 for (int i = 0; i < names.length - 1; i++) {
                     String name = names[i];
                     if (i == 0 && GLOBAL_KO_OBJECT.equals(name)) {
@@ -122,9 +163,9 @@ public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
                 }
 
                 String name = names[names.length - 1];
-                if (arg2.getKind() == FunctionArgument.Kind.REFERENCE) {
-                    List<Identifier> identifiers = (List<Identifier>) arg2.getValue();
-                    JsObject value = getReference((JsObject) scope, identifiers);
+                if (valueArgument.getKind() == FunctionArgument.Kind.REFERENCE) {
+                    List<String> identifiers = (List<String>) valueArgument.getValue();
+                    JsObject value = getReference(scope, identifiers, false);
                     if (value != null) {
                         JsObject found = findJsObjectByAssignment(globalObject, value, offset);
                         if (found != null) {
@@ -144,7 +185,7 @@ public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
                             if (foundParent != null) {
                                 boolean skip = true;
                                 for (int i = levelUp; i < names.length; i++) {
-                                    JsObject property = foundParent.getProperty(identifiers.get(i).getName());
+                                    JsObject property = foundParent.getProperty(identifiers.get(i));
                                     if (property == null) {
                                         skip = false;
                                         break;
@@ -155,7 +196,6 @@ public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
                                     return;
                                 }
                             }
-                            
                         }
 
                         OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
@@ -170,7 +210,6 @@ public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
                         }
 
                         parent.addProperty(name, factory.newReference(parent, name, offsetRange, value, true));
-                        System.out.println("===Putting " + name + " to " + parent + " value " + value);
                     }
                 }
 
@@ -178,7 +217,30 @@ public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
         }
     }
 
-    private JsObject getReference(JsObject object, List<Identifier> identifier) {
+    private static JsObject getReference(DeclarationScope scope,
+            List<String> identifier, boolean searchPrototype) {
+
+        if ("this".equals(identifier.get(0))) { // NOI18N
+            // XXX this is not exactly right as it is evaluated at runtime
+            return (JsObject) scope;
+        }
+        DeclarationScope currentScope = scope;
+        while (currentScope != null) {
+            JsObject ret = getReference((JsObject) currentScope, identifier);
+            if (ret != null) {
+                return ret;
+            }
+            currentScope = currentScope.getInScope();
+        }
+        if (searchPrototype && identifier.size() > 1) {
+            List<String> prototype = new ArrayList<String>(identifier);
+            prototype.add(prototype.size() - 1, "prototype"); // NOI18N
+            return getReference(scope, prototype, false);
+        }
+        return null;
+    }
+
+    private static JsObject getReference(JsObject object, List<String> identifier) {
         // XXX performance
         if (object == null) {
             return null;
@@ -187,23 +249,52 @@ public class KnockoutExportFunctionInterceptor implements FunctionInterceptor {
             return object;
         }
         int index = 0;
-        if (object.getName().equals(identifier.get(0).getName())) {
-            index++;
+        if (object.getName().equals(identifier.get(0))) {
+            if (identifier.size() == 1) {
+                return object;
+            } else {
+                index++;
+            }
         }
-        return getReference(object.getProperty(identifier.get(index).getName()),
+        return getReference(object.getProperty(identifier.get(index)),
                 identifier.subList(index + 1, identifier.size()));
-
     }
 
-    private static JsObject findJsObjectByAssignment(JsObject globalObject, JsObject value, int offset) {
+    private static JsObject findJsObjectByAssignment(JsObject globalObject,
+            JsObject value, int offset) {
+
+        return findJsObjectByAssignment(globalObject, value, offset, true);
+    }
+
+    private static JsObject findJsObjectByAssignment(JsObject globalObject, JsObject value,
+            int offset, boolean searchPrototype) {
+
+        if (value == null) {
+            return null;
+        }
+
+        JsObject ret = null;
         Collection<? extends TypeUsage> assigments = value.getAssignmentForOffset(offset);
         if (assigments.size() == 1) {
-            return findJsObjectByName(globalObject,
+            ret = findJsObjectByName(globalObject,
                     assigments.iterator().next().getType());
         }
         // XXX multiple assignments
-        return null;
+
+        if (ret == null && searchPrototype) {
+            String fqn = value.getFullyQualifiedName();
+            int index = fqn.lastIndexOf('.');
+            if (index > 0) {
+                fqn = fqn.substring(0, index) + ".prototype" + fqn.substring(index);
+                JsObject obj = findJsObjectByName(globalObject, fqn);
+                if (obj != null) {
+                    ret = findJsObjectByAssignment(globalObject, obj, offset, false);
+                }
+            }
+        }
+        return ret;
     }
+
     private static JsObject findJsObjectByName(JsObject global, String fqName) {
         JsObject result = global;
         JsObject property = result;
