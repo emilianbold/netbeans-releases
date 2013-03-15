@@ -268,7 +268,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             
         }
 
-        if (id == GroovyTokenId.IDENTIFIER || id == GroovyTokenId.CONSTANT || id == GroovyTokenId.GLOBAL_VAR) {
+        if (id == GroovyTokenId.IDENTIFIER) {
             String s = token.text().toString();
             int length = s.length();
             int wordOffset = offset-ts.offset();
