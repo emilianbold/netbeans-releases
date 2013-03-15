@@ -122,5 +122,7 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.popupswitcher.background", new Color(18, 30, 49) );
 
         UIManager.put( "nb.editor.errorstripe.caret.color", new Color(230, 230, 230) ); //NOI18N
+
+        UIManager.put( "nb.wizard.hideimage", Boolean.TRUE ); //NOI18N
    }
 }
