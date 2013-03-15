@@ -142,6 +142,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
     @Override
     public boolean cancel() {
         cancelled.set(true);
+        // XXX cancel code sniffer?
         return true;
     }
 
