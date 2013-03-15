@@ -41,16 +41,43 @@
  */
 package org.netbeans.modules.php.analysis.commands;
 
+import java.io.File;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
+import org.netbeans.modules.php.analysis.parsers.CodeSnifferReportParser;
+import org.netbeans.modules.php.analysis.results.Result;
+import org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelController;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public final class CodeSniffer {
 
     public static final String NAME = "phpcs"; // NOI18N
     public static final String LONG_NAME = NAME + FileUtils.getScriptExtension(true);
+
+    private static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpcs-log.xml"); // NOI18N
+
+    // XXX
+    private static final String STANDARD_PARAM = "--standard=PSR2"; // NOI18N
+    private static final String REPORT_PARAM = "--report=xml"; // NOI18N
+    private static final String REPORT_FILE_PARAM = "--report-file=" + XML_LOG.getAbsolutePath();
+    private static final String EXTENSIONS_PARAM = "--extensions=php"; // NOI18N
+    private static final String ENCODING_PARAM = "--encoding=%s"; // NOI18N
+    private static final String NO_RECURSION_PARAM = "-l"; // NOI18N
 
     private final String codeSnifferPath;
 
@@ -76,6 +103,61 @@ public final class CodeSniffer {
     @NbBundle.Messages("CodeSniffer.script.label=Code sniffer")
     public static String validate(String codeSnifferPath) {
         return PhpExecutableValidator.validateCommand(codeSnifferPath, Bundle.CodeSniffer_script_label());
+    }
+
+    @CheckForNull
+    public List<Result> analyze(FileObject file) {
+        return analyze(file, false);
+    }
+
+    @NbBundle.Messages("CodeSniffer.analyze=Code Sniffer (analyze)")
+    @CheckForNull
+    public List<Result> analyze(FileObject file, boolean noRecursion) {
+        assert file.isValid() : "Invalid file given: " + file;
+        try {
+            Integer result = getExecutable(Bundle.CodeSniffer_analyze())
+                    .additionalParameters(getParameters(file, noRecursion))
+                    .runAndWait(getDescriptor(), "Running code sniffer..."); // NOI18N
+            if (result == null) {
+                return null;
+            }
+            return CodeSnifferReportParser.parse(XML_LOG);
+        } catch (CancellationException ex) {
+            // cancelled
+            return Collections.emptyList();
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex, AnalysisOptionsPanelController.OPTIONS_SUB_PATH);
+        }
+        return null;
+    }
+
+    private PhpExecutable getExecutable(String title) {
+        return new PhpExecutable(codeSnifferPath)
+                .optionsSubcategory(AnalysisOptionsPanelController.OPTIONS_SUB_PATH)
+                .displayName(title);
+    }
+
+    private ExecutionDescriptor getDescriptor() {
+        // XXX no reset but custom IO is needed
+        ExecutionDescriptor descriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .optionsPath(AnalysisOptionsPanelController.OPTIONS_PATH)
+                .inputVisible(false);
+        return descriptor;
+    }
+
+    private List<String> getParameters(FileObject file, boolean noRecursion) {
+        Charset encoding = FileEncodingQuery.getEncoding(file);
+        List<String> params = new ArrayList<String>();
+        params.add(STANDARD_PARAM);
+        params.add(REPORT_PARAM);
+        params.add(REPORT_FILE_PARAM);
+        params.add(EXTENSIONS_PARAM);
+        params.add(String.format(ENCODING_PARAM, encoding.name()));
+        if (noRecursion) {
+            params.add(NO_RECURSION_PARAM);
+        }
+        params.add(FileUtil.toFile(file).getAbsolutePath());
+        return params;
     }
 
 }
