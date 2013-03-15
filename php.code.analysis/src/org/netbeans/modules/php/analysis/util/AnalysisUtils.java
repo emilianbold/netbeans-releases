@@ -113,6 +113,8 @@ public final class AnalysisUtils {
                         wascr = false;
                         lineStart = true;
                         break;
+                    default:
+                        // noop
                 }
 
                 if (lineStart && Character.isWhitespace(read)) {

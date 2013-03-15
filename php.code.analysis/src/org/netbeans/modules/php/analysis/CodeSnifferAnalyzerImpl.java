@@ -65,6 +65,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -72,6 +73,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 public class CodeSnifferAnalyzerImpl implements Analyzer {
 
+    private static final String ANALYZER_PREFIX = "codeSniffer:"; // NOI18N
     private static final LazyFixList EMPTY_LAZY_FIX_LIST = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
 
     private final Context context;
@@ -114,7 +116,11 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
-            errors.addAll(map(codeSniffer.analyze(root)));
+            List<Result> results = codeSniffer.analyze(root);
+            // XXX inform about error?
+            if (results != null) {
+                errors.addAll(map(results));
+            }
             progress += fileCount.get(root);
             context.progress(progress);
         }
@@ -123,7 +129,11 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
-            errors.addAll(map(codeSniffer.analyze(file)));
+            List<Result> results = codeSniffer.analyze(file);
+            // XXX inform about error?
+            if (results != null) {
+                errors.addAll(map(results));
+            }
             progress += fileCount.get(file);
             context.progress(progress);
         }
@@ -133,7 +143,11 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 return Collections.emptyList();
             }
             FileObject folder = nonRecursiveFolder.getFolder();
-            errors.addAll(map(codeSniffer.analyze(folder, true)));
+            List<Result> results = codeSniffer.analyze(folder, true);
+            // XXX inform about error?
+            if (results != null) {
+                errors.addAll(map(results));
+            }
             progress += fileCount.get(folder);
             context.progress(progress);
         }
@@ -159,8 +173,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
         int[] lineMap = null;
         for (Result result : results) {
             String currentFilePath = result.getFilePath();
-            if (filePath == null
-                    || !filePath.equals(currentFilePath)) {
+            if (!currentFilePath.equals(filePath)) {
                 filePath = currentFilePath;
                 file = FileUtil.toFileObject(new File(currentFilePath));
                 assert file != null : "File object not found for " + currentFilePath;
@@ -176,9 +189,11 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
 
     private ErrorDescription map(Result result, FileObject file, int[] lineMap) {
         int line = 2 * (Math.min(result.getLine(), lineMap.length / 2) - 1);
-        // XXX
-        return ErrorDescriptionFactory.createErrorDescription("ID", result.getSeverity(), result.getCategory(), result.getDescription(), // NOI18N
-                EMPTY_LAZY_FIX_LIST, file, lineMap[line], lineMap[line + 1]);
+        // XXX i18n for category and categories in Inspector view
+        // XXX which severity?
+        // XXX fixes?
+        return ErrorDescriptionFactory.createErrorDescription(ANALYZER_PREFIX + result.getCategory(), Severity.VERIFIER, result.getCategory(),
+                result.getDescription(), EMPTY_LAZY_FIX_LIST, file, lineMap[line], lineMap[line + 1]);
     }
 
     //~ Inner classes
