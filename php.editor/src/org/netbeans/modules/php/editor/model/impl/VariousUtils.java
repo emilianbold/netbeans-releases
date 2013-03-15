@@ -105,7 +105,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
@@ -316,19 +315,19 @@ public final class VariousUtils {
             }
             return CodeUtils.extractClassName(className);
         } else if (expression instanceof ArrayCreation) {
-            return "array"; //NOI18N
+            return Type.ARRAY;
         } else if (expression instanceof VariableBase) {
             return extractTypeFroVariableBase((VariableBase) expression, allAssignments); //extractVariableTypeFromVariableBase(varBase);
         } else if (expression instanceof Scalar) {
             Scalar scalar = (Scalar) expression;
-            Type scalarType = scalar.getScalarType();
+            Scalar.Type scalarType = scalar.getScalarType();
             if (scalarType.equals(Scalar.Type.STRING)) {
                 String stringValue = scalar.getStringValue().toLowerCase();
                 if (stringValue.equals("false") || stringValue.equals("true")) { //NOI18N
-                    return "boolean"; //NOI18N
+                    return Type.BOOLEAN;
                 }
-                if (stringValue.equals("null")) { //NOI18N
-                    return "null"; //NOI18N
+                if (stringValue.equals(Type.NULL)) {
+                    return Type.NULL;
                 }
             }
             return scalarType.toString().toLowerCase();
@@ -898,7 +897,7 @@ public final class VariousUtils {
         if (e instanceof Scalar) {
             Scalar s = (Scalar) e;
 
-            if (Type.STRING == s.getScalarType()) {
+            if (Scalar.Type.STRING == s.getScalarType()) {
                 String fileName = s.getStringValue();
                 fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName;
                 return fileName;
@@ -1542,19 +1541,6 @@ public final class VariousUtils {
         return TypeNameResolverImpl.forFullyQualifiedName(inScope, offset).resolve(qualifiedName);
     }
 
-    public static boolean isPrimitiveType(String typeName) {
-        boolean retval = false;
-        if ("bool".equals(typeName) || "boolean".equals(typeName) || "int".equals(typeName)
-                || "integer".equals(typeName) || "float".equals(typeName) || "real".equals(typeName)
-                || "array".equals(typeName) || "object".equals(typeName) || "mixed".equals(typeName)
-                || "number".equals(typeName) || "callback".equals(typeName) || "resource".equals(typeName)
-                || "double".equals(typeName) || "string".equals(typeName) || "null".equals(typeName)
-                || "void".equals(typeName)) { //NOI18N
-            retval = true;
-        }
-        return retval;
-    }
-
     /**
      * Resolves fully qualified type names from their simple names.
      *
@@ -1569,7 +1555,7 @@ public final class VariousUtils {
         if (typeNames != null) {
             if (!typeNames.matches(SPACES_AND_TYPE_DELIMITERS)) { //NOI18N
                 for (String typeName : typeNames.split("\\" + typeSeparator)) { //NOI18N
-                    if (!typeName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !VariousUtils.isPrimitiveType(typeName)) {
+                    if (!typeName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !Type.isPrimitive(typeName)) {
                         QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), offset, inScope);
                         retval.append(fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)
                                 ? ""

@@ -37,48 +37,79 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.prep.refactoring;
 
-package org.netbeans.modules.php.editor.parser;
-
-import java.io.File;
-import java.io.FileReader;
-import java.util.Date;
-import java_cup.runtime.Symbol;
-import org.netbeans.junit.NbTestCase;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Petr Pisl
+ * @author mfukala@netbeans.org
  */
-public class ParserPerformanceTest extends NbTestCase {
+public class WhereUsedUI implements RefactoringUI {
 
-    public ParserPerformanceTest(String testName) {
-        super(testName);
+    private WhereUsedPanel panel;
+    private final WhereUsedQuery query;
+
+    public WhereUsedUI(RefactoringElementContext context) {
+	this.query = new WhereUsedQuery(Lookups.fixed(context));
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public String getName() {
+	return NbBundle.getMessage(WhereUsedUI.class, "LBL_FindUsages"); //NOI18N
     }
 
     @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    public String getDescription() {
+	return NbBundle.getMessage(WhereUsedUI.class, "LBL_FindUsages"); //NOI18N
     }
 
-    // the current time is around 1200 ms
-    public void testBigFile() throws Exception {
-        File testFile = new File(getDataDir(), "testfiles/Subs.php");
-        assertTrue(testFile.exists());
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
-        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-        Date start = new Date();
-        Symbol root = parser.parse();
-        Date end = new Date();
-        long time = end.getTime() - start.getTime();
-        System.out.println("Parsing of big files takes: " + time);
-        assertTrue(time < 2500);
+    @Override
+    public boolean isQuery() {
+	return true;
     }
+
+    @Override
+    public CustomRefactoringPanel getPanel(ChangeListener parent) {
+       if(panel == null) {
+           panel = new WhereUsedPanel();
+       }
+        return panel;
+    }
+
+    @Override
+    public Problem setParameters() {
+	return query.checkParameters();
+    }
+
+    @Override
+    public Problem checkParameters() {
+	return query.fastCheckParameters();
+    }
+
+    @Override
+    public boolean hasParameters() {
+	return true;
+    }
+
+    @Override
+    public AbstractRefactoring getRefactoring() {
+	return this.query;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+	return null;
+    }
+
 }

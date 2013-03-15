@@ -37,48 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.prep.refactoring;
 
-package org.netbeans.modules.php.editor.parser;
-
-import java.io.File;
-import java.io.FileReader;
-import java.util.Date;
-import java_cup.runtime.Symbol;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Petr Pisl
+ * @author mfukala@netbeans.org
  */
-public class ParserPerformanceTest extends NbTestCase {
-
-    public ParserPerformanceTest(String testName) {
-        super(testName);
-    }
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position = 120)
+public class CPRefactoringPluginFactory implements RefactoringPluginFactory {
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+	if (refactoring instanceof RenameRefactoring) {
+	    if (null != refactoring.getRefactoringSource().lookup(RefactoringElementContext.class)) {
+		return new CPRenameRefactoringPlugin((RenameRefactoring)refactoring);
+	    } else {
+                //folder refactoring
+                FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
+                if(file != null && file.isFolder()) {
+                    return new CPRenameRefactoringPlugin((RenameRefactoring)refactoring);
+                }
+            }
+	} else if(refactoring instanceof WhereUsedQuery) {
+            if (null != refactoring.getRefactoringSource().lookup(RefactoringElementContext.class)) {
+                return new CPWhereUsedQueryPlugin((WhereUsedQuery)refactoring);
+            }
+        }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
+	return null;
 
-    // the current time is around 1200 ms
-    public void testBigFile() throws Exception {
-        File testFile = new File(getDataDir(), "testfiles/Subs.php");
-        assertTrue(testFile.exists());
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
-        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-        Date start = new Date();
-        Symbol root = parser.parse();
-        Date end = new Date();
-        long time = end.getTime() - start.getTime();
-        System.out.println("Parsing of big files takes: " + time);
-        assertTrue(time < 2500);
     }
 }

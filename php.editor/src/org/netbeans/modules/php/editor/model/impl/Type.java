@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.editor.parser;
-
-import java.io.File;
-import java.io.FileReader;
-import java.util.Date;
-import java_cup.runtime.Symbol;
-import org.netbeans.junit.NbTestCase;
+package org.netbeans.modules.php.editor.model.impl;
 
 /**
  *
- * @author Petr Pisl
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ParserPerformanceTest extends NbTestCase {
+public final class Type {
 
-    public ParserPerformanceTest(String testName) {
-        super(testName);
+    private Type() {
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    public static final String STRING = "string"; //NOI18N
+    public static final String REAL = "real"; //NOI18N
+    public static final String INT = "int"; //NOI18N
+    public static final String INTEGER = "integer"; //NOI18N
+    public static final String BOOL = "bool"; //NOI18N
+    public static final String BOOLEAN = "boolean"; //NOI18N
+    public static final String ARRAY = "array"; //NOI18N
+    public static final String NULL = "null"; //NOI18N
+    public static final String FLOAT = "float"; //NOI18N
+    public static final String DOUBLE = "double"; //NOI18N
+    public static final String OBJECT = "object"; //NOI18N
+    public static final String NUMBER = "number"; //NOI18N
+    public static final String CALLBACK = "callback"; //NOI18N
+    public static final String RESOURCE = "resource"; //NOI18N
+    public static final String VOID = "void"; //NOI18N
+    public static final String MIXED = "mixed"; //NOI18N
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    // the current time is around 1200 ms
-    public void testBigFile() throws Exception {
-        File testFile = new File(getDataDir(), "testfiles/Subs.php");
-        assertTrue(testFile.exists());
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
-        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
-        Date start = new Date();
-        Symbol root = parser.parse();
-        Date end = new Date();
-        long time = end.getTime() - start.getTime();
-        System.out.println("Parsing of big files takes: " + time);
-        assertTrue(time < 2500);
+    public static boolean isPrimitive(String typeName) {
+        boolean retval = false;
+        if (BOOL.equals(typeName) || BOOLEAN.equals(typeName) || INT.equals(typeName)
+                || INTEGER.equals(typeName) || FLOAT.equals(typeName) || REAL.equals(typeName)
+                || ARRAY.equals(typeName) || OBJECT.equals(typeName) || MIXED.equals(typeName)
+                || NUMBER.equals(typeName) || CALLBACK.equals(typeName) || RESOURCE.equals(typeName)
+                || DOUBLE.equals(typeName) || STRING.equals(typeName) || NULL.equals(typeName)
+                || VOID.equals(typeName)) {
+            retval = true;
+        }
+        return retval;
     }
 }
