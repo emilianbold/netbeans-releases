@@ -82,6 +82,26 @@ public class DependenciesGraph {
     }
 
     /**
+     * Returns a collection of files where the relation type from the base file is defined by the argument.
+     * 
+     * @since 1.35
+     * @param type defines the relation type.
+     * @return 
+     */
+    public Collection<FileObject> getFiles(DependencyType type) {
+        switch(type) {
+            case REFERRING:
+                return getAllReferingFiles();
+            case REFERRED:
+                return getAllReferedFiles();
+            case REFERRING_AND_REFERRED:
+                return getAllRelatedFiles();
+            default:
+                throw new IllegalStateException();
+        }
+    }
+    
+    /**
      * 
      * @return a collection a files which are either imported or importing the 
      * base source file for this dependencies graph

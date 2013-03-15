@@ -80,6 +80,7 @@ import org.netbeans.modules.css.prep.model.CPElementHandle;
 import org.netbeans.modules.css.prep.model.CPElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.DependencyType;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Lines;
 import org.netbeans.modules.web.common.api.Pair;
@@ -205,7 +206,7 @@ public class CPCssEditorModule extends CssEditorModule {
             //now gather global vars from all linked sheets
             FileObject file = context.getFileObject();
             if (file != null) {
-                Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(file, true);
+                Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(file, DependencyType.REFERRED, true);
                 for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                     FileObject reff = entry.getKey();
                     CPCssIndexModel cpIndexModel = entry.getValue();
@@ -253,7 +254,7 @@ public class CPCssEditorModule extends CssEditorModule {
             //now gather global vars from all linked sheets
             FileObject file = context.getFileObject();
             if (file != null) {
-                Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(file, true);
+                Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(file, DependencyType.REFERRED, true);
                 for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                     FileObject reff = entry.getKey();
                     CPCssIndexModel cpIndexModel = entry.getValue();
@@ -412,7 +413,7 @@ public class CPCssEditorModule extends CssEditorModule {
 
                         //then look at the referred files
                         try {
-                            Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(context.getFileObject(), true);
+                            Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(context.getFileObject(), DependencyType.REFERRED, true);
                             for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                                 CPCssIndexModel im = entry.getValue();
                                 FileObject file = entry.getKey();
@@ -459,7 +460,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         }
                         try {
                             //then look at the referred files
-                            Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(context.getFileObject(), true);
+                            Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(context.getFileObject(), DependencyType.REFERRED, true);
                             for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                                 CPCssIndexModel im = entry.getValue();
                                 FileObject file = entry.getKey();
