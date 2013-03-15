@@ -263,8 +263,12 @@ public class PUDataObject extends XmlMultiViewDataObject {
         
         boolean switchView = false;
         NotifyDescriptor nd = null;
-        
-        if (!parseDocument() && getSelectedPerspective().preferredID().startsWith(DESIGN_VIEW_ID)) {
+        if(FileOwnerQuery.getOwner(getPrimaryFile())==null) {
+             nd = new org.openide.NotifyDescriptor.Message(
+                    NbBundle.getMessage(PUDataObject.class, "TXT_StandAlonePersistence",
+                    getPrimaryFile().getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
+            switchView = true;           
+        } else if (!parseDocument() && getSelectedPerspective().preferredID().startsWith(DESIGN_VIEW_ID)) {
             nd = new org.openide.NotifyDescriptor.Message(
                     NbBundle.getMessage(PUDataObject.class, "TXT_DocumentUnparsable",
                     getPrimaryFile().getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
