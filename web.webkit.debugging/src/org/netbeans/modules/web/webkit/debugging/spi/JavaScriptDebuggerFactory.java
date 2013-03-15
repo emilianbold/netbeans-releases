@@ -39,48 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.javascript.debugger.browser;
+package org.netbeans.modules.web.webkit.debugging.spi;
 
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerInfo;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
-import org.netbeans.modules.web.javascript.debugger.EngineDestructorProvider;
-import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-import org.netbeans.modules.web.webkit.debugging.spi.JavaScriptDebuggerFactory;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service=JavaScriptDebuggerFactory.class)
-public class NetBeansJavaScriptDebuggerFactoryImpl implements JavaScriptDebuggerFactory {
+/**
+ * Factory for creating NetBeans UI for WebKit javascript debugging.
+ */
+public interface JavaScriptDebuggerFactory {
+    
+    /**
+     * Create and start new JavaScript debugging session using given WebKit
+     * Debugging protocol.
+     * @param projectContext lookup which may contain Project instance if
+     *   JavaScript Debugger session is started in the context of a project
+     */
+    Session createDebuggingSession(WebKitDebugging webkit, Lookup projectContext);
 
-    @Override
-    public Session createDebuggingSession(WebKitDebugging webkit, Lookup projectContext) {
-        Debugger debugger = webkit.getDebugger();
-        ProjectContext pc = new ProjectContext(projectContext);
-        EngineDestructorProvider edp = new EngineDestructorProvider();
-        
-        DebuggerInfo di = DebuggerInfo.create(DebuggerConstants.DEBUGGER_INFO,
-                new Object[]{webkit, debugger, pc, edp});
-        DebuggerEngine engine = DebuggerManager.getDebuggerManager().startDebugging(di)[0];
-        Session session = engine.lookupFirst(null, Session.class);
-        return session;
-    }
-
-    @Override
-    public void stopDebuggingSession(Session session) {
-        DebuggerEngine engine = session.lookupFirst(null, DebuggerEngine.class);
-        if (engine == null) {
-            return ; // No engine, nothing to stop.
-        }
-        Debugger debugger = engine.lookupFirst(null, Debugger.class);
-        if ((debugger != null) && debugger.isEnabled()) {
-            debugger.disable();
-        }
-        session.kill();
-        engine.lookupFirst(null, EngineDestructorProvider.class).getDestructor().killEngine();
-    }
-
+    /**
+     * Stop session previously started by this factory.
+     * @param session 
+     */
+    void stopDebuggingSession(Session session);
+    
 }
