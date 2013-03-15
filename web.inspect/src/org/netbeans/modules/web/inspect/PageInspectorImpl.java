@@ -99,6 +99,8 @@ public class PageInspectorImpl extends PageInspector {
     private MessageDispatcher messageDispatcher;
     /** Lock guarding access to modifiable fields. */
     private final Object LOCK = new Object();
+    /** Lock guarding access to {@code pageModel} field. */
+    private final Object PAGE_MODEL_LOCK = new Object();
     /** Page inspector customizer for the inspected page. */
     private PageInspectorCustomizer pageInspectorCustomizer;
     /** Listener for a page inspector customizer. */
@@ -123,37 +125,45 @@ public class PageInspectorImpl extends PageInspector {
     @Override
     public void inspectPage(Lookup pageContext) {
         synchronized (LOCK) {
-            if (pageModel != null) {
-                pageModel.dispose();
+            PageModel oldModel = getPage();
+            if (oldModel != null) {
+                oldModel.dispose();
                 if (messageDispatcher != null) {
                     messageDispatcher.removeMessageListener(messageListener);
                 }
                 if (pageInspectorCustomizer != null) {
                     pageInspectorCustomizer.removePropertyChangeListener(pageInspectorCustomizerListener);
                 }
+                synchronized (PAGE_MODEL_LOCK) {
+                    pageModel = null;
+                }
+                messageDispatcher = null;
+                messageListener = null;
+                pageInspectorCustomizer = null;
+                pageInspectorCustomizerListener = null;
             }
             WebKitDebugging webKit = pageContext.lookup(WebKitDebugging.class);
             if (webKit != null) {
-                pageModel = new WebKitPageModel(pageContext);
+                PageModel newModel = new WebKitPageModel(pageContext);
                 messageDispatcher = pageContext.lookup(MessageDispatcher.class);
                 if (messageDispatcher != null) {
-                    messageListener = new InspectionMessageListener(pageModel, pageContext);
+                    messageListener = new InspectionMessageListener(newModel, pageContext);
                     messageDispatcher.addMessageListener(messageListener);
                 }
-                initSelectionMode(pageContext.lookup(JToolBar.class), pageContext.lookup(JPopupMenu.class), pageModel);
+                initSelectionMode(pageContext.lookup(JToolBar.class), pageContext.lookup(JPopupMenu.class), newModel);
                 Project p = pageContext.lookup(Project.class);
                 if (p != null) {
                     pageInspectorCustomizer = p.getLookup().lookup(PageInspectorCustomizer.class);
                     if (pageInspectorCustomizer != null) {
-                        pageInspectorCustomizerListener = createPageInspectorCustomizerListener(pageModel, pageInspectorCustomizer);
+                        pageInspectorCustomizerListener = createPageInspectorCustomizerListener(newModel, pageInspectorCustomizer);
                         pageInspectorCustomizer.addPropertyChangeListener(pageInspectorCustomizerListener);
-                        pageModel.setSynchronizeSelection(pageInspectorCustomizer.isHighlightSelectionEnabled());
+                        newModel.setSynchronizeSelection(pageInspectorCustomizer.isHighlightSelectionEnabled());
                     }
                 }
                 final PageInspectionHandle inspectionHandle = pageContext.lookup(PageInspectionHandle.class);
                 if (inspectionHandle != null) {
-                    final PageModel model = pageModel;
-                    pageModel.addPropertyChangeListener(new PropertyChangeListener() {
+                    final PageModel model = newModel;
+                    newModel.addPropertyChangeListener(new PropertyChangeListener() {
                         @Override
                         public void propertyChange(PropertyChangeEvent evt) {
                             String propertyName = evt.getPropertyName();
@@ -167,12 +177,9 @@ public class PageInspectorImpl extends PageInspector {
                     inspectionHandle.setSelectionMode(model.isSelectionMode());
                     inspectionHandle.setSynchronizeSelection(model.isSynchronizeSelection());
                 }
-            } else {
-                pageModel = null;
-                messageDispatcher = null;
-                messageListener = null;
-                pageInspectorCustomizer = null;
-                pageInspectorCustomizerListener = null;
+                synchronized (PAGE_MODEL_LOCK) {
+                    pageModel = newModel;
+                }
             }
         }
         firePropertyChange(PROP_MODEL, null, null);
@@ -294,7 +301,7 @@ public class PageInspectorImpl extends PageInspector {
      */
     @Override
     public PageModel getPage() {
-        synchronized (LOCK) {
+        synchronized (PAGE_MODEL_LOCK) {
             return pageModel;
         }
     }
@@ -382,7 +389,7 @@ public class PageInspectorImpl extends PageInspector {
             if (messageTxt == null) {
                 synchronized (LOCK) {
                     uninitSelectionMode(pageContext.lookup(JToolBar.class));
-                    if (pageModel == PageInspectorImpl.this.pageModel) {
+                    if (pageModel == getPage()) {
                         inspectPage(Lookup.EMPTY);
                     }
                 }
