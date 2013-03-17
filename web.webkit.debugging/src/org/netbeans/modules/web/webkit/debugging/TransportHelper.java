@@ -237,14 +237,14 @@ public class TransportHelper {
     
     private void log(String s) {
         checkReset();
-        if (SHOW_WEBKIT_PROTOCOL) {
+        if (SHOW_WEBKIT_PROTOCOL || s.contains("Network.") || s.contains("Console.")) {
             getOutputLogger().getOut().println(getCurrentTime() + " " + s);
         }
     }
     
     private void logError(String s) {
         checkReset();
-        if (SHOW_WEBKIT_PROTOCOL) {
+        if (SHOW_WEBKIT_PROTOCOL || s.contains("Network.") || s.contains("Console.")) {
             getOutputLogger().getErr().println(getCurrentTime()+" "+s); 
         }
     }

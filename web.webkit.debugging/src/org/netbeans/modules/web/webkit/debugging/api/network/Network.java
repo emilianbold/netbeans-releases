@@ -146,6 +146,17 @@ public class Network {
         req.setResponse(params);
     }
 
+    private void requestFailed(JSONObject params) {
+        String requestId = String.valueOf(params.get("requestId"));
+        assert requestId != null;
+        Request req = activeRequests.remove(requestId);
+        if (req == null) {
+            // see comment in responseReceived()
+            return;
+        }
+        req.setFailed(params);
+    }
+
     private void dataReceived(JSONObject params) {
         String requestId = String.valueOf(params.get("requestId"));
         assert requestId != null;
@@ -265,6 +276,7 @@ public class Network {
         private boolean hasData = false;
         private boolean dataReady = false;
         private final Network network;
+        private boolean failed = false;
 
         private Request(Network network, JSONObject params) {
             this.request = (JSONObject)params.get("request");
@@ -295,6 +307,16 @@ public class Network {
 
         public JSONObject getResponse() {
             return response;
+        }
+
+        public int getResponseCode() {
+            if (response != null) {
+                Number statusCode = (Number)response.get("status");
+                if (statusCode != null) {
+                    return statusCode.intValue();
+                }
+            }
+            return -1;
         }
 
         private void setResponse(JSONObject response) {
@@ -345,6 +367,17 @@ public class Network {
         public void removePropertyChangeListener(PropertyChangeListener l) {
             support.addPropertyChangeListener(l);
         }
+
+        private void setFailed(JSONObject params) {
+            // there is "errorText" in params but it is always empty so I ignore it for now
+            failed = true;
+            support.firePropertyChange(PROP_RESPONSE, null, null);
+        }
+
+        public boolean isFailed() {
+            return failed;
+        }
+
     }
 
     public final static class WebSocketRequest {
@@ -484,7 +517,9 @@ public class Network {
                         }
                     });
                 }
-
+            } else if ("Network.loadingFailed".equals(response.getMethod())) {
+                requestFailed(response.getParams());
+                
 
 // TODO: XXX: handle requestServedFromMemoryCache here as well
 

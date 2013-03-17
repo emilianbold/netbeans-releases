@@ -43,6 +43,8 @@ package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.webkit.debugging.api.console.Console;
+import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -50,7 +52,7 @@ import org.openide.windows.TopComponent;
 /**
  *
  */
-public class NetworkMonitor implements Network.Listener {
+public class NetworkMonitor implements Network.Listener, Console.Listener {
 
     private NetworkMonitorTopComponent component;
     private NetworkMonitorTopComponent.Model model;
@@ -93,6 +95,19 @@ public class NetworkMonitor implements Network.Listener {
 
     void componentClosed() {
         component = null;
+    }
+
+    @Override
+    public void messageAdded(ConsoleMessage message) {
+        model.console(message);
+    }
+
+    @Override
+    public void messagesCleared() {
+    }
+
+    @Override
+    public void messageRepeatCountUpdated(int count) {
     }
 
 }

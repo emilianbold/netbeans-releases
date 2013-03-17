@@ -55,7 +55,9 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JEditorPane;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -104,6 +106,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         this.model = m;
         this.parent = parent;
         jRequestsList.setModel(model);
+        jRequestsList.setCellRenderer(new ListRendererImpl());
         jSplitPane.setDividerLocation(200);
         model.addListDataListener(this);
         selectedItemChanged();
@@ -171,7 +174,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         );
         jHeadersPanelLayout.setVerticalGroup(
             jHeadersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jHeadersPanel.TabConstraints.tabTitle"), jHeadersPanel); // NOI18N
@@ -200,7 +203,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jRequestPanelLayout.setVerticalGroup(
             jRequestPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jRequestPanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jRawResponseRequest))
         );
@@ -231,7 +234,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jResponsePanelLayout.setVerticalGroup(
             jResponsePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jResponsePanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jRawResponseResponse))
         );
@@ -261,7 +264,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jFramesPanelLayout.setVerticalGroup(
             jFramesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jFramesPanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jRawResponseFrames))
         );
@@ -280,7 +283,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         );
         jCallStackPanelLayout.setVerticalGroup(
             jCallStackPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jCallStackPanel.TabConstraints.tabTitle"), jCallStackPanel); // NOI18N
@@ -295,7 +298,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 264, Short.MAX_VALUE)
+            .addGap(0, 251, Short.MAX_VALUE)
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 183, Short.MAX_VALUE))
         );
@@ -316,20 +319,22 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jSplitPane.setRightComponent(jPanel1);
 
         org.openide.awt.Mnemonics.setLocalizedText(jNoData, org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jNoData.text")); // NOI18N
+        jNoData.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jNoData.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 1, 1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
-            .addComponent(jNoData)
+            .addComponent(jNoData, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jSplitPane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jNoData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jNoData))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -521,6 +526,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         private Network.WebSocketRequest wsRequest;
         private ChangeListener changeListener;
         private String data = null;
+        private String failureCause = null;
 
         public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest) {
             this.request = request;
@@ -550,6 +556,15 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                     return true;
                 }
             }
+
+            if (request.getResponseCode() != -1 && request.getResponseCode() >= 400) {
+                return true;
+            }
+
+            if (request.isFailed()) {
+                return true;
+            }
+            
             return false;
         }
 
@@ -653,6 +668,10 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             StyledDocument doc = pane.getStyledDocument();
             Style boldStyle = doc.addStyle("bold", defaultStyle);
             StyleConstants.setBold(boldStyle, true);
+            Style errorStyle = doc.addStyle("error", defaultStyle);
+            StyleConstants.setBold(errorStyle, true);
+            StyleConstants.setFontSize(errorStyle, StyleConstants.getFontSize(errorStyle)+6);
+            StyleConstants.setForeground(errorStyle, Color.red);
             Style paragraphStyle = doc.addStyle("paragraph", defaultStyle);
             StyleConstants.setFontSize(paragraphStyle, StyleConstants.getFontSize(paragraphStyle)+8);
             StyleConstants.setForeground(paragraphStyle, Color.gray);
@@ -665,17 +684,31 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 doc.insertString(doc.getLength(), (String)request.getRequest().get("method")+"\n", defaultStyle);
                 JSONObject r = getResponseHeaders();
                 if (r != null) {
+                    int statusCode = request.getResponseCode();
                     doc.insertString(doc.getLength(), "Status: ", boldStyle);
                     String status = (String)r.get("Status");
                     if (status == null) {
-                        status = ((Number)request.getResponse().get("status")).toString() + 
+                        status = statusCode == -1 ? "" : ""+statusCode +
                                 " " + request.getResponse().get("statusText");
                     }
-                    doc.insertString(doc.getLength(), status+"\n", defaultStyle);
+                    doc.insertString(doc.getLength(), status+"\n",
+                            statusCode >= 400 ? errorStyle : defaultStyle);
                     Boolean fromCache = (Boolean)r.get("fromDiskCache");
                     if (Boolean.TRUE.equals(fromCache)) {
                         doc.insertString(doc.getLength(), "From Disk Cache: ", boldStyle);
                         doc.insertString(doc.getLength(), "yes\n", defaultStyle);
+                    }
+                } else if (request.isFailed()) {
+                    doc.insertString(doc.getLength(), "Status: ", boldStyle);
+                    if (failureCause != null) {
+                        doc.insertString(doc.getLength(), "Request was cancelled. "+failureCause+"\n", errorStyle);
+                        doc.insertString(doc.getLength(), "This type of failure is usually caused by the browser's Same Origin Security Policy. "
+                                + "There are two ways to comply with the policy:\n"
+                                + " - the REST server enables cross-origin requests. This is a preferred solution.\n"
+                                + "   (in NetBeans see 'Jersey Cross-Origin Resource Sharing' new file wizard in Web Services category)\n"
+                                + " - use 'JSONP' workaround to call REST endpoint\n", defaultStyle);
+                    } else {
+                        doc.insertString(doc.getLength(), "Request was cancelled.\n", errorStyle);
                     }
                 }
             } else {
@@ -728,6 +761,11 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                     }
                 }
             });
+        }
+
+        private void setFailureCause(String cause) {
+            this.failureCause = cause;
+            fireChange();
         }
 
         private void loadRequestData() {
@@ -854,6 +892,13 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 }
                 
             }
+        }
+
+        private boolean isError() {
+            if (wsRequest != null) {
+                return false;
+            }
+            return request.isFailed() || request.getResponseCode() >= 400;
         }
 
     }
@@ -1030,6 +1075,25 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             visibleRequests = new ArrayList<ModelItem>();
         }
 
+        void console(ConsoleMessage message) {
+            // handle case of following message:
+            //
+            // event {"method":"Console.messageAdded","params":{"message":{"text":
+            //   "XMLHttpRequest cannot load http:\/\/localhost:8080\/SampleDBrest
+            //   \/resources\/aaa.manXXXufacturer\/. Origin http:\/\/localhost:8383
+            //   is not allowed by Access-Control-Allow-Origin.","level":"error",
+            //   "source":"javascript","line":0,"repeatCount":1,"type":"log","url"
+            //   :"http:\/\/localhost:8383\/nb-rest-test\/knockout-approach\/index-ko.html"}}}
+
+            if (message.getText().contains("Access-Control-Allow-Origin") && !allRequests.isEmpty()) {
+                ModelItem mi = allRequests.get(allRequests.size()-1);
+                // XXX: perhaps I should match requests here with a timestamp???
+                if (mi.request != null) {
+                    mi.setFailureCause(message.getText());
+                }
+            }
+        }
+
     }
 
     public static class JTextPaneNonWrapping extends JTextPane {
@@ -1044,6 +1108,22 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
             return parent != null ? (ui.getPreferredSize(this).width <= parent
                     .getSize().width) : true;
+        }
+
+    }
+
+    private static class ListRendererImpl extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof ModelItem) {
+                ModelItem mi = (ModelItem)value;
+                if (mi.isError()) {
+                    c.setForeground(Color.red);
+                }
+            }
+            return c;
         }
 
     }
