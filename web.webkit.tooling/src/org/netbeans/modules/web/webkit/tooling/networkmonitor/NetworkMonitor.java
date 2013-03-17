@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -51,18 +52,17 @@ import org.openide.windows.TopComponent;
  */
 public class NetworkMonitor implements Network.Listener {
 
-    private Lookup projectContext;
     private NetworkMonitorTopComponent component;
     private NetworkMonitorTopComponent.Model model;
 
     public NetworkMonitor(Lookup projectContext) {
-        this.projectContext = projectContext;
-        this.model = new NetworkMonitorTopComponent.Model();
+        BrowserFamilyId fam = projectContext.lookup(BrowserFamilyId.class);
+        this.model = new NetworkMonitorTopComponent.Model(fam);
         for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
             if (tc instanceof NetworkMonitorTopComponent) {
                 component = (NetworkMonitorTopComponent)tc;
                 model = component.getModel();
-                component.resetModel();
+                component.resetModel(fam);
                 break;
             }
         }

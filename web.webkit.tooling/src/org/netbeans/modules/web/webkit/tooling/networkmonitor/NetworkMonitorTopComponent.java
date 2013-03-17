@@ -72,6 +72,7 @@ import javax.swing.text.StyledDocument;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.openide.text.CloneableEditorSupport;
@@ -465,8 +466,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         refreshDetailsView(lastSelectedItem);
     }
 
-    void resetModel() {
-        model.reset();
+    void resetModel(BrowserFamilyId browserFamilyId) {
+        model.reset(browserFamilyId);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -531,7 +532,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             }
         }
 
-        public boolean canBeShownToUser() {
+        public boolean canBeShownToUser(BrowserFamilyId browserFamilyId) {
             if (wsRequest != null) {
                 return true;
             }
@@ -539,6 +540,15 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                     request.getResponse() != null && !"Image".equals(request.getResponseType()) ||
                 (request.getResponse() != null && "XHR".equals(request.getResponseType())))) {
                 return true;
+            }
+
+            if (browserFamilyId == BrowserFamilyId.JAVAFX_WEBVIEW) {
+                // WebView does not have "script" initiator type:
+                if (("other".equals(request.getInitiatorType()) &&
+                        request.getResponse() != null && !"Image".equals(request.getResponseType()) &&
+                        !"Document".equals(request.getResponseType())) ) {
+                    return true;
+                }
             }
             return false;
         }
@@ -596,9 +606,11 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 JSONObject r = (JSONObject)request.getResponse();
                 if (r != null) {
                     r = (JSONObject)r.get("requestHeaders");
-                    for (Object o : r.entrySet()) {
-                        Map.Entry m = (Map.Entry)o;
-                        requestHeaders.put(m.getKey(), m.getValue());
+                    if (r != null) {
+                        for (Object o : r.entrySet()) {
+                            Map.Entry m = (Map.Entry)o;
+                            requestHeaders.put(m.getKey(), m.getValue());
+                        }
                     }
                 }
                 return requestHeaders;
@@ -952,9 +964,14 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
     static class Model extends AbstractListModel implements PropertyChangeListener {
 
+        private BrowserFamilyId browserFamilyId;
         private List<ModelItem> allRequests = new ArrayList<ModelItem>();
         private List<ModelItem> visibleRequests = new ArrayList<ModelItem>();
 
+        public Model(BrowserFamilyId browserFamilyId) {
+            this.browserFamilyId = browserFamilyId;
+        }
+        
         public void add(Network.Request r) {
             add(new ModelItem(r, null));
             r.addPropertyChangeListener(this);
@@ -990,7 +1007,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         private void updateVisibleItems() {
             List<ModelItem> res = new ArrayList<ModelItem>();
             for (ModelItem mi : allRequests) {
-                if (mi.canBeShownToUser()) {
+                if (mi.canBeShownToUser(browserFamilyId)) {
                     res.add(mi);
                 }
             }
@@ -1007,7 +1024,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             });
         }
 
-        void reset() {
+        void reset(BrowserFamilyId browserFamilyId) {
+            this.browserFamilyId = browserFamilyId;
             allRequests = new ArrayList<ModelItem>();
             visibleRequests = new ArrayList<ModelItem>();
         }
