@@ -44,40 +44,29 @@
 package org.netbeans.modules.profiler.stp;
 
 import java.awt.BorderLayout;
-import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.io.File;
-import java.lang.ref.WeakReference;
-import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
-import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.ui.UIUtils;
-import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
 
 
 /**
@@ -106,7 +95,8 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
     "CPUSettingsAdvancedPanel_EmptyMethodsCheckboxText=Empt&y methods",
     "CPUSettingsAdvancedPanel_ThreadsCaption=Threads",
     "CPUSettingsAdvancedPanel_EnableThreadsCheckboxText=E&nable threads monitoring",
-    "CPUSettingsAdvancedPanel_EnableSamplingCheckboxText=&Sample threads states"
+    "CPUSettingsAdvancedPanel_EnableSamplingCheckboxText=&Sample threads states",
+    "CPUSettingsAdvancedPanel_EnableLockContentionCheckboxText=En&able lock contention monitoring"
 })
 public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
@@ -124,6 +114,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     private JCheckBox profileSpawnedThreadsCheckbox;
     private JCheckBox threadsMonitoringCheckbox;
     private JCheckBox threadsSamplingCheckbox;
+    private JCheckBox lockContentionMonitoringCheckbox;
     private JCheckBox useCPUTimerCheckbox;
     private JComboBox instrumentationSchemeCombo;
     private JLabel instrumentLabel;
@@ -349,6 +340,14 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     public boolean getThreadsSampling() {
         return threadsSamplingCheckbox.isSelected();
     }
+    
+    public void setLockContentionMonitoring(boolean enabled) {
+        lockContentionMonitoringCheckbox.setSelected(enabled);
+    }
+
+    public boolean getLockContentionMonitoring() {
+        return lockContentionMonitoringCheckbox.isSelected();
+    }
 
     public void setUseCPUTimer(boolean use, boolean available) {
         useCPUTimerCheckbox.setSelected(use);
@@ -385,6 +384,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         threadsSettingsPanel.setEnabled(false);
         threadsMonitoringCheckbox.setEnabled(false);
         threadsSamplingCheckbox.setEnabled(false);
+        lockContentionMonitoringCheckbox.setEnabled(false);
     }
 
     public void enableAll() {
@@ -412,6 +412,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         threadsSettingsPanel.setEnabled(true);
         threadsMonitoringCheckbox.setEnabled(true);
         threadsSamplingCheckbox.setEnabled(true);
+        lockContentionMonitoringCheckbox.setEnabled(true);
 
     }
 
@@ -930,8 +931,24 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(0, 7, 3, 0);
+        constraints.insets = new Insets(0, 7, 1, 0);
         threadsSettingsPanel.add(threadsSamplingCheckbox, constraints);
+        
+        // lockContentionMonitoringCheckbox
+        lockContentionMonitoringCheckbox = new JCheckBox();
+        org.openide.awt.Mnemonics.setLocalizedText(lockContentionMonitoringCheckbox, Bundle.CPUSettingsAdvancedPanel_EnableLockContentionCheckboxText());
+        lockContentionMonitoringCheckbox.setToolTipText(Bundle.StpLockContentionTooltip());
+        lockContentionMonitoringCheckbox.addActionListener(getSettingsChangeListener());
+        lockContentionMonitoringCheckbox.setOpaque(false);
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        constraints.weightx = 1;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(0, 7, 3, 0);
+        threadsSettingsPanel.add(lockContentionMonitoringCheckbox, constraints);
 
         // fillerPanel
         constraints = new GridBagConstraints();
