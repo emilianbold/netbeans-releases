@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.webkit.debugging.api.console.Console;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
@@ -59,12 +60,13 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
 
     public NetworkMonitor(Lookup projectContext) {
         BrowserFamilyId fam = projectContext.lookup(BrowserFamilyId.class);
+        final Project p = projectContext.lookup(Project.class);
         this.model = new NetworkMonitorTopComponent.Model(fam);
         for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
             if (tc instanceof NetworkMonitorTopComponent) {
                 component = (NetworkMonitorTopComponent)tc;
                 model = component.getModel();
-                component.resetModel(fam);
+                component.resetModel(fam, p);
                 break;
             }
         }
@@ -72,7 +74,7 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
             @Override
             public void run() {
                 if (component == null) {
-                    component = new NetworkMonitorTopComponent(NetworkMonitor.this, model);
+                    component = new NetworkMonitorTopComponent(NetworkMonitor.this, model, p);
                 }
                 component.open();
             }

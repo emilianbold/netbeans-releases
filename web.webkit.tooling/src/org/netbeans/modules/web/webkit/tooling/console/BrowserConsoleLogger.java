@@ -163,6 +163,8 @@ public class BrowserConsoleLogger implements Console.Listener {
         String level = msg.getLevel();
         boolean isErr = LEVEL_ERROR.equals(level);
         String time = getCurrentTime();
+
+        Project project = projectContext.lookup(Project.class);
         
         String logInfo = createLogInfo(time, level, msg.getSource(), msg.getType());
         OutputWriter ow = isErr ? io.getErr() : io.getOut();
@@ -172,7 +174,7 @@ public class BrowserConsoleLogger implements Console.Listener {
             if (colorStdBrighter == null && i == lines.length-1) {
                 singleMessageLine += logInfo;
             }
-            Object res[] = tryToConvertLineToHyperlink(singleMessageLine);
+            Object res[] = tryToConvertLineToHyperlink(project, singleMessageLine);
             MyListener l = null;
             String newMessage1 = null;
             String newMessage2 = null;
@@ -220,9 +222,9 @@ public class BrowserConsoleLogger implements Console.Listener {
                 sb = new StringBuilder();
                 
                 String urlStr = sf.getURLString();
-                urlStr = getProjectPath(urlStr);
+                urlStr = getProjectPath(project, urlStr);
                 sb.append(" ("+urlStr+":"+sf.getLine()+":"+sf.getColumn()+")");
-                MyListener l = new MyListener(sf.getURLString(), sf.getLine(), sf.getColumn());
+                MyListener l = new MyListener(project, sf.getURLString(), sf.getLine(), sf.getColumn());
                 if (l.isValidHyperlink()) {
                     ow.println(sb.toString(), l);
                 } else {
@@ -233,14 +235,14 @@ public class BrowserConsoleLogger implements Console.Listener {
         if (first && msg.getURLString() != null && msg.getURLString().length() > 0) {
             ow.print("  at ");
             String url = msg.getURLString();
-            String file = getProjectPath(url);
+            String file = getProjectPath(project, url);
             sb = new StringBuilder(file);
             int line = msg.getLine();
             if (line != -1 && line != 0) {
                 sb.append(":");
                 sb.append(line);
             }        
-            MyListener l = new MyListener(url, line, -1);
+            MyListener l = new MyListener(project, url, line, -1);
             if (l.isValidHyperlink()) {
                 ow.println(sb.toString(), l);
             } else {
@@ -255,11 +257,11 @@ public class BrowserConsoleLogger implements Console.Listener {
     // XXX: exact this algorithm is also in 
     // javascript.jstestdriver/src/org/netbeans/modules/javascript/jstestdriver/JSTestDriverSupport.java
     // keep them in sync
-    private Object[] tryToConvertLineToHyperlink(String line) {
+    private Object[] tryToConvertLineToHyperlink(Project project, String line) {
         // pattern is "at ...... (file:line:column)"
         // file can be also http:// url
         if (!line.endsWith(")")) {
-            return tryToConvertLineURLToHyperlink(line);
+            return tryToConvertLineURLToHyperlink(project, line);
         }
         int start = line.lastIndexOf('(');
         if (start == -1) {
@@ -297,13 +299,13 @@ public class BrowserConsoleLogger implements Console.Listener {
         }
         String s1 = line.substring(0, start);
         String s2 = "(" +  // NOI18N
-                getProjectPath(file) + 
+                getProjectPath(project, file) +
             line.substring(fileEnd, line.length());
-        MyListener l = new MyListener(file, lineNumber, columnNumber);
+        MyListener l = new MyListener(project, file, lineNumber, columnNumber);
         return new Object[]{l,s1,s2};
     }
     
-    private Object[] tryToConvertLineURLToHyperlink(String line) {
+    private Object[] tryToConvertLineURLToHyperlink(Project project, String line) {
         int u1 = line.indexOf("http://");   // NOI18N
         if (u1 < 0) {
             u1 = line.indexOf("https://");  // NOI18N
@@ -344,7 +346,7 @@ public class BrowserConsoleLogger implements Console.Listener {
         }
         String s1 = line.substring(0, u1);
         String s2 = line.substring(u1, line.length());
-        MyListener l = new MyListener(file, lineNumber, columnNumber);
+        MyListener l = new MyListener(project, file, lineNumber, columnNumber);
         return new Object[]{l,s1,s2};
     }
     
@@ -389,10 +391,9 @@ public class BrowserConsoleLogger implements Console.Listener {
      * @param urlStr The URL
      * @return a project-relative path, or the original URL.
      */
-    private String getProjectPath(String urlStr) {
+    public static String getProjectPath(Project project, String urlStr) {
         try {
             URL url = new URL(urlStr);
-            Project project = projectContext.lookup(Project.class);
             if (project != null) {
                 FileObject fo = ServerURLMapping.fromServer(project, url);
                 if (fo != null) {
@@ -406,16 +407,18 @@ public class BrowserConsoleLogger implements Console.Listener {
         return urlStr;
     }
 
-    private class MyListener implements OutputListener {
+    public static class MyListener implements OutputListener {
 
         private String url;
         private int line;
         private int column;
+        private Project project;
 
-        public MyListener(String url, int line, int column) {
+        public MyListener(Project project, String url, int line, int column) {
             this.url = url;
             this.line = line;
             this.column = column;
+            this.project = project;
         }
         
         @Override
@@ -431,7 +434,6 @@ public class BrowserConsoleLogger implements Console.Listener {
             }
         }
         private Line getLine() {
-            Project project = projectContext.lookup(Project.class);
             return BrowserConsoleLogger.getLine(project, url, line-1);
         }
 

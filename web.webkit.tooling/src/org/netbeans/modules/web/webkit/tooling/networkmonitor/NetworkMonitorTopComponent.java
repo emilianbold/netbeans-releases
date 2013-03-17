@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,7 +57,10 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
+import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -74,14 +79,20 @@ import javax.swing.text.StyledDocument;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
+import org.netbeans.modules.web.webkit.tooling.console.BrowserConsoleLogger;
+import static org.netbeans.modules.web.webkit.tooling.console.BrowserConsoleLogger.getProjectPath;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOContainer;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 import org.openide.windows.Mode;
 import org.openide.windows.WindowManager;
 
@@ -97,20 +108,25 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     private Model model;
     private static RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
     private NetworkMonitor parent;
+    private InputOutput io;
+    private Project project;
 
-    NetworkMonitorTopComponent(NetworkMonitor parent, Model m) {
+    NetworkMonitorTopComponent(NetworkMonitor parent, Model m, Project p) {
         initComponents();
         jResponse.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
         setName(Bundle.CTL_NetworkMonitorTopComponent());
         setToolTipText(Bundle.HINT_NetworkMonitorTopComponent());
         this.model = m;
         this.parent = parent;
+        this.project = p;
         jRequestsList.setModel(model);
         jRequestsList.setCellRenderer(new ListRendererImpl());
         jSplitPane.setDividerLocation(200);
         model.addListDataListener(this);
         selectedItemChanged();
         updateVisibility();
+        IOContainer container = IOContainer.create(new MyProvider(jIOContainerPlaceholder));
+        io = IOProvider.getDefault().getIO("callstack", new Action[0], container);
     }
 
     Model getModel() {
@@ -147,8 +163,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         jFrames = new javax.swing.JTextPane();
         jRawResponseFrames = new javax.swing.JCheckBox();
         jCallStackPanel = new javax.swing.JPanel();
-        jScrollPane6 = new javax.swing.JScrollPane();
-        jCallStack = new JTextPaneNonWrapping();
+        jIOContainerPlaceholder = new javax.swing.JPanel();
         jNoData = new javax.swing.JLabel();
 
         jRequestsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -273,17 +288,26 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
         jCallStackPanel.setName(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jCallStackPanel.TabConstraints.tabTitle")); // NOI18N
 
-        jScrollPane6.setViewportView(jCallStack);
+        javax.swing.GroupLayout jIOContainerPlaceholderLayout = new javax.swing.GroupLayout(jIOContainerPlaceholder);
+        jIOContainerPlaceholder.setLayout(jIOContainerPlaceholderLayout);
+        jIOContainerPlaceholderLayout.setHorizontalGroup(
+            jIOContainerPlaceholderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 443, Short.MAX_VALUE)
+        );
+        jIOContainerPlaceholderLayout.setVerticalGroup(
+            jIOContainerPlaceholderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 214, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout jCallStackPanelLayout = new javax.swing.GroupLayout(jCallStackPanel);
         jCallStackPanel.setLayout(jCallStackPanelLayout);
         jCallStackPanelLayout.setHorizontalGroup(
             jCallStackPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+            .addComponent(jIOContainerPlaceholder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jCallStackPanelLayout.setVerticalGroup(
             jCallStackPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+            .addComponent(jIOContainerPlaceholder, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jCallStackPanel.TabConstraints.tabTitle"), jCallStackPanel); // NOI18N
@@ -364,12 +388,12 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     }//GEN-LAST:event_jRawResponseFramesItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextPane jCallStack;
     private javax.swing.JPanel jCallStackPanel;
     private javax.swing.JTextPane jFrames;
     private javax.swing.JPanel jFramesPanel;
     private javax.swing.JTextPane jHeaders;
     private javax.swing.JPanel jHeadersPanel;
+    private javax.swing.JPanel jIOContainerPlaceholder;
     private javax.swing.JLabel jNoData;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -386,7 +410,6 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSplitPane jSplitPane;
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
@@ -437,7 +460,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             mi.updateResponsePane(jResponse, jRawResponseResponse.isSelected());
             mi.updateFramesPane(jFrames, jRawResponseFrames.isSelected());
             mi.updatePostDataPane(jRequest, jRawResponseRequest.isSelected());
-            mi.updateCallStack(jCallStack);
+            mi.updateCallStack(project, io);
         }
         updateTabVisibility(mi);
     }
@@ -471,8 +494,9 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         refreshDetailsView(lastSelectedItem);
     }
 
-    void resetModel(BrowserFamilyId browserFamilyId) {
+    void resetModel(BrowserFamilyId browserFamilyId, Project p) {
         model.reset(browserFamilyId);
+        this.project = p;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -876,18 +900,28 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             }
         }
 
-        private void updateCallStack(JTextPane pane) {
-            pane.setText("");
-            StyledDocument doc = pane.getStyledDocument();
+        private void updateCallStack(Project project, InputOutput io) {
+            try {
+                io.getOut().reset();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             if (hasCallStack()) {
                 List<ConsoleMessage.StackFrame> callStack = request.getInitiatorCallStack();
                 for (ConsoleMessage.StackFrame sf : callStack) {
-                    String text = sf.getFunctionName()+ " (" +
-                            sf.getURLString()+":"+sf.getLine()+":"+sf.getColumn()+")\n";
-                    try {
-                        doc.insertString(doc.getLength(), text, null);
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                    String projectUrl = getProjectPath(project, sf.getURLString());
+                    io.getOut().print(sf.getFunctionName()+ " ");
+                    String text = "(" +
+                            projectUrl+":"+sf.getLine()+":"+sf.getColumn()+")";
+                    BrowserConsoleLogger.MyListener l = new BrowserConsoleLogger.MyListener(project, sf.getURLString(), sf.getLine(), sf.getColumn());
+                    if (l.isValidHyperlink()) {
+                        try {
+                            io.getOut().println(text, l);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } else {
+                        io.getOut().println(text);
                     }
                 }
                 
@@ -1124,6 +1158,74 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 }
             }
             return c;
+        }
+
+    }
+
+    private static class MyProvider implements IOContainer.Provider {
+
+        private JPanel parent;
+
+        public MyProvider(JPanel parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        public void open() {
+        }
+
+        @Override
+        public void requestActive() {
+        }
+
+        @Override
+        public void requestVisible() {
+        }
+
+        @Override
+        public boolean isActivated() {
+            return false;
+        }
+
+        @Override
+        public void add(JComponent comp, IOContainer.CallBacks cb) {
+            parent.setLayout(new BorderLayout());
+            parent.add(comp, BorderLayout.CENTER);
+        }
+
+        @Override
+        public void remove(JComponent comp) {
+            parent.remove(comp);
+        }
+
+        @Override
+        public void select(JComponent comp) {
+        }
+
+        @Override
+        public JComponent getSelected() {
+            return null;
+        }
+
+        @Override
+        public void setTitle(JComponent comp, String name) {
+        }
+
+        @Override
+        public void setToolTipText(JComponent comp, String text) {
+        }
+
+        @Override
+        public void setIcon(JComponent comp, Icon icon) {
+        }
+
+        @Override
+        public void setToolbarActions(JComponent comp, Action[] toolbarActions) {
+        }
+
+        @Override
+        public boolean isCloseable(JComponent comp) {
+            return false;
         }
 
     }
