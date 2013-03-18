@@ -48,14 +48,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.analysis.options.AnalysisOptions;
 import org.netbeans.modules.php.analysis.results.Result;
+import org.netbeans.modules.php.analysis.ui.analyzer.CodeSnifferCustomizerPanel;
 import org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelController;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
@@ -111,12 +112,14 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
 
         context.start(totalCount);
 
+        // XXX how to get it from customizer?
+        String codeSnifferStandard = AnalysisOptions.getInstance().getCodeSnifferStandard();
         int progress = 0;
         for (FileObject root : scope.getSourceRoots()) {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
-            List<Result> results = codeSniffer.analyze(root);
+            List<Result> results = codeSniffer.analyze(codeSnifferStandard, root);
             // XXX inform about error?
             if (results != null) {
                 errors.addAll(map(results));
@@ -129,7 +132,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
-            List<Result> results = codeSniffer.analyze(file);
+            List<Result> results = codeSniffer.analyze(codeSnifferStandard, file);
             // XXX inform about error?
             if (results != null) {
                 errors.addAll(map(results));
@@ -143,7 +146,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 return Collections.emptyList();
             }
             FileObject folder = nonRecursiveFolder.getFolder();
-            List<Result> results = codeSniffer.analyze(folder, true);
+            List<Result> results = codeSniffer.analyze(codeSnifferStandard, folder, true);
             // XXX inform about error?
             if (results != null) {
                 errors.addAll(map(results));
@@ -192,7 +195,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
         // XXX i18n for category
         // XXX categories in Inspector view
         // XXX which severity?
-        // XXX fixes?
+        // XXX fixes? show only warning without any hint...
         return ErrorDescriptionFactory.createErrorDescription(ANALYZER_PREFIX + result.getCategory(), Severity.VERIFIER, result.getCategory(),
                 result.getDescription(), EMPTY_LAZY_FIX_LIST, file, lineMap[line], lineMap[line + 1]);
     }
@@ -221,14 +224,29 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
         }
 
         @Override
-        public <D, C extends JComponent> CustomizerProvider<D, C> getCustomizerProvider() {
-            // XXX
-            return null;
+        public CustomizerProvider<Void, CodeSnifferCustomizerPanel> getCustomizerProvider() {
+            return new CustomizerProvider<Void, CodeSnifferCustomizerPanel>() {
+                @Override
+                public Void initialize() {
+                    return null;
+                }
+                @Override
+                public CodeSnifferCustomizerPanel createComponent(CustomizerContext<Void, CodeSnifferCustomizerPanel> context) {
+                    // XXX whatif any error in the customizer?
+                    // how to get values from customizer?
+                    return new CodeSnifferCustomizerPanel();
+                }
+            };
         }
 
         @Override
         public Analyzer createAnalyzer(Context context) {
             return new CodeSnifferAnalyzerImpl(context);
+        }
+
+        @Override
+        public void warningOpened(ErrorDescription warning) {
+            // XXX
         }
 
     }
