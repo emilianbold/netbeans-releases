@@ -240,11 +240,9 @@ public class JsCompletionItem implements CompletionProposal {
 
             ElementHandle element = getElement();
             if (element instanceof JsFunction) {
-                for (TypeUsage type: ((JsFunction) element).getReturnTypes()) {
-                    returnTypes.add((type.getType()));
-                }
+                returnTypes.addAll(Utils.getDisplayNames(((JsFunction) element).getReturnTypes()));
             } else if (element instanceof IndexedElement.FunctionIndexedElement) {
-                returnTypes.addAll(((IndexedElement.FunctionIndexedElement) element).getReturnTypes());
+                returnTypes.addAll(Utils.getDisplayNamesFromStrings(((IndexedElement.FunctionIndexedElement) element).getReturnTypes()));
             }
             if (!returnTypes.isEmpty()) {
                 formatter.appendText(": "); //NOI18N
