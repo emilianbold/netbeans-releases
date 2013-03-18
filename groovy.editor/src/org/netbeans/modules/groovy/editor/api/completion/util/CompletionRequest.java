@@ -243,8 +243,7 @@ public class CompletionRequest {
             if (node instanceof ModuleNode) {
                 ModuleNode module = (ModuleNode) node;
                 String name = null;
-                for (Iterator it = module.getClasses().iterator(); it.hasNext();) {
-                    ClassNode clazz = (ClassNode) it.next();
+                for (ClassNode clazz : module.getClasses()) {
                     if (clazz.isScript()) {
                         name = clazz.getName();
                         scriptMode = true;
@@ -256,8 +255,7 @@ public class CompletionRequest {
                 // non-script class with same name that would mean we are just
                 // broken class, not a script
                 if (name != null) {
-                    for (Iterator it = module.getClasses().iterator(); it.hasNext();) {
-                        ClassNode clazz = (ClassNode) it.next();
+                    for (ClassNode clazz : module.getClasses()) {
                         if (!clazz.isScript() && name.equals(clazz.getName())) {
                             scriptMode = false;
                             break;
@@ -465,41 +463,6 @@ public class CompletionRequest {
             }
         }
 
-        if (false) {
-            // Display the line where completion was invoked to ease debugging
-
-            String line = "";
-            String marker = "";
-
-            try {
-                int lineStart = org.netbeans.editor.Utilities.getRowStart(doc, lexOffset);
-                int lineStop = org.netbeans.editor.Utilities.getRowEnd(doc, lexOffset);
-                int lineLength = lexOffset - lineStart;
-
-                line = doc.getText(lineStart, lineStop - lineStart);
-
-                StringBuilder sb = new StringBuilder();
-
-                while (lineLength > 0) {
-                    sb.append(" ");
-                    lineLength--;
-                }
-
-                sb.append("|");
-
-                marker = sb.toString();
-
-
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            LOG.log(Level.FINEST, "---------------------------------------------------------------");
-            LOG.log(Level.FINEST, "Prefix : {0}", prefix);
-            LOG.log(Level.FINEST, "Line   : {0}", marker);
-            LOG.log(Level.FINEST, "Line   : {0}", line);
-        }
-
         LOG.log(Level.FINEST, "---------------------------------------------------------------");
         LOG.log(Level.FINEST, "move() diff   : {0}", difference);
         LOG.log(Level.FINEST, "beforeLiteral : {0}", beforeLiteral);
@@ -521,8 +484,6 @@ public class CompletionRequest {
         int position = lexOffset;
 
         TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, position);
-
-        int difference = ts.move(position);
 
         // get the active token:
         Token<GroovyTokenId> active = null;
