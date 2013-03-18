@@ -961,6 +961,9 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             data = reformatJSON(data);
             contentType = "text/x-json";
         }
+        if ("application/xml".equals(contentType)) {
+            contentType = "text/xml";
+        }
         pane.setEditorKit(CloneableEditorSupport.getEditorKit(contentType));
         pane.setText(data);
     }
