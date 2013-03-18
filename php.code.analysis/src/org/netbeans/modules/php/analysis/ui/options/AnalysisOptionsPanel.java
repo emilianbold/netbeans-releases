@@ -46,6 +46,8 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -55,6 +57,7 @@ import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -64,7 +67,11 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.analysis.ui.CodeSnifferStandardsComboBoxModel;
+import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -84,34 +91,67 @@ public class AnalysisOptionsPanel extends JPanel {
 
     private static final String CODE_SNIFFER_LAST_FOLDER_SUFFIX = ".codeSniffer"; // NOI18N
 
+    final CodeSnifferStandardsComboBoxModel codeSnifferStandardsModel = new CodeSnifferStandardsComboBoxModel();
+
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
-    public AnalysisOptionsPanel() {
+    public AnalysisOptionsPanel(@NullAllowed String selectedCodeSnifferStandard) {
         initComponents();
 
-        init();
+        init(selectedCodeSnifferStandard);
     }
 
     @NbBundle.Messages({
         "# {0} - short script name",
         "# {1} - long script name",
-        "AnalysisOptionsPanel.codeSniffer.hint=Full path of Code Sniffer script (typically {0} or {1})."
+        "AnalysisOptionsPanel.codeSniffer.hint=Full path of Code Sniffer script (typically {0} or {1}).",
+        "AnalysisOptionsPanel.codeSniffer.error.standards=Standards cannot be fetched, review Output window.",
     })
-    private void init() {
+    private void init(final String selectedCodeSnifferStandard) {
         errorLabel.setText(" "); // NOI18N
         codeSnifferHintLabel.setText(Bundle.AnalysisOptionsPanel_codeSniffer_hint(CodeSniffer.NAME, CodeSniffer.LONG_NAME));
 
+        codeSnifferStandardComboBox.setModel(codeSnifferStandardsModel);
+
+        // listeners
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         codeSnifferTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        ItemListener defaultItemListener = new DefaultItemListener();
+        codeSnifferStandardComboBox.addItemListener(defaultItemListener);
+
+        // default values
+        AnalysisUtils.connect(codeSnifferStandardComboBox, codeSnifferStandardsModel, selectedCodeSnifferStandard, new Runnable() {
+            @Override
+            public void run() {
+                setError(Bundle.AnalysisOptionsPanel_codeSniffer_error_standards());
+            }
+        });
     }
 
-    public String getCodeSniffer() {
+    public String getCodeSnifferPath() {
         return codeSnifferTextField.getText();
     }
 
-    public void setCodeSniffer(String codeSniffer) {
-        codeSnifferTextField.setText(codeSniffer);
+    public void setCodeSnifferPath(String path) {
+        codeSnifferTextField.setText(path);
+    }
+
+    @CheckForNull
+    public String getCodeSnifferStandard() {
+        if (!codeSnifferStandardComboBox.isEnabled()) {
+            // fetching standards or some error
+            return null;
+        }
+        return codeSnifferStandardsModel.getSelectedStandard();
+    }
+
+    public void setCodeSnifferStandard(String standard) {
+        if (!codeSnifferStandardComboBox.isEnabled()) {
+            // fetching standards or some error
+            return;
+        }
+        codeSnifferStandardsModel.setSelectedItem(standard);
     }
 
     public void setError(String message) {
@@ -152,6 +192,8 @@ public class AnalysisOptionsPanel extends JPanel {
         codeSnifferBrowseButton = new JButton();
         codeSnifferSearchButton = new JButton();
         codeSnifferHintLabel = new JLabel();
+        codeSnifferStandardLabel = new JLabel();
+        codeSnifferStandardComboBox = new JComboBox();
         noteLabel = new JLabel();
         codeSnifferLearnMoreLabel = new JLabel();
         errorLabel = new JLabel();
@@ -174,6 +216,9 @@ public class AnalysisOptionsPanel extends JPanel {
         });
 
         Mnemonics.setLocalizedText(codeSnifferHintLabel, "HINT"); // NOI18N
+
+        codeSnifferStandardLabel.setLabelFor(codeSnifferStandardComboBox);
+        Mnemonics.setLocalizedText(codeSnifferStandardLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.codeSnifferStandardLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.noteLabel.text")); // NOI18N
 
@@ -202,18 +247,22 @@ public class AnalysisOptionsPanel extends JPanel {
                         .addComponent(codeSnifferLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(codeSnifferLabel)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(codeSnifferLabel)
+                    .addComponent(codeSnifferStandardLabel))
                 .addGap(13, 13, 13)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(codeSnifferHintLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(codeSnifferTextField)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(codeSnifferBrowseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(codeSnifferSearchButton))))
+                        .addComponent(codeSnifferSearchButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(codeSnifferStandardComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(codeSnifferHintLabel))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {codeSnifferBrowseButton, codeSnifferSearchButton});
@@ -228,6 +277,10 @@ public class AnalysisOptionsPanel extends JPanel {
                     .addComponent(codeSnifferBrowseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(codeSnifferHintLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(codeSnifferStandardComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(codeSnifferStandardLabel))
                 .addGap(18, 18, 18)
                 .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -308,6 +361,8 @@ public class AnalysisOptionsPanel extends JPanel {
     private JLabel codeSnifferLabel;
     private JLabel codeSnifferLearnMoreLabel;
     private JButton codeSnifferSearchButton;
+    private JComboBox codeSnifferStandardComboBox;
+    private JLabel codeSnifferStandardLabel;
     private JTextField codeSnifferTextField;
     private JLabel errorLabel;
     private JLabel noteLabel;
@@ -333,6 +388,15 @@ public class AnalysisOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
+            fireChange();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
 

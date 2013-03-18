@@ -77,14 +77,16 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
     @Override
     public void update() {
         assert EventQueue.isDispatchThread();
-        getAnalysisOptionsPanel().setCodeSniffer(getAnalysisOptions().getCodeSnifferPath());
+        getAnalysisOptionsPanel().setCodeSnifferPath(getAnalysisOptions().getCodeSnifferPath());
+        getAnalysisOptionsPanel().setCodeSnifferStandard(getAnalysisOptions().getCodeSnifferStandard());
 
         changed = false;
     }
 
     @Override
     public void applyChanges() {
-        getAnalysisOptions().setCodeSnifferPath(getAnalysisOptionsPanel().getCodeSniffer());
+        getAnalysisOptions().setCodeSnifferPath(getAnalysisOptionsPanel().getCodeSnifferPath());
+        getAnalysisOptions().setCodeSnifferStandard(getAnalysisOptionsPanel().getCodeSnifferStandard());
 
         changed = false;
     }
@@ -98,7 +100,7 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
         assert EventQueue.isDispatchThread();
         AnalysisOptionsPanel panel = getAnalysisOptionsPanel();
         ValidationResult result = new AnalysisOptionsValidator()
-                .validate(panel.getCodeSniffer())
+                .validate(panel.getCodeSnifferPath(), panel.getCodeSnifferStandard())
                 .getResult();
         // errors
         if (result.hasErrors()) {
@@ -153,7 +155,7 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
     private AnalysisOptionsPanel getAnalysisOptionsPanel() {
         assert EventQueue.isDispatchThread();
         if (analysisOptionsPanel == null) {
-            analysisOptionsPanel = new AnalysisOptionsPanel();
+            analysisOptionsPanel = new AnalysisOptionsPanel(getAnalysisOptions().getCodeSnifferStandard());
             analysisOptionsPanel.addChangeListener(this);
         }
         return analysisOptionsPanel;
