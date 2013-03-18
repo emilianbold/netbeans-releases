@@ -54,6 +54,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 
 import java.util.List;
@@ -107,6 +109,14 @@ class DataViewUI extends JXPanel {
     private String imgPrefix = "/org/netbeans/modules/db/dataview/images/"; // NOI18N
 
     private static final int MAX_TAB_LENGTH = 25;
+
+    private final PropertyChangeListener pageContextListener =
+            new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    updateTotalCountLabel();
+                }
+            };
 
     /** Shared mouse listener used for setting the border painting property
      * of the toolbar buttons and for invoking the popup menu.
@@ -177,6 +187,11 @@ class DataViewUI extends JXPanel {
         this.add(dataPanelScrollPane, BorderLayout.CENTER);
         dataPanel.revalidate();
         dataPanel.repaint();
+
+        dataPanel.setModel(dataView.getDataViewPageContext().getModel());
+        dataView.getDataViewPageContext().addPropertyChangeListener(
+                pageContextListener);
+        updateTotalCountLabel();
     }
 
     void handleColumnUpdated() {
@@ -201,7 +216,8 @@ class DataViewUI extends JXPanel {
         return getDataViewTableUIModel().isEditable();
     }
 
-    void setTotalCount(int count) {
+    final void updateTotalCountLabel() {
+        int count = dataView.getDataViewPageContext().getTotalRows();
         assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
         if (count < 0) {
             int pageSize = dataView.getDataViewPageContext().getPageSize();

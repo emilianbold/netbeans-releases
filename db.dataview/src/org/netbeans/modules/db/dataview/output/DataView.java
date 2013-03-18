@@ -129,9 +129,7 @@ public class DataView {
 
         synchronized (this) {
             this.dataViewUI = new DataViewUI(this, nbOutputComponent);
-            dataViewUI.getDataViewTableUI().setModel(dataPage.getModel());
             dataViewUI.setEditable(tblMeta == null ? false : tblMeta.hasOneTable());
-            dataViewUI.setTotalCount(dataPage.getTotalRows());
             resetToolbar(hasExceptions());
         }
         results = new ArrayList<Component>();
@@ -316,41 +314,6 @@ public class DataView {
             @Override
             public void run() {
                 dataViewUI.resetToolbar(wasError);
-            }
-        });
-    }
-
-    synchronized void setTotalRowCount(final int count) {
-        if (dataViewUI != null) {
-            Mutex.EVENT.readAccess(new Runnable() {
-                @Override
-                public void run() {
-                    dataViewUI.setTotalCount(count);
-                }
-            });
-        }
-    }
-
-    synchronized void incrementRowSize(int count) {
-        assert dataViewUI != null;
-        dataPage.setTotalRows(dataPage.getTotalRows() + count);
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                dataViewUI.setTotalCount(dataPage.getTotalRows());
-            }
-        });
-    }
-
-    synchronized void decrementRowSize(int count) {
-        assert dataViewUI != null;
-        dataPage.decrementRowSize(count);
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                dataViewUI.setTotalCount(dataPage.getTotalRows());
             }
         });
     }

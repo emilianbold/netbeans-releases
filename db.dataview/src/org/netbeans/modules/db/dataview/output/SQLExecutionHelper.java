@@ -195,7 +195,7 @@ class SQLExecutionHelper {
                     Integer result = null;
 
                     if (rs.getType() == ResultSet.TYPE_SCROLL_INSENSITIVE
-                            || rs.getType() == ResultSet.TYPE_SCROLL_INSENSITIVE) {
+                            || rs.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) {
                         try {
                             rs.last();
                             result = rs.getRow();
@@ -306,7 +306,7 @@ class SQLExecutionHelper {
                     dataView.getDataViewPageContext().setTotalRows(0);
                     dataView.getDataViewPageContext().first();
                 }
-                dataView.incrementRowSize(1);
+                dataView.getDataViewPageContext().incrementRowSize(1);
 
                 // refresh when required
                 if (dataView.getDataViewPageContext().refreshRequiredOnInsert()) {
@@ -378,7 +378,7 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                dataView.decrementRowSize(rows.length);
+                dataView.getDataViewPageContext().decrementRowSize(rows.length);
                 SQLExecutionHelper.this.executeQuery();
             }
         };
@@ -561,7 +561,7 @@ class SQLExecutionHelper {
                             Integer result = null;
 
                             if (rs.getType() == ResultSet.TYPE_SCROLL_INSENSITIVE
-                                    || rs.getType() == ResultSet.TYPE_SCROLL_INSENSITIVE) {
+                                    || rs.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) {
                                 try {
                                     rs.last();
                                     result = rs.getRow();
@@ -692,10 +692,8 @@ class SQLExecutionHelper {
     void setTotalCount(Integer count) {
         if (count == null) {
             dataView.getDataViewPageContext().setTotalRows(-1);
-            dataView.setTotalRowCount(-1);
         } else {
             dataView.getDataViewPageContext().setTotalRows(count);
-            dataView.setTotalRowCount(count);
         }
     }
 

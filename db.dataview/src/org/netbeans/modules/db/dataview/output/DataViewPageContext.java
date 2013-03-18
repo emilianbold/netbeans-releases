@@ -43,7 +43,10 @@ Other names may be trademarks of their respective owners.
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -52,7 +55,10 @@ import org.openide.util.NbBundle;
  * @author Ahimanikya Satapathy
  */
 class DataViewPageContext {
-
+    public static final String PROP_pageSize = "pageSize";
+    public static final String PROP_totalRows = "totalRows";
+    public static final String PROP_currentPos = "currentPos";
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private int pageSize = 10;
     private int totalRows = -1;
     private int currentPos = 1;
@@ -66,8 +72,42 @@ class DataViewPageContext {
         return pageSize;
     }
 
+    synchronized void setPageSize(int pageSize) {
+        int oldPageSize = this.pageSize;
+        this.pageSize = pageSize;
+        firePropertyChange(PROP_pageSize, oldPageSize, pageSize);
+    }
+
     int getCurrentPos() {
         return currentPos;
+    }
+
+    synchronized private void setCurrentPos(int currentPos) {
+        int oldPos = this.currentPos;
+        this.currentPos = currentPos;
+        firePropertyChange(PROP_currentPos, oldPos, currentPos);
+    }
+
+    synchronized void first() {
+        setCurrentPos(1);
+    }
+
+    synchronized void previous() {
+        setCurrentPos(getCurrentPos() - pageSize);
+    }
+
+    synchronized void next() {
+        setCurrentPos(getCurrentPos() + pageSize);
+    }
+
+    synchronized void last() {
+        if (pageSize < 1) {
+            return;
+        }
+
+        int rem = totalRows % pageSize;
+        int newCurrentPos = totalRows - (rem == 0 ? pageSize : rem) + 1;
+        setCurrentPos(newCurrentPos);
     }
 
     DataViewTableUIModel getModel() {
@@ -76,6 +116,12 @@ class DataViewPageContext {
 
     int getTotalRows() {
         return totalRows;
+    }
+
+    synchronized void setTotalRows(int totalCount) {
+        int oldTotalRows = this.totalRows;
+        this.totalRows = totalCount;
+        firePropertyChange(PROP_totalRows, oldTotalRows, totalCount);
     }
 
     boolean hasRows() {
@@ -92,27 +138,6 @@ class DataViewPageContext {
 
     boolean hasPrevious() {
         return ((currentPos - pageSize) >= 0) && hasRows();
-    }
-
-    void first() {
-        currentPos = 1;
-    }
-
-    void previous() {
-        currentPos -= pageSize;
-    }
-
-    void next() {
-        currentPos += pageSize;
-    }
-
-    void last() {
-        if (pageSize < 1) {
-            return;
-        }
-
-        int rem = totalRows % pageSize;
-        currentPos = totalRows - (rem == 0 ? pageSize : rem) + 1;
     }
 
     boolean isLastPage() {
@@ -137,20 +162,54 @@ class DataViewPageContext {
         return NbBundle.getMessage(DataViewPageContext.class, "LBL_page_of", curPage, totalPages);
     }
 
-    synchronized void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    synchronized void setTotalRows(int totalCount) {
-        this.totalRows = totalCount;
-    }
-
     synchronized void decrementRowSize(int count) {
-        totalRows -= count;
+        setTotalRows(getTotalRows() - count);
         if (totalRows <= pageSize) {
             first();
         } else if (currentPos > totalRows) {
             previous();
         }
+    }
+
+    synchronized void incrementRowSize(int count) {
+        setTotalRows(getTotalRows() + count);
+        if (totalRows <= pageSize) {
+            first();
+        } else if (currentPos > totalRows) {
+            previous();
+        }
+    }
+
+    /**
+     * Ensure the property change event is dispatched into the EDT
+     *
+     * @param propertyName
+     * @param oldValue
+     * @param newValue
+     */
+    protected void firePropertyChange(final String propertyName, final Object oldValue, final Object newValue) {
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                pcs.firePropertyChange(propertyName, oldValue, newValue);
+            }
+        });
+
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
     }
 }
