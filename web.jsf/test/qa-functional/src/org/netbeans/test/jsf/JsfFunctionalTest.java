@@ -60,7 +60,7 @@ import org.netbeans.test.web.NewWebProjectJSFFrameworkStepOperator;
 import org.netbeans.test.web.WebProjectValidationEE5;
 
 /**
- * Test JSF support in Java EE 5 project.
+ * Test JSF support in Java EE 7 project.
  *
  * @author Lukasz Grela
  * @author Jiri Skrivanek
@@ -104,7 +104,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
     /** Need to be defined because of JUnit */
     public JsfFunctionalTest(String name) {
         super(name);
-        PROJECT_NAME = "WebJSFProjectEE5";
+        PROJECT_NAME = "WebJSFProjectEE7";
     }
 
     public static Test suite() {
@@ -113,7 +113,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
 
     @Override
     protected String getEEVersion() {
-        return JAVA_EE_5;
+        return JAVA_EE_7;
     }
 
     /** Test creation of web project.

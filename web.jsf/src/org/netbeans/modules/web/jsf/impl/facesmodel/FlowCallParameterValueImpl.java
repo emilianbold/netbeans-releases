@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,51 +34,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.persistence.action;
+package org.netbeans.modules.web.jsf.impl.facesmodel;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowCallParameter;
+import static org.netbeans.modules.web.jsf.api.facesmodel.FlowCallParameter.VALUE;
+import org.netbeans.modules.web.jsf.api.facesmodel.FlowCallParameterValue;
+import org.netbeans.modules.web.jsf.api.facesmodel.Value;
+import org.w3c.dom.Element;
 
 /**
- * Executes save script.
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class GenerateScriptExecutor {
+public abstract class FlowCallParameterValueImpl extends JSFConfigComponentImpl implements FlowCallParameterValue {
 
-    public void execute(Project project, File file, PersistenceEnvironment pe, PersistenceUnit pu, List<String> problems) {
-        try {
-
-            Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");//NOI18N
-            javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();
-
-            HashMap map = new HashMap();
-            //
-            map.put("javax.persistence.schema-generation.scripts.action", "create");
-            try {
-                map.put("javax.persistence.schema-generation.scripts.create-target", new FileWriter(file));
-            } catch (IOException ex) {
-                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_File", file.getAbsolutePath()));
-            }
-            //
-            p.generateSchema(pu.getName(), map);
-        } catch (ClassNotFoundException ex) {
-                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getAbsolutePath()));
-        } catch (IllegalAccessException ex) {
-                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getAbsolutePath()));
-        } catch (InstantiationException ex) {
-                problems.add( NbBundle.getMessage(GenerateScriptExecutor.class, "ERR_Classpath", file.getAbsolutePath()));
-        }
-
+    public FlowCallParameterValueImpl(JSFConfigModelImpl model, Element element) {
+        super(model, element);
     }
+
+    @Override
+    public List<Value> getValues() {
+        return getChildren(Value.class);
+    }
+
+    @Override
+    public void addValue(Value value) {
+        appendChild(VALUE, value);
+    }
+
+    @Override
+    public void removeValue(Value value) {
+        removeChild(VALUE, value);
+    }
+
 }

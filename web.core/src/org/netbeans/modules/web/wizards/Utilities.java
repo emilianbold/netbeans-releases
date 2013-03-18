@@ -46,6 +46,7 @@ package org.netbeans.modules.web.wizards;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
@@ -167,12 +168,12 @@ public class Utilities {
         return res;
     }
 
-    public static boolean isJavaEE6(TemplateWizard wizard) {
+    public static boolean isJavaEE6Plus(TemplateWizard wizard) {
         Project project = Templates.getProject(wizard);
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             Profile profile = wm.getJ2eeProfile();
-            return (profile == Profile.JAVA_EE_6_FULL || profile == Profile.JAVA_EE_6_WEB);
+            return Util.isAtLeastJavaEE6Web(profile);
         }
         return false;
     }
