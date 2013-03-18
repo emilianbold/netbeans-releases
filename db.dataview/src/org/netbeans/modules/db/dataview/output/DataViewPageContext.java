@@ -114,6 +114,10 @@ class DataViewPageContext {
         return model;
     }
 
+    boolean isTotalRowCountAvailable() {
+        return totalRows >= 0;
+    }
+
     int getTotalRows() {
         return totalRows;
     }
@@ -125,15 +129,15 @@ class DataViewPageContext {
     }
 
     boolean hasRows() {
-        return (totalRows != 0 && pageSize != 0);
+        return model.getRowCount() > 0;
     }
 
     boolean hasNext() {
-        return ((currentPos + pageSize) <= totalRows) && hasRows();
+        return (((currentPos + pageSize) <= totalRows) && hasRows()) || (totalRows < 0 && getModel().getRowCount() >= pageSize);
     }
 
     boolean hasOnePageOnly() {
-        return (currentPos - pageSize) <= 0;
+        return totalRows > 0 && totalRows < pageSize;
     }
 
     boolean hasPrevious() {
@@ -141,7 +145,7 @@ class DataViewPageContext {
     }
 
     boolean isLastPage() {
-        return (currentPos + pageSize) > totalRows;
+        return ((currentPos + pageSize) > totalRows) && totalRows > 0;
     }
 
     boolean refreshRequiredOnInsert() {
@@ -153,12 +157,16 @@ class DataViewPageContext {
     }
 
     String pageOf() {
-        if (pageSize < 1 || totalRows < 1) {
-            return ""; // NOI18N
+        String curPage = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
+        String totalPages = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
+
+        if (pageSize >= 0 && currentPos >= 0) {
+            curPage = Integer.toString(currentPos / pageSize + (pageSize == 1 ? 0 : 1));
         }
 
-        Integer curPage = currentPos / pageSize + (pageSize == 1 ? 0 : 1);
-        Integer totalPages = totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0);
+        if (pageSize >= 0 && totalRows >= 0) {
+            totalPages = Integer.toString(totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0));
+        }
         return NbBundle.getMessage(DataViewPageContext.class, "LBL_page_of", curPage, totalPages);
     }
 

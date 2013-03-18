@@ -217,15 +217,15 @@ class DataViewUI extends JXPanel {
     }
 
     final void updateTotalCountLabel() {
-        int count = dataView.getDataViewPageContext().getTotalRows();
         assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
-        if (count < 0) {
-            int pageSize = dataView.getDataViewPageContext().getPageSize();
-            int totalRows = dataView.getDataViewPageContext().getModel().getRowCount();
-            String NA = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
-            totalRowsLabel.setText(totalRows < pageSize ? totalRows + "" : NA);
+        DataViewPageContext pageContext = dataView.getDataViewPageContext();
+        if (pageContext.isTotalRowCountAvailable()) {
+            totalRowsLabel.setText(
+                    pageContext.getTotalRows() + "   " + pageContext.pageOf());
         } else {
-            totalRowsLabel.setText(count + "   " + dataView.getDataViewPageContext().pageOf());
+            totalRowsLabel.setText(NbBundle.getMessage(DataViewUI.class,
+                    "LBL_not_available") + " "
+                    + dataView.getDataViewPageContext().pageOf());
         }
     }
 
@@ -316,7 +316,9 @@ class DataViewUI extends JXPanel {
 
             if (dataPage.hasNext()) {
                 next.setEnabled(true);
-                last.setEnabled(true);
+                if (dataPage.getTotalRows() >= 0) {
+                    last.setEnabled(true);
+                }
             }
 
             if (dataPage.hasOnePageOnly()) {
