@@ -54,6 +54,7 @@ import org.openide.util.HelpCtx;
  */
 @OptionsPanelController.SubRegistration(
 location = "Advanced",
+id = "Windows",
 displayName = "#AdvancedOption_DisplayName_MultiTabs",
 keywords = "#AdvancedOption_Keywords_MultiTabs",
 keywordsCategory = "Advanced/MultiTabs" )
