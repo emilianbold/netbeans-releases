@@ -107,6 +107,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  * UI for selecting JS libraries.
@@ -1037,7 +1038,8 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
         static LibrariesTableModel create() {
             LibrariesTableModel model = new LibrariesTableModel();
-            WebClientLibraryManager.getDefault().addPropertyChangeListener(model);
+            WebClientLibraryManager libraryManager = WebClientLibraryManager.getDefault();
+            libraryManager.addPropertyChangeListener(WeakListeners.propertyChange(model, libraryManager));
             return model;
         }
 
