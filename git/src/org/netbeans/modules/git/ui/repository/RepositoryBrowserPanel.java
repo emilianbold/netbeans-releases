@@ -189,7 +189,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    jSplitPane1.setDividerLocation(0.5);
+                    int width = revisionsPanel1.getPreferredSize().width;
+                    int leftPanelWidth = jSplitPane1.getPreferredSize().width - width;
+                    jSplitPane1.setDividerLocation(Math.min(200, leftPanelWidth));
                 }
             });
         }
