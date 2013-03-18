@@ -43,14 +43,16 @@ package org.netbeans.modules.php.analysis.options;
 
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
 import org.netbeans.modules.php.api.validation.ValidationResult;
+import org.openide.util.NbBundle;
 
 public final class AnalysisOptionsValidator {
 
     private final ValidationResult result = new ValidationResult();
 
 
-    public AnalysisOptionsValidator validate(String codeSnifferPath) {
+    public AnalysisOptionsValidator validate(String codeSnifferPath, String codeSnifferStandard) {
         validateCodeSnifferPath(codeSnifferPath);
+        validateCodeSnifferStandard(codeSnifferStandard);
         return this;
     }
 
@@ -61,7 +63,14 @@ public final class AnalysisOptionsValidator {
     private void validateCodeSnifferPath(String codeSnifferPath) {
         String warning = CodeSniffer.validate(codeSnifferPath);
         if (warning != null) {
-            result.addWarning(new ValidationResult.Message("codeSnifferPath", warning)); // NOI18N
+            result.addWarning(new ValidationResult.Message("codeSniffer.path", warning)); // NOI18N
+        }
+    }
+
+    @NbBundle.Messages("AnalysisOptionsValidator.codeSniffer.standard.empty=Valid code sniffer standard must be set.")
+    private void validateCodeSnifferStandard(String codeSnifferStandard) {
+        if (codeSnifferStandard == null) {
+            result.addWarning(new ValidationResult.Message("codeSniffer.standard", Bundle.AnalysisOptionsValidator_codeSniffer_standard_empty())); // NOI18N
         }
     }
 
