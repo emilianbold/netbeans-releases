@@ -116,8 +116,8 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         command.setModel(new DefaultComboBoxModel(issues.toArray(new IssueImpl[issues.size()])));
         command.setSelectedItem(null);
     }
-
-    void setIssue(IssueImpl issue) {
+    
+    public void setIssue(IssueImpl issue) {
         if(issue != null) {
             command.getEditor().setItem(issue);
             displayer.setVisible(false);

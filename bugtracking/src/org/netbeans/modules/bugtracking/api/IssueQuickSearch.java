@@ -79,4 +79,8 @@ public final class IssueQuickSearch {
     public void enableFields(boolean b) {
         bar.enableFields(b);
     }
+    
+    public void setIssue(Issue issue) {
+        bar.setIssue(issue.getImpl());
+    }
 }
