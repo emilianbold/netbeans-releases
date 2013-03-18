@@ -229,7 +229,7 @@ public class AutomaticRegistration {
             instanceFO.setAttribute(GlassfishModule.INSTALL_FOLDER_ATTR, glassfishRoot.getParent());
             instanceFO.setAttribute(GlassfishModule.HOSTNAME_ATTR, "localhost"); // NOI18N
             instanceFO.setAttribute(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot.getAbsolutePath());
-            instanceFO.setAttribute(GlassfishModule.JAVA_PLATFORM_ATTR, java7orLaterExecutable == null ? "" : java7orLaterExecutable); // NOI18N
+            instanceFO.setAttribute(GlassfishModule.JAVA_PLATFORM_ATTR, java7orLaterExecutable == null ? "" : java7orLaterExecutable.getAbsolutePath()); // NOI18N
             instanceFO.setAttribute(GlassfishModule.HTTPPORT_ATTR, "8080"); // NOI18N
             instanceFO.setAttribute(GlassfishModule.HTTPHOST_ATTR, "localhost"); // NOI18N
             instanceFO.setAttribute(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE);

@@ -53,10 +53,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.BrowserUtils;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
@@ -64,6 +66,7 @@ import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
+import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationValidator;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxEditor;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxModel;
@@ -107,6 +110,8 @@ public class GlassFishPanel extends DestinationPanel {
         setProperty(BROWSE_BUTTON_TEXT_PROPERTY,
                 DEFAULT_BROWSE_BUTTON_TEXT);
         
+        setProperty(WARNING_JDK_NOT_RECOMMENDED_VERSION,
+                DEFAULT_WARNING_JDK_NOT_RECOMMENDED_VERSION);
     }
     
     @Override
@@ -191,7 +196,7 @@ public class GlassFishPanel extends DestinationPanel {
         private NbiLabel jdkLocationLabel;
         private NbiComboBox jdkLocationComboBox;
         private NbiButton browseButton;
-        private NbiLabel statusLabel;
+        private NbiTextPane statusLabel;
         
         private NbiTextField jdkLocationField;
         
@@ -223,7 +228,7 @@ public class GlassFishPanel extends DestinationPanel {
                         jdkLocationPanel.getProperty(JdkLocationPanel.ERROR_NOTHING_FOUND_PROPERTY),
                         minVersion.toJdkStyle(),
                         minVersion.toJdkStyle()));
-            } else {
+            } else if (getNeedJava7Warning() == null) {
                 statusLabel.clearText();
                 statusLabel.setVisible(false);
             }
@@ -254,6 +259,7 @@ public class GlassFishPanel extends DestinationPanel {
             
             
             super.initialize();
+            
         }
         
         @Override
@@ -311,18 +317,37 @@ public class GlassFishPanel extends DestinationPanel {
                 } while (actualFolder.getParentFile() != null);
             }
             
+            if (getWarningMessage() == null && getNeedJava7Warning() != null) {
+                if (! statusLabel.isVisible()) {
+                    statusLabel.setText(getNeedJava7Warning());
+                    statusLabel.setVisible(true);
+                }
+            } else {
+                statusLabel.clearText();
+                statusLabel.setVisible(false);
+            }
+            
             return null;
         }
         
-//        @Override
-//        protected String getWarningMessage() {
-//            String warningMessage  = panel.getJdkLocationPanel().validateLocation(
-//                        jdkLocationField.getText());
-//            if (warningMessage == null) {
-//                warningMessage = super.getWarningMessage();
-//            }
-//            return warningMessage;
-//        }
+        @Override
+        protected String getWarningMessage() {
+            String warningMessage  = panel.getJdkLocationPanel().validateLocation(
+                        jdkLocationField.getText());
+            return warningMessage;
+        }
+        
+        private String getNeedJava7Warning() {
+            String warningMessage = null;
+            if (getWarningMessage() == null) {
+                if (JavaUtils.criticalLowVersion.newerThan(JavaUtils.getVersion(panel.getJdkLocationPanel().getSelectedLocation()))) {
+                    warningMessage = StringUtils.format(
+                            panel.getProperty(WARNING_JDK_NOT_RECOMMENDED_VERSION), 
+                            panel.jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY));
+                }
+            }
+            return warningMessage;
+        }
         
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
@@ -391,7 +416,10 @@ public class GlassFishPanel extends DestinationPanel {
             });
             
             // statusLabel //////////////////////////////////////////////////////////
-            statusLabel = new NbiLabel();
+            statusLabel = new NbiTextPane();
+            statusLabel.setContentType("text/html");
+            statusLabel.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
+            
             
             // fileChooser //////////////////////////////////////////////////////////
             fileChooser = new NbiDirectoryChooser();
@@ -464,6 +492,8 @@ public class GlassFishPanel extends DestinationPanel {
             "jdk.location.label.text"; // NOI18N
     public static final String BROWSE_BUTTON_TEXT_PROPERTY =
             "browse.button.text"; // NOI18N
+    public static final String WARNING_JDK_NOT_RECOMMENDED_VERSION =
+            "jdk.not.recommended.version";
 
     public static final String DEFAULT_DESTINATION_LABEL_TEXT =
             ResourceUtils.getString(GlassFishPanel.class,
@@ -490,4 +520,7 @@ public class GlassFishPanel extends DestinationPanel {
     public static final String DEFAULT_ERROR_IN_NETBEANS_INSTALLATION_FOLDER =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.error.in.nb.installation.folder"); // NOI18N
+    public static final String DEFAULT_WARNING_JDK_NOT_RECOMMENDED_VERSION =
+            ResourceUtils.getString(GlassFishPanel.class,
+            "GFP.warning.jdk.not.recommended.version"); // NOI18N
 }
