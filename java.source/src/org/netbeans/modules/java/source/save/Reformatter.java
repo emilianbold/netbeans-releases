@@ -1188,6 +1188,21 @@ public class Reformatter implements ReformatTask {
         }
 
         @Override
+        public Boolean visitAnnotatedType(AnnotatedTypeTree node, Void p) {
+            List<? extends AnnotationTree> annotations = node.getAnnotations();
+            if (annotations != null && !annotations.isEmpty()) {
+                for (Iterator<? extends AnnotationTree> it = annotations.iterator(); it.hasNext();) {
+                    scan(it.next(), p);
+                    if (it.hasNext())
+                        spaces(1, true);
+                }
+            }
+            space();
+            scan(node.getUnderlyingType(), p);
+            return true;
+        }
+
+        @Override
         public Boolean visitTypeParameter(TypeParameterTree node, Void p) {
             if (!ERROR.contentEquals(node.getName()))
                 accept(IDENTIFIER);
