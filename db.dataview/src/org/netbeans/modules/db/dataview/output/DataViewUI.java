@@ -205,14 +205,6 @@ class DataViewUI extends JXPanel {
         return editButtons;
     }
 
-    void setEditable(boolean editable) {
-        getDataViewTableUIModel().setEditable(editable);
-    }
-
-    boolean isEditable() {
-        return getDataViewTableUIModel().isEditable();
-    }
-
     final void updateTotalCountLabel() {
         assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
 
@@ -313,7 +305,7 @@ class DataViewUI extends JXPanel {
             }
 
             // editing controls
-            if (!isEditable()) {
+            if (! dataPanel.getModel().isEditable()) {
                 commit.setEnabled(false);
                 cancel.setEnabled(false);
                 deleteRow.setEnabled(false);

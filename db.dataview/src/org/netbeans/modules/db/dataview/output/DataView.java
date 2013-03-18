@@ -129,7 +129,7 @@ public class DataView {
         synchronized (this) {
             DataViewDBTable tblMeta = dataPage.getTableMetaData();
             this.dataViewUI = new DataViewUI(this, dataPage, nbOutputComponent);
-            dataViewUI.setEditable(tblMeta == null ? false : tblMeta.hasOneTable());
+            dataPage.getModel().setEditable(tblMeta == null ? false : tblMeta.hasOneTable());
             resetToolbar(hasExceptions());
         }
         results = new ArrayList<Component>();
@@ -194,7 +194,7 @@ public class DataView {
     }
 
     public synchronized void setEditable(boolean editable) {
-        dataViewUI.setEditable(editable);
+        getDataViewPageContext().getModel().setEditable(editable);
     }
 
     // Used by org.netbeans.modules.db.dataview.api.DataViewPageContext#getPageSize
@@ -238,7 +238,7 @@ public class DataView {
     }
 
     public boolean isEditable() {
-        return dataViewUI.isEditable();
+        return getDataViewPageContext().getModel().isEditable();
     }
 
     synchronized void disableButtons() {

@@ -305,7 +305,7 @@ final class DataViewTableUI extends ResultSetJXTable {
 
             if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
                 boolean rowSelected = table.getSelectedRows().length > 0;
-                if (rowSelected && dataviewUI.isEditable()) {
+                if (rowSelected && getModel().isEditable()) {
                     dataviewUI.enableDeleteBtn(true);
                 } else {
                     dataviewUI.enableDeleteBtn(false);
@@ -566,7 +566,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     if (!inSelection) {
                         changeSelection(selectedRow, selectedColumn, false, false);
                     }
-                    if (!dataviewUI.isEditable()) {
+                    if (! getModel().isEditable()) {
                         miInsertAction.setEnabled(false);
                         miDeleteAction.setEnabled(false);
                         miTruncateRecord.setEnabled(false);
