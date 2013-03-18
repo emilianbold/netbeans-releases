@@ -475,7 +475,7 @@ public class BrowserConsoleLogger implements Console.Listener {
             fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         }
         if (fileObject == null) {
-            LOG.log(Level.INFO, "Cannot resolve \"{0}\"", filePath);
+            LOG.log(Level.FINE, "Cannot resolve \"{0}\"", filePath);
             return null;
         }
 
