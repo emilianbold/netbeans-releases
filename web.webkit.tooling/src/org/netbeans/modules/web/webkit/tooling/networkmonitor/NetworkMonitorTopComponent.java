@@ -964,6 +964,9 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         if ("application/xml".equals(contentType)) {
             contentType = "text/xml";
         }
+        if (contentType == null) {
+            contentType = "text/plain";
+        }
         pane.setEditorKit(CloneableEditorSupport.getEditorKit(contentType));
         pane.setText(data);
     }
