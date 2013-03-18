@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.analysis.util;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -50,15 +51,61 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JComboBox;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.analysis.ui.CodeSnifferStandardsComboBoxModel;
+import org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelController;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 public final class AnalysisUtils {
 
+    private static final RequestProcessor RP = new RequestProcessor("Code analysis standards fetcher"); // NOI18N
+
+
     private AnalysisUtils() {
+    }
+
+    public static void connect(final JComboBox comboBox, final CodeSnifferStandardsComboBoxModel standardsComboBoxModel, @NullAllowed final String selectedStandard,
+            @NullAllowed final Runnable errorTaks) {
+        comboBox.setModel(standardsComboBoxModel);
+        comboBox.setEnabled(false);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                CodeSniffer codeSniffer;
+                try {
+                    codeSniffer = CodeSniffer.getDefault();
+                } catch (InvalidPhpExecutableException ex) {
+                    UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AnalysisOptionsPanelController.OPTIONS_SUB_PATH);
+                    return;
+                }
+                final List<String> standards = codeSniffer.getStandards();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (standards == null) {
+                            if (errorTaks != null) {
+                                errorTaks.run();
+                            }
+                        } else {
+                            comboBox.setEnabled(true);
+                            standardsComboBoxModel.setStandards(standards);
+                            if (selectedStandard != null) {
+                                standardsComboBoxModel.setSelectedItem(selectedStandard);
+                            }
+                        }
+                    }
+                });
+            }
+        });
     }
 
     public static Map<FileObject, Integer> countPhpFiles(Scope scope) {
