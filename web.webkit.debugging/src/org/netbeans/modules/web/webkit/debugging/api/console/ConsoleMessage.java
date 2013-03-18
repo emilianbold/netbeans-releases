@@ -108,7 +108,7 @@ public final class ConsoleMessage {
 
         private JSONObject stack;
 
-        StackFrame(JSONObject stack) {
+        public StackFrame(JSONObject stack) {
             this.stack = stack;
         }
         
