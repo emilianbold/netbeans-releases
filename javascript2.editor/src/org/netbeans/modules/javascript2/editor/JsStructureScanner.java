@@ -369,13 +369,7 @@ public class JsStructureScanner implements StructureScanner {
         }
         
         protected void appendTypeInfo(HtmlFormatter formatter, Collection<? extends Type> types) {
-            List<String> displayNames = new ArrayList<String>(types.size());
-            for (Type type : types) { 
-                String displayName = type.getDisplayName();
-                if (!displayName.isEmpty()) {
-                    displayNames.add(displayName);
-                }
-            }
+            Collection<String> displayNames = Utils.getDisplayNames(types);
             if (!displayNames.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR);
                 formatter.appendText(" : ");
