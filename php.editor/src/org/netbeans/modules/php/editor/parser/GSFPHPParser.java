@@ -109,38 +109,11 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         long startTime = System.currentTimeMillis();
-        FileObject file = snapshot.getSource().getFileObject();
-        if (!PARSE_BIG_FILES && fileIsTooBig(file)) {
-            Program emptyProgram = new Program(0, snapshot.getText().toString().length(), Collections.<Statement>emptyList(), Collections.<Comment>emptyList());
-            result = new PHPParseResult(snapshot, emptyProgram);
-            LOGGER.log(
-                    Level.WARNING,
-                    "Parsing of big file cancelled. Size: {0} Name: {1}",
-                    new Object[] {file.getSize(), FileUtil.getFileDisplayName(file)});
+        FileObject fileObject = snapshot.getSource().getFileObject();
+        if (!PARSE_BIG_FILES && fileIsTooBig(fileObject)) {
+            doNotProcessParsing(fileObject, snapshot);
         } else {
-            PhpLanguageProperties languageProperties = PhpLanguageProperties.forFileObject(file);
-            if (!projectPropertiesListenerAdded) {
-                PropertyChangeListener weakListener = WeakListeners.propertyChange(this, languageProperties);
-                languageProperties.addPropertyChangeListener(weakListener);
-                projectPropertiesListenerAdded = true;
-            }
-
-            shortTags = languageProperties.areShortTagsEnabled();
-            aspTags = languageProperties.areAspTagsEnabled();
-            try {
-                int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
-                LOGGER.log(Level.FINE, "caretOffset: {0}", caretOffset); //NOI18N
-                Context context = new Context(snapshot, caretOffset);
-                result = parseBuffer(context, Sanitize.NONE, null);
-            } catch (Exception exception) {
-                LOGGER.log(Level.FINE, "Exception during parsing: {0}", exception);
-                int end = snapshot.getText().toString().length();
-                ASTError error = new ASTError(0, end);
-                List<Statement> statements = new ArrayList<Statement>();
-                statements.add(error);
-                Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
-                result = new PHPParseResult(snapshot, emptyProgram);
-            }
+            processParsing(fileObject, snapshot, event);
         }
         long endTime = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, System.identityHashCode(snapshot.getSource())}); //NOI18N
@@ -148,6 +121,40 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     private static boolean fileIsTooBig(FileObject fileObject) {
         return fileObject.getSize() > BIG_FILE_SIZE;
+    }
+
+    private void doNotProcessParsing(FileObject fileObject, Snapshot snapshot) {
+        Program emptyProgram = new Program(0, snapshot.getText().toString().length(), Collections.<Statement>emptyList(), Collections.<Comment>emptyList());
+        result = new PHPParseResult(snapshot, emptyProgram);
+        LOGGER.log(
+                Level.WARNING,
+                "Parsing of big file cancelled. Size: {0} Name: {1}",
+                new Object[] {fileObject.getSize(), FileUtil.getFileDisplayName(fileObject)});
+    }
+
+    private void processParsing(FileObject fileObject, Snapshot snapshot, SourceModificationEvent event) {
+        PhpLanguageProperties languageProperties = PhpLanguageProperties.forFileObject(fileObject);
+        if (!projectPropertiesListenerAdded) {
+            PropertyChangeListener weakListener = WeakListeners.propertyChange(this, languageProperties);
+            languageProperties.addPropertyChangeListener(weakListener);
+            projectPropertiesListenerAdded = true;
+        }
+        shortTags = languageProperties.areShortTagsEnabled();
+        aspTags = languageProperties.areAspTagsEnabled();
+        try {
+            int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
+            LOGGER.log(Level.FINE, "caretOffset: {0}", caretOffset); //NOI18N
+            Context context = new Context(snapshot, caretOffset);
+            result = parseBuffer(context, Sanitize.NONE, null);
+        } catch (Exception exception) {
+            LOGGER.log(Level.FINE, "Exception during parsing: {0}", exception);
+            int end = snapshot.getText().toString().length();
+            ASTError error = new ASTError(0, end);
+            List<Statement> statements = new ArrayList<Statement>();
+            statements.add(error);
+            Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
+            result = new PHPParseResult(snapshot, emptyProgram);
+        }
     }
 
     protected PHPParseResult parseBuffer(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception {
