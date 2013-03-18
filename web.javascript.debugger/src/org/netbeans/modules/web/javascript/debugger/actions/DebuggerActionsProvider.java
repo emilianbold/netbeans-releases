@@ -54,7 +54,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.javascript.debugger.eval.ui.CodeEvaluator;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
-import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
+import org.netbeans.modules.web.webkit.debugging.spi.JavaScriptDebuggerFactory;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -168,8 +168,8 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
             //debugger.startJSDebugging();
         } else if (action == ActionsManager.ACTION_KILL) {
             if (debugger.isEnabled()) {
-                NetBeansJavaScriptDebuggerFactory factory =
-                        Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
+                JavaScriptDebuggerFactory factory =
+                        Lookup.getDefault().lookup(JavaScriptDebuggerFactory.class);
                 if (factory != null) {
                     factory.stopDebuggingSession(DebuggerManager.getDebuggerManager().getCurrentSession());
                 }
