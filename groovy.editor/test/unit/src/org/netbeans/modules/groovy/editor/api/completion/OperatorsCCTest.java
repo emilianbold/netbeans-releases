@@ -69,9 +69,9 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "SafeNavigation1.groovy", "        r?.t^", true);
     }
 
-    /*public void testSafeNavigation2_1() throws Exception {
-        checkCompletion(BASE + "SafeNavigation2.groovy", "        \"\"?.^", true);
-    }*/
+    public void testSafeNavigation2_1() throws Exception {
+        checkCompletion(BASE + "SafeNavigation2.groovy", "        \"\"?.a^", true);
+    }
 
     public void testMethodClosure1_1() throws Exception {
         checkCompletion(BASE + "MethodClosure1.groovy", "        x.&b^", true);
@@ -85,9 +85,9 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "MethodClosure1.groovy", "        r.&t^", true);
     }
 
-    /*public void testMethodClosure2_1() throws Exception {
-        checkCompletion(BASE + "MethodClosure2.groovy", "        \"\".&^", true);
-    }*/
+    public void testMethodClosure2_1() throws Exception {
+        checkCompletion(BASE + "MethodClosure2.groovy", "        \"\".&a^", true);
+    }
 
 
     public void testElvisOperator1_1() throws Exception {
