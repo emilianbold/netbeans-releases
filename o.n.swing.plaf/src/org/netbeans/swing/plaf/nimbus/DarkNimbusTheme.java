@@ -135,5 +135,10 @@ public class DarkNimbusTheme {
 
         UIManager.put( "nb.diff.sidebar.changed.color", new Color(18, 30, 74) ); //NOI18N
         UIManager.put( "nb.diff.sidebar.deleted.color", new Color(66, 30, 49) ); //NOI18N
+
+        //form designer
+        UIManager.put( "nb.formdesigner.gap.fixed.color", new Color(112,112,112) ); //NOI18N
+        UIManager.put( "nb.formdesigner.gap.resizing.color", new Color(116,116,116) ); //NOI18N
+        UIManager.put( "nb.formdesigner.gap.min.color", new Color(104,104,104) ); //NOI18N
    }
 }
