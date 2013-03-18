@@ -57,7 +57,6 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
@@ -138,6 +137,7 @@ public class GlassFishPanel extends DestinationPanel {
                 break;
             }
         }
+        jdkSelectedInGF = getWizard().getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY);
         if (jdkSelectedInGF != null) {
             getWizard().setProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY, jdkSelectedInGF);
         } else if (jdkSelectedInIDE != null) {
@@ -156,6 +156,7 @@ public class GlassFishPanel extends DestinationPanel {
             jdkLocationPanel.setLocation(jdkLocation);
         }
         
+        getWizard().setProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY, jdkSelectedInGF == null ? "" : jdkSelectedInGF); // NOI18N
     }
 
     public JdkLocationPanel getJdkLocationPanel() {
@@ -268,6 +269,9 @@ public class GlassFishPanel extends DestinationPanel {
                 return errorMessage;
             }
 
+            panel.getJdkLocationPanel().getWizard().
+                    setProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY, jdkSelectedInGF == null ? "" : jdkSelectedInGF); // NOI18N
+            
             //#128991: Installation not recognized not empty dir for GF
             File f = FileUtils.eliminateRelativity(getDestinationField().getText().trim());
             if (FileUtils.exists(f)) {

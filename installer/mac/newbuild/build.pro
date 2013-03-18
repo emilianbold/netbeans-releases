@@ -41,7 +41,7 @@
           </filterchain>
     </loadresource>
     
-    <property name="glassfish.v3.display.version" value="3.1.2.2"/>
+    <property name="glassfish.v3.display.version" value="4.0"/>
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.id"           value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-4.0"/>
