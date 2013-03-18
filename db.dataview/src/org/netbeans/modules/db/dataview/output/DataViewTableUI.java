@@ -415,7 +415,7 @@ final class DataViewTableUI extends ResultSetJXTable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    DBTable table = dataView.getDataViewDBTable().geTable(0);
+                    DBTable table = dataView.getDataViewDBTable().getTable(0);
                     String createSQL = dataView.getSQLStatementGenerator().generateCreateStatement(table);
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());

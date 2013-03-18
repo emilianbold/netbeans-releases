@@ -395,7 +395,7 @@ class SQLStatementGenerator {
     }
 
     private void generateWhereCondition(StringBuilder result, List<Integer> types, List<Object> values, int rowNum, DataViewTableUIModel model) {
-        DBPrimaryKey key = tblMeta.geTable(0).getPrimaryKey();
+        DBPrimaryKey key = tblMeta.getTable(0).getPrimaryKey();
         boolean keySelected = false;
         boolean and = false;
 
@@ -426,7 +426,7 @@ class SQLStatementGenerator {
     }
 
     private void generateWhereCondition(StringBuilder sql, int rowNum, DataViewTableUIModel model) {
-        DBPrimaryKey key = tblMeta.geTable(0).getPrimaryKey();
+        DBPrimaryKey key = tblMeta.getTable(0).getPrimaryKey();
         boolean keySelected = false;
         boolean and = false;
 

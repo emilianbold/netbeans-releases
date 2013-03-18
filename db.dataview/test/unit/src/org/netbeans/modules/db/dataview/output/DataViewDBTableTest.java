@@ -93,7 +93,7 @@ public class DataViewDBTableTest extends NbTestCase {
     }
 
     public static DBTable getTable(DataView dv, int index){
-        return dv.getDataViewDBTable().geTable(index);
+        return dv.getDataViewDBTable().getTable(index);
     }
     /**
      * Test of geTable method, of class DataViewDBTable.
@@ -103,7 +103,7 @@ public class DataViewDBTableTest extends NbTestCase {
         String sqlStr = context.getSqlSelect();
         DataView dv = DataView.create(dbconn, sqlStr, index);
         DataViewDBTable instance = dv.getDataViewDBTable();
-        DBTable result = instance.geTable(0);
+        DBTable result = instance.getTable(0);
         assertNotNull(result);
         assertEquals(11, instance.getColumnCount());
     }
@@ -117,7 +117,7 @@ public class DataViewDBTableTest extends NbTestCase {
         DataView dv = DataView.create(dbconn, sqlStr, index);
         DataViewDBTable instance = dv.getDataViewDBTable();
         int expResult = 1;
-        int result = instance.geTableCount();
+        int result = instance.getTableCount();
         assertEquals(expResult, result);
     }
 

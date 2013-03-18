@@ -489,7 +489,7 @@ class SQLExecutionHelper {
             public void execute() throws SQLException, DBException {
 
 
-                DBTable dbTable = dataView.getDataViewDBTable().geTable(0);
+                DBTable dbTable = dataView.getDataViewDBTable().getTable(0);
                 String truncateSql = "TRUNCATE TABLE " + dbTable.getFullyQualifiedName(true); // NOI18N
 
                 try {

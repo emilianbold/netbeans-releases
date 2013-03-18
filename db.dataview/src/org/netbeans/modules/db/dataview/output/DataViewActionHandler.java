@@ -156,7 +156,7 @@ class DataViewActionHandler {
     }
 
     void truncateActionPerformed() {
-        String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataView.getDataViewDBTable().geTable(0).getDisplayName();
+        String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataView.getDataViewDBTable().getTable(0).getDisplayName();
         if ((showYesAllDialog(confirmMsg, confirmMsg)).equals(NotifyDescriptor.YES_OPTION)) {
             execHelper.executeTruncate();
         }

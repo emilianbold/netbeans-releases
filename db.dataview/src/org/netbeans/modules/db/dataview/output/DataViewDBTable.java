@@ -77,11 +77,11 @@ public class DataViewDBTable {
         columns = Collections.unmodifiableList(cols);
     }
 
-    public DBTable geTable(int index) {
+    public DBTable getTable(int index) {
         return dbTables[index];
     }
 
-    public int geTableCount() {
+    public int getTableCount() {
         return dbTables.length;
     }
 
