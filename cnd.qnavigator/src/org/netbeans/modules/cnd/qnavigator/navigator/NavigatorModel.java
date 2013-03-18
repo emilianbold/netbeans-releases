@@ -56,7 +56,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.Timer;
 import javax.swing.text.Caret;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -156,6 +155,18 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
 
     void removeNotify() {
         stopTimers();
+        synchronized(lock) {
+            final Children children = root.getChildren();
+            if (!Children.MUTEX.isReadAccess()){
+                 Children.MUTEX.writeAccess(new Runnable(){
+                    @Override
+                    public void run() {
+                        children.remove(children.getNodes());
+                    }
+                });
+            }
+            ui.selectNodes(new Node[] {});
+        }
     }
 
     void addNotify() {
@@ -265,7 +276,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         synchronized(lock) {
             Node node = fileModel.setSelection(caretLineNo);
             if (node != null) {
-                ui.selectNode(node);
+                ui.selectNodes(new Node[]{node});
             }
         }
     }
