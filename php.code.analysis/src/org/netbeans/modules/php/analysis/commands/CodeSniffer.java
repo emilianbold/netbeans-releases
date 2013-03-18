@@ -81,7 +81,7 @@ public final class CodeSniffer {
     private static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpcs-log.xml"); // NOI18N
 
     // XXX standard
-    private static final String STANDARD_PARAM = "--standard=PSR2"; // NOI18N
+    private static final String STANDARD_PARAM = "--standard=%s"; // NOI18N
     private static final String LIST_STANDARDS_PARAM = "-i"; // NOI18N
     private static final String REPORT_PARAM = "--report=xml"; // NOI18N
     private static final String REPORT_FILE_PARAM = "--report-file=" + XML_LOG.getAbsolutePath();
@@ -117,17 +117,17 @@ public final class CodeSniffer {
     }
 
     @CheckForNull
-    public List<Result> analyze(FileObject file) {
-        return analyze(file, false);
+    public List<Result> analyze(String standard, FileObject file) {
+        return analyze(standard, file, false);
     }
 
     @NbBundle.Messages("CodeSniffer.analyze=Code Sniffer (analyze)")
     @CheckForNull
-    public List<Result> analyze(FileObject file, boolean noRecursion) {
+    public List<Result> analyze(String standard, FileObject file, boolean noRecursion) {
         assert file.isValid() : "Invalid file given: " + file;
         try {
             Integer result = getExecutable(Bundle.CodeSniffer_analyze())
-                    .additionalParameters(getParameters(file, noRecursion))
+                    .additionalParameters(getParameters(ensureStandard(standard), file, noRecursion))
                     .runAndWait(getDescriptor(false), "Running code sniffer..."); // NOI18N
             if (result == null) {
                 return null;
@@ -142,7 +142,7 @@ public final class CodeSniffer {
         return null;
     }
 
-    @NbBundle.Messages("CodeSniffer.listStandards=Code Sniffer (list standards)")
+    @NbBundle.Messages("CodeSniffer.listStandards=Code Sniffer (standards)")
     @CheckForNull
     public List<String> getStandards() {
         StandardsOutputProcessorFactory standardsProcessorFactory = new StandardsOutputProcessorFactory();
@@ -180,10 +180,10 @@ public final class CodeSniffer {
         return descriptor;
     }
 
-    private List<String> getParameters(FileObject file, boolean noRecursion) {
+    private List<String> getParameters(String standard, FileObject file, boolean noRecursion) {
         Charset encoding = FileEncodingQuery.getEncoding(file);
         List<String> params = new ArrayList<String>();
-        params.add(STANDARD_PARAM);
+        params.add(String.format(STANDARD_PARAM, standard));
         params.add(REPORT_PARAM);
         params.add(REPORT_FILE_PARAM);
         params.add(EXTENSIONS_PARAM);
@@ -193,6 +193,18 @@ public final class CodeSniffer {
         }
         params.add(FileUtil.toFile(file).getAbsolutePath());
         return params;
+    }
+
+    private String ensureStandard(String standard) {
+        if (standard != null) {
+            return standard;
+        }
+        List<String> standards = getStandards();
+        if (standards == null) {
+            // fallback
+            return "PEAR"; // NOI18N
+        }
+        return standards.get(0);
     }
 
     //~ Inner classes
