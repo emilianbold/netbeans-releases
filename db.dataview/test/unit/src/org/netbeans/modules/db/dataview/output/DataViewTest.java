@@ -156,7 +156,7 @@ public class DataViewTest extends NbTestCase {
             ResultSet rset = stmt.executeQuery(sqlStr);
             Collection<DBTable> tables = dbMeta.generateDBTables(rset, sqlStr, true); //generateDBTables(rset);
             DataViewDBTable expResult = new DataViewDBTable(tables);
-            DataViewDBTable result = instance.getDataViewDBTable();
+            DataViewDBTable result = instance.getDataViewPageContext().getTableMetaData();
             assertEquals(expResult.getQualifiedName(0, false), result.getQualifiedName(0, false));
             assertEquals(expResult.getColumnCount(), result.getColumnCount());
             assertEquals(expResult.getColumnType(2), result.getColumnType(2));

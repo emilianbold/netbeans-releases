@@ -104,12 +104,10 @@ class InsertRecordDialog extends javax.swing.JDialog {
     InsertRecordTableUI insertRecordTableUI;
     private JXTableRowHeader rowHeader;
 
-    public InsertRecordDialog(DataView dataView) {
+    public InsertRecordDialog(DataView dataView, DBTable insertTable) {
         super(WindowManager.getDefault().getMainWindow(), true);
         this.dataView = dataView;
-
-        // @todo Don't directly choose first table for insert, but let it be passed in
-        insertTable = dataView.getDataViewDBTable().getTable(0);
+        this.insertTable = insertTable;
 
         insertDataModel = new ResultSetTableModel(
                 insertTable.getColumnList().toArray(new DBColumn[0]));
@@ -388,7 +386,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     try {
                         Object[] insertedRow = getInsertValues(i);
                         insertSQL = stmtBldr.generateInsertStatement(insertTable, insertedRow);
-                        RequestProcessor.Task task = execHelper.executeInsertRow(insertSQL, insertedRow);
+                        RequestProcessor.Task task = execHelper.executeInsertRow(insertTable, insertSQL, insertedRow);
                         task.waitFinished();
                         wasException = dataView.hasExceptions();
                     } catch (DBException ex) {
@@ -619,8 +617,9 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
         insertRecordTableUI.editCellAt(row, col);
         TableCellEditor editor = insertRecordTableUI.getCellEditor();
+        List<DBColumn> columns = insertTable.getColumnList();
         if (editor != null) {
-            DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
+            DBColumn dbcol = columns.get(col);
             if (dbcol.isGenerated() || !dbcol.isNullable()) {
                 Toolkit.getDefaultToolkit().beep();
                 editor.stopCellEditing();
@@ -642,7 +641,8 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         insertRecordTableUI.editCellAt(row, col);
         TableCellEditor editor = insertRecordTableUI.getCellEditor();
         if (editor != null) {
-            DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
+            List<DBColumn> columns = insertTable.getColumnList();
+            DBColumn dbcol = columns.get(col);
             Object val = insertRecordTableUI.getValueAt(row, col);
             if (dbcol.isGenerated() || !dbcol.hasDefault()) {
                 Toolkit.getDefaultToolkit().beep();

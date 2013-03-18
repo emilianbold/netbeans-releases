@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -144,25 +145,35 @@ class DataViewActionHandler {
     }
 
     void commitActionPerformed(boolean selectedOnly) {
+        assert dataPage.getTableMetaData().getTableCount() == 1 : "Only one table allowed in resultset if update is invoked";
+
         if (dataViewUI.isDirty()) {
-            execHelper.executeUpdateRow(dataViewUI.getDataViewTableUI(), selectedOnly);
+            execHelper.executeUpdateRow(
+                    dataPage.getTableMetaData().getTable(0),
+                    dataViewUI.getDataViewTableUI(),
+                    selectedOnly);
         }
     }
 
     void insertActionPerformed() {
-        InsertRecordDialog dialog = new InsertRecordDialog(dataView);
+        DBTable table = dataPage.getTableMetaData().getTable(0);
+        InsertRecordDialog dialog = new InsertRecordDialog(dataView, table);
         dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
         dialog.setVisible(true);
     }
 
     void truncateActionPerformed() {
-        String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataView.getDataViewDBTable().getTable(0).getDisplayName();
+        assert dataPage.getTableMetaData().getTableCount() == 1 : "Only one table allowed in resultset if delete is invoked";
+
+        String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataPage.getTableMetaData().getTable(0).getDisplayName();
         if ((showYesAllDialog(confirmMsg, confirmMsg)).equals(NotifyDescriptor.YES_OPTION)) {
-            execHelper.executeTruncate();
+            execHelper.executeTruncate(dataPage.getTableMetaData().getTable(0));
         }
     }
 
     void deleteRecordActionPerformed() {
+        assert dataPage.getTableMetaData().getTableCount() == 1 : "Only one table allowed in resultset if delete is invoked";
+
         DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
         if (rsTable.getSelectedRowCount() == 0) {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_select_delete_rows");
@@ -170,7 +181,8 @@ class DataViewActionHandler {
         } else {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_permanent_delete");
             if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete"))).equals(NotifyDescriptor.YES_OPTION)) {
-                execHelper.executeDeleteRow(rsTable);
+                DBTable table = dataPage.getTableMetaData().getTable(0);
+                execHelper.executeDeleteRow(table, rsTable);
             }
         }
     }

@@ -182,12 +182,12 @@ class SQLExecutionHelper {
                     DataViewDBTable dvTable = new DataViewDBTable(tables);
                     dataView.getDataViewPageContext().getModel().setColumns(
                             dvTable.getColumns().toArray(new DBColumn[0]));
-                    dataView.setDataViewDBTable(dvTable);
+                    dataView.getDataViewPageContext().setTableMetaData(dvTable);
                     if (resultSetNeedsReloading(dvTable)) {
                         executeSQLStatement(stmt, sql);
                         rs = stmt.getResultSet();
                     }
-                    loadDataFrom(rs);
+                    loadDataFrom(dvTable, rs);
                     if (Thread.interrupted()) {
                         return;
                     }
@@ -259,13 +259,14 @@ class SQLExecutionHelper {
         }
     }
 
-    RequestProcessor.Task executeInsertRow(final String insertSQL, final Object[] insertedRow) {
+    RequestProcessor.Task executeInsertRow(final DBTable table, final String insertSQL, final Object[] insertedRow) {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_insert");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
+                List<DBColumn> columns = table.getColumnList();
                 PreparedStatement pstmt = conn.prepareStatement(insertSQL);
                 try {
                     int pos = 1;
@@ -273,13 +274,12 @@ class SQLExecutionHelper {
                         Object val = insertedRow[i];
 
                         // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
-                        if (DataViewUtils.isSQLConstantString(val,
-                                dataView.getDataViewDBTable().getColumn(i))) {
+                        if (DataViewUtils.isSQLConstantString(val, columns.get(i))) {
                             continue;
                         }
 
                         // literals
-                        int colType = dataView.getDataViewDBTable().getColumnType(i);
+                        int colType = columns.get(i).getJdbcType();
                         DBReadWriteHelper.setAttributeValue(pstmt, pos++, colType, val);
                     }
 
@@ -322,17 +322,13 @@ class SQLExecutionHelper {
         return task;
     }
 
-    void executeDeleteRow(final DataViewTableUI rsTable) {
-        // @todo enhance to be able to work with more than one table
-        assert dataView.getDataViewDBTable().getTableCount() == 1 : "Deletes only supported for single table in resultset";
-
+    void executeDeleteRow(final DBTable table, final DataViewTableUI rsTable) {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_delete");
         final int[] rows = rsTable.getSelectedRows();
         for(int i = 0; i < rows.length; i++) {
             rows[i] = rsTable.convertRowIndexToModel(rows[i]);
         }
         Arrays.sort(rows);
-        final DBTable table = dataView.getDataViewDBTable().getTable(0);
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
             @Override
@@ -392,11 +388,7 @@ class SQLExecutionHelper {
         task.schedule(0);
     }
 
-    void executeUpdateRow(final DataViewTableUI rsTable, final boolean selectedOnly) {
-        // @todo enhance to be able to work with more than one table
-        assert dataView.getDataViewDBTable().getTableCount() == 1 : "Updates only supported for single table in resultset";
-
-        final DBTable table = dataView.getDataViewDBTable().getTable(0);
+    void executeUpdateRow(final DBTable table, final DataViewTableUI rsTable, final boolean selectedOnly) {
         final DataViewTableUIModel dataViewTableUIModel = rsTable.getModel();
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_update");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
@@ -486,7 +478,7 @@ class SQLExecutionHelper {
     }
 
     // Truncate is allowed only when there is single table used in the query.
-    void executeTruncate() {
+    void executeTruncate(final DBTable dbTable) {
         String msg = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_truncate_table_progress");
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_truncate");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, msg) {
@@ -495,9 +487,6 @@ class SQLExecutionHelper {
 
             @Override
             public void execute() throws SQLException, DBException {
-
-
-                DBTable dbTable = dataView.getDataViewDBTable().getTable(0);
                 String truncateSql = "TRUNCATE TABLE " + dbTable.getFullyQualifiedName(true); // NOI18N
 
                 try {
@@ -563,7 +552,8 @@ class SQLExecutionHelper {
                     executeSQLStatement(stmt, sql);
                     if (dataView.hasResultSet()) {
                         ResultSet rs = stmt.getResultSet();
-                        loadDataFrom(rs);
+                        loadDataFrom(dataView.getDataViewPageContext().getTableMetaData(),
+                                rs);
 
                         if (getTotal) {
                             Integer result = null;
@@ -631,7 +621,7 @@ class SQLExecutionHelper {
         task.schedule(0);
     }
 
-    void loadDataFrom(ResultSet rs) throws SQLException {
+    void loadDataFrom(DataViewDBTable tblMeta, ResultSet rs) throws SQLException {
         if (rs == null) {
             return;
         }
@@ -639,7 +629,6 @@ class SQLExecutionHelper {
         int pageSize = dataView.getDataViewPageContext().getPageSize();
         int startFrom = dataView.getDataViewPageContext().getCurrentPos();
 
-        DataViewDBTable tblMeta = dataView.getDataViewDBTable();
         List<Object[]> rows = new ArrayList<Object[]>();
         int colCnt = tblMeta.getColumnCount();
         try {

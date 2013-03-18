@@ -58,7 +58,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 
-import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -73,7 +72,6 @@ import javax.swing.SwingUtilities;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
-import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.table.JXTableRowHeader;
 import org.netbeans.modules.db.dataview.table.MultiColPatternFilter;
 import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
@@ -103,7 +101,7 @@ class DataViewUI extends JXPanel {
     private JXButton[] editButtons = new JXButton[5];
     private DataViewTableUI dataPanel;
     private JScrollPane dataPanelScrollPane;
-    private final DataView dataView;
+    private final DataViewPageContext pageContext;
     private JXButton cancel;
     private DataViewActionHandler actionHandler;
     private String imgPrefix = "/org/netbeans/modules/db/dataview/images/"; // NOI18N
@@ -151,10 +149,10 @@ class DataViewUI extends JXPanel {
         }
     };
 
-    DataViewUI(DataView dataView, boolean nbOutputComponent) {
+    DataViewUI(DataView dataView, DataViewPageContext pageContext, boolean nbOutputComponent) {
         assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
 
-        this.dataView = dataView;
+        this.pageContext = pageContext;
 
         //do not show tab view if there is only one tab
         this.putClientProperty("TabPolicy", "HideWhenAlone"); //NOI18N
@@ -178,7 +176,7 @@ class DataViewUI extends JXPanel {
         actionHandler = new DataViewActionHandler(this, dataView);
 
         //add resultset data panel
-        dataPanel = new DataViewTableUI(this, actionHandler, dataView);
+        dataPanel = new DataViewTableUI(this, actionHandler, dataView, pageContext);
         dataPanelScrollPane = new JScrollPane(dataPanel);
         JXTableRowHeader rowHeader = new JXTableRowHeader(dataPanel);
         dataPanelScrollPane.setRowHeaderView(rowHeader);
@@ -188,9 +186,8 @@ class DataViewUI extends JXPanel {
         dataPanel.revalidate();
         dataPanel.repaint();
 
-        dataPanel.setModel(dataView.getDataViewPageContext().getModel());
-        dataView.getDataViewPageContext().addPropertyChangeListener(
-                pageContextListener);
+        dataPanel.setModel(pageContext.getModel());
+        pageContext.addPropertyChangeListener(pageContextListener);
         updateTotalCountLabel();
     }
 
@@ -218,14 +215,14 @@ class DataViewUI extends JXPanel {
 
     final void updateTotalCountLabel() {
         assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
-        DataViewPageContext pageContext = dataView.getDataViewPageContext();
+
         if (pageContext.isTotalRowCountAvailable()) {
             totalRowsLabel.setText(
                     pageContext.getTotalRows() + "   " + pageContext.pageOf());
         } else {
             totalRowsLabel.setText(NbBundle.getMessage(DataViewUI.class,
                     "LBL_not_available") + " "
-                    + dataView.getDataViewPageContext().pageOf());
+                    + pageContext.pageOf());
         }
     }
 
@@ -249,21 +246,6 @@ class DataViewUI extends JXPanel {
         cancel.setEnabled(flag);
     }
 
-    void setDataRows(List<Object[]> rows) {
-        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
-        assert rows != null;
-
-        DBColumn[] columns = dataView.getDataViewDBTable().getColumns().toArray(
-                new DBColumn[0]);
-
-        DataViewTableUIModel dvtm = getDataViewTableUIModel();
-
-        dvtm.removeAllUpdates(false);
-
-        dvtm.setColumns(columns);
-        dvtm.setData(rows);
-        }
-
     void disableButtons() {
         assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
 
@@ -286,8 +268,8 @@ class DataViewUI extends JXPanel {
     }
 
     int getPageSize() {
-        int pageSize = dataView.getDataViewPageContext().getPageSize();
-        int totalCount = dataView.getDataViewPageContext().getTotalRows();
+        int pageSize = pageContext.getPageSize();
+        int totalCount = pageContext.getTotalRows();
         try {
             int count = Integer.parseInt(refreshField.getText().trim());
             return count < 0 ? pageSize : count;
@@ -307,26 +289,25 @@ class DataViewUI extends JXPanel {
         refreshField.setEnabled(true);
         matchBoxField.setEditable(true);
         deleteRow.setEnabled(false);
-        DataViewPageContext dataPage = dataView.getDataViewPageContext();
         if (!wasError) {
-            if (dataPage.hasPrevious()) {
+            if (pageContext.hasPrevious()) {
                 first.setEnabled(true);
                 previous.setEnabled(true);
             }
 
-            if (dataPage.hasNext()) {
+            if (pageContext.hasNext()) {
                 next.setEnabled(true);
-                if (dataPage.getTotalRows() >= 0) {
+                if (pageContext.getTotalRows() >= 0) {
                     last.setEnabled(true);
                 }
             }
 
-            if (dataPage.hasOnePageOnly()) {
+            if (pageContext.hasOnePageOnly()) {
                 first.setEnabled(false);
                 previous.setEnabled(false);
             }
 
-            if (dataPage.isLastPage()) {
+            if (pageContext.isLastPage()) {
                 next.setEnabled(false);
                 last.setEnabled(false);
             }
@@ -339,12 +320,12 @@ class DataViewUI extends JXPanel {
                 insert.setEnabled(false);
                 truncateButton.setEnabled(false);
             } else {
-                if (dataPage.hasRows()) {
+                if (pageContext.hasRows()) {
                     truncateButton.setEnabled(true);
                 } else {
                     deleteRow.setEnabled(false);
                     truncateButton.setEnabled(false);
-                    dataPage.first();
+                    pageContext.first();
                 }
                 insert.setEnabled(true);
                 if (getDataViewTableUIModel().getUpdateKeys().isEmpty()) {
@@ -359,7 +340,7 @@ class DataViewUI extends JXPanel {
             disableButtons();
         }
 
-        refreshField.setText("" + dataPage.getPageSize());
+        refreshField.setText("" + pageContext.getPageSize());
         if (dataPanel != null) {
             dataPanel.revalidate();
             dataPanel.repaint();

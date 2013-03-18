@@ -44,10 +44,10 @@ package org.netbeans.modules.db.dataview.output;
 import java.sql.Connection;
 import java.sql.Date;
 import javax.swing.SortOrder;
-import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.spi.DBConnectionProviderImpl;
 import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
 import org.netbeans.modules.db.dataview.util.DBTestUtil;
@@ -97,7 +97,8 @@ public class InsertRecordTableUITest extends NbTestCase {
         DataView dv = DataView.create(dbconn, sqlString, 5);
         dv.createComponents();
 
-        InsertRecordDialog ird = new InsertRecordDialog(dv);
+        DBTable table = dv.getDataViewPageContext().getTableMetaData().getTable(0);
+        InsertRecordDialog ird = new InsertRecordDialog(dv, table);
 
         ResultSetTableModel model = ird.insertRecordTableUI.getModel();
         ird.insertRecordTableUI.appendEmptyRow();

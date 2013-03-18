@@ -58,14 +58,26 @@ class DataViewPageContext {
     public static final String PROP_pageSize = "pageSize";
     public static final String PROP_totalRows = "totalRows";
     public static final String PROP_currentPos = "currentPos";
+    public static final String PROP_tableMetaData = "tableMetaData";
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private int pageSize = 10;
     private int totalRows = -1;
     private int currentPos = 1;
+    private DataViewDBTable tableMetaData = null;
     private final DataViewTableUIModel model = new DataViewTableUIModel(new DBColumn[0]);
 
     DataViewPageContext(int pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public DataViewDBTable getTableMetaData() {
+        return tableMetaData;
+    }
+
+    public void setTableMetaData(DataViewDBTable tableMetaData) {
+        DataViewDBTable old = this.tableMetaData;
+        this.tableMetaData = tableMetaData;
+        firePropertyChange(PROP_tableMetaData, old, tableMetaData);
     }
 
     int getPageSize() {

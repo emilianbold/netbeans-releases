@@ -103,7 +103,7 @@ final class DataViewTableUI extends ResultSetJXTable {
         }
     };
 
-    public DataViewTableUI(final DataViewUI dataviewUI, final DataViewActionHandler handler, final DataView dataView) {
+    public DataViewTableUI(DataViewUI dataviewUI, DataViewActionHandler handler, DataView dataView, DataViewPageContext pageContext) {
         this.dataviewUI = dataviewUI;
         this.handler = handler;
 
@@ -112,7 +112,7 @@ final class DataViewTableUI extends ResultSetJXTable {
         this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
         addKeyListener(createControKeyListener());
-        createPopupMenu(handler, dataView);
+        createPopupMenu(handler, dataView, pageContext);
     }
 
     @Override
@@ -314,7 +314,7 @@ final class DataViewTableUI extends ResultSetJXTable {
         }
     }
 
-    private void createPopupMenu(final DataViewActionHandler handler, final DataView dataView) {
+    private void createPopupMenu(final DataViewActionHandler handler, final DataView dataView, final DataViewPageContext pageContext) {
         // content popup menu on table with results
         tablePopupMenu = new JPopupMenu();
         final JMenuItem miInsertAction = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_insert"));
@@ -415,7 +415,7 @@ final class DataViewTableUI extends ResultSetJXTable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    DBTable table = dataView.getDataViewDBTable().getTable(0);
+                    DBTable table = pageContext.getTableMetaData().getTable(0);
                     String createSQL = dataView.getSQLStatementGenerator().generateCreateStatement(table);
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -441,7 +441,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                         int modelIndex = convertRowIndexToModel(rows[j]);
                         Object[] insertRow = getModel().getRowData(modelIndex);
                         // @todo make table configurable
-                        DBTable table = dataView.getDataViewDBTable().getTable(0);
+                        DBTable table = pageContext.getTableMetaData().getTable(0);
                         String sql = dataView.getSQLStatementGenerator()
                                 .generateRawInsertStatement(table, insertRow);
                         insertSQL += sql + ";\n"; // NOI18N
@@ -469,7 +469,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
                     int modelIndex = convertRowIndexToModel(rows[j]);
                     // @todo make table configurable
-                    DBTable table = dataView.getDataViewDBTable().getTable(0);
+                    DBTable table = pageContext.getTableMetaData().getTable(0);
                     final String deleteStmt = generator.generateDeleteStatement(table, modelIndex, getModel());
                     rawDeleteStmt += deleteStmt + ";\n"; // NOI18N
                 }
@@ -489,7 +489,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                 String rawUpdateStmt = "";
                 SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
                 // @todo make table configurable
-                DBTable table = dataView.getDataViewDBTable().getTable(0);
+                DBTable table = pageContext.getTableMetaData().getTable(0);
 
                 try {
                     for (Integer row : getModel().getUpdateKeys()) {

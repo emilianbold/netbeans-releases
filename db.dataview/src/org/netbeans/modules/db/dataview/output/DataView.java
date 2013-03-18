@@ -71,7 +71,6 @@ public class DataView {
     private DatabaseConnection dbConn;
     private List<Throwable> errMessages = new ArrayList<Throwable>();
     private String sqlString; // Once Set, Data View assumes it will never change
-    private DataViewDBTable tblMeta;
     private SQLStatementGenerator stmtGenerator;
     private SQLExecutionHelper execHelper;
     private DataViewPageContext dataPage;
@@ -128,7 +127,8 @@ public class DataView {
         }
 
         synchronized (this) {
-            this.dataViewUI = new DataViewUI(this, nbOutputComponent);
+            DataViewDBTable tblMeta = dataPage.getTableMetaData();
+            this.dataViewUI = new DataViewUI(this, dataPage, nbOutputComponent);
             dataViewUI.setEditable(tblMeta == null ? false : tblMeta.hasOneTable());
             resetToolbar(hasExceptions());
         }
@@ -206,14 +206,6 @@ public class DataView {
     }
 
     // Non API modules follow
-
-    DataViewDBTable getDataViewDBTable() {
-        return tblMeta;
-    }
-
-    void setDataViewDBTable(DataViewDBTable tblMeta) {
-        this.tblMeta = tblMeta;
-    }
 
     DataViewPageContext getDataViewPageContext() {
         return dataPage;
