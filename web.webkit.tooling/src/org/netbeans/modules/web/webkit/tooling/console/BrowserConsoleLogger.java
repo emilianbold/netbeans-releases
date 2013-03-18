@@ -40,32 +40,40 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.javascript.debugger.console;
+package org.netbeans.modules.web.webkit.tooling.console;
 
 import java.awt.Color;
 import java.awt.SystemColor;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
-import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
-import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.console.Console;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -80,7 +88,7 @@ public class BrowserConsoleLogger implements Console.Listener {
     private static final String LEVEL_ERROR = "error";      // NOI18N
     private static final String LEVEL_DEBUG = "debug";      // NOI18N
 
-    private ProjectContext pc;
+    private Lookup projectContext;
     private InputOutput io;
     private Color colorStdBrighter;
     /** The last logged message. */
@@ -88,8 +96,10 @@ public class BrowserConsoleLogger implements Console.Listener {
     //private Color colorErrBrighter;
     private final AtomicBoolean shownOnError = new AtomicBoolean(false);
 
-    public BrowserConsoleLogger(ProjectContext pc) {
-        this.pc = pc;
+    private static final Logger LOG = Logger.getLogger(BrowserConsoleLogger.class.getName());
+
+    public BrowserConsoleLogger(Lookup projectContext) {
+        this.projectContext = projectContext;
         initIO();
     }
     
@@ -107,7 +117,12 @@ public class BrowserConsoleLogger implements Console.Listener {
             //colorErrBrighter = shiftTowards(colorErr, background);
         }
     }
-    
+
+    public void close() {
+        io.getErr().close();
+        io.getOut().close();
+    }
+
     private static Color shiftTowards(Color c, Color b) {
         return new Color((c.getRed() + b.getRed())/2, (c.getGreen() + b.getGreen())/2, (c.getBlue() + b.getBlue())/2);
     }
@@ -124,13 +139,10 @@ public class BrowserConsoleLogger implements Console.Listener {
 
     @Override
     public void messagesCleared() {
-// each new page loaded in the browser send this message;
-// it is little bit too agressive - I would prefere user to decide
-// when they want to clear the log
-//        try {
-//            getOutputLogger().getOut().reset();
-//        } catch (IOException ex) {}
-        shownOnError.set(false);
+        try {
+            io.getOut().reset();
+            io.getErr().reset();
+        } catch (IOException ex) {}
     }
 
     @Override
@@ -151,6 +163,8 @@ public class BrowserConsoleLogger implements Console.Listener {
         String level = msg.getLevel();
         boolean isErr = LEVEL_ERROR.equals(level);
         String time = getCurrentTime();
+
+        Project project = projectContext.lookup(Project.class);
         
         String logInfo = createLogInfo(time, level, msg.getSource(), msg.getType());
         OutputWriter ow = isErr ? io.getErr() : io.getOut();
@@ -160,7 +174,7 @@ public class BrowserConsoleLogger implements Console.Listener {
             if (colorStdBrighter == null && i == lines.length-1) {
                 singleMessageLine += logInfo;
             }
-            Object res[] = tryToConvertLineToHyperlink(singleMessageLine);
+            Object res[] = tryToConvertLineToHyperlink(project, singleMessageLine);
             MyListener l = null;
             String newMessage1 = null;
             String newMessage2 = null;
@@ -208,9 +222,9 @@ public class BrowserConsoleLogger implements Console.Listener {
                 sb = new StringBuilder();
                 
                 String urlStr = sf.getURLString();
-                urlStr = getProjectPath(urlStr);
+                urlStr = getProjectPath(project, urlStr);
                 sb.append(" ("+urlStr+":"+sf.getLine()+":"+sf.getColumn()+")");
-                MyListener l = new MyListener(sf.getURLString(), sf.getLine(), sf.getColumn());
+                MyListener l = new MyListener(project, sf.getURLString(), sf.getLine(), sf.getColumn());
                 if (l.isValidHyperlink()) {
                     ow.println(sb.toString(), l);
                 } else {
@@ -221,14 +235,14 @@ public class BrowserConsoleLogger implements Console.Listener {
         if (first && msg.getURLString() != null && msg.getURLString().length() > 0) {
             ow.print("  at ");
             String url = msg.getURLString();
-            String file = getProjectPath(url);
+            String file = getProjectPath(project, url);
             sb = new StringBuilder(file);
             int line = msg.getLine();
             if (line != -1 && line != 0) {
                 sb.append(":");
                 sb.append(line);
             }        
-            MyListener l = new MyListener(url, line, -1);
+            MyListener l = new MyListener(project, url, line, -1);
             if (l.isValidHyperlink()) {
                 ow.println(sb.toString(), l);
             } else {
@@ -243,11 +257,11 @@ public class BrowserConsoleLogger implements Console.Listener {
     // XXX: exact this algorithm is also in 
     // javascript.jstestdriver/src/org/netbeans/modules/javascript/jstestdriver/JSTestDriverSupport.java
     // keep them in sync
-    private Object[] tryToConvertLineToHyperlink(String line) {
+    private Object[] tryToConvertLineToHyperlink(Project project, String line) {
         // pattern is "at ...... (file:line:column)"
         // file can be also http:// url
         if (!line.endsWith(")")) {
-            return tryToConvertLineURLToHyperlink(line);
+            return tryToConvertLineURLToHyperlink(project, line);
         }
         int start = line.lastIndexOf('(');
         if (start == -1) {
@@ -285,13 +299,13 @@ public class BrowserConsoleLogger implements Console.Listener {
         }
         String s1 = line.substring(0, start);
         String s2 = "(" +  // NOI18N
-                getProjectPath(file) + 
+                getProjectPath(project, file) +
             line.substring(fileEnd, line.length());
-        MyListener l = new MyListener(file, lineNumber, columnNumber);
+        MyListener l = new MyListener(project, file, lineNumber, columnNumber);
         return new Object[]{l,s1,s2};
     }
     
-    private Object[] tryToConvertLineURLToHyperlink(String line) {
+    private Object[] tryToConvertLineURLToHyperlink(Project project, String line) {
         int u1 = line.indexOf("http://");   // NOI18N
         if (u1 < 0) {
             u1 = line.indexOf("https://");  // NOI18N
@@ -332,7 +346,7 @@ public class BrowserConsoleLogger implements Console.Listener {
         }
         String s1 = line.substring(0, u1);
         String s2 = line.substring(u1, line.length());
-        MyListener l = new MyListener(file, lineNumber, columnNumber);
+        MyListener l = new MyListener(project, file, lineNumber, columnNumber);
         return new Object[]{l,s1,s2};
     }
     
@@ -377,10 +391,9 @@ public class BrowserConsoleLogger implements Console.Listener {
      * @param urlStr The URL
      * @return a project-relative path, or the original URL.
      */
-    private String getProjectPath(String urlStr) {
+    public static String getProjectPath(Project project, String urlStr) {
         try {
             URL url = new URL(urlStr);
-            Project project = pc.getProject();
             if (project != null) {
                 FileObject fo = ServerURLMapping.fromServer(project, url);
                 if (fo != null) {
@@ -394,16 +407,18 @@ public class BrowserConsoleLogger implements Console.Listener {
         return urlStr;
     }
 
-    private class MyListener implements OutputListener {
+    public static class MyListener implements OutputListener {
 
         private String url;
         private int line;
         private int column;
+        private Project project;
 
-        public MyListener(String url, int line, int column) {
+        public MyListener(Project project, String url, int line, int column) {
             this.url = url;
             this.line = line;
             this.column = column;
+            this.project = project;
         }
         
         @Override
@@ -419,8 +434,7 @@ public class BrowserConsoleLogger implements Console.Listener {
             }
         }
         private Line getLine() {
-            Project project = pc.getProject();
-            return MiscEditorUtil.getLine(project, url, line-1);
+            return BrowserConsoleLogger.getLine(project, url, line-1);
         }
 
         @Override
@@ -432,5 +446,66 @@ public class BrowserConsoleLogger implements Console.Listener {
         }
     
     }
-    
+
+    private static Line getLine(Project project, final String filePath, final int lineNumber) {
+        if (filePath == null || lineNumber < 0) {
+            return null;
+        }
+
+        FileObject fileObject = null;
+        if (filePath.startsWith("http:") || filePath.startsWith("https:")) {    // NOI18N
+            try {
+                URL url = URI.create(filePath).toURL();
+                if (project != null) {
+                    fileObject = ServerURLMapping.fromServer(project, url);
+                }
+                if (fileObject == null) {
+                    fileObject = RemoteFileCache.getRemoteFile(url);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            File file;
+            if (filePath.startsWith("file:/")) {                                // NOI18N
+                file = Utilities.toFile(URI.create(filePath));
+            } else {
+                file = new File(filePath);
+            }
+            fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        }
+        if (fileObject == null) {
+            LOG.log(Level.INFO, "Cannot resolve \"{0}\"", filePath);
+            return null;
+        }
+
+        LineCookie lineCookie = getLineCookie(fileObject);
+        if (lineCookie == null) {
+            LOG.log(Level.INFO, "No line cookie for \"{0}\"", fileObject);
+            return null;
+        }
+        try {
+            return lineCookie.getLineSet().getCurrent(lineNumber);
+        } catch (IndexOutOfBoundsException ioob) {
+            List<? extends Line> lines = lineCookie.getLineSet().getLines();
+            if (lines.size() > 0) {
+                return lines.get(lines.size() - 1);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public static LineCookie getLineCookie(final FileObject fo) {
+        LineCookie result = null;
+        try {
+            DataObject dataObject = DataObject.find(fo);
+            if (dataObject != null) {
+                result = dataObject.getCookie(LineCookie.class);
+            }
+        } catch (DataObjectNotFoundException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }
