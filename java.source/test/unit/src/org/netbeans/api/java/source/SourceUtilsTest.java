@@ -56,6 +56,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -70,7 +72,9 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.modules.java.source.ClassIndexTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileLock;
@@ -96,7 +100,12 @@ public class SourceUtilsTest extends ClassIndexTestCase {
 
     protected void setUp() throws Exception {
         clearWorkDir();
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {SFBQImpl.getDefault()});
+        SourceUtilsTestUtil.prepareTest(
+                new String[0],
+                new Object[] {
+                    SFBQImpl.getDefault(),
+                    CPProvider.getDefault()
+                });
     }
         
     public void testGetEnclosingTypeElement() throws Exception {
@@ -239,50 +248,75 @@ public class SourceUtilsTest extends ClassIndexTestCase {
     
     
     public void testGetDependentRoots () throws Exception {
-        final URL url0 = new URL ("file:///url0/");
-        final URL url1 = new URL ("file:///url1/");
-        final URL url2 = new URL ("file:///url2/");
-        final URL url3 = new URL ("file:///url3/");
-        final URL url4 = new URL ("file:///url4/");
-        final URL url5 = new URL ("file:///url5/");
-        
-        final List<URL> deps0 = Arrays.asList (new URL[] {url0});
-        final List<URL> deps1 = Arrays.asList (new URL[] {url1, url2});
-        final List<URL> deps2 = Arrays.asList (new URL[] {url2});
-        final List<URL> deps3 = Arrays.asList (new URL[] {url3, url4});
+        final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        final FileObject url0 = FileUtil.createFolder(wd,"url0");  //NOI18N
+        final FileObject bin0 = FileUtil.createFolder(wd, "bin0"); //NOI18N
+        final FileObject url1 = FileUtil.createFolder(wd,"url1");  //NOI18N
+        final FileObject bin1 = FileUtil.createFolder(wd, "bin0"); //NOI18N
+        final FileObject url2 = FileUtil.createFolder(wd,"url2");  //NOI18N
+        final FileObject bin2 = FileUtil.createFolder(wd, "bin2"); //NOI18N
+        final FileObject url3 = FileUtil.createFolder(wd,"url3");  //NOI18N
+        final FileObject bin3 = FileUtil.createFolder(wd, "bin3"); //NOI18N
+        final FileObject url4 = FileUtil.createFolder(wd,"url4");  //NOI18N
+        final FileObject bin4 = FileUtil.createFolder(wd, "bin4"); //NOI18N
+        final FileObject url5 = FileUtil.createFolder(wd,"url5");  //NOI18N
+        final FileObject bin5 = FileUtil.createFolder(wd, "bin5"); //NOI18N
 
-        final ClassPath cp1 = ClassPathSupport.createClassPath(new URL[] {url1});
-        final ClassPath cp2 = ClassPathSupport.createClassPath(new URL[] {url2});
-        final ClassPath cp3 = ClassPathSupport.createClassPath(new URL[] {url3});
-        final ClassPath cp4 = ClassPathSupport.createClassPath(new URL[] {url4});
-        final ClassPath cp5 = ClassPathSupport.createClassPath(new URL[] {url5});
+        SFBQImpl.getDefault().register(bin0, url0);
+        SFBQImpl.getDefault().register(bin1, url1);
+        SFBQImpl.getDefault().register(bin2, url2);
+        SFBQImpl.getDefault().register(bin3, url3);
+        SFBQImpl.getDefault().register(bin4, url4);
+        SFBQImpl.getDefault().register(bin5, url5);
 
+
+
+        final ClassPath cp1 = ClassPathSupport.createClassPath(url1);
+        final ClassPath compile1 = ClassPathSupport.createClassPath(bin0);
+        final ClassPath cp2 = ClassPathSupport.createClassPath(url2);
+        final ClassPath compile2 = ClassPath.EMPTY;
+        final ClassPath cp3 = ClassPathSupport.createClassPath(url3);
+        final ClassPath compile3 = ClassPathSupport.createClassPath(bin1, bin2);
+        final ClassPath cp4 = ClassPathSupport.createClassPath(url4);
+        final ClassPath compile4 = ClassPathSupport.createClassPath(bin2);
+        final ClassPath cp5 = ClassPathSupport.createClassPath(url5);
+        final ClassPath compile5 = ClassPathSupport.createClassPath(bin3, bin4);
         final ClassPath[] cps = new ClassPath[] {cp1,cp2,cp3,cp4,cp5};
+
+        CPProvider.getDefault().register(url1, ClassPath.COMPILE, compile1);
+        CPProvider.getDefault().register(url1, ClassPath.SOURCE, cp1);
+        CPProvider.getDefault().register(url2, ClassPath.COMPILE, compile2);
+        CPProvider.getDefault().register(url2, ClassPath.SOURCE, cp2);
+        CPProvider.getDefault().register(url3, ClassPath.COMPILE, compile3);
+        CPProvider.getDefault().register(url3, ClassPath.SOURCE, cp3);
+        CPProvider.getDefault().register(url4, ClassPath.COMPILE, compile4);
+        CPProvider.getDefault().register(url4, ClassPath.SOURCE, cp4);
+        CPProvider.getDefault().register(url5, ClassPath.COMPILE, compile5);
+        CPProvider.getDefault().register(url5, ClassPath.SOURCE, cp5);
         
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cps);
+        IndexingManager.getDefault().refreshIndexAndWait(url1.toURL(), null, true);
+        IndexingManager.getDefault().refreshIndexAndWait(url2.toURL(), null, true);
+        IndexingManager.getDefault().refreshIndexAndWait(url3.toURL(), null, true);
+        IndexingManager.getDefault().refreshIndexAndWait(url4.toURL(), null, true);
+        IndexingManager.getDefault().refreshIndexAndWait(url5.toURL(), null, true);
 
-        final Map<URL,List<URL>> deps = new HashMap<URL,List<URL>> ();
-        deps.put (url1,deps0);
-        deps.put (url2,Collections.<URL>emptyList());
-        deps.put (url3,deps1);
-        deps.put (url4,deps2);
-        deps.put (url5,deps3);
-        
-        Set<URL> result = SourceUtils.getDependentRootsImpl(url5, deps, Collections.<URL, List<URL>>emptyMap(), true);
+
+        Set<URL> result = SourceUtils.getDependentRoots(url5.toURL(), true);
         assertEquals (1, result.size());
-        assertEquals (url5,result.iterator().next());
-        
-        result = SourceUtils.getDependentRootsImpl(url4, deps, Collections.<URL, List<URL>>emptyMap(), true);
-        assertEquals (new URL[] {url4, url5}, result);
-        
-        result = SourceUtils.getDependentRootsImpl(url3, deps, Collections.<URL, List<URL>>emptyMap(), true);
-        assertEquals (new URL[] {url3, url5}, result);
-        
-        result = SourceUtils.getDependentRootsImpl(url2, deps, Collections.<URL, List<URL>>emptyMap(), true);
-        assertEquals (new URL[] {url2, url3, url4, url5}, result);
-        
-        result = SourceUtils.getDependentRootsImpl(url1, deps, Collections.<URL, List<URL>>emptyMap(), true);
-        assertEquals (new URL[] {url1, url3, url5}, result);
+        assertEquals (url5.toURL(),result.iterator().next());
+
+        result = SourceUtils.getDependentRoots(url4.toURL(), true);
+        assertEquals (new URL[] {url4.toURL(), url5.toURL()}, result);
+
+        result = SourceUtils.getDependentRoots(url3.toURL(), true);
+        assertEquals (new URL[] {url3.toURL(), url5.toURL()}, result);
+
+        result = SourceUtils.getDependentRoots(url2.toURL(), true);
+        assertEquals (new URL[] {url2.toURL(), url3.toURL(), url4.toURL(), url5.toURL()}, result);
+
+        result = SourceUtils.getDependentRoots(url1.toURL(), true);
+        assertEquals (new URL[] {url1.toURL(), url3.toURL(), url5.toURL()}, result);
     }
     
                     
@@ -476,7 +510,47 @@ public class SourceUtilsTest extends ClassIndexTestCase {
         }
         return fo;
     }
-    
+
+    private static class CPProvider implements ClassPathProvider {
+
+        private ConcurrentMap<FileObject,Map<String,ClassPath>> cps =
+                new ConcurrentHashMap<FileObject, Map<String, ClassPath>>();
+
+        private CPProvider() {}
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            final Map<String,ClassPath> cps4file = cps.get(file);
+            if (cps4file == null) {
+                return null;
+            }
+            return cps4file.get(type);
+        }
+
+        void register(
+            FileObject root,
+            String type,
+            ClassPath cp) {
+            Map<String,ClassPath> res = cps.get(root);
+            if (res == null) {
+                final Map<String, ClassPath> newCps = new HashMap<String, ClassPath>();
+                res = cps.putIfAbsent(root, newCps);
+                if (res == null) {
+                    res = newCps;
+                }
+            }
+            res.put(type, cp);
+        }
+
+        static CPProvider getDefault() {
+            return H.INSTANCE;
+        }
+
+        private static class H {
+            private static final CPProvider INSTANCE = new CPProvider();
+        }
+
+    }
     
     private static class SFBQImpl implements SourceForBinaryQueryImplementation {
         
@@ -489,7 +563,7 @@ public class SourceUtilsTest extends ClassIndexTestCase {
         }
         
         public void register (FileObject bin, FileObject src) throws IOException {
-            map.put(bin.getURL(), src);
+            map.put(bin.toURL(), src);
         }
             
         public Result findSourceRoots(URL binaryRoot) {
