@@ -93,6 +93,10 @@ public class RevisionPicker implements PropertyChangeListener {
         if (evt.getPropertyName() == RepositoryBrowserPanel.PROP_REVISION_CHANGED) {
             revision = (Revision) evt.getNewValue();
             updateDialogState();
+        } else if (evt.getPropertyName() == RepositoryBrowserPanel.PROP_REVISION_ACCEPTED) {
+            if (revision != null && revision.equals(evt.getNewValue())) {
+                okButton.doClick();
+            }
         }
     }
 

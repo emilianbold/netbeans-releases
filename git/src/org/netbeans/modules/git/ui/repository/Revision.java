@@ -73,4 +73,24 @@ public class Revision {
         }
         return sb.toString();
     }
+
+    @Override
+    public final boolean equals (Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Revision)) {
+            return false;
+        }
+        Revision other = (Revision) obj;
+        return name.equals(other.name) && revision.equals(other.revision);
+    }
+
+    @Override
+    public final int hashCode () {
+        int hash = 7;
+        hash = 97 * hash + (this.revision != null ? this.revision.hashCode() : 0);
+        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
 }
