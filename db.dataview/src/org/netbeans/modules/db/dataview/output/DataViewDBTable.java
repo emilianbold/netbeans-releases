@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBTable;
-import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**
  * Wrapper class provides ordered columns and tooltips

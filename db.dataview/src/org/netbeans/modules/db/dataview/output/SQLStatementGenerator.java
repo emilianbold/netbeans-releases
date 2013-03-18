@@ -47,8 +47,11 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
@@ -363,12 +366,16 @@ class SQLStatementGenerator {
         }
     }
 
-    private void generateWhereCondition(DBTable table, StringBuilder result, List<Integer> types, List<Object> values, int rowNum, DataViewTableUIModel model) {
+    void generateWhereCondition(DBTable table, StringBuilder result, List<Integer> types, List<Object> values, int rowNum, DataViewTableUIModel model) {
         DBPrimaryKey key = table.getPrimaryKey();
-        boolean keySelected = false;
+        Set<String> columnsSelected = new HashSet<String>();
         boolean and = false;
 
         List<DBColumn> columns = table.getColumnList();
+
+        StringBuilder pkSelect = new StringBuilder();
+        List<Integer> pkTypes = new ArrayList<Integer>();
+        List<Object> pkObject = new ArrayList<Object>();
 
         if (key != null) {
             for (String keyName : key.getColumnNames()) {
@@ -378,9 +385,9 @@ class SQLStatementGenerator {
                     if (columnName.equals(keyName)) {
                         Object val = model.getOriginalValueAt(rowNum, i);
                         if (val != null) {
-                            keySelected = true;
-                            and = addSeparator(and, result, " AND "); // NOI18N
-                            generateNameValue(dbcol, result, val, values, types);
+                            columnsSelected.add(columnName);
+                            and = addSeparator(and, pkSelect, " AND "); // NOI18N
+                            generateNameValue(dbcol, pkSelect, val, pkObject, pkTypes);
                             break;
                         }
                     }
@@ -388,7 +395,12 @@ class SQLStatementGenerator {
             }
         }
 
-        if (key == null || !keySelected) {
+        if (key != null && columnsSelected.equals(new HashSet<String>(key.getColumnNames()))) {
+            result.append(pkSelect);
+            types.addAll(pkTypes);
+            values.addAll(pkObject);
+        } else {
+            and = false;
             for (int i = 0; i < model.getColumnCount(); i++) {
                 DBColumn dbcol = columns.get(i);
                 Object val = model.getOriginalValueAt(rowNum, i);
@@ -398,12 +410,14 @@ class SQLStatementGenerator {
         }
     }
 
-    private void generateWhereCondition(DBTable table, StringBuilder sql, int rowNum, DataViewTableUIModel model) {
+    void generateWhereCondition(DBTable table, StringBuilder sql, int rowNum, DataViewTableUIModel model) {
         DBPrimaryKey key = table.getPrimaryKey();
-        boolean keySelected = false;
+        Set<String> columnsSelected = new HashSet<String>();
         boolean and = false;
 
         List<DBColumn> columns = table.getColumnList();
+
+        StringBuilder pkSelect = new StringBuilder();
 
         if (key != null) {
             for (String keyName : key.getColumnNames()) {
@@ -413,9 +427,9 @@ class SQLStatementGenerator {
                     if (columnName.equals(keyName)) {
                         Object val = model.getOriginalValueAt(rowNum, i);
                         if (val != null) {
-                            keySelected = true;
-                            and = addSeparator(and, sql, " AND "); // NOI18N
-                            generateNameValue(dbcol, sql, val);
+                            columnsSelected.add(columnName);
+                            and = addSeparator(and, pkSelect, " AND "); // NOI18N
+                            generateNameValue(dbcol, pkSelect, val);
                             break;
                         }
                     }
@@ -423,7 +437,10 @@ class SQLStatementGenerator {
             }
         }
 
-        if (key == null || !keySelected) {
+        if (key != null && columnsSelected.equals(new HashSet<String>(key.getColumnNames()))) {
+            sql.append(pkSelect);
+        } else {
+            and = false;
             for (int i = 0; i < model.getColumnCount(); i++) {
                 DBColumn dbcol = columns.get(i);
                 Object val = model.getOriginalValueAt(rowNum, i);
