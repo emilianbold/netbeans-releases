@@ -543,7 +543,8 @@ public class CompletionRequest {
                 ts.token().id() != GroovyTokenId.NLS &&
                 ts.token().id() != GroovyTokenId.WHITESPACE &&
                 ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
-                ts.token().id() != GroovyTokenId.MEMBER_POINTER) {
+                ts.token().id() != GroovyTokenId.MEMBER_POINTER &&
+                ts.token().id() != GroovyTokenId.ELVIS_OPERATOR) {
 
                 // is it prefix
                 // keyword check is here because of issue #150862
@@ -559,7 +560,8 @@ public class CompletionRequest {
         boolean remainingTokens = true;
         if (ts.token().id() != GroovyTokenId.DOT &&
             ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
-            ts.token().id() != GroovyTokenId.MEMBER_POINTER) {
+            ts.token().id() != GroovyTokenId.MEMBER_POINTER &&
+            ts.token().id() != GroovyTokenId.ELVIS_OPERATOR) {
 
             // travel back on the token string till the token is neither a
             // WHITESPACE nor NLS
@@ -573,7 +575,8 @@ public class CompletionRequest {
 
         if ((ts.token().id() != GroovyTokenId.DOT &&
              ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
-             ts.token().id() != GroovyTokenId.MEMBER_POINTER)
+             ts.token().id() != GroovyTokenId.MEMBER_POINTER &&
+             ts.token().id() != GroovyTokenId.ELVIS_OPERATOR)
             || !remainingTokens) {
 
             return null; // no astpath
