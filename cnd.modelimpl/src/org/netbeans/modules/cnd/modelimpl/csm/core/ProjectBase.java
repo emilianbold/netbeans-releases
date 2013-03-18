@@ -256,7 +256,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (getGlobalNamespace() == FAKE_GLOBAL_NAMESPACE) {
             return false;
         }
-        if (TraceFlags.TIMING || CndUtils.isUnitTestMode()) {
+        if (TraceFlags.CHECK_CONSISTENCY || CndUtils.isUnitTestMode()) {
             if (TraceFlags.TIMING) {
                 System.err.printf("Consistency check took %d ms\n", System.currentTimeMillis() - time);
             }
