@@ -46,7 +46,6 @@ package org.netbeans.core.multitabs.prefs;
 import org.netbeans.core.windows.options.WinSysOptionsPanelController;
 import org.netbeans.core.windows.options.WinSysPanel;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
 
 /**
  * 
@@ -62,11 +61,6 @@ keywordsCategory = "Advanced/MultiTabs" )
 public final class MultiTabsOptionsPanelController extends WinSysOptionsPanelController {
 
     private MultiTabsPanel panel;
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx( MultiTabsOptionsPanelController.class );
-    }
 
     @Override
     protected void changed() {
