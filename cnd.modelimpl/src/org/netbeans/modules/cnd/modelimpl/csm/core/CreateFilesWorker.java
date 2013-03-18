@@ -205,6 +205,7 @@ final class CreateFilesWorker {
                     }
                 }
             } finally {
+                Notificator.instance().flush();
                 countDownLatch.countDown();
             }
         }

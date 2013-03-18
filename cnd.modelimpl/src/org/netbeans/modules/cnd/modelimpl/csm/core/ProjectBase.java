@@ -2618,22 +2618,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             synchronized (fileContainerLock) {
                 impl = getFile(absPath, treatSymlinkAsSeparateFile);
                 if (impl == null) {
-                    impl = new FileImpl(fileBuffer, this, fileType, nativeFileItem);
-                    if (nativeFileItem != null) {
-                        putNativeFileItem(impl.getUID(), nativeFileItem);
-                    }
+                    try {
+                        impl = new FileImpl(fileBuffer, this, fileType, nativeFileItem);
+                        if (nativeFileItem != null) {
+                            putNativeFileItem(impl.getUID(), nativeFileItem);
+                        }
                     // initial can be null here and due to this we have warnings from ParserThread like:
                     // SEVERE [org.netbeans.modules.cnd.modelimpl]: Adding a file with an emty preprocessor state set
                     // TODO: do we need to set up initial value?
 //                    if (initial == null) {
 //                        initial = APTHandlersSupport.createCleanPreprocState(preprocHandler.getState());
 //                    }
-                    putFile(impl, initial);
-                    putContainer = true;
-                    // NB: parse only after putting into a map
-                    if (scheduleParseIfNeed) {
-                        APTPreprocHandler.State ppState = preprocHandler.getState();
-                        ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
+                        putFile(impl, initial);
+                        putContainer = true;
+                        // NB: parse only after putting into a map
+                        if (scheduleParseIfNeed) {
+                            APTPreprocHandler.State ppState = preprocHandler.getState();
+                            ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
+                        }
+                    } finally {
+                        Notificator.instance().flush();
                     }
                 }
             }
@@ -2651,7 +2655,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         return impl;
     }
-    
+
     protected final FileImpl createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile) {
         return createOrFindFileImpl(buf, nativeFile, Utils.getFileType(nativeFile)).fileImpl;
     }
