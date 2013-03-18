@@ -31,6 +31,7 @@
                         <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-editor-actions-FixImportsAction.instance"/>
                     </file>
                 </folder>
+
                 <folder name="Popup">
                     <file name="fix-groovy-imports">
                         <attr name="position" intvalue="801"/>
@@ -56,6 +57,7 @@
                     </folder>
                 </folder>
 
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.editor.resources.Bundle"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -88,7 +90,7 @@
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
-                <file name="x-groovy" url="GroovyPreviewExample"/>
+                <file name="x-groovy" url="FontsAndColorsPreview.groovy"/>
             </folder>
         </folder>
     </folder>
