@@ -57,6 +57,7 @@ public final class AnalysisOptions {
 
     // code sniffer
     private static final String CODE_SNIFFER_PATH = "codeSniffer.path"; // NOI18N
+    private static final String CODE_SNIFFER_STANDARD = "codeSniffer.standard"; // NOI18N
 
     private volatile boolean codeSnifferSearched = false;
 
@@ -78,8 +79,16 @@ public final class AnalysisOptions {
         return codeSnifferPath;
     }
 
-    public void setCodeSnifferPath(String codeSnifferPath) {
-        getPreferences().put(CODE_SNIFFER_PATH, codeSnifferPath);
+    public void setCodeSnifferPath(String path) {
+        getPreferences().put(CODE_SNIFFER_PATH, path);
+    }
+
+    public String getCodeSnifferStandard() {
+        return getPreferences().get(CODE_SNIFFER_STANDARD, null);
+    }
+
+    public void setCodeSnifferStandard(String standard) {
+        getPreferences().put(CODE_SNIFFER_STANDARD, standard);
     }
 
     private Preferences getPreferences() {
