@@ -58,13 +58,12 @@ import org.openide.util.NbBundle;
  */
 public class GenerateScriptExecutor {
 
-    public void execute(Project project, FileObject file, PersistenceEnvironment pe, PersistenceUnit pu, List<String> problems, ProgressHandle handle, boolean validateOnly) {
+    public void execute(Project project, FileObject file, PersistenceEnvironment pe, PersistenceUnit pu, HashMap map, List<String> problems, ProgressHandle handle, boolean validateOnly) {
         try {
 
             Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");//NOI18N
             javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();
 
-            HashMap map = new HashMap();
             //
             map.put("javax.persistence.schema-generation.scripts.action", "create");
             //map.put("javax.persistence.schema-generation-target", "scripts");

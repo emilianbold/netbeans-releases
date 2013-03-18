@@ -81,11 +81,4 @@ public class PUDataLoader extends UniFileLoader {
     protected String actionsContext() {
         return "Loaders/" + REQUIRED_MIME + "/Actions";
     }
-    
-    protected FileObject findPrimaryFile(FileObject fo) {
-        FileObject superFo = super.findPrimaryFile(fo);
-        return (superFo != null && FileOwnerQuery.getOwner(superFo) != null)
-                ? superFo : null;
-    }
-    
 }
