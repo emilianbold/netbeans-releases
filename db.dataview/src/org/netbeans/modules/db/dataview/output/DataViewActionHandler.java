@@ -84,14 +84,11 @@ class DataViewActionHandler {
         synchronized (dataView) {
             if (selectedOnly) {
                 DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
-                UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
+                DataViewTableUIModel updatedRowCtx = dataView.getDataViewTableUIModel();
                 int[] rows = rsTable.getSelectedRows();
                 for (int i = 0; i < rows.length; i++) {
-                    int row = rows[i];
-                    for (int col = 0, CNT = rsTable.getColumnCount(); col < CNT; col++) {
-                        dataViewUI.resetValueAt(row, col);
-                    }
-                    updatedRowCtx.removeUpdateForSelectedRow(row);
+                    int row = rsTable.convertRowIndexToModel(rows[i]);
+                    updatedRowCtx.removeUpdateForSelectedRow(row, true);
                 }
 
                 if (updatedRowCtx.getUpdateKeys().isEmpty()) {
@@ -99,15 +96,14 @@ class DataViewActionHandler {
                     dataViewUI.setCommitEnabled(false);
                 }
             } else {
-                dataView.getUpdatedRowContext().removeAllUpdates();
-                dataView.setRowsInTableModel();
+                dataView.getDataViewTableUIModel().removeAllUpdates(true);
                 dataViewUI.setCancelEnabled(false);
                 dataViewUI.setCommitEnabled(false);
             }
         }
     }
 
-    void setMaxActionPerformed() {
+    void updateActionPerformed() {
         if (rejectModifications()) {
             int pageSize = dataViewUI.getPageSize();
             dataPage.setPageSize(pageSize);

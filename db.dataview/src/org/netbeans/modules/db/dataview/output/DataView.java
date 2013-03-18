@@ -80,7 +80,6 @@ public class DataView {
     private boolean hasResultSet = false;
     private int updateCount;
     private long executionTime;
-    private boolean supportsLimit = false;
 
     /**
      * Create and populate a DataView Object. Populates 1st data page of default size.
@@ -130,8 +129,9 @@ public class DataView {
 
         synchronized (this) {
             this.dataViewUI = new DataViewUI(this, nbOutputComponent);
-            setRowsInTableModel();
+            dataViewUI.getDataViewTableUI().setModel(dataPage.getModel());
             dataViewUI.setEditable(tblMeta == null ? false : tblMeta.hasOneTable());
+            dataViewUI.setTotalCount(dataPage.getTotalRows());
             resetToolbar(hasExceptions());
         }
         results = new ArrayList<Component>();
@@ -199,8 +199,22 @@ public class DataView {
         dataViewUI.setEditable(editable);
     }
 
-    public DataViewDBTable getDataViewDBTable() {
+    // Used by org.netbeans.modules.db.dataview.api.DataViewPageContext#getPageSize
+    public int getPageSize() {
+        if (dataViewUI == null) {
+            return -1;
+    }
+        return dataViewUI.getPageSize();
+    }
+
+    // Non API modules follow
+
+    DataViewDBTable getDataViewDBTable() {
         return tblMeta;
+    }
+
+    void setDataViewDBTable(DataViewDBTable tblMeta) {
+        this.tblMeta = tblMeta;
     }
 
     DataViewPageContext getDataViewPageContext() {
@@ -215,8 +229,8 @@ public class DataView {
         return sqlString;
     }
 
-    UpdatedRowContext getUpdatedRowContext() {
-        return dataViewUI.getUpdatedRowContext();
+    DataViewTableUIModel getDataViewTableUIModel() {
+        return dataViewUI.getDataViewTableUIModel();
     }
 
     SQLExecutionHelper getSQLExecutionHelper() {
@@ -235,10 +249,6 @@ public class DataView {
 
     public boolean isEditable() {
         return dataViewUI.isEditable();
-    }
-
-    boolean isLimitSupported() {
-        return supportsLimit;
     }
 
     synchronized void disableButtons() {
@@ -310,21 +320,12 @@ public class DataView {
         });
     }
 
-    void setLimitSupported(boolean supportsLimit) {
-        this.supportsLimit = supportsLimit;
-    }
-
-    void setRowsInTableModel() {
-        assert dataViewUI != null;
-        assert dataPage != null;
-
-        if (dataPage.getCurrentRows() != null) {
+    synchronized void setTotalRowCount(final int count) {
+        if (dataViewUI != null) {
             Mutex.EVENT.readAccess(new Runnable() {
-
                 @Override
                 public void run() {
-                    dataViewUI.setDataRows(dataPage.getCurrentRows());
-                    dataViewUI.setTotalCount(dataPage.getTotalRows());
+                    dataViewUI.setTotalCount(count);
                 }
             });
         }
@@ -354,10 +355,6 @@ public class DataView {
         });
     }
 
-    synchronized void syncPageWithTableModel() {
-        dataViewUI.syncPageWithTableModel();
-    }
-
     void setHasResultSet(boolean hasResultSet) {
         this.hasResultSet = hasResultSet;
     }
@@ -370,17 +367,6 @@ public class DataView {
         this.executionTime = executionTime;
     }
 
-    void setDataViewDBTable(DataViewDBTable tblMeta) {
-        this.tblMeta = tblMeta;
-    }
-
     private DataView() {
-    }
-
-    public int getPageSize() {
-        if (dataViewUI == null) {
-            return -1;
-        }
-        return dataViewUI.getPageSize();
     }
 }

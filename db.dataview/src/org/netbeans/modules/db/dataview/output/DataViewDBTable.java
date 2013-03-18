@@ -63,7 +63,6 @@ public class DataViewDBTable {
 
     private final DBTable[] dbTables;
     private final List<DBColumn> columns;
-    private String[] columnTooltipStr;
 
     public DataViewDBTable(Collection<DBTable> tables) {
         assert tables != null;
@@ -114,23 +113,16 @@ public class DataViewDBTable {
         return columns.size();
     }
 
-    public synchronized Map<String,DBColumn> getColumns() {
+    public List<DBColumn> getColumns() {
+        return Collections.unmodifiableList(columns);
+    }
+
+    public synchronized Map<String,DBColumn> getColumnMap() {
         Map<String, DBColumn> colMap = new HashMap<String, DBColumn>();
         for (DBTable tbl : dbTables) {
             colMap.putAll(tbl.getColumns());
         }
         return Collections.unmodifiableMap(colMap);
-    }
-
-    public synchronized String[] getColumnToolTips() {
-        if (columnTooltipStr == null) {
-            columnTooltipStr = new String[columns.size()];
-            int i = 0;
-            for (DBColumn column : columns) {
-                columnTooltipStr[i++] = DataViewUtils.getColumnToolTip(column);
-            }
-        }
-        return columnTooltipStr;
     }
 
     final class ColumnOrderComparator implements Comparator<DBColumn> {

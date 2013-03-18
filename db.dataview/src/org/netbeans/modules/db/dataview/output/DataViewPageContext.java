@@ -43,7 +43,7 @@ Other names may be trademarks of their respective owners.
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.util.List;
+import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,7 +56,7 @@ class DataViewPageContext {
     private int pageSize = 10;
     private int totalRows = -1;
     private int currentPos = 1;
-    private List<Object[]> rows;
+    private final DataViewTableUIModel model = new DataViewTableUIModel(new DBColumn[0]);
 
     DataViewPageContext(int pageSize) {
         this.pageSize = pageSize;
@@ -70,12 +70,8 @@ class DataViewPageContext {
         return currentPos;
     }
 
-    List<Object[]> getCurrentRows() {
-        return rows;
-    }
-
-    Object getColumnData(int row, int column) {
-        return rows.get(row)[column];
+    DataViewTableUIModel getModel() {
+        return model;
     }
 
     int getTotalRows() {
@@ -124,11 +120,11 @@ class DataViewPageContext {
     }
 
     boolean refreshRequiredOnInsert() {
-        return (isLastPage() && rows.size() <= pageSize) ? true : false;
+        return (isLastPage() && model.getRowCount() <= pageSize);
     }
 
     boolean hasDataRows() {
-        return (rows != null && !rows.isEmpty());
+        return model.getRowCount() > 0;
     }
 
     String pageOf() {
@@ -156,9 +152,5 @@ class DataViewPageContext {
         } else if (currentPos > totalRows) {
             previous();
         }
-    }
-
-    synchronized void setCurrentRows(List<Object[]> rows) {
-        this.rows = rows;
     }
 }

@@ -194,15 +194,6 @@ public class DataViewTest extends NbTestCase {
         assertEquals(expResult, result);
     }
 
-    public void testGetUpdatedRowContext() {
-        String selectStr = "select * from simpletable";
-        int pageSize = 5;
-        DataView instance = DataView.create(dbconn, selectStr, pageSize);
-        instance.createComponents();
-        UpdatedRowContext result = instance.getUpdatedRowContext();
-        assertNotNull(result);
-    }
-
     /**
      * Test of getSQLExecutionHelper method, of class DataView.
      */
@@ -214,7 +205,6 @@ public class DataViewTest extends NbTestCase {
         assertFalse(instance.hasExceptions());
         assertNotNull(instance);
         assertNotNull(result);
-
     }
 
     /**

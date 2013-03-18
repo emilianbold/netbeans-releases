@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.table.TableModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -174,7 +173,7 @@ class SQLStatementGenerator {
         return rawInsertSql.toString();
     }
 
-    String generateUpdateStatement(int row, Map<Integer, Object> changedRow, List<Object> values, List<Integer> types, TableModel tblModel) throws DBException {
+    String generateUpdateStatement(int row, Map<Integer, Object> changedRow, List<Object> values, List<Integer> types, DataViewTableUIModel tblModel) throws DBException {
         StringBuilder updateStmt = new StringBuilder();
         updateStmt.append("UPDATE ").append(tblMeta.getFullyQualifiedName(0, true)).append(" SET "); // NOI18N
         String commaStr = ", "; // NOI18N
@@ -214,7 +213,7 @@ class SQLStatementGenerator {
         return updateStmt.toString();
     }
 
-    String generateUpdateStatement(int row, Map<Integer, Object> changedRow, TableModel tblModel) throws DBException {
+    String generateUpdateStatement(int row, Map<Integer, Object> changedRow, DataViewTableUIModel tblModel) throws DBException {
         StringBuilder rawUpdateStmt = new StringBuilder();
         rawUpdateStmt.append("UPDATE ").append(tblMeta.getFullyQualifiedName(0, false)).append(" SET "); // NOI18N
 
@@ -250,7 +249,7 @@ class SQLStatementGenerator {
         return rawUpdateStmt.toString();
     }
 
-    String generateDeleteStatement(List<Integer> types, List<Object> values, int rowNum, TableModel tblModel) {
+    String generateDeleteStatement(List<Integer> types, List<Object> values, int rowNum, DataViewTableUIModel tblModel) {
         StringBuilder deleteStmt = new StringBuilder();
         deleteStmt.append("DELETE FROM ").append(tblMeta.getFullyQualifiedName(0, true)).append(" WHERE "); // NOI18N
 
@@ -258,7 +257,7 @@ class SQLStatementGenerator {
         return deleteStmt.toString();
     }
 
-    String generateDeleteStatement(int rowNum, TableModel tblModel) {
+    String generateDeleteStatement(int rowNum, DataViewTableUIModel tblModel) {
         StringBuilder rawDeleteStmt = new StringBuilder();
         rawDeleteStmt.append("DELETE FROM ").append(tblMeta.getFullyQualifiedName(0, false)).append(" WHERE "); // NOI18N
 
@@ -395,7 +394,7 @@ class SQLStatementGenerator {
         }
     }
 
-    private void generateWhereCondition(StringBuilder result, List<Integer> types, List<Object> values, int rowNum, TableModel model) {
+    private void generateWhereCondition(StringBuilder result, List<Integer> types, List<Object> values, int rowNum, DataViewTableUIModel model) {
         DBPrimaryKey key = tblMeta.geTable(0).getPrimaryKey();
         boolean keySelected = false;
         boolean and = false;
@@ -405,7 +404,7 @@ class SQLStatementGenerator {
                 for (int i = 0; i < model.getColumnCount(); i++) {
                     String columnName = tblMeta.getColumnName(i);
                     if (columnName.equals(keyName)) {
-                        Object val = dataView.getDataViewPageContext().getColumnData(rowNum, i);
+                        Object val = model.getOriginalValueAt(rowNum, i);
                         if (val != null) {
                             keySelected = true;
                             and = addSeparator(and, result, " AND "); // NOI18N
@@ -419,14 +418,14 @@ class SQLStatementGenerator {
 
         if (key == null || !keySelected) {
             for (int i = 0; i < model.getColumnCount(); i++) {
-                Object val = dataView.getDataViewPageContext().getColumnData(rowNum, i);
+                Object val = model.getOriginalValueAt(rowNum, i);
                 and = addSeparator(and, result, " AND "); // NOI18N
                 generateNameValue(i, result, val, values, types);
             }
         }
     }
 
-    private void generateWhereCondition(StringBuilder sql, int rowNum, TableModel model) {
+    private void generateWhereCondition(StringBuilder sql, int rowNum, DataViewTableUIModel model) {
         DBPrimaryKey key = tblMeta.geTable(0).getPrimaryKey();
         boolean keySelected = false;
         boolean and = false;
@@ -436,7 +435,7 @@ class SQLStatementGenerator {
                 for (int i = 0; i < model.getColumnCount(); i++) {
                     String columnName = tblMeta.getColumnName(i);
                     if (columnName.equals(keyName)) {
-                        Object val = dataView.getDataViewPageContext().getColumnData(rowNum, i);
+                        Object val = model.getOriginalValueAt(rowNum, i);
                         if (val != null) {
                             keySelected = true;
                             and = addSeparator(and, sql, " AND "); // NOI18N
@@ -450,7 +449,7 @@ class SQLStatementGenerator {
 
         if (key == null || !keySelected) {
             for (int i = 0; i < model.getColumnCount(); i++) {
-                Object val = dataView.getDataViewPageContext().getColumnData(rowNum, i);
+                Object val = model.getOriginalValueAt(rowNum, i);
                 and = addSeparator(and, sql, " AND "); // NOI18N
                 generateNameValue(i, sql, val);
             }

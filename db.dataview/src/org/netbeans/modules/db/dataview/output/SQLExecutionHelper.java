@@ -51,6 +51,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -86,6 +87,7 @@ class SQLExecutionHelper {
     private static final String LIMIT_CLAUSE = "LIMIT "; // NOI18N
     public static final String OFFSET_CLAUSE = "OFFSET "; // NOI18N
     private static final Logger LOGGER = Logger.getLogger(SQLExecutionHelper.class.getName());
+    private boolean limitSupported = false;
 
     SQLExecutionHelper(DataView dataView) {
         this.dataView = dataView;
@@ -133,7 +135,7 @@ class SQLExecutionHelper {
                         throw new SQLException(msg, t);
                     }
                     DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
-                    dataView.setLimitSupported(dbMeta.supportsLimit());
+                    limitSupported = dbMeta.supportsLimit();
                     String sql = dataView.getSQLString();
                     boolean isSelect = isSelectStatement(sql);
 
@@ -172,8 +174,10 @@ class SQLExecutionHelper {
                     Collection<DBTable> tables = dbMeta.generateDBTables(
                             rs, sql, isSelect);
                     DataViewDBTable dvTable = new DataViewDBTable(tables);
+                    dataView.getDataViewPageContext().getModel().setColumns(
+                            dvTable.getColumns().toArray(new DBColumn[0]));
                     dataView.setDataViewDBTable(dvTable);
-                    if (resultSetNeedsReloading()) {
+                    if (resultSetNeedsReloading(dvTable)) {
                         executeSQLStatement(stmt, sql);
                         rs = stmt.getResultSet();
                     }
@@ -299,21 +303,24 @@ class SQLExecutionHelper {
     void executeDeleteRow(final DataViewTableUI rsTable) {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_delete");
         final int[] rows = rsTable.getSelectedRows();
+        for(int i = 0; i < rows.length; i++) {
+            rows[i] = rsTable.convertRowIndexToModel(rows[i]);
+        }
+        Arrays.sort(rows);
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
-
-                for (int j = 0; j < rows.length && !error; j++) {
+                for (int j = (rows.length - 1); j >= 0 && !error; j--) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
-                    deleteARow(rsTable.convertRowIndexToModel(rows[j]), rsTable.getModel());
+                    deleteARow(rows[j], rsTable.getModel());
                 }
             }
 
-            private void deleteARow(int rowNum, TableModel tblModel) throws SQLException, DBException {
+            private void deleteARow(int rowNum, DataViewTableUIModel tblModel) throws SQLException, DBException {
                 final List<Object> values = new ArrayList<Object>();
                 final List<Integer> types = new ArrayList<Integer>();
 
@@ -360,6 +367,7 @@ class SQLExecutionHelper {
     }
 
     void executeUpdateRow(final DataViewTableUI rsTable, final boolean selectedOnly) {
+        final DataViewTableUIModel dataViewTableUIModel = rsTable.getModel();
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_update");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
@@ -372,7 +380,7 @@ class SQLExecutionHelper {
                 if (selectedOnly) {
                     updateSelected();
                 } else {
-                    for (Integer key : dataView.getUpdatedRowContext().getUpdateKeys()) {
+                    for (Integer key : dataViewTableUIModel.getUpdateKeys()) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
                         } else {
@@ -385,9 +393,8 @@ class SQLExecutionHelper {
 
             private void updateSelected() throws SQLException, DBException {
                 int[] rows = rsTable.getSelectedRows();
-                UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
                 for (int j = 0; j < rows.length && !error; j++) {
-                    Set<Integer> keys = tblContext.getUpdateKeys();
+                    Set<Integer> keys = dataViewTableUIModel.getUpdateKeys();
                     for (Integer key : keys) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
@@ -400,12 +407,11 @@ class SQLExecutionHelper {
             }
 
             private void updateARow(Integer key) throws SQLException, DBException {
-                UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
                 SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
 
                 List<Object> values = new ArrayList<Object>();
                 List<Integer> types = new ArrayList<Integer>();
-                String updateStmt = generator.generateUpdateStatement(key, updatedRowCtx.getChangedData(key), values, types, rsTable.getModel());
+                String updateStmt = generator.generateUpdateStatement(key, dataViewTableUIModel.getChangedData(key), values, types, rsTable.getModel());
 
                 pstmt = conn.prepareStatement(updateStmt);
                 int pos = 1;
@@ -437,11 +443,10 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                UpdatedRowContext tblContext = dataView.getUpdatedRowContext();
+                DataViewTableUIModel tblContext = dataView.getDataViewTableUIModel();
                 for (Integer key : keysToRemove) {
-                    tblContext.removeUpdateForSelectedRow(key);
+                    tblContext.removeUpdateForSelectedRow(key, false);
                 }
-                dataView.syncPageWithTableModel();
                 reinstateToolbar();
             }
         };
@@ -553,9 +558,7 @@ class SQLExecutionHelper {
                     if (error) {
                         dataView.setErrorStatusText(ex);
                     }
-                    dataView.getUpdatedRowContext().removeAllUpdates();
                     dataView.resetToolbar(error);
-                    dataView.setRowsInTableModel();
                 }
             }
 
@@ -585,7 +588,7 @@ class SQLExecutionHelper {
 
         int pageSize = dataView.getDataViewPageContext().getPageSize();
         int startFrom = 0;
-        if (!dataView.isLimitSupported() || isLimitUsedInSelect(dataView.getSQLString())) {
+        if (! limitSupported || isLimitUsedInSelect(dataView.getSQLString())) {
             startFrom = dataView.getDataViewPageContext().getCurrentPos() - 1;
         }
 
@@ -628,7 +631,7 @@ class SQLExecutionHelper {
             LOGGER.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
             throw e;
         } finally {
-            dataView.getDataViewPageContext().setCurrentRows(rows);
+            dataView.getDataViewPageContext().getModel().setData(rows);
         }
     }
 
@@ -636,10 +639,12 @@ class SQLExecutionHelper {
         try {
             if (countresultSet == null) {
                 dataView.getDataViewPageContext().setTotalRows(-1);
+                dataView.setTotalRowCount(-1);
             } else {
                 if (countresultSet.next()) {
                     int count = countresultSet.getInt(1);
                     dataView.getDataViewPageContext().setTotalRows(count);
+                    dataView.setTotalRowCount(count);
                 }
             }
         } catch (SQLException ex) {
@@ -648,7 +653,7 @@ class SQLExecutionHelper {
     }
 
     private String appendLimitIfRequired(String sql) {
-        if (dataView.isLimitSupported() && isSelectStatement(sql)) {
+        if (limitSupported && isSelectStatement(sql)) {
             if (!isLimitUsedInSelect(sql)) {
                 sql += ' ' + LIMIT_CLAUSE + dataView.getDataViewPageContext().getPageSize();
                 sql += ' ' + OFFSET_CLAUSE + (dataView.getDataViewPageContext().getCurrentPos() - 1);
@@ -661,7 +666,6 @@ class SQLExecutionHelper {
     private Statement prepareSQLStatement(Connection conn, String sql) throws SQLException {
         Statement stmt = null;
         if (sql.startsWith("{")) { // NOI18N
-
             stmt = conn.prepareCall(sql);
         } else if (isSelectStatement(sql)) {
             stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -675,7 +679,7 @@ class SQLExecutionHelper {
             }
 
             try {
-                if (dataView.isLimitSupported() && ! isLimitUsedInSelect(sql)) {
+                if ( limitSupported && ! isLimitUsedInSelect(sql)) {
                     stmt.setMaxRows(pageSize);
                 } else {
                     stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
@@ -689,7 +693,7 @@ class SQLExecutionHelper {
         return stmt;
     }
 
-    private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
+    private boolean executeSQLStatement(Statement stmt, String sql) throws SQLException {
         LOGGER.log(Level.FINE, "Statement: {0}", sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
@@ -719,6 +723,7 @@ class SQLExecutionHelper {
             dataView.setUpdateCount(stmt.getUpdateCount());
             dataView.setExecutionTime(executionTime);
         }
+        return isResultSet;
     }
 
     private void executePreparedStatement(PreparedStatement stmt) throws SQLException {
@@ -840,14 +845,14 @@ class SQLExecutionHelper {
      *
      * @return True if and only if the result set needs to be reloaded.
      */
-    private boolean resultSetNeedsReloading() {
+    private boolean resultSetNeedsReloading(DataViewDBTable metadata) {
         if (!dataView.getDatabaseConnection().getDriverClass().contains(
                 "oracle")) {                                            //NOI18N
             return false;
         }
-        int colCnt = dataView.getDataViewDBTable().getColumnCount();
+        int colCnt = metadata.getColumnCount();
         for (int i = 0; i < colCnt; i++) {
-            DBColumn column = dataView.getDataViewDBTable().getColumn(i);
+            DBColumn column = metadata.getColumn(i);
             int jdbcType = column.getJdbcType();
             if (jdbcType == Types.LONGVARCHAR || jdbcType == Types.LONGNVARCHAR
                     || jdbcType == Types.LONGVARBINARY || jdbcType == Types.BLOB
