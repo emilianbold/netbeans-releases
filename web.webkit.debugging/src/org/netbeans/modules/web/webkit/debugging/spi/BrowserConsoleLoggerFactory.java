@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger;
+package org.netbeans.modules.web.webkit.debugging.spi;
 
-import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.openide.util.Lookup;
 
 /**
- * Factory which creates NetBeans Debugging session for given WebKit Debugging
- * Protocol. This is could be moved to a better place if you find one - it does
- * not have to be defined in web.webkit.debugging module and is here only because
- * of lack of better place.
+ * Factory for creating NetBeans UI for WebKit browser logging.
  */
-public interface NetBeansJavaScriptDebuggerFactory {
-    
-    /**
-     * Create and start new JavaScript debugging session using given WebKit
-     * Debugging protocol.
-     * @param projectContext lookup which may contain Project instance if
-     *   JavaScript Debugger session is started in the context of a project
-     */
-    Session createDebuggingSession(WebKitDebugging webkit, Lookup projectContext);
+public interface BrowserConsoleLoggerFactory {
 
-    /**
-     * Stop session previously started by this factory.
-     * @param session 
-     */
-    void stopDebuggingSession(Session session);
-    
+    Lookup createBrowserConsoleLogger(WebKitDebugging webkit, Lookup projectContext);
+
+    void stopBrowserConsoleLogger(Lookup session);
+
 }
