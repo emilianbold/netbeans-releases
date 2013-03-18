@@ -106,8 +106,10 @@ public class TransportHelper {
     }
 
     public void reset() {
-        getOutputLogger().getOut().close();
-        getOutputLogger().getErr().close();
+        if (SHOW_WEBKIT_PROTOCOL) {
+            getOutputLogger().getOut().close();
+            getOutputLogger().getErr().close();
+        }
         reset = true;
     }
     
@@ -252,11 +254,13 @@ public class TransportHelper {
     private void checkReset() {
         if (reset) {
             reset = false;
-            try {
-                getOutputLogger().getOut().reset();
-                getOutputLogger().getErr().reset();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (SHOW_WEBKIT_PROTOCOL) {
+                try {
+                    getOutputLogger().getOut().reset();
+                    getOutputLogger().getErr().reset();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
