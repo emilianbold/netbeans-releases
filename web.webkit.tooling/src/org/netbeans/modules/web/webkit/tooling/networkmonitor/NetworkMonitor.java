@@ -82,7 +82,14 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
     }
 
     public void close() {
-        // XXX: should I close the component here???
+        if (model.getSize() == 0) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    component.close();
+                }
+            });
+        }
     }
 
     @Override
