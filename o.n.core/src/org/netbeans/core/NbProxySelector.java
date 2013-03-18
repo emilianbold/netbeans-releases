@@ -65,12 +65,13 @@ public final class NbProxySelector extends ProxySelector {
     private final ProxySelector original;
     private static final Logger LOG = Logger.getLogger (NbProxySelector.class.getName ());
     private static Object useSystemProxies;
+    private static String DEFAULT_PROXY_SELECTOR_CLASS_NAME = "sun.net.spi.DefaultProxySelector";
         
     /** Creates a new instance of NbProxySelector */
     private NbProxySelector(ProxySelector delegate) {
         original = delegate;
         LOG.log(Level.FINE, "java.net.useSystemProxies has been set to {0}", useSystemProxies());
-        if (delegate == null) {
+        if (original.getClass().getName().equals(DEFAULT_PROXY_SELECTOR_CLASS_NAME) || original == null) {
             NetworkProxySelector.reloadNetworkProxy();
         }
         ProxySettings.addPreferenceChangeListener(new ProxySettingsListener());
