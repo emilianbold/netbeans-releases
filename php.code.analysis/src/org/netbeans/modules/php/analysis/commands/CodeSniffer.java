@@ -47,9 +47,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
 import org.netbeans.modules.php.analysis.parsers.CodeSnifferReportParser;
@@ -59,12 +65,15 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public final class CodeSniffer {
+
+    private static final Logger LOGGER = Logger.getLogger(CodeSniffer.class.getName());
 
     public static final String NAME = "phpcs"; // NOI18N
     public static final String LONG_NAME = NAME + FileUtils.getScriptExtension(true);
@@ -73,6 +82,7 @@ public final class CodeSniffer {
 
     // XXX standard
     private static final String STANDARD_PARAM = "--standard=PSR2"; // NOI18N
+    private static final String LIST_STANDARDS_PARAM = "-i"; // NOI18N
     private static final String REPORT_PARAM = "--report=xml"; // NOI18N
     private static final String REPORT_FILE_PARAM = "--report-file=" + XML_LOG.getAbsolutePath();
     // XXX how to get all php extensions?
@@ -118,7 +128,7 @@ public final class CodeSniffer {
         try {
             Integer result = getExecutable(Bundle.CodeSniffer_analyze())
                     .additionalParameters(getParameters(file, noRecursion))
-                    .runAndWait(getDescriptor(), "Running code sniffer..."); // NOI18N
+                    .runAndWait(getDescriptor(false), "Running code sniffer..."); // NOI18N
             if (result == null) {
                 return null;
             }
@@ -132,13 +142,37 @@ public final class CodeSniffer {
         return null;
     }
 
+    @NbBundle.Messages("CodeSniffer.listStandards=Code Sniffer (list standards)")
+    @CheckForNull
+    public List<String> getStandards() {
+        StandardsOutputProcessorFactory standardsProcessorFactory = new StandardsOutputProcessorFactory();
+        try {
+            getExecutable(Bundle.CodeSniffer_listStandards())
+                    .additionalParameters(Collections.singletonList(LIST_STANDARDS_PARAM))
+                    .runAndWait(getDescriptor(true), standardsProcessorFactory, "Fetching standards..."); // NOI18N
+            if (!standardsProcessorFactory.hasStandards()
+                    && standardsProcessorFactory.hasOutput) {
+                // some error
+                return null;
+            }
+            return standardsProcessorFactory.getStandards();
+        } catch (CancellationException ex) {
+            // canceled
+            LOGGER.log(Level.FINE, "Fetching standards cancelled", ex);
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            UiUtils.processExecutionException(ex, AnalysisOptionsPanelController.OPTIONS_SUB_PATH);
+        }
+        return null;
+    }
+
     private PhpExecutable getExecutable(String title) {
         return new PhpExecutable(codeSnifferPath)
                 .optionsSubcategory(AnalysisOptionsPanelController.OPTIONS_SUB_PATH)
                 .displayName(title);
     }
 
-    private ExecutionDescriptor getDescriptor() {
+    private ExecutionDescriptor getDescriptor(boolean reset) {
         // XXX no reset but custom IO is needed
         ExecutionDescriptor descriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(AnalysisOptionsPanelController.OPTIONS_PATH)
@@ -159,6 +193,79 @@ public final class CodeSniffer {
         }
         params.add(FileUtil.toFile(file).getAbsolutePath());
         return params;
+    }
+
+    //~ Inner classes
+
+    static final class StandardsOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+        static final String LINE_START = "The installed coding standards are "; // NOI18N
+
+        private final List<String> standards = new CopyOnWriteArrayList<String>();
+
+        private volatile boolean hasOutput = false;
+
+
+        @Override
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.bridge(new LineProcessor() {
+                @Override
+                public void processLine(String line) {
+                    hasOutput = true;
+                    if (line.startsWith(LINE_START)) {
+                        List<String> parsed = parseStandards(line);
+                        if (parsed != null) {
+                            standards.addAll(parsed);
+                        }
+                    }
+                }
+                @Override
+                public void reset() {
+                }
+                @Override
+                public void close() {
+                }
+            });
+        }
+
+        public List<String> getStandards() {
+            return standards;
+        }
+
+        public boolean hasStandards() {
+            return !standards.isEmpty();
+        }
+
+        public boolean hasOutput() {
+            return hasOutput;
+        }
+
+        @CheckForNull
+        public static List<String> parseStandards(String line) {
+            assert line.startsWith(LINE_START) : line;
+            line = line.substring(LINE_START.length());
+            List<String> standards = new ArrayList<String>();
+            List<String> tmp = StringUtils.explode(line, " and "); // NOI18N
+            if (tmp.isEmpty()) {
+                LOGGER.log(Level.WARNING, "Standards cannot be parsed from: {0}", line);
+                return null;
+            }
+            if (tmp.size() != 2) {
+                LOGGER.log(Level.WARNING, "Unexpected standards in: {0}", line);
+                return null;
+            }
+            standards.add(tmp.get(1));
+            String rest = tmp.get(0);
+            tmp = StringUtils.explode(rest, ", "); // NOI18N
+            if (tmp.isEmpty()) {
+                LOGGER.log(Level.WARNING, "Standards cannot be parsed from: {0}", rest);
+            } else {
+                standards.addAll(tmp);
+            }
+            Collections.sort(standards);
+            return standards;
+        }
+
     }
 
 }
