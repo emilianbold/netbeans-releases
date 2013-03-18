@@ -255,6 +255,7 @@ NetBeans.setSelectionMode = function(selectionMode) {
     canvas.style.pointerEvents = value;
     this.lastHighlighted = null;
     this.selectionMode = selectionMode;
+    this.handleBlockedEvents();
 };
 
 // Repaints the glass-pane
@@ -431,6 +432,25 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
     ctx.restore();
 };
 
+// The first blocked mouseout event (that will be redispatched once
+// the selection mode is turned off).
+NetBeans.blockedMouseOut = null;
+
+// Handles blocked events. This method is invoked when
+// the selection mode is switched.
+NetBeans.handleBlockedEvents = function() {
+    if (this.selectionMode) {
+        this.blockedMouseOut = null;
+    } else {
+        if (this.blockedMouseOut !== null) {
+            var event = document.createEvent('MouseEvents');
+            event.initMouseEvent('mouseout', true, true, window,
+                0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            this.blockedMouseOut.target.dispatchEvent(event);
+        }
+    }
+};
+
 // Filters/blocks some mouse events when Select/Inspect mode is turned on.
 // This, for example, allows design/selection of JavaScript-based menus.
 NetBeans.installMouseEventFilters = function() {
@@ -438,6 +458,10 @@ NetBeans.installMouseEventFilters = function() {
         if (NetBeans.selectionMode && (e.target.id !== NetBeans.GLASSPANE_ID)) {
             e.stopImmediatePropagation();
             e.preventDefault();
+            if (e.type === 'mouseout' && NetBeans.blockedMouseOut === null) {
+                // Save the first mouseout event
+                NetBeans.blockedMouseOut = e;
+            }
         }
     };
     document.documentElement.addEventListener('click', blockingListener, true);
