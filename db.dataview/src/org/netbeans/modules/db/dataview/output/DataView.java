@@ -102,7 +102,7 @@ public class DataView {
             dv.dataPage = new DataViewPageContext(pageSize);
             dv.execHelper = new SQLExecutionHelper(dv);
             dv.execHelper.initialDataLoad();
-            dv.stmtGenerator = new SQLStatementGenerator(dv);
+            dv.stmtGenerator = new SQLStatementGenerator();
         } catch (Exception ex) {
             dv.setErrorStatusText(ex);
         }
@@ -240,7 +240,7 @@ public class DataView {
 
     SQLStatementGenerator getSQLStatementGenerator() {
         if (stmtGenerator == null) {
-            stmtGenerator = new SQLStatementGenerator(this);
+            stmtGenerator = new SQLStatementGenerator();
         }
         return stmtGenerator;
     }

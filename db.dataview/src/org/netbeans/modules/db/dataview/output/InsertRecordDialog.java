@@ -80,6 +80,7 @@ import javax.swing.table.TableCellEditor;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.text.CloneableEditorSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
+import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
@@ -98,6 +99,7 @@ import org.openide.windows.WindowManager;
  */
 class InsertRecordDialog extends javax.swing.JDialog {
     private final ResultSetTableModel insertDataModel;
+    private final DBTable insertTable;
     private final DataView dataView;
     InsertRecordTableUI insertRecordTableUI;
     private JXTableRowHeader rowHeader;
@@ -106,9 +108,11 @@ class InsertRecordDialog extends javax.swing.JDialog {
         super(WindowManager.getDefault().getMainWindow(), true);
         this.dataView = dataView;
 
+        // @todo Don't directly choose first table for insert, but let it be passed in
+        insertTable = dataView.getDataViewDBTable().getTable(0);
+
         insertDataModel = new ResultSetTableModel(
-                dataView.getDataViewDBTable().getColumns().toArray(new DBColumn[0])
-                );
+                insertTable.getColumnList().toArray(new DBColumn[0]));
         insertDataModel.setEditable(true);
 
         insertRecordTableUI = new InsertRecordTableUI() {
@@ -383,7 +387,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     boolean wasException = false;
                     try {
                         Object[] insertedRow = getInsertValues(i);
-                        insertSQL = stmtBldr.generateInsertStatement(insertedRow);
+                        insertSQL = stmtBldr.generateInsertStatement(insertTable, insertedRow);
                         RequestProcessor.Task task = execHelper.executeInsertRow(insertSQL, insertedRow);
                         task.waitFinished();
                         wasException = dataView.hasExceptions();
@@ -425,7 +429,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             if (jSplitPane1.getBottomComponent() != null) {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
                 for (int i = 0; i < insertRecordTableUI.getRowCount(); i++) {
-                    String sql = stmtBldr.generateRawInsertStatement(getInsertValues(i));
+                    String sql = stmtBldr.generateRawInsertStatement(insertTable, getInsertValues(i));
                     sqlText = sqlText + sql + "\n";
                 }
                 jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql")); // NOI18N

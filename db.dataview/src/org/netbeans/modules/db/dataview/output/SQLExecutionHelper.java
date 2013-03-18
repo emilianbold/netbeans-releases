@@ -323,12 +323,16 @@ class SQLExecutionHelper {
     }
 
     void executeDeleteRow(final DataViewTableUI rsTable) {
+        // @todo enhance to be able to work with more than one table
+        assert dataView.getDataViewDBTable().getTableCount() == 1 : "Deletes only supported for single table in resultset";
+
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_delete");
         final int[] rows = rsTable.getSelectedRows();
         for(int i = 0; i < rows.length; i++) {
             rows[i] = rsTable.convertRowIndexToModel(rows[i]);
         }
         Arrays.sort(rows);
+        final DBTable table = dataView.getDataViewDBTable().getTable(0);
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
             @Override
@@ -347,7 +351,7 @@ class SQLExecutionHelper {
                 final List<Integer> types = new ArrayList<Integer>();
 
                 SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
-                final String deleteStmt = generator.generateDeleteStatement(types, values, rowNum, tblModel);
+                final String deleteStmt = generator.generateDeleteStatement(table, types, values, rowNum, tblModel);
                 PreparedStatement pstmt = conn.prepareStatement(deleteStmt);
                 try {
                     int pos = 1;
@@ -389,6 +393,10 @@ class SQLExecutionHelper {
     }
 
     void executeUpdateRow(final DataViewTableUI rsTable, final boolean selectedOnly) {
+        // @todo enhance to be able to work with more than one table
+        assert dataView.getDataViewDBTable().getTableCount() == 1 : "Updates only supported for single table in resultset";
+
+        final DBTable table = dataView.getDataViewDBTable().getTable(0);
         final DataViewTableUIModel dataViewTableUIModel = rsTable.getModel();
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_update");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
@@ -433,7 +441,7 @@ class SQLExecutionHelper {
 
                 List<Object> values = new ArrayList<Object>();
                 List<Integer> types = new ArrayList<Integer>();
-                String updateStmt = generator.generateUpdateStatement(key, dataViewTableUIModel.getChangedData(key), values, types, rsTable.getModel());
+                String updateStmt = generator.generateUpdateStatement(table, key, dataViewTableUIModel.getChangedData(key), values, types, rsTable.getModel());
 
                 pstmt = conn.prepareStatement(updateStmt);
                 int pos = 1;

@@ -206,16 +206,4 @@ public class DataViewTest extends NbTestCase {
         assertNotNull(instance);
         assertNotNull(result);
     }
-
-    /**
-     * Test of getSQLStatementGenerator method, of class DataView.
-     */
-    public void testGetSQLStatementGenerator() {
-        String sqlStr = "select * from simpletable";
-        int pageSize = 5;
-        DataView instance = DataView.create(dbconn, sqlStr, pageSize);
-        SQLStatementGenerator expResult = new SQLStatementGenerator(instance);
-        SQLStatementGenerator result = instance.getSQLStatementGenerator();
-        assertEquals(SQLStatementGenerator.getCountSQLQuery(sqlStr), SQLStatementGenerator.getCountSQLQuery(sqlStr));
-    }
 }

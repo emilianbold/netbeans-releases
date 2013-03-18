@@ -440,7 +440,10 @@ final class DataViewTableUI extends ResultSetJXTable {
                     for (int j = 0; j < rows.length; j++) {
                         int modelIndex = convertRowIndexToModel(rows[j]);
                         Object[] insertRow = getModel().getRowData(modelIndex);
-                        String sql = dataView.getSQLStatementGenerator().generateRawInsertStatement(insertRow);
+                        // @todo make table configurable
+                        DBTable table = dataView.getDataViewDBTable().getTable(0);
+                        String sql = dataView.getSQLStatementGenerator()
+                                .generateRawInsertStatement(table, insertRow);
                         insertSQL += sql + ";\n"; // NOI18N
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
@@ -465,7 +468,9 @@ final class DataViewTableUI extends ResultSetJXTable {
                 for (int j = 0; j < rows.length; j++) {
                     SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
                     int modelIndex = convertRowIndexToModel(rows[j]);
-                    final String deleteStmt = generator.generateDeleteStatement(modelIndex, getModel());
+                    // @todo make table configurable
+                    DBTable table = dataView.getDataViewDBTable().getTable(0);
+                    final String deleteStmt = generator.generateDeleteStatement(table, modelIndex, getModel());
                     rawDeleteStmt += deleteStmt + ";\n"; // NOI18N
                 }
                 ShowSQLDialog dialog = new ShowSQLDialog();
@@ -483,11 +488,13 @@ final class DataViewTableUI extends ResultSetJXTable {
             public void actionPerformed(ActionEvent e) {
                 String rawUpdateStmt = "";
                 SQLStatementGenerator generator = dataView.getSQLStatementGenerator();
+                // @todo make table configurable
+                DBTable table = dataView.getDataViewDBTable().getTable(0);
 
                 try {
                     for (Integer row : getModel().getUpdateKeys()) {
                         Map<Integer, Object> changedData = getModel().getChangedData(row);
-                        rawUpdateStmt += generator.generateUpdateStatement(row, changedData, getModel()) + ";\n"; // NOI18N
+                        rawUpdateStmt += generator.generateUpdateStatement(table, row, changedData, getModel()) + ";\n"; // NOI18N
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
