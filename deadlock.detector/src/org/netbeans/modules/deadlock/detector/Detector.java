@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.deadlock.detector;
 
-import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -51,20 +50,19 @@ import static java.lang.management.ManagementFactory.*;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /**
  * Detects deadlocks using ThreadMXBean.
  * @author David Strupl
  */
-class Detector implements Runnable {
+public class Detector implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(Detector.class.getName());
     
@@ -123,22 +121,34 @@ class Detector implements Runnable {
         if (tids == null) {
             return;
         }
-        String message = "The thread dump was written to "; // NOI18N
+        
         PrintStream out = null;
         File file = null;
         try {
             file = File.createTempFile("deadlock", ".txt"); // NOI18N
             out = new PrintStream(new FileOutputStream(file));
-            message += file.getAbsolutePath() + "\n"; // NOI18N
+            
         } catch (IOException iOException) {
             out = System.out;
-            message += "stdout and/or messages.log.\n"; // NOI18N
+            
         }
-        message += "Before submitting please paste the thread dump text here. " + // NOI18N
-                "It should be opened in your notepad automatically.\n" + // NOI18N
-                "Alternativelly you can attach the generated thread dump as an attachment."; // NOI18N
-        out.println("Deadlock found :-"); // NOI18N
+        String userDir = System.getProperty ("netbeans.user");
+        if (userDir != null) {
+            out.println("Please consider also attaching " + userDir + "/var/log/messages.log");
+        }
+        
+        out.println("Deadlocked threads :"); // NOI18N
         ThreadInfo[] infos = threadMXBean.getThreadInfo(tids, true, true);
+        for (ThreadInfo ti : infos) {
+            printThreadInfo(ti, out);
+            printMonitorInfo(ti, out);
+            printLockInfo(ti.getLockedSynchronizers(), out);
+            out.println();
+        }
+        
+        out.println("All threads :"); // NOI18N
+        tids = threadMXBean.getAllThreadIds();
+        infos = threadMXBean.getThreadInfo(tids, true, true);
         for (ThreadInfo ti : infos) {
             printThreadInfo(ti, out);
             printMonitorInfo(ti, out);
@@ -148,9 +158,8 @@ class Detector implements Runnable {
         if (out != System.out) {
             out.close();
         }
-        openThreadDumpFile(file);
-        submitThreadDump(message);
         stop();
+        fork(file);
     }
 
     private void printThreadInfo(ThreadInfo ti, PrintStream out) {
@@ -208,36 +217,33 @@ class Detector implements Runnable {
            out.println(INDENT + "  - " + li); // NOI18N
        }
        out.println();
-    }    
-
-    /**
-     * Sends the thread dump to bugzilla.
-     * @param message 
-     */
-    private void submitThreadDump(String message) {
+    }   
+    
+    private static void fork(File dumpFile) {
         try {
-            message = URLEncoder.encode(message);
-            URI whereToSubmit = new URI(NbBundle.getMessage(Detector.class, "BugzillaURL", message));
-            Desktop.getDesktop().browse(whereToSubmit);
+            final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+            final File currentJar = Utilities.toFile(Detector.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+
+            /* is it a jar file? */
+            if (!currentJar.getName().endsWith(".jar")) {
+                System.out.println("currentJar.getName() == " + currentJar.getName());
+                return;
+            }
+
+            /* Build command: java -jar application.jar */
+            final ArrayList<String> command = new ArrayList<String>();
+            command.add(javaBin);
+            command.add("-jar");
+            command.add(currentJar.getPath());
+            command.add(dumpFile.getPath());
+
+            final ProcessBuilder builder = new ProcessBuilder(command);
+            builder.start();
+            System.out.println("FORKED OK with command " + command);
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-    
-
-    /**
-     * Opens the specified file in notepad.
-     * @param file to be opened
-     */
-    private void openThreadDumpFile(File file) {
-        if (file != null) {
-            try {
-                Desktop.getDesktop().open(file);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
+    }    
 }
