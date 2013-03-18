@@ -127,7 +127,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         Program emptyProgram = new Program(0, snapshot.getText().toString().length(), Collections.<Statement>emptyList(), Collections.<Comment>emptyList());
         result = new PHPParseResult(snapshot, emptyProgram);
         LOGGER.log(
-                Level.WARNING,
+                Level.INFO,
                 "Parsing of big file cancelled. Size: {0} Name: {1}",
                 new Object[] {fileObject.getSize(), FileUtil.getFileDisplayName(fileObject)});
     }
