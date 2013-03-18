@@ -81,6 +81,11 @@ public class GconfNetworkProxy {
     private final static String GCONF_VALUE_AUTO = "auto"; //NOI18N
     private final static String GCONF_VALUE_MANUAL = "manual"; //NOI18N
 
+    /**
+     * Returns network proxy settings - retrieved via gconftool.
+     * 
+     * @return network proxy settings via GSettings.
+     */
     protected static NetworkProxySettings getNetworkProxySettings() {
         LOGGER.log(Level.FINE, "GConf system proxy resolver started."); //NOI18N
         Map<String, String> proxyProperties = getGconfMap(GCONF_NODE_PROXY);

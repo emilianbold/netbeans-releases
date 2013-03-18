@@ -57,8 +57,7 @@ import org.netbeans.core.networkproxy.NetworkProxySettings;
 public class GnomeNetworkProxy implements NetworkProxyResolver{
     
     private final static Logger LOGGER = Logger.getLogger(GnomeNetworkProxy.class.getName());
-    
-    
+        
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
         if (new File(GsettingsNetworkProxy.GSETTINGS_PATH).exists()) {

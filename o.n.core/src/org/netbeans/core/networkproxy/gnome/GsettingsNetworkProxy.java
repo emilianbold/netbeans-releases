@@ -84,6 +84,11 @@ public class GsettingsNetworkProxy {
     private final static String GSETTINGS_VALUE_AUTO = "auto"; //NOI18N
     private final static String GSETTINGS_VALUE_MANUAL = "manual"; //NOI18N
 
+    /**
+     * Returns network proxy settings - retrieved via GSettings (preferred).
+     * 
+     * @return network proxy settings via GSettings.
+     */
     protected static NetworkProxySettings getNetworkProxySettings() {
         LOGGER.log(Level.FINE, "GSettings system proxy resolver started."); //NOI18N
         Map<String, String> proxyProperties = getGsettingsMap();
