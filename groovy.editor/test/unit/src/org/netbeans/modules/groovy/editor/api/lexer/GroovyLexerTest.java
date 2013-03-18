@@ -127,6 +127,13 @@ public class GroovyLexerTest extends GroovyTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.LINE_COMMENT, "// def =\"string\"");
     }
     
+    // Groovy supports special line comment started with #!
+    public void testLineComment_SH_comment() {
+        TokenSequence<GroovyTokenId> ts = createTokenSequenceFor("#! def =\"string\"");
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.LINE_COMMENT, "#! def =\"string\"");
+    }
+    
     public void testBlockComment() {
         TokenSequence<GroovyTokenId> ts = createTokenSequenceFor(
                 "/*"
