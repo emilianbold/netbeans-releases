@@ -300,6 +300,9 @@ public class ResultSetJXTable extends JXTableDecorator {
 
     @Override
     public boolean isCellEditable(int row, int column) {
+        if (getCellEditor(row, column) instanceof AlwaysEnable) {
+            return true;
+        }
         if(getModel() != null) {
             int modelRow = convertRowIndexToModel(row);
             int modelColumn = convertColumnIndexToModel(column);
