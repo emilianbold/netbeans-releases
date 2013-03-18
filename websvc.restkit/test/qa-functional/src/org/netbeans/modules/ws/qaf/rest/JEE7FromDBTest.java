@@ -1,7 +1,7 @@
-/**
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,47 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ws.qaf.rest;
 
-package org.netbeans.modules.j2ee.persistence.unit;
-
-import java.io.File;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.j2ee.persistence.unit.PUDataObjectTestBase.Lkp;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
+import junit.framework.Test;
 
 /**
- * @author Martin Krauskopf
+ * Tests for New REST web services from Database wizard
+ *
+ * @author Jiri Skrivanek
  */
-public class PUDataLoaderTest extends PUDataObjectTestBase {
-    
-    static {
-        // set the lookup which will be returned by Lookup.getDefault()
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        ((Lkp) Lookup.getDefault()).setLookups(new Object[] {
-            new PUDataObjectTestBase.PUMimeResolver(),
-            new PUDataObjectTestBase.Pool(),
-        });
+public class JEE7FromDBTest extends FromDBTest {
+
+    public JEE7FromDBTest(String name) {
+        super(name);
     }
-    
-    public PUDataLoaderTest(String testName) {
-        super(testName);
+
+    @Override
+    protected JavaEEVersion getJavaEEversion() {
+        return JavaEEVersion.JAVAEE7;
     }
-    
-    public void setUp() throws Exception {
-        clearWorkDir();
-        super.setUp();
+
+    /**
+     * Creates suite from particular test cases. You can define order of testcases here.
+     */
+    public static Test suite() {
+        return createAllModulesServerSuite(Server.GLASSFISH, JEE7FromDBTest.class,
+                "testFromDB", //NOI18N
+                "testDeploy", //NOI18N
+                "testUndeploy"); //NOI18N
     }
-    
-    public void testPUWithoutProjectOwnerIsRecognized() throws Exception {
-        String persistenceFile = getDataDir().getAbsolutePath() + "/persistence.xml";
-        FileObject puFO = FileUtil.toFileObject(new File(persistenceFile));
-        assertTrue("persistence unit without project owner is not recongnized." +
-                " Project owner: " + FileOwnerQuery.getOwner(puFO),
-                DataObject.find(puFO) instanceof PUDataObject);
-    }
-    
 }

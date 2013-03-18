@@ -41,14 +41,19 @@
  */
 package org.netbeans.modules.glassfish.common.ui;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Iterator;
+import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import static org.openide.NotifyDescriptor.OK_OPTION;
+import static org.openide.NotifyDescriptor.CANCEL_OPTION;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -62,6 +67,24 @@ import org.openide.util.NbBundle;
  */
 public class JavaSEPlatformPanel extends JPanel {
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner classes methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Action to invoke Java SE platforms customizer.
+     */
+    private class PlatformAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            PlatformsCustomizer.showCustomizer(javaPlatform());
+            javaPlatforms = JavaUtils.findSupportedPlatforms(instance);
+            ((JavaPlatformsComboBox)javaComboBox)
+                    .updateModel(javaPlatforms, false);
+        }
+        
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -83,11 +106,19 @@ public class JavaSEPlatformPanel extends JPanel {
                 ? platform.getDisplayName() : javaHome.getAbsolutePath();
         String message = NbBundle.getMessage(
                 JavaSEPlatformPanel.class,
-                "JavaSEPlatformPanel.Warning", platformName);
+                "JavaSEPlatformPanel.warning", platformName);
+        String title = NbBundle.getMessage(
+                JavaSEPlatformPanel.class,
+                "JavaSEPlatformPanel.title", platformName);
         JavaSEPlatformPanel panel = new JavaSEPlatformPanel(instance, message);
-        NotifyDescriptor notifyDescriptor = new NotifyDescriptor.Message(
-                panel, NotifyDescriptor.PLAIN_MESSAGE);
-        DialogDisplayer.getDefault().notify(notifyDescriptor);
+        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
+                panel, title, NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.PLAIN_MESSAGE,
+                new Object[] { OK_OPTION, CANCEL_OPTION }, OK_OPTION);
+        Object button = DialogDisplayer.getDefault().notify(notifyDescriptor);
+        if (button == CANCEL_OPTION) {
+            return selectedJavaHome;
+        }
         JavaPlatform selectedPlatform = panel.javaPlatform();
         if (selectedPlatform != null) {
             Iterator<FileObject> platformIterator
@@ -107,14 +138,23 @@ public class JavaSEPlatformPanel extends JPanel {
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
+    /** GlassFish server instance used to search for supported platforms. */
+    private final GlassfishInstance instance;
+
     /** Warning message to be shown in the panel. */
     private final String message;
 
     /** Java SE JDK selection label. */
     private final String javaLabelText;
 
-    /** update properties check box label. */
+    /** Update properties check box label. */
     private final String propertiesLabelText;
+
+    /** Platform customizer button label. */
+    private final String platformButtonText;
+
+    /** Platform customizer button action. */
+    private final PlatformAction platformButtonAction;
 
     /** Java SE JDK selection content. */
     JavaPlatform[] javaPlatforms;
@@ -131,6 +171,7 @@ public class JavaSEPlatformPanel extends JPanel {
      * @param message  Warning text.
      */
     public JavaSEPlatformPanel(GlassfishInstance instance, String message) {
+        this.instance = instance;
         this.message = message;
         this.javaLabelText = NbBundle.getMessage(
                 JavaSEPlatformPanel.class,
@@ -138,6 +179,10 @@ public class JavaSEPlatformPanel extends JPanel {
         this.propertiesLabelText = NbBundle.getMessage(
                 JavaSEPlatformPanel.class,
                 "JavaSEPlatformPanel.propertiesLabel");
+        this.platformButtonText = NbBundle.getMessage(
+                JavaSEPlatformPanel.class,
+                "JavaSEPlatformPanel.platformButton");
+        this.platformButtonAction = new PlatformAction();
         javaPlatforms = JavaUtils.findSupportedPlatforms(instance);
         initComponents();
     }
@@ -185,6 +230,7 @@ public class JavaSEPlatformPanel extends JPanel {
         javaLabel = new javax.swing.JLabel();
         propertiesLabel = new javax.swing.JLabel();
         propertiesCheckBox = new javax.swing.JCheckBox();
+        platformButton = new javax.swing.JButton(platformButtonAction);
 
         setMaximumSize(new java.awt.Dimension(400, 200));
         setMinimumSize(new java.awt.Dimension(400, 150));
@@ -199,6 +245,8 @@ public class JavaSEPlatformPanel extends JPanel {
 
         propertiesCheckBox.setSelected(true);
 
+        org.openide.awt.Mnemonics.setLocalizedText(platformButton, this.platformButtonText);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -212,13 +260,15 @@ public class JavaSEPlatformPanel extends JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(javaLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(javaComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(javaComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(platformButton))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(propertiesLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(propertiesCheckBox)
                                 .addGap(0, 0, Short.MAX_VALUE)))
-                        .addGap(12, 12, 12))))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -227,19 +277,22 @@ public class JavaSEPlatformPanel extends JPanel {
                 .addComponent(messageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(javaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(javaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(platformButton))
                     .addComponent(javaLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(propertiesLabel)
                     .addComponent(propertiesCheckBox))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox javaComboBox;
     private javax.swing.JLabel javaLabel;
     private javax.swing.JLabel messageLabel;
+    private javax.swing.JButton platformButton;
     private javax.swing.JCheckBox propertiesCheckBox;
     private javax.swing.JLabel propertiesLabel;
     // End of variables declaration//GEN-END:variables

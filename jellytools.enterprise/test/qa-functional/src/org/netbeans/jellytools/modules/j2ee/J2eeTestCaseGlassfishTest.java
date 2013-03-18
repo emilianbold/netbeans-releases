@@ -42,16 +42,16 @@ import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestResult;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbModuleSuite.Configuration;
 import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Jindrich Sedek
  */
-public class J2eeTestCaseGlassfishTest extends JellyTestCase {
+public class J2eeTestCaseGlassfishTest extends NbTestCase {
 
     public J2eeTestCaseGlassfishTest(String name) {
         super(name);
@@ -81,7 +81,7 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
     public void testAddEmptyTestIntoEmptyConfiguration() {
         Configuration conf = NbModuleSuite.emptyConfiguration();
         conf = J2eeTestCase.addServerTests(ANY, conf, TD.class).gui(false);
-        Test t = NbModuleSuite.create(conf);
+        Test t = conf.suite();
         t.run(new TestResult());
         assertEquals("just one empty test", 1, t.countTestCases());
         assertNull("testA was not running", System.getProperty("testA"));
@@ -91,7 +91,7 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
         setGlassfishHome(false);
         Configuration conf = NbModuleSuite.createConfiguration(TD.class);
         conf = J2eeTestCase.addServerTests(GLASSFISH, conf, "testA", "testB").gui(false);
-        Test t = NbModuleSuite.create(conf);
+        Test t = conf.suite();
         t.run(new TestResult());
         assertEquals("just empty test", 1, t.countTestCases());
     }
@@ -100,7 +100,7 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
         setGlassfishHome(true);
         Configuration conf = NbModuleSuite.createConfiguration(TD.class);
         conf = J2eeTestCase.addServerTests(GLASSFISH, conf, "testA", "testB").gui(false);
-        Test t = NbModuleSuite.create(conf);
+        Test t = conf.suite();
         t.run(new TestResult());
         assertEquals("both tests", 2, t.countTestCases());
     }

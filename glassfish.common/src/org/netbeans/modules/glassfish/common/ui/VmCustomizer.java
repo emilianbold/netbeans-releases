@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.glassfish.common.ui;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Iterator;
+import javax.swing.AbstractAction;
 import javax.swing.SpinnerNumberModel;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -54,9 +57,29 @@ import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class VmCustomizer extends javax.swing.JPanel {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner classes methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Action to invoke Java SE platforms customizer.
+     */
+    private class PlatformAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            PlatformsCustomizer.showCustomizer(javaPlatform());
+            javaPlatforms = JavaUtils.findSupportedPlatforms(instance);
+            ((JavaPlatformsComboBox)javaComboBox)
+                    .updateModel(javaPlatforms, true);
+        }
+        
+    }
 
     /**
      * Port limits: Minimal value. From {
@@ -71,6 +94,12 @@ public class VmCustomizer extends javax.swing.JPanel {
      */
     private static int PORT_MAX = 0xFFFF;
 
+    /** Platform customizer button label. */
+    private final String platformButtonText;
+
+    /** Platform customizer button action. */
+    private final PlatformAction platformButtonAction;
+
     /** GlassFish server instance to be modified. */
     final GlassfishInstance instance;
 
@@ -83,6 +112,10 @@ public class VmCustomizer extends javax.swing.JPanel {
     public VmCustomizer(final GlassfishInstance instance) {
         this.instance = instance;
         javaPlatforms = JavaUtils.findSupportedPlatforms(this.instance);
+        this.platformButtonText = NbBundle.getMessage(
+                VmCustomizer.class,
+                "VmCustomizer.platformButton");
+        this.platformButtonAction = new PlatformAction();
         initComponents();
     }
 
@@ -231,6 +264,7 @@ public class VmCustomizer extends javax.swing.JPanel {
         pickerPanel = new javax.swing.JPanel();
         javaInstallLabel = new javax.swing.JLabel();
         javaComboBox = new JavaPlatformsComboBox(javaPlatforms, true);
+        platformButton = new javax.swing.JButton(platformButtonAction);
         useIDEProxyInfo = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "VmCustomizer.name")); // NOI18N
@@ -264,17 +298,17 @@ public class VmCustomizer extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(debugSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(debugSettingsPanelLayout.createSequentialGroup()
-                        .addGroup(debugSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(useSharedMemRB)
-                            .addComponent(useSocketRB))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(debugSettingsPanelLayout.createSequentialGroup()
                         .addComponent(useUserDefinedAddress)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(addressValue, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 146, Short.MAX_VALUE))))
+                        .addGap(0, 136, Short.MAX_VALUE))
+                    .addGroup(debugSettingsPanelLayout.createSequentialGroup()
+                        .addGroup(debugSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(useSharedMemRB)
+                            .addComponent(useSocketRB))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         debugSettingsPanelLayout.setVerticalGroup(
             debugSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -287,7 +321,7 @@ public class VmCustomizer extends javax.swing.JPanel {
                     .addComponent(useUserDefinedAddress)
                     .addComponent(jLabel1)
                     .addComponent(addressValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         useSocketRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_UseSockets")); // NOI18N
@@ -301,6 +335,8 @@ public class VmCustomizer extends javax.swing.JPanel {
         javaComboBox.setMinimumSize(new java.awt.Dimension(400, 24));
         javaComboBox.setPreferredSize(new java.awt.Dimension(400, 24));
 
+        platformButton.setText(this.platformButtonText);
+
         javax.swing.GroupLayout pickerPanelLayout = new javax.swing.GroupLayout(pickerPanel);
         pickerPanel.setLayout(pickerPanelLayout);
         pickerPanelLayout.setHorizontalGroup(
@@ -309,7 +345,10 @@ public class VmCustomizer extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(javaInstallLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(javaComboBox, 0, 1, Short.MAX_VALUE))
+                .addComponent(javaComboBox, 0, 1, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(platformButton)
+                .addContainerGap())
         );
         pickerPanelLayout.setVerticalGroup(
             pickerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -317,7 +356,8 @@ public class VmCustomizer extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(pickerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(javaInstallLabel)
-                    .addComponent(javaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(javaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(platformButton))
                 .addContainerGap())
         );
 
@@ -330,22 +370,21 @@ public class VmCustomizer extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(debugSettingsPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(pickerPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(useIDEProxyInfo)))
-                .addGap(0, 12, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pickerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(debugSettingsPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(useIDEProxyInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(pickerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(9, 9, 9)
-                .addComponent(debugSettingsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(debugSettingsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(useIDEProxyInfo))
+                .addComponent(useIDEProxyInfo)
+                .addGap(19, 19, 19))
         );
 
         useIDEProxyInfo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VmCustomizer.class, "A11Y_DESC_UseIdeProxySettings")); // NOI18N
@@ -380,6 +419,7 @@ public class VmCustomizer extends javax.swing.JPanel {
     private javax.swing.JComboBox javaComboBox;
     private javax.swing.JLabel javaInstallLabel;
     private javax.swing.JPanel pickerPanel;
+    private javax.swing.JButton platformButton;
     private javax.swing.JCheckBox useIDEProxyInfo;
     private javax.swing.JRadioButton useSharedMemRB;
     private javax.swing.JRadioButton useSocketRB;

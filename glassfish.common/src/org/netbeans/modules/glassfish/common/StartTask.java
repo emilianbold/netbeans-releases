@@ -329,6 +329,11 @@ public class StartTask extends BasicTask<TaskState> {
                             instance, jdkHomeFile);
                 }
             }
+            if (jdkHome == null) {
+                return fireOperationStateChanged(TaskState.FAILED,
+                        TaskEvent.CMD_FAILED,
+                        "MSG_START_SERVER_FAILED_NOJDK", instanceName);
+            }
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex); // NOI18N
             return fireOperationStateChanged(TaskState.FAILED,
@@ -383,7 +388,8 @@ public class StartTask extends BasicTask<TaskState> {
                     TaskEvent.CMD_FAILED,
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName);
         } catch (ProcessCreationException ex) {
-            LOGGER.log(Level.INFO, null, ex); // NOI18N
+            Logger.getLogger("glassfish").log(Level.INFO,
+                    "Could not start process for " + instanceName, ex);
             return fireOperationStateChanged(TaskState.FAILED,
                     TaskEvent.CMD_FAILED, "MSG_PASS_THROUGH",
                     ex.getLocalizedMessage());
