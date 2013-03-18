@@ -1127,7 +1127,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 weakPrefL = WeakListeners.create(PreferenceChangeListener.class, new PreferenceChangeListener() {
                     @Override
                     public void preferenceChange(PreferenceChangeEvent evt) {
-                        if (evt.getKey().startsWith(FoldUtilitiesImpl.PREF_COLLAPSE_PREFIX)) {
+                        if (evt == null || evt.getKey().startsWith(FoldUtilitiesImpl.PREF_COLLAPSE_PREFIX)) {
                             if (!initialFoldState.isEmpty()) {
                                 initialFoldState = new HashMap<FoldType, Boolean>();
                             }
