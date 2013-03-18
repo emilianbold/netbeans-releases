@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
@@ -324,7 +325,10 @@ public class PUDataObject extends XmlMultiViewDataObject {
      * Adds given persistence unit and schedules update of data.
      */
     public void addPersistenceUnit(PersistenceUnit persistenceUnit){
-        ProviderUtil.makePortableIfPossible(FileOwnerQuery.getOwner(getPrimaryFile()), persistenceUnit);
+        Project project = FileOwnerQuery.getOwner(getPrimaryFile());
+        if(project != null) {
+            ProviderUtil.makePortableIfPossible(project, persistenceUnit);
+        }
         getPersistence().addPersistenceUnit(persistenceUnit);
         modelUpdated();
         firePropertyChange(PERSISTENCE_UNIT_ADDED_OR_REMOVED, false, true);
