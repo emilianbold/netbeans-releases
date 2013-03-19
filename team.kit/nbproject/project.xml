@@ -6,12 +6,7 @@
             <code-name-base>org.netbeans.modules.team.kit</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>com.tasktop.c2c.client.commons</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>com.tasktop.c2c.client.tasks.core</code-name-base>
+                    <code-name-base>oracle.eclipse.tools.cloud.dev.tasks</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
                 </dependency>
@@ -61,11 +56,6 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.aopalliance</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.codehaus.jackson.core</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
@@ -79,15 +69,6 @@
                     <code-name-base>org.eclipse.mylyn.commons.repositories.core</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.odcs.jersey</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.libs.smack</code-name-base>
@@ -156,12 +137,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.odcs.tasks.tasktop</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.odcs.ui</code-name-base>
                     <run-dependency>
                         <specification-version>0.1</specification-version>
@@ -178,51 +153,6 @@
                     <run-dependency>
                         <specification-version>1.4</specification-version>
                     </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.springframework.aop</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.springframework.asm</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.springframework.beans</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.springframework.context</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.springframework.context.support</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.springframework.core</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.springframework.expression</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.springframework.security.core</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.springframework.web</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
                 </dependency>
             </module-dependencies>
             <public-packages/>
