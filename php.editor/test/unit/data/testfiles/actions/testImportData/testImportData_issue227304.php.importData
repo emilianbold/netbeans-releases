@@ -1,0 +1,12 @@
+Caret position: 34
+Should show uses panel: true
+Defaults:
+ Don't use type.
+
+Names:
+ MyClass
+
+Variants:
+ \Two\MyClass
+ Don't use type.
+
