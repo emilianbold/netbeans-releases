@@ -45,91 +45,86 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.dircache.DirCacheIterator;
-import org.eclipse.jgit.errors.CorruptObjectException;
-import org.eclipse.jgit.lib.Constants;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.*;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitStatus;
-import org.netbeans.libs.git.GitStatus.Status;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.netbeans.libs.git.progress.StatusListener;
 
 /**
  *
  * @author ondra
  */
-public class ConflictCommand extends StatusCommand {
-
-    private final ProgressMonitor monitor;
-    private final StatusListener listener;
+public class CompareCommand extends GitCommand {
+    private final LinkedHashMap<File, GitRevisionInfo.GitFileInfo> statuses;
     private final File[] roots;
+    private final String revisionFirst;
+    private final String revisionSecond;
 
-    public ConflictCommand (Repository repository, GitClassFactory gitFactory, File[] roots, ProgressMonitor monitor, StatusListener listener) {
-        super(repository, Constants.HEAD, roots, gitFactory, monitor, listener);
-        this.monitor = monitor;
-        this.listener = listener;
+    public CompareCommand (Repository repository, String revisionFirst, String revisionSecond, File[] roots,
+            GitClassFactory gitFactory, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.roots = roots;
+        this.revisionFirst = revisionFirst;
+        this.revisionSecond = revisionSecond;
+        statuses = new LinkedHashMap<File, GitRevisionInfo.GitFileInfo>();
     }
 
     @Override
     protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git show conflicts"); //NOI18N
+        StringBuilder sb = new StringBuilder("git diff --raw"); //NOI18N
+        sb.append(revisionFirst).append(' ').append(revisionSecond);                
         for (File root : roots) {
-            sb.append(" ").append(root.getAbsolutePath()); //NOI18N
+            sb.append(" ").append(root.getAbsolutePath());
         }
         return sb.toString();
     }
 
     @Override
+    protected boolean prepareCommand () throws GitException {
+        return getRepository().getDirectory().exists();
+    }
+
+    @Override
     protected void run () throws GitException {
         Repository repository = getRepository();
+        TreeWalk walk = new TreeWalk(repository);
         try {
-            DirCache cache = repository.readDirCache();
-            try {
-                String workTreePath = repository.getWorkTree().getAbsolutePath();
-                Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
-                TreeWalk treeWalk = new TreeWalk(repository);
-                if (!pathFilters.isEmpty()) {
-                    treeWalk.setFilter(PathFilterGroup.create(pathFilters));
-                }
-                treeWalk.setRecursive(true);
-                treeWalk.reset();
-                // Index
-                treeWalk.addTree(new DirCacheIterator(cache));
-                String lastPath = null;
-                GitStatus[] conflicts = new GitStatus[3];
-                while (treeWalk.next() && !monitor.isCanceled()) {
-                    String path = treeWalk.getPathString();
-                    if (!path.equals(lastPath)) {
-                        handleConflict(conflicts, workTreePath);
-                    }
-                    lastPath = path;
-                    File file = new File(workTreePath + File.separator + path);
-                    DirCacheIterator indexIterator = treeWalk.getTree(0, DirCacheIterator.class);
-                    DirCacheEntry indexEntry = indexIterator != null ? indexIterator.getDirCacheEntry() : null;
-                    int stage = indexEntry == null ? 0 : indexEntry.getStage();
-
-                    if (stage != 0) {
-                        GitStatus status = getClassFactory().createStatus(true, path, workTreePath, file, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, null, false, null);
-                        conflicts[stage - 1] = status;
-                    }
-                }
-                handleConflict(conflicts, workTreePath);
-            } finally {
-                cache.unlock();
+            walk.reset();
+            walk.setRecursive(true);
+            walk.addTree(Utils.findCommit(repository, revisionFirst).getTree());
+            walk.addTree(Utils.findCommit(repository, revisionSecond).getTree());
+            Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
+            if (pathFilters.isEmpty()) {
+                walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
+            } else {
+                walk.setFilter(AndTreeFilter.create(new TreeFilter[] { 
+                    TreeFilter.ANY_DIFF,
+                    PathFilter.ANY_DIFF,
+                    PathFilterGroup.create(pathFilters)
+                }));
             }
-        } catch (CorruptObjectException ex) {
-            throw new GitException(ex);
+            List<GitRevisionInfo.GitFileInfo> infos = Utils.getDiffEntries(repository, walk, getClassFactory());
+            for (GitRevisionInfo.GitFileInfo info : infos) {
+                statuses.put(info.getFile(), info);
+            }
         } catch (IOException ex) {
             throw new GitException(ex);
+        } finally {
+            walk.release();
         }
+    }
+
+    public Map<File, GitRevisionInfo.GitFileInfo> getFileDifferences () {
+        return statuses;
     }
 }

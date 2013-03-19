@@ -49,9 +49,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryState;
+import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.JGitCredentialsProvider;
 import org.netbeans.libs.git.jgit.JGitRepository;
@@ -62,6 +64,7 @@ import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutRevisionCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
+import org.netbeans.libs.git.jgit.commands.CompareCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
@@ -603,16 +606,53 @@ public final class GitClient {
     }
 
     /**
-     * Returns an array of statuses for files under given roots
+     * Compares the working tree with the current HEAD and returns an array of
+     * statuses for files under given roots
+     *
      * @param roots root folders or files to search under
      * @return status array
      * @throws GitException an unexpected error occurs
      */
     public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException {
+        return getStatus(roots, Constants.HEAD, monitor);
+    }
+
+    /**
+     * Compares working tree with a given revision and returns an array of
+     * statuses for files under given roots
+     *
+     * @param roots root folders or files to search under
+     * @param revision revision to compare with the working tree. If set
+     * to <code>null</code> HEAD will be used instead.
+     * @return status array
+     * @throws GitException an unexpected error occurs
+     * @since 1.9
+     */
+    public Map<File, GitStatus> getStatus (File[] roots, String revision, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        StatusCommand cmd = new StatusCommand(repository, getClassFactory(), roots, monitor, delegateListener);
+        StatusCommand cmd = new StatusCommand(repository, revision == null ? Constants.HEAD : revision,
+                roots, getClassFactory(), monitor, delegateListener);
         cmd.execute();
         return cmd.getStatuses();
+    }
+
+    /**
+     * Compares two different commit trees and returns an array of file
+     * modifications between <code>revisionFirst</code> and <code>revisionSecond</code>
+     *
+     * @param roots root folders or files to search under
+     * @param revisionFirst first revision to compare
+     * @param revisionSecond second revision to compare
+     * @return status array
+     * @throws GitException an unexpected error occurs
+     * @since 1.9
+     */
+    public Map<File, GitFileInfo> getStatus (File[] roots, String revisionFirst, String revisionSecond, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CompareCommand cmd = new CompareCommand(repository, revisionFirst, revisionSecond, roots,
+                getClassFactory(), monitor);
+        cmd.execute();
+        return cmd.getFileDifferences();
     }
 
     /**

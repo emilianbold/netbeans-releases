@@ -162,8 +162,8 @@ public class RebaseCommand extends GitCommand {
             Repository repository = getRepository();
             GitRevisionInfo info = getClassFactory().createRevisionInfo(currentCommit, repository);
             Map<File, GitRevisionInfo.GitFileInfo> modifiedFiles = info.getModifiedFiles();
-            StatusCommand cmd = new StatusCommand(repository, getClassFactory(), modifiedFiles.keySet().toArray(
-                    new File[modifiedFiles.keySet().size()]),
+            StatusCommand cmd = new StatusCommand(repository, Constants.HEAD, modifiedFiles.keySet().toArray(
+                    new File[modifiedFiles.keySet().size()]), getClassFactory(), 
                     new DelegatingGitProgressMonitor(monitor),
                     new StatusListener() {
                         @Override
