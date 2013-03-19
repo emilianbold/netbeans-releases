@@ -47,7 +47,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -64,10 +63,6 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
  */
 @FunctionInterceptor.Registration(priority = 100)
 public class KnockoutExtendInterceptor implements FunctionInterceptor {
-
-    private static final Logger LOGGER = Logger.getLogger(KnockoutExtendInterceptor.class.getName());
-
-    private static final String GLOBAL_KO_OBJECT = "ko"; // NOI18N
 
     @Override
     public Pattern getNamePattern() {
