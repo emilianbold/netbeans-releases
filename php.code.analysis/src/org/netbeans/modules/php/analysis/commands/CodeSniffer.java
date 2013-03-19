@@ -89,6 +89,9 @@ public final class CodeSniffer {
     private static final String ENCODING_PARAM = "--encoding=%s"; // NOI18N
     private static final String NO_RECURSION_PARAM = "-l"; // NOI18N
 
+    // cache
+    private static final List<String> CACHED_STANDARDS = new CopyOnWriteArrayList<String>();
+
     private final String codeSnifferPath;
 
 
@@ -144,6 +147,9 @@ public final class CodeSniffer {
     @NbBundle.Messages("CodeSniffer.listStandards=Code Sniffer (standards)")
     @CheckForNull
     public List<String> getStandards() {
+        if (!CACHED_STANDARDS.isEmpty()) {
+            return Collections.unmodifiableList(CACHED_STANDARDS);
+        }
         StandardsOutputProcessorFactory standardsProcessorFactory = new StandardsOutputProcessorFactory();
         try {
             getExecutable(Bundle.CodeSniffer_listStandards())
@@ -154,7 +160,9 @@ public final class CodeSniffer {
                 // some error
                 return null;
             }
-            return standardsProcessorFactory.getStandards();
+            List<String> standards = standardsProcessorFactory.getStandards();
+            CACHED_STANDARDS.addAll(standards);
+            return standards;
         } catch (CancellationException ex) {
             // canceled
             LOGGER.log(Level.FINE, "Fetching standards cancelled", ex);
