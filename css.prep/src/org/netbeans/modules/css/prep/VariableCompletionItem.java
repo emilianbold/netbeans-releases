@@ -91,7 +91,7 @@ public class VariableCompletionItem extends CssCompletionItem {
             case VARIABLE_GLOBAL_DECLARATION:
                 prio -= GLOBAL_VAR_SORT_IMPORTANCE;
                 break;
-            case VARIABLE_DECLARATION_MIXIN_PARAMS:
+            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
             case VARIABLE_LOCAL_DECLARATION:
                 prio -= LOCAL_VAR_SORT_IMPORTANCE;
                 break;
@@ -104,7 +104,7 @@ public class VariableCompletionItem extends CssCompletionItem {
     public ImageIcon getIcon() {
         switch (handle.getType()) {
             case VARIABLE_LOCAL_DECLARATION:
-            case VARIABLE_DECLARATION_MIXIN_PARAMS:
+            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
                 return LOCAL_VAR_ICON;
             default:
                 return super.getIcon();

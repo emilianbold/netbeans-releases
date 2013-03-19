@@ -75,7 +75,7 @@ public class CPCssIndexModelTest extends ProjectTestBase {
         assertNotNull(variables);
         
         assertEquals(2, CPUtils.filter(variables, CPElementType.VARIABLE_GLOBAL_DECLARATION).size());
-        assertEquals(1, CPUtils.filter(variables, CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS).size());
+        assertEquals(1, CPUtils.filter(variables, CPElementType.VARIABLE_DECLARATION_IN_BLOCK_CONTROL).size());
         assertEquals(2, CPUtils.filter(variables, CPElementType.VARIABLE_USAGE).size());
         
         Collection<CPElementHandle> mixins = indexModel.getMixins();

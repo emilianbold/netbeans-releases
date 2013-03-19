@@ -151,7 +151,7 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
                     }
                 }
                 break;
-            case VARIABLE_DECLARATION_MIXIN_PARAMS:
+            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
                 //the VARIABLE_DECLARATION_MIXIN_PARAMS itself is not in its scope (the scope is the following declarations node).
                 elements.add(new RefactoringElement(context.getFileObject(), currentVar.getRange(), currentVar.getName()));
             case VARIABLE_LOCAL_DECLARATION:

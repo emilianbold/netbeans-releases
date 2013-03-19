@@ -209,7 +209,7 @@ public class CPModel {
     public Collection<CPElement> getVariables() {
         final Collection<CPElement> vars = new ArrayList<CPElement>();
         NodeVisitor visitor = new NodeVisitor() {
-            private boolean in_cp_variable_declaration, in_cp_args_list, in_declarations;
+            private boolean in_cp_variable_declaration, in_block_control, in_block;
             private Stack<OffsetRange> contexts = new Stack<OffsetRange>();
             private CPElement elementAwaitingDeclarationNode;
             
@@ -217,6 +217,7 @@ public class CPModel {
             public boolean visit(Node node) {
 
                 switch (node.type()) {
+                    case sass_control_block:
                     case declarations:
                         OffsetRange range = new OffsetRange(node.from(), node.to());
                         contexts.push(range);
@@ -227,12 +228,12 @@ public class CPModel {
                         }
                         
                         //the declarations node represents a content of a code block
-                        in_declarations = true;
+                        in_block = true;
 
                         _visitChildren(this, node);
 
                         contexts.pop();
-                        in_declarations = false;
+                        in_block = false;
                         break;
 
                     case cp_variable_declaration:
@@ -243,22 +244,23 @@ public class CPModel {
                         in_cp_variable_declaration = false;
                         break;
 
+                    case sass_control:
                     case cp_args_list:
-                        in_cp_args_list = true;
+                        in_block_control = true;
 
                         _visitChildren(this, node);
 
-                        in_cp_args_list = false;
+                        in_block_control = false;
                         break;
 
                     case cp_variable:
                         //determine the variable type
                         CPElementType type;
-                        if (in_cp_args_list) {
-                            type = CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS;
+                        if (in_block_control && !in_block /* for sass_control which contains also the block */) {
+                            type = CPElementType.VARIABLE_DECLARATION_IN_BLOCK_CONTROL;
                         } else {
                             if (in_cp_variable_declaration) {
-                                if (in_declarations) {
+                                if (in_block) {
                                     type = CPElementType.VARIABLE_LOCAL_DECLARATION;
                                 } else {
                                     type = CPElementType.VARIABLE_GLOBAL_DECLARATION;
