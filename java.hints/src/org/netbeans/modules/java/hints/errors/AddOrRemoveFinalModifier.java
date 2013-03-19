@@ -71,21 +71,64 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
+ * Adds or removes the final modifier from/to the local variable declarations or
+ * local parameters. Based on {@link MakeVariableFinal} from Jan Lahoda.
  *
+ * @author markiewb
  * @author Jan Lahoda
  */
-public class MakeVariableFinal implements ErrorRule<Void> {
+public class AddOrRemoveFinalModifier implements ErrorRule<Void> {
 
-    public MakeVariableFinal() {
+    private final Type type;
+    private final String errorCode;
+    private final String displayName;
+    private final String description;
+    private final String fixDescription;
+
+    /**
+     *
+     * @param errorCode javac error code - see
+     * http://hg.netbeans.org/main/nb-javac/raw-file/tip/src/share/classes/com/sun/tools/javac/resources/compiler.properties
+     * for possible codes
+     */
+    private AddOrRemoveFinalModifier(String errorCode, String displayName, String description, String fixDescription, Type type) {
+        this.errorCode = errorCode;
+        this.displayName = displayName;
+        this.description = description;
+        this.fixDescription = fixDescription;
+        this.type = type;
+     }
+    
+    @NbBundle.Messages({
+        "DN_RemoveFinalModifierFromVariable=Remove \"final\" modifier",
+        "DESC_RemoveFinalModifierFromVariable=Removes the \"final\" modifier from the variable declaration",
+        "# {0} - variable name",
+        "FIX_RemoveFinalModifierFromVariable=Remove \"final\" modifier from variable \"{0}\""})
+    public static AddOrRemoveFinalModifier createRemoveFinalFromVariable() {
+        return new AddOrRemoveFinalModifier("compiler.err.cant.assign.val.to.final.var", Bundle.DN_RemoveFinalModifierFromVariable(), Bundle.DESC_RemoveFinalModifierFromVariable(), "FIX_RemoveFinalModifierFromVariable", Type.REMOVE);
     }
     
-    private static final Set<String> CODES = new HashSet<String>(Arrays.asList(
-            "compiler.err.local.var.accessed.from.icls.needs.final"
-    ));
-    
+    @NbBundle.Messages({
+        "DN_RemoveFinalModifierFromParameter=Remove \"final\" modifier",
+        "DESC_RemoveFinalModifierFromParameter=Removes the \"final\" modifier from the parameter declaration",
+        "# {0} - parameter name",
+        "FIX_RemoveFinalModifierFromParameter=Remove \"final\" modifier from parameter \"{0}\""})
+    public static AddOrRemoveFinalModifier createRemoveFinalFromParameter() {
+        return new AddOrRemoveFinalModifier("compiler.err.final.parameter.may.not.be.assigned", Bundle.DN_RemoveFinalModifierFromParameter(), Bundle.DESC_RemoveFinalModifierFromParameter(), "FIX_RemoveFinalModifierFromParameter", Type.REMOVE);
+    }
+
+    @NbBundle.Messages({
+        "DN_MakeVariableFinal=Add \"final\" modifier",
+        "DESC_MakeVariableFinal=Add \"final\" modifier to variable declaration or parameter",
+        "# {0} - variable or parameter name",
+        "FIX_MakeVariableFinal=Add \"final\" modifier to \"{0}\""})
+    public static AddOrRemoveFinalModifier createAddFinalModifier() {
+        return new AddOrRemoveFinalModifier("compiler.err.local.var.accessed.from.icls.needs.final", Bundle.DN_MakeVariableFinal(), Bundle.DESC_MakeVariableFinal(), "FIX_MakeVariableFinal", Type.ADD);
+    }
+
     public Set<String> getCodes() {
-        return CODES;
-    }
+        return new HashSet<String>(Arrays.asList(errorCode));
+     }
 
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         Tree leaf = treePath.getLeaf();
@@ -95,7 +138,7 @@ public class MakeVariableFinal implements ErrorRule<Void> {
             TreePath declaration = compilationInfo.getTrees().getPath(el);
             
             if (declaration != null) {
-                return Collections.singletonList((Fix) new FixImpl(compilationInfo.getFileObject(), el.getSimpleName().toString(), TreePathHandle.create(declaration, compilationInfo)));
+                return Collections.singletonList((Fix) new FixImpl(compilationInfo.getFileObject(), el.getSimpleName().toString(), TreePathHandle.create(declaration, compilationInfo), fixDescription, type));
             }
         }
         
@@ -106,31 +149,37 @@ public class MakeVariableFinal implements ErrorRule<Void> {
     }
 
     public String getId() {
-        return MakeVariableFinal.class.getName();
+        return AddOrRemoveFinalModifier.class.getName();
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(MakeVariableFinal.class, "DN_MakeVariableFinal");
-    }
-
-    public String getDescription() {
-        return NbBundle.getMessage(MakeVariableFinal.class, "DESC_MakeVariableFinal");
-    }
+    @Override
+     public String getDisplayName() {
+        return displayName;
+     }
+ 
+     public String getDescription() {
+        return description;
+     }
 
     private static final class FixImpl implements Fix {
         
         private String variableName;
         private TreePathHandle variable;
         private FileObject file;
+        private final String fixDescription;
+        private final Type type;
         
-        public FixImpl(FileObject file, String variableName, TreePathHandle variable) {
+        public FixImpl(FileObject file, String variableName, TreePathHandle variable, String fixDescription, Type type) {
             this.file = file;
             this.variableName = variableName;
             this.variable = variable;
+            this.fixDescription = fixDescription;
+            this.type = type;
         }
+
         public String getText() {
-            return NbBundle.getMessage(MakeVariableFinal.class, "FIX_MakeVariableFinal", new Object[]{String.valueOf(variableName)});
-        }
+            return NbBundle.getMessage(AddOrRemoveFinalModifier.class, fixDescription, String.valueOf(variableName));
+         }
 
         public ChangeInfo implement() throws IOException {
             JavaSource js = JavaSource.forFileObject(file);
@@ -140,16 +189,26 @@ public class MakeVariableFinal implements ErrorRule<Void> {
                     wc.toPhase(Phase.RESOLVED);
                     TreePath tp = variable.resolve(wc);
 
-                    if (tp == null)
-                        return ;
+                    if (tp == null) {
+                        return;
+                    }
 
                     VariableTree vt = (VariableTree) tp.getLeaf();
                     ModifiersTree mt = vt.getModifiers();
                     Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
 
                     modifiers.addAll(mt.getFlags());
-                    modifiers.add(Modifier.FINAL);
-
+                    switch (type) {
+                        case ADD:
+			    modifiers.add(Modifier.FINAL);
+                            break;
+                        case REMOVE:
+                            modifiers.remove(Modifier.FINAL);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Type " + type + " not supported");
+                    }
+ 
                     ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
 
                     wc.rewrite(mt, newMod);
@@ -166,9 +225,21 @@ public class MakeVariableFinal implements ErrorRule<Void> {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof FixImpl)) return false;
-            return variable.equals(((FixImpl) obj).variable);
+            if (!(obj instanceof FixImpl)) {
+                return false;
+            }
+	    return variable.equals(((FixImpl) obj).variable);
         }
         
     }
+
+    /**
+     * Defines the type of this hint. Remove the final modifier OR add the final
+     * modifier.
+     */
+    private enum Type {
+
+        REMOVE,
+        ADD
+     }
 }

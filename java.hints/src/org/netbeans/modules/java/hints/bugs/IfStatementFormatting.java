@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.errors;
+package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.util.TreePath;
+import java.util.Map;
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
 
 /**
- *
- * @author Jan Lahoda
+ * When 'if' statement does not have braces, and does not have the else-statement,
+ * issues a warning if the statement indentation (or indentation of following statements) does not suggest conditionality.
+ * 
+ * @author sdedic
  */
-public class MakeVariableFinalTest extends HintsTestBase {
+@Hint(
+        displayName="Correct 'if' statement formatting",
+        description = "Checks that if statement without curly braces is properly indented",
+        category = "suggestions",
+        enabled = true,
+        severity = Severity.HINT
+)
+public class IfStatementFormatting {
     
-    public MakeVariableFinalTest(String name) {
-        super(name);
+    private static Preferences javaPreferences;
+    
+    private static Preferences getJavaPreferences() {
+        return MimeLookup.getLookup("text/x-java").lookup(Preferences.class);
     }
     
-    @Override
-    protected void setUp() throws Exception {
-        super.doSetUp("org/netbeans/modules/java/hints/resources/layer.xml");
-    }
-    
-    @Override
-    protected String testDataExtension() {
-        return "org/netbeans/test/java/hints/MakeVariableFinalTest/";
-    }
-    
-    public void testMakeVariableFinal1() throws Exception {
-        performTest("MakeVariableFinal", "Make", 10, 5);
-    }
-    
-    public void testMakeVariableFinal2() throws Exception {
-        performTest("MakeVariableFinal", "Make", 11, 5);
-    }
+    // trigger on an if with >= 1 following statement without brace
+    @TriggerPattern("if ($expr) $stmt1; $stmt2;")
+    public static ErrorDescription run(HintContext ctx) {
+        final Map<String, TreePath> vars = ctx.getVariables();
+        TreePath ifPath = ctx.getPath();
 
+        IfTree tree = (IfTree)ifPath.getLeaf();
+        
+        CompilationUnitTree cut = ctx.getInfo().getCompilationUnit();
+        long ifPos = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(cut, tree);
+        
+        CharSequence text = ctx.getInfo().getSnapshot().getText();
+        
+        return null;
+    }
+    
+    
 }
