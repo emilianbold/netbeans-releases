@@ -557,7 +557,7 @@ public final class ElementUtilities {
         Types types = JavacTypes.instance(ctx);
         com.sun.tools.javac.code.Types implTypes = com.sun.tools.javac.code.Types.instance(ctx);
         DeclaredType implType = (DeclaredType)impl.asType();
-        if (element.getModifiers().contains(Modifier.ABSTRACT)) {
+        if (element.getKind().isInterface() || element.getModifiers().contains(Modifier.ABSTRACT)) {
             for (Element e : element.getEnclosedElements()) {
                 if (e.getKind() == ElementKind.METHOD && e.getModifiers().contains(Modifier.ABSTRACT)) {
                     ExecutableElement ee = (ExecutableElement)e;
