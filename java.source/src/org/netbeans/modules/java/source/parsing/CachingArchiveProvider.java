@@ -77,6 +77,7 @@ public final class CachingArchiveProvider {
     private static final String NAME_RT_JAR = "rt.jar";         //NOI18N
     private static final String PATH_CT_SYM = "lib/ct.sym";     //NOI18N
     private static final String PATH_RT_JAR_IN_CT_SYM = "META-INF/sym/rt.jar/"; //NOI18N
+    private static final boolean USE_CT_SYM = !Boolean.getBoolean("CachingArchiveProvider.disableCtSym");   //NOI18N
     //@GuardedBy("CachingArchiveProvider.class")
     private static CachingArchiveProvider instance;
 
@@ -228,7 +229,7 @@ public final class CachingArchiveProvider {
         @NonNull final File file,
         @NonNull final URL originalRoot) {
         assert Thread.holdsLock(this);
-        if (NAME_RT_JAR.equals(file.getName())) {
+        if (USE_CT_SYM && NAME_RT_JAR.equals(file.getName())) {
             final FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
                 for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
