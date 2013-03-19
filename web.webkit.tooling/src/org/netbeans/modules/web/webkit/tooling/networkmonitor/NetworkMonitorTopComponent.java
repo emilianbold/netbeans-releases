@@ -642,6 +642,9 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            if (Network.Request.PROP_RESPONSE_DATA.equals(evt.getPropertyName())) {
+                startLoadingData();
+            }
             fireChange();
         }
 
@@ -814,7 +817,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 return;
             }
             try {
-                updateDataImpl(pane, rawData);
+                updateResponseDataImpl(pane, rawData);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -825,72 +828,75 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 return;
             }
             try {
-                updateDataImpl(pane, rawData);
+                updateFramesImpl(pane, rawData);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
 
-        private void updateDataImpl(JEditorPane pane, boolean rawData) throws BadLocationException {
-            if (request != null) {
-                if (!request.hasData()) {
-                    data = "";
-                }
-                if (data == null) {
-                    data = "loading...";
-                    loadRequestData();
-                    pane.setText(data);
-                } else {
-                    if (rawData || data.isEmpty()) {
-                        pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
-                        pane.setText(data);
-                    } else {
-                        String contentType = stripDownContentType((JSONObject)request.getResponse().get("headers"));
-                        reformatAndUseRightEditor(pane, data, contentType);
-                    }
-                }
-            } else {
-                Style defaultStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-                StyledDocument doc = (StyledDocument)pane.getDocument();
-                Style timingStyle = doc.addStyle("timing", defaultStyle);
-                StyleConstants.setForeground(timingStyle, Color.lightGray);
-                Style infoStyle = doc.addStyle("comment", defaultStyle);
-                StyleConstants.setForeground(infoStyle, Color.darkGray);
-                StyleConstants.setBold(infoStyle, true);
-                SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
-                pane.setText("");
-                StringBuilder sb = new StringBuilder();
-                int lastFrameType = -1;
-                for (Network.WebSocketFrame f : wsRequest.getFrames()) {
-                    int opcode = f.getOpcode();
-                    if (opcode == 0) { // "continuation frame"
-                        opcode = lastFrameType;
-                    } else {
-                        lastFrameType = opcode;
-                    }
-                    if (opcode == 1) { // "text frame"
-                        if (!rawData) {
-                            doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
-                            doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
-                        }
-                        doc.insertString(doc.getLength(), f.getPayload()+"\n", defaultStyle);
-                    } else if (opcode == 2) { // "binary frame"
-                        if (!rawData) {
-                            doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
-                            doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
-                        }
-                        // XXX: binary data???
-                        doc.insertString(doc.getLength(), f.getPayload()+"\n", defaultStyle);
-                    } else if (opcode == 8) { // "close frame"
-                        if (!rawData) {
-                            doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
-                            doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
-                        }
-                        doc.insertString(doc.getLength(), "Frame closed\n", infoStyle);
-                    }
-                }
-                data = sb.toString();
+        private void startLoadingData() {
+            if (!request.hasData()) {
+                data = "";
             }
+            if (data == null) {
+                data = "loading...";
+                loadRequestData();
+            }
+        }
+
+        private void updateResponseDataImpl(JEditorPane pane, boolean rawData) throws BadLocationException {
+            assert data != null;
+            if (rawData || data.isEmpty()) {
+                pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
+                pane.setText(data);
+            } else {
+                String contentType = stripDownContentType((JSONObject)request.getResponse().get("headers"));
+                reformatAndUseRightEditor(pane, data, contentType);
+            }
+            pane.setCaretPosition(0);
+        }
+
+        private void updateFramesImpl(JEditorPane pane, boolean rawData) throws BadLocationException {
+            Style defaultStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+            StyledDocument doc = (StyledDocument)pane.getDocument();
+            Style timingStyle = doc.addStyle("timing", defaultStyle);
+            StyleConstants.setForeground(timingStyle, Color.lightGray);
+            Style infoStyle = doc.addStyle("comment", defaultStyle);
+            StyleConstants.setForeground(infoStyle, Color.darkGray);
+            StyleConstants.setBold(infoStyle, true);
+            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
+            pane.setText("");
+            StringBuilder sb = new StringBuilder();
+            int lastFrameType = -1;
+            for (Network.WebSocketFrame f : wsRequest.getFrames()) {
+                int opcode = f.getOpcode();
+                if (opcode == 0) { // "continuation frame"
+                    opcode = lastFrameType;
+                } else {
+                    lastFrameType = opcode;
+                }
+                if (opcode == 1) { // "text frame"
+                    if (!rawData) {
+                        doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
+                        doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
+                    }
+                    doc.insertString(doc.getLength(), f.getPayload()+"\n", defaultStyle);
+                } else if (opcode == 2) { // "binary frame"
+                    if (!rawData) {
+                        doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
+                        doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
+                    }
+                    // XXX: binary data???
+                    doc.insertString(doc.getLength(), f.getPayload()+"\n", defaultStyle);
+                } else if (opcode == 8) { // "close frame"
+                    if (!rawData) {
+                        doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
+                        doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
+                    }
+                    doc.insertString(doc.getLength(), "Frame closed\n", infoStyle);
+                }
+            }
+            data = sb.toString();
             pane.setCaretPosition(0);
         }
 
@@ -980,7 +986,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 contentType = "application/json";
             }
         }
-        if ("application/json".equals(contentType)) {
+        if ("application/json".equals(contentType) || "text/x-json".equals(contentType)) {
             data = reformatJSON(data);
             contentType = "text/x-json";
         }
