@@ -84,8 +84,7 @@ public final class CodeSniffer {
     private static final String LIST_STANDARDS_PARAM = "-i"; // NOI18N
     private static final String REPORT_PARAM = "--report=xml"; // NOI18N
     private static final String REPORT_FILE_PARAM = "--report-file=" + XML_LOG.getAbsolutePath();
-    // XXX how to get all php extensions?
-    private static final String EXTENSIONS_PARAM = "--extensions=php"; // NOI18N
+    private static final String EXTENSIONS_PARAM = "--extensions=%s"; // NOI18N
     private static final String ENCODING_PARAM = "--encoding=%s"; // NOI18N
     private static final String NO_RECURSION_PARAM = "-l"; // NOI18N
 
@@ -193,7 +192,7 @@ public final class CodeSniffer {
         params.add(String.format(STANDARD_PARAM, standard));
         params.add(REPORT_PARAM);
         params.add(REPORT_FILE_PARAM);
-        params.add(EXTENSIONS_PARAM);
+        params.add(String.format(EXTENSIONS_PARAM, StringUtils.implode(FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE), ","))); // NOI18N
         params.add(String.format(ENCODING_PARAM, encoding.name()));
         if (noRecursion) {
             params.add(NO_RECURSION_PARAM);
