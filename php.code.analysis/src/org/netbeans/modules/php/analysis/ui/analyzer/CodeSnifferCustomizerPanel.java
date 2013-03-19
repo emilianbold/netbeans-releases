@@ -62,49 +62,30 @@ public class CodeSnifferCustomizerPanel extends JPanel {
     public static final String STANDARD = "codeSniffer.standard"; // NOI18N
 
     final CodeSnifferStandardsComboBoxModel standardsModel = new CodeSnifferStandardsComboBoxModel();
-
-    // @Guardedby("this")
-    private Preferences settings;
+    final Preferences settings;
 
 
-    public CodeSnifferCustomizerPanel() {
+    public CodeSnifferCustomizerPanel(Preferences settings) {
+        assert settings != null;
+
+        this.settings = settings;
+
         initComponents();
         init();
     }
 
     private void init() {
-        AnalysisUtils.connect(standardComboBox, standardsModel, AnalysisOptions.getInstance().getCodeSnifferStandard(), null);
+        String selectedStandard = settings.get(STANDARD, AnalysisOptions.getInstance().getCodeSnifferStandard());
+        AnalysisUtils.connect(standardComboBox, standardsModel, selectedStandard, null);
         // listeners
         standardComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    getSettings().put(STANDARD, standardsModel.getSelectedStandard());
+                    settings.put(STANDARD, standardsModel.getSelectedStandard());
                 }
             }
         });
-    }
-
-    public synchronized Preferences getSettings() {
-        assert Thread.holdsLock(this);
-        assert settings != null;
-        return settings;
-    }
-
-    public synchronized void loadSettings(Preferences settings) {
-        assert Thread.holdsLock(this);
-        assert settings != null;
-        this.settings = settings;
-        initFromSettings();
-    }
-
-    private void initFromSettings() {
-        assert Thread.holdsLock(this);
-        assert settings != null;
-        String standard = settings.get(STANDARD, null);
-        if (standard != null) {
-            standardsModel.setSelectedItem(standard);
-        }
     }
 
     /**

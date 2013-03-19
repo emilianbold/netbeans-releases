@@ -241,12 +241,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 }
                 @Override
                 public CodeSnifferCustomizerPanel createComponent(CustomizerContext<Void, CodeSnifferCustomizerPanel> context) {
-                    CodeSnifferCustomizerPanel component = context.getPreviousComponent();
-                    if (component == null) {
-                        component = new CodeSnifferCustomizerPanel();
-                    }
-                    component.loadSettings(context.getSettings());
-                    return component;
+                    return new CodeSnifferCustomizerPanel(context.getSettings());
                 }
             };
         }
