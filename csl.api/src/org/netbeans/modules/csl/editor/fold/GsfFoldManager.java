@@ -50,6 +50,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -528,6 +529,8 @@ public class GsfFoldManager implements FoldManager {
                 return;
             }
             Collection<? extends FoldType> ftypes = FoldUtilities.getFoldTypes(mime).values();
+            // make a copy, since addFoldsOfType will remove pieces:
+            folds = new HashMap<String, List<OffsetRange>>(folds);
             for (FoldType ft : ftypes) {
                 addFoldsOfType(ft.code(), folds, result, doc, ft);
             }
