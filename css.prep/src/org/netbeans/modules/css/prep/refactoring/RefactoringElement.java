@@ -39,74 +39,51 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.model;
+package org.netbeans.modules.css.prep.refactoring;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.openide.filesystems.FileObject;
 
 /**
- * Resolved element.
- * 
- * Can hold model and parser result!
  *
  * @author marekfukala
  */
-public class CPElement {
+public class RefactoringElement {
+    
+    private FileObject file;
+    private OffsetRange range;
+    private String name;
 
-    private CPElementHandle handle;
-    private OffsetRange range; 
-    private OffsetRange scope;
-
-    public CPElement(CPElementHandle handle, OffsetRange range, OffsetRange scope) {
-        this.handle = handle;
+    public RefactoringElement(FileObject file, OffsetRange range, String name) {
+        this.file = file;
         this.range = range;
-        this.scope = scope;
-    }
-    
-    public String getName() {
-        return getHandle().getName();
-    }
-    
-    public CPElementType getType() {
-        return getHandle().getType();
-    }
-    
-    public FileObject getFile() {
-        return getHandle().getFile();
+        this.name = name;
     }
 
-    /**
-     * range of the element itself.
-     */
+    public FileObject getFile() {
+        return file;
+    }
+
     public OffsetRange getRange() {
         return range;
     }
 
-    /**
-     * range of the element scope.
-     * 
-     * null means no scope 
-     */
-    public OffsetRange getScope() {
-        return scope;
-    }
-    
-    void setScope(OffsetRange scope) {
-        this.scope = scope;
+    public String getName() {
+        return name;
     }
 
-    public CPElementHandle getHandle() {
-        return handle;
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append(RefactoringElement.class.getSimpleName())
+                .append(':')
+                .append(file.getNameExt())
+                .append(',')
+                .append(name)
+                .append(',')
+                .append(range).toString();
     }
     
-    public static Collection<CPElementHandle> toHandles(Collection<CPElement> elements) {
-        Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>();
-        for(CPElement e : elements) {
-            handles.add(e.getHandle());
-        }
-        return handles;
-    }
+    
     
 }

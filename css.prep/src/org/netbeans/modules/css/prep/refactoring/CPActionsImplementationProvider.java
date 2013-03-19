@@ -230,7 +230,6 @@ public class CPActionsImplementationProvider extends ActionsImplementationProvid
 
         @Override
         public void run(ResultIterator ri) throws ParseException {
-            Snapshot topLevelSnapshot = ri.getSnapshot();
             ResultIterator cssri = WebUtils.getResultIterator(ri, "text/css");
 
             if (cssri != null) {
@@ -238,7 +237,7 @@ public class CPActionsImplementationProvider extends ActionsImplementationProvid
                 if (result.getParseTree() != null) {
                     //the parser result seems to be quite ok,
                     //in case of serious parse issue the parse root is null
-                    RefactoringElementContext context = new RefactoringElementContext(result, topLevelSnapshot, caretOffset, selectionStart, selectionEnd);
+                    RefactoringElementContext context = new RefactoringElementContext(result, caretOffset, selectionStart, selectionEnd);
                     ui = context.isRefactoringAllowed() ? createRefactoringUI(context) : null;
                 }
             }

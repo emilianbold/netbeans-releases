@@ -39,74 +39,50 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.model;
+package org.netbeans.modules.css.prep;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collection;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.prep.model.CPElementHandle;
+import org.netbeans.modules.css.prep.model.CPElementType;
 import org.openide.filesystems.FileObject;
 
 /**
- * Resolved element.
- * 
- * Can hold model and parser result!
  *
  * @author marekfukala
  */
-public class CPElement {
-
-    private CPElementHandle handle;
-    private OffsetRange range; 
-    private OffsetRange scope;
-
-    public CPElement(CPElementHandle handle, OffsetRange range, OffsetRange scope) {
-        this.handle = handle;
-        this.range = range;
-        this.scope = scope;
+public class CPCssIndexModelTest extends ProjectTestBase {
+    
+    public CPCssIndexModelTest(String name) {
+        super(name, "testProject");
     }
     
-    public String getName() {
-        return getHandle().getName();
-    }
-    
-    public CPElementType getType() {
-        return getHandle().getType();
-    }
-    
-    public FileObject getFile() {
-        return getHandle().getFile();
-    }
-
-    /**
-     * range of the element itself.
-     */
-    public OffsetRange getRange() {
-        return range;
-    }
-
-    /**
-     * range of the element scope.
-     * 
-     * null means no scope 
-     */
-    public OffsetRange getScope() {
-        return scope;
-    }
-    
-    void setScope(OffsetRange scope) {
-        this.scope = scope;
-    }
-
-    public CPElementHandle getHandle() {
-        return handle;
-    }
-    
-    public static Collection<CPElementHandle> toHandles(Collection<CPElement> elements) {
-        Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>();
-        for(CPElement e : elements) {
-            handles.add(e.getHandle());
-        }
-        return handles;
+    public void testIndexingAndQueryingOfVarsAndMixins() throws IOException {
+        FileObject file = getTestFile(getSourcesFolderName() + "/lib1.scss");
+        Project project = FileOwnerQuery.getOwner(file);
+        assertNotNull(project);
+        
+        CssIndex index = CssIndex.create(project);
+        assertNotNull(index);
+        
+        CPCssIndexModel indexModel = (CPCssIndexModel)index.getIndexModel(CPCssIndexModel.Factory.class, file);
+        assertNotNull(indexModel);
+        
+        Collection<CPElementHandle> variables = indexModel.getVariables();
+        assertNotNull(variables);
+        
+        assertEquals(2, CPUtils.filter(variables, CPElementType.VARIABLE_GLOBAL_DECLARATION).size());
+        assertEquals(1, CPUtils.filter(variables, CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS).size());
+        assertEquals(2, CPUtils.filter(variables, CPElementType.VARIABLE_USAGE).size());
+        
+        Collection<CPElementHandle> mixins = indexModel.getMixins();
+        assertNotNull(mixins);
+        assertEquals(2, CPUtils.filter(mixins, CPElementType.MIXIN_DECLARATION).size());
+        assertEquals(1, CPUtils.filter(mixins, CPElementType.MIXIN_USAGE).size());
+        
     }
     
 }

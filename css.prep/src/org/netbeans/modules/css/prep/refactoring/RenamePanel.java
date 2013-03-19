@@ -129,7 +129,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(nameField, gridBagConstraints);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/css/refactoring/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/css/prep/refactoring/Bundle"); // NOI18N
         nameField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_nameField")); // NOI18N
 
         jPanel1.setMinimumSize(new java.awt.Dimension(0, 0));
