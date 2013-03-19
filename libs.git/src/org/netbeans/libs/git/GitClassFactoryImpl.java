@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.RebaseResult;
 import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.lib.ObjectId;
@@ -103,6 +104,12 @@ final class GitClassFactoryImpl extends GitClassFactory {
     @Override
     public GitPushResult createPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates) {
         return new GitPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
+    }
+
+    @Override
+    public GitRebaseResult createRebaseResult (RebaseResult rebaseResult, List<File> rebaseConflicts, List<File> failures,
+            String newHead) {
+        return new GitRebaseResult(rebaseResult, rebaseConflicts, failures, newHead);
     }
 
     @Override

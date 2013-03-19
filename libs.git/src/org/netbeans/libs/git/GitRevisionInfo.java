@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -105,7 +106,12 @@ public final class GitRevisionInfo {
      * @return time this commit was created in milliseconds.
      */
     public long getCommitTime () {
-        return (long) revCommit.getCommitTime() * 1000;
+        PersonIdent author = revCommit.getAuthorIdent();
+        if (author == null) {
+            return (long) revCommit.getCommitTime() * 1000;
+        } else {
+            return author.getWhen().getTime();
+        }
     }
 
     /**

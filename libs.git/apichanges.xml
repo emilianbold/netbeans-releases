@@ -111,6 +111,22 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>Adding support for rebase to the API</summary>
+            <version major="1" minor="8"/>
+            <date day="11" month="3" year="2013"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <ul>
+                    <li>Adding a new method GitClient.rebase delegating to the rebase command.</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <class package="org.netbeans.libs.git" name="GitRebaseResult"/>
+            <issue number="226545"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>Adding new method to GitClient: commit(), amending the last commit</summary>
             <version major="1" minor="7"/>
             <date day="6" month="2" year="2013"/>

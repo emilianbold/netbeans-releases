@@ -85,6 +85,7 @@ import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.MergeCommand;
 import org.netbeans.libs.git.jgit.commands.PullCommand;
 import org.netbeans.libs.git.jgit.commands.PushCommand;
+import org.netbeans.libs.git.jgit.commands.RebaseCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveRemoteCommand;
 import org.netbeans.libs.git.jgit.commands.RenameCommand;
@@ -196,6 +197,52 @@ public final class GitClient {
          * Compares the Index vs. the Working tree
          */
         INDEX_VS_WORKINGTREE
+    }
+    
+    /**
+     * Used as a parameter of {@link #rebase(GitClient.RebaseOperationType,
+     * String, ProgressMonitor) } to set the behavior of the command.
+     * @since 1.8
+     */
+    public enum RebaseOperationType {
+
+        /**
+         * A fresh rebase action will be started.
+         */
+        BEGIN,
+        /**
+         * Continues an interrupted rebase after conflicts are resolved.
+         */
+        CONTINUE {
+
+            @Override
+            public String toString () {
+                return "--continue"; //NOI18N
+            }
+            
+        },
+        /**
+         * Skips the current commit and continues an interrupted rebase.
+         */
+        SKIP {
+
+            @Override
+            public String toString () {
+                return "--skip"; //NOI18N
+            }
+            
+        },
+        /**
+         * Aborts and resets an interrupted rebase.
+         */
+        ABORT {
+
+            @Override
+            public String toString () {
+                return "--abort"; //NOI18N
+            }
+            
+        };
     }
     
     private final JGitRepository gitRepository;
@@ -767,6 +814,25 @@ public final class GitClient {
     public GitPushResult push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         PushCommand cmd = new PushCommand(gitRepository.getRepository(), getClassFactory(), remote, pushRefSpecifications, fetchRefSpecifications, monitor);
         cmd.setCredentialsProvider(this.credentialsProvider);
+        cmd.execute();
+        return cmd.getResult();
+    }
+    
+    /**
+     * Rebases the current HEAD onto a commit specified by the given revision.
+     *
+     * @param operation kind of rebase operation you want to perform
+     * @param revision id of a destination commit. Considered only
+     * when <code>operation</code> is set
+     * to <code>RebaseOperationType.BEGIN</code> otherwise it's meaningless.
+     * @param monitor progress monitor
+     * @return result of the rebase
+     * @throws GitException an unexpected error occurs
+     * @since 1.8
+     */
+    public GitRebaseResult rebase (RebaseOperationType operation, String revision, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        RebaseCommand cmd = new RebaseCommand(repository, getClassFactory(), revision, operation, monitor);
         cmd.execute();
         return cmd.getResult();
     }
