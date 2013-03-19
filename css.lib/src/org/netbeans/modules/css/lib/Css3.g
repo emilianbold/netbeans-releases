@@ -438,13 +438,10 @@ bodyItem
         | {isScssSource()}? sass_debug
         | {isScssSource()}? sass_control
         | {isScssSource()}? sass_function_declaration
-    ;
-
-//    	catch[ RecognitionException rce] {
-//        reportError(rce);
-//        syncToRBRACE(0); //nesting aware, initial nest == 0
-//        input.consume(); //consume the RBRACE as well
-//        }
+    ; catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(NL)); 
+    }
     
 vendorAtRule
 : moz_document | webkitKeyframes | generic_at_rule;

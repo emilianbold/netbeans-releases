@@ -155,16 +155,38 @@ public class CPCssEditorModule extends CssEditorModule {
         }
 
         Node activeNode = context.getActiveNode();
-        boolean isError = activeNode.type() == NodeType.error;
-        if (isError) {
+        boolean isError = false;
+        //skip to first non error or recovery parent
+        while(activeNode.type() == NodeType.error || activeNode.type() == NodeType.recovery) {
+            isError = true;
             activeNode = activeNode.parent();
         }
-
 //        NodeUtil.dumpTree(context.getParseTreeRoot());
 
-
-
         switch (activeNode.type()) {
+            case bodyItem:
+                switch(tid) {
+                    case WS:
+                        //in stylesheet main body: @include |
+                        //check the previous token
+                        if(ts.movePrevious()) {
+                            Token<CssTokenId> previousToken = ts.token();
+                            if(previousToken.id() == CssTokenId.SASS_INCLUDE) {
+                                //add all mixins
+                                proposals.addAll(getMixinsCompletionProposals(context, model));
+                            }
+                        }
+                        break;
+                        
+                    case IDENT:
+                        //in stylesheet main body: @include mix|
+                        if(LexerUtils.followsToken(ts, CssTokenId.SASS_INCLUDE, true, false, CssTokenId.WS) != null) {
+                            //ok so the ident if preceeded by WS and then by SASS_INCLUDE token
+                            proposals.addAll(getMixinsCompletionProposals(context, model));
+                        }
+                        break;
+                }
+                break;
             case cp_mixin_call:
             //@include |
             case cp_mixin_name:
