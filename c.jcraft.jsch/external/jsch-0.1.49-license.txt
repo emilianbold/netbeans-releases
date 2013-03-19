@@ -1,11 +1,11 @@
 Name: JSch
-Version: 0.1.45
+Version: 0.1.49
 License: BSD-jsch-variant
 OSR: 3548
 Origin: http://www.jcraft.com/jsch/
 Description: Java implementation of SSH2
 
-Copyright (c) 2002-2011 Atsuhiko Yamanaka, JCraft,Inc. 
+Copyright (c) 2002-2012 Atsuhiko Yamanaka, JCraft,Inc. 
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
