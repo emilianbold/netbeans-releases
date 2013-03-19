@@ -82,6 +82,7 @@ public class JavaSEPlatformPanel extends JPanel {
             javaPlatforms = JavaUtils.findSupportedPlatforms(instance);
             ((JavaPlatformsComboBox)javaComboBox)
                     .updateModel(javaPlatforms, false);
+            setDescriptorButtons(descriptor, javaPlatforms);
         }
         
     }
@@ -91,13 +92,31 @@ public class JavaSEPlatformPanel extends JPanel {
     ////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Set buttons in user notification descriptor depending on Java SE
+     * platforms.
+     * <p/>
+     * This method is used in constructor so it's better to be static.
+     * <p/>
+     * @param descriptor    User notification descriptor.
+     * @param javaPlatforms Java SE JDK selection content.
+     */
+    private void setDescriptorButtons(
+            NotifyDescriptor descriptor, JavaPlatform[] javaPlatforms) {
+        if (javaPlatforms == null || javaPlatforms.length == 0) {
+            descriptor.setOptions(new Object[] {CANCEL_OPTION});
+        } else {
+            descriptor.setOptions(new Object[] {OK_OPTION, CANCEL_OPTION});
+        }
+    }
+
+            /**
      * Display GlassFish Java SE selector to allow switch Java SE used
      * to run GlassFish.
      * <p/>
      * @param instance GlassFish server instance to be started.
      * @param javaHome Java SE home currently selected.
      */
-    public static FileObject selectServerSEPlatform(
+    public static FileObject selectServerSEPlatform(            
             GlassfishInstance instance, File javaHome) {
         FileObject selectedJavaHome = null;
         // Matching Java SE home installed platform if exists.
@@ -110,11 +129,11 @@ public class JavaSEPlatformPanel extends JPanel {
         String title = NbBundle.getMessage(
                 JavaSEPlatformPanel.class,
                 "JavaSEPlatformPanel.title", platformName);
-        JavaSEPlatformPanel panel = new JavaSEPlatformPanel(instance, message);
         NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
-                panel, title, NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE,
-                new Object[] { OK_OPTION, CANCEL_OPTION }, OK_OPTION);
+                null, title, NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.PLAIN_MESSAGE, null, null);
+        JavaSEPlatformPanel panel = new JavaSEPlatformPanel(
+                notifyDescriptor, instance, message);
         Object button = DialogDisplayer.getDefault().notify(notifyDescriptor);
         if (button == CANCEL_OPTION) {
             return selectedJavaHome;
@@ -159,6 +178,9 @@ public class JavaSEPlatformPanel extends JPanel {
     /** Java SE JDK selection content. */
     JavaPlatform[] javaPlatforms;
 
+    /** User notification descriptor. */
+    private final NotifyDescriptor descriptor;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -166,11 +188,14 @@ public class JavaSEPlatformPanel extends JPanel {
     /**
      * Creates new Java SE platform selection panel with message.
      * <p/>
-     * @param instance GlassFish server instance used to search
-     *                 for supported platforms.
-     * @param message  Warning text.
+     * @param descriptor User notification descriptor.
+     * @param instance   GlassFish server instance used to search
+     *                   for supported platforms.
+     * @param message    Warning text.
      */
-    public JavaSEPlatformPanel(GlassfishInstance instance, String message) {
+    public JavaSEPlatformPanel(NotifyDescriptor descriptor,
+            GlassfishInstance instance, String message) {
+        this.descriptor = descriptor;
         this.instance = instance;
         this.message = message;
         this.javaLabelText = NbBundle.getMessage(
@@ -184,11 +209,13 @@ public class JavaSEPlatformPanel extends JPanel {
                 "JavaSEPlatformPanel.platformButton");
         this.platformButtonAction = new PlatformAction();
         javaPlatforms = JavaUtils.findSupportedPlatforms(instance);
+        descriptor.setMessage(this);
+        setDescriptorButtons(this.descriptor, this.javaPlatforms);
         initComponents();
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // GUI Getters                                                            //
+    // GUI Getters and Setters                                                //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -233,9 +260,9 @@ public class JavaSEPlatformPanel extends JPanel {
         platformButton = new javax.swing.JButton(platformButtonAction);
 
         setMaximumSize(new java.awt.Dimension(400, 200));
-        setMinimumSize(new java.awt.Dimension(400, 150));
+        setMinimumSize(new java.awt.Dimension(500, 150));
         setName(""); // NOI18N
-        setPreferredSize(new java.awt.Dimension(400, 150));
+        setPreferredSize(new java.awt.Dimension(500, 150));
 
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, this.message);
 
@@ -244,6 +271,7 @@ public class JavaSEPlatformPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, this.propertiesLabelText);
 
         propertiesCheckBox.setSelected(true);
+        propertiesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
         org.openide.awt.Mnemonics.setLocalizedText(platformButton, this.platformButtonText);
 
@@ -254,21 +282,21 @@ public class JavaSEPlatformPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(messageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                    .addComponent(messageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(javaLabel)
+                            .addComponent(propertiesLabel, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(javaLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(javaComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(javaComboBox, 0, 232, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(platformButton))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(propertiesLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(propertiesCheckBox)
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())))
+                                .addGap(0, 0, Short.MAX_VALUE)))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -276,16 +304,15 @@ public class JavaSEPlatformPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(messageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(javaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(platformButton))
-                    .addComponent(javaLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(propertiesLabel)
-                    .addComponent(propertiesCheckBox))
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(javaLabel)
+                    .addComponent(javaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(platformButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(propertiesCheckBox)
+                    .addComponent(propertiesLabel))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

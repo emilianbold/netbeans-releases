@@ -331,8 +331,7 @@ public class StartTask extends BasicTask<TaskState> {
             }
             if (jdkHome == null) {
                 return fireOperationStateChanged(TaskState.FAILED,
-                        TaskEvent.CMD_FAILED,
-                        "MSG_START_SERVER_FAILED_NOJDK", instanceName);
+                        TaskEvent.CMD_FAILED, null , instanceName);
             }
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex); // NOI18N
@@ -344,8 +343,10 @@ public class StartTask extends BasicTask<TaskState> {
         long start = System.currentTimeMillis();
         try {
             // lookup the javadb start service and use it here.
-            RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
-            if (null != db && "true".equals(instance.getProperty(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
+            RegisteredDerbyServer db
+                    = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
+            if (null != db && "true".equals(
+                    instance.getProperty(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
                 db.start();
             }
             int testPort = 0;
@@ -365,7 +366,8 @@ public class StartTask extends BasicTask<TaskState> {
             if (GlassFishStatus.isReady(instance, false)) {
                 TaskState result = TaskState.COMPLETED;
                 TaskEvent event = TaskEvent.CMD_COMPLETED;
-                if (GlassfishModule.PROFILE_MODE.equals(instance.getProperty(GlassfishModule.JVM_MODE))) {
+                if (GlassfishModule.PROFILE_MODE.equals(
+                        instance.getProperty(GlassfishModule.JVM_MODE))) {
                     result = TaskState.FAILED;
                     event = TaskEvent.CMD_FAILED;
                 }
@@ -383,7 +385,8 @@ public class StartTask extends BasicTask<TaskState> {
             }
             serverProcess = createProcess();
         } catch (NumberFormatException nfe) {
-            LOGGER.log(Level.INFO, instance.getProperty(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
+            LOGGER.log(Level.INFO, instance.getProperty(
+                    GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
             return fireOperationStateChanged(TaskState.FAILED,
                     TaskEvent.CMD_FAILED,
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName);
