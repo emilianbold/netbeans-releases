@@ -120,7 +120,9 @@ import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -3518,6 +3520,31 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return intersectionType;
     }
     
+    @Override
+    public Mirror visitLambdaExpression(LambdaExpressionTree node, EvaluationContext p) {
+        /**
+         * A tree node for a lambda expression.
+         * It creates a new class, which is unsupported.
+         */
+        
+        Assert.error(node, "noNewClassWithBody");
+        return super.visitLambdaExpression(node, p);
+    }
+
+    @Override
+    public Mirror visitMemberReference(MemberReferenceTree node, EvaluationContext p) {
+        /**
+         * A tree node for a member reference expression.
+         * There are two kinds of member references:
+         *   method references (ReferenceMode.INVOKE) and
+         *   constructor references (ReferenceMode.NEW).
+         * It creates a new class, which is unsupported.
+         */
+
+        Assert.error(node, "noNewClassWithBody");
+        return super.visitMemberReference(node, p);
+    }
+
     private Value setToMirror(Tree var, Value value, EvaluationContext evaluationContext) {
         VariableInfo varInfo = evaluationContext.getVariableInfo(var);
         if (varInfo == null) {
