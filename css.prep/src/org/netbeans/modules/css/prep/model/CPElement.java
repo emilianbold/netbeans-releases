@@ -59,10 +59,6 @@ public class CPElement {
     private OffsetRange range; 
     private OffsetRange scope;
 
-    public CPElement(CPElementHandle handle, OffsetRange range) {
-        this(handle, range, null);
-    }
-
     public CPElement(CPElementHandle handle, OffsetRange range, OffsetRange scope) {
         this.handle = handle;
         this.range = range;

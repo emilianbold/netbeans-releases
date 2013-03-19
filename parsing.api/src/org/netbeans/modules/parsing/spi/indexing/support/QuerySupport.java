@@ -60,7 +60,11 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.impl.Installer;
@@ -76,6 +80,7 @@ import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.TransientUpdateSupport;
 import org.netbeans.modules.parsing.impl.indexing.URLCache;
 import org.netbeans.modules.parsing.impl.indexing.Util;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
@@ -83,6 +88,7 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
 
 /**
@@ -152,6 +158,67 @@ public final class QuerySupport {
         }
 
         return roots != null ? roots : Collections.<FileObject>emptySet();
+    }
+
+    /**
+     * Returns the dependent source roots for given source root. It returns
+     * all the source roots which have either direct or transitive dependency on
+     * the given source root.
+     *
+     * @param root to find the dependent roots for
+     * @param filterNonOpenedProjects if true the results contains only roots of
+     * opened projects
+     * @return {@link Collection} of {@link FileObject}s containing at least the incoming
+     * root, never returns null.
+     * @since 1.64
+     */
+    @NonNull
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")
+    public static Collection<FileObject> findDependentRoots(
+            @NonNull final FileObject file,
+            final boolean filterNonOpenedProjects) {
+        Parameters.notNull("file", file);   //NOI18N
+
+        final URL root = findOwnerRoot(file);
+        if (root == null) {
+            return Collections.<FileObject>emptySet();
+        }
+        final IndexingController ic = IndexingController.getDefault();
+        final Map<URL, List<URL>> binaryDeps = ic.getBinaryRootDependencies();
+        final Map<URL, List<URL>> sourceDeps = ic.getRootDependencies();
+        final Map<URL, List<URL>> peerDeps = ic.getRootPeers();
+        Set<URL> urls;
+
+        if (sourceDeps.containsKey(root)) {
+            urls = findReverseSourceRoots(root, sourceDeps, peerDeps);
+        } else {
+            urls = new HashSet<URL>();
+            final FileObject rootFo = URLMapper.findFileObject(root);
+            if (rootFo != null) {
+                for (URL binary : findBinaryRootsForSourceRoot(rootFo, binaryDeps)) {
+                    List<URL> deps = binaryDeps.get(binary);
+                    if (deps != null) {
+                        urls.addAll(deps);
+                    }
+                }
+            }
+        }
+
+        if(filterNonOpenedProjects) {
+            final GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
+            final Set<ClassPath> cps = new HashSet<ClassPath>();
+            for (String id : PathRecognizerRegistry.getDefault().getSourceIds()) {
+                cps.addAll(gpr.getPaths(id));
+            }
+            Set<URL> toRetain = new HashSet<URL>();
+            for (ClassPath cp : cps) {
+                for (ClassPath.Entry e : cp.entries()) {
+                    toRetain.add(e.getURL());
+                }
+            }
+            urls.retainAll(toRetain);
+        }
+        return mapToFileObjects(urls);
     }
 
     /**
@@ -470,7 +537,113 @@ public final class QuerySupport {
             case CASE_INSENSITIVE_CAMEL_CASE: return Queries.QueryKind.CASE_INSENSITIVE_CAMEL_CASE;
             default: throw new UnsupportedOperationException (kind.toString());
         }
-    } 
+    }
+
+    @CheckForNull
+    private static URL findOwnerRoot(@NonNull final FileObject file) {
+        final PathRecognizerRegistry regs = PathRecognizerRegistry.getDefault();
+        URL res = findOwnerRoot(file, regs.getSourceIds());
+        if (res != null) {
+            return res;
+        }
+        res = findOwnerRoot(file, regs.getBinaryLibraryIds());
+        if (res != null) {
+            return res;
+        }
+        res = findOwnerRoot(file, regs.getLibraryIds());
+        if (res != null) {
+            return res;
+        }
+        //Fallback for roots with wrong classpath
+        return file.isFolder() ? file.toURL() : null;
+    }
+
+    @CheckForNull
+    private static URL findOwnerRoot(
+        @NonNull final FileObject file,
+        @NonNull final Collection<? extends String> ids) {
+        for (String id : ids) {
+            final ClassPath cp = ClassPath.getClassPath(file, id);
+            if (cp != null) {
+                final FileObject owner = cp.findOwnerRoot(file);
+                if (owner != null) {
+                    return owner.toURL();
+                }
+            }
+        }
+        return null;
+    }
+
+    @NonNull
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")
+    private static Set<URL> findReverseSourceRoots(
+            @NonNull final URL thisSourceRoot,
+            @NonNull final Map<URL, List<URL>> deps,
+            @NonNull final Map<URL, List<URL>> peers) {
+        //Create inverse dependencies
+        final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
+        for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
+            final URL u1 = entry.getKey();
+            final List<URL> l1 = entry.getValue();
+            for (URL u2 : l1) {
+                List<URL> l2 = inverseDeps.get(u2);
+                if (l2 == null) {
+                    l2 = new ArrayList<URL>();
+                    inverseDeps.put (u2,l2);
+                }
+                l2.add (u1);
+            }
+        }
+        //Collect dependencies
+        final Set<URL> result = new HashSet<URL>();
+        final LinkedList<URL> todo = new LinkedList<URL> ();
+        todo.add (thisSourceRoot);
+        while (!todo.isEmpty()) {
+            final URL u = todo.removeFirst();
+            if (!result.contains(u)) {
+                result.add (u);
+                List<URL> ideps = inverseDeps.get(u);
+                if (ideps != null) {
+                    todo.addAll (ideps);
+                }                
+                ideps = peers.get(u);
+                if (ideps != null) {
+                    todo.addAll (ideps);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @NonNull
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")
+    private static Set<URL> findBinaryRootsForSourceRoot(
+            @NonNull final FileObject sourceRoot,
+            @NonNull final Map<URL, List<URL>> binaryDeps) {
+        Set<URL> result = new HashSet<URL>();
+        for (URL bin : binaryDeps.keySet()) {
+            for (FileObject fo : SourceForBinaryQuery.findSourceRoots(bin).getRoots()) {
+                if (sourceRoot.equals(fo)) {
+                    result.add(bin);
+                }
+            }
+        }
+        return result;
+    }
+
+    @NonNull
+    private static Collection<FileObject> mapToFileObjects(
+        @NonNull final Collection<? extends URL> urls) {
+        final Collection<FileObject> result = new ArrayList<FileObject>(urls.size());
+        for (URL u : urls) {
+            final FileObject fo = URLMapper.findFileObject(u);
+            if (fo != null) {
+                result.add(fo);
+            }
+        }
+        return result;
+    }
 
     /* test */ static final class IndexerQuery {
 

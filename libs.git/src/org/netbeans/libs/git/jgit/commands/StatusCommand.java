@@ -95,19 +95,27 @@ public class StatusCommand extends GitCommand {
     private final File[] roots;
     private final ProgressMonitor monitor;
     private final StatusListener listener;
+    private final String revision;
     private static final String PROP_TRACK_SYMLINKS = "org.netbeans.libs.git.trackSymLinks"; //NOI18N
 
-    public StatusCommand (Repository repository, GitClassFactory gitFactory, File[] roots, ProgressMonitor monitor, StatusListener listener) {
+    public StatusCommand (Repository repository, String revision, File[] roots, GitClassFactory gitFactory,
+            ProgressMonitor monitor, StatusListener listener) {
         super(repository, gitFactory, monitor);
         this.roots = roots;
         this.monitor = monitor;
         this.listener = listener;
+        this.revision = revision;
         statuses = new LinkedHashMap<File, GitStatus>();
     }
 
     @Override
     protected String getCommandDescription () {
-        StringBuilder sb = new StringBuilder("git status"); //NOI18N
+        StringBuilder sb = new StringBuilder("git "); //NOI18N
+        if (Constants.HEAD.equals(revision)) {
+             sb.append("status"); //NOI18N
+        } else {
+             sb.append("diff --raw"); //NOI18N
+        }
         for (File root : roots) {
             sb.append(" ").append(root.getAbsolutePath());
         }
@@ -128,16 +136,16 @@ public class StatusCommand extends GitCommand {
             try {
                 String workTreePath = repository.getWorkTree().getAbsolutePath();
                 Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
-                Map<String, DiffEntry> renames = detectRenames(repository, cache);
+                ObjectId commitId = Utils.parseObjectId(repository, revision);
+                Map<String, DiffEntry> renames = detectRenames(repository, cache, commitId);
                 TreeWalk treeWalk = new TreeWalk(repository);
                 if (!pathFilters.isEmpty()) {
                     treeWalk.setFilter(PathFilterGroup.create(pathFilters));
                 }
                 treeWalk.setRecursive(false);
                 treeWalk.reset();
-                ObjectId headId = repository.resolve(Constants.HEAD);
-                if (headId != null) {
-                    treeWalk.addTree(new RevWalk(repository).parseTree(headId));
+                if (commitId != null) {
+                    treeWalk.addTree(new RevWalk(repository).parseTree(commitId));
                 } else {
                     treeWalk.addTree(new EmptyTreeIterator());
                 }
@@ -145,7 +153,7 @@ public class StatusCommand extends GitCommand {
                 treeWalk.addTree(new DirCacheIterator(cache));
                 // Working directory
                 treeWalk.addTree(new FileTreeIterator(repository));
-                final int T_HEAD = 0;
+                final int T_COMMIT = 0;
                 final int T_INDEX = 1;
                 final int T_WORKSPACE = 2;
                 String lastPath = null;
@@ -166,7 +174,7 @@ public class StatusCommand extends GitCommand {
                     }
                     lastPath = path;
                     File file = new File(workTreePath + File.separator + path);
-                    int mHead = treeWalk.getRawMode(T_HEAD);
+                    int mHead = treeWalk.getRawMode(T_COMMIT);
                     int mIndex = treeWalk.getRawMode(T_INDEX);
                     int mWorking = treeWalk.getRawMode(T_WORKSPACE);
                     GitStatus.Status statusHeadIndex;
@@ -177,7 +185,7 @@ public class StatusCommand extends GitCommand {
                         statusHeadIndex = GitStatus.Status.STATUS_ADDED;
                     } else if (mIndex == FileMode.MISSING.getBits() && mHead != FileMode.MISSING.getBits()) {
                         statusHeadIndex = GitStatus.Status.STATUS_REMOVED;
-                    } else if (mHead != mIndex || (mIndex != FileMode.TREE.getBits() && !treeWalk.idEqual(T_HEAD, T_INDEX))) {
+                    } else if (mHead != mIndex || (mIndex != FileMode.TREE.getBits() && !treeWalk.idEqual(T_COMMIT, T_INDEX))) {
                         statusHeadIndex = GitStatus.Status.STATUS_MODIFIED;
                     } else {
                         statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
@@ -234,7 +242,7 @@ public class StatusCommand extends GitCommand {
                                     && (indexEntry == null || !indexEntry.isAssumeValid()) //no update-index --assume-unchanged
                                     // head vs wt can be modified only when head vs index or index vs wt are modified, otherwise it's probably line-endings issue
                                     && (statusIndexWC != GitStatus.Status.STATUS_NORMAL || statusHeadIndex != GitStatus.Status.STATUS_NORMAL)
-                                    && !treeWalk.getObjectId(T_HEAD).equals(fti.getEntryObjectId())))) {
+                                    && !treeWalk.getObjectId(T_COMMIT).equals(fti.getEntryObjectId())))) {
                             statusHeadWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusHeadWC = GitStatus.Status.STATUS_NORMAL;
@@ -271,15 +279,14 @@ public class StatusCommand extends GitCommand {
         return statuses;
     }
 
-    private Map<String, DiffEntry> detectRenames (Repository repository, DirCache cache) {
+    private Map<String, DiffEntry> detectRenames (Repository repository, DirCache cache, ObjectId commitId) {
         List<DiffEntry> entries;
         TreeWalk treeWalk = new TreeWalk(repository);
         try {
             treeWalk.setRecursive(true);
             treeWalk.reset();
-            ObjectId headId = repository.resolve(Constants.HEAD);
-            if (headId != null) {
-                treeWalk.addTree(new RevWalk(repository).parseTree(headId));
+            if (commitId != null) {
+                treeWalk.addTree(new RevWalk(repository).parseTree(commitId));
             } else {
                 treeWalk.addTree(new EmptyTreeIterator());
             }

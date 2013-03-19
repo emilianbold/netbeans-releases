@@ -1757,6 +1757,13 @@
                     a3.setName("Implementation-Version");
                     a3.setValue("1.0");
                     man.addConfiguredAttribute(a3);
+                    var a4prop = project.getProperty("javafx.deploy.disable.proxy");
+                    if(isTrue(a4prop)) {
+                        var a4 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                        a4.setName("JavaFX-Feature-Proxy");
+                        a4.setValue("None");
+                        man.addConfiguredAttribute(a4);
+                    }
                     // custom manifest entries
                     var searchManifestHides = project.getProperties().keys();
                     var manifestHides = new Array();

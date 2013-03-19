@@ -89,6 +89,9 @@ public final class MacrosPanelController extends OptionsPanelController {
     }
 
     public boolean isChanged() {
+        if (lastPanel == null) {
+            return false;
+        }
         return lastPanel.getModel().isChanged();
     }
 

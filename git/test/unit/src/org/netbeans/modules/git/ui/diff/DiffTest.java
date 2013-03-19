@@ -52,6 +52,7 @@ import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.FileStatusCache.ChangedEvent;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
@@ -95,7 +96,8 @@ public class DiffTest extends AbstractGitTestCase {
         EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run () {
-                controllers[0] = new MultiDiffPanelController(VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(file)) }));
+                controllers[0] = new MultiDiffPanelController(VCSContext.forNodes(new Node[] {
+                    new AbstractNode(Children.LEAF, Lookups.fixed(file)) }), Revision.BASE, Revision.LOCAL);
             }
         });
         MultiDiffPanelController controller = controllers[0];

@@ -223,28 +223,10 @@ public class GroovyFormatter implements Formatter {
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if (id == GroovyTokenId.STRING_LITERAL
-                 || id == GroovyTokenId.DOCUMENTATION
-                 || id == GroovyTokenId.QUOTED_STRING_LITERAL
-                 || id == GroovyTokenId.REGEXP_LITERAL) {
+                if (id == GroovyTokenId.STRING_LITERAL || id == GroovyTokenId.REGEXP_LITERAL) {
                     // No indentation for literal strings in Groovy, since they can
                     // contain newlines. Leave it as is.
                     return true;
-                }
-
-                if (id == GroovyTokenId.STRING_END || id == GroovyTokenId.QUOTED_STRING_END) {
-                    // Possibly a heredoc
-                    TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, pos);
-                    ts.move(pos);
-                    OffsetRange range = LexUtilities.findHeredocBegin(ts, token);
-                    if (range != OffsetRange.NONE) {
-                        String text = doc.getText(range.getStart(), range.getLength());
-                        if (text.startsWith("<<-")) { // NOI18N
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
                 }
             } else {
                 // No Groovy token -- leave the formatting alone!
@@ -258,10 +240,7 @@ public class GroovyFormatter implements Formatter {
                 TokenId id = token.id();
                 // If we're in a string literal (or regexp or documentation) leave
                 // indentation alone!
-                if (id == GroovyTokenId.STRING_LITERAL
-                 || id == GroovyTokenId.DOCUMENTATION
-                 || id == GroovyTokenId.QUOTED_STRING_LITERAL
-                 || id == GroovyTokenId.REGEXP_LITERAL) {
+                if (id == GroovyTokenId.STRING_LITERAL || id == GroovyTokenId.REGEXP_LITERAL) {
                     // No indentation for literal strings in Groovy, since they can
                     // contain newlines. Leave it as is.
                     return true;

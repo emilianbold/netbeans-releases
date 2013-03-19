@@ -333,66 +333,6 @@ public final class LexUtilities {
     }
 
     /** Search forwards in the token sequence until a token of type <code>down</code> is found. */
-    public static OffsetRange findHeredocEnd(TokenSequence<GroovyTokenId> ts,  Token<GroovyTokenId> startToken) {
-        // Look for the end of the given heredoc
-        String text = startToken.text().toString();
-        assert text.startsWith("<<");
-        text = text.substring(2);
-        if (text.startsWith("-")) {
-            text = text.substring(1);
-        }
-        if ((text.startsWith("\"") && text.endsWith("\"")) || (text.startsWith("'") && text.endsWith("'"))) {
-            text = text.substring(0, text.length() - 2);
-        }
-        String textn = text + "\n";
-
-        while (ts.moveNext()) {
-            Token<GroovyTokenId> token = ts.token();
-            TokenId id = token.id();
-
-            if (id == GroovyTokenId.STRING_END || id == GroovyTokenId.QUOTED_STRING_END) {
-                String t = token.text().toString();
-                if (text.equals(t) || textn.equals(t)) {
-                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
-                }
-            }
-        }
-
-        return OffsetRange.NONE;
-    }
-
-    /** Search forwards in the token sequence until a token of type <code>down</code> is found. */
-    public static OffsetRange findHeredocBegin(TokenSequence<GroovyTokenId> ts,  Token<GroovyTokenId> endToken) {
-        // Look for the end of the given heredoc
-        String text = endToken.text().toString();
-        if (text.endsWith("\n")) {
-            text = text.substring(0, text.length() - 1);
-        }
-        String textQuotes = "\"" + text + "\"";
-        String textSQuotes = "'" + text + "'";
-
-        while (ts.movePrevious()) {
-            Token<GroovyTokenId> token = ts.token();
-            TokenId id = token.id();
-
-            if (id == GroovyTokenId.STRING_BEGIN || id == GroovyTokenId.QUOTED_STRING_BEGIN) {
-                String t = token.text().toString();
-                String marker = null;
-                if (t.startsWith("<<-")) {
-                    marker = t.substring(3);
-                } else if (t.startsWith("<<")) {
-                    marker = t.substring(2);
-                }
-                if (marker != null && (text.equals(marker) || textQuotes.equals(marker) || textSQuotes.equals(marker))) {
-                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
-                }
-            }
-        }
-
-        return OffsetRange.NONE;
-    }
-
-    /** Search forwards in the token sequence until a token of type <code>down</code> is found. */
     public static OffsetRange findFwd(BaseDocument doc, TokenSequence<GroovyTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
@@ -685,107 +625,6 @@ public final class LexUtilities {
     }
 
     /**
-     * Return the string at the given position, or null if none.
-     */
-    @SuppressWarnings("unchecked")
-    public static String getStringAt(int caretOffset, TokenHierarchy<Document> th) {
-        TokenSequence<GroovyTokenId> ts = getGroovyTokenSequence(th, caretOffset);
-
-        if (ts == null) {
-            return null;
-        }
-
-        ts.move(caretOffset);
-
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return null;
-        }
-
-        if (ts.offset() == caretOffset) {
-            // We're looking at the offset to the RIGHT of the caret
-            // and here I care about what's on the left
-            ts.movePrevious();
-        }
-
-        Token<GroovyTokenId> token = ts.token();
-
-        if (token != null) {
-            TokenId id = token.id();
-
-            // We're within a String that has embedded Groovy. Drop into the
-            // embedded language and see if we're within a literal string there.
-            if (id == GroovyTokenId.EMBEDDED_GROOVY) {
-                ts = (TokenSequence) ts.embedded();
-                assert ts != null;
-                ts.move(caretOffset);
-
-                if (!ts.moveNext() && !ts.movePrevious()) {
-                    return null;
-                }
-
-                token = ts.token();
-                id = token.id();
-            }
-
-            String string = null;
-
-            // Skip over embedded Groovy segments and literal strings until you find the beginning
-            int segments = 0;
-
-            while ((id == GroovyTokenId.ERROR)
-                || (id == GroovyTokenId.STRING_LITERAL)
-                || (id == GroovyTokenId.QUOTED_STRING_LITERAL)
-                || (id == GroovyTokenId.EMBEDDED_GROOVY)) {
-
-                string = token.text().toString();
-                segments++;
-                ts.movePrevious();
-                token = ts.token();
-                id = token.id();
-            }
-
-            if ((id == GroovyTokenId.STRING_BEGIN) || (id == GroovyTokenId.QUOTED_STRING_BEGIN)) {
-                if (segments == 1) {
-                    return string;
-                } else {
-                    // Build up the String from the sequence
-                    StringBuilder sb = new StringBuilder();
-
-                    while (ts.moveNext()) {
-                        token = ts.token();
-                        id = token.id();
-
-                        if ((id == GroovyTokenId.ERROR)
-                         || (id == GroovyTokenId.STRING_LITERAL)
-                         || (id == GroovyTokenId.QUOTED_STRING_LITERAL)
-                         || (id == GroovyTokenId.EMBEDDED_GROOVY)) {
-                            sb.append(token.text());
-                        } else {
-                            break;
-                        }
-                    }
-
-                    return sb.toString();
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public static int getSingleQuotedStringOffset(int caretOffset, TokenHierarchy<Document> th) {
-        return getLiteralStringOffset(caretOffset, th, GroovyTokenId.STRING_BEGIN);
-    }
-
-    public static int getDoubleQuotedStringOffset(int caretOffset, TokenHierarchy<Document> th) {
-        return getLiteralStringOffset(caretOffset, th, GroovyTokenId.QUOTED_STRING_BEGIN);
-    }
-
-    public static int getRegexpOffset(int caretOffset, TokenHierarchy<Document> th) {
-        return getLiteralStringOffset(caretOffset, th, GroovyTokenId.REGEXP_BEGIN);
-    }
-
-    /**
      * Determine if the caret is inside a literal string, and if so, return its starting
      * offset. Return -1 otherwise.
      */
@@ -815,27 +654,10 @@ public final class LexUtilities {
         if (token != null) {
             TokenId id = token.id();
 
-            // We're within a String that has embedded Groovy. Drop into the
-            // embedded language and see if we're within a literal string there.
-            if (id == GroovyTokenId.EMBEDDED_GROOVY) {
-                ts = (TokenSequence) ts.embedded();
-                assert ts != null;
-                ts.move(caretOffset);
-
-                if (!ts.moveNext() && !ts.movePrevious()) {
-                    return -1;
-                }
-
-                token = ts.token();
-                id = token.id();
-            }
-
             // Skip over embedded Groovy segments and literal strings until you find the beginning
-            while ((id == GroovyTokenId.ERROR)
-                || (id == GroovyTokenId.STRING_LITERAL)
-                || (id == GroovyTokenId.QUOTED_STRING_LITERAL)
-                || (id == GroovyTokenId.REGEXP_LITERAL)
-                || (id == GroovyTokenId.EMBEDDED_GROOVY)) {
+            while (id == GroovyTokenId.ERROR
+                || id == GroovyTokenId.STRING_LITERAL
+                || id == GroovyTokenId.REGEXP_LITERAL) {
 
                 ts.movePrevious();
                 token = ts.token();
@@ -852,60 +674,6 @@ public final class LexUtilities {
         }
 
         return -1;
-    }
-
-    public static boolean isInsideQuotedString(BaseDocument doc, int offset) {
-        TokenSequence<GroovyTokenId> ts = getGroovyTokenSequence(doc, offset);
-
-        if (ts == null) {
-            return false;
-        }
-
-        ts.move(offset);
-
-        if (ts.moveNext()) {
-            Token<GroovyTokenId> token = ts.token();
-            TokenId id = token.id();
-            if (id == GroovyTokenId.QUOTED_STRING_LITERAL || id == GroovyTokenId.QUOTED_STRING_END) {
-                return true;
-            }
-        }
-        if (ts.movePrevious()) {
-            Token<GroovyTokenId> token = ts.token();
-            TokenId id = token.id();
-            if (id == GroovyTokenId.QUOTED_STRING_LITERAL || id == GroovyTokenId.QUOTED_STRING_BEGIN) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static boolean isInsideRegexp(BaseDocument doc, int offset) {
-        TokenSequence<GroovyTokenId> ts = getGroovyTokenSequence(doc, offset);
-
-        if (ts == null) {
-            return false;
-        }
-
-        ts.move(offset);
-
-        if (ts.moveNext()) {
-            Token<GroovyTokenId> token = ts.token();
-            TokenId id = token.id();
-            if (id == GroovyTokenId.REGEXP_LITERAL || id == GroovyTokenId.REGEXP_END) {
-                return true;
-            }
-        }
-        if (ts.movePrevious()) {
-            Token<GroovyTokenId> token = ts.token();
-            TokenId id = token.id();
-            if (id == GroovyTokenId.REGEXP_LITERAL || id == GroovyTokenId.REGEXP_BEGIN) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public static OffsetRange getCommentBlock(BaseDocument doc, int caretOffset) {
@@ -954,12 +722,6 @@ public final class LexUtilities {
                     int offset = token.offset(th);
                     return new OffsetRange(offset, offset + token.length());
                 }
-            } else if (token != null && token.id() == GroovyTokenId.DOCUMENTATION) {
-                // Select the whole token block
-                TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
-                int begin = token.offset(th);
-                int end = begin + token.length();
-                return new OffsetRange(begin, end);
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);

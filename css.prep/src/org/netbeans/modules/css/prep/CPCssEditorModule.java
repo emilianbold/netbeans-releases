@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,8 +56,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
@@ -73,7 +70,6 @@ import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzer;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
-import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -84,7 +80,7 @@ import org.netbeans.modules.css.prep.model.CPElementHandle;
 import org.netbeans.modules.css.prep.model.CPElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.api.DependencyType;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Lines;
 import org.netbeans.modules.web.common.api.Pair;
@@ -210,7 +206,7 @@ public class CPCssEditorModule extends CssEditorModule {
             //now gather global vars from all linked sheets
             FileObject file = context.getFileObject();
             if (file != null) {
-                Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(file);
+                Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(file, DependencyType.REFERRED, true);
                 for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                     FileObject reff = entry.getKey();
                     CPCssIndexModel cpIndexModel = entry.getValue();
@@ -258,7 +254,7 @@ public class CPCssEditorModule extends CssEditorModule {
             //now gather global vars from all linked sheets
             FileObject file = context.getFileObject();
             if (file != null) {
-                Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(file);
+                Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(file, DependencyType.REFERRED, true);
                 for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                     FileObject reff = entry.getKey();
                     CPCssIndexModel cpIndexModel = entry.getValue();
@@ -286,35 +282,7 @@ public class CPCssEditorModule extends CssEditorModule {
         return proposals;
     }
 
-    /**
-     * Gets {@link CPCssIndexModel}s for all referred files (transitionally)
-     * EXCLUDING model for the given file itself.
-     *
-     * @param file
-     * @return
-     */
-    private static Map<FileObject, CPCssIndexModel> getIndexModels(FileObject file) throws IOException {
-        Map<FileObject, CPCssIndexModel> models = new HashMap<FileObject, CPCssIndexModel>();
-        Project project = FileOwnerQuery.getOwner(file);
-        if (project != null) {
-            CssIndex index = CssIndex.get(project);
-            DependenciesGraph dependencies = index.getDependencies(file);
-            Collection<FileObject> referred = dependencies.getAllReferedFiles();
-            for (FileObject reff : referred) {
-                if (reff.equals(file)) {
-                    //skip current file (it is included to the referred files list)
-                    continue;
-                }
-                CPCssIndexModel cpIndexModel = (CPCssIndexModel) index.getIndexModel(CPCssIndexModel.Factory.class, reff);
-                if (cpIndexModel != null) {
-                    models.put(reff, cpIndexModel);
-                }
-
-            }
-        }
-        return models;
-
-    }
+    
 
     @Override
     public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
@@ -445,7 +413,7 @@ public class CPCssEditorModule extends CssEditorModule {
 
                         //then look at the referred files
                         try {
-                            Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(context.getFileObject());
+                            Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(context.getFileObject(), DependencyType.REFERRED, true);
                             for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                                 CPCssIndexModel im = entry.getValue();
                                 FileObject file = entry.getKey();
@@ -492,7 +460,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         }
                         try {
                             //then look at the referred files
-                            Map<FileObject, CPCssIndexModel> indexModels = getIndexModels(context.getFileObject());
+                            Map<FileObject, CPCssIndexModel> indexModels = CPUtils.getIndexModels(context.getFileObject(), DependencyType.REFERRED, true);
                             for (Entry<FileObject, CPCssIndexModel> entry : indexModels.entrySet()) {
                                 CPCssIndexModel im = entry.getValue();
                                 FileObject file = entry.getKey();
@@ -563,9 +531,6 @@ public class CPCssEditorModule extends CssEditorModule {
         final Set<StructureItem> vars = new HashSet<StructureItem>();
         final Set<StructureItem> mixins = new HashSet<StructureItem>();
 
-        result.add(new CPCategoryStructureItem.Variables(vars));
-        result.add(new CPCategoryStructureItem.Mixins(mixins, context));
-
         CPModel model = CPModel.getModel(context.getParserResult());
         for(CPElement element : model.getElements()) {
             switch(element.getType()) {
@@ -578,6 +543,13 @@ public class CPCssEditorModule extends CssEditorModule {
                     vars.add(new CPStructureItem.Variable(element));
                     break;
             }
+        }
+        
+        if(!vars.isEmpty()) {
+            result.add(new CPCategoryStructureItem.Variables(vars));
+        }
+        if(!mixins.isEmpty()) {
+            result.add(new CPCategoryStructureItem.Mixins(mixins, context));
         }
 
         //XXX ugly - we need no visitor, but still forced to return one

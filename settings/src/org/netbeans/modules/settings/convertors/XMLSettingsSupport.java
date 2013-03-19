@@ -46,10 +46,12 @@ package org.netbeans.modules.settings.convertors;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.settings.FactoryMethod;
 
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
@@ -78,6 +80,26 @@ final class XMLSettingsSupport {
     
     /** Logging for events in XML settings system. */
     static final Logger err = Logger.getLogger(XMLSettingsSupport.class.getName()); // NOI18N
+
+    static Object newInstance(Class<?> clazz) throws IllegalArgumentException, 
+    InstantiationException, NoSuchMethodException, InvocationTargetException, 
+    IllegalAccessException {
+        FactoryMethod fm = clazz.getAnnotation(FactoryMethod.class);
+        if (fm != null) {
+            Method method;
+            try {
+                method = clazz.getMethod(fm.value());
+            } catch (NoSuchMethodException ex) {
+                method = clazz.getDeclaredMethod(fm.value());
+            }
+            method.setAccessible(true);
+            return method.invoke(null);
+        }
+        Constructor<?> c = clazz.getDeclaredConstructor();
+        c.setAccessible(true);
+        return c.newInstance();
+    }
+
     
     /** Store instanceof elements.
      * @param classes everything what class extends or implements
@@ -603,9 +625,7 @@ final class XMLSettingsSupport {
                         }
                     } else {
                         try {
-                            Constructor<?> c = clazz.getDeclaredConstructor();
-                            c.setAccessible(true);
-                            inst = c.newInstance();
+                            inst = newInstance(clazz);
                         } catch (Exception ex) {
                             IOException ioe = new IOException();
                             ioe.initCause(ex);

@@ -1304,7 +1304,9 @@ public final class VeryPretty extends JCTree.Visitor {
         if (tree.meth.getTag() == JCTree.Tag.SELECT) {
             JCFieldAccess left = (JCFieldAccess)tree.meth;
             printExpr(left.selected);
-            print('.');
+            boolean wrapAfterDot = cs.wrapAfterDotInChainedMethodCalls();
+            if (wrapAfterDot)
+                print('.');
             if (left.selected.getTag() == JCTree.Tag.APPLY) {
                 switch(cs.wrapChainedMethodCalls()) {
                 case WRAP_IF_LONG:
@@ -1321,6 +1323,8 @@ public final class VeryPretty extends JCTree.Visitor {
                     break;
                 }
             }
+            if (!wrapAfterDot)
+                print('.');
             if (tree.typeargs.nonEmpty())
                 printTypeArguments(tree.typeargs);
             print(left.name);
@@ -1649,6 +1653,13 @@ public final class VeryPretty extends JCTree.Visitor {
 	print('>');
     }
 
+    @Override
+    public void visitAnnotatedType(JCAnnotatedType tree) {
+	printExprs(tree.annotations);
+        print(' ');
+	printExpr(tree.underlyingType);
+    }
+    
     @Override
     public void visitTypeParameter(JCTypeParameter tree) {
 	print(tree.name);

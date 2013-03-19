@@ -319,7 +319,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 Collection<String> typeNames = assignment.getTypeNames();
                 if (typeNames.isEmpty() || assignment.isArrayAccess()) {
                     if (assignment.isArrayAccess()) {
-                        retval = Collections.singleton("array"); //NOI18N
+                        retval = Collections.singleton(Type.ARRAY);
                     }
                     AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
                     if (nextAssignment != null && !nextAssignment.equals(assignment)) {

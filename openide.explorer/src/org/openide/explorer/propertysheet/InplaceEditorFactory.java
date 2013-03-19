@@ -253,6 +253,7 @@ final class InplaceEditorFactory implements PropertyChangeListener {
         if (result == null) {
             Class c = p.getValueType();
 
+            String[] tags;
             if ((c == Boolean.class) || (c == Boolean.TYPE)) {
                 if (ped instanceof PropUtils.NoPropertyEditorEditor) {
                     //platform case
@@ -261,8 +262,8 @@ final class InplaceEditorFactory implements PropertyChangeListener {
                     boolean useRadioButtons = useRadioBoolean || (p.getValue("stringValues") != null); //NOI18N
                     result = useRadioButtons ? getRadioEditor(newInstance) : getCheckboxEditor(newInstance);
                 }
-            } else if (ped.getTags() != null) {
-                if (ped.getTags().length <= radioButtonMax) {
+            } else if ((tags = ped.getTags()) != null) {
+                if (tags.length <= radioButtonMax) {
                     result = getRadioEditor(newInstance);
                 } else {
                     result = getComboBoxEditor(newInstance);

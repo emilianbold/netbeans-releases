@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.groovy.editor.typinghooks;
 
+import java.util.EnumSet;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
@@ -75,22 +77,20 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
     }
 
     /** Tokens which indicate that we're within a literal string */
-    private static final TokenId[] STRING_TOKENS = {
-        GroovyTokenId.STRING_LITERAL,
-        GroovyTokenId.STRING_END,
-        GroovyTokenId.QUOTED_STRING_LITERAL,
-        GroovyTokenId.QUOTED_STRING_END
-    };
+    private static final Set<GroovyTokenId> STRING_TOKENS = EnumSet.of(
+        GroovyTokenId.STRING_LITERAL
+    );
 
+    private static final Set<GroovyTokenId> COMMENT_TOKENS = EnumSet.of(
+        GroovyTokenId.BLOCK_COMMENT,
+        GroovyTokenId.LINE_COMMENT
+    );
+    
     /** Tokens which indicate that we're within a regexp string */
-    private static final TokenId[] REGEXP_TOKENS = {
+    private static final Set<GroovyTokenId> REGEXP_TOKENS = EnumSet.of(
         GroovyTokenId.REGEXP_LITERAL,
-        GroovyTokenId.REGEXP_SYMBOL,
-        GroovyTokenId.REGEXP_BEGIN,
-        GroovyTokenId.REGEXP_END,
-        GroovyTokenId.REGEX_MATCH,
-        GroovyTokenId.REGEX_FIND
-    };
+        GroovyTokenId.REGEXP_SYMBOL
+    );
 
     /** True iff we're processing bracket matching AFTER the key has been inserted rather than before  */
     private boolean isAfter;
@@ -144,7 +144,6 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
             previousAdjustmentOffset = -1;
         }
 
-        //dumpTokens(doc, dotPos);
         switch (ch) {
         case '}':
         case '{':
@@ -211,19 +210,6 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
                         break;
                     }
                 }
-                if (id == GroovyTokenId.REGEXP_BEGIN || id == GroovyTokenId.REGEXP_END) {
-                    TokenId[] stringTokens = REGEXP_TOKENS;
-                    TokenId beginTokenId = GroovyTokenId.REGEXP_BEGIN;
-
-                    boolean inserted =
-                        completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
-
-                    if (inserted) {
-                        caret.setDot(dotPos + 1);
-                    }
-
-                    break;
-                }
             }
             break;
             
@@ -265,7 +251,6 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
                                 doc, start);
                         if (ts != null
                                 && ts.token().id() != GroovyTokenId.LINE_COMMENT
-                                && ts.token().id() != GroovyTokenId.DOCUMENTATION
                                 && ts.token().id() != GroovyTokenId.BLOCK_COMMENT // not inside comments
                                 && ts.token().id() != GroovyTokenId.STRING_LITERAL) { // not inside strings!
                             int lastChar = selection.charAt(selection.length()-1);
@@ -307,8 +292,6 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
 
         Token<GroovyTokenId> token = ts.token();
         GroovyTokenId id = token.id();
-        TokenId[] stringTokens = null;
-        TokenId beginTokenId = null;
 
         if (ch == '*' && id == GroovyTokenId.LINE_COMMENT && caretOffset == ts.offset()+1) {
             // Just typed "*" inside a "//" -- the user has typed "/", which automatched to
@@ -320,48 +303,10 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
 
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
         if (ch == '\"' || ch == '\'') {
-            stringTokens = STRING_TOKENS;
-            beginTokenId = GroovyTokenId.STRING_BEGIN;
-        } else if (id == GroovyTokenId.ERROR) {
-            //String text = token.text().toString();
-
-            ts.movePrevious();
-
-            TokenId prevId = ts.token().id();
-
-            if (isCompletableStringBoundary(ts.token(), false)) {
-                stringTokens = STRING_TOKENS;
-                beginTokenId = prevId;
-            } else if (prevId == GroovyTokenId.REGEXP_BEGIN) {
-                stringTokens = REGEXP_TOKENS;
-                beginTokenId = GroovyTokenId.REGEXP_BEGIN;
-            }
-        } else if (isCompletableStringBoundary(token, false) &&
-                (caretOffset == (ts.offset() + 1))) {
-            if (!Character.isLetter(ch)) { // %q, %x, etc. Only %[], %!!, %<space> etc. is allowed
-                stringTokens = STRING_TOKENS;
-                beginTokenId = id;
-            }
-        } else if ((isCompletableStringBoundary(token, false) && (caretOffset == (ts.offset() + 2))) ||
-                isCompletableStringBoundary(token, true)) {
-            stringTokens = STRING_TOKENS;
-            beginTokenId = GroovyTokenId.STRING_BEGIN;
-        } else if (((id == GroovyTokenId.REGEXP_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
-                (id == GroovyTokenId.REGEXP_END)) {
-            stringTokens = REGEXP_TOKENS;
-            beginTokenId = GroovyTokenId.REGEXP_BEGIN;
-        }
-
-        if (stringTokens != null) {
-            boolean inserted =
-                completeQuote(doc, caretOffset, caret, ch, stringTokens, beginTokenId);
-
-            if (inserted) {
+            if (completeQuote(doc, caretOffset, caret, ch, STRING_TOKENS, GroovyTokenId.STRING_LITERAL)) {
                 caret.setDot(caretOffset + 1);
 
                 return true;
-            } else {
-                return false;
             }
         }
 
@@ -393,15 +338,7 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
                 final int rowFirstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
                 // Ensure that this token is at the beginning of the line
                 if (ts.offset() > rowFirstNonWhite) {
-//                    if (RubyUtils.isRhtmlDocument(doc)) {
-//                        // Allow "<%[whitespace]*" to preceed
-//                        String s = doc.getText(rowFirstNonWhite, ts.offset()-rowFirstNonWhite);
-//                        if (!s.matches("<%\\s*")) {
-//                            return;
-//                        }
-//                    } else {
-                        return;
-//                    }
+                    return;
                 }
 
                 OffsetRange begin = OffsetRange.NONE;
@@ -449,7 +386,7 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
      * @param bracket the character that was inserted
      */
     private boolean completeQuote(BaseDocument doc, int dotPos, Caret caret, char bracket,
-        TokenId[] stringTokens, TokenId beginToken) throws BadLocationException {
+        Set<GroovyTokenId> stringTokens, TokenId beginToken) throws BadLocationException {
         if (isEscapeSequence(doc, dotPos)) { // \" or \' typed
 
             return false;
@@ -485,7 +422,6 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
         boolean eol = lastNonWhite < dotPos;
 
         if ((token.id() == GroovyTokenId.BLOCK_COMMENT)
-                || (token.id() == GroovyTokenId.DOCUMENTATION)
                 || (token.id() == GroovyTokenId.LINE_COMMENT)
                 || (previousToken != null && previousToken.id() == GroovyTokenId.LINE_COMMENT && token.id() == GroovyTokenId.EOL)) {
             return false;
@@ -868,92 +804,114 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
             return bracket;
         }
     }
-
-    private static boolean isCompletableStringBoundary(Token<GroovyTokenId> token, boolean end) {
-        if ((!end && token.id() == GroovyTokenId.STRING_BEGIN) || (end && token.id() == GroovyTokenId.STRING_END)) {
-            if ("\"".equals(token.text().toString())) {
-                return true;
-            }
-        }
-        return false;
-    }
     
+    /**
+     * Called to add semicolon after bracket for some conditions
+     *
+     * @param context
+     * @return relative caretOffset change
+     * @throws BadLocationException
+     */
     private static boolean moveSemicolon(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
-        int eolPos = Utilities.getRowEnd(doc, dotPos);
         TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
-        int lastParenPos = dotPos;
-
-        Token<GroovyTokenId> token;
-        while (ts.moveNext() && ts.offset() < eolPos) {
-            token = ts.token();
-            GroovyTokenId tokenId = token.id();
-            if (tokenId == GroovyTokenId.RPAREN) {
-                lastParenPos = ts.offset();
-            } else if (tokenId != GroovyTokenId.WHITESPACE) {
-                return false;
-            }
-        }
-
-        if (isForLoopSemicolon(ts) || posWithinAnyQuote(doc, dotPos)) {
+        if (ts == null || isStringOrComment(ts.token().id())) {
             return false;
         }
+        int lastParenPos = dotPos;
+        int index = ts.index();
+        // Move beyond semicolon
+        while (ts.moveNext() && !(ts.token().id() == GroovyTokenId.NLS)) {
+            switch (ts.token().id()) {
+                case RPAREN:
+                    lastParenPos = ts.offset();
+                    break;
+                case WHITESPACE:
+                    break;
+                default:
+                    return false;
+            }
+        }
+        // Restore javaTS position
+        ts.moveIndex(index);
+        ts.moveNext();
+        if (isForLoopOrTryWithResourcesSemicolon(ts) || posWithinAnyQuote(doc, dotPos, ts) || (lastParenPos == dotPos && !ts.token().id().equals(GroovyTokenId.RPAREN))) {
+            return false;
+        }
+        
         doc.remove(dotPos, 1);
         doc.insertString(lastParenPos, ";", null); // NOI18N
         caret.setDot(lastParenPos + 1);
         return true;
     }
-
-    private static boolean isForLoopSemicolon(TokenSequence<GroovyTokenId> ts) {
-        Token<GroovyTokenId> token = ts.token();
-        if (token == null || token.id() != GroovyTokenId.SEMI) {
-            return false;
-        }
-        int parDepth = 0; // parenthesis depth
+    
+    private static boolean isStringOrComment(GroovyTokenId tokenID) {
+        return COMMENT_TOKENS.contains(tokenID) || STRING_TOKENS.contains(tokenID);
+    }
+    
+    private static boolean isForLoopOrTryWithResourcesSemicolon(TokenSequence<GroovyTokenId> ts) {
+        int parenDepth = 0; // parenthesis depth
         int braceDepth = 0; // brace depth
         boolean semicolonFound = false; // next semicolon
-        token = ts.movePrevious() ? ts.token() : null; // ignore this semicolon
-        while (token != null) {
-            if (token.id() == GroovyTokenId.LPAREN) {
-                if (parDepth == 0) { // could be a 'for ('
-                    token = ts.movePrevious() ? ts.token() : null; 
-                    while (token != null && (token.id() == GroovyTokenId.WHITESPACE || token.id() == GroovyTokenId.BLOCK_COMMENT || token.id() == GroovyTokenId.LINE_COMMENT)) {
-                        token = ts.movePrevious() ? ts.token() : null; 
-                    }
-                    if (token != null && token.id() == GroovyTokenId.LITERAL_for) {
-                        return true;
-                    }
-                    return false;
-                } else { // non-zero depth
-                    parDepth--;
-                }
-            } else if (token.id() == GroovyTokenId.RPAREN) {
-                parDepth++;
-            } else if (token.id() == GroovyTokenId.LBRACE) {
-                if (braceDepth == 0) { // unclosed left brace
-                    return false;
-                }
-                braceDepth--;
-            } else if (token.id() == GroovyTokenId.RBRACE) {
-                braceDepth++;
+        int tsOrigIndex = ts.index();
+        try {
+            while (ts.movePrevious()) {
+                switch (ts.token().id()) {
+                    case LPAREN:
+                        if (parenDepth == 0) { // could be a 'for (' or 'try ('
+                            while (ts.movePrevious()) {
+                                switch (ts.token().id()) {
+                                    case WHITESPACE:
+                                    case BLOCK_COMMENT:
+                                    case LINE_COMMENT:
+                                        break; // skip
+                                    case LITERAL_for:
+                                    case LITERAL_try:
+                                        return true;
+                                    default:
+                                        return false;
+                                }
+                            }
+                            return false;
+                        } else { // non-zero depth
+                            parenDepth--;
+                        }
+                        break;
 
-            } else if (token.id() == GroovyTokenId.SEMI) {
-                if (semicolonFound) { // one semicolon already found
-                    return false;
+                    case RPAREN:
+                        parenDepth++;
+                        break;
+
+                    case LBRACE:
+                        if (braceDepth == 0) { // unclosed left brace
+                            return false;
+                        }
+                        braceDepth--;
+                        break;
+
+                    case RBRACE:
+                        braceDepth++;
+                        break;
+
+                    case SEMI:
+                        if (semicolonFound) { // one semicolon already found
+                            return false;
+                        }
+                        semicolonFound = true;
+                        break;
                 }
-                semicolonFound = true;
             }
-            token = ts.movePrevious() ? ts.token() : null; 
+        } finally {
+            // Restore orig TS's location
+            ts.moveIndex(tsOrigIndex);
+            ts.moveNext();
         }
         return false;
     }
-
-    private static boolean posWithinAnyQuote(BaseDocument doc, int dotPos) {
-        TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
-        if (ts != null) {
-            Token<GroovyTokenId> token = ts.token();
-            if (token != null && token.id() == GroovyTokenId.STRING_LITERAL) {
-                return true;
-            }
+    
+    private static boolean posWithinAnyQuote(BaseDocument doc, int offset, TokenSequence<GroovyTokenId> ts) throws BadLocationException {
+        if (ts.token().id() == GroovyTokenId.STRING_LITERAL || ts.token().id() == GroovyTokenId.STRING_CH) {
+            char chr = doc.getText(offset, 1).charAt(0);
+            return (offset - ts.offset() == 1 || (chr != '"' && chr != '\''));
         }
         return false;
     }

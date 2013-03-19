@@ -53,6 +53,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -61,6 +62,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.settings.ConvertAsJavaBean;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.netbeans.api.settings.FactoryMethod;
 import org.netbeans.modules.settings.Env;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -78,7 +80,8 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
     public @Override Set<String> getSupportedAnnotationTypes() {
         return new HashSet<String>(Arrays.asList(
             ConvertAsProperties.class.getCanonicalName(),
-            ConvertAsJavaBean.class.getCanonicalName()
+            ConvertAsJavaBean.class.getCanonicalName(),
+            FactoryMethod.class.getCanonicalName()
         ));
     }
 
@@ -158,6 +161,45 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
             }
             f.write();
         }
+        
+        for (Element e : env.getElementsAnnotatedWith(FactoryMethod.class)) {
+            FactoryMethod m = e.getAnnotation(FactoryMethod.class);
+            if (m == null) {
+                continue;
+            }
+            
+            boolean found = false;
+            for (Element ch : e.getEnclosedElements()) {
+                if (ch.getKind() != ElementKind.METHOD) {
+                    continue;
+                }
+                
+                if (!m.value().equals(ch.getSimpleName().toString())) {
+                    continue;
+                }
+                
+                ExecutableElement ee = (ExecutableElement)ch;
+                
+                if (ee.getParameters().size() > 0) {
+                    throw new LayerGenerationException("Factory method " + m.value() + " must have no parameters", ee);
+                }
+
+                if (!ee.getModifiers().contains(Modifier.STATIC)) {
+                    throw new LayerGenerationException("Factory method " + m.value() + " has to be static", ee);
+                }
+                
+                if (!processingEnv.getTypeUtils().isSameType(ee.getReturnType(), e.asType())) {
+                    throw new LayerGenerationException("Factory method " + m.value() + " must return " + e.getSimpleName(), ee);
+                }
+                
+                found = true;
+            }
+            
+            if (!found) {
+                throw new LayerGenerationException("Method named " + m.value() + " was not found in this class", e);
+            }
+        }
+        
         return true;
     }
 

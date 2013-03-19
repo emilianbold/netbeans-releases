@@ -127,16 +127,19 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
         }
     }
     
-    public @Override void foldHierarchyChanged(FoldHierarchyEvent evt) {
-        if (!(component.getCaret() instanceof BaseCaret)) {
+    public @Override void foldHierarchyChanged(final FoldHierarchyEvent evt) {
+        Caret c = component.getCaret();
+        if (!(c instanceof BaseCaret)) {
             return;
         }
-        int caretOffset = component.getCaret().getDot();
+        final BaseCaret bc = (BaseCaret)c;
+        int caretOffset = c.getDot();
         final int addedFoldCnt = evt.getAddedFoldCount();
         boolean scrollToView = false;
         LOG.finest("Received fold hierarchy change"); // NOI18N
         boolean expand = false;
         boolean includeEnd = false;
+        int newPosition = -1;
         
         FoldHierarchy hierarchy = (FoldHierarchy) evt.getSource();
         if (addedFoldCnt > 0) {
@@ -180,7 +183,8 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
                     }
                 }
                 if (startOffset != Integer.MAX_VALUE) {
-                    ((BaseCaret)component.getCaret()).setDot(startOffset, false);
+                    newPosition = startOffset;
+                    bc.setDot(startOffset, false);
                     expand = false;
                 }
             }
@@ -206,19 +210,26 @@ public class FoldingEditorSupport implements FoldHierarchyListener {
             scrollToView = wasExpanded;
         }
         
+        final int newPositionF = newPosition;
+        
         // Update caret's visual position
         // Post the caret update asynchronously since the fold hierarchy is updated before
         // the view hierarchy and the views so the dispatchUpdate() could be picking obsolete
         // view information.
-        if (addedFoldCnt > 1 || scrollToView) {
+        if (addedFoldCnt > 1 || scrollToView || newPosition >= 0) {
             final boolean scroll = scrollToView;
             SwingUtilities.invokeLater(new Runnable() {
                 public @Override void run() {
                     LOG.finest("Updating after fold hierarchy change"); // NOI18N
-                    if (component == null) {
+                    // see defect #227531; the caret may be uninstalled before the EDT executes this runnable.
+                    if (component == null || component.getCaret() != bc) {
                         return;
                     }
-                    ((BaseCaret)component.getCaret()).refresh(addedFoldCnt > 1 && !scroll);
+                    if (newPositionF >= 0) {
+                        bc.setDot(newPositionF);
+                    } else {
+                        bc.refresh(addedFoldCnt > 1 && !scroll);
+                    }
                 }
             });
         }

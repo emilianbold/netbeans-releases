@@ -162,10 +162,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
     }
 
     private void preselectIssue () {
-        if (qs.getComponent() instanceof JComboBox) {
-            //TODO: probably should make qs.setIssue public
-            ((JComboBox) qs.getComponent()).getEditor().setItem(preselectedIssue);
-        }
+        qs.setIssue(preselectedIssue);
         enableFields();
     }
 
