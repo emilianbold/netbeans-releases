@@ -110,6 +110,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="QuerySupport.findDependentRoots">
+      <api name="ParsingAPI"/>
+      <summary>Added <code>QuerySupport.findDependentRoots</code> to find out source roots depending on given source root.</summary>
+      <version major="1" minor="64"/>
+      <date day="18" month="3" year="2013"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added a <code>QuerySupport.findDependentRoots</code> method returning the dependent source roots for given source root.
+              It returns all the source roots which have either direct or transitive dependency on the given source root.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+      <issue number="227363"/>
+  </change>
   <change id="EmbeddingProvider.Registration">
       <api name="ParsingAPI"/>
       <summary>Added <code>EmbeddingProvider.Registration</code> annotation to register <code>EmbeddingProvider</code>s.</summary>
