@@ -162,7 +162,7 @@ class DataViewPageContext {
     }
 
     boolean hasPrevious() {
-        return ((currentPos - pageSize) >= 0) && hasRows();
+        return ((currentPos - pageSize) > 0) && hasRows();
     }
 
     boolean isLastPage() {
