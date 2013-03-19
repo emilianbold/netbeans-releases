@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -65,6 +65,7 @@ import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
@@ -85,21 +86,24 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
         this.context = context;
     }
 
-    @CheckForNull
-    static CodeSniffer getCodeSniffer() {
-        try {
-            return CodeSniffer.getDefault();
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getMessage(), AnalysisOptionsPanelController.OPTIONS_SUB_PATH);
-        }
-        return null;
-    }
-
+    @NbBundle.Messages({
+        "CodeSnifferAnalyzerImpl.codeSniffer.error=Code sniffer is not valid",
+        "CodeSnifferAnalyzerImpl.codeSniffer.error.description=Invalid code sniffer set in IDE Options.",
+        "CodeSnifferAnalyzerImpl.analyze.error=Error occured",
+        "CodeSnifferAnalyzerImpl.analyze.error.description=Error occured during analysis, review Output window for more information."
+    })
     @Override
     public Iterable<? extends ErrorDescription> analyze() {
         List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
 
-        CodeSniffer codeSniffer = getCodeSniffer();
+        CodeSniffer codeSniffer;
+        try {
+            codeSniffer = CodeSniffer.getDefault();
+        } catch (InvalidPhpExecutableException ex) {
+            UiUtils.invalidScriptProvided(ex.getMessage(), AnalysisOptionsPanelController.OPTIONS_SUB_PATH);
+            context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_codeSniffer_error(), Bundle.CodeSnifferAnalyzerImpl_codeSniffer_error_description());
+            return Collections.emptyList();
+        }
         assert codeSniffer != null;
 
         Scope scope = context.getScope();
@@ -112,17 +116,26 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
 
         context.start(totalCount);
 
-        // XXX how to get it from customizer?
-        String codeSnifferStandard = AnalysisOptions.getInstance().getCodeSnifferStandard();
+        String codeSnifferStandard = null;
+        Preferences settings = context.getSettings();
+        if (settings != null) {
+            codeSnifferStandard = settings.get(CodeSnifferCustomizerPanel.STANDARD, null);
+        }
+        if (codeSnifferStandard == null) {
+            codeSnifferStandard = AnalysisOptions.getInstance().getCodeSnifferStandard();
+        }
         int progress = 0;
+        boolean analysisError = false;
         for (FileObject root : scope.getSourceRoots()) {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
             List<Result> results = codeSniffer.analyze(codeSnifferStandard, root);
-            // XXX inform about error?
             if (results != null) {
                 errors.addAll(map(results));
+            } else if (!analysisError) {
+                analysisError = true;
+                context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
             }
             progress += fileCount.get(root);
             context.progress(progress);
@@ -133,9 +146,11 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 return Collections.emptyList();
             }
             List<Result> results = codeSniffer.analyze(codeSnifferStandard, file);
-            // XXX inform about error?
             if (results != null) {
                 errors.addAll(map(results));
+            } else if (!analysisError) {
+                analysisError = true;
+                context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
             }
             progress += fileCount.get(file);
             context.progress(progress);
@@ -147,9 +162,11 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
             }
             FileObject folder = nonRecursiveFolder.getFolder();
             List<Result> results = codeSniffer.analyze(codeSnifferStandard, folder, true);
-            // XXX inform about error?
             if (results != null) {
                 errors.addAll(map(results));
+            } else if (!analysisError) {
+                analysisError = true;
+                context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
             }
             progress += fileCount.get(folder);
             context.progress(progress);
@@ -192,10 +209,6 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
 
     private ErrorDescription map(Result result, FileObject file, int[] lineMap) {
         int line = 2 * (Math.min(result.getLine(), lineMap.length / 2) - 1);
-        // XXX i18n for category
-        // XXX categories in Inspector view
-        // XXX which severity?
-        // XXX fixes? show only warning without any hint...
         return ErrorDescriptionFactory.createErrorDescription(ANALYZER_PREFIX + result.getCategory(), Severity.VERIFIER, result.getCategory(),
                 result.getDescription(), EMPTY_LAZY_FIX_LIST, file, lineMap[line], lineMap[line + 1]);
     }
@@ -205,21 +218,17 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
     @ServiceProvider(service=AnalyzerFactory.class)
     public static final class CodeSnifferAnalyzerFactory extends AnalyzerFactory {
 
-        // XXX
         @StaticResource
         private static final String ICON_PATH = "org/netbeans/modules/php/analysis/ui/resources/warning.gif"; // NOI18N
 
 
         @NbBundle.Messages("CodeSnifferAnalyzerFactory.displayName=Code Sniffer")
         public CodeSnifferAnalyzerFactory() {
-            super("PhpCodeSniffer", Bundle.CodeSnifferAnalyzerFactory_displayName(), ICON_PATH);
+            super("PhpCodeSniffer", Bundle.CodeSnifferAnalyzerFactory_displayName(), ICON_PATH); // NOI18N
         }
 
         @Override
         public Iterable<? extends WarningDescription> getWarnings() {
-            // XXX
-            // check code sniffer is set correctly
-            getCodeSniffer();
             return Collections.emptyList();
         }
 
@@ -232,9 +241,12 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 }
                 @Override
                 public CodeSnifferCustomizerPanel createComponent(CustomizerContext<Void, CodeSnifferCustomizerPanel> context) {
-                    // XXX whatif any error in the customizer?
-                    // how to get values from customizer?
-                    return new CodeSnifferCustomizerPanel();
+                    CodeSnifferCustomizerPanel component = context.getPreviousComponent();
+                    if (component == null) {
+                        component = new CodeSnifferCustomizerPanel();
+                    }
+                    component.loadSettings(context.getSettings());
+                    return component;
                 }
             };
         }
@@ -246,7 +258,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
 
         @Override
         public void warningOpened(ErrorDescription warning) {
-            // XXX
+            HintsController.setErrors(warning.getFile(), "phpCodeSnifferWarning", Collections.singleton(warning)); // NOI18N
         }
 
     }

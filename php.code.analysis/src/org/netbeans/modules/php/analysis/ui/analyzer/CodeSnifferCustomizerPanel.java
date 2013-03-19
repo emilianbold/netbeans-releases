@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.analysis.ui.analyzer;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -56,7 +59,12 @@ public class CodeSnifferCustomizerPanel extends JPanel {
 
     private static final long serialVersionUID = 46872132457657L;
 
+    public static final String STANDARD = "codeSniffer.standard"; // NOI18N
+
     final CodeSnifferStandardsComboBoxModel standardsModel = new CodeSnifferStandardsComboBoxModel();
+
+    // @Guardedby("this")
+    private Preferences settings;
 
 
     public CodeSnifferCustomizerPanel() {
@@ -66,6 +74,37 @@ public class CodeSnifferCustomizerPanel extends JPanel {
 
     private void init() {
         AnalysisUtils.connect(standardComboBox, standardsModel, AnalysisOptions.getInstance().getCodeSnifferStandard(), null);
+        // listeners
+        standardComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    getSettings().put(STANDARD, standardsModel.getSelectedStandard());
+                }
+            }
+        });
+    }
+
+    public synchronized Preferences getSettings() {
+        assert Thread.holdsLock(this);
+        assert settings != null;
+        return settings;
+    }
+
+    public synchronized void loadSettings(Preferences settings) {
+        assert Thread.holdsLock(this);
+        assert settings != null;
+        this.settings = settings;
+        initFromSettings();
+    }
+
+    private void initFromSettings() {
+        assert Thread.holdsLock(this);
+        assert settings != null;
+        String standard = settings.get(STANDARD, null);
+        if (standard != null) {
+            standardsModel.setSelectedItem(standard);
+        }
     }
 
     /**
@@ -101,4 +140,5 @@ public class CodeSnifferCustomizerPanel extends JPanel {
     private JComboBox standardComboBox;
     private JLabel standardLabel;
     // End of variables declaration//GEN-END:variables
+
 }
