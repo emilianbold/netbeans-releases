@@ -211,7 +211,8 @@ public class CPModel {
         NodeVisitor visitor = new NodeVisitor() {
             private boolean in_cp_variable_declaration, in_cp_args_list, in_declarations;
             private Stack<OffsetRange> contexts = new Stack<OffsetRange>();
-
+            private CPElement elementAwaitingDeclarationNode;
+            
             @Override
             public boolean visit(Node node) {
 
@@ -219,6 +220,12 @@ public class CPModel {
                     case declarations:
                         OffsetRange range = new OffsetRange(node.from(), node.to());
                         contexts.push(range);
+                        
+                        if(elementAwaitingDeclarationNode != null) {
+                            elementAwaitingDeclarationNode.setScope(range);
+                            elementAwaitingDeclarationNode = null;
+                        }
+                        
                         //the declarations node represents a content of a code block
                         in_declarations = true;
 
@@ -260,12 +267,20 @@ public class CPModel {
                                 type = CPElementType.VARIABLE_USAGE;
                             }
                         }
-                        OffsetRange context = contexts.isEmpty() ? null : contexts.peek();
+                        OffsetRange scope = contexts.isEmpty() ? null : contexts.peek();
 
                         CPElementHandle handle = new CPElementHandle(getFile(), node.image().toString().trim(), type);
                         OffsetRange variableRange = new OffsetRange(node.from(), node.to());
-                        CPElement element = new CPElement(handle, variableRange, context);
+                        CPElement element = new CPElement(handle, variableRange, scope);
 
+                        if(scope == null) {
+                            //in the case of VARIABLE_DECLARATION_MIXIN_PARAMS variable
+                            //the context will be known later during parsing
+                            //
+                            //XXX rewrite the scope resolve completely - ideally computed lazily in CPElement.getScope()
+                            elementAwaitingDeclarationNode = element;
+                        }
+                        
                         vars.add(element);
                         break;
 

@@ -42,12 +42,18 @@
 package org.netbeans.modules.css.prep;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.prep.model.CPElementHandle;
+import org.netbeans.modules.css.prep.model.CPElementType;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependencyType;
 import org.openide.filesystems.FileObject;
@@ -57,17 +63,13 @@ import org.openide.filesystems.FileObject;
  * @author marekfukala
  */
 public class CPUtils {
-    
+
     public static String SCSS_FILE_EXTENSION = "scss"; //NOI18N
-    
     public static String SASS_FILE_EXTENSION = "sass"; //NOI18N
-    
     public static String LESS_FILE_EXTENSION = "less"; //NOI18N
-    
     public static String SCSS_FILE_MIMETYPE = "text/scss"; //NOI18N
-    
     public static String LESS_FILE_MIMETYPE = "text/less"; //NOI18N
-    
+
     public static boolean isCPFile(FileObject file) {
         String mt = file.getMIMEType();
         return SCSS_FILE_MIMETYPE.equals(mt) || LESS_FILE_MIMETYPE.equals(mt);
@@ -83,25 +85,42 @@ public class CPUtils {
      * @return
      */
     public static Map<FileObject, CPCssIndexModel> getIndexModels(FileObject file, DependencyType dependencyType, boolean excludeTheBaseFile) throws IOException {
-        Map<FileObject, CPCssIndexModel> models = new HashMap<FileObject, CPCssIndexModel>();
+        Map<FileObject, CPCssIndexModel> models = new LinkedHashMap<FileObject, CPCssIndexModel>();
         Project project = FileOwnerQuery.getOwner(file);
         if (project != null) {
             CssIndex index = CssIndex.get(project);
-            DependenciesGraph dependencies = index.getDependencies(file);
-            Collection<FileObject> referred = dependencies.getFiles(dependencyType);
-            for (FileObject reff : referred) {
-                if (excludeTheBaseFile && reff.equals(file)) {
-                    //skip current file (it is included to the referred files list)
-                    continue;
-                }
-                CPCssIndexModel cpIndexModel = (CPCssIndexModel) index.getIndexModel(CPCssIndexModel.Factory.class, reff);
-                if (cpIndexModel != null) {
-                    models.put(reff, cpIndexModel);
-                }
-
+        DependenciesGraph dependencies = index.getDependencies(file);
+        Collection<FileObject> referred = dependencies.getFiles(dependencyType);
+        for (FileObject reff : referred) {
+            if (excludeTheBaseFile && reff.equals(file)) {
+                //skip current file (it is included to the referred files list)
+                continue;
             }
+            CPCssIndexModel cpIndexModel = (CPCssIndexModel) index.getIndexModel(CPCssIndexModel.Factory.class, reff);
+            if (cpIndexModel != null) {
+                models.put(reff, cpIndexModel);
+            }
+
+        }
         }
         return models;
+    }
 
+    /**
+     * Gets a new collection of {@link CPElementHandle}s containing just handles of the specified types.
+     *
+     * @param handles handles to filter
+     * @param type required handle types
+     * @return non null collection of filtered handles.
+     */
+    public static Collection<CPElementHandle> filter(Collection<CPElementHandle> handles, CPElementType... types) {
+        Set<CPElementType> typesSet = EnumSet.copyOf(Arrays.asList(types));
+        Collection<CPElementHandle> filtered = new ArrayList<CPElementHandle>();
+        for (CPElementHandle handle : handles) {
+            if (typesSet.contains(handle.getType())) {
+                filtered.add(handle);
+            }
+        }
+        return filtered;
     }
 }

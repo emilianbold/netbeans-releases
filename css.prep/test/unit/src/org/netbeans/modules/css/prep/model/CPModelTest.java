@@ -44,7 +44,9 @@ package org.netbeans.modules.css.prep.model;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.*;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.lib.CssTestBase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
@@ -223,4 +225,37 @@ public class CPModelTest extends CssTestBase {
         assertFalse(vars.hasNext());
         
     }
+    
+     public void testScopeOfVariableDeclaredAsMixinArgument() {
+        String source =
+                  "@mixin my($arg) {\n"
+                // 012345678901234567
+                + "    color: $arg;\n"
+                + "}\n";
+
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+
+        TestUtil.dumpResult(result);
+        
+        CPModel model = CPModel.getModel(result);
+        assertNotNull(model);
+
+        CPElement var = model.getVariableAtOffset(12); 
+        assertNotNull(var);
+        assertEquals("$arg", var.getName().toString());
+        assertEquals(CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS, var.getType());
+        
+        OffsetRange range = var.getRange();
+        assertEquals(10, range.getStart());
+        assertEquals(14, range.getEnd());
+
+        //the scope should be the declarations node scope
+        OffsetRange scope = var.getScope();
+        assertNotNull(scope);
+        assertEquals(22, scope.getStart());
+        assertEquals(35, scope.getEnd());
+
+     }
+     
 }
