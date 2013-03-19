@@ -57,49 +57,72 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
 
     private NetworkMonitorTopComponent component;
     private NetworkMonitorTopComponent.Model model;
+    private BrowserFamilyId browserFamilyId;
+    private Project project;
 
-    public NetworkMonitor(Lookup projectContext) {
-        BrowserFamilyId fam = projectContext.lookup(BrowserFamilyId.class);
-        final Project p = projectContext.lookup(Project.class);
-        this.model = new NetworkMonitorTopComponent.Model(fam);
-        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
-            if (tc instanceof NetworkMonitorTopComponent) {
-                component = (NetworkMonitorTopComponent)tc;
-                model = component.getModel();
-                component.resetModel(fam, p);
-                break;
-            }
-        }
+    private NetworkMonitor(Lookup projectContext, NetworkMonitorTopComponent comp, 
+            NetworkMonitorTopComponent.Model mod) {
+        this.component = comp;
+        this.model = mod;
+        browserFamilyId = projectContext.lookup(BrowserFamilyId.class);
+        project = projectContext.lookup(Project.class);
+        
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 if (component == null) {
-                    component = new NetworkMonitorTopComponent(NetworkMonitor.this, model, p);
+                    component = new NetworkMonitorTopComponent(NetworkMonitor.this, model);
                 }
                 component.open();
             }
         });
     }
 
+    public static NetworkMonitor createNetworkMonitor(Lookup projectContext) {
+        NetworkMonitorTopComponent component = null;
+        NetworkMonitorTopComponent.Model model;
+        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+            if (tc instanceof NetworkMonitorTopComponent) {
+                component = (NetworkMonitorTopComponent)tc;
+                break;
+            }
+        }
+        if (component != null) {
+            model = component.getModel();
+        } else {
+            model = new NetworkMonitorTopComponent.Model();
+        }
+        return new NetworkMonitor(projectContext, component, model);
+    }
+
     public void close() {
-        if (model.getSize() == 0) {
+        if (model.getSize() == 0 && component != null) {
+            final NetworkMonitorTopComponent comp = component;
+            component = null;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    component.close();
+                    comp.close();
                 }
             });
+        } else {
+            model.close(project);
         }
     }
 
     @Override
     public void networkRequest(Network.Request request) {
-        model.add(request);
+        if (component != null) {
+            model.add(request, browserFamilyId, project);
+        }
+        DependentFileQueryImpl.DEFAULT.networkRequest(project, request);
     }
 
     @Override
     public void webSocketRequest(Network.WebSocketRequest request) {
-        model.add(request);
+        if (component != null) {
+            model.add(request, browserFamilyId, project);
+        }
     }
 
     void componentClosed() {
@@ -108,7 +131,9 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
 
     @Override
     public void messageAdded(ConsoleMessage message) {
-        model.console(message);
+        if (component != null) {
+            model.console(message);
+        }
     }
 
     @Override

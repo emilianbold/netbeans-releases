@@ -109,16 +109,14 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     private static RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
     private NetworkMonitor parent;
     private InputOutput io;
-    private Project project;
 
-    NetworkMonitorTopComponent(NetworkMonitor parent, Model m, Project p) {
+    NetworkMonitorTopComponent(NetworkMonitor parent, Model m) {
         initComponents();
         jResponse.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
         setName(Bundle.CTL_NetworkMonitorTopComponent());
         setToolTipText(Bundle.HINT_NetworkMonitorTopComponent());
         this.model = m;
         this.parent = parent;
-        this.project = p;
         jRequestsList.setModel(model);
         jRequestsList.setCellRenderer(new ListRendererImpl());
         jSplitPane.setDividerLocation(200);
@@ -130,6 +128,9 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     }
 
     Model getModel() {
+        if (model.canResetModel()) {
+            resetModel();
+        }
         return model;
     }
 
@@ -422,6 +423,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     @Override
     public void componentClosed() {
         parent.componentClosed();
+        model.reset();
     }
 
     @Override
@@ -460,7 +462,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             mi.updateResponsePane(jResponse, jRawResponseResponse.isSelected());
             mi.updateFramesPane(jFrames, jRawResponseFrames.isSelected());
             mi.updatePostDataPane(jRequest, jRawResponseRequest.isSelected());
-            mi.updateCallStack(project, io);
+            mi.updateCallStack(io);
         }
         updateTabVisibility(mi);
     }
@@ -494,9 +496,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         refreshDetailsView(lastSelectedItem);
     }
 
-    void resetModel(BrowserFamilyId browserFamilyId, Project p) {
-        model.reset(browserFamilyId);
-        this.project = p;
+    void resetModel() {
+        model.reset();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -551,10 +552,15 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         private ChangeListener changeListener;
         private String data = null;
         private String failureCause = null;
+        private BrowserFamilyId browserFamilyId;
+        private Project project;
 
-        public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest) {
+        public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest,
+                BrowserFamilyId browserFamilyId, Project project) {
             this.request = request;
             this.wsRequest = wsRequest;
+            this.browserFamilyId = browserFamilyId;
+            this.project = project;
             if (this.request != null) {
                 this.request.addPropertyChangeListener(this);
             } else {
@@ -562,7 +568,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             }
         }
 
-        public boolean canBeShownToUser(BrowserFamilyId browserFamilyId) {
+        public boolean canBeShownToUser() {
             if (wsRequest != null) {
                 return true;
             }
@@ -900,7 +906,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             }
         }
 
-        private void updateCallStack(Project project, InputOutput io) {
+        private void updateCallStack(InputOutput io) {
             try {
                 io.getOut().reset();
             } catch (IOException ex) {
@@ -933,6 +939,18 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 return false;
             }
             return request.isFailed() || request.getResponseCode() >= 400;
+        }
+
+        private boolean inactive = false;
+        
+        void deactivateItem(Project p) {
+            if (project == p) {
+                inactive = true;
+            }
+        }
+
+        boolean isInactive() {
+            return inactive;
         }
 
     }
@@ -1049,21 +1067,21 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
     static class Model extends AbstractListModel implements PropertyChangeListener {
 
-        private BrowserFamilyId browserFamilyId;
         private List<ModelItem> allRequests = new ArrayList<ModelItem>();
         private List<ModelItem> visibleRequests = new ArrayList<ModelItem>();
 
-        public Model(BrowserFamilyId browserFamilyId) {
-            this.browserFamilyId = browserFamilyId;
+        public Model() {
         }
         
-        public void add(Network.Request r) {
-            add(new ModelItem(r, null));
+        public void add(Network.Request r, BrowserFamilyId browserFamilyId, Project project) {
+            add(new ModelItem(r, null, browserFamilyId, project));
             r.addPropertyChangeListener(this);
+            // with regular request do not call updateVisibleItems() here as we need
+            // to receive response headers first and they will fire Network.Request.PROP_RESPONSE event
         }
 
-        public void add(Network.WebSocketRequest r) {
-            add(new ModelItem(null, r));
+        public void add(Network.WebSocketRequest r, BrowserFamilyId browserFamilyId, Project project) {
+            add(new ModelItem(null, r, browserFamilyId, project));
             r.addPropertyChangeListener(this);
             updateVisibleItems();
         }
@@ -1092,7 +1110,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         private void updateVisibleItems() {
             List<ModelItem> res = new ArrayList<ModelItem>();
             for (ModelItem mi : allRequests) {
-                if (mi.canBeShownToUser(browserFamilyId)) {
+                if (mi.canBeShownToUser()) {
                     res.add(mi);
                 }
             }
@@ -1109,8 +1127,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             });
         }
 
-        void reset(BrowserFamilyId browserFamilyId) {
-            this.browserFamilyId = browserFamilyId;
+        void reset() {
             allRequests = new ArrayList<ModelItem>();
             visibleRequests = new ArrayList<ModelItem>();
         }
@@ -1132,6 +1149,24 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                     mi.setFailureCause(message.getText());
                 }
             }
+        }
+
+        void close(Project project) {
+            for (ModelItem mi : allRequests) {
+                mi.deactivateItem(project);
+            }
+        }
+
+        public boolean canResetModel() {
+            boolean allDeactivated = true;
+            for (ModelItem mi : allRequests) {
+                if (!mi.isInactive()) {
+                    allDeactivated = false;
+                    break;
+                }
+            }
+            // if model contains only deactivated items they can be reset:
+            return allDeactivated;
         }
 
     }
