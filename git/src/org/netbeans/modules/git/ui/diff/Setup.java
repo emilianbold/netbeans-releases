@@ -51,7 +51,8 @@ import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Mode;
-import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.GitFileNode;
+import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
@@ -77,7 +78,7 @@ class Setup extends AbstractDiffSetup {
 
     private String    title;
 
-    public Setup (GitFileNode node, Mode mode, Revision revision) {
+    public Setup (GitLocalFileNode node, Mode mode, Revision revision) {
         this.baseFile = node.getFile();
 
         ResourceBundle loc = NbBundle.getBundle(Setup.class);
@@ -187,11 +188,15 @@ class Setup extends AbstractDiffSetup {
         };
     }
 
-    Setup (File file, Revision rev1, Revision rev2) {
+    Setup (File file, Revision rev1, Revision rev2, GitFileNode.HistoryFileInformation fileInfo) {
         baseFile = file;
         firstRevision = rev1.getRevision();
         secondRevision = rev2.getRevision();
-        firstSource = new DiffStreamSource(baseFile, firstRevision, rev1.toString(true));
+        StringBuilder sb = new StringBuilder(rev1.toString(true));
+        if (fileInfo != null && fileInfo.getOldPath() != null) {
+            sb.append(" (").append(fileInfo.getOldPath()).append(")");
+        }
+        firstSource = new DiffStreamSource(baseFile, firstRevision, sb.toString());
         secondSource = new DiffStreamSource(baseFile, secondRevision, rev2.toString(true));
     }
 

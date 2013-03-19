@@ -95,6 +95,8 @@ import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitFileNode;
+import org.netbeans.modules.git.GitFileNode.GitHistoryFileNode;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
@@ -104,9 +106,11 @@ import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.ExcludeFromCommitAction;
-import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.git.ui.commit.IncludeInCommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
+import org.netbeans.modules.git.ui.diff.DiffNode.DiffHistoryNode;
+import org.netbeans.modules.git.ui.diff.DiffNode.DiffLocalNode;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.ui.repository.RevisionPicker;
@@ -240,7 +244,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             c.setVisible(false);
         }
         // mimics refreshSetups()
-        Map<File, Setup> localSetups = Collections.singletonMap(currentFile, new Setup(file, rev1, rev2));
+        Map<File, Setup> localSetups = Collections.singletonMap(currentFile, new Setup(file, rev1, rev2, null));
         setSetups(localSetups, Collections.<File, EditorCookie>emptyMap());
         setDiffIndex(file, 0, false);
         dpt = new DiffPrepareTask(setups.values().toArray(new Setup[setups.size()]));
@@ -1059,9 +1063,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             for (File f : interestingFiles) {
                 File root = git.getRepositoryRoot(f);
                 if (root != null) {
-                    GitFileNode fNode = new GitFileNode(root, f);
+                    GitLocalFileNode fNode = new GitLocalFileNode(root, f);
                     Setup setup = new Setup(fNode, mode, Revision.HEAD);
-                    DiffNode diffNode = new DiffNode(fNode, DiffUtils.getEditorCookie(setup), mode);
+                    DiffNode diffNode = new DiffLocalNode(fNode, DiffUtils.getEditorCookie(setup), mode);
                     nodes.add(diffNode);
                     setup.setNode(diffNode);
                     localSetups.put(f, setup);
@@ -1089,14 +1093,14 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                     if (!fi.containsStatus(displayStatuses)) {
                         continue;
                     }
-                    GitFileNode fNode = new GitFileNode(repository, f) {
+                    GitLocalFileNode fNode = new GitLocalFileNode(repository, f) {
                         @Override
                         public FileInformation getInformation () {
                             return fi;
                         }
                     };
                     Setup setup = new Setup(fNode, mode, revisionLeft);
-                    DiffNode diffNode = new DiffNode(fNode, DiffUtils.getEditorCookie(setup), mode);
+                    DiffNode diffNode = new DiffLocalNode(fNode, DiffUtils.getEditorCookie(setup), mode);
                     nodes.add(diffNode);
                     setup.setNode(diffNode);
                     localSetups.put(f, setup);
@@ -1124,14 +1128,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 for (Map.Entry<File, GitRevisionInfo.GitFileInfo> e : statuses.entrySet()) {
                     File f = e.getKey();
                     GitRevisionInfo.GitFileInfo info = e.getValue();
-                    final FileInformation fi = new FileInformation(info);
-                    Setup setup = new Setup(f, revisionLeft, revisionRight);
-                    DiffNode historyNode = new DiffNode(new GitFileNode(repository, f) {
-                        @Override
-                        public FileInformation getInformation () {
-                            return fi;
-                        }
-                    }, null, Mode.HEAD_VS_INDEX);
+                    GitFileNode.HistoryFileInformation fi = new GitFileNode.HistoryFileInformation(info);
+                    Setup setup = new Setup(f, revisionLeft, revisionRight, fi);
+                    DiffNode historyNode = new DiffHistoryNode(new GitHistoryFileNode(repository, f, fi));
                     nodes.add(historyNode);
                     historySetups.put(f, setup);
                 }
@@ -1188,17 +1187,21 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 DiffNode node = nodes.get(evt.getFile());
                 if (newInfo.containsStatus(displayStatuses)) {
                     if (node != null) {
-                        toRefresh.add(node);
-                        Setup setup = new Setup(node.getFileNode(), mode, Revision.HEAD);
-                        setup.setNode(node);
-                        localSetups.put(evt.getFile(), setup);
-                        LOG.log(Level.FINE, "ApplyChanges: refreshing node {0}", node);
+                        if (node instanceof DiffLocalNode) {
+                            toRefresh.add(node);
+                            Setup setup = new Setup(((DiffLocalNode) node).getFileNode(), mode, Revision.HEAD);
+                            setup.setNode(node);
+                            localSetups.put(evt.getFile(), setup);
+                            LOG.log(Level.FINE, "ApplyChanges: refreshing node {0}", node);
+                        } else {
+                            toRemove.add(node);
+                        }
                     } else {
                         File root = git.getRepositoryRoot(evt.getFile());
                         if (root != null) {
-                            GitFileNode fNode = new GitFileNode(root, evt.getFile());
+                            GitLocalFileNode fNode = new GitLocalFileNode(root, evt.getFile());
                             Setup setup = new Setup(fNode, mode, Revision.HEAD);
-                            DiffNode toAddNode = new DiffNode(fNode, DiffUtils.getEditorCookie(setup), mode);
+                            DiffNode toAddNode = new DiffLocalNode(fNode, DiffUtils.getEditorCookie(setup), mode);
                             setup.setNode(toAddNode);
                             localSetups.put(evt.getFile(), setup);
                             toAdd.add(toAddNode);

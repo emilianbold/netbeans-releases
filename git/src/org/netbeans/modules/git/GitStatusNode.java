@@ -40,14 +40,8 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.status;
+package org.netbeans.modules.git;
 
-import javax.swing.Action;
-import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.FileInformation.Mode;
-import org.netbeans.modules.git.ui.commit.GitFileNode;
-import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
-import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -56,33 +50,21 @@ import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author ondra
  */
-public class GitStatusNode extends VCSStatusNode<GitFileNode> {
-    private final Mode mode;
+public abstract class GitStatusNode<T extends GitFileNode> extends VCSStatusNode<T> {
 
-    public GitStatusNode (GitFileNode node, Mode mode) {
-        this(node, mode, Lookups.fixed(node.getLookupObjects()));
+    public GitStatusNode (T node) {
+        this(node, Lookups.fixed(node.getLookupObjects()));
     }
 
-    public GitStatusNode (GitFileNode node, Mode mode, Lookup lkp) {
+    public GitStatusNode (T node, Lookup lkp) {
         super(node, lkp);
-        this.mode = mode;
         initProperties();
-    }
-
-    @Override
-    public Action getPreferredAction () {
-        if (node.getInformation().containsStatus(FileInformation.Status.IN_CONFLICT)) {
-            return SystemAction.get(ResolveConflictsAction.class);
-        } else {
-            return SystemAction.get(DiffAction.class);
-        }
     }
     
     /**
@@ -124,6 +106,8 @@ public class GitStatusNode extends VCSStatusNode<GitFileNode> {
         // do something when needed
     }
 
+    public abstract String getStatusText ();
+
     protected static abstract class NodeProperty<T> extends ReadOnly<T> {
         protected NodeProperty (String name, Class<T> type, String displayName, String description) {
             super(name, type, displayName, description);
@@ -141,23 +125,22 @@ public class GitStatusNode extends VCSStatusNode<GitFileNode> {
     private static final String [] zeros = new String [] { "", "00", "0", "" }; // NOI18N
     public static class GitStatusProperty extends NodeProperty<String> {
         public static final String NAME = "gitstatus"; //NOI18N
-        public static final String DISPLAY_NAME = NbBundle.getMessage(GitStatusNode.class, "LBL_Status.DisplayName"); //NOI18N
-        public static final String DESCRIPTION = NbBundle.getMessage(GitStatusNode.class, "LBL_Status.Description"); //NOI18N
-        private final GitFileNode fileNode;
-        private final Mode mode;
+        @NbBundle.Messages("LBL_Status.DisplayName=Status")
+        public static final String DISPLAY_NAME = Bundle.LBL_Status_DisplayName();
+        @NbBundle.Messages("LBL_Status.Description=Last known Git status")
+        public static final String DESCRIPTION = Bundle.LBL_Status_Description();
+        private final GitStatusNode node;
 
         public GitStatusProperty (GitStatusNode statusNode) {
             super(NAME, String.class, DISPLAY_NAME, DESCRIPTION);
             String sortable = Integer.toString(statusNode.getFileNode().getInformation().getComparableStatus());
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + statusNode.getFileNode().getName()); // NOI18N
-            this.fileNode = statusNode.node;
-            this.mode = statusNode.mode;
+            this.node = statusNode;
         }
 
         @Override
         public String getValue () {
-            FileInformation finfo =  fileNode.getInformation();
-            return finfo.getStatusText(mode);
+            return node.getStatusText();
         }
     }
 }

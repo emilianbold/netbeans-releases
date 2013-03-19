@@ -80,7 +80,7 @@ import org.netbeans.modules.git.ui.blame.AnnotateAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.git.ui.status.GitStatusNode;
+import org.netbeans.modules.git.GitStatusNode;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;

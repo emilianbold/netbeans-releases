@@ -55,10 +55,13 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.GitStatusNode.GitStatusProperty;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
+import org.netbeans.modules.versioning.util.status.VCSStatusNode.NameProperty;
+import org.netbeans.modules.versioning.util.status.VCSStatusNode.PathProperty;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport.ReadOnly;
@@ -95,9 +98,9 @@ class DiffFileTable extends VCSStatusTable<DiffNode> {
     @Override
     protected void setModelProperties () {
         Node.Property [] properties = new Node.Property[3];
-        properties[0] = new ColumnDescriptor<String>(DiffNode.NameProperty.NAME, String.class, DiffNode.NameProperty.DISPLAY_NAME, DiffNode.NameProperty.DESCRIPTION);
-        properties[1] = new ColumnDescriptor<String>(DiffNode.GitStatusProperty.NAME, String.class, DiffNode.GitStatusProperty.DISPLAY_NAME, DiffNode.GitStatusProperty.DESCRIPTION);
-        properties[2] = new ColumnDescriptor<String>(DiffNode.PathProperty.NAME, String.class, DiffNode.PathProperty.DISPLAY_NAME, DiffNode.PathProperty.DESCRIPTION);
+        properties[0] = new ColumnDescriptor<String>(NameProperty.NAME, String.class, NameProperty.DISPLAY_NAME, NameProperty.DESCRIPTION);
+        properties[1] = new ColumnDescriptor<String>(GitStatusProperty.NAME, String.class, GitStatusProperty.DISPLAY_NAME, GitStatusProperty.DESCRIPTION);
+        properties[2] = new ColumnDescriptor<String>(PathProperty.NAME, String.class, PathProperty.DISPLAY_NAME, PathProperty.DESCRIPTION);
         tableModel.setProperties(properties);
     }
 

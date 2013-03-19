@@ -47,16 +47,15 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
-import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitStatus;
-import org.netbeans.modules.versioning.util.common.VCSFileInformation;
+import org.netbeans.modules.git.GitFileNode.FileNodeInformation;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-public class FileInformation extends VCSFileInformation {
+public class FileInformation extends FileNodeInformation {
     private final EnumSet<Status> status;
     private boolean seenInUI;
     private final boolean directory;
@@ -134,30 +133,6 @@ public class FileInformation extends VCSFileInformation {
             }
             this.status = s;
         }
-    }
-
-    public FileInformation (GitRevisionInfo.GitFileInfo info) {
-        directory = false;
-        seenInUI = true;
-        renamed = info.getStatus() == GitRevisionInfo.GitFileInfo.Status.RENAMED;
-        copied = info.getStatus() == GitRevisionInfo.GitFileInfo.Status.COPIED;
-        oldFile = info.getOriginalFile();
-        GitRevisionInfo.GitFileInfo.Status st = info.getStatus();
-        EnumSet<Status> s = EnumSet.noneOf(Status.class);
-        if (GitRevisionInfo.GitFileInfo.Status.ADDED.equals(st)) {
-            s.add(Status.NEW_HEAD_INDEX);
-            s.add(Status.NEW_HEAD_WORKING_TREE);
-        } else if (GitRevisionInfo.GitFileInfo.Status.MODIFIED.equals(st)) {
-            s.add(Status.MODIFIED_HEAD_INDEX);
-            s.add(Status.MODIFIED_HEAD_WORKING_TREE);
-        } else if (GitRevisionInfo.GitFileInfo.Status.REMOVED.equals(st)) {
-            s.add(Status.REMOVED_HEAD_INDEX);
-            s.add(Status.REMOVED_HEAD_WORKING_TREE);
-        }
-        if (s.isEmpty()) {
-            s.add(Status.UPTODATE);
-        }
-        this.status = s;
     }
 
     public boolean containsStatus (Set<Status> includeStatus) {
@@ -362,14 +337,17 @@ public class FileInformation extends VCSFileInformation {
         }
     }
 
+    @Override
     public boolean isRenamed () {
         return renamed;
     }
 
+    @Override
     public boolean isCopied () {
         return copied;
     }
 
+    @Override
     public File getOldFile () {
         return oldFile;
     }
