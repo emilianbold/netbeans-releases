@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
     "OptionsCategory_Groovy=Groovy"
 )
 @OptionsPanelController.SubRegistration(
+    id = "org-netbeans-modules-groovy-support-api-GroovySettings",
     displayName="#OptionsCategory_Groovy"
 )
 public final class SupportOptionsPanelController extends OptionsPanelController {

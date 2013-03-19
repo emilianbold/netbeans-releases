@@ -89,6 +89,12 @@ public class QueryPanel extends javax.swing.JPanel {
         initComponents();
         this.controller = controller;
 
+        Color bkColor = UIUtils.getSectionPanelBackground();
+        gotoPanel.setBackground( bkColor );
+        tablePanel.setBackground( bkColor );
+        urlPanel.setBackground( bkColor );
+        criteriaPanel.setBackground( bkColor );
+
         Font f = new JLabel().getFont();
         int s = f.getSize();
         nameLabel.setFont(jLabel1.getFont().deriveFont(s * 1.7f));

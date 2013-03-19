@@ -54,15 +54,12 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -73,12 +70,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
 import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
@@ -156,10 +151,12 @@ public final class SendJMSGenerator {
         String destinationName = null;
 
         if (injectionStrategy == InjectionStrategy.INJ_EE7_SOURCES) {
-            EjbJar ejbJar = EjbJar.getEjbJar(fileObject);
-            FileObject beansFile = createBeansDD(project, ejbJar.getJ2eeProfile());
-            if (beansFile != null) {
-                injectionStrategy = InjectionStrategy.INJ_EE7_CDI;
+            CdiUtil util = project.getLookup().lookup(CdiUtil.class);
+            if (util != null) {
+                FileObject beansFile = util.enableCdi();
+                if (beansFile != null) {
+                    injectionStrategy = InjectionStrategy.INJ_EE7_CDI;
+                }
             }
         }
         switch (injectionStrategy) {
@@ -191,7 +188,8 @@ public final class SendJMSGenerator {
         createJMSProducer(fileObject, className, factoryName, connectionFactoryFieldName, destinationName,
                 destinationFieldName, sendMethodName, slStrategy, injectionStrategy);
 
-        if (messageDestination != null) {
+        if (messageDestination != null
+                && injectionStrategy != InjectionStrategy.INJ_EE7_CDI && injectionStrategy != InjectionStrategy.INJ_EE7_SOURCES ) {
             try {
                 if (j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.WAR)) {
                     //in the current implementation, reference name is the same as the destination name...
@@ -310,7 +308,7 @@ public final class SendJMSGenerator {
                 "javax.jms.JMSConnectionFactory", //NOI18N
                 fieldName,
                 fieldType,
-                Collections.singletonMap("value", destinationName),  //NOI18N
+                Collections.singletonMap("", destinationName),  //NOI18N
                 InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
                 );
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
@@ -379,13 +377,16 @@ public final class SendJMSGenerator {
 
         String body;
         List<String> throwsClause = new ArrayList<String>();
+        String parameterType = Object.class.getName();
         switch (injectionStrategy) {
             case INJ_EE7_CDI:
                 body = getSendJMSCodeForJMSContext(connectionFactoryFieldName, destinationFieldName);
+                parameterType = String.class.getName();
                 break;
 
             case INJ_EE7_SOURCES:
                 body = getSendJMSCodeForCreatedJMSContext(connectionFactoryFieldName, destinationFieldName);
+                parameterType = String.class.getName();
                 break;
 
             case INJ_COMMON:
@@ -409,7 +410,7 @@ public final class SendJMSGenerator {
                 "sendJMSMessageTo" + destBuff, //NOI18N
                 "void", //NOI18N
                 body,
-                Collections.singletonList(MethodModel.Variable.create(Object.class.getName(), "messageData")), //NOI18N
+                Collections.singletonList(MethodModel.Variable.create(parameterType, "messageData")), //NOI18N
                 throwsClause,
                 Collections.singleton(Modifier.PRIVATE)
                 );
@@ -425,32 +426,6 @@ public final class SendJMSGenerator {
                 workingCopy.rewrite(classTree, newClassTree);
             }
         }).commit();
-    }
-
-    private static FileObject createBeansDD(Project project, Profile profile) {
-        CdiUtil util = project.getLookup().lookup(CdiUtil.class);
-        Collection<FileObject> infs;
-        if (util == null) {
-            infs = CdiUtil.getBeansTargetFolder(project, true);
-        } else {
-            infs = util.getBeansTargetFolder(true);
-        }
-        for (FileObject inf : infs) {
-            if (inf != null) {
-                FileObject beansXml = inf.getFileObject(CdiUtil.BEANS_XML);
-                if (beansXml != null) {
-                    return null;
-                }
-                try {
-                    LOG.log(Level.INFO, "Creating beans.xml file for project: {0}", project.getProjectDirectory());
-                    return DDHelper.createBeansXml(profile, inf, CdiUtil.BEANS);
-                } catch (IOException exception) {
-                    Exceptions.printStackTrace(exception);
-                }
-                return null;
-            }
-        }
-        return null;
     }
 
     /**
@@ -489,7 +464,7 @@ public final class SendJMSGenerator {
     private String getSendJMSCodeForJMSContext(String contextFieldName,
             String destinationFieldName){
         return MessageFormat.format(
-                "{0}.createProducer().send({1}, messageData.toString());", //NOI18N
+                "{0}.createProducer().send({1}, messageData);", //NOI18N
                 contextFieldName, destinationFieldName);
     }
 
@@ -501,7 +476,7 @@ public final class SendJMSGenerator {
             String destinationFieldName){
         return MessageFormat.format(
                 "try (javax.jms.JMSContext context = {0}.createContext()) '{'\n" +                //NOI18N
-                "context.createProducer().send({1}, messageData.toString());\n" +    //NOI18N
+                "context.createProducer().send({1}, messageData);\n" +    //NOI18N
                 "'}'\n",                                                                 //NOI18N
                 connectionFactoryFieldName, destinationFieldName);
     }

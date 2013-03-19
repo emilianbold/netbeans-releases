@@ -47,8 +47,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -63,6 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
@@ -79,6 +82,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.modules.maven.NbArtifactFixer;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.actions.OpenPOMAction;
@@ -103,6 +107,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -358,7 +363,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                         ERR_MissingJ2eeModule(),
                         MSG_MissingJ2eeModule(),
-                        null);
+                        new InstallJ2eeModulesAction());
                     report.setId(MISSING_J2EE);
                     addReport(report);
                     if (j2eeInfo != null) {
@@ -384,7 +389,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                     ERR_MissingApisupportModule(),
                     MSG_MissingApisupportModule(),
-                    null);
+                    new InstallApisupportModulesAction());
                 report.setId(MISSING_APISUPPORT);
                 addReport(report);
             }
@@ -676,7 +681,50 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         
         
     }
+
+    private static class InstallJ2eeModulesAction extends AbstractAction {
+
+        public InstallJ2eeModulesAction() {
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            try {
+                //ideally we would use InvokeAndWait otherwise the dialog ui gets messed up.
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        PluginManager.install(Collections.singleton("org.netbeans.modules.j2ee.kit"));
+                    }
+                });
+            } catch (InterruptedException ex) {
+            } catch (InvocationTargetException ex) {
+            }
+        }
+    }
     
+    private static class InstallApisupportModulesAction extends AbstractAction {
+
+        public InstallApisupportModulesAction() {
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            try {
+                //ideally we would use InvokeAndWait otherwise the dialog ui gets messed up.
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        PluginManager.install(Collections.singleton("org.netbeans.modules.apisupport.kit"));
+                    }
+                });
+            } catch (InterruptedException ex) {
+            } catch (InvocationTargetException ex) {
+            }
+        }
+    }
    
     
 }

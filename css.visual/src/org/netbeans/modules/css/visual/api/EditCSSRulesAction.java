@@ -84,7 +84,7 @@ public class EditCSSRulesAction extends AbstractAction {
     
     public EditCSSRulesAction() {
         super(Bundle.label_create_rule());
-        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("/org/netbeans/modules/css/visual/resources/newRule.png", false)); //NOI18N
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/css/visual/resources/newRule.png", false)); //NOI18N
         setEnabled(false);
     }
     

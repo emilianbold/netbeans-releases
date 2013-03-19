@@ -80,12 +80,6 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
-        <folder name="Versioning">
-            <file name="org-netbeans-modules-versioning-shelve-impl-ShelveChangesMenu.shadow">
-                <attr name="originalFile" stringvalue="Actions/Versioning/org-netbeans-modules-versioning-shelve-impl-ShelveChangesMenu.instance"/>
-                <attr name="position" intvalue="90"/>
-            </file>
-        </folder>
     </folder>
     
     <folder name="Windows2">

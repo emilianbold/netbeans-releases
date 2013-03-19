@@ -59,7 +59,7 @@ import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -106,13 +106,13 @@ public abstract class IssueNode<I> extends AbstractNode {
         this.issueData = issueData;
         initProperties();
         refreshHtmlDisplayName();
-        IssueCacheUtils.addCacheListener(issue, new PropertyChangeListener() {
+        issue.addIssueStatusListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if(IssueNode.this.issue.getIssue() != evt.getSource()) {
+                if(!IssueNode.this.issue.isData(evt.getSource())) {
                     return;
                 }
-                if(evt.getPropertyName().equals(IssueCache.EVENT_ISSUE_SEEN_CHANGED)) {
+                if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_SEEN_CHANGED)) {
                     fireSeenValueChanged((Boolean)evt.getOldValue(), (Boolean)evt.getNewValue());
                 }
             }
@@ -141,7 +141,7 @@ public abstract class IssueNode<I> extends AbstractNode {
     }
 
     public boolean wasSeen() {
-        return IssueCacheUtils.wasSeen(issue);
+        return issue.getStatus() == IssueStatusProvider.Status.SEEN;
     }
 
     private void initProperties() {
@@ -268,13 +268,13 @@ public abstract class IssueNode<I> extends AbstractNode {
         }
         @Override
         public Boolean getValue() {
-            return IssueCacheUtils.wasSeen(issue);
+            return issue.getStatus() == IssueStatusProvider.Status.SEEN;
         }
         @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
             Boolean b1 = IssueNode.this.wasSeen();
-            Boolean b2 = IssueCacheUtils.wasSeen(APIAccessor.IMPL.getImpl(p.getIssue()));
+            Boolean b2 = APIAccessor.IMPL.getImpl(p.getIssue()).getStatus() == IssueStatusProvider.Status.SEEN;
             return b1.compareTo(b2);
         }
 

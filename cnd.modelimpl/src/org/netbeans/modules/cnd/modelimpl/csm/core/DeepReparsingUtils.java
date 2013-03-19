@@ -77,7 +77,7 @@ import org.openide.filesystems.FileObject;
 public final class DeepReparsingUtils {
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
     private static final boolean TRACE = LOG.isLoggable(Level.FINE);
-
+    
     private DeepReparsingUtils() {
     }
 
@@ -86,6 +86,7 @@ public final class DeepReparsingUtils {
      * File->Document, Document->Document, Document->File, File->File
      */
     private static void reparseOnlyOneFile(ProjectBase project, FileImpl fileImpl) {
+        checkFileState(fileImpl, "reparseOnlyOneFile"); // NOI18N
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnlyOneFile {0}", fileImpl.getAbsolutePath());
         }
@@ -98,6 +99,7 @@ public final class DeepReparsingUtils {
      * Reparse one file when fileImpl content changed as result of Undo operation.
      */
     static void reparseOnUndoEditedFile(ProjectBase project, FileImpl fileImpl) {
+        checkFileState(fileImpl, "reparseOnUndoEditedFile"); // NOI18N
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnUndoEditedFile {0}", fileImpl.getAbsolutePath());
         }
@@ -108,6 +110,7 @@ public final class DeepReparsingUtils {
      * Reparse one file when fileImpl content changed as result of typing in editor.
      */
     static void reparseOnEditingFile(ProjectBase project, FileImpl fileImpl) {
+        checkFileState(fileImpl, "reparseOnEditingFile"); // NOI18N 
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
         }
@@ -118,6 +121,7 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at fileImpl content changed.
      */
     public static void tryPartialReparseOnChangedFile(final ProjectBase changedFileProject, final FileImpl fileImpl) {
+        checkFileState(fileImpl, "changedFileProject"); // NOI18N
         if (TRACE) {
             LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
         }
@@ -508,5 +512,11 @@ public final class DeepReparsingUtils {
             }
         }
         return out.toString();
+    }    
+    
+    private static void checkFileState(FileImpl fileImpl, String msg) {
+        if (fileImpl.getState() == FileImpl.State.INITIAL) {
+            LOG.log(Level.INFO, "{0} for INITIAL {1}", new Object[]{msg, fileImpl.getAbsolutePath()});
+        }
     }    
 }

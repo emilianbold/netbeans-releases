@@ -380,7 +380,7 @@ class StackTraceSupport {
         Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
         Style hlStyle = doc.addStyle("regularBlue-stacktrace", defStyle); // NOI18N
         hlStyle.addAttribute(HyperlinkSupport.STACKTRACE_ATTRIBUTE, new StackTraceAction());
-        StyleConstants.setForeground(hlStyle, Color.BLUE);
+        StyleConstants.setForeground(hlStyle, UIUtils.getLinkColor());
         StyleConstants.setUnderline(hlStyle, true);
 
         int last = 0;

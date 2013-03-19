@@ -64,5 +64,10 @@ public enum WhereUsedQueryConstants {
     /**
      * Search from base class
      */
-    SEARCH_FROM_BASECLASS;
+    SEARCH_FROM_BASECLASS,
+    /**
+     * Search from base class
+     * @since 1.45
+     */
+    SEARCH_OVERLOADED;
 }

@@ -1,5 +1,5 @@
    assert $cond;
-=> assert $left != $right; :: matchesWithBind($cond, "$left == $right")
-=> assert $left == $right; :: matchesWithBind($cond, "$left != $right")
+=> assert $right != $left; :: matchesWithBind($cond, "$left == $right")
+=> assert $right == $left; :: matchesWithBind($cond, "$left != $right")
 => assert !$cond           :: otherwise
 ;;

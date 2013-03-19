@@ -658,7 +658,10 @@ public final class ImageUtilities {
                 .getDefaultScreenDevice().getDefaultConfiguration()
                 .getColorModel(transparency);
         }
-        catch(HeadlessException he) {
+        catch(ArrayIndexOutOfBoundsException aioobE) {
+            //#226279
+            model = ColorModel.getRGBdefault();
+        } catch(HeadlessException he) {
             model = ColorModel.getRGBdefault();
         }
         return model;

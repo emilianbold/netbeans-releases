@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.git.ui.status;
 
+import org.netbeans.modules.git.GitStatusNode;
 import org.netbeans.modules.git.ui.status.VersioningPanelController.ModeKeeper;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
@@ -70,13 +71,13 @@ import org.netbeans.modules.git.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.git.ui.commit.IncludeInCommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.status.VersioningPanelController.GitStatusNodeImpl;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -89,10 +90,10 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author Maros Sandor
  */
-class GitStatusTable extends VCSStatusTable<GitStatusNode> {
+class GitStatusTable extends VCSStatusTable<GitStatusNodeImpl> {
     private final ModeKeeper modeKeeper;
 
-    public GitStatusTable (VCSStatusTableModel<GitStatusNode> model, VersioningPanelController.ModeKeeper modeKeeper) {
+    public GitStatusTable (VCSStatusTableModel<GitStatusNodeImpl> model, VersioningPanelController.ModeKeeper modeKeeper) {
         super(model);
         this.modeKeeper = modeKeeper;
         setDefaultRenderer(new SyncTableCellRenderer());
@@ -117,10 +118,10 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
         item = menu.add(new OpenInEditorAction(getSelectedFiles()));
         Mnemonics.setLocalizedText(item, item.getText());
 
-        GitStatusNode[] selectedNodes = getSelectedNodes();
+        GitStatusNodeImpl[] selectedNodes = getSelectedNodes();
         boolean displayAdd = false;
         boolean allLocallyNew = true;
-        for (GitStatusNode node : selectedNodes) {
+        for (GitStatusNodeImpl node : selectedNodes) {
             FileInformation info = node.getFileNode().getInformation();
             // is there any change between index and WT?
             if (info.containsStatus(EnumSet.of(Status.NEW_INDEX_WORKING_TREE,

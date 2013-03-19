@@ -125,7 +125,6 @@ public class CreateProjectTest_1 extends PerformanceTestCase {
     
     public ComponentOperator open(){
         wizard_location.finish();
-        CommonUtilities.waitProjectTasksFinished();
         return null;
     }
     

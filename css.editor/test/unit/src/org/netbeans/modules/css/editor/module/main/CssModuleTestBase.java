@@ -61,6 +61,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
+import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
@@ -77,6 +78,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.web.common.api.WebUtils;
 
 /**
  *
@@ -258,6 +260,10 @@ public class CssModuleTestBase extends CslTestBase {
     protected DefaultLanguageConfig getPreferredLanguage() {
         return new CssLanguage();
     }
+    
+    protected String getTopLevelSnapshotMimetype() {
+        return getPreferredMimeType();
+    }
 
     @Override
     protected String getPreferredMimeType() {
@@ -322,35 +328,23 @@ public class CssModuleTestBase extends CslTestBase {
         content.deleteCharAt(pipeOffset);
         Document doc = getDocument(content.toString());
         Source source = Source.create(doc);
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
+        
+        CssParserResult cssresult = TestUtil.parse(source, getTopLevelSnapshotMimetype());
+        CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
+        String prefix = cc.getPrefix(cssresult, pipeOffset, false);
+        CodeCompletionResult ccresult = cc.complete(createContext(pipeOffset, cssresult, prefix));
 
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                Result result = resultIterator.getParserResult();
-                assertNotNull(result);
-                assertTrue(result instanceof CssParserResult);
-
-                CssParserResult cssresult = (CssParserResult) result;
-
-
-                CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
-                String prefix = cc.getPrefix(cssresult, pipeOffset, false);
-                CodeCompletionResult ccresult = cc.complete(createContext(pipeOffset, cssresult, prefix));
-
-                try {
-                    assertCompletionItemNames(expectedItemsNames, ccresult, type);
-                } catch (junit.framework.AssertionFailedError afe) {
-                    System.out.println("AssertionFailedError debug information:");
-                    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                    System.out.println("Caret offset: " + pipeOffset);
-                    System.out.println("Parse tree:");
-                    NodeUtil.dumpTree(cssresult.getParseTree());
-                    System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-                    throw afe;
-                }
-
-            }
-        });
+        try {
+            assertCompletionItemNames(expectedItemsNames, ccresult, type);
+        } catch (junit.framework.AssertionFailedError afe) {
+            System.out.println("AssertionFailedError debug information:");
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            System.out.println("Caret offset: " + pipeOffset);
+            System.out.println("Parse tree:");
+            NodeUtil.dumpTree(cssresult.getParseTree());
+            System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            throw afe;
+        }
 
     }
 
@@ -463,11 +457,15 @@ public class CssModuleTestBase extends CslTestBase {
     protected String[] arr(String... args) {
         return args;
     }
+    
+    protected String getCompletionItemText(CompletionProposal cp) {
+        return cp.getName();
+    }
 
     private void assertCompletionItemNames(String[] expected, CodeCompletionResult ccresult, Match type) {
         Collection<String> real = new ArrayList<String>();
         for (CompletionProposal ccp : ccresult.getItems()) {
-            real.add(ccp.getName());
+            real.add(getCompletionItemText(ccp));
         }
         Collection<String> exp = new ArrayList<String>(Arrays.asList(expected));
 

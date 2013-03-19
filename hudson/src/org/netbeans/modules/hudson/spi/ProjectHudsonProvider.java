@@ -45,6 +45,8 @@
 package org.netbeans.modules.hudson.spi;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -54,6 +56,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.hudson.api.HudsonFolder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
@@ -144,8 +147,9 @@ public abstract class ProjectHudsonProvider {
      */
     public static final class Association {
 
-        private final String serverURL;
-        private final String jobName;
+        private final String jobURL;
+        /** Server URL (first), sequence of folders, job name (last). */
+        private final String[] jobPath;
 
         /**
          * Creates an association.
@@ -164,8 +168,60 @@ public abstract class ProjectHudsonProvider {
             if (jobName != null && jobName.indexOf('/') != -1) {
                 throw new IllegalArgumentException("No slashes permitted in job name: " + jobName);
             }
-            this.serverURL = serverURL;
-            this.jobName = jobName;
+            this.jobURL = getStandardJobUrl(serverURL, jobName);
+            this.jobPath = new String[]{serverURL, jobName};
+        }
+
+        private static String getStandardJobUrl(String serverURL, String jobName) {
+            return jobName != null
+                    ? serverURL + "job/" + Utilities.uriEncode(jobName) + "/" // NOI18N
+                    : serverURL;
+        }
+
+        /**
+         * Creates an association.
+         *
+         * @param job URL
+         * @throws IllegalArgumentException if parameter has invalid syntax
+         * @since hudson/1.32
+         */
+        public Association(String jobURL) throws IllegalArgumentException {
+            URI.create(jobURL); // check syntax
+            if (!jobURL.endsWith("/")) { // NOI18N
+                throw new IllegalArgumentException(jobURL + " must end in a slash"); // NOI18N
+            }
+            this.jobURL = jobURL;
+            this.jobPath = extractJobPath(jobURL);
+        }
+
+        private static String[] extractJobPath(String jobURL) throws IllegalArgumentException {
+            Matcher m = Pattern.compile("(https?://.+?/)((?:job/(?:[^/]+)/)*)").matcher(jobURL); // NOI18N
+            if (!m.matches()) {
+                throw new IllegalArgumentException("Cannot extract job path: " + jobURL); //NOI18N
+            } else {
+                String rawPath = m.group(2);
+                if (rawPath == null || rawPath.isEmpty()) {
+                    return new String[]{m.group(1)};
+                } else {
+                    String[] elements = rawPath.split("/");
+                    assert elements.length > 0 && (elements.length % 2) == 0;
+                    String[] result = new String[(elements.length / 2) + 1];
+                    result[0] = m.group(1); // server URL
+                    for (int i = 0; i < elements.length; i++) {
+                        String element = elements[i];
+                        if (i % 2 == 0) {
+                            assert "job".equals(element);
+                        } else {
+                            String decoded = Utilities.uriDecode(element);
+                            if (decoded.trim().isEmpty()) {
+                                throw new IllegalArgumentException("Empty job name: " + jobURL); //NOI18N
+                            }
+                            result[(i / 2) + 1] = decoded;
+                        }
+                    }
+                    return result;
+                }
+            }
         }
 
         /**
@@ -174,21 +230,41 @@ public abstract class ProjectHudsonProvider {
          * @return an association with the same server URL and job name
          */
         public static Association forJob(HudsonJob job) {
-            return new Association(job.getInstance().getUrl(), job.getName());
+            return new Association(job.getUrl());
         }
 
         /**
          * @return the root URL of the server ending in slash, e.g. {@code http://deadlock.netbeans.org/hudson/}
          */
         public String getServerUrl() {
-            return serverURL;
+            return jobPath[0];
         }
 
         /**
          * @return the code name of the job on that server; may be null
          */
         public String getJobName() {
-            return jobName;
+            if (jobPath.length == 2) {
+                return jobPath[1];
+            } else if (jobPath.length > 2) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 1; i < jobPath.length; i++) {
+                    if (sb.length() > 0) {
+                        sb.append("/");                                 //NOI18N
+                    }
+                    sb.append(jobPath[i]);
+                }
+                return sb.toString();
+            } else {
+                return null;
+            }
+        }
+
+        /**
+         * Get copy of job path. Not private - called from tests.
+         */
+        String[] getJobPath() {
+            return Arrays.copyOf(jobPath, jobPath.length);
         }
 
         /**
@@ -196,15 +272,55 @@ public abstract class ProjectHudsonProvider {
          * @return a job with the name {@link #getJobName} on the server with the same {@link #getServerUrl}, or null
          */
         public @CheckForNull HudsonJob getJob() {
-            if (jobName == null) {
+            if (jobPath == null || jobPath.length < 2) { // no job name
                 return null;
             }
-            HudsonInstance instance = HudsonManagerImpl.getDefault().getInstance(serverURL);
+            HudsonInstance instance = HudsonManagerImpl.getDefault().getInstance(jobPath[0]);
             if (instance == null) {
                 return null;
             }
-            for (HudsonJob job : instance.getJobs()) {
-                if (job.getName().equals(jobName)) {
+            if (jobPath.length == 2) {
+                return findJobByName(instance.getJobs(), jobPath[1]);
+            } else {
+                HudsonFolder lastFolder = null;
+                for (int i = 1; i < jobPath.length; i++) {
+                    String name = jobPath[i];
+                    if (i == 1) {
+                        lastFolder = findFolderByName(instance.getFolders(), name);
+                    } else if (i < jobPath.length - 1 && lastFolder != null) {
+                        lastFolder = findFolderByName(lastFolder.getFolders(), name);
+                    } else if (lastFolder != null) {
+                        return findJobByName(lastFolder.getJobs(), name);
+                    }
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Find a folder of specified name in a collection of folders.
+         *
+         * @return The folder with name {@code name}, or null if not found.
+         */
+        private HudsonFolder findFolderByName(Collection<HudsonFolder> folders,
+                String name) {
+            for (HudsonFolder folder : folders) {
+                if (name.equals(folder.getName())) {
+                    return folder;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Find a job of specified name in a collection of jobs.
+         *
+         * @return The job with name {@code name}, or null if not found.
+         */
+        private HudsonJob findJobByName(Collection<HudsonJob> jobs,
+                String name) {
+            for (HudsonJob job : jobs) {
+                if (name.equals(job.getName())) {
                     return job;
                 }
             }
@@ -226,7 +342,7 @@ public abstract class ProjectHudsonProvider {
          * URL of either job or server root.
          */
         public @Override String toString() {
-            return jobName != null ? serverURL + "job/" + Utilities.uriEncode(jobName) + "/" : serverURL; // NOI18N
+            return jobURL;
         }
 
         /**
@@ -234,13 +350,8 @@ public abstract class ProjectHudsonProvider {
          * @return an association based on parsing a Hudson job or root URL, or null
          */
         public static Association fromString(String s) {
-            Matcher m = Pattern.compile("(https?://.+?/)(?:job/([^/]+)/?)?").matcher(s); // NOI18N
-            if (!m.matches()) {
-                return null;
-            }
-            String jobNameRaw = m.group(2);
             try {
-                return new Association(m.group(1), jobNameRaw != null ? Utilities.uriDecode(jobNameRaw) : null);
+                return new Association(s);
             } catch (IllegalArgumentException x) {
                 Logger.getLogger(ProjectHudsonProvider.class.getName()).log(Level.WARNING, "Bad URL: {0}", s);
                 return null;

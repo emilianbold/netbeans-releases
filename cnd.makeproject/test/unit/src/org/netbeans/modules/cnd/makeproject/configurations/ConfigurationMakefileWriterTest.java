@@ -125,7 +125,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         File folderBase = getBaseFolder();
         final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBaseFO);
-        MakeConfiguration conf = new MakeConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION);  // NOI18N
+        MakeConfiguration conf = MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION, null, null);  // NOI18N
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
         LibraryItem.ProjectItem projectItem;
@@ -264,7 +264,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         File folderBase = getBaseFolder();
         final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBaseFO);
-        MakeConfiguration conf = new MakeConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_DYNAMIC_LIB);  // NOI18N
+        MakeConfiguration conf =MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_DYNAMIC_LIB, null, null);  // NOI18N
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
 

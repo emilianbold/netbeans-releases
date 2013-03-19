@@ -43,11 +43,13 @@
  */
 package org.netbeans.modules.db.dataview.meta;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**
@@ -58,20 +60,36 @@ import org.netbeans.modules.db.dataview.util.DataViewUtils;
 public final class DBPrimaryKey extends DBObject<DBTable> {
     private static final String RS_COLUMN_NAME = "COLUMN_NAME"; // NOI18N
     private static final String RS_KEY_NAME = "PK_NAME"; // NOI18N
+    private static final String RS_KEY_SEQ = "KEY_SEQ"; // NOI18N
     private List<String> columnNames;
     private String name;
     private DBTable parent;
 
     public DBPrimaryKey(ResultSet rs) throws SQLException {
         assert rs != null;
-        columnNames = new ArrayList<String>();
+
+        Map<Integer,String> pkColumns = new HashMap<Integer,String>();
+
         while (rs.next()) {
+            int keySeq = rs.getShort(RS_KEY_SEQ);
+            String columName = rs.getString(RS_COLUMN_NAME);
+
+            pkColumns.put(keySeq, columName);
+
             name = rs.getString(RS_COLUMN_NAME);
-            columnNames.add(rs.getString(RS_COLUMN_NAME));
             String tmpName = rs.getString(RS_KEY_NAME);
             if (!DataViewUtils.isNullString(tmpName) && name == null) {
                 name = tmpName;
             }
+        }
+
+        columnNames = new ArrayList<String>();
+
+        List<Integer> columnEntries = new ArrayList<Integer>(pkColumns.keySet());
+        Collections.sort(columnEntries);
+
+        for(Integer id: columnEntries) {
+            columnNames.add(pkColumns.get(id));
         }
     }
 

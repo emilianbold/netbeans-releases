@@ -106,4 +106,14 @@ public abstract class TaskManager {
      * @param scanner 
      */
     public abstract void clearAllTasks( PushTaskScanner scanner );
+
+    /**
+     * @returns true, if the UI displaying tasks is observed, false otherwise.
+     */
+    public abstract boolean isObserved();
+
+    /**
+     * @returns true, if currentEditor scope is set, false otherwise.
+     */
+    public abstract boolean isCurrentEditorScope();
 }

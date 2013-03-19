@@ -107,7 +107,13 @@ public class NewFileWizardsTest extends JellyTestCase {
         if (projectLocation == null) {
             projectLocation = getWorkDir().getParentFile().getParentFile().getCanonicalPath();
         }
-        if (!version.equals(projectsCreated)) {
+        if ("1.4".equals(version)) {
+            File projectDir = new File(getDataDir(), "projects");
+            projectLocation = projectDir.getCanonicalPath();
+            String projectPathEJB = new File(projectDir, EJB_PROJECT_NAME + version).getAbsolutePath();
+            String projectPathWeb = new File(projectDir, WEB_PROJECT_NAME + version).getAbsolutePath();
+            openProjects(projectPathEJB, projectPathWeb);
+        } else if (!version.equals(projectsCreated)) {
             projectsCreated = version;
             WizardUtils.createEJBProject(projectLocation, EJB_PROJECT_NAME + version, version);
             WizardUtils.createWebProject(projectLocation, WEB_PROJECT_NAME + version, version);
@@ -375,6 +381,7 @@ public class NewFileWizardsTest extends JellyTestCase {
             addMessageDestinationOper.ok();
             // need to wait until wizard is refreshed after the add dialog is closed
             new EventTool().waitNoEvent(1000);
+            nop.next();
         } else {
             if (!stateless) {
                 if (type.equals("Session Bean")) {

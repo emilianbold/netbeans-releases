@@ -221,8 +221,8 @@ public class BasicSearchProvider extends SearchProvider {
         @Override
         public boolean isUsable(NotificationLineSupport notifySupport) {
             boolean usable = form.isUsable();
+            BasicSearchCriteria bsc = form.getBasicSearchCriteria();
             if (!usable) {
-                BasicSearchCriteria bsc = form.getBasicSearchCriteria();
                 String msg;
                 if (bsc.isTextPatternInvalid()) {
                     msg = "BasicSearchForm.txtErrorTextPattern";        //NOI18N
@@ -242,7 +242,15 @@ public class BasicSearchProvider extends SearchProvider {
                 notifySupport.setErrorMessage(UiUtils.getText(msg));
             } else {
                 wasUsableAlready = true;
-                notifySupport.clearMessages();
+                if (!bsc.isFileNameRegexp()
+                        && bsc.getFileNamePatternExpr() != null
+                        && bsc.getFileNamePatternExpr().matches(
+                        "^[\\w-]*$")) { //NOI18N
+                    notifySupport.setInformationMessage(UiUtils.getText(
+                            "BasicSearchForm.txtInfoNoWildcards"));     //NOI18N
+                } else {
+                    notifySupport.clearMessages();
+                }
             }
             return usable;
         }

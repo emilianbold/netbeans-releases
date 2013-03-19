@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
@@ -313,7 +314,7 @@ public final class CodeUtils {
     public static String extractVariableName(Variable var) {
         String variableName = VariableNameVisitor.getInstance().findName(var);
         if (variableName == null) {
-            LOGGER.log(Level.INFO, "Can not retrieve variable name: {0}", var);
+            LOGGER.log(Level.FINE, "Can not retrieve variable name: {0}", var);
         }
         return variableName;
     }
@@ -335,7 +336,7 @@ public final class CodeUtils {
             Expression className = classInstanceCreation.getClassName().getName();
             return CodeUtils.extractUnqualifiedName(className);
         } else if (rightSideExpression instanceof ArrayCreation) {
-            return "array"; //NOI18N
+            return Type.ARRAY;
         } else if (rightSideExpression instanceof FunctionInvocation) {
             FunctionInvocation functionInvocation = (FunctionInvocation) rightSideExpression;
             String fname = extractFunctionName(functionInvocation);

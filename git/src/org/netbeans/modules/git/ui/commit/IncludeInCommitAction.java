@@ -51,6 +51,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -86,6 +87,8 @@ public class IncludeInCommitAction extends MultipleRepositoryAction {
         List<String> toInclude = filterRoots(roots);
         GitModuleConfig config = GitModuleConfig.getDefault();
         config.removeExclusionPaths(toInclude);
+        SystemAction.get(IncludeInCommitAction.class).setEnabled(false);
+        SystemAction.get(ExcludeFromCommitAction.class).setEnabled(false);
         return null;
     }
     

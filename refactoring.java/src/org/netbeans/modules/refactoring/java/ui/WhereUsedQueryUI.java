@@ -149,6 +149,9 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         } else if (kind.isClass() || kind.isInterface()) {
             setForClass();
             return query.checkParameters();
+        } else if(kind == ElementKind.CONSTRUCTOR) {
+            setForConstructor();
+            return query.checkParameters();
         } else {
             return null;
         }
@@ -160,6 +163,11 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         query.putValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, panel.isMethodFromBaseClass());
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, panel.isMethodOverriders());
         query.putValue(WhereUsedQuery.FIND_REFERENCES, panel.isMethodFindUsages());
+        query.putValue(WhereUsedQueryConstants.SEARCH_OVERLOADED, panel.isMethodSearchOverloaded());
+    }
+    
+    private void setForConstructor() {
+        query.putValue(WhereUsedQueryConstants.SEARCH_OVERLOADED, panel.isMethodSearchOverloaded());
     }
 
     private void setForClass() {
@@ -175,6 +183,9 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
             return query.fastCheckParameters();
         } else if (kind.isClass() || kind.isInterface()) {
             setForClass();
+            return query.fastCheckParameters();
+        } else if(kind == ElementKind.CONSTRUCTOR) {
+            setForConstructor();
             return query.fastCheckParameters();
         } else {
             return null;

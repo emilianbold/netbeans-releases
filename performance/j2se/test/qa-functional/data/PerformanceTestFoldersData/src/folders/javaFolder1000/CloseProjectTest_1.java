@@ -104,7 +104,6 @@ public class CloseProjectTest_1 extends org.netbeans.modules.performance.utiliti
         String projectsDir = CommonUtilities.getProjectsDir() + projectPath;
         Object prj = ProjectSupport.openProject(projectsDir);
         assertNotNull(prj);
-        CommonUtilities.waitProjectTasksFinished();
     }
     public void testClosePHPProject() {
         projectName = Projects.PHP_PROJECT;

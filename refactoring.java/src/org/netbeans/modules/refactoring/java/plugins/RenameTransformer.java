@@ -60,6 +60,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
@@ -71,10 +72,12 @@ import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 public class RenameTransformer extends RefactoringVisitor {
 
     private Set<ElementHandle<ExecutableElement>> allMethods;
+    private TreePathHandle handle;
     private String newName;
     private boolean renameInComments;
 
-    public RenameTransformer(String newName, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
+    public RenameTransformer(TreePathHandle handle, String newName, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
+        this.handle = handle;
         this.newName = newName;
         this.allMethods = am;
         this.renameInComments = renameInComments;
@@ -117,6 +120,39 @@ public class RenameTransformer extends RefactoringVisitor {
         renameUsageIfMatch(getCurrentPath(), node,p);
         return super.visitMemberSelect(node, p);
     }
+
+    @Override
+    public Tree visitLabeledStatement(LabeledStatementTree tree, Element p) {
+        if(handle.getKind() == Tree.Kind.LABELED_STATEMENT && tree == handle.resolve(workingCopy).getLeaf()) {
+            LabeledStatementTree newTree = make.LabeledStatement(newName, tree.getStatement());
+            rewrite(tree, newTree);
+        }
+        return super.visitLabeledStatement(tree, p);
+    }
+
+    @Override
+    public Tree visitContinue(ContinueTree tree, Element p) {
+        if(handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+            StatementTree target = workingCopy.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+            if(target == handle.resolve(workingCopy).getLeaf()) {
+                ContinueTree newTree = make.Continue(newName);
+                rewrite(tree, newTree);
+            }
+        }
+        return super.visitContinue(tree, p);
+    }
+
+    @Override
+    public Tree visitBreak(BreakTree tree, Element p) {
+        if(handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+            StatementTree target = workingCopy.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+            if(target == handle.resolve(workingCopy).getLeaf()) {
+                BreakTree newTree = make.Break(newName);
+                rewrite(tree, newTree);
+            }
+        }
+        return super.visitBreak(tree, p);
+    }
     
     private String getOldSimpleName(Element p) {
         if (p!=null) {
@@ -133,7 +169,7 @@ public class RenameTransformer extends RefactoringVisitor {
     }
     
     private void renameUsageIfMatch(final TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path)) {
+        if (workingCopy.getTreeUtilities().isSynthetic(path) || handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
             return;
         }
         TreePath elementPath = path;
@@ -310,7 +346,7 @@ public class RenameTransformer extends RefactoringVisitor {
     }
     
     private void renameDeclIfMatch(TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path)) {
+        if (workingCopy.getTreeUtilities().isSynthetic(path) || handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
             return;
         }
         Element el = workingCopy.getTrees().getElement(path);

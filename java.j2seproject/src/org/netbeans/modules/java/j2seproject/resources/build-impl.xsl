@@ -222,10 +222,11 @@ is divided into following sections:
                         </not>
                     </and>
                 </condition>
-                <condition property="manifest.available+main.class">
+                <condition property="profile.available">
                     <and>
-                        <isset property="manifest.available"/>
-                        <isset property="main.class.available"/>
+                        <isset property="javac.profile"/>
+                        <length length="0" string="${{javac.profile}}" when="greater"/>
+                        <matches pattern="1\.[89](\..*)?" string="${{javac.source}}"/>
                     </and>
                 </condition>
                 <condition property="do.archive">
@@ -240,12 +241,6 @@ is divided into following sections:
                         <not>
                             <istrue value="${{mkdist.disabled}}"/>
                         </not>
-                    </and>
-                </condition>
-                <condition property="manifest.available+main.class+mkdist.available">
-                    <and>
-                        <istrue value="${{manifest.available+main.class}}"/>
-                        <isset property="do.mkdist"/>
                     </and>
                 </condition>                
                 <condition property="do.archive+manifest.available">
@@ -266,25 +261,13 @@ is divided into following sections:
                         <istrue value="${{do.archive}}"/>
                     </and>
                 </condition>
-                <condition property="do.archive+manifest.available+main.class">
+                <condition property="do.archive+profile.available">
                     <and>
-                        <istrue value="${{manifest.available+main.class}}"/>
+                        <isset property="profile.available"/>
                         <istrue value="${{do.archive}}"/>
                     </and>
                 </condition>
-
-                <condition property="manifest.available-mkdist.available">
-                    <or>
-                        <istrue value="${{manifest.available}}"/>
-                        <isset property="do.mkdist"/>
-                    </or>
-                </condition>
-                <condition property="manifest.available+main.class-mkdist.available">
-                    <or>
-                        <istrue value="${{manifest.available+main.class}}"/>
-                        <isset property="do.mkdist"/>
-                    </or>
-                </condition>
+                                
                 <xsl:call-template name="createRootAvailableTest">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                     <xsl:with-param name="propName">have.tests</xsl:with-param>
@@ -337,6 +320,9 @@ is divided into following sections:
                 <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
                 <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
                     <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                </condition>
+                <condition property="javac.profile.cmd.line.arg" value="-profile ${{javac.profile}}" else="">
+                    <isset property="profile.available"/>
                 </condition>
                 <xsl:if test="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform)">
                     <condition property="jdkBug6558476" else="false"> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 on JDK 1.5 and 1.6 on Windows -->
@@ -508,6 +494,7 @@ is divided into following sections:
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <compilerarg value="-processorpath" />
                             <compilerarg path="@{{processorpath}}:${{empty.dir}}" />
@@ -610,6 +597,7 @@ is divided into following sections:
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
@@ -1852,44 +1840,8 @@ is divided into following sections:
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
-            <target name="-do-jar-without-manifest">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="if">do.archive</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available-mkdist.available</xsl:attribute>
-                <j2seproject1:jar/>
-            </target>
-            
-            <target name="-do-jar-with-manifest">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="if">do.archive+manifest.available</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available+main.class-mkdist.available</xsl:attribute>
-                <j2seproject1:jar manifest="${{manifest.file}}"/>
-            </target>
-            
-            <target name="-do-jar-with-mainclass">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="if">do.archive+manifest.available+main.class</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available+main.class+mkdist.available</xsl:attribute>
-                <j2seproject1:jar manifest="${{manifest.file}}">
-                    <j2seproject1:manifest>
-                        <j2seproject1:attribute name="Main-Class" value="${{main.class}}"/>
-                    </j2seproject1:manifest>
-                </j2seproject1:jar>
-                <echo level="info">To run this application from the command line without Ant, try:</echo>
-                <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
-                <property name="dist.jar.resolved" location="${{dist.jar}}"/>
-                <pathconvert property="run.classpath.with.dist.jar">
-                    <path path="${{run.classpath}}"/>
-                    <map from="${{build.classes.dir.resolved}}" to="${{dist.jar.resolved}}"/>
-                </pathconvert>
-                <echo level="info"><xsl:choose>
-                        <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
-                        <xsl:otherwise>java</xsl:otherwise>
-                </xsl:choose> -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
-            </target>
 
-            <target name="-do-jar-with-libraries-create-manifest">
+            <target name="-do-jar-create-manifest">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="if">do.archive</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available</xsl:attribute>
@@ -1897,23 +1849,31 @@ is divided into following sections:
                 <touch file="${{tmp.manifest.file}}" verbose="false"/>
             </target>
 
-            <target name="-do-jar-with-libraries-copy-manifest">
+            <target name="-do-jar-copy-manifest">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="if">do.archive+manifest.available</xsl:attribute>
                 <tempfile destdir="${{build.dir}}" deleteonexit="true" property="tmp.manifest.file"/>
                 <copy file="${{manifest.file}}" tofile="${{tmp.manifest.file}}"/>
             </target>
 
-            <target name="-do-jar-with-libraries-set-main">
-                <xsl:attribute name="depends">init,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest</xsl:attribute>
+            <target name="-do-jar-set-mainclass">
+                <xsl:attribute name="depends">init,-do-jar-create-manifest,-do-jar-copy-manifest</xsl:attribute>
                 <xsl:attribute name="if">do.archive+main.class.available</xsl:attribute>
                 <manifest file="${{tmp.manifest.file}}" mode="update">
                     <attribute name="Main-Class" value="${{main.class}}"/>
                 </manifest>
             </target>
 
-            <target name="-do-jar-with-libraries-set-splashscreen">
-                <xsl:attribute name="depends">init,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest</xsl:attribute>
+            <target name="-do-jar-set-profile">
+                <xsl:attribute name="depends">init,-do-jar-create-manifest,-do-jar-copy-manifest</xsl:attribute>
+                <xsl:attribute name="if">do.archive+profile.available</xsl:attribute>
+                <manifest file="${{tmp.manifest.file}}" mode="update">
+                    <attribute name="Profile" value="${{javac.profile}}"/>
+                </manifest>
+            </target>
+
+            <target name="-do-jar-set-splashscreen">
+                <xsl:attribute name="depends">init,-do-jar-create-manifest,-do-jar-copy-manifest</xsl:attribute>
                 <xsl:attribute name="if">do.archive+splashscreen.available</xsl:attribute>
                 <basename file="${{application.splash}}" property="splashscreen.basename"/>
                 <mkdir dir="${{build.classes.dir}}/META-INF"/>
@@ -1923,8 +1883,8 @@ is divided into following sections:
                 </manifest>
             </target>
 
-            <target name="-do-jar-with-libraries-pack">
-                <xsl:attribute name="depends">init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest,-do-jar-with-libraries-set-main,-do-jar-with-libraries-set-splashscreen</xsl:attribute>
+            <target name="-do-jar-copylibs">
+                <xsl:attribute name="depends">init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen</xsl:attribute>
                 <xsl:attribute name="if">do.mkdist</xsl:attribute>
                 <j2seproject3:copylibs manifest="${{tmp.manifest.file}}"/>
                 <echo level="info">To run this application from the command line without Ant, try:</echo>
@@ -1935,25 +1895,53 @@ is divided into following sections:
                 </xsl:choose> -jar "${dist.jar.resolved}"</echo>
             </target>
 
-            <target depends="" name="-do-jar-with-libraries-delete-manifest" >
-                <xsl:attribute name="depends">-do-jar-with-libraries-pack</xsl:attribute>
+            <target name="-do-jar-jar">
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen</xsl:attribute>
+                <xsl:attribute name="if">do.archive</xsl:attribute>
+                <xsl:attribute name="unless">do.mkdist</xsl:attribute>
+                <j2seproject1:jar manifest="${{tmp.manifest.file}}"/>
+                <property location="${{build.classes.dir}}" name="build.classes.dir.resolved"/>
+                <property location="${{dist.jar}}" name="dist.jar.resolved"/>
+                <pathconvert property="run.classpath.with.dist.jar">
+                    <path path="${{run.classpath}}"/>
+                    <map from="${{build.classes.dir.resolved}}" to="${{dist.jar.resolved}}"/>
+                </pathconvert>
+                <condition property="jar.usage.message" else="" value="To run this application from the command line without Ant, try:${{line.separator}}${{platform.java}} -cp ${{run.classpath.with.dist.jar}} ${{main.class}}">
+                    <isset property="main.class.available"/>
+                </condition>
+                <condition property="jar.usage.level" else="debug" value="info">
+                    <isset property="main.class.available"/>
+                </condition>
+                <echo level="${{jar.usage.level}}" message="${{jar.usage.message}}"/>
+            </target>
+
+            <target name="-do-jar-delete-manifest" >
+                <xsl:attribute name="depends">-do-jar-copylibs</xsl:attribute>
                 <xsl:attribute name="if">do.archive</xsl:attribute>
                 <delete>
                     <fileset file="${{tmp.manifest.file}}"/>
                 </delete>
             </target>
 
+
+            <target name="-do-jar-without-libraries">
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen,-do-jar-jar,-do-jar-delete-manifest</xsl:attribute>
+            </target>
             <target name="-do-jar-with-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-with-libraries-create-manifest,-do-jar-with-libraries-copy-manifest,-do-jar-with-libraries-set-main,-do-jar-with-libraries-set-splashscreen,-do-jar-with-libraries-pack,-do-jar-with-libraries-delete-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen,-do-jar-copylibs,-do-jar-delete-manifest</xsl:attribute>
             </target>
            
             <target name="-post-jar">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
+
+            <target name="-do-jar">
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-without-libraries,-do-jar-with-libraries,-post-jar</xsl:attribute>
+            </target>
             
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar,-post-jar</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
             

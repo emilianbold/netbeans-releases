@@ -59,9 +59,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
-/**
- *
- */
 public class PhpUnitTestLocator implements TestLocator {
 
     private final PhpModule phpModule;
@@ -112,17 +109,32 @@ public class PhpUnitTestLocator implements TestLocator {
             }
 
             for (Pair<String, String> namePair : classes) {
+                // prefer FQN
                 Collection<Pair<FileObject, Integer>> files = editorSupport.filesForClass(sourceRoot, new PhpClass(namePair.first, namePair.second, -1));
-                for (Pair<FileObject, Integer> pair : files) {
-                    FileObject fileObject = pair.first;
-                    if (FileUtils.isPhpFile(fileObject)
-                            && FileUtil.isParentOf(sourceRoot, fileObject)) {
-                        phpFiles.add(new Locations.Offset(fileObject, pair.second));
-                    }
+                List<Locations.Offset> results = filterPhpFiles(sourceRoot, files);
+                if (!results.isEmpty()) {
+                    phpFiles.addAll(results);
+                    continue;
                 }
+                // #221816 - search only by class name
+                files = editorSupport.filesForClass(sourceRoot, new PhpClass(namePair.first, null, -1));
+                results = filterPhpFiles(sourceRoot, files);
+                phpFiles.addAll(results);
             }
         }
         return phpFiles;
+    }
+
+    private List<Locations.Offset> filterPhpFiles(FileObject sourceRoot, Collection<Pair<FileObject, Integer>> files) {
+        List<Locations.Offset> results = new ArrayList<Locations.Offset>(files.size());
+        for (Pair<FileObject, Integer> pair : files) {
+            FileObject fileObject = pair.first;
+            if (FileUtils.isPhpFile(fileObject)
+                    && FileUtil.isParentOf(sourceRoot, fileObject)) {
+                results.add(new Locations.Offset(fileObject, pair.second));
+            }
+        }
+        return results;
     }
 
 }

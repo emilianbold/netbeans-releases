@@ -46,6 +46,7 @@ package org.netbeans.modules.java.source.pretty;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
@@ -995,14 +996,39 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
-    public void visitLambda(JCLambda that) {
-	print("(");
-        wrapTrees(that.params, WrapStyle.WRAP_NEVER, out.col);
-        print(") -> ");
-        if (that.body.getKind() == Kind.BLOCK) {
-            printStat(that.body);
+    public void visitLambda(JCLambda tree) {
+        print(cs.spaceWithinLambdaParens() && tree.params.nonEmpty() ? "( " : "(");
+        boolean oldPrintingMethodParams = printingMethodParams;
+        printingMethodParams = true;
+        wrapTrees(tree.params, cs.wrapLambdaParams(), cs.alignMultilineLambdaParams()
+                ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
+                  true);
+        printingMethodParams = oldPrintingMethodParams;
+        if (cs.spaceWithinLambdaParens() && tree.params.nonEmpty())
+            needSpace();
+        print(')');
+        print(cs.spaceAroundLambdaArrow() ? " ->" : "->");
+        if (tree.getBodyKind() == BodyKind.STATEMENT) {
+            printBlock(tree.body, cs.getOtherBracePlacement(), cs.spaceAroundLambdaArrow());
         } else {
-            printExpr(that.body, TreeInfo.notExpression);
+            int rm = cs.getRightMargin();
+            switch(cs.wrapBinaryOps()) {
+            case WRAP_IF_LONG:
+                if (widthEstimator.estimateWidth(tree.body, rm - out.col) + out.col <= cs.getRightMargin()) {
+                    if(cs.spaceAroundLambdaArrow())
+                        print(' ');
+                    break;
+                }
+            case WRAP_ALWAYS:
+                newline();
+                toColExactly(out.leftMargin + cs.getContinuationIndentSize());
+                break;
+            case WRAP_NEVER:
+                if(cs.spaceAroundLambdaArrow())
+                    print(' ');
+                break;
+            }
+            printExpr(tree.body, TreeInfo.notExpression);
         }
     }
 
@@ -1278,7 +1304,9 @@ public final class VeryPretty extends JCTree.Visitor {
         if (tree.meth.getTag() == JCTree.Tag.SELECT) {
             JCFieldAccess left = (JCFieldAccess)tree.meth;
             printExpr(left.selected);
-            print('.');
+            boolean wrapAfterDot = cs.wrapAfterDotInChainedMethodCalls();
+            if (wrapAfterDot)
+                print('.');
             if (left.selected.getTag() == JCTree.Tag.APPLY) {
                 switch(cs.wrapChainedMethodCalls()) {
                 case WRAP_IF_LONG:
@@ -1295,6 +1323,8 @@ public final class VeryPretty extends JCTree.Visitor {
                     break;
                 }
             }
+            if (!wrapAfterDot)
+                print('.');
             if (tree.typeargs.nonEmpty())
                 printTypeArguments(tree.typeargs);
             print(left.name);
@@ -1624,6 +1654,13 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
+    public void visitAnnotatedType(JCAnnotatedType tree) {
+	printExprs(tree.annotations);
+        print(' ');
+	printExpr(tree.underlyingType);
+    }
+    
+    @Override
     public void visitTypeParameter(JCTypeParameter tree) {
 	print(tree.name);
 	if (tree.bounds.nonEmpty()) {
@@ -1680,7 +1717,7 @@ public final class VeryPretty extends JCTree.Visitor {
     @Override
     public void visitReference(JCMemberReference tree) {
         printExpr(tree.expr);
-        print("::");
+        print(cs.spaceAroundMethodReferenceDoubleColon() ? " :: " : "::");
         if (tree.typeargs != null && !tree.typeargs.isEmpty()) {
             print("<");
             printExprs(tree.typeargs);
@@ -1833,7 +1870,7 @@ public final class VeryPretty extends JCTree.Visitor {
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
             ClasspathInfo cpInfo = ClasspathInfo.create(JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries(), empty, empty);
-            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null, null, null);
+            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null, null, null, null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("", "", code)).iterator().next(); //NOI18N

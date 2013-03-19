@@ -122,7 +122,7 @@ public final class FoldHierarchy {
     static {
         ensureApiAccessorRegistered();
     }
-    
+
     private static void ensureApiAccessorRegistered() {
         if (!apiPackageAccessorRegistered) {
             apiPackageAccessorRegistered = true;
@@ -335,6 +335,22 @@ public final class FoldHierarchy {
     public String toString() {
         return execution.toString();
     }
+    
+    /**
+     * Determines whether the hierarchy can have some folds. 
+     * If the method returns {@code false}, there is no provider currently
+     * that could define folds. If {@code true} is returned, then there are
+     * 'just' no folds at the moment, but they could appear.
+     * <p/>
+     * Note that provider may (dis)appear, so clients should subscribe their
+     * {@link FoldHierarchyListener}, and react if a Fold appears. 
+     * 
+     * @return {@code false}, if there is no FoldManager providing folds.
+     * @since 1.34
+     */
+    public boolean isActive() {
+        return execution.hasProviders();
+    }
 
     /**
      * Implementation of the API package accessor allows the implementation
@@ -456,6 +472,10 @@ public final class FoldHierarchy {
         public void foldStateChangeEndOffsetChanged(FoldStateChange fsc,
         int originalEndOffset) {
             fsc.endOffsetChanged(originalEndOffset);
+        }
+        
+        public FoldHierarchyExecution foldGetExecution(FoldHierarchy h) {
+            return h.execution;
         }
         
     }

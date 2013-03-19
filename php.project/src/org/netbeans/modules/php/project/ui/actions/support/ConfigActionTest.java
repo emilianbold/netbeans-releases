@@ -43,21 +43,27 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.testrunner.ControllableRerunHandler;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
+import org.netbeans.spi.project.SingleMethod;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 
@@ -103,10 +109,40 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public boolean isDebugFileEnabled(Lookup context) {
-        if (XDebugStarterFactory.getInstance() == null) {
+        if (DebugStarterFactory.getInstance() == null) {
             return false;
         }
         return isRunFileEnabled(context);
+    }
+
+    @Override
+    public boolean isRunMethodEnabled(Lookup context) {
+        SingleMethod singleMethod = CommandUtils.singleMethodForContext(context);
+        if (singleMethod == null) {
+            return false;
+        }
+        FileObject file = singleMethod.getFile();
+        if (file == null) {
+            return false;
+        }
+        if (!FileUtils.isPhpFile(file)) {
+            return false;
+        }
+        PhpModule phpModule = project.getPhpModule();
+        for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+            if (testingProvider.isTestFile(phpModule, file)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isDebugMethodEnabled(Lookup context) {
+        if (DebugStarterFactory.getInstance() == null) {
+            return false;
+        }
+        return isRunMethodEnabled(context);
     }
 
     @Override
@@ -116,7 +152,7 @@ class ConfigActionTest extends ConfigAction {
         if (testDirectory == null) {
             return;
         }
-        TestRunInfo testRunInfo = getTestRunInfo(null, false);
+        TestRunInfo testRunInfo = getTestRunInfoForDir(testDirectory, false);
         assert testRunInfo != null;
         run(testRunInfo);
     }
@@ -128,21 +164,35 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runFile(final Lookup context) {
-        TestRunInfo testRunInfo = getTestRunInfo(context, false);
-        if (testRunInfo == null) {
-            // XXX
-            return;
-        }
+        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        assert fileObj != null : "Fileobject not found for context: " + context;
+        TestRunInfo testRunInfo = getTestRunInfoForFile(fileObj, false);
+        assert testRunInfo != null;
         run(testRunInfo);
     }
 
     @Override
     public void debugFile(final Lookup context) {
-        TestRunInfo testRunInfo = getTestRunInfo(context, true);
-        if (testRunInfo == null) {
-            // XXX
-            return;
-        }
+        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
+        assert fileObj != null : "Fileobject not found for context: " + context;
+        TestRunInfo testRunInfo = getTestRunInfoForFile(fileObj, true);
+        assert testRunInfo != null;
+        run(testRunInfo);
+    }
+
+    @Override
+    public void runMethod(Lookup context) {
+        SingleMethod singleMethod = CommandUtils.singleMethodForContext(context);
+        TestRunInfo testRunInfo = getTestRunInfo(singleMethod, false);
+        assert testRunInfo != null;
+        run(testRunInfo);
+    }
+
+    @Override
+    public void debugMethod(Lookup context) {
+        SingleMethod singleMethod = CommandUtils.singleMethodForContext(context);
+        TestRunInfo testRunInfo = getTestRunInfo(singleMethod, true);
+        assert testRunInfo != null;
         run(testRunInfo);
     }
 
@@ -151,33 +201,40 @@ class ConfigActionTest extends ConfigAction {
                 .run();
     }
 
-    @CheckForNull
-    private TestRunInfo getTestRunInfo(Lookup context, boolean debug) {
-        if (context == null) {
-            // run project
-            FileObject testDirectory = getTestDirectory(true);
-            if (testDirectory == null) {
-                return null;
-            }
-            return getProjectTestRunInfo(testDirectory, debug);
-        }
-        return getFileTestRunInfo(context, debug);
+    private TestRunInfo getTestRunInfo(SingleMethod singleMethod, boolean debug) {
+        assert singleMethod != null;
+        FileObject file = singleMethod.getFile();
+        assert file != null;
+        TestRunInfo testRunInfo = getTestRunInfoForFile(file, debug);
+        assert testRunInfo != null;
+        Pair<String, String> method = CommandUtils.decodeMethod(singleMethod.getMethodName());
+        TestRunInfo.TestInfo testInfo = new TestRunInfo.TestInfo(TestRunInfo.TestInfo.UNKNOWN_TYPE, method.second, method.first,
+                FileUtil.toFile(file).getAbsolutePath());
+        testRunInfo.setCustomTests(Collections.singleton(testInfo));
+        return testRunInfo;
     }
 
     @CheckForNull
-    private TestRunInfo getProjectTestRunInfo(FileObject testDirectory, boolean debug) {
-        if (debug) {
-            return TestRunInfo.debug(testDirectory, testDirectory, null, getCoverageProvider().isEnabled());
+    private TestRunInfo getTestRunInfoForDir(FileObject dir, boolean debug) {
+        assert dir != null;
+        assert dir.isFolder() : dir;
+
+        if (!dir.isValid()) {
+            return null;
         }
-        return TestRunInfo.test(testDirectory, testDirectory, null, getCoverageProvider().isEnabled());
+        return new TestRunInfo.Builder()
+                .setSessionType(debug ? TestRunInfo.SessionType.DEBUG : TestRunInfo.SessionType.TEST)
+                .setWorkingDirectory(dir)
+                .setStartFile(dir)
+                .setCoverageEnabled(getCoverageProvider().isEnabled())
+                .build();
     }
 
     @CheckForNull
-    private TestRunInfo getFileTestRunInfo(Lookup context, boolean debug) {
-        assert context != null;
+    private TestRunInfo getTestRunInfoForFile(FileObject fileObj, boolean debug) {
+        assert fileObj != null;
+        assert fileObj.isData() : fileObj;
 
-        FileObject fileObj = CommandUtils.fileForContextOrSelectedNodes(context);
-        assert fileObj != null : "Fileobject not found for context: " + context;
         if (!fileObj.isValid()) {
             return null;
         }
@@ -191,10 +248,13 @@ class ConfigActionTest extends ConfigAction {
             workDir = fileObj.getParent();
             name = fileObj.getName();
         }
-        if (debug) {
-            return TestRunInfo.debug(workDir, fileObj, name, getCoverageProvider().isEnabled());
-        }
-        return TestRunInfo.test(workDir, fileObj, name, getCoverageProvider().isEnabled());
+        return new TestRunInfo.Builder()
+                .setSessionType(debug ? TestRunInfo.SessionType.DEBUG : TestRunInfo.SessionType.TEST)
+                .setWorkingDirectory(workDir)
+                .setStartFile(fileObj)
+                .setSuiteName(name)
+                .setCoverageEnabled(getCoverageProvider().isEnabled())
+                .build();
     }
 
     //~ Inner classes

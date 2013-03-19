@@ -1579,10 +1579,22 @@
                         return prop != null && 
                            (prop.toLowerCase()=="true" || prop.toLowerCase()=="yes" || prop.toLowerCase()=="on");
                     }                    
+                    function contains(array, prop) {
+                        for ( i=0; i < array.length; i++) {
+                            var s1 = new String(array[i]);
+                            var s2 = new String(prop);
+                            if( s1.equalsIgnoreCase(s2) ) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
                     var S = java.io.File.separator;
                     var JFXPAR = "javafx.param";
+                    var JFXMAN = "javafx.manifest.entry";
                     var JFXPARN = "name";
                     var JFXPARV = "value";
+                    var JFXPARH = "hidden";
                     var JFXLAZY = "download.mode.lazy.jar";
                     var withpreloader = project.getProperty("app-with-preloader");
                     var fx_ant_api_1_1 = project.getProperty("have-fx-ant-api-1.1");
@@ -1635,12 +1647,26 @@
                         app.setPreloaderClass(preloaderclass);
                     }
                     // fx:param, fx:argument
+                    var searchHides = project.getProperties().keys();
+                    var hides = new Array();
+                    while(searchHides.hasMoreElements()) {
+                        // collect all hidden property names
+                        var pns = searchHides.nextElement();
+                        if(pns.substr(0,JFXPAR.length) == JFXPAR && pns.indexOf(JFXPARN) == (pns.length()-JFXPARN.length)) {
+                            var propns = project.getProperty(pns);
+                            var phs = pns.substr(0,pns.indexOf(JFXPARN)) + JFXPARH;
+                            var proph = project.getProperty(phs);
+                            if(isTrue(proph)) {
+                                hides.push(propns);
+                            }
+                         }
+                    }
                     var keys = project.getProperties().keys();
                     while(keys.hasMoreElements()) {
                         var pn = keys.nextElement();
                         if(pn.substr(0,JFXPAR.length) == JFXPAR && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
                             var propn = project.getProperty(pn);
-                            if(propn != null && propn.length() > 0) {
+                            if(propn != null && propn.trim().length() > 0 && !contains(hides, propn)) {
                                 var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
                                 var propv = project.getProperty(pv);
                                 if(propv != null && propv.length() > 0) {
@@ -1651,6 +1677,8 @@
                                     if(isTrue(fx_ant_api_1_1)) {
                                         var arg = app.createArgument();
                                         arg.addText(propn);
+                                    } else {
+                                        println("Warning: Unnamed parameters not supported by this version of JavaFX SDK deployment Ant tasks. Upgrade JavaFX to 2.0.2 or higher.");
                                     }
                                 }
                             }
@@ -1729,6 +1757,49 @@
                     a3.setName("Implementation-Version");
                     a3.setValue("1.0");
                     man.addConfiguredAttribute(a3);
+                    var a4prop = project.getProperty("javafx.deploy.disable.proxy");
+                    if(isTrue(a4prop)) {
+                        var a4 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                        a4.setName("JavaFX-Feature-Proxy");
+                        a4.setValue("None");
+                        man.addConfiguredAttribute(a4);
+                    }
+                    // custom manifest entries
+                    var searchManifestHides = project.getProperties().keys();
+                    var manifestHides = new Array();
+                    while(searchManifestHides.hasMoreElements()) {
+                        // collect all hidden property names
+                        var pns = searchManifestHides.nextElement();
+                        if(pns.substr(0,JFXMAN.length) == JFXMAN && pns.indexOf(JFXPARN) == (pns.length()-JFXPARN.length)) {
+                            var propns = project.getProperty(pns);
+                            var phs = pns.substr(0,pns.indexOf(JFXPARN)) + JFXPARH;
+                            var proph = project.getProperty(phs);
+                            if(isTrue(proph)) {
+                                manifestHides.push(propns);
+                            }
+                         }
+                    }
+                    var manifestKeys = project.getProperties().keys();
+                    while(manifestKeys.hasMoreElements()) {
+                        var pn = manifestKeys.nextElement();
+                        if(pn.substr(0,JFXMAN.length) == JFXMAN && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
+                            var propn = project.getProperty(pn);
+                            if(propn != null && propn.trim().length() > 0 && !contains(manifestHides, propn)) {
+                                var tmp = new String(propn.trim());
+                                var propnr = tmp.replace(/\s/g, "-");
+                                var entry = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                                entry.setName(propnr);
+                                var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
+                                var propv = project.getProperty(pv);
+                                if(propv != null && propv.length() > 0) {
+                                    entry.setValue(propv);
+                                } else {
+                                    entry.setValue("");
+                                }
+                                man.addConfiguredAttribute(entry);
+                            }
+                        }
+                    }
                     
                     jar.perform();
                 ]]>
@@ -1813,16 +1884,28 @@
             <echo message="deploy_deploy: pp_deploy_fs1 = ${pp_deploy_fs1}" level="verbose"/>
             <echo message="deploy_deploy: pp_deploy_fs2 = ${pp_deploy_fs2}" level="verbose"/>
             <echo message="JavaScript: deploy-deploy" level="verbose"/>
+            <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
             <script language="javascript">
                 <![CDATA[
                     function isTrue(prop) {
                         return prop != null && 
                            (prop.toLowerCase()=="true" || prop.toLowerCase()=="yes" || prop.toLowerCase()=="on");
                     }                    
+                    function contains(array, prop) {
+                        for ( i=0; i < array.length; i++) {
+                            var s1 = new String(array[i]);
+                            var s2 = new String(prop);
+                            if( s1.equalsIgnoreCase(s2) ) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
                     var S = java.io.File.separator;
                     var JFXPAR = "javafx.param";
                     var JFXPARN = "name";
                     var JFXPARV = "value";
+                    var JFXPARH = "hidden";
                     var JFXCALLB = "javafx.jscallback";
                     var JFXLAZY = "download.mode.lazy.jar";
                     var withpreloader = project.getProperty("app-with-preloader");
@@ -1930,12 +2013,26 @@
                         app.setPreloaderClass(preloaderclass);
                     }
                     // fx:param, fx:argument
+                    var searchHides = project.getProperties().keys();
+                    var hides = new Array();
+                    while(searchHides.hasMoreElements()) {
+                        // collect all hidden property names
+                        var pns = searchHides.nextElement();
+                        if(pns.substr(0,JFXPAR.length) == JFXPAR && pns.indexOf(JFXPARN) == (pns.length()-JFXPARN.length)) {
+                            var propns = project.getProperty(pns);
+                            var phs = pns.substr(0,pns.indexOf(JFXPARN)) + JFXPARH;
+                            var proph = project.getProperty(phs);
+                            if(isTrue(proph)) {
+                                hides.push(propns);
+                            }
+                         }
+                    }
                     var keys = project.getProperties().keys();
                     while(keys.hasMoreElements()) {
                         var pn = keys.nextElement();
                         if(pn.substr(0,JFXPAR.length) == JFXPAR && pn.indexOf(JFXPARN) == (pn.length()-JFXPARN.length)) {
                             var propn = project.getProperty(pn);
-                            if(propn != null && propn.length() > 0) {
+                            if(propn != null && propn.trim().length() > 0 && !contains(hides, propn)) {
                                 var pv = pn.substr(0,pn.indexOf(JFXPARN)) + JFXPARV;
                                 var propv = project.getProperty(pv);
                                 if(propv != null && propv.length() > 0) {
@@ -2026,11 +2123,40 @@
                         if(icon != null && icon.length() > 0) {
                             if(isTrue(fx_ant_api_1_2) && !isTrue(have_jdk_pre7u14)) {
                                 var dicon = derelativizePath(icon);
+                                // create temporary icon copy renamed to application name (required by native packager)
+                                var baseDir = project.getProperty("basedir");
+                                var buildDir = project.getProperty("build.dir");
+                                var deployBase = project.getProperty("jfx.deployment.base");
+                                var copyTask = project.createTask("copy");
+                                var source = new java.io.File(dicon);
+                                var sourceName = source.getName();
+                                var lastDot = sourceName.lastIndexOf(".");
+                                if(lastDot >=0) {
+                                    var sourceExt = sourceName.substr(lastDot);
+                                } else {
+                                    var sourceExt = "";
+                                }
+                                var target = new java.io.File(baseDir + S + buildDir + S + "icon" + S + deployBase + sourceExt);
+                                copyTask.setFile(source);
+                                copyTask.setTofile(target);
+                                copyTask.setFlatten(true);
+                                copyTask.setFailOnError(false);
+                                copyTask.perform();
+                                if(target.exists()) {
+                                    try {
+                                        var tempicon = target.getCanonicalPath();
+                                    } catch(err) {
+                                        var tempicon = dicon;
+                                    }
+                                } else {
+                                    var tempicon = dicon;
+                                }
                                 var nicon = info.createIcon();
-                                nicon.setHref(dicon);
-                                println("Adding native icon reference: " + dicon);
+                                nicon.setHref(tempicon);
+                                println("Source native icon reference: " + dicon);
+                                println("Processed native icon reference: " + tempicon);
                             } else {
-                                println("Warning: Native Package icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade to JDK7u14 or higher.");
+                                println("Warning: Native Package icon not supported by this version of JavaFX SDK deployment Ant task. Please upgrade to JDK7u14.");
                             }
                         }
                     } else {

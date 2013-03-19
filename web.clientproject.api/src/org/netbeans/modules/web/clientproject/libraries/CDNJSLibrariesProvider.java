@@ -42,25 +42,39 @@
 package org.netbeans.modules.web.clientproject.libraries;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
+import org.netbeans.modules.web.clientproject.api.network.NetworkException;
+import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 
 /**
@@ -71,12 +85,31 @@ import org.openide.util.Exceptions;
 //@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
 public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementation> {
 
+    private static final Logger LOGGER = Logger.getLogger(CDNJSLibrariesProvider.class.getName());
+
+    private static final String DEFAULT_ZIP_PATH = "resources/cdnjs.zip"; // NOI18N
+    private static final String JSLIBS_CACHE_PATH = "html5/jslibs"; // NOI18N
+    private static final String CDNJS_ZIP_FILENAME = "cdnjs.zip"; // NOI18N
+    private static final String CDNJS_ZIP_TMP_FILENAME = "cdnjs-tmp.zip"; // NOI18N
+    private static final String CDNJS_ZIP_URL = "https://github.com/cdnjs/cdnjs/zipball/master"; // NOI18N
+
+    private static final CDNJSLibrariesProvider INSTANCE = new CDNJSLibrariesProvider();
+
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+
+    private CDNJSLibrariesProvider() {
+    }
+
+    public static CDNJSLibrariesProvider getDefault() {
+        return INSTANCE;
+    }
+
     @Override
     public LibraryImplementation[] getLibraries() {
         List<LibraryImplementation> libs = new ArrayList<LibraryImplementation>();
         Map<String, List<String>> versions = new HashMap<String, List<String>>();
-        ZipInputStream str = new ZipInputStream(new BufferedInputStream(
-                CDNJSLibrariesProvider.class.getResourceAsStream("resources/cdnjs.zip"))); // NOI18N
+        ZipInputStream str = new ZipInputStream(new BufferedInputStream(getLibraryZip()));
         ZipEntry entry;
         try {
             while ((entry = str.getNextEntry()) != null) {
@@ -116,9 +149,7 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
             Exceptions.printStackTrace(ex);
         } finally {
             try {
-                if (str != null) {
-                    str.close();
-                }
+                str.close();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -126,15 +157,32 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         return libs.toArray(new LibraryImplementation[libs.size()]);
     }
 
+    public void updateLibraries() throws NetworkException, IOException {
+        File tmpZip = getCachedZip(true);
+        // download to tmp
+        NetworkSupport.download(CDNJS_ZIP_URL, tmpZip);
+        assert tmpZip.isFile();
+        // rename
+        File cachedZip = getCachedZip(false);
+        if (cachedZip.isFile()) {
+            cachedZip.delete();
+        }
+        tmpZip.renameTo(cachedZip);
+        // fire property change
+        propertyChangeSupport.firePropertyChange(PROP_LIBRARIES, null, null);
+    }
+
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    private void addLibrary(List<LibraryImplementation> libs, ZipInputStream str, 
+    private void addLibrary(List<LibraryImplementation> libs, ZipInputStream str,
             Map<String, List<String>> versions) throws ParseException, IOException {
         Reader r = new InputStreamReader(str, Charset.forName("UTF-8"));
         JSONObject desc = (JSONObject)JSONValue.parseWithException(r);
@@ -157,8 +205,8 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
             libs.add(createLibrary(name, v, file, homepage, description));
         }
     }
-    
-    private LibraryImplementation createLibrary(String name, String version, String file, 
+
+    private LibraryImplementation createLibrary(String name, String version, String file,
             String homepage, String description) {
         LibraryImplementation3 l1 = (LibraryImplementation3) LibrariesSupport.createLibraryImplementation(
                 WebClientLibraryManager.TYPE, JavaScriptLibraryTypeProvider.VOLUMES);
@@ -175,11 +223,33 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         l1.setDescription(description);
         try {
             String path = "http://cdnjs.cloudflare.com/ajax/libs/"+name+"/"+version+"/"+file; // NOI18N
-            l1.setContent(WebClientLibraryManager.VOL_MINIFIED, 
+            l1.setContent(WebClientLibraryManager.VOL_MINIFIED,
                     Collections.singletonList(new URL(path)));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
         return l1;
     }
+
+    private InputStream getLibraryZip() {
+        File cachedZip = getCachedZip(false);
+        if (cachedZip.isFile()) {
+            try {
+                return new FileInputStream(cachedZip);
+            } catch (FileNotFoundException ex) {
+                LOGGER.log(Level.WARNING, "Existing file not found: " + cachedZip, ex);
+            }
+        }
+        // fallback
+        return CDNJSLibrariesProvider.class.getResourceAsStream(DEFAULT_ZIP_PATH);
+    }
+
+    private File getCachedZip(boolean tmp) {
+        File jsLibsCacheDir = Places.getCacheSubdirectory(JSLIBS_CACHE_PATH);
+        if (jsLibsCacheDir.isDirectory()) {
+            return new File(jsLibsCacheDir, tmp ? CDNJS_ZIP_TMP_FILENAME : CDNJS_ZIP_FILENAME);
+        }
+        return null;
+    }
+
 }

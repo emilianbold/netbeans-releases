@@ -308,7 +308,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
     private GroovyTokenId getTokenId(int token) {
         switch (token) {
             case GroovyTokenTypes.ABSTRACT:
-                    return GroovyTokenId.ABSTRACT;
+                    return GroovyTokenId.LITERAL_abstract;
             case GroovyTokenTypes.ANNOTATION_ARRAY_INIT:
                     return GroovyTokenId.ANNOTATION_ARRAY_INIT;
             case GroovyTokenTypes.ANNOTATION_DEF:
@@ -355,6 +355,8 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     return GroovyTokenId.CLASS_DEF;
             case GroovyTokenTypes.CLOSABLE_BLOCK:
                     return GroovyTokenId.CLOSED_BLOCK;
+            case GroovyTokenTypes.CLOSABLE_BLOCK_OP:
+                return GroovyTokenId.CLOSED_BLOCK_OP;
             case GroovyTokenTypes.CLOSURE_LIST:
                     return GroovyTokenId.CLOSURE_OP;
             case GroovyTokenTypes.COLON:
@@ -371,12 +373,22 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     return GroovyTokenId.DEC;
             case GroovyTokenTypes.DIGIT:
                     return GroovyTokenId.DIGIT;
+            case GroovyTokenTypes.DIGITS_WITH_UNDERSCORE:
+                    return GroovyTokenId.DIGITS_WITH_UNDERSCORE;
+            case GroovyTokenTypes.DIGITS_WITH_UNDERSCORE_OPT:
+                    return GroovyTokenId.DIGITS_WITH_UNDERSCORE_OPT;
             case GroovyTokenTypes.DIV_ASSIGN:
                     return GroovyTokenId.DIV_ASSIGN;
             case GroovyTokenTypes.DIV:
                     return GroovyTokenId.DIV;
             case GroovyTokenTypes.DOLLAR:
                     return GroovyTokenId.DOLLAR;
+            case GroovyTokenTypes.DOLLAR_REGEXP_CTOR_END:
+                    return GroovyTokenId.DOLLAR_REGEXP_CTOR_END;
+            case GroovyTokenTypes.DOLLAR_REGEXP_LITERAL:
+                    return GroovyTokenId.DOLLAR_REGEXP_LITERAL;
+            case GroovyTokenTypes.DOLLAR_REGEXP_SYMBOL:
+                    return GroovyTokenId.DOLLAR_REGEXP_SYMBOL;
             case GroovyTokenTypes.DOT:
                     return GroovyTokenId.DOT;
             case GroovyTokenTypes.DYNAMIC_MEMBER:
@@ -397,6 +409,10 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     return GroovyTokenId.EQUAL;
             case GroovyTokenTypes.ESC:
                     return GroovyTokenId.ESC;
+            case GroovyTokenTypes.ESCAPED_DOLLAR:
+                    return GroovyTokenId.ESCAPED_DOLLAR;
+            case GroovyTokenTypes.ESCAPED_SLASH:
+                    return GroovyTokenId.ESCAPED_SLASH;
             case GroovyTokenTypes.EXPONENT:
                     return GroovyTokenId.EXPONENT;
             case GroovyTokenTypes.EXPR:
@@ -404,7 +420,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
             case GroovyTokenTypes.EXTENDS_CLAUSE:
                     return GroovyTokenId.EXTENDS_CLAUSE;
             case GroovyTokenTypes.FINAL:
-                    return GroovyTokenId.FINAL;
+                    return GroovyTokenId.LITERAL_final;
             case GroovyTokenTypes.FLOAT_SUFFIX:
                     return GroovyTokenId.FLOAT_SUFFIX;
             case GroovyTokenTypes.FOR_CONDITION:
@@ -425,6 +441,8 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     return GroovyTokenId.HEX_DIGIT;
             case GroovyTokenTypes.IDENT:
                     return GroovyTokenId.IDENTIFIER;
+            case GroovyTokenTypes.IDENTICAL:
+                    return GroovyTokenId.IDENTICAL;
             case GroovyTokenTypes.IMPLEMENTS_CLAUSE:
                     return GroovyTokenId.IMPLEMENTS_CLAUSE;
             case GroovyTokenTypes.IMPLICIT_PARAMETERS:
@@ -469,6 +487,8 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     return GroovyTokenId.LITERAL_case;
             case GroovyTokenTypes.LITERAL_catch:
                     return GroovyTokenId.LITERAL_catch;
+            case GroovyTokenTypes.LITERAL_char:
+                    return GroovyTokenId.LITERAL_char;
             case GroovyTokenTypes.LITERAL_class:
                     return GroovyTokenId.LITERAL_class;
             case GroovyTokenTypes.LITERAL_continue:
@@ -493,8 +513,6 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     return GroovyTokenId.LITERAL_float;
             case GroovyTokenTypes.LITERAL_for:
                     return GroovyTokenId.LITERAL_for;
-            case GroovyTokenTypes.LITERAL_char:
-                    return GroovyTokenId.LITERAL_char;
             case GroovyTokenTypes.LITERAL_if:
                     return GroovyTokenId.LITERAL_if;
             case GroovyTokenTypes.LITERAL_implements:
@@ -585,10 +603,16 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     return GroovyTokenId.MOD;
             case GroovyTokenTypes.MODIFIERS:
                     return GroovyTokenId.MODIFIERS;
+            case GroovyTokenTypes.MULTICATCH:
+                    return GroovyTokenId.MULTICATCH;
+            case GroovyTokenTypes.MULTICATCH_TYPES:
+                    return GroovyTokenId.MULTICATCH_TYPES;
             case GroovyTokenTypes.NLS:
                     return GroovyTokenId.NLS;
             case GroovyTokenTypes.NOT_EQUAL:
                     return GroovyTokenId.NOT_EQUAL;
+            case GroovyTokenTypes.NOT_IDENTICAL:
+                return GroovyTokenId.NOT_IDENTICAL;
             case GroovyTokenTypes.NULL_TREE_LOOKAHEAD:
                     return GroovyTokenId.NULL_TREE_LOOKAHEAD;
             case GroovyTokenTypes.NUM_BIG_DECIMAL:
@@ -633,12 +657,16 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     return GroovyTokenId.RBRACE;
             case GroovyTokenTypes.RBRACK:
                     return GroovyTokenId.RBRACKET;
+            case GroovyTokenTypes.REGEXP_CTOR_END:
+                    return GroovyTokenId.REGEXP_CTOR_END;
+            case GroovyTokenTypes.REGEXP_LITERAL:
+                    return GroovyTokenId.REGEXP_LITERAL;
+            case GroovyTokenTypes.REGEXP_SYMBOL:
+                    return GroovyTokenId.REGEXP_SYMBOL;
             case GroovyTokenTypes.REGEX_FIND:
                     return GroovyTokenId.REGEX_FIND;
             case GroovyTokenTypes.REGEX_MATCH:
                     return GroovyTokenId.REGEX_MATCH;
-            case GroovyTokenTypes.REGEXP_SYMBOL:
-                    return GroovyTokenId.REGEXP_SYMBOL;
             case GroovyTokenTypes.RPAREN:
                     return GroovyTokenId.RPAREN;
             case GroovyTokenTypes.SELECT_SLOT:

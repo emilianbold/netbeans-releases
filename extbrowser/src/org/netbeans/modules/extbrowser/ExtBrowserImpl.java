@@ -296,6 +296,11 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
             }
         }
         else {
+            
+            // enforce ExternalBrowserPlugin server initialization even when page
+            // is opened without NB integration:
+            ExternalBrowserPlugin.getInstance();
+
             loadURLInBrowser(url);
         }
         this.url = url;

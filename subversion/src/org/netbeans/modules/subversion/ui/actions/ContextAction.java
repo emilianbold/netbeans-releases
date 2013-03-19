@@ -72,6 +72,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.ImageUtilities;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -87,9 +88,17 @@ public abstract class ContextAction extends NodeAction {
     // it's singleton
     // do not declare any instance data
 
-    protected ContextAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    protected ContextAction () {
+        this(null);
+    }
+
+    protected ContextAction (String iconResource) {
+        if (iconResource == null) {
+            setIcon(null);
+            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        } else {
+            setIcon(ImageUtilities.loadImageIcon(iconResource, true));
+        }
     }
     
     /**

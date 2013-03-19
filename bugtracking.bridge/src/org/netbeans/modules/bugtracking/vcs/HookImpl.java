@@ -49,13 +49,12 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryQuery;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
@@ -229,6 +228,36 @@ class HookImpl {
         }
         LOG.log(Level.FINE, "push hook end for {0}", file);                     // NOI18N
         VCSHooksConfig.logHookUsage(hookUsageName, getSelectedRepository());             // NOI18N
+    }
+    
+    public void afterChangesetReplace (File[] files, Map<String, String> changesets, String hookUsageName) {
+        if(files.length == 0) {
+            LOG.warning("calling afterChangesetReplace for zero files");                   // NOI18N
+            return;
+        }
+        File file = files[0];
+        LOG.log(Level.FINE, "afterChangesetReplace hook start for {0}", file);                   // NOI18N
+
+        for (Map.Entry<String, String> changesetMapping : changesets.entrySet()) {
+            String original = changesetMapping.getKey();
+            String replace = changesetMapping.getValue();
+            PushOperation operation = config.popPushAction(original);
+            if (operation != null) {
+                if (replace == null) {
+                    // shouldn't we delete the original push operation?
+                    LOG.log(Level.FINE, "afterChangesetReplace hook found a deleted changeset {0}", original); //NOI18N
+                    config.setPushAction(original, operation);
+                } else {
+                    LOG.log(Level.FINE, "afterChangesetReplace hook found a replaced changeset {0}->{1}", //NOI18N
+                            new Object[] { original, replace });
+                    config.setPushAction(replace, new PushOperation(operation.getIssueID(), 
+                            operation.getMsg().replaceAll(original, replace), // replace also all links to the old changeset
+                            operation.isClose()));
+                }
+            }
+            
+        }
+        LOG.log(Level.FINE, "afterChangesetReplace hook end for {0}", file); // NOI18N
     }
 
     public HookPanel createComponent(File[] files) {

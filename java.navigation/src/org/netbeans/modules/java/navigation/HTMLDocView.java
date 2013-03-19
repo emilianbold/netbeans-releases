@@ -76,6 +76,7 @@ class HTMLDocView extends JEditorPane {
         setFocusable(true);
         setBackground(bgColor);
         setMargin(new Insets(0,3,3,3));
+        putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
     }
 
     /** Sets the javadoc content as HTML document */

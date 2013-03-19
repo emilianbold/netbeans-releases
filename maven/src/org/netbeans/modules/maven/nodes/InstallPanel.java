@@ -172,11 +172,11 @@ public class InstallPanel extends javax.swing.JPanel {
         return fil != null && fil.exists() ? fil : null;
     }
     
-    @Messages({"MSG_Instructions=<html>Please enter path to JAR file that represents the dependency with <br>groupId: <b>{0}</b>,<br>artifactId: <b>{1}</b> and <br>version: <b>{2}</b><br>This JAR will be copied to your local repository. <br>Please note that having non-repository based JARs as dependencies is bad for build reproducibility.</html>", 
+    @Messages({"MSG_Instructions=<html>Please enter path to JAR file that represents the dependency with <br>groupId: <b>{0}</b>,<br>artifactId: <b>{1}</b>,<br>version: <b>{2}</b>{3}<br>This JAR will be copied to your local repository. <br>Please note that having non-repository based JARs as dependencies is bad for build reproducibility.</html>", 
         "BTN_Install_locally=Install locally", "TIT_Install_locally=Install locally"})
     public static File showInstallDialog(Artifact art) {
         final InstallPanel panel = new InstallPanel();
-        panel.setExplainText(MSG_Instructions(art.getGroupId(), art.getArtifactId(), art.getVersion()));
+        panel.setExplainText(MSG_Instructions(art.getGroupId(), art.getArtifactId(), art.getVersion(), art.getClassifier() != null ? ",<br>classifier: <b>" + art.getClassifier() + "</b>" : "."));
                 
                 
         final JButton btnSelect  = new JButton(BTN_Install_locally());
@@ -223,6 +223,9 @@ public class InstallPanel extends javax.swing.JPanel {
         brc.setProperty("groupId", art.getGroupId()); //NOI18N
         brc.setProperty("version", art.getVersion()); //NOI18N
         brc.setProperty("packaging", art.getType()); //NOI18N
+        if (art.getClassifier() != null) {
+            brc.setProperty("classifier", art.getClassifier()); //NOI18N
+        }
         brc.setProperty("file", fil.getAbsolutePath()); //NOI18N
         brc.setProperty("generatePom", "false"); //NOI18N
         brc.setActivatedProfiles(Collections.<String>emptyList());

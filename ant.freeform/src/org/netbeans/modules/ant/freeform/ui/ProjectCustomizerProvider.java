@@ -57,12 +57,16 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import static org.netbeans.modules.ant.freeform.ui.Bundle.*;
 
 /**
  *
@@ -74,17 +78,29 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
     
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-ant-freeform/Customizer"; //NO18N
     
-    private static Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>(); 
+    private static final Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>(); 
     
     public ProjectCustomizerProvider(FreeformProject project) {
         this.project = project;
     }
             
+    @Override
+    @NbBundle.Messages("MSG_CustomizerForbidden=The customizer is disabled, using it would revert manual changes done to the nbproject/project.xml file.")
     public void showCustomizer() {
+        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+        String show = props.get("show.customizer", true);
+        if (show != null && "false".equals(show)) {
+            String message = props.get("show.customizer.message", true);
+            if (message == null) {
+                message = MSG_CustomizerForbidden();
+            }
+            NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return;
+        }
         Dialog dialog = project2Dialog.get (project);
         if ( dialog != null ) {            
             dialog.setVisible(true);
-            return;
         }
         else {
             InstanceContent ic = new InstanceContent();
@@ -113,6 +129,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
     
         // Listening to OK button ----------------------------------------------
         
+        @Override
         public void actionPerformed( ActionEvent e ) {
 //#95952 some users experience this assertion on a fairly random set of changes in 
 // the customizer, that leads me to assume that a project can be already marked

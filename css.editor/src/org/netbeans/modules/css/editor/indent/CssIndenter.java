@@ -233,7 +233,24 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                     lastLBrace = ts.offset();
                     blockStack.push(new CssStackItem(StackItemState.IN_MEDIA));
                     mediaWasDefined = true;
-                } else if (!isInState(blockStack, StackItemState.IN_RULE)) {
+                    //SASS&LESS - code blocks (e.g. rules) may be nested
+//                } else if (!isInState(blockStack, StackItemState.IN_RULE)) {
+                } else {
+                    //SASS&LESS:
+                    //
+                    //first check if we are in IN_VALUE state and if so pop that
+                    //state:
+                    //
+                    //div {
+                    //   a:active {
+                    //      color: red;
+                    //   }
+                    //}
+                    //
+                    if(isInState(blockStack, StackItemState.IN_VALUE)) {
+                        blockStack.pop();
+                    }
+                    
                     CssStackItem state = new CssStackItem(StackItemState.IN_RULE);
                     lastLBrace = ts.offset();
                     blockStack.push(state);

@@ -54,8 +54,10 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.customizer.ActionMappings;
+import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,7 +65,7 @@ import org.openide.util.NbBundle;
  * @author  mkleint
  */
 @SuppressWarnings("serial")
-public class ConfigurationsPanel extends javax.swing.JPanel {
+public class ConfigurationsPanel extends javax.swing.JPanel implements HelpCtx.Provider {
     private NbMavenProjectImpl project;
     private ModelHandle2 handle;
     List<ModelHandle2.Configuration> lastNonProfileList = new ArrayList<ModelHandle2.Configuration>();
@@ -346,5 +348,8 @@ private void btnActivateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 //        }
 //        createListModel();
 //    }
-
+    @Override
+    public HelpCtx getHelpCtx() {
+        return CustomizerProviderImpl.HELP_CTX;
+    }
 }

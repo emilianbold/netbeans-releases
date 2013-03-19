@@ -44,7 +44,6 @@ package org.netbeans.modules.db.dataview.output;
 import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
 import java.sql.Types;
 import java.util.Arrays;
-import javax.swing.table.DefaultTableModel;
 import org.jdesktop.swingx.JXTable;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 
@@ -55,18 +54,17 @@ class InsertRecordTableUI extends ResultSetJXTable {
 
     boolean isRowSelectionAllowed = rowSelectionAllowed;
 
-    public InsertRecordTableUI(DataView dataView) {
-        super(dataView);
-        if (getRSColumnCount() < 7) {
+    public InsertRecordTableUI() {
+        if (getColumnModel().getColumnCount() < 7) {
             setAutoResizeMode(JXTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         }
     }   
 
     // Must correspond to DataViewUtils#isSQLConstantString!
-    protected Object[] createNewRow() {
-        Object[] row = new Object[getRSColumnCount()];
-        for (int i = 0, I = getRSColumnCount(); i < I; i++) {
-            DBColumn col = getDBColumn(i);
+    protected void appendEmptyRow() {
+        Object[] row = new Object[getModel().getColumnCount()];
+        for (int i = 0, I = getModel().getColumnCount(); i < I; i++) {
+            DBColumn col = getModel().getColumn(i);
             if (col.isGenerated()) {
                 row[i] = "<GENERATED>";
             } else if (col.hasDefault()) {
@@ -79,22 +77,33 @@ class InsertRecordTableUI extends ResultSetJXTable {
                 row[i] = "<CURRENT_TIME>";
             }
         }
-        return row;
+        getModel().addRow(row);
     }
 
     protected void removeRows() {
         if (isEditing()) {
             getCellEditor().cancelCellEditing();
         }
+
         int[] rows = getSelectedRows();
-        if (rows.length == 0) return ;
-        Arrays.sort(rows);
-        DefaultTableModel model = (DefaultTableModel) getModel();
-        for (int i = (rows.length - 1); i >= 0; i--) {
-            model.removeRow(rows[i]);
+
+        if (rows.length == 0) {
+            return ;
+        }
+
+        int[] modelRows = new int[rows.length];
+
+        for(int i = 0; i < modelRows.length; i++) {
+            modelRows[i] = convertRowIndexToModel(rows[i]);
+        }
+
+        Arrays.sort(modelRows);
+
+        for (int i = (modelRows.length - 1); i >= 0; i--) {
+            getModel().removeRow(modelRows[i]);
         }
         if (getRowCount() == 0) {
-            model.addRow(createNewRow());
+            appendEmptyRow();
         }
     }
 }

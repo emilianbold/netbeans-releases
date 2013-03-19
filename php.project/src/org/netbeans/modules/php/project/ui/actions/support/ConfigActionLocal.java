@@ -97,7 +97,7 @@ class ConfigActionLocal extends ConfigAction {
 
     @Override
     public boolean isDebugFileEnabled(Lookup context) {
-        if (XDebugStarterFactory.getInstance() == null) {
+        if (DebugStarterFactory.getInstance() == null) {
             return false;
         }
         return isRunFileEnabled(context);
@@ -148,7 +148,7 @@ class ConfigActionLocal extends ConfigAction {
 
 
         //temporary; after narrowing deps. will be changed
-        DebugStarter dbgStarter = XDebugStarterFactory.getInstance();
+        DebugStarter dbgStarter = DebugStarterFactory.getInstance();
         if (dbgStarter != null) {
             if (dbgStarter.isAlreadyRunning()) {
                 if (CommandUtils.warnNoMoreDebugSession()) {
@@ -247,7 +247,7 @@ class ConfigActionLocal extends ConfigAction {
             }
         };
 
-        DebugStarter dbgStarter = XDebugStarterFactory.getInstance();
+        DebugStarter dbgStarter = DebugStarterFactory.getInstance();
         if (dbgStarter != null) {
             if (dbgStarter.isAlreadyRunning()) {
                 if (CommandUtils.warnNoMoreDebugSession()) {

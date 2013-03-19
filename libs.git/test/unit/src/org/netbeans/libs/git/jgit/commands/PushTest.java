@@ -50,7 +50,10 @@ import java.util.Map;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.transport.RemoteRefUpdate;
+import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.TrackingRefUpdate;
+import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitPushResult;
@@ -60,7 +63,7 @@ import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.jgit.DelegatingProgressMonitor;
 
 /**
  *
@@ -276,12 +279,28 @@ public class PushTest extends AbstractGitTestCase {
         assertEquals(1, updates.size());
         assertUpdate(updates.get("master"), "localbranch", "master", id, newid, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.REJECTED_NONFASTFORWARD);
         
-        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/localbranch:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/localbranch:refs/heads/master" }), Arrays.asList(new String[] { "+refs/heads/master:refs/remotes/origin/master" }), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
         remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(newid, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
         assertUpdate(updates.get("master"), "localbranch", "master", id, newid, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.REJECTED_NONFASTFORWARD);
+        
+        // if starts failing, the WA at GitTransportUpdate.(URIish uri, TrackingRefUpdate update) should be removed
+        // this.result = GitRefUpdateResult.valueOf((update.getResult() == null ? RefUpdate.Result.NOT_ATTEMPTED : update.getResult()).name());
+        Transport transport = Transport.open(getRepository(getClient(workDir)), new URIish(remoteUri));
+        transport.setDryRun(false);
+        transport.setPushThin(true);
+        PushResult pushResult = transport.push(new DelegatingProgressMonitor(NULL_PROGRESS_MONITOR),
+                Transport.findRemoteRefUpdatesFor(getRepository(getClient(workDir)),
+                Collections.singletonList(new RefSpec("refs/heads/localbranch:refs/heads/master")),
+                Collections.singletonList(new RefSpec("refs/heads/master:refs/remotes/origin/master"))));
+        assertEquals(1, pushResult.getTrackingRefUpdates().size());
+        for (TrackingRefUpdate update : pushResult.getTrackingRefUpdates()) {
+            // null but not NOT_ATTEMPTED, probably a bug
+            // remove the WA if it starts failing here
+            assertNull(update.getResult());
+        }
     }
 
     public void testPushTag () throws Exception {

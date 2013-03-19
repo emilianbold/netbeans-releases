@@ -75,6 +75,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.netbeans.spi.diff.DiffProvider;
@@ -504,7 +505,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     pri.runWithRevision(Git.getInstance().getRequestProcessor(), new Runnable() {
                         @Override
                         public void run() {
-                            SystemAction.get(DiffAction.class).diff(originalFile, pri.getPreviousRevision(), revisionPerLine.getRevision());
+                            SystemAction.get(DiffAction.class).diff(originalFile, new Revision(pri.getPreviousRevision(), pri.getPreviousRevision()),
+                                    new Revision(revisionPerLine.getRevision(), revisionPerLine.getRevision()));
                         }
                     }, true, null);
                 }

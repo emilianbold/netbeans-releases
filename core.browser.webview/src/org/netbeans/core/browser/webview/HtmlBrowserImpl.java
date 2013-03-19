@@ -47,13 +47,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
-import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -70,6 +71,8 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     private WebBrowser browser;
     private final Object LOCK = new Object();
     private Session session;
+    private Lookup consoleLogger;
+    private Lookup networkMonitor;
     private boolean disablePageInspector = false;
     private Lookup projectContext;
 
@@ -113,8 +116,7 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     
     @Override
     public void reloadDocument() {
-        init();
-        getBrowser().reloadDocument();
+        init(null);
     }
 
     @Override
@@ -129,8 +131,15 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
         
     private boolean initialized = false;
 
-    private void init() {
+    /**
+     * Initialize and set browser to the url, or reload the page.
+     * Called in event dispatch thread.
+     * @param url The URL to set the browser to or <code>null</code> to reload
+     * the page.
+     */
+    private void init(final String url) {
         if (initialized) {
+            setBrowserTo(url);
             return;
         }
         initialized = true;
@@ -139,9 +148,13 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
 
         getBrowser();
         final TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
+        if (url != null && transport instanceof TransportImplementationWithURLToLoad) {
+            ((TransportImplementationWithURLToLoad) transport).setURLToLoad(url);
+        }
         final WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
-        final NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
-        if (webkitDebugger == null || debuggerFactory == null || projectContext == null) {
+
+        if (webkitDebugger == null || projectContext == null) {
+            setBrowserTo(url);
             return;
         }
         RP.post(new Runnable() {
@@ -149,14 +162,34 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             public void run() {
                 transport.attach();
                 webkitDebugger.getDebugger().enable();
-                session = debuggerFactory.createDebuggingSession(webkitDebugger, projectContext);
+                session = WebKitUIManager.getDefault().createDebuggingSession(webkitDebugger, projectContext);
+                consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webkitDebugger, projectContext);
+                networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webkitDebugger, projectContext);
 
                 PageInspector inspector = PageInspector.getDefault();
                 if (inspector != null && !disablePageInspector) {
                     inspector.inspectPage(new ProxyLookup(getLookup(), projectContext));
                 }
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setBrowserTo(url);
+                        if (url != null && transport instanceof TransportImplementationWithURLToLoad) {
+                            // reset the URL to load, so that the URL is taken from the browser:
+                            ((TransportImplementationWithURLToLoad) transport).setURLToLoad(null);
+                        }
+                    }
+                });
             }
         });
+    }
+    
+    private void setBrowserTo(String url) {
+        if (url != null) {
+            getBrowser().setURL(url);
+        } else {
+            getBrowser().reloadDocument();
+        }
     }
 
     private void destroy() {
@@ -166,18 +199,25 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
         initialized = false;
         final TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
         final WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
-        final NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
         final MessageDispatcherImpl dispatcher = getLookup().lookup(MessageDispatcherImpl.class);
-        if (webkitDebugger == null || debuggerFactory == null) {
+        if (webkitDebugger == null) {
             return;
         }
         RP.post(new Runnable() {
             @Override
             public void run() {
                 if (session != null) {
-                    debuggerFactory.stopDebuggingSession(session);
+                    WebKitUIManager.getDefault().stopDebuggingSession(session);
                 }
                 session = null;
+                if (consoleLogger != null) {
+                    WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
+                }
+                consoleLogger = null;
+                if (networkMonitor != null) {
+                    WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
+                }
+                networkMonitor = null;
                 if (dispatcher != null) {
                     dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
                 }
@@ -192,18 +232,7 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     
     @Override
     public void setURL(final URL url) {
-//        if( !SwingUtilities.isEventDispatchThread() ) {
-//            SwingUtilities.invokeLater( new Runnable() {
-//
-//                @Override
-//                public void run() {
-//                    setURL( url );
-//                }
-//            });
-//            return;
-//        }
-        init();
-        getBrowser().setURL(url.toString());
+        init(url.toString());
     }
 
     @Override

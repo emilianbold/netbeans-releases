@@ -34,6 +34,7 @@
 
 package org.netbeans.freemarker.templates;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -42,6 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
+import static junit.framework.Assert.assertEquals;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.MockServices;
@@ -57,6 +59,7 @@ import org.openide.loaders.MultiFileLoader;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -139,6 +142,24 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
             assertEquals("#!/usr/bin/perl\n# GPL\n# explicit_1 in explicit_1.pl\n", inst.asText());
             assertEquals("explicit_1.pl", inst.getPath());
              */
+    }
+    
+    public void testExternalLicenseFile() throws Exception {
+        File license = new File(getDataDir(), "licenseheader.txt");
+        assertTrue(license.exists());
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject template = FileUtil.createData(root, "simple.pl");
+        OutputStream os = template.getOutputStream();
+        os.write("#!/usr/bin/perl\n<#include \"${licensePath}\">".getBytes());
+        os.close();
+        System.out.println(template.asText());
+        template.setAttribute("template", true);
+        template.setAttribute("javax.script.ScriptEngine", "freemarker");
+        Map<String,Object> parameters = new HashMap<String,Object>();
+        parameters.put("licensePath", Utilities.toURI(license).toString());
+        FileObject inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "pl", parameters).getPrimaryFile();
+        System.out.println(inst.asText());
+        assertTrue(inst.asText().contains("TEST LICENSE"));
     }
     
     //fix for this test was rolled back because of issue #120865

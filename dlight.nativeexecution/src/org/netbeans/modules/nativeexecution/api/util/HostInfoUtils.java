@@ -11,12 +11,13 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchSupport;
@@ -108,22 +109,30 @@ public final class HostInfoUtils {
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname)
             throws ConnectException, IOException, InterruptedException {
-        boolean fileExists = false;
 
         if (execEnv.isLocal()) {
-            fileExists = new File(fname).exists();
+            return new File(fname).exists();
         } else {
             if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 throw new ConnectException();
             }
 
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable("test").setArguments("-e", fname); // NOI18N
-
-            fileExists = npb.call().waitFor() == 0;
+            try {
+                SftpSupport.getInstance(execEnv).stat(fname, null).get();
+                return true;
+            } catch (ExecutionException ex) {
+                if (ex.getCause() instanceof SftpIOException) {
+                    SftpIOException e = (SftpIOException) ex.getCause();
+                    if (SftpIOException.SSH_FX_NO_SUCH_FILE == e.getId()) {
+                        return false;
+                    }
+                }
+                if (ex.getCause() instanceof IOException) {
+                    throw (IOException) ex.getCause();
+                }
+                throw new IOException(ex);
+            }
         }
-
-            return fileExists;
     }
 
     public static String searchFile(ExecutionEnvironment execEnv,

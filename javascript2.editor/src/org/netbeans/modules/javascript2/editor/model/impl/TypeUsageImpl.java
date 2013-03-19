@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
@@ -49,11 +48,12 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
  * @author Petr Pisl
  */
 public class TypeUsageImpl implements TypeUsage {
-
     
-    private String type;
+    private final String type;
+
     private final int offset;
-    private boolean resolved;
+    
+    private final boolean resolved;
     
     public TypeUsageImpl(String type, int offset, boolean resolved) {
         this.type = type;
@@ -79,26 +79,93 @@ public class TypeUsageImpl implements TypeUsage {
         return offset;
     }
 
+    @Override
     public boolean isResolved() {
         return resolved;
     }
     
+    private static String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
+    private static String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
+    
+    @Override
+    public String getDisplayName() {
+        String displayName = type;
+        if (displayName.contains(GENERATED_FUNCTION_PREFIX)) {
+            displayName = removeGeneratedFromFQN(displayName, GENERATED_FUNCTION_PREFIX);
+        }
+        if (displayName.contains(GENERATED_ANONYM_PREFIX)) {
+            displayName = removeGeneratedFromFQN(displayName, GENERATED_ANONYM_PREFIX);
+        }
+        return displayName;
+    }
+
+    /**
+     * 
+     * @param fqn fully qualified name of the type
+     * @param generated the generated prefix
+     * @return the fully qualified name without the generated part or empty string if the generated name is the last one.
+     * 
+     */
+    private String removeGeneratedFromFQN(String fqn, String generated) {
+        String[] parts = type.split("\\."); //NOI18N
+        String part = parts[parts.length - 1];
+        if(part.contains(generated)) {
+            try {
+                Integer.parseInt(part.substring(generated.length()));
+                return ""; // return empty name if the last name is generated
+            } catch (NumberFormatException nfe) {
+                // do nothing
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            part = parts[i];
+            boolean add = true;
+            if (part.startsWith(generated)) {
+                try {
+                    Integer.parseInt(part.substring(generated.length()));
+                    add = false;
+                } catch (NumberFormatException nfe) {
+                    // do nothing
+                }
+            }
+            if (add) {
+                sb.append(part);
+                if (i < (parts.length - 1)) {
+                    sb.append(".");
+                }
+            }
+        }
+        return sb.toString();
+    }
+    
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || !(obj instanceof TypeUsageImpl)) return false;
-        TypeUsageImpl typeUsage = (TypeUsageImpl)obj;
-        return type.equals(typeUsage.getType())
-                && offset == typeUsage.getOffset()
-                && resolved == typeUsage.isResolved();
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TypeUsageImpl other = (TypeUsageImpl) obj;
+        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+            return false;
+        }
+        if (this.offset != other.offset) {
+            return false;
+        }
+        if (this.resolved != other.resolved) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        int hash = 2;
-        hash = hash * 31 + (type != null ? type.hashCode() : 0);
-        hash = hash * 31 + offset;
-        hash = hash * 31 + (resolved ? 1 : 0);
+        int hash = 7;
+        hash = 83 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 83 * hash + this.offset;
+        hash = 83 * hash + (this.resolved ? 1 : 0);
         return hash;
     }
 }

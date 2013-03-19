@@ -61,6 +61,7 @@ import org.netbeans.modules.editor.macros.storage.MacrosStorage;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -69,7 +70,12 @@ import org.openide.util.WeakListeners;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageFilter.class)
 public final class MacroShortcutsInjector extends StorageFilter<Collection<KeyStroke>, MultiKeyBinding> implements PropertyChangeListener {
-
+    /**
+     * How many times the Injector will try to load the macros from the editor storage.
+     * Because of issue #223802, editor storage may not be yet initialized when the Injector is run.
+     */
+    private static final int MAX_RETRY_COUNT = 2;
+    
     public static void refreshShortcuts() {
         Collection<? extends MacroShortcutsInjector> injectors = Lookup.getDefault().lookupAll(MacroShortcutsInjector.class);
         if (injectors.size() == 0) {
@@ -99,7 +105,9 @@ public final class MacroShortcutsInjector extends StorageFilter<Collection<KeySt
     @Override
     public void afterLoad(Map<Collection<KeyStroke>, MultiKeyBinding> map, MimePath mimePath, String profile, boolean defaults) {
         Map<String, MacroDescription> macros = new HashMap<String, MacroDescription>();
-        collectMacroActions(mimePath, macros);
+        if (!collectMacroActions(mimePath, macros)) {
+            return;
+        }
         
         for(MacroDescription macro : macros.values()) {
             List<? extends MultiKeyBinding> shortcuts = macro.getShortcuts();
@@ -157,9 +165,36 @@ public final class MacroShortcutsInjector extends StorageFilter<Collection<KeySt
     
     private EditorSettingsStorage<String, MacroDescription> storage = null;
     
-    private void collectMacroActions(MimePath mimePath, Map<String, MacroDescription> macros) {
+    /**
+     * Counter of attempted refreshes
+     */
+    private int retryCount;
+    
+    private RequestProcessor.Task delayed;
+    
+    private boolean collectMacroActions(MimePath mimePath, Map<String, MacroDescription> macros) {
         if (storage == null) {
-            storage = EditorSettingsStorage.<String, MacroDescription>get(MacrosStorage.ID);
+            storage = EditorSettingsStorage.<String, MacroDescription>find(MacrosStorage.ID);
+            if (storage == null) {
+                synchronized (this) {
+                    if (delayed != null) {
+                        return false;
+                    }
+                    if (retryCount++ < MAX_RETRY_COUNT) {
+                        delayed = RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                synchronized (MacroShortcutsInjector.this) {
+                                    delayed = null;
+                                }
+                                refreshShortcuts();
+                            }
+                        }, 500);
+                    } else {
+                        LOG.warning("Could not create macro shortcuts, editor settings storage not initialized yet.");
+                    }
+                }
+                return false;
+            }
             storage.addPropertyChangeListener(WeakListeners.propertyChange(this, storage));
         }
 
@@ -168,6 +203,7 @@ public final class MacroShortcutsInjector extends StorageFilter<Collection<KeySt
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);
         }
+        return true;
     }
 
 }

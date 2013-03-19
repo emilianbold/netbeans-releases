@@ -104,7 +104,6 @@ mimeType = SQLDataLoader.SQL_MIME_TYPE,
 preferredID = "sql.source",
 position = 1)
 public final class SQLCloneableEditor extends CloneableEditor implements MultiViewElement {
-
     private transient JSplitPane splitter;
     private transient JTabbedPane resultComponent;
     private transient JPopupMenu resultPopupMenu;
@@ -167,8 +166,10 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
             resultComponent.removeAll();
         }
         
+        int i = 0;
         for (Component comp : components ) {
             resultComponent.add(comp);            
+            resultComponent.setToolTipTextAt(i++, getToolTipForComponent(comp));
         }
 
         // Put focus on the first result from the set
@@ -179,6 +180,22 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
         showResultComponent();
     }
     
+    private String getToolTipForComponent(Component comp) {
+        if (comp instanceof JComponent) {
+            String rawToolTip = ((JComponent) comp).getToolTipText();
+            if (rawToolTip == null) {
+                return null;
+            } else {
+                String shortened = rawToolTip.length() > 128
+                        ? rawToolTip.substring(0, 128) + "\u2026" //NOI18N
+                        : rawToolTip;
+                return shortened.replace("\n", " ");                    //NOI18N
+            }
+        } else {
+            return null;
+        }
+    }
+
     @SuppressWarnings("deprecation")
     private void createResultComponent() {
         JPanel container = findContainer(this);
@@ -483,6 +500,9 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
     @Override
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         this.callback = callback;
+        // Needed as Title and Tooltip could be calculated from currently set
+        // jdbc connection - which changes after deserialization (none is set)
+        updateName();
     }
 
     @Messages({

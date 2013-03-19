@@ -83,14 +83,32 @@ import org.openide.util.NbBundle;
 public class LinkButton extends JButton implements MouseListener, FocusListener {
 
     private static final Font  BUTTON_FONT = getButtonFont();
-    private static final Color LINK_IN_FOCUS_COLOR     = new Color(0xFF8E00);
-    private static final Color LINK_COLOR              = new Color(0x164B7B);
-    private static final Color MOUSE_OVER_LINK_COLOR   = new Color(0xFF8E00);
-    private static final Color VISITED_LINK_COLOR      = new Color(0x5591D2);
+    private static Color linkInFocusColor   = null;
+    private static Color linkColor          = null;
+    private static Color mouseOverLinkColor = null;
+    private static Color visitedLinkColor   = null;
     private static final Stroke LINK_IN_FOCUS_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE,
         BasicStroke.JOIN_BEVEL, 0, new float[] {0, 2}, 0);
 
     private boolean underline = false;
+
+    static {
+        linkInFocusColor = UIManager.getColor( "nb.html.link.foreground.focus" ); //NOI18N
+        if( null == linkInFocusColor )
+            linkInFocusColor = new Color(0xFF8E00);
+
+        linkColor = UIManager.getColor( "nb.html.link.foreground" ); //NOI18N
+        if( null == linkColor )
+            linkColor = new Color(0x164B7B);
+
+        mouseOverLinkColor = UIManager.getColor( "nb.html.link.foreground.hover" ); //NOI18N
+        if( null == mouseOverLinkColor )
+            mouseOverLinkColor = new Color(0xFF8E00);
+
+        visitedLinkColor = UIManager.getColor( "nb.html.link.foreground.visited" ); //NOI18N
+        if( null == visitedLinkColor )
+            visitedLinkColor = new Color(0x5591D2);
+    }
 
     public LinkButton(String text, Icon icon) {
         super(text, icon);
@@ -118,7 +136,7 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
     }
 
     private void init() {
-        setForeground( LINK_COLOR );
+        setForeground( linkColor );
         setFont( BUTTON_FONT );
         setBorder( new EmptyBorder(1, 1, 1, 1) );
         setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
@@ -147,17 +165,17 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
     public void mouseEntered(MouseEvent e) {
         if( isEnabled() ) {
             underline = true;
-            setForeground( LINK_IN_FOCUS_COLOR );
+            setForeground( linkInFocusColor );
             repaint();
             onMouseEntered( e );
-            setForeground( MOUSE_OVER_LINK_COLOR );
+            setForeground( mouseOverLinkColor );
         }
     }
 
     public void mouseExited(MouseEvent e) {
         if( isEnabled() ) {
             underline = false;
-            setForeground( isVisited() ? VISITED_LINK_COLOR : LINK_COLOR );
+            setForeground( isVisited() ? visitedLinkColor : linkColor );
             repaint();
             onMouseExited( e );
         }
@@ -171,7 +189,7 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
         Dimension size = getSize();
         if( hasFocus() && isEnabled() ) {
             g2.setStroke( LINK_IN_FOCUS_STROKE );
-            g2.setColor( LINK_IN_FOCUS_COLOR );
+            g2.setColor( linkInFocusColor );
             g2.drawRect( 0, 0, size.width - 1, size.height - 1 );
         }
     }

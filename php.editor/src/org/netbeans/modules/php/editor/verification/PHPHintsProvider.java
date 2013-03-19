@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
@@ -109,17 +110,15 @@ public class PHPHintsProvider implements HintsProvider {
             unhandled.addAll(errors);
         }
         Map<?, List<? extends ErrorRule>> allErrors = manager.getErrors();
-        if (allErrors != null) {
-            List<? extends ErrorRule> unhandledErrors = allErrors.get(ErrorType.UNHANDLED_ERRORS);
-            if (unhandledErrors != null) {
-                RulesRunner<Error> rulesRunner = new RulesRunnerImpl<Error>(manager, initializeContext(context), unhandled);
-                rulesRunner.run(unhandledErrors, RuleAdjuster.NONE);
-            }
-            List<? extends ErrorRule> hintErrors = allErrors.get(ErrorType.HINT_ERRORS);
-            if (hintErrors != null) {
-                RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(manager, initializeContext(context), hints);
-                rulesRunner.run(hintErrors, RuleAdjuster.NONE);
-            }
+        List<? extends ErrorRule> unhandledErrors = allErrors.get(ErrorType.UNHANDLED_ERRORS);
+        if (unhandledErrors != null) {
+            RulesRunner<Error> rulesRunner = new RulesRunnerImpl<Error>(manager, initializeContext(context), unhandled);
+            rulesRunner.run(unhandledErrors, RuleAdjuster.NONE);
+        }
+        List<? extends ErrorRule> hintErrors = allErrors.get(ErrorType.HINT_ERRORS);
+        if (hintErrors != null) {
+            RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(manager, initializeContext(context), hints);
+            rulesRunner.run(hintErrors, RuleAdjuster.NONE);
         }
     }
 
@@ -245,7 +244,9 @@ public class PHPHintsProvider implements HintsProvider {
         public void adjust(Rule rule) {
             if (rule instanceof CustomisableRule) {
                 CustomisableRule icm = (CustomisableRule) rule;
-                icm.setPreferences(hintManager.getPreferences(icm));
+                Preferences preferences = hintManager.getPreferences(icm);
+                assert preferences != null : rule;
+                icm.setPreferences(preferences);
             }
         }
 

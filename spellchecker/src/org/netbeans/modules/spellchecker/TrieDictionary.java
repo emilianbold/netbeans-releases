@@ -70,6 +70,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.modules.OnStop;
 import org.openide.modules.Places;
 import org.openide.util.CharSequences;
@@ -330,7 +332,8 @@ public class TrieDictionary implements Dictionary {
         SortedSet<CharSequence> data = new TreeSet<CharSequence>();
 
         for (URL u : sources) {
-
+            FileObject f = URLMapper.findFileObject(u);
+            u = f != null ? URLMapper.findURL(f, URLMapper.EXTERNAL) : u;
             BufferedReader in = new BufferedReader(new InputStreamReader(u.openStream(), "UTF-8"));
             
             try {

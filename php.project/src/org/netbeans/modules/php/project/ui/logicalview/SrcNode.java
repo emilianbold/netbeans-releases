@@ -170,9 +170,9 @@ public class SrcNode extends FilterNode {
         Action customizeAction = null;
         if (isTest) {
             for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
-                String customizerCategoryName = testingProvider.getCustomizerCategoryName();
-                if (customizerCategoryName != null) {
-                    customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, customizerCategoryName);
+                String customizerCategory = testingProvider.getCustomizerCategoryIdent();
+                if (customizerCategory != null) {
+                    customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, customizerCategory);
                 }
             }
         } else {

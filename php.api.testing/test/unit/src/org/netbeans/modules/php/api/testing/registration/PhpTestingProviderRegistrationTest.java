@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
@@ -140,7 +141,12 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
         }
 
         @Override
-        public TestSession runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
+        public boolean isTestCase(PhpModule phpModule, PhpClass.Method method) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -165,7 +171,7 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
         }
 
         @Override
-        public String getCustomizerCategoryName() {
+        public String getCustomizerCategoryIdent() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

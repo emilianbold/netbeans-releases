@@ -45,20 +45,15 @@ import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import javax.swing.DefaultCellEditor;
-import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import org.jdesktop.swingx.renderer.JRendererCheckBox;
-import org.netbeans.modules.db.dataview.meta.DBColumn;
-import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
-import org.openide.awt.StatusDisplayer;
 
 public class ResultSetTableCellEditor extends DefaultCellEditor {
 
     protected Object val;
-    protected boolean editable = true;
     protected JTable table;
     protected static final boolean suppressEditorBorder;
 
@@ -93,17 +88,9 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
                 if (val == null && txtVal.equals("")) {
                     return null;
                 } else {
-                    try {
-                        assert table != null;
-                        int col = table.getEditingColumn();
-                        //textField.addKeyListener(new TableKeyListener());
-                        return DBReadWriteHelper.validate(txtVal, ((ResultSetJXTable) table).getDBColumn(col));
-                    } catch (Exception ex) {
-                        StatusDisplayer.getDefault().setStatusText(ex.getMessage());
                         return txtVal;
                     }
                 }
-            }
         };
 
         textField.addActionListener(delegate);
@@ -147,24 +134,5 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
         };
 
         checkBox.addActionListener(delegate);
-    }
-
-    protected void setEditable(int column, Component c, boolean celleditable) {
-        assert table != null;
-        DBColumn dbCol = ((ResultSetJXTable) table).getDBColumn(column);
-        if (dbCol.isGenerated()) {
-            editable = false;
-        }
-        if (! celleditable) {
-            editable = false;
-        } else {
-            editable = dbCol.isEditable();
-        }
-
-        if (c instanceof JTextField) {
-            ((JTextField) c).setEditable(editable);
-        } else if (c instanceof JComponent) {
-            ((JComponent) c).setEnabled(editable);
-        }
     }
 }

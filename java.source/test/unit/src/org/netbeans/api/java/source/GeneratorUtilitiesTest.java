@@ -44,6 +44,7 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
@@ -637,6 +638,20 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                     }
                 }
             }
+        });
+    }
+
+    public void testCommentsCopyingNull() throws Exception {//#165241
+        performTest("package test;\npublic abstract class Test {\npublic abstract void test();\n }\n", new Task<WorkingCopy>() {
+            @Override public void run(WorkingCopy parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+                ClassTree clazz = (ClassTree) parameter.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+                BlockTree nue = parameter.getTreeMaker().Block(Collections.<StatementTree>emptyList(), false);
+                GeneratorUtilities.get(parameter).copyComments(mt.getBody(), nue, true);
+            }
+        }, new Validator() {
+            public void validate(CompilationInfo info) {}
         });
     }
 

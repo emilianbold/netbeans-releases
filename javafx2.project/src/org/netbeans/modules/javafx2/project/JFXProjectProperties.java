@@ -144,9 +144,9 @@ public final class JFXProjectProperties {
     
     // FX config properties (Run panel), replicated from ProjectProperties
     public static final String MAIN_CLASS = "javafx.main.class"; // NOI18N
-    public static final String APPLICATION_ARGS = JFXProjectConfigurations.APPLICATION_ARGS;
-    public static final String APP_PARAM_PREFIX = JFXProjectConfigurations.APP_PARAM_PREFIX;
-    public static final String APP_PARAM_SUFFIXES[] = JFXProjectConfigurations.APP_PARAM_SUFFIXES;
+    //public static final String APPLICATION_ARGS = JFXProjectConfigurations.APPLICATION_ARGS;
+    //public static final String APP_PARAM_PREFIX = JFXProjectConfigurations.APP_PARAM_PREFIX;
+    //public static final String APP_PARAM_SUFFIXES[] = JFXProjectConfigurations.APP_PARAM_SUFFIXES;
     public static final String RUN_JVM_ARGS = ProjectProperties.RUN_JVM_ARGS;
     public static final String FALLBACK_CLASS = "javafx.fallback.class"; // NOI18N
     public static final String SIGNED_JAR = "dist.signed.jar"; // NOI18N
@@ -182,6 +182,7 @@ public final class JFXProjectProperties {
     public static final String NATIVE_ICON_FILE = "javafx.deploy.icon.native"; // NOI18N
     public static final String SPLASH_IMAGE_FILE = "javafx.deploy.splash"; // NOI18N
     public static final String PERMISSIONS_ELEVATED = "javafx.deploy.permissionselevated"; // NOI18N
+    public static final String DISABLE_PROXY = "javafx.deploy.disable.proxy"; // NOI18N
 
     // Deployment - signing
     public static final String JAVAFX_SIGNING_ENABLED = "javafx.signing.enabled"; //NOI18N
@@ -312,6 +313,10 @@ public final class JFXProjectProperties {
     JToggleButton.ToggleButtonModel addStartMenuShortcut;
     public JToggleButton.ToggleButtonModel getAddStartMenuShortcutModel() {
         return addStartMenuShortcut;
+    }
+    JToggleButton.ToggleButtonModel disableProxy;
+    public JToggleButton.ToggleButtonModel getDisableProxyModel() {
+        return disableProxy;
     }
 
     String wsIconPath;
@@ -610,6 +615,7 @@ public final class JFXProjectProperties {
             installPermanently = fxPropGroup.createToggleButtonModel(evaluator, INSTALL_PERMANENTLY);
             addDesktopShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_DESKTOP_SHORTCUT);
             addStartMenuShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_STARTMENU_SHORTCUT);
+            disableProxy = fxPropGroup.createToggleButtonModel(evaluator, DISABLE_PROXY);
             
             // CustomizerRun
             CONFIGS = new JFXConfigs();
@@ -660,14 +666,16 @@ public final class JFXProjectProperties {
     public static class PropertiesTableModel extends AbstractTableModel {
         
         private List<Map<String,String>> properties;
+        private List<Map<String,String>> defaultProperties;
         private String propSuffixes[];
         private String columnNames[];
         
-        public PropertiesTableModel(List<Map<String,String>> props, String sfxs[], String clmns[]) {
-            if (sfxs.length != clmns.length) {
+        public PropertiesTableModel(List<Map<String,String>> props, List<Map<String,String>> defaultProps, String sfxs[], String clmns[]) {
+            if (sfxs.length < clmns.length) {
                 throw new IllegalArgumentException();
             }
             properties = props;
+            defaultProperties = defaultProps;
             propSuffixes = sfxs;
             columnNames = clmns;
         }
@@ -686,6 +694,10 @@ public final class JFXProjectProperties {
                 }
             }
             return true;
+        }
+        
+        public boolean hasDefaultProperties() {
+            return defaultProperties != null;
         }
         
         public boolean isRowEmpty(int index) {
@@ -741,6 +753,57 @@ public final class JFXProjectProperties {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             return properties.get(rowIndex).get(propSuffixes[columnIndex]);
+        }
+        
+        /**
+         * restore defaults if defaultProperties exist, otherwise clean
+         */
+        public void reset() {
+            if(defaultProperties != null) {
+                properties.clear();
+                properties.addAll(defaultProperties);
+            } else {
+                properties.clear();
+            }
+            fireTableDataChanged();
+        }
+        
+        /**
+         * Indicates whether it makes sense to enable the Default/Clean
+         * button, i.e., whether current table contents differ from the default
+         * @return true is a call to reset() would modify data
+         */
+        public boolean isResettable() {
+            if(hasDefaultProperties()) {
+                return !areEqual(properties, defaultProperties);
+            }
+            return !properties.isEmpty();
+        }
+        
+        private boolean areEqual(List<Map<String,String>> list1, List<Map<String,String>> list2) {
+            String s1 = getAsString(list1);
+            String s2 = getAsString(list2);
+            if(isEqualText(s1, s2)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private String getAsString(List<Map<String,String>> list) {
+            if(list != null) {
+                List<String> l = new LinkedList<String>();
+                for(Map<String, String> entry : list) {
+                    StringBuilder sb = new StringBuilder();
+                    for(int i = 0; i < columnNames.length; i++) {
+                        sb.append(propSuffixes[i]);
+                        sb.append(entry.get(propSuffixes[i]));
+                    }
+                    l.add(sb.toString());
+                }
+                Collections.sort(l);
+                return l.toString();
+            }
+            return null;
         }
         
         public void addRow() {
@@ -1259,11 +1322,25 @@ public final class JFXProjectProperties {
             }
         }
     }
+    
+    private boolean isParentOf(File parent, File child) {
+        if(parent == null || child == null) {
+            return false;
+        }
+        if(!parent.exists() || !child.exists()) {
+            return false;
+        }
+        FileObject parentFO = FileUtil.toFileObject(parent);
+        FileObject childFO = FileUtil.toFileObject(child);
+        return FileUtil.isParentOf(parentFO, childFO);
+    }
 
     private void initResources (final PropertyEvaluator eval, final Project prj, final JFXConfigs configs) {
         final String lz = eval.getProperty(DOWNLOAD_MODE_LAZY_JARS); //old way, when changed rewritten to new
         final String rcp = eval.getProperty(RUN_CP);        
-        final String bc = eval.getProperty(BUILD_CLASSES);        
+        final String bc = eval.getProperty(BUILD_CLASSES);
+        final String runtimePath = eval.getProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME);
+        final String sdkPath = eval.getProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK);
         final File prjDir = FileUtil.toFile(prj.getProjectDirectory());
         final File bcDir = bc == null ? null : PropertyUtils.resolveFile(prjDir, bc);
         final List<File> lazyFileList = new ArrayList<File>();
@@ -1286,6 +1363,8 @@ public final class JFXProjectProperties {
             // no need to react
         }
 
+        File runtimeF = runtimePath != null ? new File(runtimePath) : null;
+        File sdkF = sdkPath != null ? new File(sdkPath) : null;
         final List<File> resFileList = new ArrayList<File>(paths.length);
         for (String p : paths) {
             if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
@@ -1293,6 +1372,9 @@ public final class JFXProjectProperties {
             }
             final File f = PropertyUtils.resolveFile(prjDir, p);
             if (f.equals(mainFile)) {
+                continue;
+            }
+            if (isParentOf(runtimeF, f) || isParentOf(sdkF, f)) {
                 continue;
             }
             boolean isPrel = false;

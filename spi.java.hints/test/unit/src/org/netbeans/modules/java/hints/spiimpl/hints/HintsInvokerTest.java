@@ -203,7 +203,7 @@ public class HintsInvokerTest extends TestBase {
                        "\n" +
                        "public class Test {\n" +
                        "     private int test(java.io.File f) {\n" +
-                       "         if (!true)\n" +
+                       "         if (false)\n" +
                        "             System.err.println(2);\n" +
                        "         else\n" +
                        "             System.err.println(1);\n" +
@@ -229,7 +229,7 @@ public class HintsInvokerTest extends TestBase {
                        "\n" +
                        "public class Test {\n" +
                        "     private int test(java.io.File f) {\n" +
-                       "         if (!true)\n" +
+                       "         if (false)\n" +
                        "             return 2;\n" +
                        "         else\n" +
                        "             return 1;\n" +
@@ -335,7 +335,7 @@ public class HintsInvokerTest extends TestBase {
                        "\n" +
                        "public class Test {\n" +
                        "     private void test() {" +
-                       "         if (!true) {\n" +
+                       "         if (false) {\n" +
                        "             System.err.println();\n" +
                        "         }\n" +
                        "     }\n" +
@@ -397,7 +397,7 @@ public class HintsInvokerTest extends TestBase {
                        "         System.err.println(\"\");\n" +
                        "     }\n" +
                        "}\n",
-                       "3:25-6:6:verifier:HINT",
+                       "4:9-4:32:verifier:HINT",
                        "FixImpl",
                        ("package test;\n" +
                        "\n" +
@@ -420,7 +420,7 @@ public class HintsInvokerTest extends TestBase {
                        "         i++;\n" +
                        "     }\n" +
                        "}\n",
-                       "3:25-8:6:verifier:HINT",
+                       "5:9-5:32:verifier:HINT",
                        "FixImpl",
                        ("package test;\n" +
                        "\n" +

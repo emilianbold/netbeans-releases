@@ -60,6 +60,7 @@ public class JDBCValue extends ValueImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCValue.class.getName());
 
+    private final MetadataElement parent;
     private final String name;
     private final SQLType type;
     private final int length;
@@ -75,7 +76,7 @@ public class JDBCValue extends ValueImplementation {
      * @return a newly created JDBCValue instance
      * @throws java.sql.SQLException
      */
-    public static JDBCValue createProcedureValue(ResultSet rs) throws SQLException {
+    public static JDBCValue createProcedureValue(ResultSet rs, MetadataElement parent) throws SQLException {
         String name = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
         int length = rs.getInt("LENGTH");
@@ -84,7 +85,20 @@ public class JDBCValue extends ValueImplementation {
         short radix = rs.getShort("RADIX");
         Nullable nullable = JDBCUtils.getProcedureNullable(rs.getShort("NULLABLE"));
 
-        return new JDBCValue(name, type, length, precision, radix, scale, nullable);
+        return new JDBCValue(parent, name, type, length, precision, radix, scale, nullable);
+    }
+
+    /**
+     * Create a value from a row in getFunctionColumns()
+     *
+     * @param rs the result set from getFunctionColumns, assumed to be at a
+     * valid row
+     * @return a newly created JDBCValue instance
+     * @throws java.sql.SQLException
+     */
+    public static JDBCValue createFunctionValue(ResultSet rs, MetadataElement parent) throws SQLException {
+        // Delegate to the procedure Version - currently the same columns are used
+        return createProcedureValue(rs, parent);
     }
 
     /**
@@ -94,7 +108,7 @@ public class JDBCValue extends ValueImplementation {
      * @return a newly created JDBCValue instance
      * @throws java.sql.SQLException
      */
-    public static JDBCValue createTableColumnValue(ResultSet rs) throws SQLException {
+    public static JDBCValue createTableColumnValue(ResultSet rs, MetadataElement parent) throws SQLException {
         String name = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
 
@@ -112,7 +126,7 @@ public class JDBCValue extends ValueImplementation {
         short radix = rs.getShort("NUM_PREC_RADIX");
         Nullable nullable = JDBCUtils.getColumnNullable(rs.getShort("NULLABLE"));
 
-        return new JDBCValue(name, type, length, precision, radix, scale, nullable);
+        return new JDBCValue(parent, name, type, length, precision, radix, scale, nullable);
     }
 
     /**
@@ -123,7 +137,7 @@ public class JDBCValue extends ValueImplementation {
      * @return a newly created JDBCValue instance
      * @throws java.sql.SQLException
      */
-    public static JDBCValue createTableColumnValueODBC(ResultSet rs) throws SQLException {
+    public static JDBCValue createTableColumnValueODBC(ResultSet rs, MetadataElement parent) throws SQLException {
         String name = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
         int length = 0;
@@ -137,10 +151,11 @@ public class JDBCValue extends ValueImplementation {
         short radix = rs.getShort("RADIX");
         Nullable nullable = JDBCUtils.getColumnNullable(rs.getShort("NULLABLE"));
 
-        return new JDBCValue(name, type, length, precision, radix, scale, nullable);
+        return new JDBCValue(parent, name, type, length, precision, radix, scale, nullable);
     }
 
-    public JDBCValue(String name, SQLType type, int length, int precision, short radix, short scale, Nullable nullable) {
+    public JDBCValue(MetadataElement parent, String name, SQLType type, int length, int precision, short radix, short scale, Nullable nullable) {
+        this.parent = parent;
         this.name = name;
         this.type = type;
         this.length = length;
@@ -193,7 +208,7 @@ public class JDBCValue extends ValueImplementation {
 
     @Override
     public MetadataElement getParent() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return this.parent;
     }
 
 }

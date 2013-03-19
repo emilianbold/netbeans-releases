@@ -241,12 +241,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new AttributeValueItem(info, value, documentation, element, substitutionOffset, referencesCount, whiteList);
     }
 
-    public static JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, WhiteListQuery.WhiteList whiteList) {
+    public static JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
         switch (memberElem.getKind()) {
             case METHOD:
             case ENUM_CONSTANT:
             case FIELD:
-                return new StaticMemberItem(info, type, memberElem, memberType, substitutionOffset, isDeprecated, whiteList);
+                return new StaticMemberItem(info, type, memberElem, memberType, substitutionOffset, isDeprecated, addSemicolon, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + memberElem.getKind());
         }
@@ -1503,7 +1503,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             TypeMirror retType = type.getReturnType();
             this.typeName = Utilities.getTypeName(info, retType, false).toString();
-            this.addSemicolon = addSemicolon && (retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID);
+            this.addSemicolon = addSemicolon && retType.getKind() == TypeKind.VOID;
             this.autoImportEnclosingType = referencesCount != null;
             if (this.autoImportEnclosingType) {
                 this.enclSortText = new LazySortText(elem.getEnclosingElement().getSimpleName().toString(), null, ElementHandle.create((TypeElement)elem.getEnclosingElement()), referencesCount);
@@ -1673,23 +1673,27 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 String toAddText = toAdd.toString();
                 int idx = toAddText.indexOf(')');
                 if (idx > 0) {
-                    if (!params.isEmpty()) {
+                    if (!params.isEmpty() || text.length() == length) {
                         if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen()) {
                             sb.append(' '); //NOI18N
                         }
                         sb.append('('); //NOI18N
-                        boolean guessArgs = Utilities.guessMethodArguments();
-                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                            ParamDesc paramDesc = it.next();
-                            sb.append("${"); //NOI18N
-                            sb.append(paramDesc.name);
-                            if (guessArgs) {
-                                sb.append(" named instanceof="); //NOI18N
-                                sb.append(paramDesc.fullTypeName);
-                            }
-                            sb.append('}'); //NOI18N
-                            if (it.hasNext()) {
-                                sb.append(", "); //NOI18N
+                        if (params.isEmpty()) {
+                            sb.append("${cursor}"); //NOI18N
+                        } else {
+                            boolean guessArgs = Utilities.guessMethodArguments();
+                            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                                ParamDesc paramDesc = it.next();
+                                sb.append("${"); //NOI18N
+                                sb.append(paramDesc.name);
+                                if (guessArgs) {
+                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(paramDesc.fullTypeName);
+                                }
+                                sb.append('}'); //NOI18N
+                                if (it.hasNext()) {
+                                    sb.append(", "); //NOI18N
+                                }
                             }
                         }
                         sb.append(')');//NOI18N
@@ -2896,20 +2900,23 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String typeName;
         private String memberName;
         private String memberTypeName;
+        private boolean addSemicolon;
         private Set<Modifier> modifiers;
         private List<ParamDesc> params;
         private String sortText;
         private String leftText;
         private String rightText;
 
-        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, WhiteListQuery.WhiteList whiteList) {
+        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, boolean addSemicolon, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, ElementHandle.create(memberElem), whiteList);
             type = (DeclaredType) info.getTypes().erasure(type);
             this.typeHandle = TypeMirrorHandle.create(type);
             this.isDeprecated = isDeprecated;
             this.typeName = Utilities.getTypeName(info, type, false).toString();
             this.memberName = memberElem.getSimpleName().toString();
-            this.memberTypeName = Utilities.getTypeName(info, memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType(), false).toString();
+            TypeMirror mtm = memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType();
+            this.memberTypeName = Utilities.getTypeName(info, mtm, false).toString();
+            this.addSemicolon = addSemicolon && mtm.getKind() == TypeKind.VOID;
             this.modifiers = memberElem.getModifiers();
             if (!memberElem.getKind().isField()) {
                 this.params = new ArrayList<ParamDesc>();
@@ -2954,6 +2961,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         public CharSequence getInsertPrefix() {
             return typeName + "." + memberName; //NOI18N
+        }
+
+        @Override
+        protected CharSequence getInsertPostfix(JTextComponent c) {
+            return addSemicolon ? new StringBuilder().append(';') : null;
         }
 
         @Override

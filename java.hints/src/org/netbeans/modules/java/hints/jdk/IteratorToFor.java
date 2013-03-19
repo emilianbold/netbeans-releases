@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.Collection;
@@ -57,7 +58,7 @@ import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle.Messages;
 
-@Hint(displayName="#DN_IteratorToFor", description="#DESC_IteratorToFor", category="rules15")
+@Hint(displayName="#DN_IteratorToFor", description="#DESC_IteratorToFor", category="rules15", suppressWarnings={"", "ForLoopReplaceableByForEach", "WhileLoopReplaceableByForEach"})
 @Messages({
     "DN_IteratorToFor=Use JDK 5 for-loop",
     "DESC_IteratorToFor=Replaces simple uses of Iterator with a corresponding for-loop.",
@@ -74,7 +75,11 @@ public class IteratorToFor {
         if (!iterable(ctx, ctx.getVariables().get("$coll"), ctx.getVariables().get("$type"))) {
             return null;
         }
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_IteratorToFor(),
+        Tree highlightTarget = ctx.getPath().getLeaf();
+        TreePath elem = ctx.getVariables().get("$elem");
+        if (elem.getParentPath() != null && elem.getParentPath().getLeaf().getKind() == Kind.BLOCK) elem = elem.getParentPath();
+        if (elem.getParentPath() != null && elem.getParentPath().getLeaf().getKind() == Kind.WHILE_LOOP) highlightTarget = elem.getParentPath().getLeaf();
+        return ErrorDescriptionFactory.forName(ctx, highlightTarget, Bundle.ERR_IteratorToFor(),
                 JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_IteratorToFor(), ctx.getPath(), "for ($type $elem : $coll) {$rest$;}"));
     }
 

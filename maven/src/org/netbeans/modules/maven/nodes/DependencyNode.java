@@ -44,6 +44,8 @@ package org.netbeans.modules.maven.nodes;
 
 import java.awt.Component;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -417,12 +419,16 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         if (longLiving && isDependencyProjectAvailable()) {
             acts.add(OpenProjectAction.SINGLETON);
         }
+        boolean local = isLocal();
         if (isAddedToCP()) {
             InstallLocalArtifactAction act = new InstallLocalArtifactAction();
             acts.add(act);
-            if (!isLocal()) {
+            if (!local) {
                 act.setEnabled(true);
             }
+        }
+        if (local) {
+            acts.add(new CopyLocationAction());
         }
 
 //        acts.add(new EditAction());
@@ -498,13 +504,13 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     public boolean hasJavadocInRepository() {
         return javadocExists.get() && (!Artifact.SCOPE_SYSTEM.equals(art.getScope())) ;
     }
-
+    
     //normalized
     public File getJavadocFile() {
         File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
         String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-javadoc.jar"); //NOI18N
+        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? ("tests".equals(art.getClassifier()) ? "-test" : "-" + art.getClassifier()) : "") + "-javadoc.jar"); //NOI18N
     }
 
     //normalized
@@ -512,7 +518,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
         String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-sources.jar"); //NOI18N
+        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? ("tests".equals(art.getClassifier()) ? "-test" : "-" + art.getClassifier()) : "") + "-sources.jar"); //NOI18N
     }
 
     public boolean hasSourceInRepository() {
@@ -528,21 +534,40 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
         try {
             String classifier;
+            String baseClassifier;
             String bundleName;
             if (isjavadoc) {
-                classifier = "javadoc";
+                if (art.getClassifier() != null) {
+                    if ("tests".equals(art.getClassifier())) {
+                        classifier = "test-javadoc";
+                    } else {
+                        classifier = art.getClassifier() + "-javadoc";
+                    }
+                } else {
+                    classifier = "javadoc";
+                }
+                baseClassifier = "javadoc";
                 bundleName = "MSG_Checking_Javadoc";
             } else {
-                classifier = "sources";
+                baseClassifier = "sources";
+                if (art.getClassifier() != null) {
+                    if ("tests".equals(art.getClassifier())) {
+                        classifier = "test-sources";
+                    } else {
+                        classifier = art.getClassifier() + "-sources";
+                    }
+                } else {
+                    classifier = "sources";
+                }
                 bundleName = "MSG_Checking_Sources";
             }
-                
+            
             Artifact sources = project.getEmbedder().createArtifactWithClassifier(
                 art.getGroupId(),
                 art.getArtifactId(),
                 art.getVersion(),
                 art.getType(),
-                (art.getClassifier() != null ? art.getClassifier() + "-" : "") + classifier); 
+                classifier); 
             progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName,art.getId()), 1);
             online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
             if (art.getFile() != null && art.getFile().exists()) {
@@ -554,7 +579,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                             coordinate.artifactId,
                             coordinate.version,
                             "jar",
-                            classifier);
+                            baseClassifier);
                         progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName, art.getId()), 1);
                         online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
                     }
@@ -656,15 +681,31 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             PropertySupport.Reflection transitive = new PropertySupport.Reflection<Boolean>(this, Boolean.TYPE, "isTransitive", null); //NOI18N
             transitive.setName("transitive"); //NOI18N
             transitive.setDisplayName(org.openide.util.NbBundle.getMessage(DependencyNode.class, "PROP_Transitive"));
+            
+            PropertySupport.Reflection path = new PropertySupport.Reflection<File>(art, File.class, "getFile", null); //NOI18N
+            path.setName("path"); //NOI18N
+            path.setDisplayName("Path");
+            path.setShortDescription("Absolute path to the artifact in the local filesystem.");
+            
+            PropertySupport.Reflection repositorypath = new PropertySupport.Reflection<String>(this, String.class, "getArtifactRepositoryPath", null); //NOI18N
+            repositorypath.setName("repositorypath"); //NOI18N
+            repositorypath.setDisplayName("Repository Path");
+            repositorypath.setShortDescription("Relative path within the local maven repository.");
+            
 
             basicProps.put(new Node.Property[] {
-                artifactId, groupId, version, type, scope, classifier, transitive, hasJavadoc, hasSources
+                artifactId, groupId, version, type, scope, classifier, transitive, hasJavadoc, hasSources, path, repositorypath
             });
         } catch (NoSuchMethodException exc) {
             exc.printStackTrace();
         }
         return sheet;
     }
+    
+    public String getArtifactRepositoryPath() {
+        return EmbedderFactory.getProjectEmbedder().getLocalRepository().pathOf(art);
+    }
+    
 //    private class DownloadJavadocAndSourcesAction extends AbstractAction implements Runnable {
 //        public DownloadJavadocAndSourcesAction() {
 //            putValue(Action.NAME, "Download Javadoc & Source");
@@ -1010,6 +1051,19 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 InstallPanel.runInstallGoal(project, fil, art);
             }
         }
+    }
+
+    private class CopyLocationAction extends AbstractAction {
+
+        @Messages("CopyLocationAction.name=Copy Location")
+        CopyLocationAction() {
+            super(CopyLocationAction_name());
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(art.getFile().getAbsolutePath()), null);
+        }
+
     }
 
     @Messages("BTN_Add_javadoc=Add local Javadoc")

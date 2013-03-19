@@ -367,7 +367,6 @@ public final class BasicSearchCriteria {
     }
 
     void setFileNamePattern(String pattern) {
-        boolean wasValid = fileNamePatternValid;
         searcherOptions.setPattern(pattern);
         if (searcherOptions.getPattern().isEmpty()) {
             fileNamePatternSpecified = false;
@@ -375,7 +374,10 @@ public final class BasicSearchCriteria {
             fileNamePatternSpecified = true;
             updateFileNamePattern();
         }
-        updateUsability(wasValid != fileNamePatternValid);
+        // Force updating of usability if standard pattern is used:
+        //  Info message about missing wildcards may need updating.
+        boolean force = !isFileNameRegexp();
+        updateUsability(force);
     }
 
     //--------------------------------------------------------------------------

@@ -43,6 +43,8 @@ package org.netbeans.modules.netbinox;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.ProtectionDomain;
@@ -55,6 +57,7 @@ import org.eclipse.osgi.baseadaptor.loader.ClasspathEntry;
 import org.eclipse.osgi.baseadaptor.loader.ClasspathManager;
 import org.eclipse.osgi.framework.adaptor.ClassLoaderDelegate;
 import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
+import org.openide.util.Exceptions;
 import org.osgi.framework.FrameworkEvent;
 
 /** Classloader that eliminates some unnecessary disk touches.
@@ -62,9 +65,36 @@ import org.osgi.framework.FrameworkEvent;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class NetbinoxLoader extends DefaultClassLoader {
+    private static final boolean jdk7;
+    static {
+        Method m = null;
+        boolean isJDK7 = true;
+        try {
+            m = ClassLoader.class.getDeclaredMethod("registerAsParallelCapable");
+        } catch (NoSuchMethodException ex) {
+            isJDK7 = false;
+        }
+        jdk7 = isJDK7;
+        if (m != null) {
+            try {
+                m.setAccessible(true);
+                m.invoke(null);
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+    }
+    
     public NetbinoxLoader(ClassLoader parent, ClassLoaderDelegate delegate, ProtectionDomain domain, BaseData bd, String[] classpath) {
         super(parent, delegate, domain, bd, classpath);
         this.manager = new NoTouchCPM(bd, classpath, this);
+    }
+
+    @Override
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        assert !jdk7 || !Thread.holdsLock(this) : 
+            "Classloading while holding classloader lock!";
+        return super.loadClass(name, resolve);
     }
 
     @Override
