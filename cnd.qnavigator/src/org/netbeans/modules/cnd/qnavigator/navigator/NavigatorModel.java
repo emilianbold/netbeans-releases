@@ -86,13 +86,13 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
 
     private static final int DEFAULT_PARSING_DELAY = 2000;
 
-    private DataObject cdo;
-    private NavigatorPanelUI ui;
+    private final DataObject cdo;
+    private final NavigatorPanelUI ui;
     private NavigatorComponent busyListener;
-    private Action[] actions;
-    private AbstractNode root;
+    private final Action[] actions;
+    private final AbstractNode root;
 
-    private CsmFileModel fileModel;
+    private final CsmFileModel fileModel;
     private Timer checkModifiedTimer;
     private long lastModified = 0;
     private long lastDocVersion = 0;
@@ -155,7 +155,18 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
 
     void removeNotify() {
         stopTimers();
+        if (checkModifiedTimer != null) {
+            for(ActionListener listener : checkModifiedTimer.getActionListeners()) {
+                checkModifiedTimer.removeActionListener(listener);
+            }
+        }
+        if (checkModifiedTimer != null) {
+            for(ActionListener listener : checkModifiedTimer.getActionListeners()) {
+                checkModifiedTimer.removeActionListener(listener);
+            }
+        }
         synchronized(lock) {
+            fileModel.clear();
             final Children children = root.getChildren();
             if (!Children.MUTEX.isReadAccess()){
                  Children.MUTEX.writeAccess(new Runnable(){
