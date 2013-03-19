@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,6 +54,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -233,92 +235,98 @@ public class Folder implements FileChangeListener, ChangeListener {
             log.log(Level.INFO, ex.getMessage(), ex);
             return;
         }
-        // files/folders to be added
-        FileObject files[] = folderFile.getChildren();
-        if (files != null) {
-            List<FileObject> fileList = new ArrayList<FileObject>();
-            ArrayList<CharSequence> otherFileList = new ArrayList<CharSequence>();
-            for (int i = 0; i < files.length; i++) {
-                if (interrupter != null && interrupter.cancelled()) {
-                    break;
-                }
-                if (!VisibilityQuery.getDefault().isVisible(files[i])) {
-                    continue;
-                }
-                if (files[i].isFolder()) {
-                    if (getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(files[i])) {
+        try {
+            // files/folders to be added
+            FileObject files[] = folderFile.getChildren();
+            if (files != null) {
+                List<FileObject> fileList = new ArrayList<FileObject>();
+                ArrayList<CharSequence> otherFileList = new ArrayList<CharSequence>();
+                for (int i = 0; i < files.length; i++) {
+                    if (interrupter != null && interrupter.cancelled()) {
+                        return;
+                    }
+                    if (!VisibilityQuery.getDefault().isVisible(files[i])) {
                         continue;
                     }
-                } else {
-                    if (!CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
-                        otherFileList.add(CharSequences.create(files[i].getNameExt()));
-                        continue;
-                    }
-                }
-                fileList.add(files[i]);
-            }
-            if (otherFileList.size() > 0) {
-                otherFileList.trimToSize();
-            }
-            MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
-            for (FileObject file : fileList) {
-                if (interrupter != null && interrupter.cancelled()) {
-                    break;
-                }
-                if (file.isFolder()) {
-                    try {
-                        String canonicalPath = RemoteFileUtil.getCanonicalPath(file);
-                        if (antiLoop.contains(canonicalPath)) {
-                            // It seems we have recursive link
-                            log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canonicalPath, folderFile.getPath()});
+                    if (files[i].isFolder()) {
+                        if (getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(files[i])) {
                             continue;
                         }
-                    } catch (IOException ex) {
-                        log.log(Level.INFO, ex.getMessage(), ex);
-                        continue;
-                    }
-                    Folder existingFolder = findFolderByName(file.getNameExt());
-                    if (existingFolder == null) {
-                        if (log.isLoggable(Level.FINE)) {
-                            log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
-                        }
-                        getConfigurationDescriptor().addFilesFromRefreshedDir(this, file, true, true, null, useOldSchemeBehavior);
                     } else {
-                        existingFolder.markRemoved(false);
-                    }
-                } else {
-                    String path = rootPath + '/' + file.getNameExt();
-                    if (path.startsWith("./")) { // NOI18N
-                        path = path.substring(2);
-                    }
-                    if (findItemByPath(path) == null) {
-                        if (log.isLoggable(Level.FINE)) {
-                            log.log(Level.FINE, "------------adding {2} item {0} in {1}", new Object[]{file.getPath(), getPath(), useOldSchemeBehavior ? "included" : "excluded"}); // NOI18N
-                        }
-                        PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(CREATE_ITEM_PERFORMANCE_EVENT, file);
-                        Item item = null;
-                        try {
-                            performanceEvent.setTimeOut(FS_TIME_OUT);
-                            item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path);
-                            addItemFromRefreshDir(item, true, true, useOldSchemeBehavior);
-                        } finally {
-                            performanceEvent.log(item);
+                        if (!CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
+                            otherFileList.add(CharSequences.create(files[i].getNameExt()));
+                            continue;
                         }
                     }
+                    fileList.add(files[i]);
                 }
-            }
-            if (interrupter == null || !interrupter.cancelled()) {
-                // Repeast for all sub folders
-                List<Folder> subFolders = getFolders();
-                for (Folder f : subFolders) {
+                if (interrupter != null && interrupter.cancelled()) {
+                    return;
+                }
+                if (otherFileList.size() > 0) {
+                    otherFileList.trimToSize();
+                }
+                MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
+                for (FileObject file : fileList) {
                     if (interrupter != null && interrupter.cancelled()) {
-                        break;
+                        return;
                     }
-                    f.refreshDiskFolder(antiLoop, useOldSchemeBehavior, interrupter);
+                    if (file.isFolder()) {
+                        try {
+                            String canonicalPath = RemoteFileUtil.getCanonicalPath(file);
+                            if (antiLoop.contains(canonicalPath)) {
+                                // It seems we have recursive link
+                                log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canonicalPath, folderFile.getPath()});
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            log.log(Level.INFO, ex.getMessage(), ex);
+                            continue;
+                        }
+                        Folder existingFolder = findFolderByName(file.getNameExt());
+                        if (existingFolder == null) {
+                            if (log.isLoggable(Level.FINE)) {
+                                log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+                            }
+                            getConfigurationDescriptor().addFilesFromRefreshedDir(this, file, true, true, null, useOldSchemeBehavior);
+                        } else {
+                            existingFolder.markRemoved(false);
+                        }
+                    } else {
+                        String path = rootPath + '/' + file.getNameExt();
+                        if (path.startsWith("./")) { // NOI18N
+                            path = path.substring(2);
+                        }
+                        if (findItemByPath(path) == null) {
+                            if (log.isLoggable(Level.FINE)) {
+                                log.log(Level.FINE, "------------adding {2} item {0} in {1}", new Object[]{file.getPath(), getPath(), useOldSchemeBehavior ? "included" : "excluded"}); // NOI18N
+                            }
+                            PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(CREATE_ITEM_PERFORMANCE_EVENT, file);
+                            Item item = null;
+                            try {
+                                performanceEvent.setTimeOut(FS_TIME_OUT);
+                                item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), path);
+                                addItemFromRefreshDir(item, true, true, useOldSchemeBehavior);
+                            } finally {
+                                performanceEvent.log(item);
+                            }
+                        }
+                    }
+                }
+                if (interrupter == null || !interrupter.cancelled()) {
+                    // Repeast for all sub folders
+                    List<Folder> subFolders = getFolders();
+                    for (Folder f : subFolders) {
+                        if (interrupter != null && interrupter.cancelled()) {
+                            return;
+                        }
+                        f.refreshDiskFolder(antiLoop, useOldSchemeBehavior, interrupter);
+                    }
                 }
             }
+        } finally {
+            antiLoop.removeLast();
         }
-        antiLoop.removeLast();
     }
 
     public String getDiskName() {
@@ -330,7 +338,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
     private static final boolean UNCHANGED_PROJECT_MODE = Boolean.getBoolean("cnd.unchanged.project"); // NOI18N
 
-    public void attachListeners(Interrupter interrupter) {
+    public void attachListeners(final Interrupter interrupter) {
         if (interrupter != null && interrupter.cancelled()) {
             return;
         }
@@ -363,7 +371,23 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
             try {
                 if (!UNCHANGED_PROJECT_MODE) {
-                    FileSystemProvider.addRecursiveListener(this, fileSystem, absRootPath);
+                    Callable<Boolean> stopper = null;
+                    if (interrupter != null) {
+                        stopper = new Callable<Boolean>() {
+
+                            @Override
+                            public Boolean call() throws Exception {
+                                return interrupter.cancelled();
+                            }
+                        };
+                    }
+                    FileFilter filter = new FileFilter() {
+                        @Override
+                        public boolean accept(File folderFile) {
+                            return !getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(folderFile) && VisibilityQuery.getDefault().isVisible(folderFile);
+                        }
+                    };
+                    FileSystemProvider.addRecursiveListener(this, fileSystem, absRootPath, filter, stopper);
                 }
                 listenerAttached = true;
                 if (log.isLoggable(Level.FINER)) {
@@ -430,6 +454,20 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
 
     }
+
+    final void onClose() {
+        synchronized (changeListenerList) {
+            changeListenerList.clear();
+        }
+        itemsLock.writeLock().lock();
+        try {
+            items.clear();
+        } finally {
+            itemsLock.writeLock().unlock();
+        }
+        deletedItems = null;
+    }
+
 
     public Folder getParent() {
         return parent;

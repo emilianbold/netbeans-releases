@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import org.netbeans.modules.git.GitFileNode;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.List;
@@ -90,7 +91,7 @@ public class CommitDialogTest extends AbstractGitTestCase {
         assertEquals(user, p.getParameters().getCommiter());
         assertEquals(message, p.getParameters().getCommitMessage());           
         
-        List<GitFileNode> files = p.getCommitTable().getCommitFiles();
+        List<GitFileNode.GitLocalFileNode> files = p.getCommitTable().getCommitFiles();
         assertEquals(1, files.size());
         assertEquals(file, files.get(0).getFile());
     }     

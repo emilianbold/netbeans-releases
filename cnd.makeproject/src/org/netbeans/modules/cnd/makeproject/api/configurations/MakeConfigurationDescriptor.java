@@ -168,9 +168,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
-    private volatile Task initFoldersTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
-    private boolean defaultConfigurationsRestored = false;
     
     private static ConcurrentHashMap<String, Object> projectWriteLocks = new ConcurrentHashMap<String, Object>();
 
@@ -199,16 +197,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             return;
         }
         ToolsPanelSupport.addCompilerSetModifiedListener(this);
-        for (Item item : getProjectItems()) {
-            if (interrupter != null && interrupter.cancelled()) {
-                return;
-            }
-            item.onOpen();
-        }        
-        Task foldersTask = this.initFoldersTask;
-        if (foldersTask != null) {
-            foldersTask.schedule(0);
-        }
+        //for (Item item : getProjectItems()) {
+        //    if (interrupter != null && interrupter.cancelled()) {
+        //        return;
+        //    }
+        //    item.onOpen();
+        //}        
+        //Task foldersTask = this.initFoldersTask;
+        //if (foldersTask != null) {
+        //    foldersTask.schedule(0);
+        //}
     }
 
     /*
@@ -227,8 +225,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (folder != null) {
             for (Folder f : folder.getAllFolders(false)) {
                 f.detachListener();
+                f.onClose();
             }
             folder.detachListener();
+            folder.onClose();
         }
     }
 
@@ -242,7 +242,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
         }
         projectItems.clear();
-        rootFolder = null;
+        sourceRoots.clear();
+        testRoots.clear();
+        rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N;
+        sourceFileItems = null;
+        headerFileItems = null;
+        resourceFileItems = null;
+        testItems = null;
+        externalFileItems = null;
     }
 
     public static MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project project) {
@@ -1088,14 +1095,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Object lock = new Object();
         Object oldLock = projectWriteLocks.putIfAbsent(project.getProjectDirectory().getPath(), lock);
         return (oldLock == null) ? lock : oldLock;
-    }
-
-    public void setFoldersTask(Task task) {
-        RequestProcessor.Task prevTask = this.initFoldersTask;
-        if (prevTask != null) {
-            prevTask.cancel();
-        }
-        this.initFoldersTask = task;
     }
 
     private class SaveRunnable implements Runnable {

@@ -294,9 +294,10 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
     // Attach listeners to all disk folders
     private void prepareFoldersTask(final MakeConfigurationDescriptor configurationDescriptor, final boolean oldSchemeWasRestored, final Interrupter interrupter) {
-        Task task = REQUEST_PROCESSOR.create(new Runnable() {
+        final List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
+        REQUEST_PROCESSOR.post(new Runnable() {
             // retstore in only scheme only once, then switch to new scheme
-            private volatile boolean restoreInOldScheme = oldSchemeWasRestored;
+            private boolean restoreInOldScheme = oldSchemeWasRestored;
             @Override
             public void run() {
                 String postfix = configurationDescriptor.getBaseDir();
@@ -307,7 +308,6 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 try {
                     //boolean currentState = configurationDescriptor.getModified();
                     Thread.currentThread().setName(threadName); // NOI18N
-                    List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
                     for (Folder f : firstLevelFolders) {
                         if (f.isDiskFolder()) {
                             if (restoreInOldScheme) {
@@ -333,7 +333,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Refresh disk folders in background process
         // revert changes bacause opening project time is increased.
         //task.waitFinished(); // See IZ https://netbeans.org/bugzilla/show_bug.cgi?id=184260
-        configurationDescriptor.setFoldersTask(task);
+        //configurationDescriptor.setFoldersTask(task);
     }
 
     // interface XMLDecoder

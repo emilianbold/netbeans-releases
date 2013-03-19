@@ -67,10 +67,10 @@ import org.netbeans.modules.git.ui.blame.AnnotateAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
-import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.menu.BranchMenu;
 import org.netbeans.modules.git.ui.menu.CheckoutMenu;
+import org.netbeans.modules.git.ui.menu.DiffMenu;
 import org.netbeans.modules.git.ui.menu.PatchesMenu;
 import org.netbeans.modules.git.ui.menu.IgnoreMenu;
 import org.netbeans.modules.git.ui.menu.RemoteMenu;
@@ -135,7 +135,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
-                actions.add(SystemAction.get(DiffAction.class));
+                actions.add(new DiffMenu(destination, null));
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(RevertChangesAction.class));
@@ -164,7 +164,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             } else {
                 Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName"), lkp));
+                actions.add(new DiffMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N

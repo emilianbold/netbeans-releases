@@ -44,6 +44,7 @@ package org.netbeans.modules.form.layoutdesign;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import javax.swing.UIManager;
 import org.openide.util.ImageUtilities;
 import static org.netbeans.modules.form.layoutdesign.VisualState.GapInfo;
 
@@ -969,27 +970,42 @@ public class LayoutPainter implements LayoutConstants {
         }
     }
 
-    private static Color fixedGapColor = new Color(220, 220, 220); // 208, 208, 208
+    private static Color fixedGapColor;
+    private static Color resGapColor;
+    private static Color minGapColor;
+    private static Color gapBorderColor = new Color(200, 200, 200); // 192, 192, 192
+    private static Color sawColor = new Color(208, 208, 208);
+
+    static {
+        fixedGapColor = UIManager.getColor( "nb.formdesigner.gap.fixed.color" ); //NOI18N
+        if( null == fixedGapColor )
+            fixedGapColor = new Color(220, 220, 220); // 208, 208, 208
+
+        resGapColor = UIManager.getColor( "nb.formdesigner.gap.resizing.color" ); //NOI18N
+        if( null == resGapColor )
+            resGapColor = new Color(224, 224, 224);
+
+        minGapColor = UIManager.getColor( "nb.formdesigner.gap.min.color" ); //NOI18N
+        if( null == minGapColor )
+            minGapColor = new Color(212, 212, 212); // 204, 204, 204
+    }
+
     private static Color getFixedGapColor(boolean selected) {
         return selected ? selectedColor(fixedGapColor) : fixedGapColor;
     }
 
-    private static Color resGapColor = new Color(224, 224, 224);
     private static Color getResizingGapColor(boolean selected) {
         return selected ? selectedColor(resGapColor) : resGapColor;
     }
 
-    private static Color minGapColor = new Color(212, 212, 212); // 204, 204, 204
     private static Color getMinGapColor(boolean selected) {
         return selected ? selectedColor(minGapColor) : minGapColor;
     }
 
-    private static Color gapBorderColor = new Color(200, 200, 200); // 192, 192, 192
     private static Color getGapBorderColor(boolean selected) {
         return selected ? selectedColor(gapBorderColor) : gapBorderColor;
     }
 
-    private static Color sawColor = new Color(208, 208, 208);
     private static Color getSawColor(boolean selected) {
         return selected ? selectedColor(sawColor) : sawColor;
     }

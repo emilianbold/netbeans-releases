@@ -49,6 +49,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
@@ -80,7 +81,7 @@ public class FetchFromUpstreamAction extends MultipleRepositoryAction {
                 RepositoryInfo info = RepositoryInfo.getInstance(repository);
                 info.refreshRemotes();
                 String errorLabel = Bundle.LBL_Fetch_fetchFromUpstreamFailed();
-                GitBranch trackedBranch = FetchUtils.getTrackedBranch(info, errorLabel);
+                GitBranch trackedBranch = GitUtils.getTrackedBranch(info, errorLabel);
                 if (trackedBranch == null) {
                     return;
                 }

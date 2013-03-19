@@ -48,14 +48,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitStatus;
-import org.netbeans.modules.versioning.util.common.VCSFileInformation;
+import org.netbeans.modules.git.GitFileNode.FileNodeInformation;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-public class FileInformation extends VCSFileInformation {
+public class FileInformation extends FileNodeInformation {
     private final EnumSet<Status> status;
     private boolean seenInUI;
     private final boolean directory;
@@ -70,7 +70,7 @@ public class FileInformation extends VCSFileInformation {
         oldFile = null;
     }
 
-    FileInformation (GitStatus status) {
+    public FileInformation (GitStatus status) {
         directory = status.isFolder();
         seenInUI = true;
         renamed = status.isRenamed();
@@ -337,14 +337,17 @@ public class FileInformation extends VCSFileInformation {
         }
     }
 
+    @Override
     public boolean isRenamed () {
         return renamed;
     }
 
+    @Override
     public boolean isCopied () {
         return copied;
     }
 
+    @Override
     public File getOldFile () {
         return oldFile;
     }

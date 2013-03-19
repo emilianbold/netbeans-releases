@@ -43,10 +43,12 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -321,6 +323,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath) {
+        addRecursiveListener(listener, fileSystem, absPath, null, null);
+    }
+
+    @Override
+    public void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath,  FileFilter recurseInto, Callable<Boolean> interrupter) {
+        //TODO: use interrupter & filter
         RemoteLogger.assertTrue(fileSystem instanceof RemoteFileSystem, "Unexpected file system class: " + fileSystem); // NOI18N
         FileObject fileObject = fileSystem.findResource(absPath);
         if (fileObject != null) {

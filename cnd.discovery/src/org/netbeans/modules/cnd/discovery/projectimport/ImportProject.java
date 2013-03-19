@@ -425,10 +425,6 @@ public class ImportProject implements PropertyChangeListener {
 
     private void doWork() {
         try {
-            //OpenProjects.getDefault().open(new Project[]{makeProject}, false);
-            if (makeProject instanceof Runnable) {
-                ((Runnable)makeProject).run();
-            }
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.getConfigurationDescriptor();
             if (pdp.gotDescriptor()) {
@@ -441,7 +437,7 @@ public class ImportProject implements PropertyChangeListener {
                             handle.start();
                             while(sources.hasNext()) {
                                 SourceFolderInfo next = sources.next();
-                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, interrupter, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, interrupter, true, Folder.Kind.SOURCE_DISK_FOLDER, null);
                             }
                             handle.finish();
                             waitSources.countDown();
