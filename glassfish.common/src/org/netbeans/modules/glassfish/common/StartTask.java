@@ -323,13 +323,13 @@ public class StartTask extends BasicTask<OperationState> {
                 }
             }
             if (jdkHome == null) {
-                return fireOperationStateChanged(OperationState.FAILED,
-                    "MSG_START_SERVER_FAILED_NOJDK", instanceName);
+                return fireOperationStateChanged(
+                        OperationState.FAILED, null, instanceName);
             }
         } catch (IOException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-            return fireOperationStateChanged(OperationState.FAILED, "MSG_PASS_THROUGH",
-                    ex.getLocalizedMessage());
+            return fireOperationStateChanged(OperationState.FAILED,
+                    "MSG_PASS_THROUGH", ex.getLocalizedMessage());
         }
         // Time must be measured after Java SE platform selection is done.
         long start = System.currentTimeMillis();
@@ -370,14 +370,15 @@ public class StartTask extends BasicTask<OperationState> {
             }
             serverProcess = createProcess();
         } catch (NumberFormatException nfe) {
-            Logger.getLogger("glassfish").log(Level.INFO, instance.getProperty(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
+            Logger.getLogger("glassfish").log(Level.INFO,
+                    instance.getProperty(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
             return fireOperationStateChanged(OperationState.FAILED,
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
         } catch (ProcessCreationException ex) {
             Logger.getLogger("glassfish").log(Level.INFO,
                     "Could not start process for " + instanceName, ex);
-            return fireOperationStateChanged(OperationState.FAILED, "MSG_PASS_THROUGH",
-                    ex.getLocalizedMessage());
+            return fireOperationStateChanged(OperationState.FAILED,
+                    "MSG_PASS_THROUGH", ex.getLocalizedMessage());
         }
 
         fireOperationStateChanged(OperationState.RUNNING,
