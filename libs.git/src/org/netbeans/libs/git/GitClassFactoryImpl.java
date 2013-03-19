@@ -60,6 +60,7 @@ import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitRevertResult.Status;
+import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 
 /**
@@ -89,6 +90,11 @@ final class GitClassFactoryImpl extends GitClassFactory {
     @Override
     public GitConflictDescriptor createConflictDescriptor (Type type) {
         return new GitConflictDescriptor(type);
+    }
+
+    @Override
+    public GitFileInfo createFileInfo (File file, String oldPath, GitFileInfo.Status status, File originalFile, String originalPath) {
+        return new GitFileInfo(file, oldPath, status, originalFile, originalPath);
     }
 
     @Override

@@ -69,6 +69,7 @@ import org.netbeans.libs.git.GitRebaseResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevertResult;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.GitTag;
@@ -86,6 +87,8 @@ public abstract class GitClassFactory {
     public abstract GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id);
 
     public abstract GitConflictDescriptor createConflictDescriptor (Type type);
+
+    public abstract GitFileInfo createFileInfo (File file, String oldPath, GitFileInfo.Status status, File originalFile, String originalPath);
     
     public abstract GitMergeResult createMergeResult (MergeResult mergeResult, File workTree);
 
