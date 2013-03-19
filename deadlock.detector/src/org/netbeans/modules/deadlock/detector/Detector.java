@@ -60,16 +60,43 @@ import org.openide.util.Utilities;
 
 /**
  * Detects deadlocks using ThreadMXBean.
- * @author David Strupl
+ * @see java.lang.management.ThreadMXBean
+ * @author Mandy Chung, David Strupl
  */
-public class Detector implements Runnable {
+class Detector implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(Detector.class.getName());
     
+    /**
+     * This variable is used from different threads and is protected by 
+     * synchronized(this).
+     */
     private boolean running = true;
+    /**
+     * How long  to wait (in milliseconds) between the deadlock checks.
+     */
     private static long PAUSE = 2000;
-    private static final String INDENT = "    ";
+    /**
+     * How long to wait (in milliseconds) before the deadlock detection starts.
+     */
+    private static long INITIAL_PAUSE = 10000;
+    /**
+     * Indents for printing the thread dumps.
+     */
+    private static final String INDENT = "    "; // NOI18N
+    /**
+     * The thread bean used for the deadlock detection.
+     */
     private ThreadMXBean threadMXBean;
+    /**
+     * Java binary used to launch a second Java VM when reporting the deadlock.
+     * @see DeadlockReporter class to what is being launched by the new VM.
+     */
+    private static final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java"; // NOI18N
+    /**
+     * Jar file name that is put on classpath of the newly spawned VM.
+     */
+    private File myJar = null;
     
     Detector() {
         threadMXBean = getThreadMXBean();
@@ -77,41 +104,67 @@ public class Detector implements Runnable {
         if (pauseFromSysProp != null) {
             PAUSE = pauseFromSysProp.longValue();
         }
+        Integer initialPauseFromSysProp = Integer.getInteger("org.netbeans.modules.deadlock.detector.Detector.INITIAL_PAUSE"); // NOI18N
+        if (initialPauseFromSysProp != null) {
+            INITIAL_PAUSE = initialPauseFromSysProp.longValue();
+        }
+        try {
+            myJar = Utilities.toFile(Detector.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (myJar == null || !myJar.getName().endsWith(".jar")) {
+            // unable to report the deadlock --> don't even start the thread
+            threadMXBean = null;
+        }
     }
     
+    /**
+     * Starts a new thread that periodically checks for deadlocks.
+     */
     void start() {
         if (threadMXBean == null) {
             return;
         }
-        Thread t = new Thread(this);
+        Thread t = new Thread(this, "Deadlock Detector"); // NOI18N
         t.start();
     }
     
+    /**
+     * Stops the detector thread.
+     */
     synchronized void stop() {
         running = false;
     }
     
-    @Override
-    public void run() {
-        while (isRunning()) {
-            try {
-                Thread.sleep(PAUSE);
-                long time = System.currentTimeMillis();
-                
-                detectDeadlock();
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Deadlock detection took: {0} ms.", System.currentTimeMillis()-time); // NOI18N
-                }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } 
-        }
-    }
-    
+    /**
+     * Accessing the variable running under the synchronized (this).
+     * @return whether we are still running the detector thread
+     */
     private synchronized boolean isRunning() {
         return running;
     }
 
+    @Override
+    public void run() {
+        try {
+            Thread.sleep(INITIAL_PAUSE);
+            while (isRunning()) {
+                long time = System.currentTimeMillis();
+                detectDeadlock();
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Deadlock detection took: {0} ms.", System.currentTimeMillis() - time); // NOI18N
+                }
+                Thread.sleep(PAUSE);
+            }
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    /**
+     * The main method called periodically by the deadlock detector thread.
+     */
     private void detectDeadlock() {
         if (threadMXBean == null) {
             return;
@@ -122,12 +175,17 @@ public class Detector implements Runnable {
             return;
         }
         
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Deadlock detected");
+        }
         PrintStream out = null;
         File file = null;
         try {
             file = File.createTempFile("deadlock", ".txt"); // NOI18N
             out = new PrintStream(new FileOutputStream(file));
-            
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Temporrary file created: {0}" , file);
+            }            
         } catch (IOException iOException) {
             out = System.out;
             
@@ -163,7 +221,6 @@ public class Detector implements Runnable {
     }
 
     private void printThreadInfo(ThreadInfo ti, PrintStream out) {
-       // print thread information
        printThread(ti, out);
 
        // print stack trace with locks
@@ -219,29 +276,24 @@ public class Detector implements Runnable {
        out.println();
     }   
     
-    private static void fork(File dumpFile) {
+    /**
+     * Starts a new java VM with DeadlockReporter as the main class. The
+     * main class is specified in the manifest of the module jar file.
+     * @param dumpFile 
+     */
+    private void fork(File dumpFile) {
         try {
-            final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-            final File currentJar = Utilities.toFile(Detector.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-
-            /* is it a jar file? */
-            if (!currentJar.getName().endsWith(".jar")) {
-                System.out.println("currentJar.getName() == " + currentJar.getName());
-                return;
-            }
-
-            /* Build command: java -jar application.jar */
             final ArrayList<String> command = new ArrayList<String>();
             command.add(javaBin);
             command.add("-jar");
-            command.add(currentJar.getPath());
+            command.add(myJar.getPath());
             command.add(dumpFile.getPath());
 
             final ProcessBuilder builder = new ProcessBuilder(command);
             builder.start();
-            System.out.println("FORKED OK with command " + command);
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "FORKED OK with command {0}", command);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

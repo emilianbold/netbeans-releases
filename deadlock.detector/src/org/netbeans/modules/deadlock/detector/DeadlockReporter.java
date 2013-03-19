@@ -64,7 +64,8 @@ public class DeadlockReporter {
      * The URL for reporting the bug - it is a message format containing one
      * parameter that will fill the long description (comment) when submitting the report.
      */
-    private static String BUGZILLA_URL = "http://netbeans.org/bugzilla/enter_bug.cgi?product=ide&component=Code&short_desc=Deadlock+Detected&comment={0}&priority=P2";
+    private static String BUGZILLA_URL = 
+        "http://netbeans.org/bugzilla/enter_bug.cgi?product=ide&component=Code&short_desc=Deadlock+Detected&comment={0}&priority=P2";
 
     /**
      * The main class should be invoked with one parameter containing full

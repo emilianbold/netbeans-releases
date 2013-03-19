@@ -82,7 +82,10 @@ public class DetectorTest {
     }
 
     /**
-     * Test of start method, of class Detector.
+     * If you invoke this test manually the functionality of the deadlock
+     * detection and reporting can be tried. Please note that this test
+     * invokes the reporting facility and so is not suitable for inclusion
+     * in the automatic test suite.
      */
     @Test
     public void testDetectDeadlock() throws InterruptedException {
@@ -125,5 +128,7 @@ public class DetectorTest {
         Thread.sleep(5000);
         t1.stop();
         t2.stop();
+        Thread.sleep(15000);
+        fail("Do not run this test in an automatic test suite! It launches external programs: web browser and notepad.");
     }
 }
