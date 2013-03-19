@@ -478,13 +478,14 @@ public final class ExternalBrowserPlugin {
 
         private void handleURLChange( Message message, SelectionKey key  ){
             int tabId = message.getTabId();
+            String url = (String)message.getValue().get(URL);
             if ( tabId == -1 ){
                 return;
             }
             for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
                 BrowserTabDescriptor browserTab = iterator.next();
                 if ( tabId == browserTab.tabID ) {
-                    browserTab.browserImpl.urlHasChanged();
+                    browserTab.browserImpl.urlHasChanged(url);
                     return;
                 }
             }
@@ -774,6 +775,14 @@ public final class ExternalBrowserPlugin {
             }
             initialized = true;
             
+            // perform session closing before creating a new one:
+            PageInspector inspector = PageInspector.getDefault();
+            if (inspector != null && !browserImpl.isDisablePageInspector()) {
+                // #219241 - "Web inspection is broken when switching 2 projects with different configuration"
+                // a solution is to close previous debugging sessions:
+                ExternalBrowserPlugin.getInstance().closeOtherDebuggingSessionsWithPageInspector(tabID);
+            }
+
             // lookup which contains Project instance if URL being opened is from a project:
             Lookup projectContext = browserImpl.getProjectContext();
             
@@ -792,13 +801,7 @@ public final class ExternalBrowserPlugin {
             consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webkitDebugger, projectContext);
             networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webkitDebugger, projectContext);
 
-            PageInspector inspector = PageInspector.getDefault();
             if (inspector != null && !browserImpl.isDisablePageInspector()) {
-                
-                // #219241 - "Web inspection is broken when switching 2 projects with different configuration"
-                // a solution is to close previous debugging sessions:
-                ExternalBrowserPlugin.getInstance().closeOtherDebuggingSessionsWithPageInspector(tabID);
-                
                 inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext()));
             }
         }

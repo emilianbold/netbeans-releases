@@ -49,6 +49,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,6 +96,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     private boolean running = false;
     
     private Lookup projectContext;
+
+    private String newURL = null;
     
     /** Default constructor. 
       * <p>Builds PropertyChangeSupport. 
@@ -209,7 +212,22 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         if ( hasEnhancedMode() ){
             BrowserTabDescriptor tab = getBrowserTabDescriptor();
             if (tab != null) {
-                ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
+                URL u = url;
+                // if user navigated to a different URL then reload the new URL
+                // for example going from .../index.html to .../index.html#page2
+                // must reload .../index.html#page2
+                if (newURL != null) {
+                    try {
+                        URL u2 = new URL(newURL);
+                        // use new URL only if the hostname and port are the same
+                        if (u2.getAuthority() != null && u2.getAuthority().equals(u.getAuthority())) {
+                            u = u2;
+                        }
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                ExternalBrowserPlugin.getInstance().showURLInTab(tab, u);
             }
             /*
              * Do nothing in case there is no possibility to reload browser in the opened tab.
@@ -259,6 +277,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
      */
     @Override
     final public void setURL(final URL url) {
+        newURL = null;
         if (hasEnhancedMode()) {
             BrowserTabDescriptor tab = getBrowserTabDescriptor();
             if (tab == null) {
@@ -369,7 +388,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         this.browserTabDescriptor = browserTabDescriptor;
     }
 
-    public void urlHasChanged() {
+    public void urlHasChanged(String newURL) {
+        this.newURL = newURL;
         pcs.firePropertyChange(HtmlBrowser.Impl.PROP_URL, null, null);
     }
 
