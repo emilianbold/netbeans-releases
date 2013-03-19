@@ -40,46 +40,56 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.commit;
+package org.netbeans.modules.git.ui.diff;
 
 import java.io.File;
-import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.GitModuleConfig;
-import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
+import org.netbeans.libs.git.GitBranch;
+import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.ui.repository.Revision;
+import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondra Vrabec
  */
-public class GitFileNode extends VCSFileNode<FileInformation> {
+@ActionID(id = "org.netbeans.modules.git.ui.diff.DiffCurrentToTrackedAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_DiffCurrentToTrackedAction_Name")
+@NbBundle.Messages({
+    "LBL_DiffCurrentToTrackedAction_Name=Diff To T&racked",
+    "LBL_DiffCurrentToTrackedAction_PopupName=Diff To Tracked"
+})
+public class DiffCurrentToTrackedAction extends GitAction {
 
-    public GitFileNode(File root, File file) {
-        super(root, file);
+    @Override
+    protected boolean enable (Node[] activatedNodes) {
+        VCSContext context = getCurrentContext(activatedNodes);
+        return GitUtils.getRepositoryRoots(context).size() == 1;
     }
 
     @Override
-    public FileInformation getInformation() {
-        return Git.getInstance().getFileStatusCache().getStatus(getFile());
+    protected void performContextAction (Node[] nodes) {
+        VCSContext context = getCurrentContext(nodes);
+        diffToTracked(context);
     }
 
-    @Override
-    public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
-        if (withExclusions && GitModuleConfig.getDefault().isExcludedFromCommit(getFile().getAbsolutePath())) {
-            return VCSCommitOptions.EXCLUDE;
-        } else {
-            if(getInformation().containsStatus(FileInformation.STATUS_REMOVED)) {
-                return VCSCommitOptions.COMMIT_REMOVE;
-            } else if(getInformation().containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
-                return GitModuleConfig.getDefault().getExludeNewFiles() ? 
-                                    VCSCommitOptions.EXCLUDE : 
-                                    VCSCommitOptions.COMMIT;
-            } else {
-                return VCSCommitOptions.COMMIT;
+    @NbBundle.Messages({
+        "LBL_DiffCurrentToTrackedAction.noTracking=Tracking Not Found"
+    })
+    public void diffToTracked (VCSContext context) {
+        if (GitUtils.getRepositoryRoots(context).size() == 1) {
+            File repository = GitUtils.getRootFile(context);
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            GitBranch tracked = GitUtils.getTrackedBranch(info, Bundle.LBL_DiffCurrentToTrackedAction_noTracking());
+            if (tracked != null) {
+                SystemAction.get(DiffAction.class).diff(context, new Revision(tracked.getName(), tracked.getName()), Revision.BASE);
             }
         }
     }
-
 }

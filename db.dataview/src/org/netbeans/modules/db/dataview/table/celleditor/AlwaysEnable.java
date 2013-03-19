@@ -39,56 +39,15 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.bugs;
-
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.IfTree;
-import com.sun.source.util.TreePath;
-import java.util.Map;
-import java.util.prefs.Preferences;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Severity;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.TriggerPattern;
+package org.netbeans.modules.db.dataview.table.celleditor;
 
 /**
- * When 'if' statement does not have braces, and does not have the else-statement,
- * issues a warning if the statement indentation (or indentation of following statements) does not suggest conditionality.
- * 
- * @author sdedic
+ * Marker interface for CellEditors that should be enabled even if TableModel is
+ * not editable.
+ *
+ * It is expected that the CellEditor handles unmodifiable models itself
+ *
+ * @author Matthias Bläsing
  */
-@Hint(
-        displayName="Correct 'if' statement formatting",
-        description = "Checks that if statement without curly braces is properly indented",
-        category = "suggestions",
-        enabled = true,
-        severity = Severity.HINT
-)
-public class IfStatementFormatting {
-    
-    private static Preferences javaPreferences;
-    
-    private static Preferences getJavaPreferences() {
-        return MimeLookup.getLookup("text/x-java").lookup(Preferences.class);
-    }
-    
-    // trigger on an if with >= 1 following statement without brace
-    @TriggerPattern("if ($expr) $stmt1; $stmt2;")
-    public static ErrorDescription run(HintContext ctx) {
-        final Map<String, TreePath> vars = ctx.getVariables();
-        TreePath ifPath = ctx.getPath();
-
-        IfTree tree = (IfTree)ifPath.getLeaf();
-        
-        CompilationUnitTree cut = ctx.getInfo().getCompilationUnit();
-        long ifPos = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(cut, tree);
-        
-        CharSequence text = ctx.getInfo().getSnapshot().getText();
-        
-        return null;
-    }
-    
-    
+public interface AlwaysEnable {
 }

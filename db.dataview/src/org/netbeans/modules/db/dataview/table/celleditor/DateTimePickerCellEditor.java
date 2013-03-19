@@ -132,7 +132,6 @@ public class DateTimePickerCellEditor extends AbstractCellEditor implements Tabl
         datePicker.setDateTime(getValueAsTimestamp(value));
 
         ignoreAction = false;
-        setEditable(column, datePicker, table.isCellEditable(row, column));
         return datePicker;
     }
 
@@ -209,19 +208,6 @@ public class DateTimePickerCellEditor extends AbstractCellEditor implements Tabl
             }
         };
         return l;
-    }
-
-    protected void setEditable(int column, JXDateTimePicker c, boolean celleditable) {
-        assert table != null;
-        DBColumn dbCol = ((ResultSetJXTable) table).getDBColumn(column);
-        if (dbCol.isGenerated()) {
-            editable = false;
-        } else if (! celleditable) {
-            editable = false;
-        } else {
-            editable = dbCol.isEditable();
-        }
-        c.setEditable(editable);
     }
 
     public void addKeyListener(KeyListener kl) {

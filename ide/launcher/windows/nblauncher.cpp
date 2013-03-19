@@ -130,11 +130,7 @@ int NbLauncher::start(int argc, char *argv[]) {
 
     CmdArgs newArgs(argc + 20);
     addSpecificOptions(newArgs);
-
-    if (!jdkHome.empty()) {
-        newArgs.add(ARG_NAME_JDKHOME);
-        newArgs.add(jdkHome.c_str());
-    }
+    
     if (!clusters.empty()) {
         newArgs.add(ARG_NAME_CLUSTERS);
         newArgs.add(clusters.c_str());
@@ -156,6 +152,10 @@ int NbLauncher::start(int argc, char *argv[]) {
     }
     for (int i = 0; i < argc; i++) {
         newArgs.add(argv[i]);
+    }
+    if (!jdkHome.empty()) {
+        newArgs.add(ARG_NAME_JDKHOME);
+        newArgs.add(jdkHome.c_str());
     }
     if (parentProcID) {
         newArgs.add(ARG_NAME_LA_PPID);

@@ -75,16 +75,20 @@ import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.VersionsCache;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.ui.blame.AnnotateAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
-import org.netbeans.modules.git.ui.status.GitStatusNode;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.GitStatusNode;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -235,6 +239,38 @@ public final class GitUtils {
             }
         }
         return false;
+    }
+    
+    @NbBundle.Messages({
+        "# {0} - branch name", "MSG_Err.noTrackedBranch=No tracked remote branch specified for local {0}",
+        "# {0} - branch name", "MSG_Err.trackedBranchLocal=Tracked branch {0} is not a remote branch"
+    })
+    public static GitBranch getTrackedBranch (RepositoryInfo info, String errorLabel) {
+        GitBranch activeBranch = info.getActiveBranch();
+        if (activeBranch == null) {
+            return null;
+        }
+        GitBranch trackedBranch = activeBranch.getTrackedBranch();
+        if (trackedBranch == null) {
+            notifyError(errorLabel, Bundle.MSG_Err_noTrackedBranch(activeBranch.getName()));
+            return null;
+        }
+        if (!trackedBranch.isRemote()) {
+            notifyError(errorLabel, Bundle.MSG_Err_trackedBranchLocal(trackedBranch.getName()));
+            return null;
+        }
+        return trackedBranch;
+    }
+
+    public static void notifyError (String errorLabel, String errorMessage) {
+        NotifyDescriptor nd = new NotifyDescriptor(
+            errorMessage,
+            errorLabel,
+            NotifyDescriptor.DEFAULT_OPTION,
+            NotifyDescriptor.ERROR_MESSAGE,
+            new Object[]{NotifyDescriptor.OK_OPTION},
+            NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
     }
 
     // cached not sharable files and folders

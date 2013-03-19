@@ -189,7 +189,7 @@ public final class MakeActionProvider implements ActionProvider {
     // Project
     private MakeProject project;
     // Project Descriptor
-    private MakeConfigurationDescriptor projectDescriptor = null;
+    //private MakeConfigurationDescriptor projectDescriptor = null;
     /** Map from commands to make targets */
     private Map<String, String[]> commands;
     private Map<String, String[]> commandsNoBuild;
@@ -238,20 +238,13 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private boolean isProjectDescriptorLoaded() {
-        if (projectDescriptor == null) {
-            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            return pdp.gotDescriptor();
-        } else {
-            return true;
-        }
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        return pdp.gotDescriptor();
     }
 
     private MakeConfigurationDescriptor getProjectDescriptor() {
-        if (projectDescriptor == null) {
-            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            projectDescriptor = pdp.getConfigurationDescriptor();
-        }
-        return projectDescriptor;
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        return pdp.getConfigurationDescriptor();
     }
 
     @Override
@@ -1394,7 +1387,7 @@ public final class MakeActionProvider implements ActionProvider {
             Node node = context.lookup(Node.class);
             return (node != null) && (node.getLookup().lookup(ShellExecSupport.class) != null);
         } else if (command.equals(COMMAND_TEST)) {
-            Folder root = projectDescriptor.getLogicalFolders();
+            Folder root = getProjectDescriptor().getLogicalFolders();
             Folder testRootFolder = null;
             for (Folder folder : root.getFolders()) {
                 if (folder.isTestRootFolder()) {

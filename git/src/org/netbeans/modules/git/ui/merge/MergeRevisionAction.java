@@ -139,13 +139,11 @@ public class MergeRevisionAction extends SingleRepositoryAction {
     
     public static class MergeResultProcessor extends ResultProcessor {
 
-        private final GitClient client;
         private final OutputLogger logger;
         private final String revision;
         
         public MergeResultProcessor (GitClient client, File repository, String revision, OutputLogger logger, ProgressMonitor pm) {
-            super(client, repository, revision, logger, pm);
-            this.client = client;
+            super(client, repository, revision, pm);
             this.revision = revision;
             this.logger = logger;
         }
