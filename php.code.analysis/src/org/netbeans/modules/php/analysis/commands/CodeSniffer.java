@@ -80,7 +80,6 @@ public final class CodeSniffer {
 
     private static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpcs-log.xml"); // NOI18N
 
-    // XXX standard
     private static final String STANDARD_PARAM = "--standard=%s"; // NOI18N
     private static final String LIST_STANDARDS_PARAM = "-i"; // NOI18N
     private static final String REPORT_PARAM = "--report=xml"; // NOI18N
