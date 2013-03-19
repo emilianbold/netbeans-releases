@@ -52,8 +52,10 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
+import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,23 +68,22 @@ class Setup extends AbstractDiffSetup {
 
     private final String    firstRevision;
     private final String    secondRevision;
-    private FileInformation info;
 
     private DiffStreamSource    firstSource;
     private DiffStreamSource    secondSource;
 
     private DiffController      view;
-    private DiffNode            node;
+    private VCSStatusNode       node;
 
     private String    title;
 
-    public Setup (GitFileNode node, Mode mode) {
+    public Setup (GitFileNode node, Mode mode, Revision revision) {
         this.baseFile = node.getFile();
 
         ResourceBundle loc = NbBundle.getBundle(Setup.class);
         String firstTitle;
         String secondTitle;
-        info = node.getInformation();
+        FileInformation info = node.getInformation();
         File originalFile = null;
         if (info != null && (info.isCopied() || info.isRenamed())) {
             originalFile = info.getOldFile();
@@ -92,10 +93,11 @@ class Setup extends AbstractDiffSetup {
         switch (mode) {
             case HEAD_VS_WORKING_TREE:
             case HEAD_VS_INDEX:
-                firstRevision = originalFile == null && info.containsStatus(EnumSet.of(FileInformation.Status.NEW_HEAD_WORKING_TREE, FileInformation.Status.NEW_HEAD_INDEX)) ? null : GitUtils.HEAD;
+                firstRevision = originalFile == null && info.containsStatus(EnumSet.of(FileInformation.Status.NEW_HEAD_WORKING_TREE, FileInformation.Status.NEW_HEAD_INDEX)) ? null : revision.getRevision();
                 firstTitle = originalFile == null
-                        ? loc.getString("MSG_DiffPanel_HeadRevision") //NOI18N
-                        : MessageFormat.format(loc.getString("MSG_DiffPanel_HeadRevision.file"), new Object[] { originalFile.getName() } ); //NOI18N
+                        ? revision.toString()
+                        : MessageFormat.format(loc.getString("MSG_DiffPanel_Revision.file"), //NOI18N
+                        new Object[] { revision.toString(), originalFile.getName() } );
                 break;
             case INDEX_VS_WORKING_TREE:
                 firstRevision = GitUtils.INDEX;
@@ -185,20 +187,16 @@ class Setup extends AbstractDiffSetup {
         };
     }
 
-    Setup (File file, String rev1, String rev2) {
+    Setup (File file, Revision rev1, Revision rev2) {
         baseFile = file;
-        firstRevision = rev1;
-        secondRevision = rev2;
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision);
+        firstRevision = rev1.getRevision();
+        secondRevision = rev2.getRevision();
+        firstSource = new DiffStreamSource(baseFile, firstRevision, rev1.toString(true));
+        secondSource = new DiffStreamSource(baseFile, secondRevision, rev2.toString(true));
     }
 
     public File getBaseFile() {
         return baseFile;
-    }
-
-    public FileInformation getInfo() {
-        return info;
     }
 
     public void setView(DiffController view) {
@@ -219,12 +217,12 @@ class Setup extends AbstractDiffSetup {
         return secondSource;
     }
 
-    void setNode (DiffNode node) {
+    void setNode (VCSStatusNode node) {
         assert this.node == null;
         this.node = node;
     }
 
-    DiffNode getNode() {
+    VCSStatusNode getNode() {
         return node;
     }
 

@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.git.ui.repository;
 
+import org.netbeans.modules.git.utils.GitUtils;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author ondra
@@ -54,6 +57,31 @@ public class Revision {
         this.revision = revision;
         this.name = name;
     }
+    
+    @NbBundle.Messages("LBL_Revision.LOCAL.name=Local Changes")
+    public static final Revision LOCAL = new Revision(Bundle.LBL_Revision_LOCAL_name(), Bundle.LBL_Revision_LOCAL_name()) {
+
+        @Override
+        public String toString (boolean shorten) {
+            return getName();
+        }
+    };
+    @NbBundle.Messages("LBL_Revision.BASE.name=Base")
+    public static final Revision BASE = new Revision(GitUtils.HEAD, Bundle.LBL_Revision_BASE_name()) {
+
+        @Override
+        public String toString (boolean shorten) {
+            return getName();
+        }
+    };
+    @NbBundle.Messages("LBL_Revision.HEAD.name=HEAD")
+    public static final Revision HEAD = new Revision(Bundle.LBL_Revision_HEAD_name(), Bundle.LBL_Revision_HEAD_name()) {
+
+        @Override
+        public String toString (boolean shorten) {
+            return getName();
+        }
+    };
 
     public String getRevision () {
         return revision;
@@ -75,7 +103,7 @@ public class Revision {
                     ? revision.substring(0, 7)
                     : revision).append(")"); //NOI18N
         } else {
-            sb.append(shorten ? revision.substring(0, 7) : revision);
+            sb.append(revision);
         }
         return sb.toString();
     }

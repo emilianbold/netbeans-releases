@@ -43,63 +43,53 @@
 package org.netbeans.modules.git.ui.diff;
 
 import java.io.File;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.repository.Revision;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
+ * @author Ondra Vrabec
  */
-@ActionID(id = "org.netbeans.modules.git.ui.diff.DiffAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_DiffAction_Name")
+@ActionID(id = "org.netbeans.modules.git.ui.diff.DiffCurrentToTrackedAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_DiffCurrentToTrackedAction_Name")
 @NbBundle.Messages({
-    "LBL_DiffAction_Name=&Diff To Base",
-    "LBL_DiffAction_PopupName=Diff To Base"
+    "LBL_DiffCurrentToTrackedAction_Name=Diff To T&racked",
+    "LBL_DiffCurrentToTrackedAction_PopupName=Diff To Tracked"
 })
-public class DiffAction extends GitAction {
-    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/diff.png"; //NOI18N
-    
-    public DiffAction () {
-        super(ICON_RESOURCE);
+public class DiffCurrentToTrackedAction extends GitAction {
+
+    @Override
+    protected boolean enable (Node[] activatedNodes) {
+        VCSContext context = getCurrentContext(activatedNodes);
+        return GitUtils.getRepositoryRoots(context).size() == 1;
     }
 
     @Override
     protected void performContextAction (Node[] nodes) {
         VCSContext context = getCurrentContext(nodes);
-        diff(context);
+        diffToTracked(context);
     }
 
-    @Override
-    protected String iconResource () {
-        return ICON_RESOURCE;
-    }
-
-    public void diff (VCSContext context) {
-        diff(context, Revision.BASE, Revision.LOCAL);
-    }
-
-    public void diff (VCSContext context, Revision left, Revision right) {
-        String contextName = Utils.getContextDisplayName(context);
-        MultiDiffPanelController controller = new MultiDiffPanelController(context, left, right);
-        DiffTopComponent tc = new DiffTopComponent(controller);
-        controller.setActions(tc);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); //NOI18N
-        tc.open();
-        tc.requestActive();
-    }
-
-    public void diff (File file, Revision rev1, Revision rev2) {
-        MultiDiffPanelController controller = new MultiDiffPanelController(file, rev1, rev2);
-        DiffTopComponent tc = new DiffTopComponent(controller);
-        controller.setActions(tc);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
-        tc.open();
-        tc.requestActive();
+    @NbBundle.Messages({
+        "LBL_DiffCurrentToTrackedAction.noTracking=Tracking Not Found"
+    })
+    public void diffToTracked (VCSContext context) {
+        if (GitUtils.getRepositoryRoots(context).size() == 1) {
+            File repository = GitUtils.getRootFile(context);
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            GitBranch tracked = GitUtils.getTrackedBranch(info, Bundle.LBL_DiffCurrentToTrackedAction_noTracking());
+            if (tracked != null) {
+                SystemAction.get(DiffAction.class).diff(context, new Revision(tracked.getName(), tracked.getName()), Revision.BASE);
+            }
+        }
     }
 }
