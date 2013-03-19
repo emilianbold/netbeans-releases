@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript2.editor.hints;
 
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle.Messages;
