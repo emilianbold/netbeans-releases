@@ -89,17 +89,16 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "MethodClosure2.groovy", "        \"\".&a^", true);
     }
 
-
     public void testElvisOperator1_1() throws Exception {
-        checkCompletion(BASE + "ElvisOperator1.groovy", "    def something = x?:^", true);
+        checkCompletion(BASE + "ElvisOperator1.groovy", "    def something = x?:e^", true);
     }
 
     public void testElvisOperator2_1() throws Exception {
-        checkCompletion(BASE + "ElvisOperator2.groovy", "    def something = x ?:^", true);
+        checkCompletion(BASE + "ElvisOperator2.groovy", "    def something = x ?:e^", true);
     }
 
     public void testElvisOperator3_1() throws Exception {
-        checkCompletion(BASE + "ElvisOperator3.groovy", "    def something = x ?: ^", true);
+        checkCompletion(BASE + "ElvisOperator3.groovy", "    def something = x ?: e^", true);
     }
 
     
@@ -127,4 +126,4 @@ public class OperatorsCCTest extends GroovyCCTestBase {
     public void testSpreadOperator2_stringArray_sPrefix() throws Exception {
         checkCompletion(BASE + "SpreadOperator2.groovy", "        [1,2]*.s^", true);
     }*/
-}
+    }
