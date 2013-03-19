@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.git.ui.commit;
-
-import java.io.File;
-import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.GitModuleConfig;
-import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
+package org.netbeans.modules.db.dataview.table.celleditor;
 
 /**
+ * Marker interface for CellEditors that should be enabled even if TableModel is
+ * not editable.
  *
- * @author Tomas Stupka
+ * It is expected that the CellEditor handles unmodifiable models itself
+ *
+ * @author Matthias Bläsing
  */
-public class GitFileNode extends VCSFileNode<FileInformation> {
-
-    public GitFileNode(File root, File file) {
-        super(root, file);
-    }
-
-    @Override
-    public FileInformation getInformation() {
-        return Git.getInstance().getFileStatusCache().getStatus(getFile());
-    }
-
-    @Override
-    public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
-        if (withExclusions && GitModuleConfig.getDefault().isExcludedFromCommit(getFile().getAbsolutePath())) {
-            return VCSCommitOptions.EXCLUDE;
-        } else {
-            if(getInformation().containsStatus(FileInformation.STATUS_REMOVED)) {
-                return VCSCommitOptions.COMMIT_REMOVE;
-            } else if(getInformation().containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
-                return GitModuleConfig.getDefault().getExludeNewFiles() ? 
-                                    VCSCommitOptions.EXCLUDE : 
-                                    VCSCommitOptions.COMMIT;
-            } else {
-                return VCSCommitOptions.COMMIT;
-            }
-        }
-    }
-
+public interface AlwaysEnable {
 }

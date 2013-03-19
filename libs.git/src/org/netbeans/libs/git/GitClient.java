@@ -49,9 +49,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryState;
+import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.JGitCredentialsProvider;
 import org.netbeans.libs.git.jgit.JGitRepository;
@@ -62,6 +64,7 @@ import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutRevisionCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
+import org.netbeans.libs.git.jgit.commands.CompareCommand;
 import org.netbeans.libs.git.jgit.commands.ConflictCommand;
 import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
@@ -85,6 +88,7 @@ import org.netbeans.libs.git.jgit.commands.LogCommand;
 import org.netbeans.libs.git.jgit.commands.MergeCommand;
 import org.netbeans.libs.git.jgit.commands.PullCommand;
 import org.netbeans.libs.git.jgit.commands.PushCommand;
+import org.netbeans.libs.git.jgit.commands.RebaseCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveRemoteCommand;
 import org.netbeans.libs.git.jgit.commands.RenameCommand;
@@ -196,6 +200,52 @@ public final class GitClient {
          * Compares the Index vs. the Working tree
          */
         INDEX_VS_WORKINGTREE
+    }
+    
+    /**
+     * Used as a parameter of {@link #rebase(GitClient.RebaseOperationType,
+     * String, ProgressMonitor) } to set the behavior of the command.
+     * @since 1.8
+     */
+    public enum RebaseOperationType {
+
+        /**
+         * A fresh rebase action will be started.
+         */
+        BEGIN,
+        /**
+         * Continues an interrupted rebase after conflicts are resolved.
+         */
+        CONTINUE {
+
+            @Override
+            public String toString () {
+                return "--continue"; //NOI18N
+            }
+            
+        },
+        /**
+         * Skips the current commit and continues an interrupted rebase.
+         */
+        SKIP {
+
+            @Override
+            public String toString () {
+                return "--skip"; //NOI18N
+            }
+            
+        },
+        /**
+         * Aborts and resets an interrupted rebase.
+         */
+        ABORT {
+
+            @Override
+            public String toString () {
+                return "--abort"; //NOI18N
+            }
+            
+        };
     }
     
     private final JGitRepository gitRepository;
@@ -556,16 +606,53 @@ public final class GitClient {
     }
 
     /**
-     * Returns an array of statuses for files under given roots
+     * Compares the working tree with the current HEAD and returns an array of
+     * statuses for files under given roots
+     *
      * @param roots root folders or files to search under
      * @return status array
      * @throws GitException an unexpected error occurs
      */
     public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException {
+        return getStatus(roots, Constants.HEAD, monitor);
+    }
+
+    /**
+     * Compares working tree with a given revision and returns an array of
+     * statuses for files under given roots
+     *
+     * @param roots root folders or files to search under
+     * @param revision revision to compare with the working tree. If set
+     * to <code>null</code> HEAD will be used instead.
+     * @return status array
+     * @throws GitException an unexpected error occurs
+     * @since 1.9
+     */
+    public Map<File, GitStatus> getStatus (File[] roots, String revision, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        StatusCommand cmd = new StatusCommand(repository, getClassFactory(), roots, monitor, delegateListener);
+        StatusCommand cmd = new StatusCommand(repository, revision == null ? Constants.HEAD : revision,
+                roots, getClassFactory(), monitor, delegateListener);
         cmd.execute();
         return cmd.getStatuses();
+    }
+
+    /**
+     * Compares two different commit trees and returns an array of file
+     * modifications between <code>revisionFirst</code> and <code>revisionSecond</code>
+     *
+     * @param roots root folders or files to search under
+     * @param revisionFirst first revision to compare
+     * @param revisionSecond second revision to compare
+     * @return status array
+     * @throws GitException an unexpected error occurs
+     * @since 1.9
+     */
+    public Map<File, GitFileInfo> getStatus (File[] roots, String revisionFirst, String revisionSecond, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CompareCommand cmd = new CompareCommand(repository, revisionFirst, revisionSecond, roots,
+                getClassFactory(), monitor);
+        cmd.execute();
+        return cmd.getFileDifferences();
     }
 
     /**
@@ -767,6 +854,25 @@ public final class GitClient {
     public GitPushResult push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         PushCommand cmd = new PushCommand(gitRepository.getRepository(), getClassFactory(), remote, pushRefSpecifications, fetchRefSpecifications, monitor);
         cmd.setCredentialsProvider(this.credentialsProvider);
+        cmd.execute();
+        return cmd.getResult();
+    }
+    
+    /**
+     * Rebases the current HEAD onto a commit specified by the given revision.
+     *
+     * @param operation kind of rebase operation you want to perform
+     * @param revision id of a destination commit. Considered only
+     * when <code>operation</code> is set
+     * to <code>RebaseOperationType.BEGIN</code> otherwise it's meaningless.
+     * @param monitor progress monitor
+     * @return result of the rebase
+     * @throws GitException an unexpected error occurs
+     * @since 1.8
+     */
+    public GitRebaseResult rebase (RebaseOperationType operation, String revision, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        RebaseCommand cmd = new RebaseCommand(repository, getClassFactory(), revision, operation, monitor);
         cmd.execute();
         return cmd.getResult();
     }
