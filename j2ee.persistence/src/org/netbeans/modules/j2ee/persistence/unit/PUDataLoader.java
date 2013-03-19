@@ -45,7 +45,6 @@
 package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.io.IOException;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
