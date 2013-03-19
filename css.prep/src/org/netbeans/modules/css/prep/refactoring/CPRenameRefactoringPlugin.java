@@ -133,7 +133,7 @@ public class CPRenameRefactoringPlugin implements RefactoringPlugin {
                     refactorElements(modificationResult, context, CPWhereUsedQueryPlugin.findVariables(context), Bundle.rename_variable());
                     break;
                 case cp_mixin_name:
-//                    refactorElements(modificationResult, context, Bundle.rename_mixin());
+                    refactorElements(modificationResult, context, CPWhereUsedQueryPlugin.findMixins(context), Bundle.rename_mixin());
                     break;
             }
             

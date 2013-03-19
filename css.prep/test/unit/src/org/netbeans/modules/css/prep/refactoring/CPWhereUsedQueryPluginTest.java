@@ -223,6 +223,71 @@ public class CPWhereUsedQueryPluginTest extends ProjectTestBase {
         
      }
     
+      /*
+     * Tests FU on mixin calls in one file.
+     */
+     public void testFUOfMixinsCalls() throws ParseException, BadLocationException, IOException {
+        FileObject libfile = getTestFile(getSourcesFolderName() + "/test1.scss");
+        
+        CssParserResult result = parse(libfile);
+        
+        //pos 7:24 - at the "incr" in @include incr(20px);
+        RefactoringElementContext context = new RefactoringElementContext(result, 143);
+        Collection<RefactoringElement> mixins = CPWhereUsedQueryPlugin.findMixins(context);
+        assertNotNull(mixins);
+//        for(RefactoringElement e : vars) {
+//            System.out.println(e.toString());
+//        }
+        assertEquals(2, mixins.size());
+        
+        Iterator<RefactoringElement> iterator = mixins.iterator();
+        
+        //the declaration itself
+        RefactoringElement re = iterator.next();
+        assertEquals("incr", re.getName());
+        assertEquals(libfile, re.getFile());
+        OffsetRange range = re.getRange();
+        assertEquals(56, range.getStart());
+        assertEquals(60, range.getEnd());
+                
+        //the usage of the mixin
+        re = iterator.next();
+        assertEquals("incr", re.getName());
+        assertEquals(libfile, re.getFile());
+        range = re.getRange();
+        assertEquals(141, range.getStart());
+        assertEquals(145, range.getEnd());
+        
+        //and vice versa
+        context = new RefactoringElementContext(result, 57);
+        mixins = CPWhereUsedQueryPlugin.findMixins(context);
+        assertNotNull(mixins);
+//        for(RefactoringElement e : vars) {
+//            System.out.println(e.toString());
+//        }
+        assertEquals(2, mixins.size());
+        
+        iterator = mixins.iterator();
+        
+        //the declaration itself
+        re = iterator.next();
+        assertEquals("incr", re.getName());
+        assertEquals(libfile, re.getFile());
+        range = re.getRange();
+        assertEquals(56, range.getStart());
+        assertEquals(60, range.getEnd());
+                
+        //the usage in mixin
+        re = iterator.next();
+        assertEquals("incr", re.getName());
+        assertEquals(libfile, re.getFile());
+        range = re.getRange();
+        assertEquals(141, range.getStart());
+        assertEquals(145, range.getEnd());
+        
+     }
+    
+     
     /**
      * Parse using standard mechanism in contrary to {@link TestUtil#parse(org.openide.filesystems.FileObject)}.
      */

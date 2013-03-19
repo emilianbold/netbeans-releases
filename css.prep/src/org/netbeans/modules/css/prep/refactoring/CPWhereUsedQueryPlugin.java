@@ -196,6 +196,13 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
     }
 
     private void findMixins(RefactoringElementContext context, RefactoringElementsBag elements) throws IOException, ParseException {
+        for(RefactoringElement re : findMixins(context)) {
+            elements.add(refactoring, WhereUsedElement.create(re.getFile(), re.getName(), re.getRange(), ElementKind.METHOD));
+        }
+    }
+    
+    public static Collection<RefactoringElement> findMixins(RefactoringElementContext context) throws IOException, ParseException {
+        Collection<RefactoringElement> elements = new ArrayList<RefactoringElement>();
         String mixinName = context.getElementName();
 
         //all files linked from the base file with their CP models
@@ -210,12 +217,13 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
                     CPElement cpElement = var.resolve(cpModel);
                     if (cpElement != null) {
                         OffsetRange elementRange = cpElement.getRange();
-                        WhereUsedElement elem = WhereUsedElement.create(file, mixinName, elementRange, ElementKind.METHOD);
-                        elements.add(refactoring, elem);
+                        elements.add(new RefactoringElement(file, elementRange, mixinName));
                     }
                 }
             }
         }
+        
+        return elements;
     }
 
     @Override

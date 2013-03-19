@@ -70,7 +70,7 @@ public class CPCssIndexModel extends CssIndexModel {
     private static final Collection<String> INDEX_KEYS = Arrays.asList(new String[]{MIXINS_INDEX_KEY, VARIABLES_INDEX_KEY});
     
     private static final String VALUE_SEPARATOR = ",";
-    private static final String TYPE_SEPARATOR = "/";
+    private static final String ITEMS_SEPARATOR = "/";
     
     private Collection<CPElementHandle> mixins, variables;
 
@@ -99,9 +99,10 @@ public class CPCssIndexModel extends CssIndexModel {
         while (i.hasNext()) {
             CPElementHandle handle = i.next();
             sb.append(handle.getName());
-            sb.append(TYPE_SEPARATOR);
+            sb.append(ITEMS_SEPARATOR);
             sb.append(handle.getType().getIndexCode());
-            
+            sb.append(ITEMS_SEPARATOR);
+            sb.append(encodeElementId(handle.getElementId()));
             if (i.hasNext()) {
                 sb.append(VALUE_SEPARATOR); //NOI18N
             }
@@ -145,12 +146,13 @@ public class CPCssIndexModel extends CssIndexModel {
             String[] items = value.split(VALUE_SEPARATOR);
             Collection<CPElementHandle> handles = new ArrayList<CPElementHandle>(items.length);
             for(String item : items) {
-                String[] name_type_pair = item.split(TYPE_SEPARATOR);
-                String name = name_type_pair[0];
-                String typeIndexCode = name_type_pair[1];
+                String[] split = item.split(ITEMS_SEPARATOR);
+                String name = split[0];
+                String typeIndexCode = split[1];
+                String elementId = decodeElementId(split[2]);
                 
                 CPElementType type = CPElementType.forIndexCode(typeIndexCode);
-                CPElementHandle handle = new CPElementHandle(file, name, type);
+                CPElementHandle handle = new CPElementHandle(file, name, type, elementId);
                 
                 handles.add(handle);
             }
@@ -158,6 +160,14 @@ public class CPCssIndexModel extends CssIndexModel {
             
         }
         
+    }
+    
+    /* test */ static String encodeElementId(String string) {
+        return string.replace('/', '%');
+    }
+    
+    /* test */ static String decodeElementId(String string) {
+        return string.replace('%', '/');
     }
     
 }

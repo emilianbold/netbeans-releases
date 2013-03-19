@@ -85,4 +85,13 @@ public class CPCssIndexModelTest extends ProjectTestBase {
         
     }
     
+    public void testEncodeDecodeElementId() {
+        String elementId = "styleSheet/body/bodyItem|1/selectorsGroup/selector/elementName";
+        String enc = CPCssIndexModel.encodeElementId(elementId);
+//        System.out.println(enc);
+        String dec = CPCssIndexModel.decodeElementId(enc);
+        assertFalse(enc.equals(dec));
+        assertEquals(elementId, dec);
+    }
+    
 }
