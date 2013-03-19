@@ -286,6 +286,63 @@ public class CPWhereUsedQueryPluginTest extends ProjectTestBase {
         assertEquals(145, range.getEnd());
         
      }
+     
+     /*
+     * Tests FU on local variable declared in sass @for statement
+     */
+     public void testFUOfVarDeclaredInForBlock() throws ParseException, BadLocationException, IOException {
+        FileObject libfile = getTestFile(getSourcesFolderName() + "/test2.scss");
+        
+        CssParserResult result = parse(libfile);
+        
+        //pos 1:8 - in the $prom in: @for $prom from 1 to 10 {
+        RefactoringElementContext context = new RefactoringElementContext(result, 8);
+        Collection<RefactoringElement> vars = CPWhereUsedQueryPlugin.findVariables(context);
+        assertNotNull(vars);
+        assertEquals(2, vars.size());
+        
+        Iterator<RefactoringElement> iterator = vars.iterator();
+        
+        //the declaration itself
+        RefactoringElement re = iterator.next();
+        assertEquals("$prom", re.getName());
+        assertEquals(libfile, re.getFile());
+        OffsetRange range = re.getRange();
+        assertEquals(5, range.getStart());
+        assertEquals(10, range.getEnd());
+                
+        //the usage of the mixin
+        re = iterator.next();
+        assertEquals("$prom", re.getName());
+        assertEquals(libfile, re.getFile());
+        range = re.getRange();
+        assertEquals(37, range.getStart());
+        assertEquals(42, range.getEnd());
+        
+        //and vice versa
+        context = new RefactoringElementContext(result, 40);
+        vars = CPWhereUsedQueryPlugin.findVariables(context);
+        assertNotNull(vars);
+        assertEquals(2, vars.size());
+        
+        iterator = vars.iterator();
+        
+        //the declaration itself
+        re = iterator.next();
+        assertEquals("$prom", re.getName());
+        assertEquals(libfile, re.getFile());
+        range = re.getRange();
+        assertEquals(5, range.getStart());
+        assertEquals(10, range.getEnd());
+                
+        //the usage of the mixin
+        re = iterator.next();
+        assertEquals("$prom", re.getName());
+        assertEquals(libfile, re.getFile());
+        range = re.getRange();
+        assertEquals(37, range.getStart());
+        assertEquals(42, range.getEnd());
+     }
     
      
     /**

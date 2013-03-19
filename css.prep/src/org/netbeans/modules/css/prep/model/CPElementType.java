@@ -70,7 +70,7 @@ public enum CPElementType {
      *
      * @mixin left($dist) { ... }
      */
-    VARIABLE_DECLARATION_MIXIN_PARAMS("var_prms"),
+    VARIABLE_DECLARATION_IN_BLOCK_CONTROL("var_prms"),
     
     /**
      * Variable usage.

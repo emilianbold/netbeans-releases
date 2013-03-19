@@ -474,7 +474,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         //first look at the current file
                         CPModel model = CPModel.getModel(context.getParserResult());
                         for (CPElement var : model.getVariables()) {
-                            if (var.getType().isOfTypes(CPElementType.VARIABLE_GLOBAL_DECLARATION, CPElementType.VARIABLE_LOCAL_DECLARATION, CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS)) {
+                            if (var.getType().isOfTypes(CPElementType.VARIABLE_GLOBAL_DECLARATION, CPElementType.VARIABLE_LOCAL_DECLARATION, CPElementType.VARIABLE_DECLARATION_IN_BLOCK_CONTROL)) {
                                 if (LexerUtils.equals(varName, var.getName(), false, false)) {
                                     return new DeclarationLocation(context.getFileObject(), var.getRange().getStart());
                                 }
@@ -559,7 +559,7 @@ public class CPCssEditorModule extends CssEditorModule {
                 case MIXIN_DECLARATION:
                     mixins.add(new CPStructureItem.Mixin(element));
                     break;
-                case VARIABLE_DECLARATION_MIXIN_PARAMS:
+                case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
                 case VARIABLE_GLOBAL_DECLARATION:
                 case VARIABLE_LOCAL_DECLARATION:
                     vars.add(new CPStructureItem.Variable(element));

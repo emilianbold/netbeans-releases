@@ -208,7 +208,7 @@ public class CPModelTest extends CssTestBase {
         v = vars.next();
         assertNotNull(v);
         assertEquals("$arg", v.getName().toString());
-        assertEquals(CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS, v.getType());
+        assertEquals(CPElementType.VARIABLE_DECLARATION_IN_BLOCK_CONTROL, v.getType());
 
         assertTrue(vars.hasNext());
         v = vars.next();
@@ -244,7 +244,7 @@ public class CPModelTest extends CssTestBase {
         CPElement var = model.getVariableAtOffset(12); 
         assertNotNull(var);
         assertEquals("$arg", var.getName().toString());
-        assertEquals(CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS, var.getType());
+        assertEquals(CPElementType.VARIABLE_DECLARATION_IN_BLOCK_CONTROL, var.getType());
         
         OffsetRange range = var.getRange();
         assertEquals(10, range.getStart());
