@@ -313,7 +313,7 @@ public class CommitAction extends SingleRepositoryAction {
             }
             File[] hookFiles = commitCandidates.toArray(new File[commitCandidates.size()]);
             LogEntry logEntry = new LogEntry(info.getFullMessage(),
-                    info.getAuthor().getName(),
+                    info.getAuthor().toString(),
                     info.getRevision(),
                     new Date(info.getCommitTime()));
 

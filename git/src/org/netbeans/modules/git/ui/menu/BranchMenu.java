@@ -51,6 +51,7 @@ import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.checkout.SwitchBranchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
+import org.netbeans.modules.git.ui.rebase.RebaseAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
@@ -115,6 +116,12 @@ public final class BranchMenu extends DynamicMenu {
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
             menu.add(item);
+            
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(RebaseAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
@@ -129,6 +136,8 @@ public final class BranchMenu extends DynamicMenu {
             
             menu.addSeparator();
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(MergeRevisionAction.class), NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RebaseAction.class), NbBundle.getMessage(RebaseAction.class, "LBL_RebaseAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;
