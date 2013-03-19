@@ -269,7 +269,7 @@ public class CPModel {
                         }
                         OffsetRange scope = contexts.isEmpty() ? null : contexts.peek();
 
-                        CPElementHandle handle = new CPElementHandle(getFile(), node.image().toString().trim(), type);
+                        CPElementHandle handle = new CPElementHandle(getFile(), node.image().toString().trim(), type, NodeUtil.getElementId(node));
                         OffsetRange variableRange = new OffsetRange(node.from(), node.to());
                         CPElement element = new CPElement(handle, variableRange, scope);
 
@@ -318,7 +318,7 @@ public class CPModel {
                     case cp_mixin_declaration:
                         Node mixin_name = NodeUtil.getChildByType(node, NodeType.cp_mixin_name);
                         if (mixin_name != null) {
-                            CPElementHandle handle = new CPElementHandle(getFile(), mixin_name.image().toString().trim(), CPElementType.MIXIN_DECLARATION);
+                            CPElementHandle handle = new CPElementHandle(getFile(), mixin_name.image().toString().trim(), CPElementType.MIXIN_DECLARATION, NodeUtil.getElementId(node));
                             OffsetRange variableRange = new OffsetRange(mixin_name.from(), mixin_name.to());
                             OffsetRange scope = null; //TODO implement!
                             CPElement element = new CPElement(handle, variableRange, scope);
@@ -329,7 +329,7 @@ public class CPModel {
                     case cp_mixin_call:
                         mixin_name = NodeUtil.getChildByType(node, NodeType.cp_mixin_name);
                         if (mixin_name != null) {
-                            CPElementHandle handle = new CPElementHandle(getFile(), mixin_name.image().toString().trim(), CPElementType.MIXIN_USAGE);
+                            CPElementHandle handle = new CPElementHandle(getFile(), mixin_name.image().toString().trim(), CPElementType.MIXIN_USAGE, NodeUtil.getElementId(node));
                             OffsetRange variableRange = new OffsetRange(mixin_name.from(), mixin_name.to());
                             OffsetRange scope = null; //TODO implement!
                             CPElement element = new CPElement(handle, variableRange, scope);
