@@ -83,6 +83,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
+import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -352,7 +353,7 @@ public class JavadocHelper {
                 fo = fo.getParent();
             }
             if (fo != null) {
-                URL url = fo.getURL();
+                final URL url = CachingArchiveProvider.getDefault().mapCtSymToJar(fo.toURL());
                 sourceRoot = JavaIndex.getSourceRootForClassFolder(url);
                 if (sourceRoot == null) {
                     binaries.add(url);
@@ -448,8 +449,6 @@ public class JavadocHelper {
             }
 
         } catch (MalformedURLException x) {
-            LOG.log(Level.INFO, null, x);
-        } catch (FileStateInvalidException x) {
             LOG.log(Level.INFO, null, x);
         }
         return null;
