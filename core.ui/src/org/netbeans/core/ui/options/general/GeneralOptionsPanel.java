@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -64,7 +64,6 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.beaninfo.editors.HtmlBrowser;
 import org.netbeans.core.ProxySettings;
-import org.netbeans.core.networkproxy.NetworkProxySelector;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -518,7 +517,7 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }//GEN-LAST:event_lblLearnMoreMousePressed
 
     private void bReloadProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bReloadProxyActionPerformed
-        NetworkProxySelector.reloadNetworkProxy();
+        ProxySettings.reload();
         rbUseSystemProxy.setToolTipText(getUseSystemProxyToolTip());
     }//GEN-LAST:event_bReloadProxyActionPerformed
 

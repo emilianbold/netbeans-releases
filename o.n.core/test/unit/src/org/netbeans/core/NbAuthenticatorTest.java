@@ -41,6 +41,7 @@
  */
 package org.netbeans.core;
 
+import org.netbeans.modules.core.network.authenticator.NbAuthenticator;
 import java.net.Authenticator;
 import java.net.Inet4Address;
 import java.net.PasswordAuthentication;

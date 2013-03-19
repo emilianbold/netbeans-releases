@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.networkproxy.kde;
+package org.netbeans.core.network.proxy.kde;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -52,8 +52,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.core.networkproxy.NetworkProxyResolver;
-import org.netbeans.core.networkproxy.NetworkProxySettings;
+import org.netbeans.core.network.proxy.NetworkProxyResolver;
+import org.netbeans.core.network.proxy.NetworkProxySettings;
 
 /**
  *

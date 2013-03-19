@@ -43,6 +43,7 @@
  */
 package org.netbeans.core;
 
+import org.netbeans.modules.core.network.proxy.NbProxySelector;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;

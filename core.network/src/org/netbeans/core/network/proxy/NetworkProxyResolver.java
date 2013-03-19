@@ -39,30 +39,23 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.networkproxy.windows;
-
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-import com.sun.jna.Structure;
+package org.netbeans.core.network.proxy;
 
 /**
- *
+ * Interface for system (platform) dependent proxy resolvers.
+ * 
+ * Different resolvers for Windows, Mac OS X, Gnome and KDE. Also there is
+ * a fallback resolver.
+ * 
  * @author lfischme
  */
-public interface WindowsNetworkProxyLibrary extends Library {
-    WindowsNetworkProxyLibrary LIBRARY = (WindowsNetworkProxyLibrary) Native.loadLibrary("winhttp.dll", WindowsNetworkProxyLibrary.class);
+public interface NetworkProxyResolver {
     
-    public class ProxyConfig extends Structure {
-        public static class ByReference extends ProxyConfig implements Structure.ByReference { }
-        
-        public boolean autoDetect;
-        public Pointer pacFile;
-        public Pointer proxy;
-        public Pointer proxyBypass;        
-    } 
-    
-    public boolean WinHttpGetIEProxyConfigForCurrentUser(
-            ProxyConfig proxyConfig
-            );
+    /**
+     * Returns NetworkProxySetting - wrapper for all proxy settings.
+     * 
+     * @return NetworkProxySettings
+     */
+    public NetworkProxySettings getNetworkProxySettings();
+
 }

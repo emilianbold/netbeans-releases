@@ -39,12 +39,12 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.networkproxy.fallback;
+package org.netbeans.core.network.proxy.fallback;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.core.networkproxy.NetworkProxyResolver;
-import org.netbeans.core.networkproxy.NetworkProxySettings;
+import org.netbeans.core.network.proxy.NetworkProxyResolver;
+import org.netbeans.core.network.proxy.NetworkProxySettings;
 
 /**
  * Fallback resolver tries to retrieve proxy setting from environment variables.

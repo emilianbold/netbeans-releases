@@ -44,6 +44,8 @@
 
 package org.netbeans.core;
 
+import org.netbeans.modules.core.network.proxy.NbProxySelector;
+import org.netbeans.modules.core.network.proxy.ProxySettings;
 import java.lang.reflect.Field;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.PreferenceChangeEvent;

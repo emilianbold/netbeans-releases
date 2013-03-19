@@ -1,4 +1,4 @@
-package org.netbeans.core.networkproxy.mac;
+package org.netbeans.core.network.proxy.mac;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;

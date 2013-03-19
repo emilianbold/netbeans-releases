@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -191,7 +191,7 @@ public class ProxySettings {
     public static int getProxyType () {
         int type = getPreferences ().getInt (PROXY_TYPE, AUTO_DETECT_PROXY);
         if (AUTO_DETECT_PROXY == type) {
-            type = NbProxySelector.usePAC() ? AUTO_DETECT_PAC : AUTO_DETECT_PROXY;
+            type = ProxySettings.getSystemPac() != null ? AUTO_DETECT_PAC : AUTO_DETECT_PROXY;
         }
         return type;
     }
@@ -224,11 +224,11 @@ public class ProxySettings {
                 NbBundle.getMessage(ProxySettings.class, "ProxySettings.password.description"));
     }
 
-    static void addPreferenceChangeListener (PreferenceChangeListener l) {
+    public static void addPreferenceChangeListener (PreferenceChangeListener l) {
         getPreferences ().addPreferenceChangeListener (l);
     }
     
-    static void removePreferenceChangeListener (PreferenceChangeListener l) {
+    public static void removePreferenceChangeListener (PreferenceChangeListener l) {
         getPreferences ().removePreferenceChangeListener (l);
     }
 
@@ -525,6 +525,11 @@ public class ProxySettings {
             }
         }
     }
+    
+    public static void reload() {
+        Reloader reloader = Lookup.getDefault().lookup(Reloader.class);
+        reloader.reload();
+    }
 
     @ServiceProvider(service = NetworkSettings.ProxyCredentialsProvider.class, position = 1000)
     public static class NbProxyCredentialsProvider extends NetworkSettings.ProxyCredentialsProvider {
@@ -571,5 +576,9 @@ public class ProxySettings {
             return getPreferences().getBoolean(USE_PROXY_AUTHENTICATION, false);
         }
 
+    }
+    
+    public abstract static class Reloader {
+        public abstract void reload();
     }
 }

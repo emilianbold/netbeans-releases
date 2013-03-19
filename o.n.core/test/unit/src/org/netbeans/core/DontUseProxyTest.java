@@ -44,6 +44,7 @@
 
 package org.netbeans.core;
 
+import org.netbeans.modules.core.network.proxy.NbProxySelector;
 import org.netbeans.junit.*;
 
 /** Tests HTTP Proxy settings.

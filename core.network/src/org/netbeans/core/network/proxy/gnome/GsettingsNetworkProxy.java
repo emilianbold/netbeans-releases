@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.networkproxy.gnome;
+package org.netbeans.core.network.proxy.gnome;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,8 +47,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.core.networkproxy.NetworkProxySettings;
-import static org.netbeans.core.networkproxy.gnome.GnomeNetworkProxy.executeCommand;
+import org.netbeans.core.network.proxy.NetworkProxySettings;
+import static org.netbeans.core.network.proxy.gnome.GnomeNetworkProxy.executeCommand;
 
 /**
  *

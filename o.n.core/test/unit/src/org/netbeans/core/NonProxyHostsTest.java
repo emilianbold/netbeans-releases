@@ -44,6 +44,8 @@
 
 package org.netbeans.core;
 
+import org.netbeans.modules.core.network.proxy.NbProxySelector;
+import org.netbeans.modules.core.network.proxy.ProxySettings;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URI;

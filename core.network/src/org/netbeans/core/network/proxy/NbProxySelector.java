@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.core.network.proxy;
 
+import org.netbeans.core.ProxySettings;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.*;
@@ -54,43 +55,30 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.netbeans.core.networkproxy.NetworkProxySelector;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jiri Rechtacek
  */
+@ServiceProvider(service = ProxySelector.class, position = 1000)
 public final class NbProxySelector extends ProxySelector {
     
     private final ProxySelector original;
     private static final Logger LOG = Logger.getLogger (NbProxySelector.class.getName ());
     private static Object useSystemProxies;
-    private static String DEFAULT_PROXY_SELECTOR_CLASS_NAME = "sun.net.spi.DefaultProxySelector";
+    private static final String DEFAULT_PROXY_SELECTOR_CLASS_NAME = "sun.net.spi.DefaultProxySelector";
         
     /** Creates a new instance of NbProxySelector */
-    private NbProxySelector(ProxySelector delegate) {
-        original = delegate;
+    public NbProxySelector() {
+        original = ProxySelector.getDefault();
         LOG.log(Level.FINE, "java.net.useSystemProxies has been set to {0}", useSystemProxies());
         if (original.getClass().getName().equals(DEFAULT_PROXY_SELECTOR_CLASS_NAME) || original == null) {
-            NetworkProxySelector.reloadNetworkProxy();
+            NetworkProxyReloader.reloadNetworkProxy();
         }
         ProxySettings.addPreferenceChangeListener(new ProxySettingsListener());
         copySettingsToSystem();
-    }
-    
-    static ProxySelector create(ProxySelector delegate) {
-        return new NbProxySelector(delegate);
-    }
-    
-    static void register() {
-        ProxySelector prev = ProxySelector.getDefault();
-        if (prev == null) {
-            LOG.warning("No default system ProxySelector was found thus NetBeans ProxySelector won't delegate on it");
-        } else {
-            LOG.log(Level.FINE, "Override the original ProxySelector: {0}", prev);
-        }
-        ProxySelector.setDefault(create(prev));
-    }
+    } 
     
     @Override
     public List<Proxy> select(URI uri) {

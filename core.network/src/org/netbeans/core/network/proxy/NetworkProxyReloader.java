@@ -39,28 +39,30 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.networkproxy;
+package org.netbeans.core.network.proxy;
 
+import org.netbeans.core.ProxySettings;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import org.netbeans.core.ProxySettings;
-import org.netbeans.core.networkproxy.fallback.FallbackNetworkProxy;
-import org.netbeans.core.networkproxy.gnome.GnomeNetworkProxy;
-import org.netbeans.core.networkproxy.kde.KdeNetworkProxy;
-import org.netbeans.core.networkproxy.mac.MacNetworkProxy;
-import org.netbeans.core.networkproxy.windows.WindowsNetworkProxy;
+import org.netbeans.core.network.proxy.fallback.FallbackNetworkProxy;
+import org.netbeans.core.network.proxy.gnome.GnomeNetworkProxy;
+import org.netbeans.core.network.proxy.kde.KdeNetworkProxy;
+import org.netbeans.core.network.proxy.mac.MacNetworkProxy;
+import org.netbeans.core.network.proxy.windows.WindowsNetworkProxy;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * This class allows user to reload system network proxy settings.
  * 
  * @author lfischme
  */
-public class NetworkProxySelector {
+@ServiceProvider(service = ProxySettings.Reloader.class, position = 1000)
+public class NetworkProxyReloader extends ProxySettings.Reloader {
     
-    private final static Logger LOGGER = Logger.getLogger(NetworkProxySelector.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(NetworkProxyReloader.class.getName());
     
     private final static String COMMA = ","; //NOI18N
     
@@ -68,8 +70,8 @@ public class NetworkProxySelector {
     private final static String KDE = "kde"; //NOI18N
     private final static String RUNNING_ENV_SYS_PROPERTY = "netbeans.running.environment"; //NOI18N
     
-    private static NetworkProxyResolver networkProxyResolver = getNetworkProxyResolver();
-    private static NetworkProxyResolver fallbackNetworkProxyResolver = getFallbackProxyResolver();
+    private static final NetworkProxyResolver NETWORK_PROXY_RESOLVER = getNetworkProxyResolver();
+    private static final NetworkProxyResolver FALLBACK_NETWORK_PROXY_RESOLVER = getFallbackProxyResolver();
     /**
      * Reloads system proxy network settings.
      * 
@@ -78,11 +80,11 @@ public class NetworkProxySelector {
      */
     public static void reloadNetworkProxy() {        
         LOGGER.log(Level.FINE, "System network proxy reloading started."); //NOI18N
-        NetworkProxySettings networkProxySettings = networkProxyResolver.getNetworkProxySettings();
+        NetworkProxySettings networkProxySettings = NETWORK_PROXY_RESOLVER.getNetworkProxySettings();
         
         if (!networkProxySettings.isResolved()) {
             LOGGER.log(Level.WARNING, "System network proxy reloading failed! Trying fallback resolver."); //NOI18N
-            NetworkProxySettings fallbackNetworkProxySettings = fallbackNetworkProxyResolver.getNetworkProxySettings();
+            NetworkProxySettings fallbackNetworkProxySettings = FALLBACK_NETWORK_PROXY_RESOLVER.getNetworkProxySettings();
             if (fallbackNetworkProxySettings.isResolved()) {
                 LOGGER.log(Level.INFO, "System network proxy reloading succeeded. Fallback provider was successful."); //NOI18N
                 networkProxySettings = fallbackNetworkProxySettings;
@@ -141,10 +143,10 @@ public class NetworkProxySelector {
     }
     
     /**
-     * Returns string from array of strings. Strings are sepparated by comma.
+     * Returns string from array of strings. Strings are separated by comma.
      * 
      * @param stringArray
-     * @return String from array of strings. Strings are sepparated by comma.
+     * @return String from array of strings. Strings are separated by comma.
      */
     private static String getStringFromArray(String[] stringArray) {
         StringBuilder sb = new StringBuilder();
@@ -168,14 +170,14 @@ public class NetworkProxySelector {
     }
     
     /**
-     * Retuns proper network resolver for running environment.
+     * Returns proper network resolver for running environment.
      * 
      * If not suitable proxy resolver found, the fallback is used.
      * 
      * @return Proper network resolver for running environment.
      */
     private static NetworkProxyResolver getNetworkProxyResolver() {
-        if (networkProxyResolver == null) {        
+        if (NETWORK_PROXY_RESOLVER == null) {        
             if (Utilities.isWindows()) {
                 LOGGER.log(Level.INFO, "System network proxy resolver: Windows"); //NOI18N
                 return new WindowsNetworkProxy();
@@ -204,7 +206,7 @@ public class NetworkProxySelector {
             LOGGER.log(Level.WARNING, "System network proxy resolver: no suitable found, using fallback."); //NOI18N
             return new FallbackNetworkProxy();
         } else {
-            return networkProxyResolver;
+            return NETWORK_PROXY_RESOLVER;
         }   
     }
     
@@ -214,10 +216,15 @@ public class NetworkProxySelector {
      * @return Fallback proxy resolver.
      */
     private static NetworkProxyResolver getFallbackProxyResolver() {
-        if (fallbackNetworkProxyResolver == null) {
+        if (FALLBACK_NETWORK_PROXY_RESOLVER == null) {
             return new FallbackNetworkProxy();
         } else {
-            return fallbackNetworkProxyResolver;
+            return FALLBACK_NETWORK_PROXY_RESOLVER;
         }
+    }
+
+    @Override
+    public void reload() {
+        NetworkProxyReloader.reloadNetworkProxy();
     }
 }

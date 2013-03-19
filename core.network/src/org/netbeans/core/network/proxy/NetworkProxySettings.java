@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.networkproxy;
+package org.netbeans.core.network.proxy;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 /**
  * Immutable class representing all network proxy settings.
  * 
- * Holds all praoxy settings values if they were succesfully retrieved
+ * Holds all proxy settings values if they were successfully retrieved
  * or tells that they were not retrieved well.
  * 
  * @author lfischme
