@@ -845,7 +845,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                         pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
                         pane.setText(data);
                     } else {
-                        String contentType = stripDownContentType((String)((JSONObject)request.getResponse().get("headers")).get("Content-Type"));
+                        String contentType = stripDownContentType((JSONObject)request.getResponse().get("headers"));
                         reformatAndUseRightEditor(pane, data, contentType);
                     }
                 }
@@ -900,7 +900,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                     pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
                     pane.setText(getPostData());
                 } else {
-                    String contentType = stripDownContentType((String)getRequestHeaders().get("Content-Type"));
+                    String contentType = stripDownContentType(getRequestHeaders());
                     reformatAndUseRightEditor(pane, getPostData(), contentType);
                 }
             }
@@ -955,7 +955,12 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
     }
 
-    private static String stripDownContentType(String contentType) {
+    private static String stripDownContentType(JSONObject o) {
+        assert o != null;
+        String contentType = (String)o.get("Content-Type");
+        if (contentType == null) {
+            contentType = (String)o.get("content-type");
+        }
         if (contentType == null) {
             return null;
         }
@@ -1056,8 +1061,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         sb.append(text);
     }
 
-    private static String getJSONPResponse(String data) {
-        Pattern p = Pattern.compile("([0-9a-zA-Z_$]+?\\()([\\{\\[].*?[\\}\\]])(\\)\\;)");
+    static String getJSONPResponse(String data) {
+        Pattern p = Pattern.compile("([0-9a-zA-Z_$]+?\\()([\\{\\[].*?[\\}\\]])(\\)[\\;]?[\n\r]?)", Pattern.DOTALL);
         Matcher m = p.matcher(data);
         if (m.matches()) {
             return m.group(2);
