@@ -156,7 +156,8 @@ public class DataViewTest extends NbTestCase {
             ResultSet rset = stmt.executeQuery(sqlStr);
             Collection<DBTable> tables = dbMeta.generateDBTables(rset, sqlStr, true); //generateDBTables(rset);
             DataViewDBTable expResult = new DataViewDBTable(tables);
-            DataViewDBTable result = instance.getDataViewPageContext().getTableMetaData();
+            DataViewPageContext pageContext = instance.getPageContext(0);
+            DataViewDBTable result = pageContext.getTableMetaData();
             assertEquals(expResult.getQualifiedName(0, false), result.getQualifiedName(0, false));
             assertEquals(expResult.getColumnCount(), result.getColumnCount());
             assertEquals(expResult.getColumnType(2), result.getColumnType(2));
@@ -170,7 +171,7 @@ public class DataViewTest extends NbTestCase {
         String sqlStr =context.getSqlSelect();
         int pageSize = 4;
         DataView instance = DataView.create(dbconn, sqlStr, pageSize);
-        DataViewPageContext result = instance.getDataViewPageContext();
+        DataViewPageContext result = instance.getPageContext(0);
         assertEquals(1, result.getTotalRows());
         assertTrue(result.hasDataRows());
     }

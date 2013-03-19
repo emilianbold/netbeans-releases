@@ -99,7 +99,7 @@ public class DataViewDBTableTest extends NbTestCase {
         int index = 5;
         String sqlStr = context.getSqlSelect();
         DataView dv = DataView.create(dbconn, sqlStr, index);
-        DataViewDBTable instance = dv.getDataViewPageContext().getTableMetaData();
+        DataViewDBTable instance = dv.getPageContext(0).getTableMetaData();
         DBTable result = instance.getTable(0);
         assertNotNull(result);
         assertEquals(11, instance.getColumnCount());
@@ -112,7 +112,7 @@ public class DataViewDBTableTest extends NbTestCase {
         int index = 5;
         String sqlStr = context.getSqlSelect();
         DataView dv = DataView.create(dbconn, sqlStr, index);
-        DataViewDBTable instance = dv.getDataViewPageContext().getTableMetaData();
+        DataViewDBTable instance = dv.getPageContext(0).getTableMetaData();
         int expResult = 1;
         int result = instance.getTableCount();
         assertEquals(expResult, result);
@@ -125,7 +125,7 @@ public class DataViewDBTableTest extends NbTestCase {
         int index = 5;
         String sqlStr = context.getSqlSelect();
         DataView dv = DataView.create(dbconn, sqlStr, index);
-        DataViewDBTable instance = dv.getDataViewPageContext().getTableMetaData();
+        DataViewDBTable instance = dv.getPageContext(0).getTableMetaData();
         boolean expResult = true;
         boolean result = instance.hasOneTable();
         assertEquals(expResult, result);
@@ -138,7 +138,7 @@ public class DataViewDBTableTest extends NbTestCase {
         int index = 5;
         String sqlStr = context.getSqlSelect();
         DataView dv = DataView.create(dbconn, sqlStr, index);
-        DataViewDBTable instance = dv.getDataViewPageContext().getTableMetaData();
+        DataViewDBTable instance = dv.getPageContext(0).getTableMetaData();
         String expResult = "SIMPLETABLE";
         String result = instance.getFullyQualifiedName(0, false);
         assertEquals(expResult, result);
@@ -151,7 +151,7 @@ public class DataViewDBTableTest extends NbTestCase {
         int index = 5;
         String sqlStr = context.getSqlSelect();
         DataView dv = DataView.create(dbconn, sqlStr, index);
-        DataViewDBTable instance = dv.getDataViewPageContext().getTableMetaData();
+        DataViewDBTable instance = dv.getPageContext(0).getTableMetaData();
         int expResult = 12;
         int result = instance.getColumnType(2);
         assertEquals(expResult, result);
@@ -164,7 +164,7 @@ public class DataViewDBTableTest extends NbTestCase {
         int index = 5;
         String sqlStr = context.getSqlSelect();
         DataView dv = DataView.create(dbconn, sqlStr, index);
-        DataViewDBTable instance = dv.getDataViewPageContext().getTableMetaData();
+        DataViewDBTable instance = dv.getPageContext(0).getTableMetaData();
         String expResult = "DATEC";
         String result = instance.getColumnName(index);
         assertEquals(expResult, result);
@@ -177,7 +177,7 @@ public class DataViewDBTableTest extends NbTestCase {
         int index = 5;
         String sqlStr = context.getSqlSelect();
         DataView dv = DataView.create(dbconn, sqlStr, index);
-        DataViewDBTable instance = dv.getDataViewPageContext().getTableMetaData();
+        DataViewDBTable instance = dv.getPageContext(0).getTableMetaData();
         String expResult = "TINYINTC";
         String result = instance.getQualifiedName(0, false);
         assertEquals(expResult, result);
@@ -190,7 +190,7 @@ public class DataViewDBTableTest extends NbTestCase {
         int index = 5;
         String sqlStr = context.getSqlSelect();
         DataView dv = DataView.create(dbconn, sqlStr, index);
-        DataViewDBTable instance = dv.getDataViewPageContext().getTableMetaData();
+        DataViewDBTable instance =dv.getPageContext(0).getTableMetaData();
         int expResult = 11;
         int result = instance.getColumnCount();
         assertEquals(expResult, result);

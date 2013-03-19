@@ -160,20 +160,12 @@ class DataViewUI extends JXPanel {
 
         this.setLayout(new BorderLayout());
         this.setBorder(BorderFactory.createEmptyBorder());
-        String sql = dataView.getSQLString();
-        if (sql.length() > MAX_TAB_LENGTH) {
-            String trimmed = NbBundle.getMessage(DataViewUI.class, "DataViewUI_TrimmedTabName", sql.substring(0, Math.min(sql.length(), MAX_TAB_LENGTH)));
-            this.setName(trimmed);
-        } else {
-            this.setName(sql);
-        }
-        this.setToolTipText(sql);
 
         // Main pannel with toolbars
         JPanel panel = initializeMainPanel(nbOutputComponent);
         this.add(panel, BorderLayout.NORTH);
 
-        actionHandler = new DataViewActionHandler(this, dataView);
+        actionHandler = new DataViewActionHandler(this, dataView, pageContext);
 
         //add resultset data panel
         dataPanel = new DataViewTableUI(this, actionHandler, dataView, pageContext);

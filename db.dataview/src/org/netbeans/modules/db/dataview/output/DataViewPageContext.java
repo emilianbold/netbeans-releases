@@ -78,6 +78,11 @@ class DataViewPageContext {
         DataViewDBTable old = this.tableMetaData;
         this.tableMetaData = tableMetaData;
         firePropertyChange(PROP_tableMetaData, old, tableMetaData);
+        resetEditableState();
+    }
+
+    void resetEditableState() {
+        model.setEditable(tableMetaData == null ? false : tableMetaData.hasOneTable());
     }
 
     int getPageSize() {
@@ -134,7 +139,11 @@ class DataViewPageContext {
         return totalRows;
     }
 
-    synchronized void setTotalRows(int totalCount) {
+    synchronized void setTotalRows(Integer totalCount) {
+        // Move logic from SQLExectionHelper
+        if (totalCount == null) {
+            totalCount = -1;
+        }
         int oldTotalRows = this.totalRows;
         this.totalRows = totalCount;
         firePropertyChange(PROP_totalRows, oldTotalRows, totalCount);

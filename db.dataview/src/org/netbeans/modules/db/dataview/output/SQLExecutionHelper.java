@@ -85,6 +85,7 @@ class SQLExecutionHelper {
     // the RequestProcessor used for executing statements.
     private final RequestProcessor rp = new RequestProcessor("SQLStatementExecution", 20, true); // NOI18N
     private int resultSetScrollType = ResultSet.TYPE_FORWARD_ONLY;
+    private boolean supportesMultipleResultSets = false;
 
     SQLExecutionHelper(DataView dataView) {
         this.dataView = dataView;
@@ -142,6 +143,11 @@ class SQLExecutionHelper {
                     } catch (Exception ex) {
                         LOGGER.log(Level.WARNING, "Exception while querying database for scrollable resultset support");
                     }
+                    try {
+                        supportesMultipleResultSets = conn.getMetaData().supportsMultipleResultSets();
+                    } catch (SQLException ex) {
+                        LOGGER.log(Level.INFO, "Database driver throws exception when checking for multiple resultset support.");
+                    }
                     DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
                     String sql = dataView.getSQLString();
 
@@ -153,61 +159,87 @@ class SQLExecutionHelper {
                     if (Thread.interrupted()) {
                         return;
                     }
-                    executeSQLStatement(stmt, sql);
+                    // Read multiple Resultsets
+                    boolean resultSet = executeSQLStatement(stmt, sql);
 
+                    // @todo: This needs clearing up => in light of request for
+                    // the ability to disable autocommit, this need to go
                     if (dataView.getUpdateCount() != -1) {
                         if (!conn.getAutoCommit()) {
                             conn.commit();
                         }
                         return;
                     }
-
-                    ResultSet rs = null;
-
                     if (Thread.interrupted()) {
                         return;
                     }
-                    if (dataView.hasResultSet()) {
-                        rs = stmt.getResultSet();
-                    }
-
-                    if (rs == null) {
+                    // @todo: This needs clearing up => in light of request for
+                    // the ability to disable autocommit, this need to go
+                    if (!resultSet) {
                         if (!conn.getAutoCommit()) {
                             conn.commit();
                         }
                         return;
                     }
-                    Collection<DBTable> tables = dbMeta.generateDBTables(
-                            rs, sql, isSelectStatement(sql));
-                    DataViewDBTable dvTable = new DataViewDBTable(tables);
-                    dataView.getDataViewPageContext().getModel().setColumns(
-                            dvTable.getColumns().toArray(new DBColumn[0]));
-                    dataView.getDataViewPageContext().setTableMetaData(dvTable);
-                    if (resultSetNeedsReloading(dvTable)) {
-                        executeSQLStatement(stmt, sql);
-                        rs = stmt.getResultSet();
-                    }
-                    loadDataFrom(dvTable, rs);
-                    if (Thread.interrupted()) {
-                        return;
-                    }
+                    boolean needReread = false;
+                    ResultSet rs = null;
+                    int count = 0;
 
-                    Integer result = null;
+                    do {
+                        if (resultSet) {
+                            rs = stmt.getResultSet();
 
-                    if (rs.getType() == ResultSet.TYPE_SCROLL_INSENSITIVE
-                            || rs.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) {
-                        try {
-                            rs.last();
-                            result = rs.getRow();
-                        } catch (SQLException ex) {
-                            LOGGER.log(Level.INFO,
-                                    "Failed to jump to end of SQL Statement [{0}], cause: {1}",
-                                    new Object[]{sql, ex});
+                            Collection<DBTable> tables = dbMeta.generateDBTables(
+                                    rs, sql, isSelectStatement(sql));
+                            DataViewDBTable dvTable = new DataViewDBTable(tables);
+                            DataViewPageContext pageContext = dataView.addPageContext(
+                                    dvTable);
+                            needReread |= resultSetNeedsReloading(dvTable);
+
+                            if (!needReread) {
+                                loadDataFrom(pageContext, rs, true);
+                            }
+                        } else {
+                            // @todo: Do somethink intelligent with the updatecounts
+                            count = stmt.getUpdateCount();
+                            if (count >= 0) {
+                            } else {
+                            }
                         }
+                        if (supportesMultipleResultSets) {
+                            resultSet = stmt.getMoreResults();
+                        } else {
+                            resultSet = false;
+                        }
+                    } while (resultSet || count != -1);
+
+                    if (needReread) {
+
+                        resultSet = executeSQLStatement(stmt, sql);
+                        int res = -1;
+                        do {
+                            if (resultSet) {
+                                res++;
+                                rs = stmt.getResultSet();
+                                DataViewPageContext pageContext = dataView.getPageContext(
+                                        res);
+                                if (!needReread) {
+                                    loadDataFrom(pageContext, rs, true);
+                                }
+                            } else {
+                                // @todo: Do somethink intelligent with the updatecounts
+                                count = stmt.getUpdateCount();
+                                if (count >= 0) {
+                                } else {
+                                }
+                            }
+                            if (supportesMultipleResultSets) {
+                                resultSet = stmt.getMoreResults();
+                            } else {
+                                resultSet = false;
+                            }
+                        } while (resultSet || count != -1);
                     }
-
-                    setTotalCount(result);
-
                     DataViewUtils.closeResources(rs);
                 } catch (SQLException sqlEx) {
                     this.ex = sqlEx;
@@ -259,7 +291,10 @@ class SQLExecutionHelper {
         }
     }
 
-    RequestProcessor.Task executeInsertRow(final DBTable table, final String insertSQL, final Object[] insertedRow) {
+    RequestProcessor.Task executeInsertRow(final DataViewPageContext pageContext,
+            final DBTable table,
+            final String insertSQL,
+            final Object[] insertedRow) {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_insert");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
 
@@ -296,20 +331,20 @@ class SQLExecutionHelper {
 
             @Override
             public void finished() {
-                dataView.setEditable(true);
+                dataView.resetEditable();
                 commitOrRollback(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_insert_command"));
             }
 
             @Override
             protected void executeOnSucess() {
-                if (dataView.getDataViewPageContext().getTotalRows() < 0) {
-                    dataView.getDataViewPageContext().setTotalRows(0);
-                    dataView.getDataViewPageContext().first();
+                if (pageContext.getTotalRows() < 0) {
+                    pageContext.setTotalRows(0);
+                    pageContext.first();
                 }
-                dataView.getDataViewPageContext().incrementRowSize(1);
+                pageContext.incrementRowSize(1);
 
                 // refresh when required
-                if (dataView.getDataViewPageContext().refreshRequiredOnInsert()) {
+                if (pageContext.refreshRequiredOnInsert()) {
                     SQLExecutionHelper.this.executeQuery();
                 } else {
                     reinstateToolbar();
@@ -322,7 +357,7 @@ class SQLExecutionHelper {
         return task;
     }
 
-    void executeDeleteRow(final DBTable table, final DataViewTableUI rsTable) {
+    void executeDeleteRow(final DataViewPageContext pageContext, final DBTable table, final DataViewTableUI rsTable) {
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_delete");
         final int[] rows = rsTable.getSelectedRows();
         for(int i = 0; i < rows.length; i++) {
@@ -372,13 +407,13 @@ class SQLExecutionHelper {
 
             @Override
             public void finished() {
-                dataView.setEditable(true);
+                dataView.resetEditable();
                 commitOrRollback(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_delete_command"));
             }
 
             @Override
             protected void executeOnSucess() {
-                dataView.getDataViewPageContext().decrementRowSize(rows.length);
+                pageContext.decrementRowSize(rows.length);
                 SQLExecutionHelper.this.executeQuery();
             }
         };
@@ -459,13 +494,13 @@ class SQLExecutionHelper {
 
             @Override
             public void finished() {
-                dataView.setEditable(true);
+                dataView.resetEditable();
                 commitOrRollback(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_update_command"));
             }
 
             @Override
             protected void executeOnSucess() {
-                DataViewTableUIModel tblContext = dataView.getDataViewTableUIModel();
+                DataViewTableUIModel tblContext = rsTable.getModel();
                 for (Integer key : keysToRemove) {
                     tblContext.removeUpdateForSelectedRow(key, false);
                 }
@@ -478,7 +513,7 @@ class SQLExecutionHelper {
     }
 
     // Truncate is allowed only when there is single table used in the query.
-    void executeTruncate(final DBTable dbTable) {
+    void executeTruncate(final DataViewPageContext pageContext, final DBTable dbTable) {
         String msg = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_truncate_table_progress");
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_truncate");
         SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, msg) {
@@ -509,8 +544,8 @@ class SQLExecutionHelper {
 
             @Override
             protected void executeOnSucess() {
-                dataView.getDataViewPageContext().setTotalRows(0);
-                dataView.getDataViewPageContext().first();
+                pageContext.setTotalRows(0);
+                pageContext.first();
                 SQLExecutionHelper.this.executeQuery();
             }
         };
@@ -539,44 +574,50 @@ class SQLExecutionHelper {
                 boolean getTotal = false;
 
                 // Get total row count
-                if (dataView.getDataViewPageContext().getTotalRows() == -1) {
-                    getTotal = true;
+                for (DataViewPageContext pageContext : dataView.getPageContexts()) {
+                    if (pageContext.getTotalRows() == -1) {
+                        getTotal = true;
+                        break;
+                    }
                 }
+
+                // Get total row count
                 stmt = prepareSQLStatement(conn, sql, getTotal);
 
-                // Execute the query
+                // Execute the query and retrieve all resultsets
+                // using: http://www.xyzws.com/Javafaq/how-to-use-methods-getresultset-or-getupdatecount-to-retrieve-the-results/175
                 try {
                     if (Thread.interrupted()) {
                         return;
                     }
-                    executeSQLStatement(stmt, sql);
-                    if (dataView.hasResultSet()) {
-                        ResultSet rs = stmt.getResultSet();
-                        loadDataFrom(dataView.getDataViewPageContext().getTableMetaData(),
-                                rs);
+                    boolean resultSet = executeSQLStatement(stmt, sql);
 
-                        if (getTotal) {
-                            Integer result = null;
+                    ResultSet rs = null;
+                    int res = -1;
+                    int count = 0;
 
-                            if (rs.getType() == ResultSet.TYPE_SCROLL_INSENSITIVE
-                                    || rs.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) {
-                                try {
-                                    rs.last();
-                                    result = rs.getRow();
-                                } catch (SQLException ex) {
-                                    LOGGER.log(Level.INFO,
-                                            "Failed to jump to end of SQL Statement [{0}], cause: {1}",
-                                            new Object[]{sql, ex});
-                                }
+                    do {
+                        if (resultSet) {
+                            res++;
+                            DataViewPageContext pageContext = dataView.getPageContext(
+                                    res);
+                            rs = stmt.getResultSet();
+                            loadDataFrom(pageContext, rs, getTotal);
+                        } else {
+                            // @todo: Do somethink intelligent with the updatecounts
+                            count = stmt.getUpdateCount();
+                            if (count >= 0) {
+                            } else {
                             }
-
-                            setTotalCount(result);
                         }
+                        if(supportesMultipleResultSets) {
+                            resultSet = stmt.getMoreResults();
+                        } else {
+                            resultSet = false;
+                        }
+                    } while (resultSet || count != -1);
 
-                        DataViewUtils.closeResources(rs);
-                    } else {
-                        return;
-                    }
+                    DataViewUtils.closeResources(rs);
                 } catch (SQLException sqlEx) {
                     String title = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_error");
                     String msg = NbBundle.getMessage(SQLExecutionHelper.class, "Confirm_Close");
@@ -593,7 +634,7 @@ class SQLExecutionHelper {
             @Override
             public void finished() {
                 DataViewUtils.closeResources(stmt);
-                dataView.setEditable(lastEditState);
+                dataView.resetEditable();
                 synchronized (dataView) {
                     if (error) {
                         dataView.setErrorStatusText(ex);
@@ -621,16 +662,16 @@ class SQLExecutionHelper {
         task.schedule(0);
     }
 
-    void loadDataFrom(DataViewDBTable tblMeta, ResultSet rs) throws SQLException {
+    void loadDataFrom(DataViewPageContext pageContext, ResultSet rs, boolean getTotal) throws SQLException {
         if (rs == null) {
             return;
         }
 
-        int pageSize = dataView.getDataViewPageContext().getPageSize();
-        int startFrom = dataView.getDataViewPageContext().getCurrentPos();
+        int pageSize = pageContext.getPageSize();
+        int startFrom = pageContext.getCurrentPos();
 
         List<Object[]> rows = new ArrayList<Object[]>();
-        int colCnt = tblMeta.getColumnCount();
+        int colCnt = pageContext.getTableMetaData().getColumnCount();
         try {
             boolean hasNext = false;
             boolean needSlowSkip = true;
@@ -667,7 +708,8 @@ class SQLExecutionHelper {
 
                 Object[] row = new Object[colCnt];
                 for (int i = 0; i < colCnt; i++) {
-                    row[i] = DBReadWriteHelper.readResultSet(rs, tblMeta.getColumn(i), i + 1);
+                    row[i] = DBReadWriteHelper.readResultSet(rs,
+                            pageContext.getTableMetaData().getColumn(i), i + 1);
                 }
                 rows.add(row);
                 rowCnt++;
@@ -678,19 +720,29 @@ class SQLExecutionHelper {
                     hasNext = false;
                 }
             }
+
+            if (getTotal) {
+                Integer result = null;
+
+                if (rs.getType() == ResultSet.TYPE_SCROLL_INSENSITIVE
+                        || rs.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) {
+                    try {
+                        rs.last();
+                        result = rs.getRow();
+                    } catch (SQLException ex) {
+                        LOGGER.log(Level.INFO,
+                                "Failed to jump to end of SQL Statement '{0}' - cause: {1}",
+                                new Object[]{dataView.getSQLString(), ex});
+                    }
+                }
+
+                pageContext.setTotalRows(result);
+            }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
             throw e;
         } finally {
-            dataView.getDataViewPageContext().getModel().setData(rows);
-        }
-    }
-
-    void setTotalCount(Integer count) {
-        if (count == null) {
-            dataView.getDataViewPageContext().setTotalRows(-1);
-        } else {
-            dataView.getDataViewPageContext().setTotalRows(count);
+            pageContext.getModel().setData(rows);
         }
     }
 
@@ -700,11 +752,10 @@ class SQLExecutionHelper {
             stmt = conn.prepareCall(sql, resultSetScrollType, ResultSet.CONCUR_READ_ONLY);
         } else if (isSelectStatement(sql)) {
             stmt = conn.createStatement(resultSetScrollType, ResultSet.CONCUR_READ_ONLY);
-            int pageSize = dataView.getDataViewPageContext().getPageSize();
 
-            // hint to fetch "pagesize" elements en-block
+            // set a reasonable fetchsize
             try {
-                stmt.setFetchSize(pageSize);
+                stmt.setFetchSize(50);
             } catch (SQLException e) {
                 // ignore -  used only as a hint to the driver to optimize
                 LOGGER.log(Level.WARNING, "Unable to set Fetch size", e); // NOI18N
@@ -715,10 +766,23 @@ class SQLExecutionHelper {
             // only usable for "non-total" resultsets
             if (!needTotal) {
                 try {
-                    stmt.setMaxRows(
-                            dataView.getDataViewPageContext().getCurrentPos() + pageSize);
+                    Integer maxRows = 0;
+                    for (DataViewPageContext pageContext : dataView.getPageContexts()) {
+                        int currentRows = pageContext.getCurrentPos();
+                        int pageSize = pageContext.getPageSize();
+                        if (pageSize <= 0) {
+                            maxRows = 0;
+                            break;
+                        } else {
+                            maxRows = Math.max(maxRows, currentRows + pageSize);
+                        }
+                    }
+                    stmt.setMaxRows(maxRows);
                 } catch (SQLException exc) {
                     LOGGER.log(Level.WARNING, "Unable to set Max row count", exc); // NOI18N
+                    try {
+                        stmt.setMaxRows(0);
+                    } catch (SQLException ex) {}
                 }
             }
         } else {
@@ -749,14 +813,13 @@ class SQLExecutionHelper {
 
         long executionTime = System.currentTimeMillis() - startTime;
         synchronized (dataView) {
-            dataView.setHasResultSet(isResultSet);
             dataView.setUpdateCount(stmt.getUpdateCount());
             dataView.setExecutionTime(executionTime);
         }
         return isResultSet;
     }
 
-    private void executePreparedStatement(PreparedStatement stmt) throws SQLException {
+    private boolean executePreparedStatement(PreparedStatement stmt) throws SQLException {
         long startTime = System.currentTimeMillis();
         boolean isResultSet = stmt.execute();
 
@@ -765,10 +828,10 @@ class SQLExecutionHelper {
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "MSG_execution_success", execTimeStr));
 
         synchronized (dataView) {
-            dataView.setHasResultSet(isResultSet);
             dataView.setUpdateCount(stmt.getUpdateCount());
             dataView.setExecutionTime(executionTime);
         }
+        return isResultSet;
     }
 
     private boolean isSelectStatement(String queryString) {

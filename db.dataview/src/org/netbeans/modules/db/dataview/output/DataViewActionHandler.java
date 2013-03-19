@@ -61,11 +61,11 @@ class DataViewActionHandler {
     private final DataViewUI dataViewUI;
     private final DataView dataView;
 
-    DataViewActionHandler(DataViewUI dataViewUI, DataView dataView) {
+    DataViewActionHandler(DataViewUI dataViewUI, DataView dataView, DataViewPageContext pageContext) {
         this.dataView = dataView;
         this.dataViewUI = dataViewUI;
 
-        this.dataPage = dataView.getDataViewPageContext();
+        this.dataPage = pageContext;
         this.execHelper = dataView.getSQLExecutionHelper();
     }
 
@@ -85,7 +85,7 @@ class DataViewActionHandler {
         synchronized (dataView) {
             if (selectedOnly) {
                 DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
-                DataViewTableUIModel updatedRowCtx = dataView.getDataViewTableUIModel();
+                DataViewTableUIModel updatedRowCtx = dataPage.getModel();
                 int[] rows = rsTable.getSelectedRows();
                 for (int i = 0; i < rows.length; i++) {
                     int row = rsTable.convertRowIndexToModel(rows[i]);
@@ -97,7 +97,7 @@ class DataViewActionHandler {
                     dataViewUI.setCommitEnabled(false);
                 }
             } else {
-                dataView.getDataViewTableUIModel().removeAllUpdates(true);
+                dataPage.getModel().removeAllUpdates(true);
                 dataViewUI.setCancelEnabled(false);
                 dataViewUI.setCommitEnabled(false);
             }
@@ -157,7 +157,7 @@ class DataViewActionHandler {
 
     void insertActionPerformed() {
         DBTable table = dataPage.getTableMetaData().getTable(0);
-        InsertRecordDialog dialog = new InsertRecordDialog(dataView, table);
+        InsertRecordDialog dialog = new InsertRecordDialog(dataView, dataPage, table);
         dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
         dialog.setVisible(true);
     }
@@ -167,7 +167,7 @@ class DataViewActionHandler {
 
         String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataPage.getTableMetaData().getTable(0).getDisplayName();
         if ((showYesAllDialog(confirmMsg, confirmMsg)).equals(NotifyDescriptor.YES_OPTION)) {
-            execHelper.executeTruncate(dataPage.getTableMetaData().getTable(0));
+            execHelper.executeTruncate(dataPage, dataPage.getTableMetaData().getTable(0));
         }
     }
 
@@ -182,7 +182,7 @@ class DataViewActionHandler {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_permanent_delete");
             if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete"))).equals(NotifyDescriptor.YES_OPTION)) {
                 DBTable table = dataPage.getTableMetaData().getTable(0);
-                execHelper.executeDeleteRow(table, rsTable);
+                execHelper.executeDeleteRow(dataPage, table, rsTable);
             }
         }
     }

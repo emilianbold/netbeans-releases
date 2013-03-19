@@ -101,11 +101,13 @@ class InsertRecordDialog extends javax.swing.JDialog {
     private final ResultSetTableModel insertDataModel;
     private final DBTable insertTable;
     private final DataView dataView;
+    private final DataViewPageContext pageContext;
     InsertRecordTableUI insertRecordTableUI;
     private JXTableRowHeader rowHeader;
 
-    public InsertRecordDialog(DataView dataView, DBTable insertTable) {
+    public InsertRecordDialog(DataView dataView, DataViewPageContext pageContext, DBTable insertTable) {
         super(WindowManager.getDefault().getMainWindow(), true);
+        this.pageContext = pageContext;
         this.dataView = dataView;
         this.insertTable = insertTable;
 
@@ -386,7 +388,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     try {
                         Object[] insertedRow = getInsertValues(i);
                         insertSQL = stmtBldr.generateInsertStatement(insertTable, insertedRow);
-                        RequestProcessor.Task task = execHelper.executeInsertRow(insertTable, insertSQL, insertedRow);
+                        RequestProcessor.Task task = execHelper.executeInsertRow(pageContext, insertTable, insertSQL, insertedRow);
                         task.waitFinished();
                         wasException = dataView.hasExceptions();
                     } catch (DBException ex) {

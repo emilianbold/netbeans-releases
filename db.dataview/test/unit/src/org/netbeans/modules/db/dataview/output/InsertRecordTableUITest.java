@@ -97,8 +97,10 @@ public class InsertRecordTableUITest extends NbTestCase {
         DataView dv = DataView.create(dbconn, sqlString, 5);
         dv.createComponents();
 
-        DBTable table = dv.getDataViewPageContext().getTableMetaData().getTable(0);
-        InsertRecordDialog ird = new InsertRecordDialog(dv, table);
+        DataViewPageContext pageContext = dv.getPageContext(0);
+        DBTable table = pageContext.getTableMetaData().getTable(0);
+
+        InsertRecordDialog ird = new InsertRecordDialog(dv, pageContext, table);
 
         ResultSetTableModel model = ird.insertRecordTableUI.getModel();
         ird.insertRecordTableUI.appendEmptyRow();

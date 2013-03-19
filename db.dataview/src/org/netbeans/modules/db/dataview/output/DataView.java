@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -50,7 +51,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Mutex;
@@ -67,16 +72,17 @@ import org.openide.util.NbBundle;
  * @author Ahimanikya Satapathy
  */
 public class DataView {
-
+    private static final int MAX_TAB_LENGTH = 25;
     private DatabaseConnection dbConn;
     private List<Throwable> errMessages = new ArrayList<Throwable>();
     private String sqlString; // Once Set, Data View assumes it will never change
     private SQLStatementGenerator stmtGenerator;
     private SQLExecutionHelper execHelper;
-    private DataViewPageContext dataPage;
-    private DataViewUI dataViewUI;
+    private final List<DataViewPageContext> dataPage = new ArrayList<DataViewPageContext>();
+    private final List<DataViewUI> dataViewUI = new ArrayList<DataViewUI>();
+    private JComponent container;
+    private int initialPageSize = org.netbeans.modules.db.dataview.api.DataViewPageContext.getStoredPageSize();
     private boolean nbOutputComponent = false;
-    private boolean hasResultSet = false;
     private int updateCount;
     private long executionTime;
 
@@ -97,8 +103,10 @@ public class DataView {
         dv.dbConn = dbConn;
         dv.sqlString = sqlString.trim();
         dv.nbOutputComponent = false;
+        if(pageSize > 0) {
+            dv.initialPageSize = pageSize;
+        }
         try {
-            dv.dataPage = new DataViewPageContext(pageSize);
             dv.execHelper = new SQLExecutionHelper(dv);
             dv.execHelper.initialDataLoad();
             dv.stmtGenerator = new SQLStatementGenerator();
@@ -120,20 +128,37 @@ public class DataView {
      * @param dataView DataView Object created using create()
      * @return a JComponent that after rending the given dataview
      */
-    public List<Component> createComponents() {
+    public synchronized List<Component> createComponents() {
         List<Component> results;
-        if (!hasResultSet) {
+        if (! hasResultSet()) {
             return Collections.emptyList();
         }
 
-        synchronized (this) {
-            DataViewDBTable tblMeta = dataPage.getTableMetaData();
-            this.dataViewUI = new DataViewUI(this, dataPage, nbOutputComponent);
-            dataPage.getModel().setEditable(tblMeta == null ? false : tblMeta.hasOneTable());
+        if(dataPage.size() > 1) {
+            container = new JTabbedPane();
+        } else {
+            container = new JPanel(new BorderLayout());
+        }
+
+        for (int i = 0; i < dataPage.size(); i++) {
+            DataViewUI ui = new DataViewUI(this, dataPage.get(i), nbOutputComponent);
+            ui.setName("Result Set " + i);
+            dataViewUI.add(ui);
+            container.add(ui);
             resetToolbar(hasExceptions());
         }
+
+        String sql = getSQLString();
+        if (sql.length() > MAX_TAB_LENGTH) {
+            String trimmed = NbBundle.getMessage(DataViewUI.class, "DataViewUI_TrimmedTabName", sql.substring(0, Math.min(sql.length(), MAX_TAB_LENGTH)));
+            container.setName(trimmed);
+        } else {
+            container.setName(sql);
+        }
+        container.setToolTipText(sql);
+
         results = new ArrayList<Component>();
-        results.add(dataViewUI);
+        results.add(container);
         return results;
     }
 
@@ -152,7 +177,7 @@ public class DataView {
      * @return true if the statement executed has ResultSet, false otherwise.
      */
     public boolean hasResultSet() {
-        return hasResultSet;
+        return dataPage.size() > 0;
     }
 
     /**
@@ -190,25 +215,39 @@ public class DataView {
      */
     public JButton[] getEditButtons() {
         assert nbOutputComponent != false;
-        return dataViewUI.getEditButtons();
+        return dataViewUI.get(0).getEditButtons();
     }
 
     public synchronized void setEditable(boolean editable) {
-        getDataViewPageContext().getModel().setEditable(editable);
+        for (DataViewPageContext pageContext : dataPage) {
+            pageContext.getModel().setEditable(editable);
+        }
     }
 
     // Used by org.netbeans.modules.db.dataview.api.DataViewPageContext#getPageSize
     public int getPageSize() {
-        if (dataViewUI == null) {
-            return -1;
-    }
-        return dataViewUI.getPageSize();
+        if (dataViewUI.isEmpty()) {
+            return initialPageSize;
+        }
+        return dataViewUI.get(0).getPageSize();
     }
 
     // Non API modules follow
 
-    DataViewPageContext getDataViewPageContext() {
-        return dataPage;
+    List<DataViewPageContext> getPageContexts() {
+        return this.dataPage;
+    }
+
+    DataViewPageContext getPageContext(int i) {
+        return this.dataPage.get(i);
+    }
+
+    DataViewPageContext addPageContext(DataViewDBTable table) {
+        DataViewPageContext pageContext = new DataViewPageContext(initialPageSize);
+        this.dataPage.add(pageContext);
+        pageContext.setTableMetaData(table);
+        pageContext.getModel().setColumns(table.getColumns().toArray(new DBColumn[0]));
+        return pageContext;
     }
 
     DatabaseConnection getDatabaseConnection() {
@@ -217,10 +256,6 @@ public class DataView {
 
     String getSQLString() {
         return sqlString;
-    }
-
-    DataViewTableUIModel getDataViewTableUIModel() {
-        return dataViewUI.getDataViewTableUIModel();
     }
 
     SQLExecutionHelper getSQLExecutionHelper() {
@@ -237,8 +272,22 @@ public class DataView {
         return stmtGenerator;
     }
 
+    public void resetEditable() {
+        for(DataViewPageContext pageContext: dataPage) {
+            pageContext.resetEditableState();
+        }
+    }
+
     public boolean isEditable() {
-        return getDataViewPageContext().getModel().isEditable();
+        if(dataPage.isEmpty()) {
+            return false;
+        } else {
+            boolean editable = true;
+            for(DataViewPageContext pageContext: dataPage) {
+                editable &= pageContext.getModel().isEditable();
+            }
+            return editable;
+        }
     }
 
     synchronized void disableButtons() {
@@ -247,7 +296,9 @@ public class DataView {
 
             @Override
             public void run() {
-                dataViewUI.disableButtons();
+                for(DataViewUI ui: dataViewUI) {
+                    ui.disableButtons();
+                }
             }
         });
         errMessages.clear();
@@ -258,13 +309,13 @@ public class DataView {
 
             @Override
             public void run() {
-                if (dataViewUI != null) {
-                    if (dataViewUI.getParent() != null) {
-                        dataViewUI.getParent().remove(dataViewUI);
+                if (container != null) {
+                    if (container != null) {
+                        container.getParent().remove(container);
                     }
-                    dataViewUI.removeAll();
-                    dataViewUI.repaint();
-                    dataViewUI.revalidate();
+                    container.removeAll();
+                    container.repaint();
+                    container.revalidate();
                 }
             }
         });
@@ -305,13 +356,11 @@ public class DataView {
 
             @Override
             public void run() {
-                dataViewUI.resetToolbar(wasError);
+                for(DataViewUI ui: dataViewUI) {
+                    ui.resetToolbar(wasError);
+                }
             }
         });
-    }
-
-    void setHasResultSet(boolean hasResultSet) {
-        this.hasResultSet = hasResultSet;
     }
 
     void setUpdateCount(int updateCount) {
