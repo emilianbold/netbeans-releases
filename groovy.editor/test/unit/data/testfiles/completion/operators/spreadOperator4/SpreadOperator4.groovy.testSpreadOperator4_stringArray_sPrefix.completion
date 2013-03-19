@@ -1,5 +1,5 @@
 Code completion result for source line:
-['cat', 'elephant']*.s|
+[1,2]*.s|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     set(int, E)                     [PUBLIC]   E
