@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.analysis.ui.analyzer;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -56,16 +59,33 @@ public class CodeSnifferCustomizerPanel extends JPanel {
 
     private static final long serialVersionUID = 46872132457657L;
 
+    public static final String STANDARD = "codeSniffer.standard"; // NOI18N
+
     final CodeSnifferStandardsComboBoxModel standardsModel = new CodeSnifferStandardsComboBoxModel();
+    final Preferences settings;
 
 
-    public CodeSnifferCustomizerPanel() {
+    public CodeSnifferCustomizerPanel(Preferences settings) {
+        assert settings != null;
+
+        this.settings = settings;
+
         initComponents();
         init();
     }
 
     private void init() {
-        AnalysisUtils.connect(standardComboBox, standardsModel, AnalysisOptions.getInstance().getCodeSnifferStandard(), null);
+        String selectedStandard = settings.get(STANDARD, AnalysisOptions.getInstance().getCodeSnifferStandard());
+        AnalysisUtils.connect(standardComboBox, standardsModel, selectedStandard, null);
+        // listeners
+        standardComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    settings.put(STANDARD, standardsModel.getSelectedStandard());
+                }
+            }
+        });
     }
 
     /**
@@ -101,4 +121,5 @@ public class CodeSnifferCustomizerPanel extends JPanel {
     private JComboBox standardComboBox;
     private JLabel standardLabel;
     // End of variables declaration//GEN-END:variables
+
 }

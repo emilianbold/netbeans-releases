@@ -82,6 +82,7 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel i
     @Override
     public void setSelectedItem(Object anItem) {
         selectedStandard = (String) anItem;
+        fireContentsChanged();
     }
 
     /**
@@ -120,7 +121,7 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel i
     }
 
     private void fireContentsChanged() {
-        fireContentsChanged(this, 0, Integer.MAX_VALUE);
+        fireContentsChanged(this, -1, -1);
     }
 
 }

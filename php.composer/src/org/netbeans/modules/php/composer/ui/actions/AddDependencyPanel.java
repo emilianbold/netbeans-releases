@@ -906,6 +906,7 @@ public final class AddDependencyPanel extends JPanel {
         @Override
         public void setSelectedItem(Object anItem) {
             selectedVersion = (String) anItem;
+            fireContentsChanged();
         }
 
         @CheckForNull
