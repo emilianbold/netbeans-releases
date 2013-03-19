@@ -120,7 +120,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     }
 
     private static boolean fileIsTooBig(FileObject fileObject) {
-        return fileObject.getSize() > BIG_FILE_SIZE;
+        return fileObject != null && fileObject.getSize() > BIG_FILE_SIZE;
     }
 
     private void doNotProcessParsing(FileObject fileObject, Snapshot snapshot) {
