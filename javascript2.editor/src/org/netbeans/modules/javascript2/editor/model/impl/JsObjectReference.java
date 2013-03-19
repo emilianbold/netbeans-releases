@@ -120,5 +120,4 @@ public class JsObjectReference extends JsObjectImpl {
         // do nothing
     }
 
-    
 }

@@ -56,4 +56,12 @@ public class KnockoutModelTest extends ModelTestBase {
     public void testKnockout() throws Exception {
         
     }
+
+    public void testExtend1() throws Exception {
+        checkModel("testfiles/model/extend1.js");
+    }
+
+    public void testExtend2() throws Exception {
+        checkModel("testfiles/model/extend2.js");
+    }
 }

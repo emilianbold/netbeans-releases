@@ -47,6 +47,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -63,6 +65,8 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
  */
 @FunctionInterceptor.Registration(priority = 100)
 public class KnockoutExtendInterceptor implements FunctionInterceptor {
+
+    private static final Logger LOGGER = Logger.getLogger(KnockoutExtendInterceptor.class.getName());
 
     @Override
     public Pattern getNamePattern() {
@@ -108,12 +112,11 @@ public class KnockoutExtendInterceptor implements FunctionInterceptor {
             value = ref;
         }
 
-        // XXX
         OffsetRange offsetRange = OffsetRange.NONE;
         if (object != null && value != null) {
-            System.out.println("=== Extending");
-            System.out.println("===" + object.getFullyQualifiedName());
-            System.out.println("===" + value.getFullyQualifiedName());
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Extending {0} with {1}", new Object[]{object.getFullyQualifiedName(), value.getFullyQualifiedName()});
+            }
             for (Map.Entry<String, ? extends JsObject> entry : value.getProperties().entrySet()) {
                 object.addProperty(entry.getKey(),
                         factory.newReference(object, entry.getKey(), offsetRange, entry.getValue(), true));
