@@ -109,7 +109,10 @@ public class ImportDataCreator {
         } else {
             Collection<TypeElement> filteredTypeElements = filterTypesFromCurrentNamespace(filteredExactUnqualifiedNames);
             if (!filteredTypeElements.isEmpty()) {
-                possibleItems.add(new ValidItem(typeName, filteredTypeElements));
+                possibleItems.add(new ValidItem(
+                        typeName,
+                        filteredTypeElements,
+                        filteredTypeElements.size() != filteredExactUnqualifiedNames.size()));
             }
         }
     }
@@ -152,26 +155,6 @@ public class ImportDataCreator {
             if (!typeElement.getNamespaceName().equals(currentNamespace)) {
                 result.add(typeElement);
             }
-        }
-        return result;
-    }
-
-    private QualifiedName createExactMatchName(final QualifiedName currentType) {
-        QualifiedName result = currentType;
-        if (!currentType.getKind().isFullyQualified()) {
-            String namespace = currentNamespace.toString();
-            if (currentType.getSegments().size() > 1) {
-                if (!namespace.trim().isEmpty()) {
-                    namespace += NS_SEPARATOR;
-                }
-                // -2
-                // because of possible bug in QualifiedName:269
-                // for (int i = 0; i <= numberOfSegments; i ++) {
-                // ====>>>>
-                // for (int i = 0; i < numberOfSegments; i ++) {
-                namespace += currentType.toString(currentType.getSegments().size() - 2);
-            }
-            result = QualifiedName.createFullyQualified(currentType.getSegments().getLast(), namespace);
         }
         return result;
     }
@@ -223,10 +206,12 @@ public class ImportDataCreator {
     private final class ValidItem implements PossibleItem {
         private final Collection<TypeElement> filteredTypeElements;
         private final String typeName;
+        private final boolean existsTypeFromCurrentNamespace;
 
-        private ValidItem(String typeName, Collection<TypeElement> filteredTypeElements) {
+        private ValidItem(String typeName, Collection<TypeElement> filteredTypeElements, boolean existsTypeFromCurrentNamespace) {
             this.typeName = typeName;
             this.filteredTypeElements = filteredTypeElements;
+            this.existsTypeFromCurrentNamespace = existsTypeFromCurrentNamespace;
         }
 
         @Override
@@ -255,8 +240,8 @@ public class ImportDataCreator {
                     defaultValue = dontUseItemVariant;
                 }
             } else {
-                QualifiedName exactMatchName = createExactMatchName(qualifiedTypeName);
-                if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedTypeElements)) || hasExactName(sortedTypeElements, exactMatchName)) {
+                if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedTypeElements))
+                        || existsTypeFromCurrentNamespace) {
                     defaultValue = dontUseItemVariant;
                 }
             }
