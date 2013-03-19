@@ -484,6 +484,7 @@ public class CompletionRequest {
         int position = lexOffset;
 
         TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, position);
+        ts.move(position);
 
         // get the active token:
         Token<GroovyTokenId> active = null;
@@ -499,17 +500,19 @@ public class CompletionRequest {
 
         // this should move us to dot or whitespace or NLS or prefix
         if (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
-
-            if (ts.token().id() != GroovyTokenId.DOT &&
-                ts.token().id() != GroovyTokenId.NLS &&
-                ts.token().id() != GroovyTokenId.WHITESPACE &&
-                ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
-                ts.token().id() != GroovyTokenId.MEMBER_POINTER &&
-                ts.token().id() != GroovyTokenId.ELVIS_OPERATOR) {
+            GroovyTokenId tokenID = ts.token().id();
+            
+            if (tokenID != GroovyTokenId.DOT &&
+                tokenID != GroovyTokenId.NLS &&
+                tokenID != GroovyTokenId.WHITESPACE &&
+                tokenID != GroovyTokenId.SPREAD_DOT &&
+                tokenID != GroovyTokenId.OPTIONAL_DOT &&
+                tokenID != GroovyTokenId.MEMBER_POINTER &&
+                tokenID != GroovyTokenId.ELVIS_OPERATOR) {
 
                 // is it prefix
                 // keyword check is here because of issue #150862
-                if (ts.token().id() != GroovyTokenId.IDENTIFIER && !ts.token().id().primaryCategory().equals("keyword")) {
+                if (tokenID != GroovyTokenId.IDENTIFIER && !tokenID.primaryCategory().equals("keyword")) {
                     return null;
                 } else {
                     ts.movePrevious();
@@ -520,6 +523,7 @@ public class CompletionRequest {
         // now we should be on dot or in whitespace or NLS after the dot
         boolean remainingTokens = true;
         if (ts.token().id() != GroovyTokenId.DOT &&
+            ts.token().id() != GroovyTokenId.SPREAD_DOT &&
             ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
             ts.token().id() != GroovyTokenId.MEMBER_POINTER &&
             ts.token().id() != GroovyTokenId.ELVIS_OPERATOR) {
@@ -535,6 +539,7 @@ public class CompletionRequest {
         }
 
         if ((ts.token().id() != GroovyTokenId.DOT &&
+             ts.token().id() != GroovyTokenId.SPREAD_DOT &&
              ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
              ts.token().id() != GroovyTokenId.MEMBER_POINTER &&
              ts.token().id() != GroovyTokenId.ELVIS_OPERATOR)

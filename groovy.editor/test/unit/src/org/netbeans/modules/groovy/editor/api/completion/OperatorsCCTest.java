@@ -43,8 +43,12 @@
 package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
+ * Created for the purpose of the specific Groovy operators - see issue #151034.
+ * 
+ * Link: http://docs.codehaus.org/display/GROOVY/Operators#Operators-ElvisOperator
  *
  * @author Petr Hejl
+ * @author Martin Janicek
  */
 public class OperatorsCCTest extends GroovyCCTestBase {
 
@@ -101,6 +105,21 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "ElvisOperator3.groovy", "    def something = x ?: e^", true);
     }
 
+    public void testSpreadOperator1_stringArray_all() throws Exception {
+        checkCompletion(BASE + "SpreadOperator1.groovy", "        ['cat', 'elephant']*.^", true);
+    }
+
+    public void testSpreadOperator2_stringArray_sPrefix() throws Exception {
+        checkCompletion(BASE + "SpreadOperator2.groovy", "        ['cat', 'elephant']*.s^", true);
+    }
+
+    public void testSpreadOperator3_stringArray_all() throws Exception {
+        checkCompletion(BASE + "SpreadOperator3.groovy", "        [1,2]*.^", true);
+    }
+
+    public void testSpreadOperator4_stringArray_sPrefix() throws Exception {
+        checkCompletion(BASE + "SpreadOperator4.groovy", "        [1,2]*.s^", true);
+    }
     
     /*
      *  Not implemented yet (see issue #151034) - only for TDD purpose
@@ -109,21 +128,5 @@ public class OperatorsCCTest extends GroovyCCTestBase {
     /*
     public void testJavaFieldOperator() throws Exception {
         checkCompletion(BASE + "JavaFieldOperator.groovy", "        def something = x.@^", true);
-    }
-
-    public void testSpreadOperator1_stringArray_all() throws Exception {
-        checkCompletion(BASE + "SpreadOperator1.groovy", "        ['cat', 'elephant']*.^", true);
-    }
-
-    public void testSpreadOperator1_stringArray_sPrefix() throws Exception {
-        checkCompletion(BASE + "SpreadOperator1.groovy", "        ['cat', 'elephant']*.s^", true);
-    }
-
-    public void testSpreadOperator2_stringArray_all() throws Exception {
-        checkCompletion(BASE + "SpreadOperator2.groovy", "        [1,2]*.^", true);
-    }
-
-    public void testSpreadOperator2_stringArray_sPrefix() throws Exception {
-        checkCompletion(BASE + "SpreadOperator2.groovy", "        [1,2]*.s^", true);
     }*/
-    }
+}
