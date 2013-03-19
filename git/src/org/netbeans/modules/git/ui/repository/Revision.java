@@ -65,11 +65,17 @@ public class Revision {
 
     @Override
     public String toString () {
+        return toString(false);
+    }
+
+    public String toString (boolean shorten) {
         StringBuilder sb = new StringBuilder();
         if (name != null && !name.equals(revision)) {
-            sb.append(name).append(" (").append(revision).append(")"); //NOI18N
+            sb.append(name).append(" (").append(shorten //NOI18N
+                    ? revision.substring(0, 7)
+                    : revision).append(")"); //NOI18N
         } else {
-            sb.append(revision);
+            sb.append(shorten ? revision.substring(0, 7) : revision);
         }
         return sb.toString();
     }

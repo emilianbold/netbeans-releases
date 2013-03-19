@@ -57,6 +57,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient.RebaseOperationType;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRebaseResult;
@@ -127,7 +128,12 @@ public class RebaseAction extends SingleRepositoryAction {
     private void rebase (File repository, RepositoryInfo info) {
         GitRepositoryState state = info.getRepositoryState();
         if (state == GitRepositoryState.SAFE) {
-            // should start
+            GitBranch current = info.getActiveBranch();
+            Rebase rebase = new Rebase(repository, info.getBranches(), current);
+            if (rebase.showDialog()) {
+                runRebase(repository, RebaseOperationType.BEGIN, rebase.getRevisionSource(), rebase.getRevisionBase(),
+                        rebase.getRevisionDest());
+            }
         } else if (state == GitRepositoryState.REBASING) {
             // abort or continue?
             JButton btnContinue = new JButton();
@@ -152,7 +158,7 @@ public class RebaseAction extends SingleRepositoryAction {
                     btnContinue));
             RebaseOperationType op = operations.get(value);
             if (op != null) {
-                finishRebase(repository, op);
+                runRebase(repository, op, null, null, null);
             }
         } else {
             GitClientExceptionHandler.annotate(Bundle.MSG_RebaseAction_rebaseNotAllowed(state));
@@ -160,7 +166,8 @@ public class RebaseAction extends SingleRepositoryAction {
     }
 
     @NbBundle.Messages("MSG_RebaseAction_progress=Rebasing...")
-    private void finishRebase (final File repository, final RebaseOperationType op) {
+    private void runRebase (final File repository, final RebaseOperationType op, final String source, final String upstream,
+    final String onto) {
         GitProgressSupport supp = new GitProgressSupport() {
 
             @Override
@@ -169,15 +176,22 @@ public class RebaseAction extends SingleRepositoryAction {
                     GitUtils.runWithoutIndexing(new Callable<Void>() {
                         @Override
                         public Void call () throws Exception {
-                            String origHead = getRebaseFileContent(repository, NETBEANS_REBASE_ORIGHEAD);
-                            String onto = getOnto(repository);
-                            String upstream = getRebaseFileContent(repository, NETBEANS_REBASE_UPSTREAM);
+                            String lSource = source;
+                            String lOnto = onto;
+                            String lUpstream = upstream;
+                            if (op == RebaseOperationType.BEGIN) {
+                                
+                            } else {
+                                lSource = getRebaseFileContent(repository, NETBEANS_REBASE_ORIGHEAD);
+                                lOnto = getOnto(repository);
+                                lUpstream = getRebaseFileContent(repository, NETBEANS_REBASE_UPSTREAM);
+                            }
                             GitClient client = getClient();
-                            RebaseResultProcessor rrp = new RebaseResultProcessor(client, repository, onto, upstream, origHead,
+                            RebaseResultProcessor rrp = new RebaseResultProcessor(client, repository, lOnto, lUpstream, lSource,
                                     getProgressSupport());
                             RebaseOperationType nextAction = op;
                             while (nextAction != null && !isCanceled()) {
-                                GitRebaseResult result = client.rebase(nextAction, onto, getProgressMonitor());
+                                GitRebaseResult result = client.rebase(nextAction, lOnto, getProgressMonitor());
                                 rrp.processResult(result);
                                 nextAction = rrp.getNextAction();
                             }

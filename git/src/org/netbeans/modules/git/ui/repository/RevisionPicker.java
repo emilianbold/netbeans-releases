@@ -73,7 +73,7 @@ public class RevisionPicker implements PropertyChangeListener {
         Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(RevisionPicker.class, "LBL_RevisionPickerDialog.okButton.title")); //NOI18N
     }
 
-    boolean open () {
+    public boolean open () {
         dd = new DialogDescriptor(panel, NbBundle.getMessage(RevisionPicker.class, "LBL_RevisionPickerDialog.title"), //NOI18N
                 true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RevisionPickerDialog.class), null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
@@ -84,7 +84,7 @@ public class RevisionPicker implements PropertyChangeListener {
         return dd.getValue() == okButton;
     }
 
-    Revision getRevision () {
+    public Revision getRevision () {
         return revision;
     }
 
