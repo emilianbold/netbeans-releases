@@ -422,21 +422,21 @@ public class ModelVisitor extends PathNodeVisitor {
                                     }
                                 }
                             } else if (argument instanceof AccessNode) {
-                                AccessNode an = (AccessNode) argument;
-                                List<Identifier> fqn = getName(an, parserResult);
-                                JsObject current = modelBuilder.getCurrentObject();
-                                while (current != null && current.getDeclarationName() != null) {
-                                    if (current != modelBuilder.getGlobal()) {
-                                        fqn.add(0, current.getDeclarationName());
-                                    }
-                                    current = current.getParent();
+                                List<String> strFqn = new ArrayList<String>();
+                                if(fillName((AccessNode) argument, strFqn)) {
+                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(
+                                            i, argument.getStart(), strFqn));
+                                } else {
+                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForUnknown(i));
                                 }
-                                List<String> strFqn = new ArrayList<String>(fqn.size());
-                                for (Identifier ident : fqn) {
-                                    strFqn.add(ident.getName());
+                            } else if (argument instanceof IndexNode) {
+                                List<String> strFqn = new ArrayList<String>();
+                                if(fillName((IndexNode) argument, strFqn)) {
+                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(
+                                            i, argument.getStart(), strFqn));
+                                } else {
+                                    funcArg.add(FunctionArgumentAccessor.getDefault().createForUnknown(i));
                                 }
-                                funcArg.add(FunctionArgumentAccessor.getDefault().createForReference(
-                                        i, argument.getStart(), strFqn));
                             } else if (argument instanceof IdentNode) {
                                 IdentNode in = (IdentNode) argument;
                                 String inName = in.getName();
@@ -1082,7 +1082,40 @@ public class ModelVisitor extends PathNodeVisitor {
     public Map<FunctionInterceptor, Collection<FunctionCall>> getCallsForProcessing() {
         return functionCalls;
     }
-    
+
+    private boolean fillName(AccessNode node, List<String> result) {
+        List<Identifier> fqn = getName(node, parserResult);
+        for (int i = fqn.size() - 1; i >= 0; i--) {
+            result.add(0, fqn.get(i).getName());
+        }
+
+        JsObject current = modelBuilder.getCurrentObject();
+        while (current != null && current.getDeclarationName() != null) {
+            if (current != modelBuilder.getGlobal()) {
+                result.add(0, current.getDeclarationName().getName());
+            }
+            current = current.getParent();
+        }
+        return true;
+    }
+
+    private boolean fillName(IndexNode node, List<String> result) {
+        Node index = node.getIndex();
+        Node base = node.getBase();
+        if (index instanceof LiteralNode && base instanceof AccessNode) {
+            LiteralNode literal = (LiteralNode) index;
+            if (literal.isString()) {
+                result.add(0, literal.getString());
+                List<Identifier> fqn = getName((AccessNode) base, parserResult);
+                for (int i = fqn.size() - 1; i >= 0; i--) {
+                    result.add(0, fqn.get(i).getName());
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     private List<Identifier> getName(PropertyNode propertyNode) {
         List<Identifier> name = new ArrayList(1);
         if (propertyNode.getGetter() != null || propertyNode.getSetter() != null) {
