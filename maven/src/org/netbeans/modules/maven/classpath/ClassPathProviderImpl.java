@@ -79,7 +79,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private static final int TYPE_UNKNOWN = -1;
     
     private final @NonNull Project proj;
-    private ClassPath[] cache = new ClassPath[9];
+    private final ClassPath[] cache = new ClassPath[9];
     
     public ClassPathProviderImpl(@NonNull Project proj) {
         this.proj = proj;
