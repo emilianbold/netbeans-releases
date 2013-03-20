@@ -380,7 +380,7 @@ public class PatternsTest extends RestTestBase {
         return FileUtil.toFile(file);
     }
 
-    private void closeCreatedFiles(Set<File> files) {
+    protected void closeCreatedFiles(Set<File> files) {
         for (File f : files) {
             EditorOperator eo = new EditorOperator(f.getName());
             eo.close();
