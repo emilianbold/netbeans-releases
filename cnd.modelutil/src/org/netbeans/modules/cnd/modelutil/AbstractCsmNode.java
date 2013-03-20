@@ -90,7 +90,7 @@ public abstract class AbstractCsmNode extends AbstractNode {
     }
 
     protected Image superGetIcon(int param) {
-        return super.getIcon(param);
+        return ImageUtilities.loadImage(CsmImageLoader.DEFAULT);
     }
     
     @Override

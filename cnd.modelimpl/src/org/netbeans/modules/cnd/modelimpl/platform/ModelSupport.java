@@ -112,7 +112,7 @@ public class ModelSupport implements PropertyChangeListener {
                 new Runnable() {
                     @Override
                     public void run() {
-                        openProjects();
+                        openProjectsIfNeeded();
                     }
                 }); 
 
@@ -199,8 +199,18 @@ public class ModelSupport implements PropertyChangeListener {
         modifiedListener.clean();
         ModelImpl model = theModel;
         if (model != null) {
+            // we have to wait openedProjects to be empty
+            // because opened projects should be closed by closeProjectsIfNeeded
+            // otherwise project metadata can be cleaned up and csm project
+            // will not get information for validator
             synchronized (openedProjects) {
-                closed = true;
+                while (!openedProjects.isEmpty()) {
+                    try {
+                        openedProjects.wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
             model.shutdown();
         }
@@ -218,7 +228,7 @@ public class ModelSupport implements PropertyChangeListener {
                         System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
                     }
                     openProjectsTask.schedule(0);
-                    closeProjects();
+                    closeProjectsIfNeeded();
                 }
             }
         } catch (Exception e) {
@@ -226,14 +236,14 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
-    private void openProjects() {
-        Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
-        if (TRACE_STARTUP) {
-            System.out.println("Model support: openProjects size=" + projects.size() + " modelState=" + CsmModelAccessor.getModelState()); // NOI18N
-        }
+    private void openProjectsIfNeeded() {
         synchronized (openedProjects) {
             if (closed) {
                 return;
+            }
+            Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
+            if (TRACE_STARTUP) {
+                System.out.println("Model support: openProjects size=" + projects.size() + " modelState=" + CsmModelAccessor.getModelState()); // NOI18N
             }
             if (TRACE_STARTUP) {
                 System.out.println("Model support: openProjects new=" + projects.size() + " now=" + openedProjects.size()); // NOI18N
@@ -247,14 +257,14 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
-    private void closeProjects() {
-        Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
-        if (TRACE_STARTUP) {
-            System.out.println("Model support: closeProjects size=" + projects.size() + " modelState=" + CsmModelAccessor.getModelState()); // NOI18N
-        }
+    private void closeProjectsIfNeeded() {
         synchronized (openedProjects) {
             if (closed) {
                 return;
+            }
+            Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
+            if (TRACE_STARTUP) {
+                System.out.println("Model support: closeProjects size=" + projects.size() + " modelState=" + CsmModelAccessor.getModelState()); // NOI18N
             }
             if (TRACE_STARTUP) {
                 System.out.println("Model support: closeProjects new=" + projects.size() + " now=" + openedProjects.size()); // NOI18N
@@ -275,6 +285,7 @@ public class ModelSupport implements PropertyChangeListener {
             for (Lookup.Provider project : toClose) {
                 closeProject(project);
             }
+            openedProjects.notifyAll();
         }
     }
 
@@ -433,6 +444,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
 
     private void closeProject(Lookup.Provider project) {
+        assert Thread.holdsLock(openedProjects);
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("### ModelSupport.closeProject: " + toString(project)); // NOI18N
         }
