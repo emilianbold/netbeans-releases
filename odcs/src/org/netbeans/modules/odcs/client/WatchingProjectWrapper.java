@@ -39,51 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.odcs.client.api;
-
-import java.net.PasswordAuthentication;
-import java.util.Collection;
-import org.netbeans.modules.odcs.client.ODCSClientImpl;
-import org.openide.util.Lookup;
+package org.netbeans.modules.odcs.client;
 
 /**
  *
- * @author ondra
+ * @author Ondrej Vrabec
  */
-public abstract class ODCSFactory {
-
-    private static ODCSFactory instance;
-   
-    public static synchronized ODCSFactory getInstance () {
-        if (instance == null) {
-            Collection<? extends ODCSFactory> allFactories = Lookup.getDefault().lookupAll(ODCSFactory.class);
-            if(allFactories != null) {
-                for (ODCSFactory cf : allFactories) {
-                   if(cf.isAvailable()) {
-                       instance = cf;
-                       break;
-                   }
-                }
-            }
-            if(instance == null) {
-                instance = new ODCSFactory() {
-                    @Override
-                    public synchronized ODCSClient createClient (String url, PasswordAuthentication auth) {
-                            return new ODCSClientImpl(url, auth);
-                        }
-
-                    @Override
-                    public boolean isAvailable() {
-                        return true;
-                    }
-
-                };
-            }
-        }
-        return instance;
-    }
+public class WatchingProjectWrapper {
     
-    public abstract boolean isAvailable ();
-    public abstract ODCSClient createClient (String url, PasswordAuthentication auth);
-    
+    public boolean isWatching;
 }

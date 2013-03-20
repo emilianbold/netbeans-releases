@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.odcs;
+package org.netbeans.modules.odcs.client;
 
 import org.netbeans.modules.odcs.client.api.ODCSFactory;
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
@@ -55,14 +55,21 @@ import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
+import com.tasktop.c2c.server.tasks.domain.Task;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.PasswordAuthentication;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -75,6 +82,14 @@ import org.netbeans.modules.odcs.client.api.ODCSException;
  * @author tomas
  */
 public class ODCSClientTest extends NbTestCase  {
+    
+    private static boolean firstRun = true;
+    protected static String uname;
+    protected  static String passw;
+    private static String proxyHost;
+    private static String proxyPort;
+    public static final String URL = "http://qa-dev.developer.us.oracle.com";
+    private static final String MY_PROJECT = "qa-dev_netbeans-test"; //NOI18N
 
     public static Test suite() {
         return NbModuleSuite
@@ -83,12 +98,6 @@ public class ODCSClientTest extends NbTestCase  {
                     .addTest(ODCSClientTest.class)
                     .suite();
     }
-    private static boolean firstRun = true;
-    private static String uname;
-    private static String passw;
-    private static String proxy_host;
-    private static String proxy_port;
-    private static final String MY_PROJECT = "qa-dev_netbeans-test"; //NOI18N
     
     public ODCSClientTest(String arg0) {
         super(arg0);
@@ -108,17 +117,27 @@ public class ODCSClientTest extends NbTestCase  {
                 BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
                 uname = br.readLine();
                 passw = br.readLine();
-                proxy_host = br.readLine();
-                proxy_port = br.readLine();
+                proxyHost = br.readLine();
+                proxyPort = br.readLine();
                 br.close();
             }
             if (firstRun) {
                 firstRun = false;
             }
         }
-        if (proxy_host != null && !proxy_host.isEmpty()) {
-            System.setProperty("netbeans.system_http_proxy", proxy_host + ":" + (proxy_port == null ? "80" : proxy_port));
+        if (proxyHost != null && !proxyHost.isEmpty()) {
+            System.setProperty("netbeans.system_http_proxy", proxyHost + ":" + (proxyPort == null ? "80" : proxyPort));
         }
+    }
+    
+    public void testGetClient() {
+        getClient();
+    }
+    
+    public void testGetProfile() throws ODCSException {
+        Profile profile = getClient().getCurrentProfile();
+        assertNotNull(profile);
+        assertEquals(uname, profile.getUsername());
     }
     
     public void testGetUserInfo () throws Exception {
@@ -128,47 +147,6 @@ public class ODCSClientTest extends NbTestCase  {
         assertNotNull(currentClient.getLastName());
         assertNotNull(currentClient.getEmail());
         assertEquals(uname, currentClient.getUsername());
-    }
-    
-    public void testGetMyProjects () throws Exception {
-        ODCSClient client = getClient();
-        List<Project> projects = client.getMyProjects();
-        assertNotNull(projects);
-        assertFalse(projects.isEmpty());
-        // anagram game should be there
-        Project myProject = null;
-        for (Project p : projects) {
-            if (MY_PROJECT.equals(p.getIdentifier())) {
-                myProject = p;
-                break;
-            }
-        }
-        assertNotNull(myProject);
-    }
-    
-    public void testGetProjectById () throws Exception {
-        ODCSClient client = getClient();
-        Project project = client.getProjectById(MY_PROJECT);
-        assertNotNull(project);
-        assertEquals(MY_PROJECT, project.getIdentifier());
-    }
-    
-    public void testSearchProjects () throws Exception {
-        ODCSClient client = getClient();
-        for (String pattern : new String[] { "netbeans", "dummy", "testing", "nb PROJECT" }) {
-            List<Project> projects = client.searchProjects(pattern);
-            assertNotNull(projects);
-            assertFalse(projects.isEmpty());
-            // anagram game should be there
-            Project myProject = null;
-            for (Project p : projects) {
-                if (MY_PROJECT.equals(p.getIdentifier())) {
-                    myProject = p;
-                    break;
-                }
-            }
-            assertNotNull(myProject);
-        }
     }
 
     public void testGetProjectServices () throws Exception {
@@ -187,6 +165,43 @@ public class ODCSClientTest extends NbTestCase  {
         assertTrue(expectedServices.isEmpty());
     }
     
+    public void testGetMyProjects () throws Exception {
+        ODCSClient client = getClient();
+        List<Project> projects = client.getMyProjects();
+        assertNotNull(projects);
+        assertFalse(projects.isEmpty());
+        // anagram game should be there
+        Project myProject = null;
+        for (Project p : projects) {
+            if (MY_PROJECT.equals(p.getIdentifier())) {
+                myProject = p;
+                break;
+            }
+        }
+        assertNotNull(myProject);
+    }
+    
+    public void testSearchProjects () throws Exception {
+        ODCSClient client = getClient();
+        List<Project> projects = client.searchProjects("blablabla");
+        assertNotNull(projects);
+        assertTrue(projects.isEmpty());
+        for (String pattern : new String[] { "netbeans", "dummy", "testing", "nb PROJECT" }) {
+            projects = client.searchProjects(pattern);
+            assertNotNull(projects);
+            assertFalse(projects.isEmpty());
+            // anagram game should be there
+            Project myProject = null;
+            for (Project p : projects) {
+                if (MY_PROJECT.equals(p.getIdentifier())) {
+                    myProject = p;
+                    break;
+                }
+            }
+            assertNotNull(myProject);
+        }
+    }
+
     public void testWatchUnwatchProject () throws Exception {
         ODCSClient client = getClient();
         String projectIdent = "qa-dev_getting-started";
@@ -292,7 +307,6 @@ public class ODCSClientTest extends NbTestCase  {
         assertQuery(client, null, queryName, queryString);
     }
     
-//    
 //    public void testCreateDeleteProject () throws Exception {
 //        ODCSClient client = getClient();
 //        Project project = new Project();
@@ -310,11 +324,6 @@ public class ODCSClientTest extends NbTestCase  {
 //        assertFalse(created.getProjectServices().isEmpty());
 //    }
     
-    private ODCSClient getClient () {
-        return ODCSFactory.getInstance().createClient("http://qa-dev.developer.us.oracle.com",
-                new PasswordAuthentication(uname, passw.toCharArray()));
-    }
-
     private void assertActivity (TaskActivity a1, TaskActivity a2) {
         com.tasktop.c2c.server.tasks.domain.TaskActivity ta1 = a1.getActivity();
         com.tasktop.c2c.server.tasks.domain.TaskActivity ta2 = a2.getActivity();
@@ -347,5 +356,10 @@ public class ODCSClientTest extends NbTestCase  {
             fail("TasksClient didn't return just previously save query " + stq.getName());
         }
     }
-
+    
+    private ODCSClient getClient() {
+        ODCSClient client = ODCSFactory.getInstance().createClient(URL, new PasswordAuthentication(uname, passw.toCharArray()));
+        assertEquals(ODCSClientImpl.class, client.getClass());
+        return client;
+    }    
 }
