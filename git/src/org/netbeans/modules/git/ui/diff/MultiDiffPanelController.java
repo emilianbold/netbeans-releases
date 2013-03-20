@@ -272,6 +272,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         if (fixedRevisions) {
             panel.treeSelectionPanel.setVisible(false);
         } else {
+            panel.cmbDiffTreeFirst.setMinimumSize(panel.cmbDiffTreeFirst.getMinimumSize());
+            panel.cmbDiffTreeSecond.setMinimumSize(panel.cmbDiffTreeSecond.getMinimumSize());
+            panel.treeSelectionPanel.setMinimumSize(panel.treeSelectionPanel.getMinimumSize());
             panel.cmbDiffTreeFirst.setRenderer(new RevisionCellRenderer());
             panel.cmbDiffTreeFirst.setModel(new DefaultComboBoxModel(new Revision[] { revisionRight }));
             panel.cmbDiffTreeFirst.addActionListener(this);

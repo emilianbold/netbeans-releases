@@ -414,7 +414,12 @@ public final class SelectConfigurationPanel extends JPanel {
         private ProgressHandle handle;
         private int done;
         private int length;
+        private final String message;
 
+        public MyProgress(String message) {
+            this.message = message;
+        }
+        
         @Override
         public void start() {
             start(0);
@@ -425,7 +430,7 @@ public final class SelectConfigurationPanel extends JPanel {
             if (handle != null) {
                 handle.finish();
             }
-            handle = ProgressHandleFactory.createHandle(getString("AnalyzingProjectProgress"));
+            handle = ProgressHandleFactory.createHandle(message);
             handle.start(length);
             done = 0;
             this.length = length;
