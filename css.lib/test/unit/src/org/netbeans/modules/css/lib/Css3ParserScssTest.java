@@ -1157,4 +1157,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "$fgcolor: blue) {\n"
                 + "}");
     }
+
+    public void testFunctionInIfStatementExpression() {
+        assertParses("@function myfn($color) {\n"
+                + "    @if lightness($color) > 50 {\n"
+                + "        @return light;\n"
+                + "    } @else {\n"
+                + "        @return dark;\n"
+                + "    }\n"
+                + "}");
+    }
 }
