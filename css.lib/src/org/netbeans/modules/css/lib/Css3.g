@@ -630,6 +630,8 @@ declarations
                 |
                 {isScssSource()}? sass_function_return ws? //not nice
                 |
+                {isScssSource()}? importItem ws?
+                |
                 (~SEMI* SEMI)=>syncTo_SEMI //doesn't work :-(
             )*
             declaration?

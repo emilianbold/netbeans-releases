@@ -1167,4 +1167,8 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     }
+    
+    public void testImportInDeclarations() {
+        assertParses(".clz { @import \"hello\"; }");
+    }
 }
