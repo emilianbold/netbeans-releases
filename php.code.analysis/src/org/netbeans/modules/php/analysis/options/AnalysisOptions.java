@@ -117,6 +117,9 @@ public final class AnalysisOptions {
 
     public List<String> getMessDetectorRuleSets() {
         String rulesets = getPreferences().get(MESS_DETECTOR_RULE_SETS, null);
+        if (rulesets == null) {
+            return MessDetector.RULE_SETS;
+        }
         return StringUtils.explode(rulesets, MESS_DETECTOR_RULE_SETS_DELIMITER);
     }
 
