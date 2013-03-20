@@ -321,9 +321,4 @@ class EmptyServletContext implements ServletContext {
     public void declareRoles(String... strings) {
     }
 
-    @Override
-    public String getVirtualServerName() {
-        return "";
-    }
-
 }
