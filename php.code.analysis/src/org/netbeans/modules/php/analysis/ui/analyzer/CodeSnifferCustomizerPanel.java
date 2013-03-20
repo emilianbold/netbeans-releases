@@ -76,7 +76,7 @@ public class CodeSnifferCustomizerPanel extends JPanel {
 
     private void init() {
         String selectedStandard = settings.get(STANDARD, AnalysisOptions.getInstance().getCodeSnifferStandard());
-        AnalysisUtils.connect(standardComboBox, standardsModel, selectedStandard, null);
+        AnalysisUtils.initCodeSnifferStandardsComponent(standardComboBox, standardsModel, selectedStandard, null);
         // listeners
         standardComboBox.addItemListener(new ItemListener() {
             @Override

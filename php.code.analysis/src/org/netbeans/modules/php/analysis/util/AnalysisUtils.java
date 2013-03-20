@@ -73,9 +73,11 @@ public final class AnalysisUtils {
     private AnalysisUtils() {
     }
 
-    public static void connect(final JComboBox comboBox, final CodeSnifferStandardsComboBoxModel standardsComboBoxModel, @NullAllowed final String selectedStandard,
-            @NullAllowed final Runnable errorTaks) {
-        comboBox.setModel(standardsComboBoxModel);
+    public static void initCodeSnifferStandardsComponent(final JComboBox comboBox, final CodeSnifferStandardsComboBoxModel standardsComboBoxModel,
+            @NullAllowed final String selectedStandard, @NullAllowed final Runnable errorTaks) {
+        if (comboBox.getModel() != standardsComboBoxModel) {
+            comboBox.setModel(standardsComboBoxModel);
+        }
         comboBox.setEnabled(false);
         RP.post(new Runnable() {
             @Override

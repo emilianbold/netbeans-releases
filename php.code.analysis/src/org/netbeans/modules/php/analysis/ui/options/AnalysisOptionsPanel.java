@@ -70,10 +70,12 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
 import org.netbeans.modules.php.analysis.ui.CodeSnifferStandardsComboBoxModel;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
@@ -106,22 +108,25 @@ public class AnalysisOptionsPanel extends JPanel {
         "# {0} - short script name",
         "# {1} - long script name",
         "AnalysisOptionsPanel.codeSniffer.hint=Full path of Code Sniffer script (typically {0} or {1}).",
-        "AnalysisOptionsPanel.codeSniffer.error.standards=Standards cannot be fetched, review Output window.",
     })
-    private void init(final String selectedCodeSnifferStandard) {
+    private void init(String selectedCodeSnifferStandard) {
         errorLabel.setText(" "); // NOI18N
         codeSnifferHintLabel.setText(Bundle.AnalysisOptionsPanel_codeSniffer_hint(CodeSniffer.NAME, CodeSniffer.LONG_NAME));
-
-        codeSnifferStandardComboBox.setModel(codeSnifferStandardsModel);
 
         // listeners
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         codeSnifferTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        codeSnifferTextField.getDocument().addDocumentListener(new CodeSnifferStandardDocumentListener());
         ItemListener defaultItemListener = new DefaultItemListener();
         codeSnifferStandardComboBox.addItemListener(defaultItemListener);
 
-        // default values
-        AnalysisUtils.connect(codeSnifferStandardComboBox, codeSnifferStandardsModel, selectedCodeSnifferStandard, new Runnable() {
+        // standards
+        setStandards(selectedCodeSnifferStandard);
+    }
+
+    @NbBundle.Messages("AnalysisOptionsPanel.codeSniffer.error.standards=Standards cannot be fetched, review Output window.")
+    void setStandards(final String selectedCodeSnifferStandard) {
+        AnalysisUtils.initCodeSnifferStandardsComponent(codeSnifferStandardComboBox, codeSnifferStandardsModel, selectedCodeSnifferStandard, new Runnable() {
             @Override
             public void run() {
                 setError(Bundle.AnalysisOptionsPanel_codeSniffer_error_standards());
@@ -389,6 +394,41 @@ public class AnalysisOptionsPanel extends JPanel {
 
         private void processUpdate() {
             fireChange();
+        }
+
+    }
+
+    private final class CodeSnifferStandardDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        private void processUpdate() {
+            if (!codeSnifferStandardComboBox.isEnabled()) {
+                // reading standards...
+                return;
+            }
+            // reset cached standards only if the new path is valid
+            ValidationResult result = new AnalysisOptionsValidator()
+                    .validateCodeSnifferPath(getCodeSnifferPath())
+                    .getResult();
+            if (!result.hasErrors()
+                    && !result.hasWarnings()) {
+                CodeSniffer.clearCachedStandards();
+                setStandards(getCodeSnifferStandard());
+            }
         }
 
     }
