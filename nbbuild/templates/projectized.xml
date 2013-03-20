@@ -106,7 +106,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="have-custom-javac-task" value="true" />
     </target>
 
-    <target name="build-init" depends="basic-init,jdk-6-check,set-buildnumber,-define-custom-javac-task">
+    <target name="build-init" depends="basic-init,jdk-7-check,set-buildnumber,-define-custom-javac-task">
         <property name="public.package.jar.dir" location="${nb.build.dir}/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
         <parseprojectxml
