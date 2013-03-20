@@ -73,7 +73,7 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
-import org.netbeans.modules.odcs.tasks.C2C;
+import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.query.Bundle;
 import org.openide.util.NbBundle;
 
@@ -246,7 +246,7 @@ public class QueryParameters {
             if(p != null) {
                 criterias.add(new ParamCriteria(p, op, cc));
             } else {
-                C2C.LOG.log(Level.WARNING, "Missing parameter for ColumnCriteria [{0}]", cc); // NOI18N
+                ODCS.LOG.log(Level.WARNING, "Missing parameter for ColumnCriteria [{0}]", cc); // NOI18N
             }
         } else if(crit instanceof NaryCriteria) {
             NaryCriteria nc = (NaryCriteria)crit;
@@ -256,7 +256,7 @@ public class QueryParameters {
             }
         } else {
             assert false : "Unexpected Criteria type : " + crit.getClass().getName(); // NOI18N
-            C2C.LOG.log(Level.WARNING, "Unexpected Criteria type : {0}", crit.getClass().getName()); // NOI18N
+            ODCS.LOG.log(Level.WARNING, "Unexpected Criteria type : {0}", crit.getClass().getName()); // NOI18N
         }
         return criterias;
     }
@@ -457,8 +457,8 @@ public class QueryParameters {
                 ret = getCriteria(getValues());
                 return ret;
             } finally {
-                if(C2C.LOG.isLoggable(Level.FINER)) {
-                    C2C.LOG.log(Level.FINER, "ListParameter {0} returned criteria [{1}]", new Object[] {getColumn().columnName, ret == null ? null : ret.toQueryString()}); // NOI18N        
+                if(ODCS.LOG.isLoggable(Level.FINER)) {
+                    ODCS.LOG.log(Level.FINER, "ListParameter {0} returned criteria [{1}]", new Object[] {getColumn().columnName, ret == null ? null : ret.toQueryString()}); // NOI18N        
                 }                
             }
         }
@@ -575,8 +575,8 @@ public class QueryParameters {
                 ret = toCriteria(criteria, Criteria.Operator.OR);
                 return ret;
             } finally {
-                if(C2C.LOG.isLoggable(Level.FINER)) {
-                    C2C.LOG.log(Level.FINER, "ByTextParameter returned criteria[{0}]", ret == null ? null : ret.toQueryString()); // NOI18N        
+                if(ODCS.LOG.isLoggable(Level.FINER)) {
+                    ODCS.LOG.log(Level.FINER, "ByTextParameter returned criteria[{0}]", ret == null ? null : ret.toQueryString()); // NOI18N        
                 }
             }
         }
@@ -668,8 +668,8 @@ public class QueryParameters {
                 ret = toCriteria(criteria, Criteria.Operator.OR);
                 return ret;
             } finally {
-                if(C2C.LOG.isLoggable(Level.FINER)) {
-                    C2C.LOG.log(Level.FINER, "ByPeopleParameter returned criteria[{0}]", ret == null ? null : ret.toQueryString()); // NOI18N        
+                if(ODCS.LOG.isLoggable(Level.FINER)) {
+                    ODCS.LOG.log(Level.FINER, "ByPeopleParameter returned criteria[{0}]", ret == null ? null : ret.toQueryString()); // NOI18N        
                 }
             }
         }
@@ -763,14 +763,14 @@ public class QueryParameters {
                 try {
                     dateFrom = getDateFrom();
                 } catch (ParseException ex) {
-                    C2C.LOG.log(Level.WARNING, fromField.getText(), ex);
+                    ODCS.LOG.log(Level.WARNING, fromField.getText(), ex);
                 }
 
                 Date dateTo = null;
                 try {
                     dateTo = getDateTo();
                 } catch (ParseException ex) {
-                    C2C.LOG.log(Level.WARNING, toField.getText(), ex);
+                    ODCS.LOG.log(Level.WARNING, toField.getText(), ex);
                 }
 
                 List<Criteria> criteria = new LinkedList<Criteria>();
@@ -786,8 +786,8 @@ public class QueryParameters {
                 ret = toCriteria(criteria, Criteria.Operator.AND);
                 return ret;
             } finally {
-                if(C2C.LOG.isLoggable(Level.FINER)) {
-                    C2C.LOG.log(Level.FINER, "ByDateParameter returned criteria[{0}]", ret == null ? null :  ret.toQueryString()); // NOI18N        
+                if(ODCS.LOG.isLoggable(Level.FINER)) {
+                    ODCS.LOG.log(Level.FINER, "ByDateParameter returned criteria[{0}]", ret == null ? null :  ret.toQueryString()); // NOI18N        
                 }
             }
         }
@@ -836,7 +836,7 @@ public class QueryParameters {
                 toField.setText(df.format((Date)cc.getColumnValue()));
             } else {
                 assert false : "unexpected operator [" + cc.getOperator() + "] in ByDateParameter. ColumnCriteria [" + cc + "]"; // NOI18N
-                C2C.LOG.log(Level.WARNING, "unexpected operator [{0}] in ByDateParameter. ColumnCriteria [{1}]", new Object[] {cc.getOperator(), cc}); // NOI18N
+                ODCS.LOG.log(Level.WARNING, "unexpected operator [{0}] in ByDateParameter. ColumnCriteria [{1}]", new Object[] {cc.getOperator(), cc}); // NOI18N
             }
         }
     }

@@ -72,7 +72,7 @@ import org.netbeans.modules.odcs.tasks.query.QueryParameters;
  *
  * @author tomas
  */
-public class ODCSQueryTestCase extends AbstractC2CTestCase {
+public class ODCSQueryTestCase extends AbstractODCSTestCase {
 
     private static final String UNIT_TEST_QUERY = "UnitTestQuery";
     private static final String UNIT_TEST_SUMMARY = "The first unit test task";

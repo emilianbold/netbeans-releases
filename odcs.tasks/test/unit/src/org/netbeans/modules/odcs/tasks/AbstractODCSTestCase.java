@@ -66,14 +66,14 @@ import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.odcs.tasks.util.C2CUtil;
+import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author tomas
  */
-public abstract class AbstractC2CTestCase extends NbTestCase  {
+public abstract class AbstractODCSTestCase extends NbTestCase  {
 
     private static String uname = null;
     private static String passw = null;
@@ -118,7 +118,7 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
             
     }
 
-    public AbstractC2CTestCase(String arg0) {
+    public AbstractODCSTestCase(String arg0) {
         super(arg0);
     }
 
@@ -132,7 +132,7 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         super.setUp();
         
         trm = new TaskRepositoryManager();
-        rc = C2C.getInstance().getRepositoryConnector(); // reuse the only one RC instance
+        rc = ODCS.getInstance().getRepositoryConnector(); // reuse the only one RC instance
         trlf = new TaskRepositoryLocationFactory();
         
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
@@ -161,8 +161,8 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
     }
 
     public TaskData createTaskData(String summary, String desc, String typeName) throws CoreException, MalformedURLException, IOException {
-        TaskData data = C2CUtil.createTaskData(taskRepository);
-        RepositoryConfiguration conf = C2C.getInstance().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+        TaskData data = ODCSUtil.createTaskData(taskRepository);
+        RepositoryConfiguration conf = ODCS.getInstance().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
         ta.setValue(summary);
@@ -189,7 +189,7 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         ta = rta.getMappedAttribute(TaskAttribute.SEVERITY);
         ta.setValue(conf.getSeverities().get(0).getValue());
         ta = rta.getMappedAttribute(TaskAttribute.STATUS);
-        ta.setValue(C2CUtil.getStatusByValue(conf, "UNCONFIRMED").getValue());
+        ta.setValue(ODCSUtil.getStatusByValue(conf, "UNCONFIRMED").getValue());
         
         ta = rta.getMappedAttribute(TaskAttribute.USER_ASSIGNED);
         ta.setValue(component.getInitialOwner().getLoginName());
@@ -197,13 +197,13 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         ta = rta.getMappedAttribute(CloudDevAttribute.REPORTER.getTaskName());
         ta.setValue(component.getInitialOwner().getLoginName());
         
-        RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, data);
+        RepositoryResponse rr = ODCSUtil.postTaskData(rc, taskRepository, data);
         assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
         String taskId = rr.getTaskId();
         assertNotNull(taskId);
         data = rc.getTaskData(taskRepository, taskId, nullProgressMonitor);
         assertFalse(data.isNew());
-        C2C.LOG.log(Level.FINE, " dataRoot after get {0}", data.getRoot().toString());
+        ODCS.LOG.log(Level.FINE, " dataRoot after get {0}", data.getRoot().toString());
         return data;
     }
 

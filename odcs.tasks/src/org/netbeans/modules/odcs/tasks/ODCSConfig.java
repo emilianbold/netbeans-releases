@@ -49,27 +49,27 @@ import org.openide.util.NbPreferences;
  *
  * @author Tomas Stupka
  */
-public class C2CConfig {
+public class ODCSConfig {
 
-    private static C2CConfig instance = null;
-    private static final String QUERY_REFRESH_INT   = "c2c.query_refresh";         // NOI18N
-    private static final String QUERY_AUTO_REFRESH  = "c2c.query_auto_refresh_";   // NOI18N
-    private static final String ISSUE_REFRESH_INT   = "c2c.issue_refresh";         // NOI18N
+    private static ODCSConfig instance = null;
+    private static final String QUERY_REFRESH_INT   = "odcs.query_refresh";         // NOI18N
+    private static final String QUERY_AUTO_REFRESH  = "odcs.query_auto_refresh_";   // NOI18N
+    private static final String ISSUE_REFRESH_INT   = "odcs.issue_refresh";         // NOI18N
 
     public static final int DEFAULT_QUERY_REFRESH = 30;
     public static final int DEFAULT_ISSUE_REFRESH = 15;
 
-    private C2CConfig() { }
+    private ODCSConfig() { }
 
-    public static C2CConfig getInstance() {
+    public static ODCSConfig getInstance() {
         if(instance == null) {
-            instance = new C2CConfig();
+            instance = new ODCSConfig();
         }
         return instance;
     }
 
     private Preferences getPreferences() {
-        return NbPreferences.forModule(C2CConfig.class);
+        return NbPreferences.forModule(ODCSConfig.class);
     }
 
     public void setQueryRefreshInterval(int i) {

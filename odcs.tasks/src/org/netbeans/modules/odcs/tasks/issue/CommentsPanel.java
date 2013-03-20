@@ -89,7 +89,7 @@ import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
-import org.netbeans.modules.odcs.tasks.util.C2CUtil;
+import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -107,8 +107,8 @@ public class CommentsPanel extends JPanel {
     private final static Color GREY_FOREGROUND = new Color(0x999999);
     
     private final JPopupMenu commentsPopup = new PopupMenu();
-    private C2CIssue issue;
-    private List<C2CIssue.C2CAttachment> attachments;
+    private ODCSIssue issue;
+    private List<ODCSIssue.Attachment> attachments;
     private List<String> attachmentIds;
     private NewCommentHandler newCommentHandler;
 
@@ -126,9 +126,9 @@ public class CommentsPanel extends JPanel {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        C2CIssue is = issue.getRepository().getIssue(issueKey);
+                        ODCSIssue is = issue.getRepository().getIssue(issueKey);
                         if (is != null) {
-                            C2CUtil.openIssue(is);
+                            ODCSUtil.openIssue(is);
                         }
                     }
                 });
@@ -140,8 +140,8 @@ public class CommentsPanel extends JPanel {
         this.wikiLanguage = wikiLanguage;
     }
 
-    void setIssue(C2CIssue issue,
-                  List<C2CIssue.C2CAttachment> attachments) {
+    void setIssue(ODCSIssue issue,
+                  List<ODCSIssue.Attachment> attachments) {
         removeAll();
         this.issue = issue;
         initCollapsedComments();
@@ -158,11 +158,11 @@ public class CommentsPanel extends JPanel {
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(verticalGroup));
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
         String creationTxt = issue.getFieldValue(IssueField.CREATED);
-        Date creation = C2CUtil.parseLongDate(creationTxt);
+        Date creation = ODCSUtil.parseLongDate(creationTxt);
         if (creation != null) {
             creationTxt = format.format(creation);
         }
-        for (C2CIssue.Comment comment : issue.getComments()) {
+        for (ODCSIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());
             addSection(layout, comment.getNumber(), comment.getText(), comment.getAuthor(), comment.getAuthorName(), when, horizontalGroup, verticalGroup, false);
         }
@@ -171,13 +171,13 @@ public class CommentsPanel extends JPanel {
     }
 
     private static List<String> getAttachmentIds(
-                                   List<C2CIssue.C2CAttachment> attachments) {
+                                   List<ODCSIssue.Attachment> attachments) {
         if (attachments.isEmpty()) {
             return Collections.emptyList();
         }
 
         List<String> result = new ArrayList<String>(attachments.size());
-        for (C2CIssue.C2CAttachment attachment : attachments) {
+        for (ODCSIssue.Attachment attachment : attachments) {
             result.add(attachment.getId());
         }
         return result;
@@ -301,11 +301,11 @@ public class CommentsPanel extends JPanel {
 //                if (attachmentId != null) {
 //                    int index = attachmentIds.indexOf(attachmentId);
 //                    if (index != -1) {
-//                        C2CIssue.Attachment attachment = attachments.get(index);
+//                        ODCSIssue.Attachment attachment = attachments.get(index);
 //                        AttachmentLink attachmentLink = new AttachmentLink(attachment);
 //                        HyperlinkSupport.getInstance().registerLink(textPane, new int[] {a.idx1, a.idx2}, attachmentLink);
 //                    } else {
-//                        C2C.LOG.log(Level.WARNING, "couldn''t find attachment id in: {0}", comment); // NOI18N
+//                        ODCS.LOG.log(Level.WARNING, "couldn''t find attachment id in: {0}", comment); // NOI18N
 //                    }
 //                }
 //            }
@@ -413,7 +413,7 @@ public class CommentsPanel extends JPanel {
                 Element elem = doc.getCharacterElement(pane.viewToModel(clickPoint));
                 Object l = elem.getAttributes().getAttribute(HyperlinkSupport.LINK_ATTRIBUTE);
                 if (l != null && l instanceof AttachmentLink) {
-                    C2CIssue.C2CAttachment attachment = ((AttachmentLink) l).attachment;
+                    ODCSIssue.Attachment attachment = ((AttachmentLink) l).attachment;
                     if (attachment != null) {
                         add(new JMenuItem(attachment.getOpenAction()));
                         add(new JMenuItem(attachment.getSaveAction()));
@@ -566,8 +566,8 @@ public class CommentsPanel extends JPanel {
     }
     
     private class AttachmentLink implements HyperlinkSupport.Link {
-        private C2CIssue.C2CAttachment attachment;
-        public AttachmentLink(C2CIssue.C2CAttachment attachment) {
+        private ODCSIssue.Attachment attachment;
+        public AttachmentLink(ODCSIssue.Attachment attachment) {
             this.attachment = attachment;
         }
         @Override

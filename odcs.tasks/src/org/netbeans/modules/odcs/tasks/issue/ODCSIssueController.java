@@ -40,30 +40,79 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.odcs.tasks.query;
+package org.netbeans.modules.odcs.tasks.issue;
 
-import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import java.awt.Font;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.UIManager;
+import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.openide.util.HelpCtx;
 
 /**
- * Notifies changes on a query
- * @author Tomas Stupka
+ *
+ * @author Tomas Stupka, Jan Stola
  */
-public interface QueryNotifyListener {
+public class ODCSIssueController extends BugtrackingController {
+    private JComponent component;
+    private final IssuePanel panel;
 
-    /**
-     * Query execution was started
-     */
-    public void started();
+    public ODCSIssueController(ODCSIssue issue) {
+        panel = new IssuePanel();
+        panel.setIssue(issue);
+        JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.getViewport().setBackground(panel.getBackground());
+        scrollPane.setBorder(null);
+        Font font = UIManager.getFont("Label.font"); // NOI18N
+        if (font != null) {
+            int size = (int)(font.getSize()*1.5);
+            scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
+            scrollPane.getVerticalScrollBar().setUnitIncrement(size);
+        }
+        UIUtils.keepFocusedComponentVisible(panel);
+        component = scrollPane;
+    }
 
-    /**
-     *
-     * @param issue
-     */
-    public void notifyData(ODCSIssue issue);
+    @Override
+    public JComponent getComponent() {
+        return component;
+    }
 
-    /**
-     * Query execution was finished
-     */
-    public void finished();
+    @Override
+    public void opened() {
+        ODCSIssue issue = panel.getIssue();
+        if (issue != null) {
+            panel.opened();
+            issue.opened();
+        }
+    }
+
+    @Override
+    public void closed() {
+        ODCSIssue issue = panel.getIssue();
+        if (issue != null) {
+            issue.closed();
+            panel.closed();
+        }
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.odcs.tasks.issue.ODCSIssue"); // NOI18N
+    }
+
+    @Override
+    public boolean isValid() {
+        return true; // PENDING
+    }
+
+    @Override
+    public void applyChanges() {
+    }
+
+    void refreshViewData(boolean force) {
+        panel.reloadFormInAWT(force);
+    }
 
 }

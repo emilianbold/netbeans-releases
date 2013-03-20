@@ -83,12 +83,12 @@ import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.mylyn.util.MylynUtils;
-import org.netbeans.modules.odcs.tasks.C2C;
-import org.netbeans.modules.odcs.tasks.C2CConnector;
-import org.netbeans.modules.odcs.tasks.C2CExecutor;
-import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
-import org.netbeans.modules.odcs.tasks.query.C2CQuery;
-import org.netbeans.modules.odcs.tasks.util.C2CUtil;
+import org.netbeans.modules.odcs.tasks.ODCS;
+import org.netbeans.modules.odcs.tasks.ODCSConnector;
+import org.netbeans.modules.odcs.tasks.ODCSExecutor;
+import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
+import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -100,18 +100,18 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Tomas Stupka
  */
-public class C2CRepository implements PropertyChangeListener {
+public class ODCSRepository implements PropertyChangeListener {
 
     private final Object INFO_LOCK = new Object();
     private final Object QUERIES_LOCK = new Object();
     private RepositoryInfo info;
-    private C2CRepositoryController controller;
+    private ODCSRepositoryController controller;
     private TaskRepository taskRepository;
     private Lookup lookup;
     private Cache cache;
-    private C2CExecutor executor;
-    private Map<PredefinedTaskQuery, C2CQuery> predefinedQueries;
-    private Collection<C2CQuery> remoteSavedQueries;
+    private ODCSExecutor executor;
+    private Map<PredefinedTaskQuery, ODCSQuery> predefinedQueries;
+    private Collection<ODCSQuery> remoteSavedQueries;
     private static final String ICON_PATH = "org/netbeans/modules/odcs/tasks/resources/repository.png"; //NOI18N
     private final Image icon;
     
@@ -119,19 +119,19 @@ public class C2CRepository implements PropertyChangeListener {
     
     private KenaiProject kenaiProject;
     
-    public C2CRepository (KenaiProject kenaiProject) {
+    public ODCSRepository (KenaiProject kenaiProject) {
         this(createInfo(kenaiProject.getDisplayName(), kenaiProject.getFeatureLocation())); // use name as id - can't be changed anyway
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
         KenaiUtil.getKenaiAccessor(kenaiProject.getFeatureLocation()).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
     }
     
-    public C2CRepository() {
+    public ODCSRepository() {
         this.icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.support = new PropertyChangeSupport(this);
     }
     
-    public C2CRepository(RepositoryInfo info) {
+    public ODCSRepository(RepositoryInfo info) {
         this();
         this.info = info;
         
@@ -161,7 +161,7 @@ public class C2CRepository implements PropertyChangeListener {
     private static RepositoryInfo createInfo (String repoName, String url) {
         String id = getRepositoryId(repoName, url);
         String tooltip = Bundle.LBL_RepositoryTooltipNoUser(repoName, url);
-        return new RepositoryInfo(id, C2CConnector.ID, url, repoName, tooltip);
+        return new RepositoryInfo(id, ODCSConnector.ID, url, repoName, tooltip);
     }
     
     private static String getRepositoryId (String name, String url) {
@@ -208,7 +208,7 @@ public class C2CRepository implements PropertyChangeListener {
     }
     
     static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-        AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
+        AbstractRepositoryConnector rc = ODCS.getInstance().getRepositoryConnector();
         TaskRepository taskRepository = MylynUtils.createTaskRepository(rc.getConnectorKind(), name, url, user, password, httpUser, httpPassword);
         patchHttpCredentials(taskRepository, user, password);        
         return taskRepository;
@@ -233,7 +233,7 @@ public class C2CRepository implements PropertyChangeListener {
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword);
         String id = info != null ? info.getId() : name + System.currentTimeMillis();
-        info = new RepositoryInfo(id, C2CConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+        info = new RepositoryInfo(id, ODCSConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
     }
     
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
@@ -277,19 +277,19 @@ public class C2CRepository implements PropertyChangeListener {
         resetRepository(true);
     }
 
-    public C2CIssue getIssue(final String id) {
+    public ODCSIssue getIssue(final String id) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
-        TaskData taskData = C2CUtil.getTaskData(this, id);
+        TaskData taskData = ODCSUtil.getTaskData(this, id);
         if(taskData == null) {
             return null;
         }
         try {
-            C2CIssue issue = getIssueCache().setIssueData(id, taskData);
+            ODCSIssue issue = getIssueCache().setIssueData(id, taskData);
             // XXX ensureConfigurationUptodate(issue);
             return issue;
         } catch (IOException ex) {
-            C2C.LOG.log(Level.SEVERE, null, ex);
+            ODCS.LOG.log(Level.SEVERE, null, ex);
             return null;
         }
     }
@@ -297,22 +297,22 @@ public class C2CRepository implements PropertyChangeListener {
     
     public RepositoryController getControler() {
         if(controller == null) {
-            controller = new C2CRepositoryController(this);
+            controller = new ODCSRepositoryController(this);
         }
         return controller;
     }
 
-    public Collection<C2CIssue> simpleSearch(String criteria) {
+    public Collection<ODCSIssue> simpleSearch(String criteria) {
         assert taskRepository != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
         String[] keywords = criteria.split(" ");                                // NOI18N
 
-        final List<C2CIssue> issues = new ArrayList<C2CIssue>();
+        final List<ODCSIssue> issues = new ArrayList<ODCSIssue>();
         TaskDataCollector collector = new TaskDataCollector() {
             @Override
             public void accept(TaskData taskData) {
-                C2CIssue issue = new C2CIssue(taskData, C2CRepository.this);
+                ODCSIssue issue = new ODCSIssue(taskData, ODCSRepository.this);
                 issues.add(issue); // we don't cache this issues
                                    // - the retured taskdata are partial
                                    // - and we need an as fast return as possible at this place
@@ -322,9 +322,9 @@ public class C2CRepository implements PropertyChangeListener {
 
         if(keywords.length == 1 && isInteger(keywords[0])) {
             // only one search criteria -> might be we are looking for the bug with id=keywords[0]
-            TaskData taskData = C2CUtil.getTaskData(this, keywords[0], false);
+            TaskData taskData = ODCSUtil.getTaskData(this, keywords[0], false);
             if(taskData != null) {
-                C2CIssue issue = new C2CIssue(taskData, C2CRepository.this);
+                ODCSIssue issue = new ODCSIssue(taskData, ODCSRepository.this);
                 issues.add(issue); // we don't cache this issues
                                    // - the retured taskdata are partial
                                    // - and we need an as fast return as possible at this place
@@ -334,7 +334,7 @@ public class C2CRepository implements PropertyChangeListener {
         try {
             criteria = URLEncoder.encode(criteria, getTaskRepository().getCharacterEncoding());
         } catch (UnsupportedEncodingException ueex) {
-            C2C.LOG.log(Level.INFO, null, ueex);
+            ODCS.LOG.log(Level.INFO, null, ueex);
             try {
                 criteria = URLEncoder.encode(criteria, "UTF-8"); // NOI18N
             } catch (UnsupportedEncodingException ex) {
@@ -348,7 +348,7 @@ public class C2CRepository implements PropertyChangeListener {
         
         PerformQueryCommand queryCmd = 
             new PerformQueryCommand(
-                C2C.getInstance().getRepositoryConnector(),
+                ODCS.getInstance().getRepositoryConnector(),
                 getTaskRepository(), 
                 collector,
                 iquery);
@@ -377,13 +377,13 @@ public class C2CRepository implements PropertyChangeListener {
         return lookup;
     }
 
-    public Collection<C2CQuery> getQueries() {
-        List<C2CQuery> ret = new ArrayList<C2CQuery>();
+    public Collection<ODCSQuery> getQueries() {
+        List<ODCSQuery> ret = new ArrayList<ODCSQuery>();
         synchronized (QUERIES_LOCK) {
             initializePredefinedQueries();
             ret.addAll(predefinedQueries.values());
             if (remoteSavedQueries == null) {
-                C2C.getInstance().getRequestProcessor().post(new Runnable() {
+                ODCS.getInstance().getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
                         requestRemoteSavedQueries();
@@ -397,20 +397,20 @@ public class C2CRepository implements PropertyChangeListener {
     }
     
     protected void requestRemoteSavedQueries () {
-        List<C2CQuery> queries = new ArrayList<C2CQuery>();
+        List<ODCSQuery> queries = new ArrayList<ODCSQuery>();
         ensureCredentials();
         RepositoryConfiguration conf = getRepositoryConfiguration(false);
         if (conf != null) {
             List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
             for (SavedTaskQuery sq : savedQueries) {
-                C2CQuery q = C2CQuery.createSaved(this, sq);
+                ODCSQuery q = ODCSQuery.createSaved(this, sq);
                 queries.add(q);
                 
-                C2C.LOG.log(Level.FINER, "added remote query {0} to repository {1}", new Object[]{sq.getName(), getDisplayName()});
+                ODCS.LOG.log(Level.FINER, "added remote query {0} to repository {1}", new Object[]{sq.getName(), getDisplayName()});
             }
         }
         synchronized (QUERIES_LOCK) {
-            remoteSavedQueries = new HashSet<C2CQuery>();
+            remoteSavedQueries = new HashSet<ODCSQuery>();
             remoteSavedQueries.addAll(queries);
         }
         
@@ -429,17 +429,17 @@ public class C2CRepository implements PropertyChangeListener {
                 queries.put(ptq, query);
             }
             synchronized(QUERIES_LOCK) {
-                predefinedQueries = new EnumMap<PredefinedTaskQuery, C2CQuery>(PredefinedTaskQuery.class);
+                predefinedQueries = new EnumMap<PredefinedTaskQuery, ODCSQuery>(PredefinedTaskQuery.class);
                 for (Map.Entry<PredefinedTaskQuery, IRepositoryQuery> e : queries.entrySet()) {
-                    predefinedQueries.put(e.getKey(), C2CQuery.createPredefined(C2CRepository.this, e.getValue().getSummary(), e.getValue()));
+                    predefinedQueries.put(e.getKey(), ODCSQuery.createPredefined(ODCSRepository.this, e.getValue().getSummary(), e.getValue()));
                     
-                    C2C.LOG.log(Level.FINER, "added predefined query {0} to repository {1}", new Object[]{e.getKey().name(), getDisplayName()});
+                    ODCS.LOG.log(Level.FINER, "added predefined query {0} to repository {1}", new Object[]{e.getKey().name(), getDisplayName()});
                 }
             }
         }
     }
 
-    public final C2CQuery getPredefinedQuery (PredefinedTaskQuery ptq) {
+    public final ODCSQuery getPredefinedQuery (PredefinedTaskQuery ptq) {
         getQueries();
         synchronized (QUERIES_LOCK) {
             initializePredefinedQueries();
@@ -447,54 +447,54 @@ public class C2CRepository implements PropertyChangeListener {
         }
     }
 
-    public C2CIssue createIssue() {
-        TaskData data = C2CUtil.createTaskData(getTaskRepository());
-        return new C2CIssue(data, this);
+    public ODCSIssue createIssue() {
+        TaskData data = ODCSUtil.createTaskData(getTaskRepository());
+        return new ODCSIssue(data, this);
     }
 
-    public C2CQuery createQuery() {
-        return C2CQuery.createNew(this);
+    public ODCSQuery createQuery() {
+        return ODCSQuery.createNew(this);
     }
 
-    public C2CIssue[] getIssues(String[] ids) {
+    public ODCSIssue[] getIssues(String[] ids) {
         if (ids.length == 0) {
-            return new C2CIssue[0];
+            return new ODCSIssue[0];
         } else {
             //TODO is there a bulk command?
-            List<C2CIssue> issues = new ArrayList<C2CIssue>(ids.length);
+            List<ODCSIssue> issues = new ArrayList<ODCSIssue>(ids.length);
             for (String id : ids) {
-                C2CIssue i = getIssue(id);
+                ODCSIssue i = getIssue(id);
                 if (i != null) {
                     issues.add(i);
                 }
             }
-            return issues.toArray(new C2CIssue[issues.size()]);
+            return issues.toArray(new ODCSIssue[issues.size()]);
         }
     }
     
     private String getTooltip(String repoName, String user, String url) {
-        return NbBundle.getMessage(C2CRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, user, url}); // NOI18N
+        return NbBundle.getMessage(ODCSRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, user, url}); // NOI18N
     }
 
     public String getID() {
         return info.getId();
     }
 
-    public IssueCache<C2CIssue, TaskData> getIssueCache() {
+    public IssueCache<ODCSIssue, TaskData> getIssueCache() {
         if(cache == null) {
             cache = new Cache();
         }
         return cache;
     }
 
-    public C2CExecutor getExecutor() {
+    public ODCSExecutor getExecutor() {
         if(executor == null) {
-            executor = new C2CExecutor(this);
+            executor = new ODCSExecutor(this);
         }
         return executor;
     }
 
-    public void removeQuery(C2CQuery query) {
+    public void removeQuery(ODCSQuery query) {
         getIssueCache().removeQuery(query.getDisplayName()); // XXX do we have to do this?
         synchronized (QUERIES_LOCK) {
             remoteSavedQueries.remove(query);
@@ -502,7 +502,7 @@ public class C2CRepository implements PropertyChangeListener {
         fireQueryListChanged();
     }
 
-    public void saveQuery(C2CQuery query) {
+    public void saveQuery(ODCSQuery query) {
         synchronized (QUERIES_LOCK) {
             remoteSavedQueries.add(query);
         }
@@ -532,7 +532,7 @@ public class C2CRepository implements PropertyChangeListener {
     }
 
     public synchronized RepositoryConfiguration getRepositoryConfiguration(boolean forceRefresh) {
-        CloudDevClient client = C2C.getInstance().getCloudDevClient(taskRepository);
+        CloudDevClient client = ODCS.getInstance().getCloudDevClient(taskRepository);
         RepositoryConfiguration configuration;
         try {
             configuration = client.getRepositoryConfiguration(forceRefresh, new NullProgressMonitor());
@@ -544,49 +544,49 @@ public class C2CRepository implements PropertyChangeListener {
         return configuration;
     }
     
-    private class Cache extends IssueCache<C2CIssue, TaskData> {
+    private class Cache extends IssueCache<ODCSIssue, TaskData> {
         Cache() {
             super(
-                C2CRepository.this.getUrl(), 
+                ODCSRepository.this.getUrl(), 
                 new IssueAccessorImpl(), 
-                C2C.getInstance().getIssueProvider(), 
-                C2CUtil.getRepository(C2CRepository.this));
+                ODCS.getInstance().getIssueProvider(), 
+                ODCSUtil.getRepository(ODCSRepository.this));
         }
     }
 
-    private class IssueAccessorImpl implements IssueCache.IssueAccessor<C2CIssue, TaskData> {
+    private class IssueAccessorImpl implements IssueCache.IssueAccessor<ODCSIssue, TaskData> {
         @Override
-        public C2CIssue createIssue(TaskData taskData) {
-            C2CIssue issue = new C2CIssue(taskData, C2CRepository.this);
+        public ODCSIssue createIssue(TaskData taskData) {
+            ODCSIssue issue = new ODCSIssue(taskData, ODCSRepository.this);
             return issue;
         }
         @Override
-        public void setIssueData(C2CIssue issue, TaskData taskData) {
+        public void setIssueData(ODCSIssue issue, TaskData taskData) {
             assert issue != null && taskData != null;
             issue.setTaskData(taskData);
         }
         @Override
-        public String getRecentChanges(C2CIssue issue) {
+        public String getRecentChanges(ODCSIssue issue) {
             assert issue != null;
             return issue.getRecentChanges();
         }
         @Override
-        public long getLastModified(C2CIssue issue) {
+        public long getLastModified(ODCSIssue issue) {
             assert issue != null;
             return issue.getLastModify();
         }
         @Override
-        public long getCreated(C2CIssue issue) {
+        public long getCreated(ODCSIssue issue) {
             assert issue != null;
             return issue.getCreated();
         }
         @Override
         public String getID(TaskData issueData) {
             assert issueData != null;
-            return C2CIssue.getID(issueData);
+            return ODCSIssue.getID(issueData);
         }
         @Override
-        public Map<String, String> getAttributes(C2CIssue issue) {
+        public Map<String, String> getAttributes(ODCSIssue issue) {
             assert issue != null;
             return issue.getAttributes();
         }

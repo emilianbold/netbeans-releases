@@ -1,4 +1,3 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -42,81 +41,96 @@
  */
 package org.netbeans.modules.odcs.tasks;
 
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryController;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class C2CIssueProvider extends IssueProvider<C2CIssue> {
+public class ODCSRepositoryProvider extends KenaiRepositoryProvider<ODCSRepository, ODCSQuery, ODCSIssue> {
 
     @Override
-    public String getDisplayName(C2CIssue data) {
-        return data.getDisplayName();
+    public RepositoryInfo getInfo(ODCSRepository r) {
+        return r.getInfo();
     }
 
     @Override
-    public String getTooltip(C2CIssue data) {
-        return data.getTooltip();
+    public Image getIcon(ODCSRepository r) {
+        return r.getIcon();
     }
 
     @Override
-    public String getID(C2CIssue data) {
-        return data.getID();
+    public ODCSIssue[] getIssues(ODCSRepository r, String... ids) {
+        return r.getIssues(ids);
     }
 
     @Override
-    public String[] getSubtasks(C2CIssue data) {
-        return data.getSubtasks();
+    public void remove(ODCSRepository r) {
+        r.remove();
     }
 
     @Override
-    public String getSummary(C2CIssue data) {
-        return data.getSummary();
+    public RepositoryController getController(ODCSRepository r) {
+        return r.getControler();
     }
 
     @Override
-    public boolean isNew(C2CIssue data) {
-        return data.isNew();
+    public ODCSQuery createQuery(ODCSRepository r) {
+        return r.createQuery();
     }
 
     @Override
-    public boolean isFinished(C2CIssue data) {
-        return data.isFinished();
+    public ODCSIssue createIssue(ODCSRepository r) {
+        return r.createIssue();
     }
 
     @Override
-    public boolean refresh(C2CIssue data) {
-        return data.refresh();
+    public Collection<ODCSQuery> getQueries(ODCSRepository r) {
+        return r.getQueries();
     }
 
     @Override
-    public void addComment(C2CIssue data, String comment, boolean closeAsFixed) {
-        data.addComment(comment, closeAsFixed);
+    public Lookup getLookup(ODCSRepository r) {
+        return r.getLookup();
     }
 
     @Override
-    public void attachPatch(C2CIssue data, File file, String description) {
-        data.attachPatch(file, description);
+    public Collection<ODCSIssue> simpleSearch(ODCSRepository r, String criteria) {
+        return r.simpleSearch(criteria);
     }
 
     @Override
-    public BugtrackingController getController(C2CIssue data) {
-        return data.getController();
+    public void removePropertyChangeListener(ODCSRepository r, PropertyChangeListener listener) {
+        r.removePropertyChangeListener(listener);
     }
 
     @Override
-    public void removePropertyChangeListener(C2CIssue data, PropertyChangeListener listener) {
-        data.removePropertyChangeListener(listener);
+    public void addPropertyChangeListener(ODCSRepository r, PropertyChangeListener listener) {
+        r.addPropertyChangeListener(listener);
+    }
+
+    /************************************************************************************
+     * Team Support
+     ************************************************************************************/
+
+    @Override
+    public ODCSQuery getAllIssuesQuery (ODCSRepository repository) {
+        return (repository).getPredefinedQuery(PredefinedTaskQuery.ALL);
     }
 
     @Override
-    public void addPropertyChangeListener(C2CIssue data, PropertyChangeListener listener) {
-        data.addPropertyChangeListener(listener);
+    public ODCSQuery getMyIssuesQuery (ODCSRepository repository) {
+        return (repository).getPredefinedQuery(PredefinedTaskQuery.MINE);
     }
     
 }

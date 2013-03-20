@@ -47,63 +47,63 @@ import java.util.Collection;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
-import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
-import org.netbeans.modules.odcs.tasks.query.C2CQuery;
-import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
+import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class C2CQueryProvider extends KenaiQueryProvider<C2CQuery, C2CIssue> {
+public class ODCSQueryProvider extends KenaiQueryProvider<ODCSQuery, ODCSIssue> {
 
     @Override
-    public String getDisplayName(C2CQuery q) {
+    public String getDisplayName(ODCSQuery q) {
         return q.getDisplayName();
     }
 
     @Override
-    public String getTooltip(C2CQuery q) {
+    public String getTooltip(ODCSQuery q) {
         return q.getTooltip();
     }
 
     @Override
-    public QueryController getController(C2CQuery q) {
+    public QueryController getController(ODCSQuery q) {
         return q.getController();
     }
 
     @Override
-    public boolean isSaved(C2CQuery q) {
+    public boolean isSaved(ODCSQuery q) {
         return q.isSaved();
     }
 
     @Override
-    public void remove(C2CQuery q) {
+    public void remove(ODCSQuery q) {
         q.remove();
     }
 
     @Override
-    public Collection<C2CIssue> getIssues(C2CQuery q) {
+    public Collection<ODCSIssue> getIssues(ODCSQuery q) {
         return q.getIssues();
     }
 
     @Override
-    public boolean contains(C2CQuery q, String id) {
+    public boolean contains(ODCSQuery q, String id) {
         return q.contains(id);
     }
 
     @Override
-    public void refresh(C2CQuery q) {
+    public void refresh(ODCSQuery q) {
         q.getController().refresh(true);
     }
 
     @Override
-    public void removePropertyChangeListener(C2CQuery q, PropertyChangeListener listener) {
+    public void removePropertyChangeListener(ODCSQuery q, PropertyChangeListener listener) {
         q.removePropertyChangeListener(listener);
     }
 
     @Override
-    public void addPropertyChangeListener(C2CQuery q, PropertyChangeListener listener) {
+    public void addPropertyChangeListener(ODCSQuery q, PropertyChangeListener listener) {
         q.addPropertyChangeListener(listener);
     }
 
@@ -112,14 +112,14 @@ public class C2CQueryProvider extends KenaiQueryProvider<C2CQuery, C2CIssue> {
      ************************************************************************************/
     
     @Override
-    public boolean needsLogin (C2CQuery q) {
-        C2CRepository repository = q.getRepository();
+    public boolean needsLogin (ODCSQuery q) {
+        ODCSRepository repository = q.getRepository();
         return q != (repository).getPredefinedQuery(PredefinedTaskQuery.ALL)
             && q != (repository).getPredefinedQuery(PredefinedTaskQuery.RECENT);
     }
 
     @Override
-    public void setOwnerInfo (C2CQuery q, OwnerInfo info) {
+    public void setOwnerInfo (ODCSQuery q, OwnerInfo info) {
         q.setOwnerInfo(info);
     }
     

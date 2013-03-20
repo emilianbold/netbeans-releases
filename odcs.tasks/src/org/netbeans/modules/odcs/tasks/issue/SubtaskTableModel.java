@@ -47,8 +47,8 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.odcs.tasks.C2C;
-import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
+import org.netbeans.modules.odcs.tasks.ODCS;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  */
 public class SubtaskTableModel extends DefaultTableModel {
 
-    public SubtaskTableModel(C2CIssue issue) {
+    public SubtaskTableModel(ODCSIssue issue) {
         super(data(issue), columnNames());
     }
 
@@ -82,16 +82,16 @@ public class SubtaskTableModel extends DefaultTableModel {
         return clazz;
     }
 
-    private static Object[][] data(C2CIssue issue) {
-        C2CRepository repository = issue.getRepository();
+    private static Object[][] data(ODCSIssue issue) {
+        ODCSRepository repository = issue.getRepository();
         IssueCache cache = repository.getIssueCache();
         String[] subtasks = issue.getSubtasks();
         Object[][] data = new Object[subtasks.length][];
         int count = 0;
         for (String key : subtasks) {
-            C2CIssue subTask = (C2CIssue)cache.getIssue(key);
+            ODCSIssue subTask = (ODCSIssue)cache.getIssue(key);
             if (subTask == null) {
-                subTask = (C2CIssue)repository.getIssue(key);
+                subTask = (ODCSIssue)repository.getIssue(key);
             }
             if(subTask != null) {
                 data[count] = new Object[] {
@@ -103,7 +103,7 @@ public class SubtaskTableModel extends DefaultTableModel {
                 };
                 count++;
             } else {
-                C2C.LOG.log(Level.WARNING, "no subtask returned for key {0}", key); // NOI18N
+                ODCS.LOG.log(Level.WARNING, "no subtask returned for key {0}", key); // NOI18N
             }
         }
         if(count < subtasks.length) {

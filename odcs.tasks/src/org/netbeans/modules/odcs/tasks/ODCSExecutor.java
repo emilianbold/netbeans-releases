@@ -50,7 +50,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
-import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -62,10 +62,10 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class C2CExecutor {
-    private final C2CRepository repository;
+public class ODCSExecutor {
+    private final ODCSRepository repository;
     
-    public C2CExecutor (C2CRepository repository) {
+    public ODCSExecutor (ODCSRepository repository) {
         this.repository = repository;
     }
     
@@ -88,9 +88,9 @@ public class C2CExecutor {
         } catch (CoreException ex) {
             notifyError(ex);
         } catch (MalformedURLException ex) {
-            C2C.LOG.log(Level.SEVERE, null, ex);
+            ODCS.LOG.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            C2C.LOG.log(Level.SEVERE, null, ex);
+            ODCS.LOG.log(Level.SEVERE, null, ex);
         }
     }
     
@@ -124,13 +124,13 @@ public class C2CExecutor {
         if(status == null || status.isOK()) {
             return false;
         }
-        C2C.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()}); // NOI18N
+        ODCS.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()}); // NOI18N
 
         Throwable t = status.getException();
         if (t instanceof CoreException) {
             throw (CoreException) status.getException();
         } else {
-            C2C.LOG.log(Level.WARNING, null, t);
+            ODCS.LOG.log(Level.WARNING, null, t);
         }
 
         boolean isHtml = false;
@@ -161,7 +161,7 @@ public class C2CExecutor {
     @NbBundle.Messages({"LBL_Error=Error"})  // NOI18N
     static void notifyErrorMessage(String msg) {
         if("true".equals(System.getProperty("netbeans.t9y.throwOnClientError", "false"))) { // NOI18N
-            C2C.LOG.info(msg);
+            ODCS.LOG.info(msg);
             throw new AssertionError(msg);
         }
         NotifyDescriptor nd =
@@ -177,6 +177,6 @@ public class C2CExecutor {
     
     private static void assertHtmlMsg(String msg) {
         assert false : "received html error msg: " + msg; // NOI18N
-        C2C.LOG.log(Level.WARNING, "received html error msg:{0}", msg); // NOI18N
+        ODCS.LOG.log(Level.WARNING, "received html error msg:{0}", msg); // NOI18N
     }    
 }

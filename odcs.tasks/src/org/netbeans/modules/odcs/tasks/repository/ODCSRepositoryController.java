@@ -59,8 +59,8 @@ import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.odcs.tasks.C2C;
-import org.netbeans.modules.odcs.tasks.C2CConnector;
+import org.netbeans.modules.odcs.tasks.ODCS;
+import org.netbeans.modules.odcs.tasks.ODCSConnector;
 import org.openide.util.Cancellable;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -71,9 +71,9 @@ import org.openide.util.RequestProcessor;
  *
  * @author tomas
  */
-public class C2CRepositoryController implements RepositoryController, DocumentListener, ActionListener {
+public class ODCSRepositoryController implements RepositoryController, DocumentListener, ActionListener {
 
-    private C2CRepository repository;
+    private ODCSRepository repository;
     private TaskRunner taskRunner;
     private RequestProcessor rp;
     private final RepositoryPanel panel;
@@ -82,7 +82,7 @@ public class C2CRepositoryController implements RepositoryController, DocumentLi
     private String errorMessage;
     private final ChangeSupport support = new ChangeSupport(this);
     
-    public C2CRepositoryController(C2CRepository repository) {
+    public ODCSRepositoryController(ODCSRepository repository) {
         this.repository = repository;
         panel = new RepositoryPanel(this);
         panel.nameField.getDocument().addDocumentListener(this);
@@ -101,7 +101,7 @@ public class C2CRepositoryController implements RepositoryController, DocumentLi
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.odcs.tasks.repository.C2CRepositoryController"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.odcs.tasks.repository.ODCSRepositoryController"); // NOI18N
     }
 
     @Override
@@ -257,7 +257,7 @@ public class C2CRepositoryController implements RepositoryController, DocumentLi
             }
 
             private void logValidateMessage(String msg, Level level, String name, String url, String user, char[] psswd, String httpUser, char[] httpPsswd) {
-                C2C.LOG.log(level, msg, new Object[] {name, url, user, BugtrackingUtil.getPasswordLog(psswd), httpUser, BugtrackingUtil.getPasswordLog(httpPsswd)});
+                ODCS.LOG.log(level, msg, new Object[] {name, url, user, BugtrackingUtil.getPasswordLog(psswd), httpUser, BugtrackingUtil.getPasswordLog(httpPsswd)});
             }
         };
         taskRunner.startTask();
@@ -283,17 +283,17 @@ public class C2CRepositoryController implements RepositoryController, DocumentLi
         // check name
         String name = panel.nameField.getText().trim();
         if(name.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(C2CRepositoryController.class, "MSG_MISSING_NAME");  // NOI18N
+            errorMessage = NbBundle.getMessage(ODCSRepositoryController.class, "MSG_MISSING_NAME");  // NOI18N
             return false;
         }
 
         // is name unique?
         Collection<Repository> repositories = null;
         if(repository.getTaskRepository() == null) {
-            repositories = RepositoryManager.getInstance().getRepositories(C2CConnector.ID);
+            repositories = RepositoryManager.getInstance().getRepositories(ODCSConnector.ID);
             for (Repository repo : repositories) {
                 if(name.equals(repo.getDisplayName())) {
-                    errorMessage = NbBundle.getMessage(C2CRepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
+                    errorMessage = NbBundle.getMessage(ODCSRepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
             }
@@ -302,12 +302,12 @@ public class C2CRepositoryController implements RepositoryController, DocumentLi
         // check url
         String url = getUrl();
         if(url.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(C2CRepositoryController.class, "MSG_MISSING_URL");  // NOI18N
+            errorMessage = NbBundle.getMessage(ODCSRepositoryController.class, "MSG_MISSING_URL");  // NOI18N
             return false;
         }
 
         if("http://".equals(url) || "https://".equals(url)) {
-            errorMessage = NbBundle.getMessage(C2CRepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
+            errorMessage = NbBundle.getMessage(ODCSRepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
             return false;
         }
 
@@ -318,7 +318,7 @@ public class C2CRepositoryController implements RepositoryController, DocumentLi
         if(repository.getTaskRepository() == null) {
             for (Repository repo : repositories) {
                 if(url.trim().equals(repo.getUrl())) {
-                    errorMessage = NbBundle.getMessage(C2CRepositoryController.class, "MSG_URL_ALREADY_EXISTS");  // NOI18N
+                    errorMessage = NbBundle.getMessage(ODCSRepositoryController.class, "MSG_URL_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
             }
@@ -409,7 +409,7 @@ public class C2CRepositoryController implements RepositoryController, DocumentLi
 
     private RequestProcessor getRequestProcessor() {
         if(rp == null) {
-            rp = new RequestProcessor("C2C Repository tasks", 1, true); // NOI18N
+            rp = new RequestProcessor("ODCS Repository tasks", 1, true); // NOI18N
         }
         return rp;
     }

@@ -46,35 +46,35 @@ import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
-import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
-import org.netbeans.modules.odcs.tasks.query.C2CQuery;
-import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
+import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author tomas
  */
-public class C2C {
+public class ODCS {
     
-    private static C2C instance;
-    public final static Logger LOG = Logger.getLogger("org.netbeans.modules.c2c.tasks"); // NOI18N
+    private static ODCS instance;
+    public final static Logger LOG = Logger.getLogger("org.netbeans.modules.odcs.tasks"); // NOI18N
     
     private CloudDevRepositoryConnector rc;
     
     private RequestProcessor rp;
     
-    public static C2C getInstance() {
+    public static ODCS getInstance() {
         if(instance == null) {
-            instance = new C2C();
+            instance = new ODCS();
             instance.init();
         }
         return instance;
     }
-    private C2CIssueProvider c2cip;
-    private C2CQueryProvider c2cqp;
-    private C2CRepositoryProvider c2crp;
-    private BugtrackingFactory<C2CRepository, C2CQuery, C2CIssue> bf;
+    private ODCSIssueProvider odcsIssueProvider;
+    private ODCSQueryProvider odcsQueryProvider;
+    private ODCSRepositoryProvider odcsRepositoryProvider;
+    private BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue> bf;
 
     private void init() {
         rc = new CloudDevRepositoryConnector();
@@ -84,35 +84,35 @@ public class C2C {
         return rc;
     }
     
-    public BugtrackingFactory<C2CRepository, C2CQuery, C2CIssue> getBugtrackingFactory() {
+    public BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue> getBugtrackingFactory() {
         if(bf == null) {
-            bf = new BugtrackingFactory<C2CRepository, C2CQuery, C2CIssue>();
+            bf = new BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue>();
         }    
         return bf;
     }
     
-    public C2CIssueProvider getIssueProvider() {
-        if(c2cip == null) {
-            c2cip = new C2CIssueProvider();
+    public ODCSIssueProvider getIssueProvider() {
+        if(odcsIssueProvider == null) {
+            odcsIssueProvider = new ODCSIssueProvider();
         }
-        return c2cip; 
+        return odcsIssueProvider; 
     }
-    public C2CQueryProvider getQueryProvider() {
-        if(c2cqp == null) {
-            c2cqp = new C2CQueryProvider();
+    public ODCSQueryProvider getQueryProvider() {
+        if(odcsQueryProvider == null) {
+            odcsQueryProvider = new ODCSQueryProvider();
         }
-        return c2cqp; 
+        return odcsQueryProvider; 
     }
-    public C2CRepositoryProvider getRepositoryProvider() {
-        if(c2crp == null) {
-            c2crp = new C2CRepositoryProvider();
+    public ODCSRepositoryProvider getRepositoryProvider() {
+        if(odcsRepositoryProvider == null) {
+            odcsRepositoryProvider = new ODCSRepositoryProvider();
         }
-        return c2crp; 
+        return odcsRepositoryProvider; 
     }    
 
     public RequestProcessor getRequestProcessor() {
         if(rp == null) {
-            rp = new RequestProcessor("C2C", 1, true); // NOI18N
+            rp = new RequestProcessor("ODCS Tasks", 1, true); // NOI18N
         }
         return rp;
     }

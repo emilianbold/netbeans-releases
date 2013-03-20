@@ -47,19 +47,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.odcs.tasks.util.C2CUtil;
+import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.nodes.Node.Property;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class C2CIssueNode extends IssueNode<C2CIssue> {
-    public C2CIssueNode(C2CIssue issue) {
-        super(C2CUtil.getRepository(issue.getRepository()), issue);
+public class ODCSIssueNode extends IssueNode<ODCSIssue> {
+    public ODCSIssueNode(ODCSIssue issue) {
+        super(ODCSUtil.getRepository(issue.getRepository()), issue);
     }
 
-    C2CIssue getC2CIssue() {
+    ODCSIssue getODCSIssue() {
         return getIssueData();
     }
 
@@ -68,15 +68,15 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         return new Property<?>[] {
             // XXX is this complete?
             new IDProperty(),
-            new C2CFieldProperty(IssueField.TASK_TYPE),
+            new ODCSFieldProperty(IssueField.TASK_TYPE),
             new SeverityProperty(),
             new PriorityProperty(),
             new StatusProperty(),
             new ResolutionProperty(),
             new SummaryProperty(), 
             new ModificationProperty(),
-            new C2CFieldProperty(IssueField.PRODUCT), 
-            new C2CFieldProperty(IssueField.COMPONENT), 
+            new ODCSFieldProperty(IssueField.PRODUCT), 
+            new ODCSFieldProperty(IssueField.COMPONENT), 
             new IterationProperty(),
             new MilestoneProperty(), 
         };
@@ -87,13 +87,13 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         super.fireDataChanged();
     }
 
-    private class IDProperty extends IssueNode<C2CIssue>.IssueProperty<String> {
+    private class IDProperty extends IssueNode<ODCSIssue>.IssueProperty<String> {
         public IDProperty() {
             super(IssueField.ID.getKey(), String.class, IssueField.ID.getDisplayName(), IssueField.ID.getDescription()); 
         }
         @Override
         public String getValue() {
-            return getC2CIssue().getID();
+            return getODCSIssue().getID();
         }
         @Override
         public int compareTo(IssueProperty p) {
@@ -112,7 +112,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public AbstractReferenceValue getValue() {
-            return getC2CIssue().getSeverity();
+            return getODCSIssue().getSeverity();
         }
     }
 
@@ -122,7 +122,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public AbstractReferenceValue getValue() {
-            return getC2CIssue().getPriority();
+            return getODCSIssue().getPriority();
         }
     }
 
@@ -132,7 +132,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
-            return getC2CIssue().getResolution();
+            return getODCSIssue().getResolution();
         }
     }
     
@@ -142,7 +142,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
-            return getC2CIssue().getStatus();
+            return getODCSIssue().getStatus();
         }
     }
     
@@ -152,7 +152,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
-            return getC2CIssue().getIteration();
+            return getODCSIssue().getIteration();
         }
     }
     
@@ -162,11 +162,11 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
-            return getC2CIssue().getMilestone();
+            return getODCSIssue().getMilestone();
         }
     }
     
-    private class ModificationProperty extends IssueNode<C2CIssue>.IssueProperty<String> {
+    private class ModificationProperty extends IssueNode<ODCSIssue>.IssueProperty<String> {
         private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         public ModificationProperty() {
             super(IssueField.MODIFIED.getKey(),
@@ -176,15 +176,15 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public String getValue() {
-            Date date = getC2CIssue().getLastModifyDate();
+            Date date = getODCSIssue().getLastModifyDate();
             return date != null ? dateFormat.format(date) : ""; // NOI18N
         }
         @Override
-        public int compareTo(IssueNode<C2CIssue>.IssueProperty<String> p) {
+        public int compareTo(IssueNode<ODCSIssue>.IssueProperty<String> p) {
             if(p == null) {
                 return 1;
             }
-            Date d1 = getC2CIssue().getLastModifyDate();
+            Date d1 = getODCSIssue().getLastModifyDate();
             if(d1 == null) {
                 return 1;
             }
@@ -216,9 +216,9 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
     }
 
-    private class C2CFieldProperty extends IssueProperty<String> {
+    private class ODCSFieldProperty extends IssueProperty<String> {
         private final IssueField field;
-        public C2CFieldProperty(IssueField f) {
+        public ODCSFieldProperty(IssueField f) {
             super(f.getKey(),
                   String.class,
                   f.getDisplayName(),
@@ -227,14 +227,14 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public String getValue() {
-            return getC2CIssue().getFieldValue(field);
+            return getODCSIssue().getFieldValue(field);
         }
         @Override
-        public int compareTo(IssueNode<C2CIssue>.IssueProperty<String> p) {
+        public int compareTo(IssueNode<ODCSIssue>.IssueProperty<String> p) {
             if(p == null) {
                 return 1;
             }
-            String s1 = getC2CIssue().getFieldValue(field);
+            String s1 = getODCSIssue().getFieldValue(field);
             String s2 = p.getIssueData().getFieldValue(field);
             return s1.compareTo(s2);
         }

@@ -86,9 +86,9 @@ import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.GetAttachmentCommand;
 import org.netbeans.modules.mylyn.util.PostAttachmentCommand;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
-import org.netbeans.modules.odcs.tasks.C2C;
-import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
-import org.netbeans.modules.odcs.tasks.util.C2CUtil;
+import org.netbeans.modules.odcs.tasks.ODCS;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
+import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -97,17 +97,17 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Tomas Stupka
  */
-public class C2CIssue {
+public class ODCSIssue {
 
     private TaskData data;
-    private final C2CRepository repository;
+    private final ODCSRepository repository;
     private final PropertyChangeSupport support;
 
-    private C2CIssueController controller;
+    private ODCSIssueController controller;
     
     private String initialProduct = null;
     
-    private C2CIssueNode node;
+    private ODCSIssueNode node;
     private static final Set<IssueField> UNAVAILABLE_FIELDS_IF_PARTIAL_DATA = new HashSet<IssueField>(Arrays.asList(
             IssueField.SUBTASK
     ));
@@ -135,7 +135,7 @@ public class C2CIssue {
     static final int FIELD_STATUS_MODIFIED = 4;
     private HashMap<String, String> attributes;
     
-    public C2CIssue(TaskData data, C2CRepository repo) {
+    public ODCSIssue(TaskData data, ODCSRepository repo) {
         this.data = data;
         this.repository = repo;
         support = new PropertyChangeSupport(this);
@@ -143,7 +143,7 @@ public class C2CIssue {
 
     public IssueNode getNode() {
         if(node == null) {
-            node = new C2CIssueNode(this);
+            node = new ODCSIssueNode(this);
         }
         return node;
     }
@@ -163,8 +163,8 @@ public class C2CIssue {
      */
     public static String getDisplayName(TaskData td) {
         return td.isNew() ?
-                NbBundle.getMessage(C2CIssue.class, "CTL_NewIssue") : // NOI18N
-                NbBundle.getMessage(C2CIssue.class, "CTL_Issue", new Object[] {getID(td), getSummary(td)}); // NOI18N
+                NbBundle.getMessage(ODCSIssue.class, "CTL_NewIssue") : // NOI18N
+                NbBundle.getMessage(ODCSIssue.class, "CTL_Issue", new Object[] {getID(td), getSummary(td)}); // NOI18N
     }
 
     /**
@@ -215,14 +215,14 @@ public class C2CIssue {
     }    
     
     // XXX merge with bugzilla
-    List<C2CAttachment> getAttachments() {
+    List<Attachment> getAttachments() {
         List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
         if (attrs == null) {
             return Collections.emptyList();
         }
-        List<C2CAttachment> attachments = new ArrayList<C2CAttachment>(attrs.size());
+        List<Attachment> attachments = new ArrayList<Attachment>(attrs.size());
         for (TaskAttribute taskAttribute : attrs) {
-            attachments.add(new C2CAttachment(taskAttribute));
+            attachments.add(new Attachment(taskAttribute));
         }
         return attachments;
     }
@@ -242,10 +242,10 @@ public class C2CIssue {
         // XXX
         attributes = null; // reset
 //        availableOperations = null;
-        C2C.getInstance().getRequestProcessor().post(new Runnable() {
+        ODCS.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-//        XXX        ((C2CIssueNode)getNode()).fireDataChanged();
+//        XXX        ((ODCSIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
                 refreshViewData(false);
             }
@@ -316,7 +316,7 @@ public class C2CIssue {
                         try {
                             count = Integer.parseInt(value) - Integer.parseInt(seenValue);
                         } catch(NumberFormatException ex) {
-                            C2C.LOG.log(Level.WARNING, ret, ex);
+                            ODCS.LOG.log(Level.WARNING, ret, ex);
                         }
                         ret = Bundle.LBL_COMMENTS_CHANGED(count);
                     } else if (changedField == IssueField.ATTACHEMENT_COUNT) {
@@ -366,7 +366,7 @@ public class C2CIssue {
     public Date getLastModifyDate() {
         String value = getFieldValue(IssueField.MODIFIED);
         if(value != null && !value.trim().equals("")) {
-            return C2CUtil.parseLongDate(value);
+            return ODCSUtil.parseLongDate(value);
         }
         return null;
     }
@@ -383,7 +383,7 @@ public class C2CIssue {
     public Date getCreatedDate() {
         String value = getFieldValue(IssueField.CREATED);
         if(value != null && !value.trim().equals("")) { // NOI18N
-            return C2CUtil.parseLongDate(value);
+            return ODCSUtil.parseLongDate(value);
         }
         return null;
     }
@@ -499,7 +499,7 @@ public class C2CIssue {
 
         // resolved attrs
         if(closeAsFixed) {
-            C2C.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()}); // NOI18N
+            ODCS.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()}); // NOI18N
             resolve(RESOLVE_FIXED); // XXX constant?
         }
         if(comment != null) {
@@ -511,7 +511,7 @@ public class C2CIssue {
 
     public void addComment(String comment) {
         if(comment != null) {
-            C2C.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()}); // NOI18N
+            ODCS.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()}); // NOI18N
             TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
             ta.setValue(comment);
         }
@@ -568,7 +568,7 @@ public class C2CIssue {
         a.setValue(file.getName());
 
         refresh(); // refresh might fail, but be optimistic and still try to force add attachment
-        PostAttachmentCommand cmd = new PostAttachmentCommand(C2C.getInstance().getRepositoryConnector(),
+        PostAttachmentCommand cmd = new PostAttachmentCommand(ODCS.getInstance().getRepositoryConnector(),
                 repository.getTaskRepository(), getAsTask(), attAttribute, attachmentSource, comment);
         repository.getExecutor().execute(cmd);
         if (!cmd.hasFailed()) {
@@ -585,7 +585,7 @@ public class C2CIssue {
         
         SubmitCommand submitCmd = 
             new SubmitCommand(
-                C2C.getInstance().getRepositoryConnector(),
+                ODCS.getInstance().getRepositoryConnector(),
                 getRepository().getTaskRepository(), 
                 data);
         repository.getExecutor().execute(submitCmd);
@@ -597,14 +597,14 @@ public class C2CIssue {
             if(!submitCmd.hasFailed()) {
                 assert rr != null;
                 String id = rr.getTaskId();
-                C2C.LOG.log(Level.FINE, "created issue #{0}", id); // NOI18N
+                ODCS.LOG.log(Level.FINE, "created issue #{0}", id); // NOI18N
                 refresh(id, true);
             } else {
-                C2C.LOG.log(Level.FINE, "submiting failed"); // NOI18N
+                ODCS.LOG.log(Level.FINE, "submiting failed"); // NOI18N
                 if(rr != null) {
-                    C2C.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind()); // NOI18N
+                    ODCS.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind()); // NOI18N
                 } else { 
-                    C2C.LOG.log(Level.FINE, "no repository response available"); // NOI18N
+                    ODCS.LOG.log(Level.FINE, "no repository response available"); // NOI18N
                 }
             }
         }
@@ -619,7 +619,7 @@ public class C2CIssue {
                 repository.getIssueCache().setSeen(getID(), true);
                 // it was the user who made the changes, so preserve the seen status if seen already
             } catch (IOException ex) {
-                C2C.LOG.log(Level.SEVERE, null, ex);
+                ODCS.LOG.log(Level.SEVERE, null, ex);
             }
         }
         if(wasNew) {
@@ -631,14 +631,14 @@ public class C2CIssue {
             seenAtributes = null;
             setSeen(true);
         } catch (IOException ex) {
-            C2C.LOG.log(Level.SEVERE, null, ex);
+            ODCS.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
     }
 
     public BugtrackingController getController() {
         if(controller == null) {
-            controller = new C2CIssueController(this);
+            controller = new ODCSIssueController(this);
         }
         return controller;
     }
@@ -669,12 +669,12 @@ public class C2CIssue {
         support.removePropertyChangeListener(listener);
     }
 
-    public C2CRepository getRepository() {
+    public ODCSRepository getRepository() {
         return repository;
     }
     
-    public static ColumnDescriptor[] getColumnDescriptors(C2CRepository repository) {
-        ResourceBundle loc = NbBundle.getBundle(C2CIssue.class);
+    public static ColumnDescriptor[] getColumnDescriptors(ODCSRepository repository) {
+        ResourceBundle loc = NbBundle.getBundle(ODCSIssue.class);
         JTable t = new JTable();
         List<ColumnDescriptor> ret = new LinkedList<ColumnDescriptor>();
         // XXX is this complete ?
@@ -697,12 +697,12 @@ public class C2CIssue {
 
     TaskResolution getResolution() {
         String value = getFieldValue(IssueField.RESOLUTION);
-        return C2CUtil.getResolutionByValue(repository.getRepositoryConfiguration(false), value);
+        return ODCSUtil.getResolutionByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     Priority getPriority() {
         String value = getFieldValue(IssueField.PRIORITY);
-        return C2CUtil.getPriorityByValue(repository.getRepositoryConfiguration(false), value);
+        return ODCSUtil.getPriorityByValue(repository.getRepositoryConfiguration(false), value);
     }
     
     String getType() {
@@ -711,22 +711,22 @@ public class C2CIssue {
 
     TaskSeverity getSeverity() {
         String value = getFieldValue(IssueField.SEVERITY);
-        return C2CUtil.getSeverityByValue(repository.getRepositoryConfiguration(false), value);
+        return ODCSUtil.getSeverityByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     TaskStatus getStatus() {
         String value = getFieldValue(IssueField.STATUS);
-        return C2CUtil.getStatusByValue(repository.getRepositoryConfiguration(false), value);
+        return ODCSUtil.getStatusByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     Iteration getIteration() {
         String value = getFieldValue(IssueField.ITERATION);
-        return C2CUtil.getIterationByValue(repository.getRepositoryConfiguration(false), value);
+        return ODCSUtil.getIterationByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     Milestone getMilestone() {
         String value = getFieldValue(IssueField.MILESTONE);
-        return C2CUtil.getMilestoneByValue(repository.getRepositoryConfiguration(false), value);
+        return ODCSUtil.getMilestoneByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     private static class IssueFieldColumnDescriptor extends ColumnDescriptor<String> {
@@ -870,10 +870,10 @@ public class C2CIssue {
     private boolean refresh(String id, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         // XXX 
-        // XXX gettaskdata the same for bugzilla, jira, c2c, ...
+        // XXX gettaskdata the same for bugzilla, jira, odcs, ...
         try {
-            C2C.LOG.log(Level.FINE, "refreshing issue #{0}", id); // NOI18N
-            TaskData td = C2CUtil.getTaskData(repository, id);
+            ODCS.LOG.log(Level.FINE, "refreshing issue #{0}", id); // NOI18N
+            TaskData td = ODCSUtil.getTaskData(repository, id);
             if (td == null) {
                 return false;
             }
@@ -881,7 +881,7 @@ public class C2CIssue {
 //            getRepository().ensureConfigurationUptodate(this);
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
-            C2C.LOG.log(Level.SEVERE, null, ex);
+            ODCS.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
     }
@@ -905,7 +905,7 @@ public class C2CIssue {
         if(f == IssueField.PRODUCT) {
             handleProductChange(a);
         }
-        C2C.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}); // NOI18N
+        ODCS.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}); // NOI18N
         a.setValue(value);
     }
 
@@ -1106,7 +1106,7 @@ public class C2CIssue {
             Date d = null;
             String s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
             if (s != null && !s.trim().equals("")) {                         // NOI18N
-                d = C2CUtil.parseLongDate(s);
+                d = ODCSUtil.parseLongDate(s);
             }
             when = d;
             TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
@@ -1152,7 +1152,7 @@ public class C2CIssue {
 
         public Time(TaskAttribute a) {
             String s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
-            Date d = C2CUtil.parseLongDate(s);
+            Date d = ODCSUtil.parseLongDate(s);
             when = d;
             TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
             if (authorAttr != null) {
@@ -1188,7 +1188,7 @@ public class C2CIssue {
         }
     }
 
-    class C2CAttachment extends AttachmentsPanel.AbstractAttachment {
+    class Attachment extends AttachmentsPanel.AbstractAttachment {
         private final String desc;
         private final String filename;
         private final String author;
@@ -1202,11 +1202,11 @@ public class C2CIssue {
         private String url;
         private final TaskAttribute ta;
 
-        public C2CAttachment(TaskAttribute ta) {
+        public Attachment(TaskAttribute ta) {
             this.ta = ta;
             id = ta.getValue();
             String s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
-            Date d = C2CUtil.parseLongDate(s);
+            Date d = ODCSUtil.parseLongDate(s);
             date = d;
             filename = getMappedValue(ta, TaskAttribute.ATTACHMENT_FILENAME);
             desc = getMappedValue(ta, TaskAttribute.ATTACHMENT_DESCRIPTION);
@@ -1291,7 +1291,7 @@ public class C2CIssue {
         @Override
         public void getAttachementData(final OutputStream os) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
-            repository.getExecutor().execute(new GetAttachmentCommand(C2C.getInstance().getRepositoryConnector(), 
+            repository.getExecutor().execute(new GetAttachmentCommand(ODCS.getInstance().getRepositoryConnector(), 
                     repository.getTaskRepository(),
                     null, ta, os));
         }

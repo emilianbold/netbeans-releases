@@ -86,14 +86,14 @@ import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.util.*;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
-import org.netbeans.modules.odcs.tasks.C2C;
-import org.netbeans.modules.odcs.tasks.C2CConfig;
-import org.netbeans.modules.odcs.tasks.C2CConnector;
-import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
+import org.netbeans.modules.odcs.tasks.ODCS;
+import org.netbeans.modules.odcs.tasks.ODCSConfig;
+import org.netbeans.modules.odcs.tasks.ODCSConnector;
+import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters.ByDateParameter;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters.Parameter;
-import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
-import org.netbeans.modules.odcs.tasks.util.C2CUtil;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
+import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -107,14 +107,14 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class C2CQueryController extends QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
+public class ODCSQueryController extends QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
 
     protected QueryPanel panel;
 
-    private RequestProcessor rp = new RequestProcessor("C2C query", 1, true);  // NOI18N
+    private RequestProcessor rp = new RequestProcessor("ODCS query", 1, true);  // NOI18N
 
-    private final C2CRepository repository;
-    protected C2CQuery query;
+    private final ODCSRepository repository;
+    protected ODCSQuery query;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private QueryTask refreshTask;
@@ -122,19 +122,19 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private final Object REFRESH_LOCK = new Object();
     private final Object CRITERIA_LOCK = new Object();
     
-    private final IssueTable<C2CQuery> issueTable;
+    private final IssueTable<ODCSQuery> issueTable;
     private boolean modifiable;
     private Criteria criteria;
     private Criteria originalCriteria;
     private final QueryParameters parameters;
         
-    C2CQueryController(C2CRepository repository, C2CQuery query, Criteria criteria, boolean modifiable) {
+    ODCSQueryController(ODCSRepository repository, ODCSQuery query, Criteria criteria, boolean modifiable) {
         this.repository = repository;
         this.query = query;
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable<C2CQuery>(C2CUtil.getRepository(repository), query, query.getColumnDescriptors(), false);
+        issueTable = new IssueTable<ODCSQuery>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors(), false);
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
@@ -208,7 +208,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     @Override
     public void opened() {
-        boolean autoRefresh = C2CConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
+        boolean autoRefresh = ODCSConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
         if(autoRefresh) {
             scheduleForRefresh();
         }
@@ -252,7 +252,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.odcs.tasks.query.C2CQueryController"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.odcs.tasks.query.ODCSQueryController"); // NOI18N
     }
 
     @Override
@@ -271,7 +271,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         selectFilter(filter);
     }
         
-    protected C2CRepository getRepository() {
+    protected ODCSRepository getRepository() {
         return repository;
     }
 
@@ -288,7 +288,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             }
         };
 
-        final String msgPopulating = NbBundle.getMessage(C2CQueryController.class, "MSG_Populating", new Object[]{repository.getDisplayName()});    // NOI18N
+        final String msgPopulating = NbBundle.getMessage(ODCSQueryController.class, "MSG_Populating", new Object[]{repository.getDisplayName()});    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
 
         EventQueue.invokeLater(new Runnable() {
@@ -354,8 +354,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
     
     private void logPopulate(String msg) {
-        if(C2C.LOG.isLoggable(Level.FINE)) {
-            C2C.LOG.log(Level.FINE, msg, (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+        if(ODCS.LOG.isLoggable(Level.FINE)) {
+            ODCS.LOG.log(Level.FINE, msg, (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
     }
 
@@ -515,10 +515,10 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onSave(final boolean refresh) {
-       C2C.getInstance().getRequestProcessor().post(new Runnable() {
+       ODCS.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                C2C.LOG.fine("on save start");
+                ODCS.LOG.fine("on save start");
                 String name = query.getDisplayName();
                 if(!query.isSaved()) {
                     name = getSaveName();
@@ -528,7 +528,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
                 }
                 assert name != null;
                 save(name);
-                C2C.LOG.fine("on save finnish");
+                ODCS.LOG.fine("on save finnish");
 
                 if(refresh) {
                     onRefresh();
@@ -543,14 +543,14 @@ public class C2CQueryController extends QueryController implements ItemListener,
      * @param name
      */
     private void save(String name) {
-        C2C.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
+        ODCS.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
         try {
             panel.setRemoteInvocationRunning(true);
             enableFields(false);
             if(query.save(name)) {
                 setAsSaved();
                 if (!query.wasRun()) {
-                    C2C.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+                    ODCS.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
                     onRefresh();
                 }
             }
@@ -558,23 +558,23 @@ public class C2CQueryController extends QueryController implements ItemListener,
             panel.setRemoteInvocationRunning(false);
             enableFields(true);
         }
-        C2C.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
+        ODCS.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
     }
 
     private String getSaveName() {
         QueryNameValidator v = new QueryNameValidator() {
             @Override
             public String isValid(String name) {
-                Collection<C2CQuery> queries = repository.getQueries ();
-                for (C2CQuery q : queries) {
+                Collection<ODCSQuery> queries = repository.getQueries ();
+                for (ODCSQuery q : queries) {
                     if(q.getDisplayName().equals(name)) {
-                        return NbBundle.getMessage(C2CQueryController.class, "MSG_SAME_NAME");
+                        return NbBundle.getMessage(ODCSQueryController.class, "MSG_SAME_NAME");
                     }
                 }
                 return null;
             }
         };
-        return SaveQueryPanel.show(v, new HelpCtx("org.netbeans.modules.c2c.tasks.query.savePanel"));
+        return SaveQueryPanel.show(v, new HelpCtx("org.netbeans.modules.odcs.tasks.query.savePanel"));
     }
 
     private void onCancelChanges() {
@@ -591,10 +591,10 @@ public class C2CQueryController extends QueryController implements ItemListener,
     public void selectFilter(final Filter filter) {
         if(filter != null) {
             // XXX this part should be handled in the issues table - move the filtercombo and the label over
-            Collection<C2CIssue> issues = query.getIssues();
+            Collection<ODCSIssue> issues = query.getIssues();
             int c = 0;
             if(issues != null) {
-                for (C2CIssue issue : issues) {
+                for (ODCSIssue issue : issues) {
                     if(filter.accept(issue.getNode())) {
                         c++;
                     }
@@ -627,7 +627,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         long l = query.getLastRefresh();
         return l > 0 ?
             dateFormat.format(new Date(l)) :
-            NbBundle.getMessage(C2CQueryController.class, "LBL_Never"); // NOI18N
+            NbBundle.getMessage(ODCSQueryController.class, "LBL_Never"); // NOI18N
     }
 
     private void onGotoIssue() {
@@ -648,8 +648,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
                 return true;
             }
         };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(C2CQueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
-        t[0] = C2C.getInstance().getRequestProcessor().create(new Runnable() {
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ODCSQueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
+        t[0] = ODCS.getInstance().getRequestProcessor().create(new Runnable() {
             @Override
             public void run() {
                 handle.start();
@@ -663,9 +663,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
         t[0].schedule(0);
     }
 
-    protected void openIssue(C2CIssue issue) {
+    protected void openIssue(ODCSIssue issue) {
         if (issue != null) {
-            C2CUtil.openIssue(issue);
+            ODCSUtil.openIssue(issue);
         } else {
             // XXX nice message?
         }
@@ -673,7 +673,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     private void onWeb() {
         KenaiProject kp = repository.getLookup().lookup(KenaiProject.class);
-        assert kp != null; // all c2c repositories should come from team support
+        assert kp != null; // all odcs repositories should come from team support
         if (kp == null) {
             return;
         }
@@ -684,13 +684,13 @@ public class C2CQueryController extends QueryController implements ItemListener,
                 if(queryString == null) {
                     return;
                 }
-                url = new URL(kp.getWebLocation() + C2CUtil.URL_FRAGMENT_QUERY + "(" + queryString.replace(' ', '+') + ")"); // NOI18N
+                url = new URL(kp.getWebLocation() + ODCSUtil.URL_FRAGMENT_QUERY + "(" + queryString.replace(' ', '+') + ")"); // NOI18N
             } else {
-                url = new URL(kp.getWebLocation() + C2CUtil.URL_FRAGMENT_QUERY + query.getDisplayName().replace(' ', '+')); // NOI18N
+                url = new URL(kp.getWebLocation() + ODCSUtil.URL_FRAGMENT_QUERY + query.getDisplayName().replace(' ', '+')); // NOI18N
             }
             HtmlBrowser.URLDisplayer.getDefault().showURLExternal(url);
         } catch (MalformedURLException muex) {
-            C2C.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
+            ODCS.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
         }
     }
 
@@ -732,13 +732,13 @@ public class C2CQueryController extends QueryController implements ItemListener,
         try {
             p.getDateFrom();
         } catch (ParseException ex) {
-            C2CUtil.notifyErrorMsg(Bundle.MSG_WrongFromDate());
+            ODCSUtil.notifyErrorMsg(Bundle.MSG_WrongFromDate());
             return false;
         }
         try {
             p.getDateTo();
         } catch (ParseException ex) {
-            C2CUtil.notifyErrorMsg(Bundle.MSG_WrongToDate());
+            ODCSUtil.notifyErrorMsg(Bundle.MSG_WrongToDate());
             return false;
         }
         return true;
@@ -765,15 +765,15 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onMarkSeen() {
-        C2C.getInstance().getRequestProcessor().post(new Runnable() {
+        ODCS.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                Collection<C2CIssue> issues = query.getIssues();
-                for (C2CIssue issue : issues) {
+                Collection<ODCSIssue> issues = query.getIssues();
+                for (ODCSIssue issue : issues) {
                     try {
                         issue.setSeen(true);
                     } catch (IOException ex) {
-                        C2C.LOG.log(Level.SEVERE, null, ex);
+                        ODCS.LOG.log(Level.SEVERE, null, ex);
                     }
                 }
             }
@@ -782,12 +782,12 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     private void onRemove() {
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-            NbBundle.getMessage(C2CQueryController.class, "MSG_RemoveQuery", new Object[] { query.getDisplayName() }), // NOI18N
-            NbBundle.getMessage(C2CQueryController.class, "CTL_RemoveQuery"),      // NOI18N
+            NbBundle.getMessage(ODCSQueryController.class, "MSG_RemoveQuery", new Object[] { query.getDisplayName() }), // NOI18N
+            NbBundle.getMessage(ODCSQueryController.class, "CTL_RemoveQuery"),      // NOI18N
             NotifyDescriptor.OK_CANCEL_OPTION);
 
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
-            C2C.getInstance().getRequestProcessor().post(new Runnable() {
+            ODCS.getInstance().getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() {
                     remove();
@@ -797,19 +797,19 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onFindIssues() {
-        Util.createNewQuery(C2CUtil.getRepository(repository));
+        Util.createNewQuery(ODCSUtil.getRepository(repository));
     }
 
     private void onCloneQuery() {
         String queryString = getQueryString();
         Criteria c = queryString != null ? CriteriaParser.parse(queryString) : null;
-        C2CQuery q = C2CQuery.createNew(repository, c);
-        C2CUtil.openQuery(q);
+        ODCSQuery q = ODCSQuery.createNew(repository, c);
+        ODCSUtil.openQuery(q);
     }
 
     protected void logAutoRefreshEvent(boolean autoRefresh) {
         LogUtils.logAutoRefreshEvent(
-            C2CConnector.ID,
+            ODCSConnector.ID,
             query.getDisplayName(),
             false,
             autoRefresh
@@ -865,8 +865,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
             public void run() {
                 String msg =
                     count == 1 ?
-                        NbBundle.getMessage(C2CQueryController.class, "LBL_MatchingIssue", new Object[] {count}) : // NOI18N
-                        NbBundle.getMessage(C2CQueryController.class, "LBL_MatchingIssues", new Object[] {count}); // NOI18N
+                        NbBundle.getMessage(ODCSQueryController.class, "LBL_MatchingIssue", new Object[] {count}) : // NOI18N
+                        NbBundle.getMessage(ODCSQueryController.class, "LBL_MatchingIssues", new Object[] {count}); // NOI18N
                 panel.tableSummaryLabel.setText(msg);
             }
         });
@@ -923,7 +923,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             criteria = cb.toCriteria();
             queryString = criteria == null ? null : criteria.toQueryString();
         }
-        C2C.LOG.log(Level.FINE, "returning queryString [{0}]", queryString); // NOI18N        
+        ODCS.LOG.log(Level.FINE, "returning queryString [{0}]", queryString); // NOI18N        
         return queryString;
     }
 
@@ -944,13 +944,13 @@ public class C2CQueryController extends QueryController implements ItemListener,
             // XXX isn't persistent and should be merged with refresh
 ////            XXX String lastChageFrom = panel.changedFromTextField.getText().trim();
 ////            if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
-////                C2CConfig.getInstance().setLastChangeFrom(lastChageFrom);
+////                ODCSConfig.getInstance().setLastChangeFrom(lastChageFrom);
 ////            }
             
             setQueryRunning(true);
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
-                        C2CQueryController.class,
+                        ODCSQueryController.class,
                         "MSG_SearchingQuery",                                       // NOI18N
                         new Object[] {
                             query.getDisplayName() != null ?
@@ -961,7 +961,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
                 @Override
                 public void run() {
                     enableFields(false);
-                    panel.showSearchingProgress(true, NbBundle.getMessage(C2CQueryController.class, "MSG_Searching")); // NOI18N
+                    panel.showSearchingProgress(true, NbBundle.getMessage(ODCSQueryController.class, "MSG_Searching")); // NOI18N
                 }
             });
             handle.start();
@@ -999,7 +999,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             if(handle != null && progressWorkunits < progressMaxWorkunits) {
                 handle.progress(
                     NbBundle.getMessage(
-                        C2CQueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}),
+                        ODCSQueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}),
                     ++progressWorkunits);
             }
         }
@@ -1043,7 +1043,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         }
 
         @Override
-        public void notifyData(final C2CIssue issue) {
+        public void notifyData(final ODCSIssue issue) {
             issueTable.addNode(issue.getNode());
             if(!query.contains(issue.getID())) {
                 // XXX this is quite ugly - the query notifies an archived issue
@@ -1067,7 +1067,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
             counter = 0;
             setIssueCount(counter);
             // XXX move to API
-            OwnerUtils.setLooseAssociation(C2CUtil.getRepository(getRepository()), false);                 
+            OwnerUtils.setLooseAssociation(ODCSUtil.getRepository(getRepository()), false);                 
         }
 
         @Override

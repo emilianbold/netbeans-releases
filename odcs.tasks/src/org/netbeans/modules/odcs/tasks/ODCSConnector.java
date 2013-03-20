@@ -48,41 +48,41 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
-import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 
 /**
  *
  * @author Tomas Stupka
  */
 @BugtrackingConnector.Registration (
-        id=C2CConnector.ID,
+        id=ODCSConnector.ID,
         displayName="#LBL_ConnectorName",
         tooltip="#LBL_ConnectorTooltip",
         providesRepositoryManagement=false
 )    
-public class C2CConnector extends KenaiBugtrackingConnector {
-    public static final String ID = "org.netbeans.modules.c2c.tasks"; // NOI18N
+public class ODCSConnector extends KenaiBugtrackingConnector {
+    public static final String ID = "org.netbeans.modules.odcs.tasks"; // NOI18N
     
     @Override
     public Repository createRepository(RepositoryInfo info) {
-        C2CRepository c2cRepository = new C2CRepository(info);
-        return C2C.getInstance().getBugtrackingFactory().
+        ODCSRepository odcsRepository = new ODCSRepository(info);
+        return ODCS.getInstance().getBugtrackingFactory().
                 createRepository(
-                    c2cRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
+                    odcsRepository, 
+                    ODCS.getInstance().getRepositoryProvider(), 
+                    ODCS.getInstance().getQueryProvider(), 
+                    ODCS.getInstance().getIssueProvider());
     }
 
     @Override
     public Repository createRepository() {
-        C2CRepository c2cRepository = new C2CRepository();
-        return C2C.getInstance().getBugtrackingFactory().
+        ODCSRepository odcsRepository = new ODCSRepository();
+        return ODCS.getInstance().getBugtrackingFactory().
                 createRepository(
-                    c2cRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
+                    odcsRepository, 
+                    ODCS.getInstance().getRepositoryProvider(), 
+                    ODCS.getInstance().getQueryProvider(), 
+                    ODCS.getInstance().getIssueProvider());
     }
 
     @Override
@@ -99,12 +99,12 @@ public class C2CConnector extends KenaiBugtrackingConnector {
         if (project == null || project.getType() != BugtrackingType.ODCS) {
             return null;
         }
-        return C2C.getInstance().getBugtrackingFactory().
+        return ODCS.getInstance().getBugtrackingFactory().
                 createRepository(
-                    new C2CRepository(project), 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
+                    new ODCSRepository(project), 
+                    ODCS.getInstance().getRepositoryProvider(), 
+                    ODCS.getInstance().getQueryProvider(), 
+                    ODCS.getInstance().getIssueProvider());
     }
 
     @Override

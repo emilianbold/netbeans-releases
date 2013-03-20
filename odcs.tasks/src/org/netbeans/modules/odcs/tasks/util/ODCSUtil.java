@@ -73,11 +73,11 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
-import org.netbeans.modules.odcs.tasks.C2C;
-import org.netbeans.modules.odcs.tasks.C2CConnector;
-import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
-import org.netbeans.modules.odcs.tasks.query.C2CQuery;
-import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
+import org.netbeans.modules.odcs.tasks.ODCS;
+import org.netbeans.modules.odcs.tasks.ODCSConnector;
+import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -87,7 +87,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class C2CUtil {
+public class ODCSUtil {
     
     public static final DateFormat DATE_TIME_FORMAT_DEFAULT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //NOI18N
     public static final String URL_FRAGMENT_TASK = "/task/"; //NOI18N
@@ -115,7 +115,7 @@ public class C2CUtil {
         
         // XXX is this all we need and how we need it?
 
-        AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
+        AbstractRepositoryConnector rc = ODCS.getInstance().getRepositoryConnector();
         TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(taskRepository);
         TaskData data = new TaskData(attributeMapper, rc.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
         
@@ -152,14 +152,14 @@ public class C2CUtil {
         return data;
     }
      
-    public static RepositoryResponse postTaskData(AbstractRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
-        C2C.LOG.log(Level.FINE, " dataRoot before post {0}", data.getRoot().toString());
+    public static RepositoryResponse postTaskData(AbstractRepositoryConnector rc, TaskRepository repository, TaskData data) throws CoreException {
+        ODCS.LOG.log(Level.FINE, " dataRoot before post {0}", data.getRoot().toString());
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); 
-        return postTaskData(cfcrc, repository, data, attrs);
+        return postTaskData(rc, repository, data, attrs);
     }
 
-    public static RepositoryResponse postTaskData(AbstractRepositoryConnector cfcrc, TaskRepository repository, TaskData data, Set<TaskAttribute> attrs) throws CoreException {
-        RepositoryResponse rr = cfcrc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
+    public static RepositoryResponse postTaskData(AbstractRepositoryConnector rc, TaskRepository repository, TaskData data, Set<TaskAttribute> attrs) throws CoreException {
+        RepositoryResponse rr = rc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
         return rr;
     }
     
@@ -169,7 +169,7 @@ public class C2CUtil {
      * @param id
      * @return
      */
-    public static TaskData getTaskData(final C2CRepository repository, final String id) {
+    public static TaskData getTaskData(final ODCSRepository repository, final String id) {
         return getTaskData(repository, id, true);
     }
 
@@ -179,28 +179,28 @@ public class C2CUtil {
      * @param id
      * @return
      */
-    public static TaskData getTaskData(final C2CRepository repository, final String id, boolean handleExceptions) {
-        GetTaskDataCommand cmd = new GetTaskDataCommand(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository(), id);
+    public static TaskData getTaskData(final ODCSRepository repository, final String id, boolean handleExceptions) {
+        GetTaskDataCommand cmd = new GetTaskDataCommand(ODCS.getInstance().getRepositoryConnector(), repository.getTaskRepository(), id);
         repository.getExecutor().execute(cmd, true, handleExceptions);
-        if(cmd.hasFailed() && C2C.LOG.isLoggable(Level.FINE)) {
-            C2C.LOG.log(Level.FINE, cmd.getErrorMessage());
+        if(cmd.hasFailed() && ODCS.LOG.isLoggable(Level.FINE)) {
+            ODCS.LOG.log(Level.FINE, cmd.getErrorMessage());
         }
         return cmd.getTaskData();
     }
     
-    public static void openIssue(C2CIssue c2cIssue) {
-        C2C.getInstance().getBugtrackingFactory().openIssue(getRepository(c2cIssue.getRepository()), c2cIssue);
+    public static void openIssue(ODCSIssue odcsIssue) {
+        ODCS.getInstance().getBugtrackingFactory().openIssue(getRepository(odcsIssue.getRepository()), odcsIssue);
     }
     
-    public static void openQuery(C2CQuery c2cQuery) {
-        C2C.getInstance().getBugtrackingFactory().openQuery(getRepository(c2cQuery.getRepository()), c2cQuery);
+    public static void openQuery(ODCSQuery odcsQuery) {
+        ODCS.getInstance().getBugtrackingFactory().openQuery(getRepository(odcsQuery.getRepository()), odcsQuery);
     }
 
-    public static Repository getRepository(C2CRepository c2cRepository) {
+    public static Repository getRepository(ODCSRepository odcsRepository) {
         //TODO review this, team projects were always initialized again and again
         //this caused problems with listeners
-        assert c2cRepository.getKenaiProject() != null : "looks like repository " + c2cRepository.getDisplayName() + " wasn't porperly inititalized via team support."; // NOI18N
-        KenaiProject teamProject = c2cRepository.getKenaiProject();
+        assert odcsRepository.getKenaiProject() != null : "looks like repository " + odcsRepository.getDisplayName() + " wasn't porperly inititalized via team support."; // NOI18N
+        KenaiProject teamProject = odcsRepository.getKenaiProject();
         Repository repository = null;
         // It is posible to bypass the generaly contract that it isn't possible 
         // to create an ODCS repository by hand (in such case there always should 
@@ -211,19 +211,19 @@ public class C2CUtil {
         }
         if (repository == null) {
             
-            repository = createRepository(c2cRepository);
+            repository = createRepository(odcsRepository);
         }
         return repository;
     }
 
-    public static Repository createRepository (C2CRepository c2cRepository) {
-        Repository repository = C2C.getInstance().getBugtrackingFactory().getRepository(C2CConnector.ID, c2cRepository.getID());
+    public static Repository createRepository (ODCSRepository odcsRepository) {
+        Repository repository = ODCS.getInstance().getBugtrackingFactory().getRepository(ODCSConnector.ID, odcsRepository.getID());
         if(repository == null) {
-            repository = C2C.getInstance().getBugtrackingFactory().createRepository(
-                    c2cRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(),
-                    C2C.getInstance().getIssueProvider());
+            repository = ODCS.getInstance().getBugtrackingFactory().createRepository(
+                    odcsRepository, 
+                    ODCS.getInstance().getRepositoryProvider(), 
+                    ODCS.getInstance().getQueryProvider(),
+                    ODCS.getInstance().getIssueProvider());
         }
         return repository;
     }
@@ -290,7 +290,7 @@ public class C2CUtil {
     }
 
     
-    public static String getKeywords(String message, String keywordString, C2CRepository repository) {
+    public static String getKeywords(String message, String keywordString, ODCSRepository repository) {
         String[] ks = keywordString.split(","); // NOI18N
         if(ks == null || ks.length == 0) {
             return null;
@@ -307,18 +307,18 @@ public class C2CUtil {
                 keywordsList.add(keyword.getName());
             }
             return ListValuePicker.getValues(
-                    NbBundle.getMessage(C2CUtil.class, "CTL_KeywordsTitle"), 
-                    NbBundle.getMessage(C2CUtil.class, "LBL_Keywords"), 
+                    NbBundle.getMessage(ODCSUtil.class, "CTL_KeywordsTitle"), 
+                    NbBundle.getMessage(ODCSUtil.class, "LBL_Keywords"), 
                     message, 
                     keywordString, 
                     keywordsList);
         } catch (Exception ex) {
-            C2C.LOG.log(Level.SEVERE, null, ex);
+            ODCS.LOG.log(Level.SEVERE, null, ex);
             return keywordString;
         }       
     }
     
-    public static String getUsers(String message, String usersString, C2CRepository repository) {
+    public static String getUsers(String message, String usersString, ODCSRepository repository) {
         String[] users = usersString.split(","); // NOI18N
         if(users == null || users.length == 0) {
             return null;
@@ -335,13 +335,13 @@ public class C2CUtil {
                 usersList.add(new ListValuePicker.ListValue(up.getRealname() + " (" + up.getLoginName() + ")", up.getLoginName()));
             }
             return ListValuePicker.getValues(
-                    NbBundle.getMessage(C2CUtil.class, "CTL_UsersTitle"), 
-                    NbBundle.getMessage(C2CUtil.class, "LBL_Users"), 
+                    NbBundle.getMessage(ODCSUtil.class, "CTL_UsersTitle"), 
+                    NbBundle.getMessage(ODCSUtil.class, "LBL_Users"), 
                     message, 
                     usersString, 
                     usersList.toArray(new ListValuePicker.ListValue[usersList.size()]));
         } catch (Exception ex) {
-            C2C.LOG.log(Level.SEVERE, null, ex);
+            ODCS.LOG.log(Level.SEVERE, null, ex);
             return usersString;
         }       
     }
@@ -373,7 +373,7 @@ public class C2CUtil {
             }
         }
         if (date == null) {
-            C2C.LOG.log(Level.FINE, "Cannot parse date: {0}", text);
+            ODCS.LOG.log(Level.FINE, "Cannot parse date: {0}", text);
         }
         return date;
     }
@@ -388,7 +388,7 @@ public class C2CUtil {
             }
         }
         if (date == null) {
-            C2C.LOG.log(Level.FINE, "Cannot parse date: {0}", text);
+            ODCS.LOG.log(Level.FINE, "Cannot parse date: {0}", text);
         }
         return date;
     }

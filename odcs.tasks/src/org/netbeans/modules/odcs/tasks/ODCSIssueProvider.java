@@ -1,7 +1,8 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,82 +38,85 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.odcs.tasks;
 
-package org.netbeans.modules.odcs.tasks.issue;
-
-import java.awt.Font;
-import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.UIManager;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 
 /**
  *
- * @author Tomas Stupka, Jan Stola
+ * @author Tomas Stupka
  */
-public class C2CIssueController extends BugtrackingController {
-    private JComponent component;
-    private final IssuePanel panel;
+public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
 
-    public C2CIssueController(C2CIssue issue) {
-        panel = new IssuePanel();
-        panel.setIssue(issue);
-        JScrollPane scrollPane = new JScrollPane(panel);
-        scrollPane.getViewport().setBackground(panel.getBackground());
-        scrollPane.setBorder(null);
-        Font font = UIManager.getFont("Label.font"); // NOI18N
-        if (font != null) {
-            int size = (int)(font.getSize()*1.5);
-            scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
-            scrollPane.getVerticalScrollBar().setUnitIncrement(size);
-        }
-        UIUtils.keepFocusedComponentVisible(panel);
-        component = scrollPane;
+    @Override
+    public String getDisplayName(ODCSIssue data) {
+        return data.getDisplayName();
     }
 
     @Override
-    public JComponent getComponent() {
-        return component;
+    public String getTooltip(ODCSIssue data) {
+        return data.getTooltip();
     }
 
     @Override
-    public void opened() {
-        C2CIssue issue = panel.getIssue();
-        if (issue != null) {
-            panel.opened();
-            issue.opened();
-        }
+    public String getID(ODCSIssue data) {
+        return data.getID();
     }
 
     @Override
-    public void closed() {
-        C2CIssue issue = panel.getIssue();
-        if (issue != null) {
-            issue.closed();
-            panel.closed();
-        }
+    public String[] getSubtasks(ODCSIssue data) {
+        return data.getSubtasks();
     }
 
     @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.odcs.tasks.issue.C2CIssue"); // NOI18N
+    public String getSummary(ODCSIssue data) {
+        return data.getSummary();
     }
 
     @Override
-    public boolean isValid() {
-        return true; // PENDING
+    public boolean isNew(ODCSIssue data) {
+        return data.isNew();
     }
 
     @Override
-    public void applyChanges() {
+    public boolean isFinished(ODCSIssue data) {
+        return data.isFinished();
     }
 
-    void refreshViewData(boolean force) {
-        panel.reloadFormInAWT(force);
+    @Override
+    public boolean refresh(ODCSIssue data) {
+        return data.refresh();
     }
 
+    @Override
+    public void addComment(ODCSIssue data, String comment, boolean closeAsFixed) {
+        data.addComment(comment, closeAsFixed);
+    }
+
+    @Override
+    public void attachPatch(ODCSIssue data, File file, String description) {
+        data.attachPatch(file, description);
+    }
+
+    @Override
+    public BugtrackingController getController(ODCSIssue data) {
+        return data.getController();
+    }
+
+    @Override
+    public void removePropertyChangeListener(ODCSIssue data, PropertyChangeListener listener) {
+        data.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public void addPropertyChangeListener(ODCSIssue data, PropertyChangeListener listener) {
+        data.addPropertyChangeListener(listener);
+    }
+    
 }

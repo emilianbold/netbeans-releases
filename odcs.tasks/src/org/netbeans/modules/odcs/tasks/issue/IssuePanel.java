@@ -131,10 +131,10 @@ import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
-import org.netbeans.modules.odcs.tasks.C2C;
-import org.netbeans.modules.odcs.tasks.issue.C2CIssue.C2CAttachment;
-import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
-import org.netbeans.modules.odcs.tasks.util.C2CUtil;
+import org.netbeans.modules.odcs.tasks.ODCS;
+import org.netbeans.modules.odcs.tasks.issue.ODCSIssue.Attachment;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
+import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.HelpCtx;
@@ -161,7 +161,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final String ICON_PATH_ERROR = "org/netbeans/modules/odcs/tasks/resources/error.gif"; //NOI18N
     private static final String ICON_PATH_INFO = "org/netbeans/modules/odcs/tasks/resources/info.png"; //NOI18N
 
-    private C2CIssue issue;
+    private ODCSIssue issue;
     
     private boolean reloading;
     private boolean skipReload;
@@ -279,16 +279,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         layout.replace(dummyDescriptionPanel, descriptionPanel);
     }
 
-    C2CIssue getIssue() {
+    ODCSIssue getIssue() {
         return issue;
     }
 
-    public void setIssue(C2CIssue issue) {
+    public void setIssue(ODCSIssue issue) {
         assert SwingUtilities.isEventDispatchThread() : "Accessing Swing components. Do not call outside event-dispatch thread!"; // NOI18N
         headerField.setText(issue.getDisplayName());
         if (this.issue == null) {
             
-            IssueCache<C2CIssue, TaskData> cache = issue.getRepository().getIssueCache();
+            IssueCache<ODCSIssue, TaskData> cache = issue.getRepository().getIssueCache();
             cache.removePropertyChangeListener(issue, cacheListener);
             cache.addPropertyChangeListener(issue, cacheListener);
 
@@ -469,14 +469,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    C2CIssue parentIssue = issue.getRepository().getIssueCache().getIssue(parentId);
+                    ODCSIssue parentIssue = issue.getRepository().getIssueCache().getIssue(parentId);
                     if (parentIssue == null) {
                         parentIssue = issue.getRepository().getIssue(parentId);
                     }
-                    final C2CIssue parent = parentIssue;
+                    final ODCSIssue parent = parentIssue;
                     if(parent == null) {
                         // how could this be possible? parent removed?
-                        C2C.LOG.log(Level.INFO, "issue {0} is referencing not available parent with key {1}", new Object[]{issue.getID(), parentId}); // NOI18N
+                        ODCS.LOG.log(Level.INFO, "issue {0} is referencing not available parent with key {1}", new Object[]{issue.getID(), parentId}); // NOI18N
                         return;
                     }
                     EventQueue.invokeLater(new Runnable() {
@@ -491,7 +491,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             LinkButton parentButton = new LinkButton(new AbstractAction() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
-                                    C2CUtil.openIssue(parent);
+                                    ODCSUtil.openIssue(parent);
                                 }
                             });
                             parentButton.setText(parentId + ':'); // NOI18N
@@ -617,7 +617,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         oldCommentCount = newCommentCount;
-        List<C2CAttachment> attachments = issue.getAttachments();
+        List<Attachment> attachments = issue.getAttachments();
         if (!isNew) {
             commentsPanel.setIssue(issue, attachments);
         }
@@ -646,7 +646,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             int row = subTaskTable.rowAtPoint(p);
                             TableModel model = subTaskTable.getModel();
                             final String issueKey = (String)model.getValueAt(row,0);
-                            C2CUtil.openIssue(issue);
+                            ODCSUtil.openIssue(issue);
                         }
                     }
                 });
@@ -718,7 +718,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             } else if (component instanceof JTextComponent) {
                 currentValue = ((JTextComponent)component).getText();
                 if (DATE_INPUT_FIELDS.contains(field) && !currentValue.trim().isEmpty()) {
-                    Date date = C2CUtil.parseTextDate(currentValue.trim(), INPUT_DATE_FORMAT);
+                    Date date = ODCSUtil.parseTextDate(currentValue.trim(), INPUT_DATE_FORMAT);
                     if (date != null) {
                         currentValue = Long.toString(date.getTime());
                     }
@@ -760,7 +760,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             } else if (component instanceof JTextComponent) {
                 String value = newValue;
                 if (DATE_INPUT_FIELDS.contains(field) && !newValue.isEmpty()) {
-                    Date date = C2CUtil.parseLongDate(newValue, new DateFormat[] { INPUT_DATE_FORMAT });
+                    Date date = ODCSUtil.parseLongDate(newValue, new DateFormat[] { INPUT_DATE_FORMAT });
                     if (date != null) {
                         value = INPUT_DATE_FORMAT.format(date);
                     }
@@ -871,7 +871,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
         RepositoryConfiguration rc = issue.getRepository().getRepositoryConfiguration(false);
         
-        List<TaskStatus> statuses = rc.computeValidStatuses(initialValue == null ? null : C2CUtil.getStatusByValue(rc, initialValue));
+        List<TaskStatus> statuses = rc.computeValidStatuses(initialValue == null ? null : ODCSUtil.getStatusByValue(rc, initialValue));
         
         // XXX evaluate statuses for open and active
         resolvedIndex = statuses.size(); // if there is no RESOLVED
@@ -885,7 +885,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         
         statusCombo.setModel(toComboModel(statuses));
         statusCombo.setRenderer(new ClientDataRenderer());
-        selectInCombo(statusCombo, C2CUtil.getStatusByValue(rc, status), false);
+        selectInCombo(statusCombo, ODCSUtil.getStatusByValue(rc, status), false);
     }    
     
     private void updateReadOnlyField(JTextField field) {
@@ -992,7 +992,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void updateFieldStatus(IssueField field, JComponent label) {
         assert label instanceof JButton || label instanceof JLabel;
-        boolean highlight = !issue.getTaskData().isNew() && (issue.getFieldStatus(field) != C2CIssue.FIELD_STATUS_UPTODATE);
+        boolean highlight = !issue.getTaskData().isNew() && (issue.getFieldStatus(field) != ODCSIssue.FIELD_STATUS_UPTODATE);
         label.setOpaque(highlight);
         if (highlight) {
             label.setBackground(HIGHLIGHT_COLOR);
@@ -1014,7 +1014,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void findIssue(JTextField fld, String msg, String helpCtx, boolean append) {
         String newIssueID = BugtrackingUtil.selectIssue(
             NbBundle.getMessage(IssuePanel.class, msg), 
-            C2CUtil.getRepository(issue.getRepository()),
+            ODCSUtil.getRepository(issue.getRepository()),
             this,
             new HelpCtx(helpCtx));
         if (newIssueID != null) {
@@ -1382,7 +1382,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             invalidDateFields.remove(fieldName(fieldLabel));
             String dateText = comp.getText().trim();
             if (!dateText.isEmpty()) {
-                Date date = C2CUtil.parseTextDate(dateText, INPUT_DATE_FORMAT);
+                Date date = ODCSUtil.parseTextDate(dateText, INPUT_DATE_FORMAT);
                 if (date == null) {
                     invalidDateFields.add(fieldName(fieldLabel));
                 }
@@ -2228,15 +2228,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     
     private void showInBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInBrowserButtonActionPerformed
         KenaiProject kp = issue.getRepository().getLookup().lookup(KenaiProject.class);
-        assert kp != null; // all c2c repositories hould come from team support
+        assert kp != null; // all odcs repositories hould come from team support
         if (kp == null) {
             return;
         }
         try {
-            URL url = new URL(kp.getWebLocation() + C2CUtil.URL_FRAGMENT_TASK + issue.getID());
+            URL url = new URL(kp.getWebLocation() + ODCSUtil.URL_FRAGMENT_TASK + issue.getID());
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException muex) {
-            C2C.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
+            ODCS.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
         }
     }//GEN-LAST:event_showInBrowserButtonActionPerformed
 
@@ -2310,9 +2310,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 return;
             }
             TaskStatus status = (TaskStatus) statusCombo.getSelectedItem();
-            TaskStatus resolvedStatus = C2CUtil.getStatusByValue(rc, RESOLUTION_RESOLVED);
+            TaskStatus resolvedStatus = ODCSUtil.getStatusByValue(rc, RESOLUTION_RESOLVED);
             if (resolvedStatus.equals(status)) { // NOI18N
-                TaskResolution fixedResolution = C2CUtil.getResolutionByValue(rc, STATUS_FIXED);
+                TaskResolution fixedResolution = ODCSUtil.getResolutionByValue(rc, STATUS_FIXED);
                 resolutionCombo.setSelectedItem(fixedResolution); 
                 resolutionCombo.setVisible(true);
                 resolutionLabel.setVisible(true);
@@ -2335,7 +2335,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_statusComboActionPerformed
 
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        findIssue(duplicateField, "IssuePanel.duplicateButton.message", "org.netbeans.modules.c2c.duplicateChooser", false);
+        findIssue(duplicateField, "IssuePanel.duplicateButton.message", "org.netbeans.modules.odcs.duplicateChooser", false);
     }//GEN-LAST:event_duplicateButtonActionPerformed
 
     private void priorityComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priorityComboActionPerformed
@@ -2374,7 +2374,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             releaseCombo.setSelectedItem(product.getDefaultMilestone());
             componentCombo.setSelectedItem(product.getDefaultComponent());
             issue.setFieldValue(IssueField.PRODUCT, product.getName());
-            AbstractRepositoryConnector connector = C2C.getInstance().getRepositoryConnector();
+            AbstractRepositoryConnector connector = ODCS.getInstance().getRepositoryConnector();
             
             TaskData data = issue.getTaskData();
 //            try {
@@ -2384,7 +2384,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 initialValues.remove(IssueField.MILESTONE.getKey());
                 reloadForm(false);
 //            } catch (CoreException cex) {
-//                C2C.LOG.log(Level.INFO, cex.getMessage(), cex);
+//                ODCS.LOG.log(Level.INFO, cex.getMessage(), cex);
 //            }
         }
     }//GEN-LAST:event_productComboActionPerformed
@@ -2421,11 +2421,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_iterationComboActionPerformed
 
     private void parentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parentButtonActionPerformed
-        findIssue(parentField, "IssuePanel.parentButton.message", "org.netbeans.modules.c2c.parentChooser", true); // NOI18N
+        findIssue(parentField, "IssuePanel.parentButton.message", "org.netbeans.modules.odcs.parentChooser", true); // NOI18N
     }//GEN-LAST:event_parentButtonActionPerformed
 
     private void subtaskButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subtaskButtonActionPerformed
-        findIssue(subtaskField, "IssuePanel.subtaskButton.message", "org.netbeans.modules.c2c.subtaskChooser", true); // NOI18N
+        findIssue(subtaskField, "IssuePanel.subtaskButton.message", "org.netbeans.modules.odcs.subtaskChooser", true); // NOI18N
     }//GEN-LAST:event_subtaskButtonActionPerformed
 
     private void externalFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externalFieldActionPerformed
@@ -2447,7 +2447,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         storeFieldValue(IssueField.SEVERITY, severityCombo);
         storeFieldValue(IssueField.STATUS, statusCombo);
         storeFieldValues(IssueField.CC, list(ccField.getText()));
-        Date dueDate = C2CUtil.parseTextDate(dueDateField.getText().trim(), INPUT_DATE_FORMAT);
+        Date dueDate = ODCSUtil.parseTextDate(dueDateField.getText().trim(), INPUT_DATE_FORMAT);
         storeFieldValue(IssueField.DUEDATE, dueDate == null ? "" : Long.toString(dueDate.getTime())); //NOI18N
         storeFieldValue(IssueField.OWNER, ((TaskUserProfile) ownerCombo.getSelectedItem()).getLoginName());
         storeFieldValues(IssueField.PARENT, bugs(parentField.getText()));
@@ -2530,9 +2530,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         });
         if (isNew) {
-            C2CRepository repository = issue.getRepository();
+            ODCSRepository repository = issue.getRepository();
             if (repository != null) {
-                OwnerUtils.setLooseAssociation(C2CUtil.getRepository(repository), false);
+                OwnerUtils.setLooseAssociation(ODCSUtil.getRepository(repository), false);
             }
         }
     }//GEN-LAST:event_submitButtonActionPerformed
@@ -2543,7 +2543,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void keywordsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keywordsButtonActionPerformed
         String message = NbBundle.getMessage(IssuePanel.class, "IssuePanel.keywordsButton.message"); // NOI18N
-        String keywords = C2CUtil.getKeywords(message, keywordsField.getText(), issue.getRepository());
+        String keywords = ODCSUtil.getKeywords(message, keywordsField.getText(), issue.getRepository());
         keywordsField.setText(keywords);
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
@@ -2568,7 +2568,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (resolutionCombo.getParent() == null) {
             return;
         }
-        TaskResolution duplicate = C2CUtil.getResolutionByValue(issue.getRepository().getRepositoryConfiguration(false), RESOLUTION_DUPLICATE);
+        TaskResolution duplicate = ODCSUtil.getResolutionByValue(issue.getRepository().getRepositoryConfiguration(false), RESOLUTION_DUPLICATE);
         boolean shown = duplicate.equals(resolutionCombo.getSelectedItem()); // NOI18N
         duplicateField.setVisible(shown);
         duplicateButton.setVisible(shown && duplicateField.isEditable());
@@ -2577,7 +2577,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void ccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ccButtonActionPerformed
         String message = NbBundle.getMessage(IssuePanel.class, "IssuePanel.ccButton.message"); // NOI18N
-        String users = C2CUtil.getUsers(message, ccField.getText(), issue.getRepository());
+        String users = ODCSUtil.getUsers(message, ccField.getText(), issue.getRepository());
         ccField.setText(users);
     }//GEN-LAST:event_ccButtonActionPerformed
 

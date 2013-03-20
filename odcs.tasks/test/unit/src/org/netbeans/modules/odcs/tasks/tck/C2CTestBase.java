@@ -50,7 +50,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.odcs.tasks.C2C;
+import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 import org.openide.util.Lookup;
 
@@ -69,7 +69,7 @@ public class C2CTestBase extends NbTestCase {
         infra = Lookup.getDefault().lookup(C2CTestInfrastructure.class);
         assertNotNull("An implementation of the C2CTestInfrastructure must be present", infra);
         url = infra.initializeRepository();
-        rc = C2C.getInstance().getRepositoryConnector(); // reuse the only one RC instance
+        rc = ODCS.getInstance().getRepositoryConnector(); // reuse the only one RC instance
         repository = new TaskRepository(rc.getConnectorKind(), repositoryURL());
         C2CExtender.assignTaskRepositoryLocationFactory(rc, new TaskRepositoryLocationFactory());
     }

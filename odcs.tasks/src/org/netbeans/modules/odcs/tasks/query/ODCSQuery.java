@@ -74,10 +74,10 @@ import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.client.api.ODCSFactory;
-import org.netbeans.modules.odcs.tasks.C2C;
-import org.netbeans.modules.odcs.tasks.C2CConnector;
-import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
-import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
+import org.netbeans.modules.odcs.tasks.ODCS;
+import org.netbeans.modules.odcs.tasks.ODCSConnector;
+import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -87,10 +87,10 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public abstract class C2CQuery {
+public abstract class ODCSQuery {
 
-    private final C2CRepository repository;
-    private C2CQueryController controller;
+    private final ODCSRepository repository;
+    private ODCSQueryController controller;
 
     private final List<QueryNotifyListener> notifyListeners = new ArrayList<QueryNotifyListener>();
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);;
@@ -106,19 +106,19 @@ public abstract class C2CQuery {
     private final Object ISSUES_LOCK = new Object();
     private final Set<String> issues = new HashSet<String>();
     
-    public static C2CQuery createNew(C2CRepository repository) {
+    public static ODCSQuery createNew(ODCSRepository repository) {
         return new CustomQuery(repository);
     }
     
-    public static C2CQuery createNew(C2CRepository repository, Criteria criteria) {
+    public static ODCSQuery createNew(ODCSRepository repository, Criteria criteria) {
         return new CustomQuery(repository, criteria);
     }
     
-    public static C2CQuery createSaved(C2CRepository repository, SavedTaskQuery stq) {
+    public static ODCSQuery createSaved(ODCSRepository repository, SavedTaskQuery stq) {
         return new CustomQuery(repository, stq);
     }
     
-    public static C2CQuery createPredefined(C2CRepository repository, String name, IRepositoryQuery predefinedQuery) {
+    public static ODCSQuery createPredefined(ODCSRepository repository, String name, IRepositoryQuery predefinedQuery) {
         return new PredefinedQuery(repository, name, predefinedQuery);
     }
         
@@ -129,13 +129,13 @@ public abstract class C2CQuery {
     protected abstract boolean save(String name);
     public abstract void remove();
     
-    protected C2CQuery(C2CRepository repository, String name) {
+    protected ODCSQuery(ODCSRepository repository, String name) {
         this.name = name;
         this.repository = repository;
         this.saved = name != null;
     }
     
-    public C2CRepository getRepository() {
+    public ODCSRepository getRepository() {
         return repository;
     }
     
@@ -180,7 +180,7 @@ public abstract class C2CQuery {
         }
     }
 
-    public Collection<C2CIssue> getIssues() {
+    public Collection<ODCSIssue> getIssues() {
         List<String> ids;
         synchronized(ISSUES_LOCK) {
             if (issues == null) {
@@ -190,8 +190,8 @@ public abstract class C2CQuery {
             ids.addAll(issues);
         }
         
-        IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
-        List<C2CIssue> ret = new ArrayList<C2CIssue>();
+        IssueCache<ODCSIssue, TaskData> cache = repository.getIssueCache();
+        List<ODCSIssue> ret = new ArrayList<ODCSIssue>();
         for (String id : ids) {
             ret.add(cache.getIssue(id));
         }
@@ -200,7 +200,7 @@ public abstract class C2CQuery {
 
     public ColumnDescriptor[] getColumnDescriptors() {
         if(columnDescriptors == null) {
-            columnDescriptors = C2CIssue.getColumnDescriptors(repository);
+            columnDescriptors = ODCSIssue.getColumnDescriptors(repository);
         }
         return columnDescriptors;
     }
@@ -217,7 +217,7 @@ public abstract class C2CQuery {
         }
     }
 
-    protected void fireNotifyData(C2CIssue issue) {
+    protected void fireNotifyData(ODCSIssue issue) {
         QueryNotifyListener[] list;
         synchronized(notifyListeners) {
             list = notifyListeners.toArray(new QueryNotifyListener[notifyListeners.size()]);
@@ -251,9 +251,9 @@ public abstract class C2CQuery {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }
 
-    public final C2CQueryController getController () {
+    public final ODCSQueryController getController () {
         if(controller == null) {
-            controller = new C2CQueryController(repository, this, getCriteria(), isModifiable());
+            controller = new ODCSQueryController(repository, this, getCriteria(), isModifiable());
         }
         return controller;
     }
@@ -290,7 +290,7 @@ public abstract class C2CQuery {
         executeQuery(new Runnable() {
             @Override
             public void run() {
-                C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(CloudDevConstants.QUERY_CRITERIA)}); // NOI18N
+                ODCS.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(CloudDevConstants.QUERY_CRITERIA)}); // NOI18N
                 IssuesCollector ic = new IssuesCollector();
                 try {
                     
@@ -302,7 +302,7 @@ public abstract class C2CQuery {
 
                     PerformQueryCommand queryCmd = 
                         new PerformQueryCommand(
-                            C2C.getInstance().getRepositoryConnector(),
+                            ODCS.getInstance().getRepositoryConnector(),
                             repository.getTaskRepository(), 
                             ic,
                             getRepositoryQuery());
@@ -323,7 +323,7 @@ public abstract class C2CQuery {
                     //is there another way?
                     if (!ic.openedIssues.isEmpty()) {
                         getController().switchToDeterminateProgress(ic.openedIssues.size());
-                        for (C2CIssue issue : ic.openedIssues) {
+                        for (ODCSIssue issue : ic.openedIssues) {
                             getController().addProgressUnit(issue.getDisplayName());
                             repository.getIssue(issue.getID());
                         }
@@ -332,8 +332,8 @@ public abstract class C2CQuery {
                     synchronized(ISSUES_LOCK) {
                         logQueryEvent(issues.size(), autoRefresh);
                     }
-                    if(C2C.LOG.isLoggable(Level.FINE)) {
-                        C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(CloudDevConstants.QUERY_CRITERIA)}); // NOI18N
+                    if(ODCS.LOG.isLoggable(Level.FINE)) {
+                        ODCS.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(CloudDevConstants.QUERY_CRITERIA)}); // NOI18N
                     }
                 }
             }
@@ -342,7 +342,7 @@ public abstract class C2CQuery {
 
     protected void logQueryEvent(int count, boolean autoRefresh) {
         LogUtils.logQueryEvent(
-            C2CConnector.ID,
+            ODCSConnector.ID,
             name,
             count,
             false,
@@ -361,47 +361,47 @@ public abstract class C2CQuery {
     }
 
     private class IssuesCollector extends TaskDataCollector {
-        List<C2CIssue> openedIssues = new LinkedList<C2CIssue>();
+        List<ODCSIssue> openedIssues = new LinkedList<ODCSIssue>();
         
         public IssuesCollector() {}
         @Override
         public void accept(TaskData taskData) {
-            String id = C2CIssue.getID(taskData);
+            String id = ODCSIssue.getID(taskData);
             synchronized(ISSUES_LOCK) {
                 issues.add(id);
             }
-            C2CIssue issue;
+            ODCSIssue issue;
             try {
-                IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
+                IssueCache<ODCSIssue, TaskData> cache = repository.getIssueCache();
                 issue = cache.setIssueData(id, taskData);
                 if (!issue.isNew() && issue.isOpened()) {
                     openedIssues.add(issue);
                 }
             } catch (IOException ex) {
-                C2C.LOG.log(Level.SEVERE, null, ex);
+                ODCS.LOG.log(Level.SEVERE, null, ex);
                 return;
             }
             fireNotifyData(issue); // XXX - !!! triggers getIssues()
         }
     };    
     
-    private static class CustomQuery extends C2CQuery {
+    private static class CustomQuery extends ODCSQuery {
 
         private IRepositoryQuery repositoryQuery;
         private SavedTaskQuery savedQuery;
         private Criteria criteria;
                 
-        public CustomQuery(C2CRepository repository) {
+        public CustomQuery(ODCSRepository repository) {
             this(repository, (SavedTaskQuery) null);
         }
         
-        public CustomQuery(C2CRepository repository, SavedTaskQuery savedQuery) {
+        public CustomQuery(ODCSRepository repository, SavedTaskQuery savedQuery) {
             super(repository, savedQuery != null ? savedQuery.getName() : null);
             this.savedQuery = savedQuery;
             this.criteria = null;
         }
         
-        public CustomQuery(C2CRepository repository, Criteria criteria) {
+        public CustomQuery(ODCSRepository repository, Criteria criteria) {
             super(repository, null);
             this.savedQuery = null;
             this.criteria = criteria;
@@ -411,7 +411,7 @@ public abstract class C2CQuery {
         protected IRepositoryQuery getRepositoryQuery() {
             // XXX synchronize
             if(repositoryQuery == null) {
-                repositoryQuery = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODCS query -" + getDisplayName()); // NOI18N
+                repositoryQuery = new RepositoryQuery(ODCS.getInstance().getRepositoryConnector().getConnectorKind(), "ODCS query -" + getDisplayName()); // NOI18N
                 repositoryQuery.setUrl(CloudDevConstants.CRITERIA_QUERY);                
             }
             return repositoryQuery;
@@ -446,7 +446,7 @@ public abstract class C2CQuery {
             
             ProjectAndClient pac = getProjectAndClient();
             if(pac == null) {
-                C2C.LOG.log(Level.WARNING, "couldn''t save query : {0}", name); // NOI18N
+                ODCS.LOG.log(Level.WARNING, "couldn''t save query : {0}", name); // NOI18N
                 return false;
             }
             
@@ -458,7 +458,7 @@ public abstract class C2CQuery {
                 try {
                     savedQuery = pac.client.createQuery(pac.projectId, savedQuery);
                 } catch (ODCSException ex) {
-                    C2C.LOG.log(Level.WARNING, "exception while creating query : " + name, ex); // NOI18N
+                    ODCS.LOG.log(Level.WARNING, "exception while creating query : " + name, ex); // NOI18N
                     return false;
                 }
             } else {
@@ -467,7 +467,7 @@ public abstract class C2CQuery {
                 try {
                     savedQuery = pac.client.updateQuery(pac.projectId, savedQuery);
                 } catch (ODCSException ex) {
-                    C2C.LOG.log(Level.WARNING, "exception while creating query : " + name, ex); // NOI18N
+                    ODCS.LOG.log(Level.WARNING, "exception while creating query : " + name, ex); // NOI18N
                     return false;
                 }
             }
@@ -484,14 +484,14 @@ public abstract class C2CQuery {
             
             ProjectAndClient pac = getProjectAndClient();
             if(pac == null) {
-                C2C.LOG.log(Level.WARNING, "couldn''t save query : {0}", getDisplayName()); // NOI18N
+                ODCS.LOG.log(Level.WARNING, "couldn''t save query : {0}", getDisplayName()); // NOI18N
                 return;
             }
             
             try {
                 pac.client.deleteQuery(pac.projectId, savedQuery.getId());
             } catch (ODCSException ex) {
-                C2C.LOG.log(Level.WARNING, "exception while removing query : " + getDisplayName(), ex); // NOI18N
+                ODCS.LOG.log(Level.WARNING, "exception while removing query : " + getDisplayName(), ex); // NOI18N
                 return;
             }
             getRepository().removeQuery(this);
@@ -510,9 +510,9 @@ public abstract class C2CQuery {
 
         private ProjectAndClient getProjectAndClient() {
             KenaiProject kp = getRepository().getLookup().lookup(KenaiProject.class);
-            assert kp != null; // all c2c repositories should come from team support
+            assert kp != null; // all odcs repositories should come from team support
             if (kp == null) {
-                C2C.LOG.log(Level.WARNING, "  no project available for query"); // NOI18N
+                ODCS.LOG.log(Level.WARNING, "  no project available for query"); // NOI18N
                 return null;
             }
             String url = kp.getFeatureLocation();
@@ -529,10 +529,10 @@ public abstract class C2CQuery {
         }
     }
 
-    private static class PredefinedQuery extends C2CQuery {
+    private static class PredefinedQuery extends ODCSQuery {
         private final IRepositoryQuery repositoryQuery;
 
-        public PredefinedQuery(C2CRepository repository, String name, IRepositoryQuery predefinedQuery) {
+        public PredefinedQuery(ODCSRepository repository, String name, IRepositoryQuery predefinedQuery) {
             super(repository, name);
             repositoryQuery = predefinedQuery;
         }
@@ -565,7 +565,7 @@ public abstract class C2CQuery {
         @Override
         public void remove() {
             NotifyDescriptor nd = new NotifyDescriptor.Message(
-                NbBundle.getMessage(C2CQueryController.class, "MSG_CantRemoveQuery"), // NOI18N
+                NbBundle.getMessage(ODCSQueryController.class, "MSG_CantRemoveQuery"), // NOI18N
                 NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }

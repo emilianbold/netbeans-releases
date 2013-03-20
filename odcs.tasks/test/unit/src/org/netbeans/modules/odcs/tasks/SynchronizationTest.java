@@ -89,7 +89,7 @@ import org.openide.modules.Places;
  *
  * @author tomas
  */
-public class SynchronizationTest extends AbstractC2CTestCase {
+public class SynchronizationTest extends AbstractODCSTestCase {
 
     public static Test suite() {
         return NbModuleSuite.emptyConfiguration()  
@@ -253,7 +253,7 @@ public class SynchronizationTest extends AbstractC2CTestCase {
 //                                                taskDataModel.getTaskData(),
 //                                                taskDataModel.getChangedOldAttributes());
         
-//        RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, taskData, taskDataModel.getChangedOldAttributes());
+//        RepositoryResponse rr = ODCSUtil.postTaskData(rc, taskRepository, taskData, taskDataModel.getChangedOldAttributes());
         RepositoryResponse rr = rc.getTaskDataHandler().postTaskData(taskRepository, taskData, taskDataModel.getChangedOldAttributes(), new NullProgressMonitor());
         assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
         

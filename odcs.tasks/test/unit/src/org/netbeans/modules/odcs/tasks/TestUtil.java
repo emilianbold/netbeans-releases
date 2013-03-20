@@ -81,13 +81,13 @@ public class TestUtil {
         throw exception;
     }
 
-    public static RepositoryResponse postTaskData(AbstractRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
+    public static RepositoryResponse postTaskData(AbstractRepositoryConnector rc, TaskRepository repository, TaskData data) throws CoreException {
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
-        return  cfcrc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
+        return  rc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
     }
 
-    public static TaskData getTaskData(AbstractRepositoryConnector cfcrc, TaskRepository taskRepository, String id) throws CoreException {
-        return cfcrc.getTaskData(taskRepository, id, new NullProgressMonitor());
+    public static TaskData getTaskData(AbstractRepositoryConnector rc, TaskRepository taskRepository, String id) throws CoreException {
+        return rc.getTaskData(taskRepository, id, new NullProgressMonitor());
     }
     
 }

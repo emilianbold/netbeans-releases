@@ -26,8 +26,8 @@ import org.netbeans.modules.bugtracking.issuetable.IssueNode.SummaryProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
-import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
-import org.netbeans.modules.odcs.tasks.util.C2CUtil;
+import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -40,7 +40,7 @@ public class QueryCellRenderer implements TableCellRenderer {
     private static final MessageFormat subtasksFormat = getFormat("subtasksFormat");  // NOI18N
     private static final MessageFormat parentFormat = getFormat("parentFormat");      // NOI18N
 
-    private final C2CQuery c2cQuery;
+    private final ODCSQuery odcsQuery;
     private Query query;
     private final QueryTableCellRenderer defaultIssueRenderer;
     private TwoLabelPanel twoLabelPanel;
@@ -52,10 +52,10 @@ public class QueryCellRenderer implements TableCellRenderer {
 
     private Map<Integer, Integer> tooLargeRows = new HashMap<Integer, Integer>();
 
-    public QueryCellRenderer(C2CQuery c2cQuery, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
+    public QueryCellRenderer(ODCSQuery odcsQuery, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
         this.defaultIssueRenderer = defaultIssueRenderer;
         this.issueTable = issueTable;
-        this.c2cQuery = c2cQuery;
+        this.odcsQuery = odcsQuery;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class QueryCellRenderer implements TableCellRenderer {
         }
 
         SummaryProperty summaryProperty = (SummaryProperty) value;
-        C2CIssue issue = (C2CIssue) summaryProperty.getIssueData();
+        ODCSIssue issue = (ODCSIssue) summaryProperty.getIssueData();
 
         if(issue.hasSubtasks() || issue.isSubtask()) {
             return getSubtaskRenderer(issue, summaryProperty, table, isSelected, row);
@@ -76,7 +76,7 @@ public class QueryCellRenderer implements TableCellRenderer {
         return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     }
 
-    private Component getSubtaskRenderer(C2CIssue issue, SummaryProperty summaryProperty, JTable table, boolean isSelected, int row) {
+    private Component getSubtaskRenderer(ODCSIssue issue, SummaryProperty summaryProperty, JTable table, boolean isSelected, int row) {
         TwoLabelPanel panel = getTwoLabelPanel();
         RendererLabel label = issue.getSubtasks().length > 0 ? panel.north : panel.south;
         String summary = summaryProperty.getValue();
@@ -100,7 +100,7 @@ public class QueryCellRenderer implements TableCellRenderer {
 
     private TableCellStyle getStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style;
-        if (c2cQuery.isSaved()) {
+        if (odcsQuery.isSaved()) {
             style = QueryTableCellRenderer.getCellStyle(table, getQuery(), issueTable, p, isSelected, row);
         } else {
             style = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, p, isSelected, row);
@@ -108,7 +108,7 @@ public class QueryCellRenderer implements TableCellRenderer {
         return style;
     }
 
-    private String getSubtaskKeys(C2CIssue issue) {
+    private String getSubtaskKeys(ODCSIssue issue) {
         String[] keys = issue.getSubtasks();
         StringBuilder keysBuffer = new StringBuilder();
         for (int i = 0; i < keys.length; i++) {
@@ -181,12 +181,12 @@ public class QueryCellRenderer implements TableCellRenderer {
      */
     private Query getQuery() {
         if(query == null)  {
-            assert c2cQuery.isSaved();
-            Repository repository = C2CUtil.getRepository(c2cQuery.getRepository());
+            assert odcsQuery.isSaved();
+            Repository repository = ODCSUtil.getRepository(odcsQuery.getRepository());
             Collection<Query> queries = repository.getQueries();
             Query aQuery = null;
             for (Query q : queries) {
-                if(q.getDisplayName().equals(c2cQuery.getDisplayName())) {
+                if(q.getDisplayName().equals(odcsQuery.getDisplayName())) {
                     aQuery = q;
                     break;
                 }
