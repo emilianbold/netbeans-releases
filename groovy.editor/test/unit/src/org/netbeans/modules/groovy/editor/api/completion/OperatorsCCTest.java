@@ -121,8 +121,20 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "SpreadOperator4.groovy", "        [1,2]*.s^", true);
     }
     
-    public void testJavaFieldOperator() throws Exception {
-        checkCompletion(BASE + "JavaFieldOperator.groovy", "        tester.@b^", true);
+    public void testJavaFieldOperator1_all() throws Exception {
+        checkCompletion(BASE + "JavaFieldOperator1.groovy", "        new Foo().@^", true);
+    }
+    
+    public void testJavaFieldOperator2_withPrefix() throws Exception {
+        checkCompletion(BASE + "JavaFieldOperator2.groovy", "        new Foo().@t^", true);
+    }
+    
+    public void testJavaFieldOperator3_withSuffix() throws Exception {
+        checkCompletion(BASE + "JavaFieldOperator3.groovy", "        new Foo().@^tes", true);
+    }
+    
+    public void testJavaFieldOperator4_withinIdentifier() throws Exception {
+        checkCompletion(BASE + "JavaFieldOperator4.groovy", "        new Foo().@te^s", true);
     }
     
     public void testSpreadJavaFieldOperator() throws Exception {

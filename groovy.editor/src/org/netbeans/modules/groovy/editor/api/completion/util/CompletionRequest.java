@@ -424,7 +424,12 @@ public class CompletionRequest {
                 ts.movePrevious();
             } else if (active.id() == GroovyTokenId.NLS ) {
                 ts.movePrevious();
-                if (ts.token().id() == GroovyTokenId.DOT || ts.token().id() == GroovyTokenId.SPREAD_DOT) {
+                if (ts.token().id() == GroovyTokenId.AT ||
+                    ts.token().id() == GroovyTokenId.DOT ||
+                    ts.token().id() == GroovyTokenId.SPREAD_DOT ||
+                    ts.token().id() == GroovyTokenId.OPTIONAL_DOT ||
+                    ts.token().id() == GroovyTokenId.MEMBER_POINTER ||
+                    ts.token().id() == GroovyTokenId.ELVIS_OPERATOR) {
                     ts.moveNext();
                 }
             }
