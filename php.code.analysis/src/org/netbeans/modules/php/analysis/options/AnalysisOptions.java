@@ -44,7 +44,9 @@ package org.netbeans.modules.php.analysis.options;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.analysis.commands.MessDetector;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.NbPreferences;
 
 public final class AnalysisOptions {
@@ -58,8 +60,13 @@ public final class AnalysisOptions {
     // code sniffer
     private static final String CODE_SNIFFER_PATH = "codeSniffer.path"; // NOI18N
     private static final String CODE_SNIFFER_STANDARD = "codeSniffer.standard"; // NOI18N
+    // mess detector
+    private static final String MESS_DETECTOR_PATH = "messDetector.path"; // NOI18N
+    private static final String MESS_DETECTOR_RULESETS = "messDetector.rulesets"; // NOI18N
+    private static final String MESS_DETECTOR_RULESETS_DELIMITER = "|"; // NOI18N
 
     private volatile boolean codeSnifferSearched = false;
+    private volatile boolean messDetectorSearched = false;
 
 
     public static AnalysisOptions getInstance() {
@@ -89,6 +96,32 @@ public final class AnalysisOptions {
 
     public void setCodeSnifferStandard(String standard) {
         getPreferences().put(CODE_SNIFFER_STANDARD, standard);
+    }
+
+    public String getMessDetectorPath() {
+        String messDetectorPath = getPreferences().get(MESS_DETECTOR_PATH, null);
+        if (messDetectorPath == null && !messDetectorSearched) {
+            messDetectorSearched = true;
+            List<String> scripts = FileUtils.findFileOnUsersPath(MessDetector.NAME, MessDetector.LONG_NAME);
+            if (!scripts.isEmpty()) {
+                messDetectorPath = scripts.get(0);
+                setMessDetectorPath(messDetectorPath);
+            }
+        }
+        return messDetectorPath;
+    }
+
+    public void setMessDetectorPath(String path) {
+        getPreferences().put(MESS_DETECTOR_PATH, path);
+    }
+
+    public List<String> getMessDetectorRulesets() {
+        String rulesets = getPreferences().get(MESS_DETECTOR_RULESETS, null);
+        return StringUtils.explode(rulesets, MESS_DETECTOR_RULESETS_DELIMITER);
+    }
+
+    public void setMessDetectorRulesets(List<String> rulesets) {
+        getPreferences().put(MESS_DETECTOR_RULESETS, StringUtils.implode(rulesets, MESS_DETECTOR_RULESETS_DELIMITER));
     }
 
     private Preferences getPreferences() {
