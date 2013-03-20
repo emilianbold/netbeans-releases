@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.php.analysis.options;
 
+import java.util.List;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.analysis.commands.MessDetector;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.openide.util.NbBundle;
 
@@ -50,9 +52,11 @@ public final class AnalysisOptionsValidator {
     private final ValidationResult result = new ValidationResult();
 
 
-    public AnalysisOptionsValidator validate(String codeSnifferPath, String codeSnifferStandard) {
+    public AnalysisOptionsValidator validate(String codeSnifferPath, String codeSnifferStandard, String messDetectorPath, List<String> messDetectorRuleSets) {
         validateCodeSnifferPath(codeSnifferPath);
         validateCodeSnifferStandard(codeSnifferStandard);
+        validateMessDetectorPath(messDetectorPath);
+        validateMessDetectorRuleSets(messDetectorRuleSets);
         return this;
     }
 
@@ -60,18 +64,36 @@ public final class AnalysisOptionsValidator {
         return result;
     }
 
-    private void validateCodeSnifferPath(String codeSnifferPath) {
+    public AnalysisOptionsValidator validateCodeSnifferPath(String codeSnifferPath) {
         String warning = CodeSniffer.validate(codeSnifferPath);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message("codeSniffer.path", warning)); // NOI18N
         }
+        return this;
     }
 
     @NbBundle.Messages("AnalysisOptionsValidator.codeSniffer.standard.empty=Valid code sniffer standard must be set.")
-    private void validateCodeSnifferStandard(String codeSnifferStandard) {
+    private AnalysisOptionsValidator validateCodeSnifferStandard(String codeSnifferStandard) {
         if (codeSnifferStandard == null) {
             result.addWarning(new ValidationResult.Message("codeSniffer.standard", Bundle.AnalysisOptionsValidator_codeSniffer_standard_empty())); // NOI18N
         }
+        return this;
+    }
+
+    private AnalysisOptionsValidator validateMessDetectorPath(String messDetectorPath) {
+        String warning = MessDetector.validate(messDetectorPath);
+        if (warning != null) {
+            result.addWarning(new ValidationResult.Message("messDetector.path", warning)); // NOI18N
+        }
+        return this;
+    }
+
+    @NbBundle.Messages("AnalysisOptionsValidator.messDetector.ruleSets.empty=At least one rule set must be set.")
+    private AnalysisOptionsValidator validateMessDetectorRuleSets(List<String> messDetectorRuleSets) {
+        if (messDetectorRuleSets.isEmpty()) {
+            result.addWarning(new ValidationResult.Message("messDetector.ruleSets", Bundle.AnalysisOptionsValidator_messDetector_ruleSets_empty())); // NOI18N
+        }
+        return this;
     }
 
 }
