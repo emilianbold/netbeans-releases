@@ -62,8 +62,8 @@ public final class AnalysisOptions {
     private static final String CODE_SNIFFER_STANDARD = "codeSniffer.standard"; // NOI18N
     // mess detector
     private static final String MESS_DETECTOR_PATH = "messDetector.path"; // NOI18N
-    private static final String MESS_DETECTOR_RULESETS = "messDetector.rulesets"; // NOI18N
-    private static final String MESS_DETECTOR_RULESETS_DELIMITER = "|"; // NOI18N
+    private static final String MESS_DETECTOR_RULE_SETS = "messDetector.ruleSets"; // NOI18N
+    private static final String MESS_DETECTOR_RULE_SETS_DELIMITER = "|"; // NOI18N
 
     private volatile boolean codeSnifferSearched = false;
     private volatile boolean messDetectorSearched = false;
@@ -115,13 +115,13 @@ public final class AnalysisOptions {
         getPreferences().put(MESS_DETECTOR_PATH, path);
     }
 
-    public List<String> getMessDetectorRulesets() {
-        String rulesets = getPreferences().get(MESS_DETECTOR_RULESETS, null);
-        return StringUtils.explode(rulesets, MESS_DETECTOR_RULESETS_DELIMITER);
+    public List<String> getMessDetectorRuleSets() {
+        String rulesets = getPreferences().get(MESS_DETECTOR_RULE_SETS, null);
+        return StringUtils.explode(rulesets, MESS_DETECTOR_RULE_SETS_DELIMITER);
     }
 
-    public void setMessDetectorRulesets(List<String> rulesets) {
-        getPreferences().put(MESS_DETECTOR_RULESETS, StringUtils.implode(rulesets, MESS_DETECTOR_RULESETS_DELIMITER));
+    public void setMessDetectorRuleSets(List<String> ruleSets) {
+        getPreferences().put(MESS_DETECTOR_RULE_SETS, StringUtils.implode(ruleSets, MESS_DETECTOR_RULE_SETS_DELIMITER));
     }
 
     private Preferences getPreferences() {
