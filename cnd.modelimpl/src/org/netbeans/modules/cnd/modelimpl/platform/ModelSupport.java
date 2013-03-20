@@ -218,6 +218,7 @@ public class ModelSupport implements PropertyChangeListener {
                         System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
                     }
                     openProjectsTask.schedule(0);
+                    closeProjects();
                 }
             }
         } catch (Exception e) {
@@ -237,13 +238,31 @@ public class ModelSupport implements PropertyChangeListener {
             if (TRACE_STARTUP) {
                 System.out.println("Model support: openProjects new=" + projects.size() + " now=" + openedProjects.size()); // NOI18N
             }
+            for(NativeProject project : projects) {
+                Provider makeProject = project.getProject();
+                if (!openedProjects.contains(makeProject)) {
+                    addProject(makeProject);
+                }
+            }
+        }
+    }
+
+    private void closeProjects() {
+        Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
+        if (TRACE_STARTUP) {
+            System.out.println("Model support: closeProjects size=" + projects.size() + " modelState=" + CsmModelAccessor.getModelState()); // NOI18N
+        }
+        synchronized (openedProjects) {
+            if (closed) {
+                return;
+            }
+            if (TRACE_STARTUP) {
+                System.out.println("Model support: closeProjects new=" + projects.size() + " now=" + openedProjects.size()); // NOI18N
+            }
             Set<Lookup.Provider> nowOpened = new HashSet<Lookup.Provider>();
             for(NativeProject project : projects) {
                 Provider makeProject = project.getProject();
                 nowOpened.add(makeProject);
-                if (!openedProjects.contains(makeProject)) {
-                    addProject(makeProject);
-                }
             }
 
             Set<Lookup.Provider> toClose = new HashSet<Lookup.Provider>();

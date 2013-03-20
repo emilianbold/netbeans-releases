@@ -64,6 +64,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -73,15 +74,22 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
 
     public LogicalViewChildren(Folder folder, MakeLogicalViewProvider provider) {
         super(folder, provider);
-        if (folder != null && folder.isDiskFolder()) {
-            MakeOptions.getInstance().addPropertyChangeListener(LogicalViewChildren.this);
-        }
     }
 
     @Override
     protected void onFolderChange(Folder folder) {
         if (folder != null && folder.isDiskFolder()) {
-            MakeOptions.getInstance().addPropertyChangeListener(LogicalViewChildren.this);
+            MakeOptions.getInstance().removePropertyChangeListener(this);
+            MakeOptions.getInstance().addPropertyChangeListener(this);
+        }
+    }
+    
+    @Override
+    protected void removeNotify() {
+        super.removeNotify();
+        final Folder folder = getFolder();
+        if (folder != null && folder.isDiskFolder()) {
+            MakeOptions.getInstance().removePropertyChangeListener(this);
         }
     }
 
