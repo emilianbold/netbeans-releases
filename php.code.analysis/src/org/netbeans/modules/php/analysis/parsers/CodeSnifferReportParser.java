@@ -150,7 +150,7 @@ public final class CodeSnifferReportParser extends DefaultHandler {
         currentResult = new Result(currentFile);
         currentResult.setLine(getInt(attributes, "line")); // NOI18N
         currentResult.setColumn(getInt(attributes, "column")); // NOI18N
-        currentResult.setCategory(attributes.getValue("source")); // NOI18N
+        currentResult.setCategory(formatCategory(attributes.getValue("source"))); // NOI18N
         description = new StringBuilder(200);
     }
 
@@ -161,6 +161,10 @@ public final class CodeSnifferReportParser extends DefaultHandler {
         results.add(currentResult);
         currentResult = null;
         description = null;
+    }
+
+    private String formatCategory(String category) {
+        return category.replaceFirst("\\.", ": ").replace(".", " > "); // NOI18N
     }
 
     private int getInt(Attributes attributes, String name) {

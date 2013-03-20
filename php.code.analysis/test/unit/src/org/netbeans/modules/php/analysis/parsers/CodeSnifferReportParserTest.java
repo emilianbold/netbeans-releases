@@ -62,7 +62,7 @@ public class CodeSnifferReportParserTest extends NbTestCase {
         assertEquals("/home/gapon/NetBeansProjects/_important/TodoList/config/Config.php", result.getFilePath());
         assertEquals(48, result.getLine());
         assertEquals(7, result.getColumn());
-        assertEquals("PSR1.Classes.ClassDeclaration.MissingNamespace", result.getCategory());
+        assertEquals("PSR1: Classes > ClassDeclaration > MissingNamespace", result.getCategory());
         assertEquals("Each class must be in a namespace of at least one level (a top-level vendor name)", result.getDescription());
 
 
@@ -70,7 +70,7 @@ public class CodeSnifferReportParserTest extends NbTestCase {
         assertEquals("/home/gapon/NetBeansProjects/_important/TodoList/exception/MyPresenter.php", result.getFilePath());
         assertEquals(1, result.getLine());
         assertEquals(1, result.getColumn());
-        assertEquals("PSR1.Files.SideEffects.FoundWithSymbols", result.getCategory());
+        assertEquals("PSR1: Files > SideEffects > FoundWithSymbols", result.getCategory());
         assertEquals("A file should declare new symbols (classes, functions, constants, etc.) and cause no other side effects, "
                 + "or it should execute logic with side effects, but should not do both. The first symbol is defined on line 15 "
                 + "and the first side effect is on line 19.", result.getDescription());
