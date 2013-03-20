@@ -384,6 +384,9 @@ public final class NavigatorScanner {
                 formatter.deprecated(true);
             }
             formatter.appendText(field.getName());
+            if (field.isDeprecated()) {
+                formatter.deprecated(false);
+            }
             Collection<? extends String> types = field.getDefaultTypeNames();
             StringBuilder sb = null;
             if (!types.isEmpty()) {
@@ -399,9 +402,6 @@ public final class NavigatorScanner {
                 }
                 formatter.appendText(sb.toString());
                 formatter.appendHtml(CLOSE_FONT);
-            }
-            if (field.isDeprecated()) {
-                formatter.deprecated(false);
             }
             return formatter.getText();
         }
@@ -529,6 +529,9 @@ public final class NavigatorScanner {
                 formatter.deprecated(true);
             }
             formatter.appendText(getName());
+            if (getConstant().isDeprecated()) {
+                formatter.deprecated(false);
+            }
             final ConstantElement constant = getConstant();
             String value = constant.getValue();
             if (value != null) {
@@ -536,9 +539,6 @@ public final class NavigatorScanner {
                 formatter.appendHtml(FONT_GRAY_COLOR); //NOI18N
                 formatter.appendText(value);
                 formatter.appendHtml(CLOSE_FONT);
-            }
-            if (getConstant().isDeprecated()) {
-                formatter.deprecated(false);
             }
             return formatter.getText();
         }
