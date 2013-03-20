@@ -1052,7 +1052,7 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
                                                            # PROPERTIES
                                                            arguments           : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                            oldValueIsPrimitive : OBJECT oldValueIsPrimitive [ANONYMOUS: false, DECLARED: true - oldValueIsPrimitive, MODIFIERS: PRIVATE, VARIABLE]
-                            observable    : FUNCTION observable [ANONYMOUS: false, DECLARED: true - observable, MODIFIERS: PRIVATE, METHOD]
+                            observable    : FUNCTION observable [ANONYMOUS: false, DECLARED: true - observable, MODIFIERS: PRIVATE, CONSTRUCTOR]
                                           # RETURN TYPES
                                           _L21.ko
                                           _L21.ko.observable.observable._latestValue
@@ -1061,7 +1061,16 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
                                           arguments         : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
                                                             # PROPERTIES
                                                             length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
-                                          equalityComparer  : OBJECT equalityComparer [ANONYMOUS: false, DECLARED: false - equalityComparer, MODIFIERS: PUBLIC, PROPERTY]
+                                          equalityComparer  : FUNCTION equalityComparer [ANONYMOUS: false, DECLARED: true - equalityComparer, MODIFIERS: PUBLIC, METHOD]
+                                                            # RETURN TYPES
+                                                            Boolean
+                                                            _L21.primitiveTypes
+                                                            # PARAMETERS
+                                                            OBJECT a [ANONYMOUS: false, DECLARED: true - a, MODIFIERS: PUBLIC, PARAMETER]
+                                                            OBJECT b [ANONYMOUS: false, DECLARED: true - b, MODIFIERS: PUBLIC, PARAMETER]
+                                                            # PROPERTIES
+                                                            arguments           : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                            oldValueIsPrimitive : OBJECT oldValueIsPrimitive [ANONYMOUS: false, DECLARED: true - oldValueIsPrimitive, MODIFIERS: PRIVATE, VARIABLE]
                                           notifySubscribers : OBJECT notifySubscribers [ANONYMOUS: false, DECLARED: false - notifySubscribers, MODIFIERS: PUBLIC, PROPERTY]
                                           peek              : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, STATIC, METHOD]
                                                             # PROPERTIES
@@ -1222,7 +1231,138 @@ observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLAR
                                       valueWillMutate : FUNCTION valueWillMutate [ANONYMOUS: false, DECLARED: false - valueWillMutate, MODIFIERS: PUBLIC, METHOD]
                                                       # PROPERTIES
                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                            result    : OBJECT result [ANONYMOUS: false, DECLARED: true - result, MODIFIERS: PRIVATE, VARIABLE]
+                            result    : OBJECT result [ANONYMOUS: false, DECLARED: true - result, MODIFIERS: PRIVATE, OBJECT]
+                                      # PROPERTIES
+                                      destroy         : FUNCTION destroy [ANONYMOUS: false, DECLARED: true - destroy, MODIFIERS: PUBLIC, METHOD]
+                                                      # RETURN TYPES
+                                                      undefined
+                                                      # PARAMETERS
+                                                      OBJECT valueOrPredicate [ANONYMOUS: false, DECLARED: true - valueOrPredicate, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments       : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      i               : OBJECT i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]
+                                                      predicate       : OBJECT predicate [ANONYMOUS: false, DECLARED: true - predicate, MODIFIERS: PRIVATE, OBJECT]
+                                                                      # PROPERTIES
+                                                                      _L1109 : FUNCTION _L1109 [ANONYMOUS: false, DECLARED: true - _L1109, MODIFIERS: PUBLIC, METHOD]
+                                                                             # RETURN TYPES
+                                                                             Boolean
+                                                                             # PARAMETERS
+                                                                             OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
+                                                                             # PROPERTIES
+                                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      underlyingArray : OBJECT underlyingArray [ANONYMOUS: false, DECLARED: true - underlyingArray, MODIFIERS: PRIVATE, OBJECT]
+                                                                      # PROPERTIES
+                                                                      length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                                                      value           : OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PRIVATE, VARIABLE]
+                                      destroyAll      : FUNCTION destroyAll [ANONYMOUS: false, DECLARED: true - destroyAll, MODIFIERS: PUBLIC, METHOD]
+                                                      # RETURN TYPES
+                                                      Array
+                                                      # PARAMETERS
+                                                      OBJECT arrayOfValues [ANONYMOUS: false, DECLARED: true - arrayOfValues, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      _L1122    : FUNCTION _L1122 [ANONYMOUS: true, DECLARED: true - _L1122, MODIFIERS: PUBLIC, METHOD]
+                                                                # RETURN TYPES
+                                                                Boolean
+                                                                # PROPERTIES
+                                                                arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      _L1127    : FUNCTION _L1127 [ANONYMOUS: true, DECLARED: true - _L1127, MODIFIERS: PUBLIC, METHOD]
+                                                                # RETURN TYPES
+                                                                Boolean
+                                                                # PARAMETERS
+                                                                OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
+                                                                # PROPERTIES
+                                                                arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      indexOf         : FUNCTION indexOf [ANONYMOUS: false, DECLARED: true - indexOf, MODIFIERS: PUBLIC, METHOD]
+                                                      # RETURN TYPES
+                                                      @exp;ko@pro;utils@call;arrayIndexOf
+                                                      # PARAMETERS
+                                                      OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments       : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      underlyingArray : OBJECT underlyingArray [ANONYMOUS: false, DECLARED: true - underlyingArray, MODIFIERS: PRIVATE, VARIABLE]
+                                      peek            : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      remove          : FUNCTION remove [ANONYMOUS: false, DECLARED: true - remove, MODIFIERS: PUBLIC, METHOD]
+                                                      # RETURN TYPES
+                                                      Array
+                                                      # PARAMETERS
+                                                      OBJECT valueOrPredicate [ANONYMOUS: false, DECLARED: true - valueOrPredicate, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments       : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      i               : OBJECT i [ANONYMOUS: false, DECLARED: true - i, MODIFIERS: PRIVATE, VARIABLE]
+                                                      predicate       : OBJECT predicate [ANONYMOUS: false, DECLARED: true - predicate, MODIFIERS: PRIVATE, OBJECT]
+                                                                      # PROPERTIES
+                                                                      _L1071 : FUNCTION _L1071 [ANONYMOUS: false, DECLARED: true - _L1071, MODIFIERS: PUBLIC, METHOD]
+                                                                             # RETURN TYPES
+                                                                             Boolean
+                                                                             # PARAMETERS
+                                                                             OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
+                                                                             # PROPERTIES
+                                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      removedValues   : OBJECT removedValues [ANONYMOUS: false, DECLARED: true - removedValues, MODIFIERS: PRIVATE, VARIABLE]
+                                                                      # PROPERTIES
+                                                                      length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                                                                      push   : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
+                                                                             # PARAMETERS
+                                                                             OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                                             # PROPERTIES
+                                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      underlyingArray : OBJECT underlyingArray [ANONYMOUS: false, DECLARED: true - underlyingArray, MODIFIERS: PRIVATE, OBJECT]
+                                                                      # PROPERTIES
+                                                                      length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                                                                      splice : FUNCTION splice [ANONYMOUS: false, DECLARED: false - splice, MODIFIERS: PUBLIC, METHOD]
+                                                                             # PARAMETERS
+                                                                             OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
+                                                                             OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
+                                                                             # PROPERTIES
+                                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      value           : OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PRIVATE, VARIABLE]
+                                      removeAll       : FUNCTION removeAll [ANONYMOUS: false, DECLARED: true - removeAll, MODIFIERS: PUBLIC, METHOD]
+                                                      # RETURN TYPES
+                                                      Array
+                                                      # PARAMETERS
+                                                      OBJECT arrayOfValues [ANONYMOUS: false, DECLARED: true - arrayOfValues, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      _L1102          : FUNCTION _L1102 [ANONYMOUS: true, DECLARED: true - _L1102, MODIFIERS: PUBLIC, METHOD]
+                                                                      # RETURN TYPES
+                                                                      Boolean
+                                                                      # PARAMETERS
+                                                                      OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
+                                                                      # PROPERTIES
+                                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      allValues       : OBJECT allValues [ANONYMOUS: false, DECLARED: true - allValues, MODIFIERS: PRIVATE, VARIABLE]
+                                                      arguments       : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      underlyingArray : OBJECT underlyingArray [ANONYMOUS: false, DECLARED: true - underlyingArray, MODIFIERS: PRIVATE, OBJECT]
+                                                                      # PROPERTIES
+                                                                      length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                                                                      slice  : FUNCTION slice [ANONYMOUS: false, DECLARED: false - slice, MODIFIERS: PUBLIC, METHOD]
+                                                                             # PARAMETERS
+                                                                             OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                                             # PROPERTIES
+                                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                      splice : FUNCTION splice [ANONYMOUS: false, DECLARED: false - splice, MODIFIERS: PUBLIC, METHOD]
+                                                                             # PARAMETERS
+                                                                             OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
+                                                                             OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
+                                                                             # PROPERTIES
+                                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      replace         : FUNCTION replace [ANONYMOUS: false, DECLARED: true - replace, MODIFIERS: PUBLIC, METHOD]
+                                                      # RETURN TYPES
+                                                      undefined
+                                                      # PARAMETERS
+                                                      OBJECT oldItem [ANONYMOUS: false, DECLARED: true - oldItem, MODIFIERS: PUBLIC, PARAMETER]
+                                                      OBJECT newItem [ANONYMOUS: false, DECLARED: true - newItem, MODIFIERS: PUBLIC, PARAMETER]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                      index     : OBJECT index [ANONYMOUS: false, DECLARED: true - index, MODIFIERS: PRIVATE, VARIABLE]
+                                      valueHasMutated : FUNCTION valueHasMutated [ANONYMOUS: false, DECLARED: true - valueHasMutated, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                      valueWillMutate : FUNCTION valueWillMutate [ANONYMOUS: false, DECLARED: true - valueWillMutate, MODIFIERS: PUBLIC, METHOD]
+                                                      # PROPERTIES
+                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 removeNode                  : FUNCTION removeNode [ANONYMOUS: false, DECLARED: true - removeNode, MODIFIERS: PUBLIC, METHOD]
                             # PARAMETERS
                             OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
@@ -1354,98 +1494,180 @@ subscribable                : FUNCTION subscribable [ANONYMOUS: false, DECLARED:
                             # RETURN TYPES
                             undefined
                             # PROPERTIES
-                            _subscriptions : OBJECT _subscriptions [ANONYMOUS: false, DECLARED: true - _subscriptions, MODIFIERS: PUBLIC, OBJECT_LITERAL]
-                            arguments      : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                            call           : FUNCTION call [ANONYMOUS: false, DECLARED: false - call, MODIFIERS: PUBLIC, METHOD]
-                                           # PARAMETERS
-                                           OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                           # PROPERTIES
-                                           arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                            fn             : OBJECT fn [ANONYMOUS: false, DECLARED: true - fn, MODIFIERS: PUBLIC, OBJECT_LITERAL]
-                                           # PROPERTIES
-                                           _subscriptions        : OBJECT _subscriptions [ANONYMOUS: false, DECLARED: false - _subscriptions, MODIFIERS: PUBLIC, OBJECT]
-                                                                 # PROPERTIES
-                                                                 hasOwnProperty : FUNCTION hasOwnProperty [ANONYMOUS: false, DECLARED: false - hasOwnProperty, MODIFIERS: PUBLIC, METHOD]
-                                                                                # PARAMETERS
-                                                                                OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                # PROPERTIES
-                                                                                arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                 length         : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
-                                                                 push           : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
-                                                                                # PARAMETERS
-                                                                                OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                # PROPERTIES
-                                                                                arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                           extend                : OBJECT extend [ANONYMOUS: false, DECLARED: true - extend, MODIFIERS: PUBLIC, PROPERTY]
-                                           getSubscriptionsCount : FUNCTION getSubscriptionsCount [ANONYMOUS: false, DECLARED: true - getSubscriptionsCount, MODIFIERS: PUBLIC, METHOD]
-                                                                 # RETURN TYPES
-                                                                 Number
+                            _subscriptions        : OBJECT _subscriptions [ANONYMOUS: false, DECLARED: true - _subscriptions, MODIFIERS: PUBLIC, OBJECT]
+                                                  # PROPERTIES
+                                                  hasOwnProperty : FUNCTION hasOwnProperty [ANONYMOUS: false, DECLARED: false - hasOwnProperty, MODIFIERS: PUBLIC, METHOD]
+                                                                 # PARAMETERS
+                                                                 OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                                                                  # PROPERTIES
                                                                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                 eventName : OBJECT eventName [ANONYMOUS: false, DECLARED: true - eventName, MODIFIERS: PRIVATE, VARIABLE]
-                                                                 total     : OBJECT total [ANONYMOUS: false, DECLARED: true - total, MODIFIERS: PRIVATE, VARIABLE]
-                                           notifySubscribers     : FUNCTION notifySubscribers [ANONYMOUS: false, DECLARED: true - notifySubscribers, MODIFIERS: PUBLIC, METHOD]
-                                                                 # RETURN TYPES
-                                                                 undefined
+                                                  length         : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                                                  push           : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
                                                                  # PARAMETERS
-                                                                 OBJECT valueToNotify [ANONYMOUS: false, DECLARED: true - valueToNotify, MODIFIERS: PUBLIC, PARAMETER]
-                                                                 OBJECT event [ANONYMOUS: false, DECLARED: true - event, MODIFIERS: PUBLIC, PARAMETER]
+                                                                 OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                                                                  # PROPERTIES
-                                                                 _L917     : FUNCTION _L917 [ANONYMOUS: true, DECLARED: true - _L917, MODIFIERS: PUBLIC, METHOD]
-                                                                           # RETURN TYPES
-                                                                           undefined
-                                                                           # PROPERTIES
-                                                                           _subscriptions : OBJECT _subscriptions [ANONYMOUS: false, DECLARED: false - _subscriptions, MODIFIERS: PUBLIC, OBJECT]
+                                                                 arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            arguments             : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            call                  : FUNCTION call [ANONYMOUS: false, DECLARED: false - call, MODIFIERS: PUBLIC, METHOD]
+                                                  # PARAMETERS
+                                                  OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                  # PROPERTIES
+                                                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            extend                : OBJECT extend [ANONYMOUS: false, DECLARED: true - extend, MODIFIERS: PUBLIC, PROPERTY]
+                            fn                    : OBJECT fn [ANONYMOUS: false, DECLARED: true - fn, MODIFIERS: PUBLIC, OBJECT_LITERAL]
+                                                  # PROPERTIES
+                                                  _subscriptions        : OBJECT _subscriptions [ANONYMOUS: false, DECLARED: false - _subscriptions, MODIFIERS: PUBLIC, OBJECT]
+                                                                        # PROPERTIES
+                                                                        hasOwnProperty : FUNCTION hasOwnProperty [ANONYMOUS: false, DECLARED: false - hasOwnProperty, MODIFIERS: PUBLIC, METHOD]
+                                                                                       # PARAMETERS
+                                                                                       OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                                                       # PROPERTIES
+                                                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                        length         : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
+                                                                        push           : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
+                                                                                       # PARAMETERS
+                                                                                       OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                                                       # PROPERTIES
+                                                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                  extend                : OBJECT extend [ANONYMOUS: false, DECLARED: true - extend, MODIFIERS: PUBLIC, PROPERTY]
+                                                  getSubscriptionsCount : FUNCTION getSubscriptionsCount [ANONYMOUS: false, DECLARED: true - getSubscriptionsCount, MODIFIERS: PUBLIC, METHOD]
+                                                                        # RETURN TYPES
+                                                                        Number
+                                                                        # PROPERTIES
+                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                        eventName : OBJECT eventName [ANONYMOUS: false, DECLARED: true - eventName, MODIFIERS: PRIVATE, VARIABLE]
+                                                                        total     : OBJECT total [ANONYMOUS: false, DECLARED: true - total, MODIFIERS: PRIVATE, VARIABLE]
+                                                  notifySubscribers     : FUNCTION notifySubscribers [ANONYMOUS: false, DECLARED: true - notifySubscribers, MODIFIERS: PUBLIC, METHOD]
+                                                                        # RETURN TYPES
+                                                                        undefined
+                                                                        # PARAMETERS
+                                                                        OBJECT valueToNotify [ANONYMOUS: false, DECLARED: true - valueToNotify, MODIFIERS: PUBLIC, PARAMETER]
+                                                                        OBJECT event [ANONYMOUS: false, DECLARED: true - event, MODIFIERS: PUBLIC, PARAMETER]
+                                                                        # PROPERTIES
+                                                                        _L917     : FUNCTION _L917 [ANONYMOUS: true, DECLARED: true - _L917, MODIFIERS: PUBLIC, METHOD]
+                                                                                  # RETURN TYPES
+                                                                                  undefined
+                                                                                  # PROPERTIES
+                                                                                  _subscriptions : OBJECT _subscriptions [ANONYMOUS: false, DECLARED: false - _subscriptions, MODIFIERS: PUBLIC, OBJECT]
+                                                                                                 # PROPERTIES
+                                                                                                 slice : FUNCTION slice [ANONYMOUS: false, DECLARED: false - slice, MODIFIERS: PUBLIC, METHOD]
+                                                                                                       # PARAMETERS
+                                                                                                       OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                                                                       # PROPERTIES
+                                                                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                                  arguments      : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                        _L918     : FUNCTION _L918 [ANONYMOUS: true, DECLARED: true - _L918, MODIFIERS: PUBLIC, METHOD]
+                                                                                  # RETURN TYPES
+                                                                                  undefined
+                                                                                  # PARAMETERS
+                                                                                  OBJECT subscription [ANONYMOUS: false, DECLARED: true - subscription, MODIFIERS: PUBLIC, PARAMETER]
                                                                                           # PROPERTIES
-                                                                                          slice : FUNCTION slice [ANONYMOUS: false, DECLARED: false - slice, MODIFIERS: PUBLIC, METHOD]
-                                                                                                # PARAMETERS
-                                                                                                OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                # PROPERTIES
-                                                                                                arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                           arguments      : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                 _L918     : FUNCTION _L918 [ANONYMOUS: true, DECLARED: true - _L918, MODIFIERS: PUBLIC, METHOD]
-                                                                           # RETURN TYPES
-                                                                           undefined
-                                                                           # PARAMETERS
-                                                                           OBJECT subscription [ANONYMOUS: false, DECLARED: true - subscription, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                   # PROPERTIES
-                                                                                   callback   : FUNCTION callback [ANONYMOUS: false, DECLARED: false - callback, MODIFIERS: PUBLIC, METHOD]
-                                                                                              # PARAMETERS
-                                                                                              OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                              # PROPERTIES
-                                                                                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                                   isDisposed : OBJECT isDisposed [ANONYMOUS: false, DECLARED: false - isDisposed, MODIFIERS: PUBLIC, PROPERTY]
+                                                                                          callback   : FUNCTION callback [ANONYMOUS: false, DECLARED: false - callback, MODIFIERS: PUBLIC, METHOD]
+                                                                                                     # PARAMETERS
+                                                                                                     OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                                                                     # PROPERTIES
+                                                                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                                          isDisposed : OBJECT isDisposed [ANONYMOUS: false, DECLARED: false - isDisposed, MODIFIERS: PUBLIC, PROPERTY]
+                                                                                  # PROPERTIES
+                                                                                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                  subscribe             : FUNCTION subscribe [ANONYMOUS: false, DECLARED: true - subscribe, MODIFIERS: PUBLIC, METHOD]
+                                                                        # PARAMETERS
+                                                                        OBJECT callback [ANONYMOUS: false, DECLARED: true - callback, MODIFIERS: PUBLIC, PARAMETER]
+                                                                                # PROPERTIES
+                                                                                bind : FUNCTION bind [ANONYMOUS: false, DECLARED: false - bind, MODIFIERS: PUBLIC, METHOD]
+                                                                                     # PARAMETERS
+                                                                                     OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                                                     # PROPERTIES
+                                                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                        OBJECT callbackTarget [ANONYMOUS: false, DECLARED: true - callbackTarget, MODIFIERS: PUBLIC, PARAMETER]
+                                                                        OBJECT event [ANONYMOUS: false, DECLARED: true - event, MODIFIERS: PUBLIC, PARAMETER]
+                                                                        # PROPERTIES
+                                                                        arguments     : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                        boundCallback : OBJECT boundCallback [ANONYMOUS: false, DECLARED: true - boundCallback, MODIFIERS: PRIVATE, VARIABLE]
+                                                                        subscription  : OBJECT subscription [ANONYMOUS: false, DECLARED: true - subscription, MODIFIERS: PRIVATE, OBJECT]
+                                                                                      # PROPERTIES
+                                                                                      _L904          : FUNCTION _L904 [ANONYMOUS: false, DECLARED: true - _L904, MODIFIERS: PUBLIC, METHOD]
+                                                                                                     # RETURN TYPES
+                                                                                                     undefined
+                                                                                                     # PROPERTIES
+                                                                                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                                      _subscriptions : OBJECT _subscriptions [ANONYMOUS: false, DECLARED: false - _subscriptions, MODIFIERS: PUBLIC, OBJECT]
+                                                                                                     # PROPERTIES
+                                                                                                     bind : FUNCTION bind [ANONYMOUS: false, DECLARED: false - bind, MODIFIERS: PUBLIC, METHOD]
+                                                                                                          # PARAMETERS
+                                                                                                          OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                                                                          # PROPERTIES
+                                                                                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            getSubscriptionsCount : FUNCTION getSubscriptionsCount [ANONYMOUS: false, DECLARED: true - getSubscriptionsCount, MODIFIERS: PUBLIC, METHOD]
+                                                  # RETURN TYPES
+                                                  Number
+                                                  # PROPERTIES
+                                                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                  eventName : OBJECT eventName [ANONYMOUS: false, DECLARED: true - eventName, MODIFIERS: PRIVATE, VARIABLE]
+                                                  total     : OBJECT total [ANONYMOUS: false, DECLARED: true - total, MODIFIERS: PRIVATE, VARIABLE]
+                            notifySubscribers     : FUNCTION notifySubscribers [ANONYMOUS: false, DECLARED: true - notifySubscribers, MODIFIERS: PUBLIC, METHOD]
+                                                  # RETURN TYPES
+                                                  undefined
+                                                  # PARAMETERS
+                                                  OBJECT valueToNotify [ANONYMOUS: false, DECLARED: true - valueToNotify, MODIFIERS: PUBLIC, PARAMETER]
+                                                  OBJECT event [ANONYMOUS: false, DECLARED: true - event, MODIFIERS: PUBLIC, PARAMETER]
+                                                  # PROPERTIES
+                                                  _L917     : FUNCTION _L917 [ANONYMOUS: true, DECLARED: true - _L917, MODIFIERS: PUBLIC, METHOD]
+                                                            # RETURN TYPES
+                                                            undefined
+                                                            # PROPERTIES
+                                                            _subscriptions : OBJECT _subscriptions [ANONYMOUS: false, DECLARED: false - _subscriptions, MODIFIERS: PUBLIC, OBJECT]
                                                                            # PROPERTIES
-                                                                           arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                 arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                           subscribe             : FUNCTION subscribe [ANONYMOUS: false, DECLARED: true - subscribe, MODIFIERS: PUBLIC, METHOD]
-                                                                 # PARAMETERS
-                                                                 OBJECT callback [ANONYMOUS: false, DECLARED: true - callback, MODIFIERS: PUBLIC, PARAMETER]
-                                                                         # PROPERTIES
-                                                                         bind : FUNCTION bind [ANONYMOUS: false, DECLARED: false - bind, MODIFIERS: PUBLIC, METHOD]
-                                                                              # PARAMETERS
-                                                                              OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                              # PROPERTIES
-                                                                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                 OBJECT callbackTarget [ANONYMOUS: false, DECLARED: true - callbackTarget, MODIFIERS: PUBLIC, PARAMETER]
-                                                                 OBJECT event [ANONYMOUS: false, DECLARED: true - event, MODIFIERS: PUBLIC, PARAMETER]
-                                                                 # PROPERTIES
-                                                                 arguments     : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                 boundCallback : OBJECT boundCallback [ANONYMOUS: false, DECLARED: true - boundCallback, MODIFIERS: PRIVATE, VARIABLE]
-                                                                 subscription  : OBJECT subscription [ANONYMOUS: false, DECLARED: true - subscription, MODIFIERS: PRIVATE, OBJECT]
+                                                                           slice : FUNCTION slice [ANONYMOUS: false, DECLARED: false - slice, MODIFIERS: PUBLIC, METHOD]
+                                                                                 # PARAMETERS
+                                                                                 OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                                                 # PROPERTIES
+                                                                                 arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                            arguments      : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                  _L918     : FUNCTION _L918 [ANONYMOUS: true, DECLARED: true - _L918, MODIFIERS: PUBLIC, METHOD]
+                                                            # RETURN TYPES
+                                                            undefined
+                                                            # PARAMETERS
+                                                            OBJECT subscription [ANONYMOUS: false, DECLARED: true - subscription, MODIFIERS: PUBLIC, PARAMETER]
+                                                                    # PROPERTIES
+                                                                    callback   : FUNCTION callback [ANONYMOUS: false, DECLARED: false - callback, MODIFIERS: PUBLIC, METHOD]
+                                                                               # PARAMETERS
+                                                                               OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                                                                                # PROPERTIES
-                                                                               _L904          : FUNCTION _L904 [ANONYMOUS: false, DECLARED: true - _L904, MODIFIERS: PUBLIC, METHOD]
-                                                                                              # RETURN TYPES
-                                                                                              undefined
-                                                                                              # PROPERTIES
-                                                                                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                               _subscriptions : OBJECT _subscriptions [ANONYMOUS: false, DECLARED: false - _subscriptions, MODIFIERS: PUBLIC, OBJECT]
-                                                                                              # PROPERTIES
-                                                                                              bind : FUNCTION bind [ANONYMOUS: false, DECLARED: false - bind, MODIFIERS: PUBLIC, METHOD]
-                                                                                                   # PARAMETERS
-                                                                                                   OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                                                   # PROPERTIES
-                                                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                    isDisposed : OBJECT isDisposed [ANONYMOUS: false, DECLARED: false - isDisposed, MODIFIERS: PUBLIC, PROPERTY]
+                                                            # PROPERTIES
+                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                            subscribe             : FUNCTION subscribe [ANONYMOUS: false, DECLARED: true - subscribe, MODIFIERS: PUBLIC, METHOD]
+                                                  # PARAMETERS
+                                                  OBJECT callback [ANONYMOUS: false, DECLARED: true - callback, MODIFIERS: PUBLIC, PARAMETER]
+                                                          # PROPERTIES
+                                                          bind : FUNCTION bind [ANONYMOUS: false, DECLARED: false - bind, MODIFIERS: PUBLIC, METHOD]
+                                                               # PARAMETERS
+                                                               OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                               # PROPERTIES
+                                                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                  OBJECT callbackTarget [ANONYMOUS: false, DECLARED: true - callbackTarget, MODIFIERS: PUBLIC, PARAMETER]
+                                                  OBJECT event [ANONYMOUS: false, DECLARED: true - event, MODIFIERS: PUBLIC, PARAMETER]
+                                                  # PROPERTIES
+                                                  arguments     : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                  boundCallback : OBJECT boundCallback [ANONYMOUS: false, DECLARED: true - boundCallback, MODIFIERS: PRIVATE, VARIABLE]
+                                                  subscription  : OBJECT subscription [ANONYMOUS: false, DECLARED: true - subscription, MODIFIERS: PRIVATE, OBJECT]
+                                                                # PROPERTIES
+                                                                _L904          : FUNCTION _L904 [ANONYMOUS: false, DECLARED: true - _L904, MODIFIERS: PUBLIC, METHOD]
+                                                                               # RETURN TYPES
+                                                                               undefined
+                                                                               # PROPERTIES
+                                                                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                                                _subscriptions : OBJECT _subscriptions [ANONYMOUS: false, DECLARED: false - _subscriptions, MODIFIERS: PUBLIC, OBJECT]
+                                                                               # PROPERTIES
+                                                                               bind : FUNCTION bind [ANONYMOUS: false, DECLARED: false - bind, MODIFIERS: PUBLIC, METHOD]
+                                                                                    # PARAMETERS
+                                                                                    OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                                                    # PROPERTIES
+                                                                                    arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 templateEngine              : FUNCTION templateEngine [ANONYMOUS: false, DECLARED: true - templateEngine, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
                             undefined

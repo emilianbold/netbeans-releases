@@ -156,13 +156,13 @@ public class KnockoutExtendInterceptor implements FunctionInterceptor {
             return object;
         }
         int index = 0;
-        if (object.getName().equals(identifier.get(0))) {
-            if (identifier.size() == 1) {
-                return object;
-            } else {
-                index++;
-            }
-        }
+//        if (object.getName().equals(identifier.get(0))) {
+//            if (identifier.size() == 1) {
+//                return object;
+//            } else {
+//                index++;
+//            }
+//        }
         return getReference(object.getProperty(identifier.get(index)),
                 identifier.subList(index + 1, identifier.size()));
     }
