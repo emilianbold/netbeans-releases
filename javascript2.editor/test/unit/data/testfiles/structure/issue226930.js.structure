@@ -12,6 +12,11 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
     $toLeftButton:VARIABLE:[PRIVATE]:ESCAPED{$toLeftButton}<font color="#999999">ESCAPED{ : }@call;$</font>:
     $toRightButton:VARIABLE:[PRIVATE]:ESCAPED{$toRightButton}<font color="#999999">ESCAPED{ : }@call;$</font>:
     addSelectOption:METHOD:[PRIVATE]:ESCAPED{addSelectOption}ESCAPED{(}ESCAPED{$sourceOption}ESCAPED{, }ESCAPED{target}ESCAPED{, }ESCAPED{ignoreIndex}ESCAPED{)}:
+      $targetOption:VARIABLE:[PRIVATE]:ESCAPED{$targetOption}:
+      $targetSelect:VARIABLE:[PRIVATE]:ESCAPED{$targetSelect}<font color="#999999">ESCAPED{ : }_L12.$.multicombo.addSelectOption.selectData.targetSelect</font>:
+      moved:VARIABLE:[PRIVATE]:ESCAPED{moved}<font color="#999999">ESCAPED{ : }Boolean</font>:
+      selectData:VARIABLE:[PRIVATE]:ESCAPED{selectData}<font color="#999999">ESCAPED{ : }@call;getSelect</font>:
+      sourceOptionIndex:VARIABLE:[PRIVATE]:ESCAPED{sourceOptionIndex}:
     defaults:CLASS:[PRIVATE]:ESCAPED{defaults}:
       classes:CLASS:[PUBLIC]:ESCAPED{classes}:
         mainElement:FIELD:[PUBLIC]:ESCAPED{mainElement}<font color="#999999">ESCAPED{ : }String</font>:
@@ -26,9 +31,25 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
     filterTimeout:VARIABLE:[PRIVATE]:ESCAPED{filterTimeout}:
     getSelect:METHOD:[PRIVATE]:ESCAPED{getSelect}ESCAPED{(}ESCAPED{targetName}ESCAPED{)}:
     initGuiMultiple:METHOD:[PRIVATE]:ESCAPED{initGuiMultiple}ESCAPED{(}ESCAPED{)}:
+      $table:VARIABLE:[PRIVATE]:ESCAPED{$table}<font color="#999999">ESCAPED{ : }@call;jQuery</font>:
+      $tbody:VARIABLE:[PRIVATE]:ESCAPED{$tbody}<font color="#999999">ESCAPED{ : }@call;jQuery</font>:
     initGuiSingle:METHOD:[PRIVATE]:ESCAPED{initGuiSingle}ESCAPED{(}ESCAPED{)}:
+      $table:VARIABLE:[PRIVATE]:ESCAPED{$table}<font color="#999999">ESCAPED{ : }@call;jQuery</font>:
+      $tbody:VARIABLE:[PRIVATE]:ESCAPED{$tbody}<font color="#999999">ESCAPED{ : }@call;jQuery</font>:
+      numberOfOptions:VARIABLE:[PRIVATE]:ESCAPED{numberOfOptions}:
     leftSelectOptionsData:VARIABLE:[PRIVATE]:ESCAPED{leftSelectOptionsData}<font color="#999999">ESCAPED{ : }Array</font>:
     moveSelectOptions:METHOD:[PRIVATE]:ESCAPED{moveSelectOptions}ESCAPED{(}ESCAPED{target}ESCAPED{)}:
+      $optionsToMove:VARIABLE:[PRIVATE]:ESCAPED{$optionsToMove}:
+      data:CLASS:[PRIVATE]:ESCAPED{data}:
+        index:FIELD:[PUBLIC]:ESCAPED{index}<font color="#999999">ESCAPED{ : }@var;index</font>:
+        text:FIELD:[PUBLIC]:ESCAPED{text}<font color="#999999">ESCAPED{ : }@var;text</font>:
+        value:FIELD:[PUBLIC]:ESCAPED{value}<font color="#999999">ESCAPED{ : }@var;value</font>:
+      i:VARIABLE:[PRIVATE]:ESCAPED{i}:
+      sd_length:VARIABLE:[PRIVATE]:ESCAPED{sd_length}<font color="#999999">ESCAPED{ : }_L12.$.multicombo.moveSelectOptions.sourceData.length</font>:
+      selectData:VARIABLE:[PRIVATE]:ESCAPED{selectData}<font color="#999999">ESCAPED{ : }@call;getSelect</font>:
+      sourceData:VARIABLE:[PRIVATE]:ESCAPED{sourceData}<font color="#999999">ESCAPED{ : }_L12.$.multicombo.moveSelectOptions.selectData.sourceData</font>:
+      targetData:VARIABLE:[PRIVATE]:ESCAPED{targetData}<font color="#999999">ESCAPED{ : }_L12.$.multicombo.moveSelectOptions.selectData.targetData</font>:
+      td_length:VARIABLE:[PRIVATE]:ESCAPED{td_length}<font color="#999999">ESCAPED{ : }_L12.$.multicombo.moveSelectOptions.targetData.length</font>:
     plugin:CLASS:[PRIVATE]:ESCAPED{plugin}:
       init:METHOD:[PUBLIC]:ESCAPED{init}ESCAPED{(}ESCAPED{)}:
       settings:CLASS:[PUBLIC]:ESCAPED{settings}:
@@ -36,6 +57,11 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
         selectContainerWidth:FIELD:[PUBLIC]:ESCAPED{selectContainerWidth}:
         type:FIELD:[PUBLIC]:ESCAPED{type}<font color="#999999">ESCAPED{ : }String</font>:
       val:METHOD:[PUBLIC]:ESCAPED{val}ESCAPED{(}ESCAPED{values}ESCAPED{)}<font color="#999999">ESCAPED{ : }returnArray</font>:
+        currentLeftFilterText:VARIABLE:[PRIVATE]:ESCAPED{currentLeftFilterText}:
+        currentRightFilterText:VARIABLE:[PRIVATE]:ESCAPED{currentRightFilterText}:
+        i:VARIABLE:[PRIVATE]:ESCAPED{i}<font color="#999999">ESCAPED{ : }Number</font>:
+        numberOfRightSelectOptions:VARIABLE:[PRIVATE]:ESCAPED{numberOfRightSelectOptions}:
+        returnArray:VARIABLE:[PRIVATE]:ESCAPED{returnArray}<font color="#999999">ESCAPED{ : }Array</font>:
     resetSearchWidth:METHOD:[PRIVATE]:ESCAPED{resetSearchWidth}ESCAPED{(}ESCAPED{)}:
     resizeSelect:METHOD:[PRIVATE]:ESCAPED{resizeSelect}ESCAPED{(}ESCAPED{target}ESCAPED{, }ESCAPED{options}ESCAPED{)}:
     rightSelectOptionsData:VARIABLE:[PRIVATE]:ESCAPED{rightSelectOptionsData}<font color="#999999">ESCAPED{ : }Array</font>:
