@@ -57,6 +57,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 
 import com.sun.source.doctree.AttributeTree;
+import com.sun.source.doctree.AttributeTree.ValueKind;
 import com.sun.source.doctree.AuthorTree;
 import com.sun.source.doctree.CommentTree;
 import com.sun.source.doctree.DeprecatedTree;
@@ -274,6 +275,12 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         if (n == null)
             return;
 	out.appendUtf8(n.getByteArray(), n.getByteOffset(), n.getByteLength());
+    }
+    
+    private void print(javax.lang.model.element.Name n) {
+        if (n == null)
+            return;
+        print(n.toString());
     }
 
     public void print(JCTree t) {
@@ -1857,6 +1864,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             case SERIAL_FIELD:
             case SINCE:
             case THROWS:
+            case UNKNOWN_BLOCK_TAG:
             case VERSION:
                 if(before) {
                     newline();
@@ -1902,21 +1910,57 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public Void visitAttribute(AttributeTree node, Void p) {
+        print(node.getName());
+        String quote;
+        switch (node.getValueKind()) {
+            case EMPTY:
+                return null;
+            case UNQUOTED:
+                quote = "";
+                break;
+            case SINGLE:
+                quote = "'";
+                break;
+            case DOUBLE:
+                quote = "\"";
+                break;
+            default:
+                throw new AssertionError();
+        }
+        print("=");
+        print(quote);
+        for (DocTree docTree : node.getValue()) {
+            doAccept((DCTree)docTree);
+        }
+        print(quote);
         return null;
     }
 
     @Override
     public Void visitAuthor(AuthorTree node, Void p) {
+        printTagName(node);
+        print(" ");
+        for (DocTree docTree : node.getName()) {
+            doAccept((DCTree)docTree);
+        }
         return null;
     }
 
     @Override
     public Void visitComment(CommentTree node, Void p) {
+        print(node.getBody());
         return null;
     }
 
     @Override
     public Void visitDeprecated(DeprecatedTree node, Void p) {
+        printTagName(node);
+        if (!node.getBody().isEmpty()) {
+            needSpace();
+            for (DocTree docTree : node.getBody()) {
+                doAccept((DCTree)docTree);
+            }
+        }
         return null;
     }
 
@@ -1950,43 +1994,92 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public Void visitDocRoot(DocRootTree node, Void p) {
+        print("{");
+        printTagName(node);
+        print("}");
+        return null;
+    }
+
+    @Override
+    public Void visitStartElement(StartElementTree node, Void p) {
+        print("<");
+        print(node.getName());
+        java.util.List<? extends DocTree> attrs = node.getAttributes();
+        if (!attrs.isEmpty()) {
+            print(" ");
+            for (DocTree docTree : attrs) {
+                doAccept((DCTree)docTree);
+            }
+            DocTree last = attrs.get(attrs.size() - 1);
+            if (node.isSelfClosing() && last instanceof AttributeTree
+                    && ((AttributeTree) last).getValueKind() == ValueKind.UNQUOTED)
+                print(" ");
+        }
+        if (node.isSelfClosing())
+            print("/");
+        print(">");
         return null;
     }
 
     @Override
     public Void visitEndElement(EndElementTree node, Void p) {
+        print("</");
+        print(node.getName());
+        print(">");
         return null;
     }
 
     @Override
     public Void visitEntity(EntityTree node, Void p) {
+        print("&");
+        print(node.getName());
+        print(";");
         return null;
     }
 
     @Override
     public Void visitErroneous(ErroneousTree node, Void p) {
+        print(node.getBody());
         return null;
     }
 
     @Override
     public Void visitIdentifier(IdentifierTree node, Void p) {
-        print(node.getName().toString());
+        print(node.getName());
         return null;
     }
 
     @Override
     public Void visitInheritDoc(InheritDocTree node, Void p) {
+        print("{");
         printTagName(node);
+        print("}");
         return null;
     }
 
     @Override
     public Void visitLink(LinkTree node, Void p) {
+        print("{");
+        printTagName(node);
+        print(" ");
+        doAccept((DCTree)node.getReference());
+        if (!node.getLabel().isEmpty()) {
+            print(" ");
+            for (DocTree docTree : node.getLabel()) {
+                doAccept((DCTree)docTree);
+            }
+        }
+        print("}");
         return null;
     }
 
     @Override
     public Void visitLiteral(LiteralTree node, Void p) {
+        print("{");
+        printTagName(node);
+        print(" ");
+        doAccept((DCTree)node.getBody());
+        print("}");
         return null;
     }
 
@@ -2018,11 +2111,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         }
         if (node.getMemberName() != null) {
             print("#");
-            print(node.getMemberName().toString());
+            print(node.getMemberName());
         }
         if (node.getMethodParameters() != null) {
             print("(");
-            boolean first = false;
+            boolean first = true;
             for (ExpressionTree param : node.getMethodParameters()) {
                 if (!first) print(", ");
                 print(param.toString());
@@ -2045,31 +2138,65 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public Void visitSee(SeeTree node, Void p) {
+        printTagName(node);
+        boolean first = true;
+        boolean needSep = true;
+        for (DocTree t: node.getReference()) {
+            if (needSep) print(" ");
+            needSep = (first && (t instanceof ReferenceTree));
+            first = false;
+            print((DCTree)t);
+        }
         return null;
     }
 
     @Override
     public Void visitSerial(SerialTree node, Void p) {
+        printTagName(node);
+        if (!node.getDescription().isEmpty()) {
+            print(" ");
+            for (DocTree docTree : node.getDescription()) {
+                doAccept((DCTree)docTree);
+            }
+        }
         return null;
     }
 
     @Override
     public Void visitSerialData(SerialDataTree node, Void p) {
+        printTagName(node);
+        if (!node.getDescription().isEmpty()) {
+            print(" ");
+            for (DocTree docTree : node.getDescription()) {
+                doAccept((DCTree)docTree);
+            }
+        }
         return null;
     }
 
     @Override
     public Void visitSerialField(SerialFieldTree node, Void p) {
+        printTagName(node);
+        print(" ");
+        print((DCTree)node.getName());
+        print(" ");
+        print((DCTree)node.getType());
+        if (!node.getDescription().isEmpty()) {
+            print(" ");
+            for (DocTree docTree : node.getDescription()) {
+                doAccept((DCTree)docTree);
+            }
+        }
         return null;
     }
 
     @Override
     public Void visitSince(SinceTree node, Void p) {
-        return null;
-    }
-
-    @Override
-    public Void visitStartElement(StartElementTree node, Void p) {
+        printTagName(node);
+        print(" ");
+        for (DocTree docTree : node.getBody()) {
+            doAccept((DCTree)docTree);
+        }
         return null;
     }
 
@@ -2084,34 +2211,65 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         printTagName(node);
         needSpace();
         doAccept((DCTree)node.getExceptionName());
-        for (DocTree docTree : node.getDescription()) {
-            doAccept((DCTree)docTree);
+        if(!node.getDescription().isEmpty()) {
+            needSpace();
+            for (DocTree docTree : node.getDescription()) {
+                doAccept((DCTree)docTree);
+            }
         }
         return null;
     }
 
     @Override
     public Void visitUnknownBlockTag(UnknownBlockTagTree node, Void p) {
+        print("@");
+        print(node.getTagName());
+        print(" ");
+        for (DocTree docTree : node.getContent()) {
+            doAccept((DCTree)docTree);
+        }
         return null;
     }
 
     @Override
     public Void visitUnknownInlineTag(UnknownInlineTagTree node, Void p) {
+        print("{");
+        print("@");
+        print(node.getTagName());
+        print(" ");
+        for (DocTree docTree : node.getContent()) {
+            doAccept((DCTree)docTree);
+        }
+        print("}");
         return null;
     }
 
     @Override
     public Void visitValue(ValueTree node, Void p) {
+        print("{");
+        printTagName(node);
+        if (node.getReference() != null) {
+            print(" ");
+            print((DCTree)node.getReference());
+        }
+        print("}");
         return null;
     }
 
     @Override
     public Void visitVersion(VersionTree node, Void p) {
+        printTagName(node);
+        print(" ");
+        for (DocTree docTree : node.getBody()) {
+            doAccept((DCTree)docTree);
+        }
         return null;
     }
 
     @Override
     public Void visitOther(DocTree node, Void p) {
+        print("(UNKNOWN: " + node + ")");
+        newline();
         return null;
     }
 

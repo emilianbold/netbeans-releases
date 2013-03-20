@@ -51,6 +51,7 @@ import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocRootTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.EndElementTree;
+import com.sun.source.doctree.EntityTree;
 import com.sun.source.doctree.InheritDocTree;
 import com.sun.source.doctree.LinkTree;
 import com.sun.source.doctree.ParamTree;
@@ -65,6 +66,7 @@ import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.ThrowsTree;
 import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
 import com.sun.source.tree.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -3142,6 +3144,10 @@ public final class TreeMaker {
         return delegate.Author(name);
     }
 
+    public EntityTree Entity(CharSequence name) {
+        return delegate.Entity(name);
+    }
+
     public DeprecatedTree Deprecated(List<? extends DocTree> text) {
         return delegate.Deprecated(text);
     }
@@ -3212,6 +3218,10 @@ public final class TreeMaker {
 
     public VersionTree Version(List<? extends DocTree> text) {
         return delegate.Version(text);
+    }
+
+    public ValueTree Value(ReferenceTree ref) {
+        return delegate.Value(ref);
     }
 
     public com.sun.source.doctree.LiteralTree Code(TextTree text) {

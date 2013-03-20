@@ -1614,12 +1614,14 @@ public class TreeFactory {
     private DocTreeMaker docMake;
 
     public AttributeTree Attribute(CharSequence name, AttributeTree.ValueKind vkind, List<? extends DocTree> value) {
-        ListBuffer<DCTree> lb = new ListBuffer<DCTree>();
-        for (DocTree t : value) {
-            lb.append((DCTree) t);
+        ListBuffer<DCTree> lb = null;
+        if(value != null) {
+            lb = new ListBuffer<DCTree>();
+            for (DocTree t : value) {
+                lb.append((DCTree) t);
+            }
         }
-
-        return docMake.at(NOPOS).Attribute((Name) names.fromString(name.toString()), vkind, lb.toList());
+        return docMake.at(NOPOS).Attribute((Name) names.fromString(name.toString()), vkind, lb != null ? lb.toList() : null);
     }
 
     public AuthorTree Author(List<? extends DocTree> name) {
@@ -1792,8 +1794,8 @@ public class TreeFactory {
         return docMake.at(NOPOS).EndElement(names.fromString(name.toString()));
     }
 
-    public EntityTree Entity(Name name) {
-        return docMake.at(NOPOS).Entity(name);
+    public EntityTree Entity(CharSequence name) {
+        return docMake.at(NOPOS).Entity(names.fromString(name.toString()));
     }
     
     public ThrowsTree Exception(ReferenceTree name, List<? extends DocTree> description) {
