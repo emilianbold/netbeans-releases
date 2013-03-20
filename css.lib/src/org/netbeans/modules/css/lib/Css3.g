@@ -1239,7 +1239,13 @@ sass_else
 
 sass_control_expression
     :
-    cp_expression (( CP_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
+    sass_control_expression_condition ( (OR | AND) ws? sass_control_expression_condition)*    
+
+    ;
+
+sass_control_expression_condition
+    :
+    (NOT ws?)? cp_expression (( CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
     ;
 
 sass_for
@@ -1613,6 +1619,7 @@ TILDE		: '~'       ;
 PIPE            : '|'       ;
 
 CP_EQ           : '=='       ;
+CP_NOT_EQ       : '!='       ;
 LESS            : '<'       ;
 GREATER_OR_EQ   : '>='      ;
 LESS_OR_EQ      : '=<'      ;
@@ -1642,6 +1649,7 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
 ONLY 		: 'ONLY';
 NOT		: 'NOT'; 
 AND		: 'AND';
+OR		: 'OR';
 
 // -------------
 // Identifier.  Identifier tokens pick up properties names and values

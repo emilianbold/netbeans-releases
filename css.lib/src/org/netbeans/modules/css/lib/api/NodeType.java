@@ -416,6 +416,8 @@ public enum NodeType {
     
     cp_mixin_call_arg,
     
+    sass_control_expression_condition,
+    
     
     ;
     
