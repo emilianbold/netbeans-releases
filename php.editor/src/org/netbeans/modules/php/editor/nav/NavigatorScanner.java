@@ -388,19 +388,17 @@ public final class NavigatorScanner {
                 formatter.deprecated(false);
             }
             Collection<? extends String> types = field.getDefaultTypeNames();
-            StringBuilder sb = null;
             if (!types.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
+                int i = 0;
                 for (String type : types) {
-                    if (sb == null) {
-                        sb = new StringBuilder();
-                    } else {
-                        sb.append(", "); //NOI18N
+                    i++;
+                    if (i > 1) {
+                        formatter.appendText(", "); //NOI18N
                     }
-                    sb.append(type);
+                    formatter.appendText(type);
 
                 }
-                formatter.appendText(sb.toString());
                 formatter.appendHtml(CLOSE_FONT);
             }
             return formatter.getText();
