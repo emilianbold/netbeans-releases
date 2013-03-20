@@ -309,7 +309,7 @@ public final class Model {
         boolean anonymous = Boolean.valueOf(m.group(3));
         boolean declared = Boolean.valueOf(m.group(4));
         // Decalartion name is not used actually
-        String declarationName = m.group(6);
+        //String declarationName = m.group(6);
         String strModifiers = m.group(8);
         // Kind is not used actually
         JsElement.Kind kind = JsElement.Kind.valueOf(m.group(12));

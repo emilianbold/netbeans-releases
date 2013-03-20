@@ -152,7 +152,6 @@ public class JsStructureScanner implements StructureScanner {
         // expect that the ts in on "{"
         int position = ts.offset();
         boolean value = false;
-        TokenId tokenId = ts.token().id();
         // find the function keyword
         ts.move(functionKeywordPosition);
         ts.movePrevious();

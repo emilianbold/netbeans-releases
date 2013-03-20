@@ -107,7 +107,7 @@ public final class ModelElementFactory {
 
     public JsObject loadGlobalObject(InputStream is) throws IOException {
         JsFunction global = newGlobalObject(null, Integer.MAX_VALUE);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
         try {
             for (JsObject object : Model.readModel(reader, global)) {
                 putGlobalProperty(global, object);
