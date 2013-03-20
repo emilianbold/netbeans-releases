@@ -294,7 +294,7 @@ public class J2eeTestCase extends JellyTestCase {
     protected J2eeServerNode getServerNode(Server server) {
         switch (server) {
             case GLASSFISH:
-                return GlassFishV3ServerNode.invoke();
+                return J2eeServerNode.invoke("GlassFish");
             case JBOSS:
                 return J2eeServerNode.invoke("JBoss");
             case TOMCAT:
