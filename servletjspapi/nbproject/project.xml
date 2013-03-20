@@ -60,8 +60,8 @@ made subject to such option by the copyright holder.
                 <package>javax.servlet.jsp.tagext</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/servlet3.0-jsp2.2-api.jar</runtime-relative-path>
-                <binary-origin>external/servlet3.0-jsp2.2-api.jar</binary-origin>
+                <runtime-relative-path>ext/servlet3.1-jsp2.3-api.jar</runtime-relative-path>
+                <binary-origin>external/servlet3.1-jsp2.3-api.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

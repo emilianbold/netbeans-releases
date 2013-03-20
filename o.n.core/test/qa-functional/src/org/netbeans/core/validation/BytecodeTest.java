@@ -276,8 +276,8 @@ public class BytecodeTest extends NbTestCase {
             if (!f.getName().endsWith(".jar"))
                 continue;
             
-            if (f.getName().endsWith("servlet-2.2.jar") 
-                    || f.getName().endsWith("servlet3.0-jsp2.2-api.jar")
+            if (f.getName().endsWith("servlet-3.1.jar")
+                    || f.getName().endsWith("servlet3.1-jsp2.3-api.jar")
                     || f.getName().endsWith("javaee.jar")
                     || f.getName().endsWith("javac-impl-nb-7.0-b07.jar")
                     || f.getName().endsWith("jaxb-impl.jar")
@@ -385,8 +385,8 @@ public class BytecodeTest extends NbTestCase {
             if (!f.getName().endsWith(".jar"))
                 continue;
             
-            if (f.getName().endsWith("servlet-2.2.jar") 
-                    || f.getName().endsWith("servlet3.0-jsp2.2-api.jar")
+            if (f.getName().endsWith("servlet-3.1.jar")
+                    || f.getName().endsWith("servlet3.1-jsp2.3-api.jar")
                     || f.getName().endsWith("cdc-pp-awt-layout.jar")) // #105314
                 continue;
                     
