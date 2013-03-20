@@ -2201,6 +2201,10 @@
                     // fx:platform
                     var plat = deploy.createPlatform();
                     plat.setProject(project);
+                    var requestRT = project.getProperty("javafx.deploy.request.runtime");
+                    if(requestRT != null && requestRT.length() > 0) {
+                        plat.setJavafx(requestRT);
+                    }
                     var jvmargs = project.getProperty("run.jvmargs");
                     if(jvmargs != null && jvmargs.length() > 0) {
                         var jvmargss = jvmargs.split(" ");

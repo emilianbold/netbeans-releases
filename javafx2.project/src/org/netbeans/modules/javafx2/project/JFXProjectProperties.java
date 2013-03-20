@@ -183,6 +183,7 @@ public final class JFXProjectProperties {
     public static final String SPLASH_IMAGE_FILE = "javafx.deploy.splash"; // NOI18N
     public static final String PERMISSIONS_ELEVATED = "javafx.deploy.permissionselevated"; // NOI18N
     public static final String DISABLE_PROXY = "javafx.deploy.disable.proxy"; // NOI18N
+    public static final String REQUEST_RT = "javafx.deploy.request.runtime"; // NOI18N
 
     // Deployment - signing
     public static final String JAVAFX_SIGNING_ENABLED = "javafx.signing.enabled"; //NOI18N
@@ -478,6 +479,15 @@ public final class JFXProjectProperties {
     public void setJSCallbacksChanged(boolean changed) {
         jsCallbacksChanged = changed;
     }
+    
+    // Deployment - requested RT
+    String requestedRT;
+    public String getRequestedRT() {
+        return requestedRT;
+    }
+    public void setRequestedRT(String rt) {
+        this.requestedRT = rt;
+    }
         
     // Project related references
     private J2SEPropertyEvaluator j2sePropEval;
@@ -629,6 +639,7 @@ public final class JFXProjectProperties {
             initNativeBundling(evaluator);
             initResources(evaluator, project, CONFIGS);
             initJSCallbacks(evaluator);
+            initRest(evaluator);
         }
     }
     
@@ -1160,6 +1171,8 @@ public final class JFXProjectProperties {
         setOrRemove(editableProps, ICON_FILE, wsIconPath);
         setOrRemove(editableProps, SPLASH_IMAGE_FILE, splashImagePath);
         setOrRemove(editableProps, NATIVE_ICON_FILE, nativeIconPath);
+        // store requested RT
+        setOrRemove(editableProps, REQUEST_RT, requestedRT);
         // store resources
         storeResources(editableProps);
         // store JavaScript callbacks
@@ -1321,6 +1334,10 @@ public final class JFXProjectProperties {
                 }
             }
         }
+    }
+    
+    private void initRest(PropertyEvaluator eval) {
+        requestedRT = eval.getProperty(REQUEST_RT);
     }
     
     private boolean isParentOf(File parent, File child) {
