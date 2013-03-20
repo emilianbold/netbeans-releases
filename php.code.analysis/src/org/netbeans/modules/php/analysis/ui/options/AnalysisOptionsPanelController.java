@@ -79,6 +79,8 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
         assert EventQueue.isDispatchThread();
         getAnalysisOptionsPanel().setCodeSnifferPath(getAnalysisOptions().getCodeSnifferPath());
         getAnalysisOptionsPanel().setCodeSnifferStandard(getAnalysisOptions().getCodeSnifferStandard());
+        getAnalysisOptionsPanel().setMessDetectorPath(getAnalysisOptions().getMessDetectorPath());
+        getAnalysisOptionsPanel().setMessDetectorRuleSets(getAnalysisOptions().getMessDetectorRuleSets());
 
         changed = false;
     }
@@ -87,6 +89,8 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
     public void applyChanges() {
         getAnalysisOptions().setCodeSnifferPath(getAnalysisOptionsPanel().getCodeSnifferPath());
         getAnalysisOptions().setCodeSnifferStandard(getAnalysisOptionsPanel().getCodeSnifferStandard());
+        getAnalysisOptions().setMessDetectorPath(getAnalysisOptionsPanel().getMessDetectorPath());
+        getAnalysisOptions().setMessDetectorRuleSets(getAnalysisOptionsPanel().getMessDetectorRuleSets());
 
         changed = false;
     }
@@ -100,7 +104,8 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
         assert EventQueue.isDispatchThread();
         AnalysisOptionsPanel panel = getAnalysisOptionsPanel();
         ValidationResult result = new AnalysisOptionsValidator()
-                .validate(panel.getCodeSnifferPath(), panel.getCodeSnifferStandard())
+                .validateCodeSniffer(panel.getCodeSnifferPath(), panel.getCodeSnifferStandard())
+                .validateMessDetector(panel.getMessDetectorPath(), panel.getMessDetectorRuleSets())
                 .getResult();
         // errors
         if (result.hasErrors()) {

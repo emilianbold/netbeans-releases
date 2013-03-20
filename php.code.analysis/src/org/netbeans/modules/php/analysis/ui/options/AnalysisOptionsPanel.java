@@ -44,6 +44,7 @@ package org.netbeans.modules.php.analysis.ui.options;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -53,13 +54,17 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.AbstractListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
@@ -67,9 +72,12 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.analysis.commands.MessDetector;
 import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
 import org.netbeans.modules.php.analysis.ui.CodeSnifferStandardsComboBoxModel;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
@@ -92,9 +100,11 @@ public class AnalysisOptionsPanel extends JPanel {
     private static final long serialVersionUID = -895132465784564654L;
 
     private static final String CODE_SNIFFER_LAST_FOLDER_SUFFIX = ".codeSniffer"; // NOI18N
+    private static final String MESS_DETECTOR_LAST_FOLDER_SUFFIX = ".messDetector"; // NOI18N
 
     final CodeSnifferStandardsComboBoxModel codeSnifferStandardsModel = new CodeSnifferStandardsComboBoxModel();
 
+    private final RuleSetsListModel ruleSetsListModel = new RuleSetsListModel();
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
@@ -104,17 +114,22 @@ public class AnalysisOptionsPanel extends JPanel {
         init(selectedCodeSnifferStandard);
     }
 
+    private void init(String selectedCodeSnifferStandard) {
+        errorLabel.setText(" "); // NOI18N
+        DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        initCodeSniffer(selectedCodeSnifferStandard, defaultDocumentListener);
+        initMessDetector(defaultDocumentListener);
+    }
+
     @NbBundle.Messages({
         "# {0} - short script name",
         "# {1} - long script name",
         "AnalysisOptionsPanel.codeSniffer.hint=Full path of Code Sniffer script (typically {0} or {1}).",
     })
-    private void init(String selectedCodeSnifferStandard) {
-        errorLabel.setText(" "); // NOI18N
+    private void initCodeSniffer(String selectedCodeSnifferStandard, DocumentListener defaultDocumentListener) {
         codeSnifferHintLabel.setText(Bundle.AnalysisOptionsPanel_codeSniffer_hint(CodeSniffer.NAME, CodeSniffer.LONG_NAME));
 
         // listeners
-        DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         codeSnifferTextField.getDocument().addDocumentListener(defaultDocumentListener);
         codeSnifferTextField.getDocument().addDocumentListener(new CodeSnifferStandardDocumentListener());
         ItemListener defaultItemListener = new DefaultItemListener();
@@ -122,6 +137,22 @@ public class AnalysisOptionsPanel extends JPanel {
 
         // standards
         setStandards(selectedCodeSnifferStandard);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - short script name",
+        "# {1} - long script name",
+        "AnalysisOptionsPanel.messDetector.hint=Full path of Mess Detector script (typically {0} or {1}).",
+    })
+    private void initMessDetector(DocumentListener defaultDocumentListener) {
+        messDetectorHintLabel.setText(Bundle.AnalysisOptionsPanel_messDetector_hint(MessDetector.NAME, MessDetector.LONG_NAME));
+
+        // listeners
+        messDetectorTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        messDetectorRuleSetsList.addListSelectionListener(new DefaultListSelectionListener());
+
+        // rulesets
+        messDetectorRuleSetsList.setModel(ruleSetsListModel);
     }
 
     @NbBundle.Messages("AnalysisOptionsPanel.codeSniffer.error.standards=Standards cannot be fetched, review Output window.")
@@ -159,6 +190,22 @@ public class AnalysisOptionsPanel extends JPanel {
         codeSnifferStandardsModel.setSelectedItem(standard);
     }
 
+    public String getMessDetectorPath() {
+        return messDetectorTextField.getText();
+    }
+
+    public void setMessDetectorPath(String path) {
+        messDetectorTextField.setText(path);
+    }
+
+    public List<String> getMessDetectorRuleSets() {
+        return getSelectedRuleSets();
+    }
+
+    public void setMessDetectorRuleSets(List<String> ruleSets) {
+        selectRuleSets(ruleSets);
+    }
+
     public void setError(String message) {
         errorLabel.setText(" "); // NOI18N
         errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
@@ -177,6 +224,24 @@ public class AnalysisOptionsPanel extends JPanel {
 
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    List<String> getSelectedRuleSets() {
+        Object[] selectedValues = messDetectorRuleSetsList.getSelectedValues();
+        List<String> ruleSets = new ArrayList<String>(selectedValues.length);
+        for (Object selected : selectedValues) {
+            ruleSets.add((String) selected);
+        }
+        return ruleSets;
+    }
+
+    void selectRuleSets(List<String> ruleSets) {
+        messDetectorRuleSetsList.clearSelection();
+        for (String ruleSet : ruleSets) {
+            int indexOf = MessDetector.RULE_SETS.indexOf(ruleSet);
+            assert indexOf != -1 : "Rule set not found: " + ruleSet;
+            messDetectorRuleSetsList.addSelectionInterval(indexOf, indexOf);
+        }
     }
 
     void fireChange() {
@@ -199,8 +264,17 @@ public class AnalysisOptionsPanel extends JPanel {
         codeSnifferHintLabel = new JLabel();
         codeSnifferStandardLabel = new JLabel();
         codeSnifferStandardComboBox = new JComboBox();
+        messDetectorLabel = new JLabel();
+        messDetectorTextField = new JTextField();
+        messDetectorBrowseButton = new JButton();
+        messDetectorSearchButton = new JButton();
+        messDetectorHintLabel = new JLabel();
+        messDetectorRuleSetsLabel = new JLabel();
+        messDetectorRuleSetsScrollPane = new JScrollPane();
+        messDetectorRuleSetsList = new JList();
         noteLabel = new JLabel();
         codeSnifferLearnMoreLabel = new JLabel();
+        messDetectorLearnMoreLabel = new JLabel();
         errorLabel = new JLabel();
 
         codeSnifferLabel.setLabelFor(codeSnifferTextField);
@@ -225,6 +299,29 @@ public class AnalysisOptionsPanel extends JPanel {
         codeSnifferStandardLabel.setLabelFor(codeSnifferStandardComboBox);
         Mnemonics.setLocalizedText(codeSnifferStandardLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.codeSnifferStandardLabel.text")); // NOI18N
 
+        messDetectorLabel.setLabelFor(messDetectorTextField);
+        Mnemonics.setLocalizedText(messDetectorLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.messDetectorLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(messDetectorBrowseButton, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.messDetectorBrowseButton.text")); // NOI18N
+        messDetectorBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                messDetectorBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(messDetectorSearchButton, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.messDetectorSearchButton.text")); // NOI18N
+        messDetectorSearchButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                messDetectorSearchButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(messDetectorHintLabel, "HINT"); // NOI18N
+
+        Mnemonics.setLocalizedText(messDetectorRuleSetsLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.messDetectorRuleSetsLabel.text")); // NOI18N
+
+        messDetectorRuleSetsScrollPane.setViewportView(messDetectorRuleSetsList);
+
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.noteLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(codeSnifferLearnMoreLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.codeSnifferLearnMoreLabel.text")); // NOI18N
@@ -234,6 +331,16 @@ public class AnalysisOptionsPanel extends JPanel {
             }
             public void mousePressed(MouseEvent evt) {
                 codeSnifferLearnMoreLabelMousePressed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(messDetectorLearnMoreLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.messDetectorLearnMoreLabel.text")); // NOI18N
+        messDetectorLearnMoreLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                messDetectorLearnMoreLabelMouseEntered(evt);
+            }
+            public void mousePressed(MouseEvent evt) {
+                messDetectorLearnMoreLabelMousePressed(evt);
             }
         });
 
@@ -252,9 +359,15 @@ public class AnalysisOptionsPanel extends JPanel {
                         .addComponent(codeSnifferLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(messDetectorLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(codeSnifferLabel)
-                    .addComponent(codeSnifferStandardLabel))
+                    .addComponent(codeSnifferStandardLabel)
+                    .addComponent(messDetectorLabel)
+                    .addComponent(messDetectorRuleSetsLabel))
                 .addGap(13, 13, 13)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -263,14 +376,23 @@ public class AnalysisOptionsPanel extends JPanel {
                         .addComponent(codeSnifferBrowseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(codeSnifferSearchButton))
+                    .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                            .addComponent(messDetectorRuleSetsScrollPane, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .addComponent(messDetectorTextField))
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(messDetectorBrowseButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(messDetectorSearchButton))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(messDetectorHintLabel)
                             .addComponent(codeSnifferStandardComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .addComponent(codeSnifferHintLabel))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {codeSnifferBrowseButton, codeSnifferSearchButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {codeSnifferBrowseButton, codeSnifferSearchButton, messDetectorBrowseButton, messDetectorSearchButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -287,12 +409,28 @@ public class AnalysisOptionsPanel extends JPanel {
                     .addComponent(codeSnifferStandardComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(codeSnifferStandardLabel))
                 .addGap(18, 18, 18)
-                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(messDetectorTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(messDetectorSearchButton)
+                    .addComponent(messDetectorBrowseButton)
+                    .addComponent(messDetectorLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(codeSnifferLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(errorLabel)
-                .addGap(0, 0, 0))
+                .addComponent(messDetectorHintLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(messDetectorRuleSetsScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(codeSnifferLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(messDetectorLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(errorLabel))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(messDetectorRuleSetsLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -359,6 +497,69 @@ public class AnalysisOptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_codeSnifferLearnMoreLabelMousePressed
 
+    private void messDetectorLearnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_messDetectorLearnMoreLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_messDetectorLearnMoreLabelMouseEntered
+
+    private void messDetectorLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_messDetectorLearnMoreLabelMousePressed
+        try {
+            URL url = new URL("http://phpmd.org/"); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }//GEN-LAST:event_messDetectorLearnMoreLabelMousePressed
+
+    @NbBundle.Messages("AnalysisOptionsPanel.messDetector.browse.title=Select Mess Detector")
+    private void messDetectorBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_messDetectorBrowseButtonActionPerformed
+        File file = new FileChooserBuilder(AnalysisOptionsPanel.class.getName() + MESS_DETECTOR_LAST_FOLDER_SUFFIX)
+        .setFilesOnly(true)
+        .setTitle(Bundle.AnalysisOptionsPanel_messDetector_browse_title())
+        .showOpenDialog();
+        if (file != null) {
+            messDetectorTextField.setText(file.getAbsolutePath());
+        }
+    }//GEN-LAST:event_messDetectorBrowseButtonActionPerformed
+
+    @NbBundle.Messages({
+        "AnalysisOptionsPanel.messDetector.search.title=Mess Detector scripts",
+        "AnalysisOptionsPanel.messDetector.search.scripts=M&ess Detector scripts:",
+        "AnalysisOptionsPanel.messDetector.search.pleaseWaitPart=Mess Detector scripts",
+        "AnalysisOptionsPanel.messDetector.search.notFound=No Mess Detector scripts found."
+    })
+    private void messDetectorSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_messDetectorSearchButtonActionPerformed
+        String messDetector = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
+
+            @Override
+            public List<String> detect() {
+                return FileUtils.findFileOnUsersPath(MessDetector.NAME, MessDetector.LONG_NAME);
+            }
+
+            @Override
+            public String getWindowTitle() {
+                return Bundle.AnalysisOptionsPanel_messDetector_search_title();
+            }
+
+            @Override
+            public String getListTitle() {
+                return Bundle.AnalysisOptionsPanel_messDetector_search_scripts();
+            }
+
+            @Override
+            public String getPleaseWaitPart() {
+                return Bundle.AnalysisOptionsPanel_messDetector_search_pleaseWaitPart();
+            }
+
+            @Override
+            public String getNoItemsFound() {
+                return Bundle.AnalysisOptionsPanel_messDetector_search_notFound();
+            }
+        });
+        if (messDetector != null) {
+            messDetectorTextField.setText(messDetector);
+        }
+    }//GEN-LAST:event_messDetectorSearchButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton codeSnifferBrowseButton;
@@ -370,6 +571,15 @@ public class AnalysisOptionsPanel extends JPanel {
     private JLabel codeSnifferStandardLabel;
     private JTextField codeSnifferTextField;
     private JLabel errorLabel;
+    private JButton messDetectorBrowseButton;
+    private JLabel messDetectorHintLabel;
+    private JLabel messDetectorLabel;
+    private JLabel messDetectorLearnMoreLabel;
+    private JLabel messDetectorRuleSetsLabel;
+    private JList messDetectorRuleSetsList;
+    private JScrollPane messDetectorRuleSetsScrollPane;
+    private JButton messDetectorSearchButton;
+    private JTextField messDetectorTextField;
     private JLabel noteLabel;
     // End of variables declaration//GEN-END:variables
 
@@ -438,6 +648,45 @@ public class AnalysisOptionsPanel extends JPanel {
         @Override
         public void itemStateChanged(ItemEvent e) {
             fireChange();
+        }
+
+    }
+
+    private final class DefaultListSelectionListener implements ListSelectionListener {
+
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            fireChange();
+        }
+
+    }
+
+    private static final class RuleSetsListModel extends AbstractListModel {
+
+        private static final long serialVersionUID = -5761457612154L;
+
+        // @GuardedBy("EDT")
+        private final List<String> ruleSets;
+
+
+        public RuleSetsListModel() {
+            assert EventQueue.isDispatchThread();
+            this.ruleSets = new ArrayList<String>(MessDetector.RULE_SETS);
+        }
+
+        @Override
+        public int getSize() {
+            assert EventQueue.isDispatchThread();
+            return ruleSets.size();
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            assert EventQueue.isDispatchThread();
+            return ruleSets.get(index);
         }
 
     }
