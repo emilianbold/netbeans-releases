@@ -42,16 +42,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.core.network.proxy;
 
-import org.netbeans.modules.core.network.proxy.NbProxySelector;
-import org.netbeans.modules.core.network.proxy.ProxySettings;
 import java.lang.reflect.Field;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import junit.framework.TestResult;
+import org.netbeans.core.ProxySettings;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.NbPreferences;
@@ -100,7 +99,7 @@ public class HttpSettingsTest extends NbTestCase {
     protected void setUp () throws Exception {
         super.setUp ();
         System.setProperty ("http.nonProxyHosts", NETBEANS_ORG + ',' + NETBEANS_ORG);
-        NbProxySelector.register();
+        new NbProxySelector();
         proxyPreferences  = NbPreferences.root ().node ("/org/netbeans/core");
         proxyPreferences.addPreferenceChangeListener (new PreferenceChangeListener() {
             @Override

@@ -39,10 +39,8 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.core;
+package org.netbeans.core.network.proxy;
 
-import org.netbeans.modules.core.network.proxy.NbProxySelector;
-import org.netbeans.modules.core.network.proxy.ProxyAutoConfig;
 import java.io.File;
 import java.net.Proxy;
 import java.net.URI;
@@ -52,7 +50,6 @@ import java.util.List;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Utilities;
 
 /**
  *

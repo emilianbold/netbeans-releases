@@ -42,9 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core;
+package org.netbeans.core.network.proxy;
 
-import org.netbeans.modules.core.network.proxy.NbProxySelector;
 import org.netbeans.junit.*;
 
 /** Tests HTTP Proxy settings.

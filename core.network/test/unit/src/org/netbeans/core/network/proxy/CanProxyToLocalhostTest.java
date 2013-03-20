@@ -41,9 +41,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.core;
+package org.netbeans.core.network.proxy;
 
-import org.netbeans.modules.core.network.proxy.NbProxySelector;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -74,7 +73,8 @@ public class CanProxyToLocalhostTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         myPS = new MyPS();
-        selector = NbProxySelector.create(myPS);
+        ProxySelector.setDefault(myPS);
+        selector = new NbProxySelector();
         TO_LOCALHOST = new URI("http://localhost");
         TO_NB = new URI("http://netbeans.org");
     }
@@ -86,13 +86,13 @@ public class CanProxyToLocalhostTest extends NbTestCase {
 
     public void testProxyForLocalhost() {
         Locale.setDefault(new Locale("te", "ST"));
-        assertEquals("Connect TO_LOCALHOST provided by MyPS", "HTTP @ my.webcache:8080", selector.select(TO_LOCALHOST).get(1).toString());
+        assertEquals("Connect TO_LOCALHOST provided by MyPS", "HTTP @ my.webcache:8080", selector.select(TO_LOCALHOST).get(0).toString());
         assertEquals("One call to my ps", 1, myPS.called);
     }
 
     public void testAlwaysProxyForNonLocalhost() {
         Locale.setDefault(Locale.US);
-        assertEquals("Connect TO_NB provided by MyPS", "HTTP @ my.webcache:8080", selector.select(TO_NB).get(1).toString());
+        assertEquals("Connect TO_NB provided by MyPS", "HTTP @ my.webcache:8080", selector.select(TO_NB).get(0).toString());
         assertEquals("One call to my ps", 1, myPS.called);
     }
 

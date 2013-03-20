@@ -44,7 +44,6 @@
 
 package org.netbeans.core.network.proxy;
 
-import org.netbeans.core.ProxySettings;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.*;
@@ -55,6 +54,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.core.ProxySettings;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
