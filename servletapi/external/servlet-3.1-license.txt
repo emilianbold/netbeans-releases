@@ -1,8 +1,9 @@
-Name: Java API for Servlets, Java API for JavaServer Pages
-Version: servlet3.0-jsp2.2.1
+Name: Servlet API
+Version: 3.1
 License: CDDL-1.0
 Description: Java API for Servlets, Java API for JavaServer Pages
 Origin: https://glassfish.dev.java.net/
+Description: Java Servlet API
 OSR: 5563
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
