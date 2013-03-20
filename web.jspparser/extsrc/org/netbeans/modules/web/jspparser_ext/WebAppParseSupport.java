@@ -543,11 +543,6 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     LOG.fine(e.getMessage());
                     LOG.log(Level.FINE, null, e);
                     JspParserAPI.ErrorDescriptor error = constructErrorDescriptor(e, wmRoot, jspFile);
-                    // JspParser does not have up to date ELParser so it brings invalid EL errors, the valid ones should
-                    //   be catched by the EL embedding -> EL parsing
-                    if (e.getMessage().contains("javax.el.ELException")) {
-                        error = null;
-                    }
                     resultRef.result = new JspParserAPI.ParseResult(nbPageInfo, nbNodes, new JspParserAPI.ErrorDescriptor[] {error});
                 }
             }

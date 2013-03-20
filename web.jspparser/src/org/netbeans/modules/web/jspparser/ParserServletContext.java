@@ -226,11 +226,6 @@ public class ParserServletContext implements ServletContext {
         setAttribute(JSP_TAGLIBRARY_CACHE, new ConcurrentHashMap<String, TagLibraryInfo>());
         setAttribute(JSP_TAGFILE_JAR_URLS_CACHE, new ConcurrentHashMap<String, URL>());
     }
-
-    @Override
-    public String getVirtualServerName() {
-        return "";
-    }
     
     
     private static final class TaglibDescriptorImpl implements TaglibDescriptor {
