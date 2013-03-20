@@ -87,6 +87,7 @@ public enum CssTokenId implements TokenId {
     ERROR(org.antlr.runtime.Token.INVALID_TOKEN_TYPE, ERRORS),
     
     AND(Css3Lexer.AND, OPERATORS),
+    OR(Css3Lexer.OR, OPERATORS),
     NOT(Css3Lexer.NOT, OPERATORS),
     ONLY(Css3Lexer.ONLY, OPERATORS),
     RESOLUTION(Css3Lexer.RESOLUTION, NUMBERS),
@@ -264,6 +265,8 @@ public enum CssTokenId implements TokenId {
     SASS_ELSE(Css3Lexer.SASS_ELSE, AT_RULE_SYMBOL),
 //    SASS_ELSEIF(Css3Lexer.SASS_ELSEIF, AT_RULE_SYMBOL),
     SASS_CONTENT(Css3Lexer.SASS_CONTENT, AT_RULE_SYMBOL),
+    
+    CP_NOT_EQ(Css3Lexer.CP_NOT_EQ, AT_RULE_SYMBOL),
     
     ;
     
