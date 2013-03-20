@@ -206,9 +206,12 @@ public final class AnalysisUtils {
         return lineOffsets;
     }
 
-    private static int countPhpFiles(FileObject folder, boolean recursive) {
+    private static int countPhpFiles(FileObject fileObject, boolean recursive) {
         int count = 0;
-        Enumeration<? extends FileObject> children = folder.getChildren(recursive);
+        if (FileUtils.isPhpFile(fileObject)) {
+            count++;
+        }
+        Enumeration<? extends FileObject> children = fileObject.getChildren(recursive);
         while (children.hasMoreElements()) {
             FileObject child = children.nextElement();
             if (FileUtils.isPhpFile(child)) {
