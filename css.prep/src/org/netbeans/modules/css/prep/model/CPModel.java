@@ -211,7 +211,7 @@ public class CPModel {
         NodeVisitor visitor = new NodeVisitor() {
             private boolean in_cp_variable_declaration, in_block_control, in_block;
             private Stack<OffsetRange> contexts = new Stack<OffsetRange>();
-            private CPElement elementAwaitingDeclarationNode;
+            private Collection<CPElement> elementsAwaitingBlockNode = new ArrayList<CPElement>();
             
             @Override
             public boolean visit(Node node) {
@@ -222,10 +222,11 @@ public class CPModel {
                         OffsetRange range = new OffsetRange(node.from(), node.to());
                         contexts.push(range);
                         
-                        if(elementAwaitingDeclarationNode != null) {
-                            elementAwaitingDeclarationNode.setScope(range);
-                            elementAwaitingDeclarationNode = null;
+                        //set scope to the elements preceeding this block node but defining its scope as the block content
+                        for(CPElement e : elementsAwaitingBlockNode) {
+                            e.setScope(range);
                         }
+                        elementsAwaitingBlockNode.clear();
                         
                         //the declarations node represents a content of a code block
                         in_block = true;
@@ -275,14 +276,14 @@ public class CPModel {
                         OffsetRange variableRange = new OffsetRange(node.from(), node.to());
                         CPElement element = new CPElement(handle, variableRange, scope);
 
-                        if(scope == null) {
-                            //in the case of VARIABLE_DECLARATION_MIXIN_PARAMS variable
-                            //the context will be known later during parsing
-                            //
-                            //XXX rewrite the scope resolve completely - ideally computed lazily in CPElement.getScope()
-                            elementAwaitingDeclarationNode = element;
+                        switch(type) {
+                            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
+                                //scope is null as the variable is declared in sass control before the actual block node
+                                //just remember the element and we will set the proper block scope later during parsing
+                                elementsAwaitingBlockNode.add(element);
+                                break;
                         }
-                        
+
                         vars.add(element);
                         break;
 

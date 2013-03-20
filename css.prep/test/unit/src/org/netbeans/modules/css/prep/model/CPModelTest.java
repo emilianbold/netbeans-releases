@@ -258,4 +258,52 @@ public class CPModelTest extends CssTestBase {
 
      }
      
+      public void testScopeOfVariableDeclaredAsMixinArgumentFollowedByMoreArgs() {
+        String source =
+                  "@mixin my($arg, $arg2) {\n"
+                // 012345678901234567
+                + "    color: $arg;\n"
+                + "}\n";
+
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+
+        TestUtil.dumpResult(result);
+        
+        CPModel model = CPModel.getModel(result);
+        assertNotNull(model);
+
+        CPElement var = model.getVariableAtOffset(12); 
+        assertNotNull(var);
+        assertEquals("$arg", var.getName().toString());
+        assertEquals(CPElementType.VARIABLE_DECLARATION_IN_BLOCK_CONTROL, var.getType());
+        
+        OffsetRange range = var.getRange();
+        assertEquals(10, range.getStart());
+        assertEquals(14, range.getEnd());
+
+        //the scope should be the declarations node scope
+        OffsetRange scope = var.getScope();
+        assertNotNull(scope);
+        assertEquals(29, scope.getStart());
+        assertEquals(42, scope.getEnd());
+        
+        //try the second argument
+        var = model.getVariableAtOffset(18); 
+        assertNotNull(var);
+        assertEquals("$arg2", var.getName().toString());
+        assertEquals(CPElementType.VARIABLE_DECLARATION_IN_BLOCK_CONTROL, var.getType());
+        
+        range = var.getRange();
+        assertEquals(16, range.getStart());
+        assertEquals(21, range.getEnd());
+
+        //the scope should be the declarations node scope
+        scope = var.getScope();
+        assertNotNull(scope);
+        assertEquals(29, scope.getStart());
+        assertEquals(42, scope.getEnd());
+
+     }
+     
 }

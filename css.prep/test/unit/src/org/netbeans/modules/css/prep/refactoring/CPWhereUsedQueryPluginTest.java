@@ -49,6 +49,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import static junit.framework.Assert.assertNotNull;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.prep.ProjectTestBase;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -89,7 +90,7 @@ public class CPWhereUsedQueryPluginTest extends ProjectTestBase {
         FileObject clientfile = getTestFile(getSourcesFolderName() + "/client1.scss");
         
         CssParserResult result = parse(libfile);
-        
+        TestUtil.dumpResult(result);
         //line:1, offset:5 - global variable declaration $glob|al_var_lib1: 1;
         RefactoringElementContext context = new RefactoringElementContext(result, 5);
         Collection<RefactoringElement> vars = CPWhereUsedQueryPlugin.findVariables(context);

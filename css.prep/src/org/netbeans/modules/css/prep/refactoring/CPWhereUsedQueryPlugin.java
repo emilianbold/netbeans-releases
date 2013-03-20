@@ -159,7 +159,7 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
                 OffsetRange scope = currentVar.getScope();
                 for (CPElement var : model.getVariables()) {
                     if (var.getName().equals(varName)) {
-                        if (scope.containsInclusive(var.getRange().getStart())) {
+                        if (scope != null && scope.containsInclusive(var.getRange().getStart())) {
                             elements.add(new RefactoringElement(context.getFileObject(), var.getRange(), var.getName()));
                         }
                     }
