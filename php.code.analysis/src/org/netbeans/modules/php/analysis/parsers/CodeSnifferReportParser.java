@@ -54,7 +54,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.analysis.results.Result;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.spi.editor.hints.Severity;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -108,10 +107,9 @@ public final class CodeSnifferReportParser extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if ("file".equals(qName)) { // NOI18N
             processFileStart(attributes);
-        } else if ("error".equals(qName)) { // NOI18N
-            processErrorStart(attributes);
-        } else if ("warning".equals(qName)) { // NOI18N
-            processWarningStart(attributes);
+        } else if ("error".equals(qName) // NOI18N
+                || "warning".equals(qName)) { // NOI18N
+            processResultStart(attributes);
         }
     }
 
@@ -121,7 +119,7 @@ public final class CodeSnifferReportParser extends DefaultHandler {
             processFileEnd();
         } else if ("warning".equals(qName) // NOI18N
                 || "error".equals(qName)) { // NOI18N
-            processWarningErrorEnd();
+            processResultEnd();
         }
     }
 
@@ -144,29 +142,19 @@ public final class CodeSnifferReportParser extends DefaultHandler {
         currentFile = null;
     }
 
-    private void processErrorStart(Attributes attributes) {
-        processWarningErrorStart(Severity.ERROR, attributes);
-    }
-
-    private void processWarningStart(Attributes attributes) {
-        processWarningErrorStart(Severity.WARNING, attributes);
-    }
-
-    private void processWarningErrorStart(Severity severity, Attributes attributes) {
-        assert severity != null;
+    private void processResultStart(Attributes attributes) {
         assert currentFile != null;
         assert currentResult == null : currentResult.getFilePath();
         assert description == null : description.toString();
 
         currentResult = new Result(currentFile);
-        currentResult.setSeverity(severity);
         currentResult.setLine(getInt(attributes, "line")); // NOI18N
         currentResult.setColumn(getInt(attributes, "column")); // NOI18N
         currentResult.setCategory(attributes.getValue("source")); // NOI18N
         description = new StringBuilder(200);
     }
 
-    private void processWarningErrorEnd() {
+    private void processResultEnd() {
         assert currentResult != null;
         assert description != null;
         currentResult.setDescription(description.toString());

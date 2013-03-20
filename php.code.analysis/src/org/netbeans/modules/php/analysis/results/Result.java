@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.php.analysis.results;
 
-import org.netbeans.spi.editor.hints.Severity;
-
 /**
  * Analysis result.
  */
@@ -54,7 +52,6 @@ public final class Result {
     private volatile String category;
     private volatile String subCategory;
     private volatile String description;
-    private volatile Severity severity;
 
 
     public Result(String filepath) {
@@ -108,15 +105,6 @@ public final class Result {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Severity getSeverity() {
-        return severity;
-    }
-
-    public void setSeverity(Severity severity) {
-        assert severity != null;
-        this.severity = severity;
     }
 
 }
