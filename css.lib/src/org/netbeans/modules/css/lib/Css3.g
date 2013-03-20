@@ -1108,14 +1108,14 @@ less_condition_operator
 scss_selector_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            scss_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                scss_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
             )
@@ -1126,14 +1126,14 @@ scss_selector_interpolation_expression
 scss_declaration_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            scss_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                scss_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
             )
@@ -1144,14 +1144,14 @@ scss_declaration_interpolation_expression
 scss_declaration_property_value_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            scss_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                scss_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
             )
@@ -1162,14 +1162,14 @@ scss_declaration_property_value_interpolation_expression
 scss_mq_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            scss_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                scss_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
             )
@@ -1179,7 +1179,7 @@ scss_mq_interpolation_expression
     
 scss_interpolation_expression_var
     :
-        HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
+        HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition | IDENT ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
     ;
     
 //SASS nested properties:
