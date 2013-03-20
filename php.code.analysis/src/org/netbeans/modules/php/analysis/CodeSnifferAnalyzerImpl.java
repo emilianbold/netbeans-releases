@@ -219,7 +219,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
     public static final class CodeSnifferAnalyzerFactory extends AnalyzerFactory {
 
         @StaticResource
-        private static final String ICON_PATH = "org/netbeans/modules/php/analysis/ui/resources/warning.gif"; // NOI18N
+        private static final String ICON_PATH = "org/netbeans/modules/php/analysis/ui/resources/code-sniffer.png"; // NOI18N
 
 
         @NbBundle.Messages("CodeSnifferAnalyzerFactory.displayName=Code Sniffer")
