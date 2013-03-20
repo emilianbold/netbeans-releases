@@ -45,8 +45,8 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
 import org.netbeans.modules.php.analysis.commands.MessDetector;
+import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.NbPreferences;
 
 public final class AnalysisOptions {
@@ -63,7 +63,6 @@ public final class AnalysisOptions {
     // mess detector
     private static final String MESS_DETECTOR_PATH = "messDetector.path"; // NOI18N
     private static final String MESS_DETECTOR_RULE_SETS = "messDetector.ruleSets"; // NOI18N
-    private static final String MESS_DETECTOR_RULE_SETS_DELIMITER = "|"; // NOI18N
 
     private volatile boolean codeSnifferSearched = false;
     private volatile boolean messDetectorSearched = false;
@@ -120,11 +119,11 @@ public final class AnalysisOptions {
         if (rulesets == null) {
             return MessDetector.RULE_SETS;
         }
-        return StringUtils.explode(rulesets, MESS_DETECTOR_RULE_SETS_DELIMITER);
+        return AnalysisUtils.deserialize(rulesets);
     }
 
     public void setMessDetectorRuleSets(List<String> ruleSets) {
-        getPreferences().put(MESS_DETECTOR_RULE_SETS, StringUtils.implode(ruleSets, MESS_DETECTOR_RULE_SETS_DELIMITER));
+        getPreferences().put(MESS_DETECTOR_RULE_SETS, AnalysisUtils.serialize(ruleSets));
     }
 
     private Preferences getPreferences() {
