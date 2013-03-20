@@ -61,11 +61,11 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Parser for code sniffer xml report file.
+ * Parser for mess detector xml report file.
  */
-public final class CodeSnifferReportParser extends DefaultHandler {
+public final class MessDetectorReportParser extends DefaultHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(CodeSnifferReportParser.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MessDetectorReportParser.class.getName());
 
     private final List<Result> results = new ArrayList<Result>();
     private final XMLReader xmlReader;
@@ -75,12 +75,12 @@ public final class CodeSnifferReportParser extends DefaultHandler {
     private StringBuilder description = null;
 
 
-    private CodeSnifferReportParser() throws SAXException {
+    private MessDetectorReportParser() throws SAXException {
         xmlReader = FileUtils.createXmlReader();
     }
 
-    private static CodeSnifferReportParser create(Reader reader) throws SAXException, IOException {
-        CodeSnifferReportParser parser = new CodeSnifferReportParser();
+    private static MessDetectorReportParser create(Reader reader) throws SAXException, IOException {
+        MessDetectorReportParser parser = new MessDetectorReportParser();
         parser.xmlReader.setContentHandler(parser);
         parser.xmlReader.parse(new InputSource(reader));
         return parser;
@@ -107,8 +107,7 @@ public final class CodeSnifferReportParser extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if ("file".equals(qName)) { // NOI18N
             processFileStart(attributes);
-        } else if ("error".equals(qName) // NOI18N
-                || "warning".equals(qName)) { // NOI18N
+        } else if ("violation".equals(qName)) { // NOI18N
             processResultStart(attributes);
         }
     }
@@ -117,8 +116,7 @@ public final class CodeSnifferReportParser extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if ("file".equals(qName)) { // NOI18N
             processFileEnd();
-        } else if ("warning".equals(qName) // NOI18N
-                || "error".equals(qName)) { // NOI18N
+        } else if ("violation".equals(qName)) { // NOI18N
             processResultEnd();
         }
     }
@@ -148,9 +146,8 @@ public final class CodeSnifferReportParser extends DefaultHandler {
         assert description == null : description.toString();
 
         currentResult = new Result(currentFile);
-        currentResult.setLine(getInt(attributes, "line")); // NOI18N
-        currentResult.setColumn(getInt(attributes, "column")); // NOI18N
-        currentResult.setCategory(formatCategory(attributes.getValue("source"))); // NOI18N
+        currentResult.setLine(getInt(attributes, "beginline")); // NOI18N
+        currentResult.setCategory(formatCategory(attributes.getValue("ruleset"), attributes.getValue("rule"))); // NOI18N
         description = new StringBuilder(200);
     }
 
@@ -163,8 +160,8 @@ public final class CodeSnifferReportParser extends DefaultHandler {
         description = null;
     }
 
-    private String formatCategory(String category) {
-        return category.replaceFirst("\\.", ": ").replace(".", " > "); // NOI18N
+    private String formatCategory(String category, String subCategory) {
+        return category + ": " + subCategory;
     }
 
     private int getInt(Attributes attributes, String name) {

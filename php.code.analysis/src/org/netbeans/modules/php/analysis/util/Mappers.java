@@ -39,48 +39,60 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.analysis.parsers;
+package org.netbeans.modules.php.analysis.util;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import static junit.framework.Assert.assertTrue;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.analysis.results.Result;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.LazyFixList;
+import org.netbeans.spi.editor.hints.Severity;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-public class CodeSnifferReportParserTest extends NbTestCase {
+/**
+ * Various mappers.
+ */
+public final class Mappers {
 
-    public CodeSnifferReportParserTest(String name) {
-        super(name);
+    private static final String ANALYZER_PREFIX = "phpCodeAnalysis:"; // NOI18N
+    private static final LazyFixList EMPTY_LAZY_FIX_LIST = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
+
+
+    private Mappers() {
     }
 
-    public void testParse() throws Exception {
-        List<Result> results = CodeSnifferReportParser.parse(getLogFile("phpcs-log.xml"));
-        assertNotNull(results);
-
-        assertEquals(9, results.size());
-        Result result = results.get(0);
-        assertEquals("/home/gapon/NetBeansProjects/_important/TodoList/config/Config.php", result.getFilePath());
-        assertEquals(48, result.getLine());
-        assertEquals(7, result.getColumn());
-        assertEquals("PSR1: Classes > ClassDeclaration > MissingNamespace", result.getCategory());
-        assertEquals("Each class must be in a namespace of at least one level (a top-level vendor name)", result.getDescription());
-
-
-        result = results.get(6);
-        assertEquals("/home/gapon/NetBeansProjects/_important/TodoList/exception/MyPresenter.php", result.getFilePath());
-        assertEquals(1, result.getLine());
-        assertEquals(1, result.getColumn());
-        assertEquals("PSR1: Files > SideEffects > FoundWithSymbols", result.getCategory());
-        assertEquals("A file should declare new symbols (classes, functions, constants, etc.) and cause no other side effects, "
-                + "or it should execute logic with side effects, but should not do both. The first symbol is defined on line 15 "
-                + "and the first side effect is on line 19.", result.getDescription());
+    public static Collection<? extends ErrorDescription> map(List<Result> results) {
+        List<ErrorDescription> errorDescriptions = new ArrayList<ErrorDescription>(results.size());
+        FileObject file = null;
+        String filePath = null;
+        int[] lineMap = null;
+        for (Result result : results) {
+            String currentFilePath = result.getFilePath();
+            if (!currentFilePath.equals(filePath)) {
+                filePath = currentFilePath;
+                file = FileUtil.toFileObject(new File(currentFilePath));
+                assert file != null : "File object not found for " + currentFilePath;
+                lineMap = AnalysisUtils.computeLineMap(file, FileEncodingQuery.getEncoding(file));
+            }
+            assert file != null;
+            assert filePath != null;
+            assert lineMap != null;
+            errorDescriptions.add(map(result, file, lineMap));
+        }
+        return errorDescriptions;
     }
 
-    private File getLogFile(String name) throws Exception {
-        assertNotNull(name);
-        File xmlLog = new File(getDataDir(), name);
-        assertTrue(xmlLog.isFile());
-        return xmlLog;
+    private static ErrorDescription map(Result result, FileObject file, int[] lineMap) {
+        int line = 2 * (Math.min(result.getLine(), lineMap.length / 2) - 1);
+        return ErrorDescriptionFactory.createErrorDescription(ANALYZER_PREFIX + result.getCategory(), Severity.VERIFIER, result.getCategory(),
+                result.getDescription(), EMPTY_LAZY_FIX_LIST, file, lineMap[line], lineMap[line + 1]);
     }
 
 }

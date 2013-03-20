@@ -39,62 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.analysis.results;
+package org.netbeans.modules.php.analysis.ui;
 
-/**
- * Analysis result.
- */
-public final class Result {
+import java.awt.EventQueue;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.AbstractListModel;
+import org.netbeans.modules.php.analysis.commands.MessDetector;
 
-    private final String filepath;
-    private volatile int line = -1;
-    private volatile int column = -1;
-    private volatile String category;
-    private volatile String description;
+public final class MessDetectorRuleSetsListModel extends AbstractListModel {
+
+    private static final long serialVersionUID = -5761457612154L;
+    // @GuardedBy("EDT")
+    private final List<String> ruleSets;
 
 
-    public Result(String filepath) {
-        assert filepath != null;
-        this.filepath = filepath;
+    public MessDetectorRuleSetsListModel() {
+        assert EventQueue.isDispatchThread();
+        this.ruleSets = getAllRuleSets();
     }
 
-    public String getFilePath() {
-        return filepath;
+    public static List<String> getAllRuleSets() {
+        return new ArrayList<String>(MessDetector.RULE_SETS);
     }
 
-    public int getLine() {
-        return line;
+    @Override
+    public int getSize() {
+        assert EventQueue.isDispatchThread();
+        return ruleSets.size();
     }
 
-    public void setLine(int line) {
-        assert line >= 1 : line;
-        this.line = line;
-    }
-
-    public int getColumn() {
-        return column;
-    }
-
-    public void setColumn(int column) {
-        assert column >= 0 : column;
-        this.column = column;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        assert category != null;
-        this.category = category;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    @Override
+    public Object getElementAt(int index) {
+        assert EventQueue.isDispatchThread();
+        return ruleSets.get(index);
     }
 
 }

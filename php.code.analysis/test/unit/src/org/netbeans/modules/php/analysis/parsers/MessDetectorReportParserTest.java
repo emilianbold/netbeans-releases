@@ -39,62 +39,44 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.analysis.results;
+package org.netbeans.modules.php.analysis.parsers;
 
-/**
- * Analysis result.
- */
-public final class Result {
+import java.io.File;
+import java.util.List;
+import static junit.framework.Assert.assertTrue;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.analysis.results.Result;
 
-    private final String filepath;
-    private volatile int line = -1;
-    private volatile int column = -1;
-    private volatile String category;
-    private volatile String description;
+public class MessDetectorReportParserTest extends NbTestCase {
 
-
-    public Result(String filepath) {
-        assert filepath != null;
-        this.filepath = filepath;
+    public MessDetectorReportParserTest(String name) {
+        super(name);
     }
 
-    public String getFilePath() {
-        return filepath;
+    public void testParse() throws Exception {
+        List<Result> results = MessDetectorReportParser.parse(getLogFile("phpmd-log.xml"));
+        assertNotNull(results);
+
+        assertEquals(8, results.size());
+        Result result = results.get(0);
+        assertEquals("/home/gapon/NetBeansProjects/TodoList/model/Todo.php", result.getFilePath());
+        assertEquals(59, result.getLine());
+        assertEquals("Naming Rules: ShortVariable", result.getCategory());
+        assertEquals("Avoid variables with short names like $id. Configured minimum length is 3.", result.getDescription());
+
+
+        result = results.get(7);
+        assertEquals("/home/gapon/NetBeansProjects/TodoList/web/index.php", result.getFilePath());
+        assertEquals(150, result.getLine());
+        assertEquals("Design Rules: ExitExpression", result.getCategory());
+        assertEquals("The method runPage() contains an exit expression.", result.getDescription());
     }
 
-    public int getLine() {
-        return line;
-    }
-
-    public void setLine(int line) {
-        assert line >= 1 : line;
-        this.line = line;
-    }
-
-    public int getColumn() {
-        return column;
-    }
-
-    public void setColumn(int column) {
-        assert column >= 0 : column;
-        this.column = column;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        assert category != null;
-        this.category = category;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    private File getLogFile(String name) throws Exception {
+        assertNotNull(name);
+        File xmlLog = new File(getDataDir(), name);
+        assertTrue(xmlLog.isFile());
+        return xmlLog;
     }
 
 }

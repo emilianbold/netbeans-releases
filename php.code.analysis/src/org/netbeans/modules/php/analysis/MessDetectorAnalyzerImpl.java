@@ -50,10 +50,10 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.analysis.spi.Analyzer;
-import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.analysis.commands.MessDetector;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
 import org.netbeans.modules.php.analysis.results.Result;
-import org.netbeans.modules.php.analysis.ui.analyzer.CodeSnifferCustomizerPanel;
+import org.netbeans.modules.php.analysis.ui.analyzer.MessDetectorCustomizerPanel;
 import org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelController;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.analysis.util.Mappers;
@@ -66,31 +66,31 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
-public class CodeSnifferAnalyzerImpl implements Analyzer {
+public class MessDetectorAnalyzerImpl implements Analyzer {
 
     private final Context context;
     private final AtomicBoolean cancelled = new AtomicBoolean();
 
 
-    CodeSnifferAnalyzerImpl(Context context) {
+    MessDetectorAnalyzerImpl(Context context) {
         this.context = context;
     }
 
     @NbBundle.Messages({
-        "CodeSnifferAnalyzerImpl.codeSniffer.error=Code sniffer is not valid",
-        "CodeSnifferAnalyzerImpl.codeSniffer.error.description=Invalid code sniffer set in IDE Options.",
+        "MessDetectorAnalyzerImpl.messDetector.error=Mess detector is not valid",
+        "MessDetectorAnalyzerImpl.messDetector.error.description=Invalid mess detector set in IDE Options.",
     })
     @Override
     public Iterable<? extends ErrorDescription> analyze() {
-        CodeSniffer codeSniffer;
+        MessDetector messDetector;
         try {
-            codeSniffer = CodeSniffer.getDefault();
+            messDetector = MessDetector.getDefault();
         } catch (InvalidPhpExecutableException ex) {
             UiUtils.invalidScriptProvided(ex.getMessage(), AnalysisOptionsPanelController.OPTIONS_SUB_PATH);
-            context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_codeSniffer_error(), Bundle.CodeSnifferAnalyzerImpl_codeSniffer_error_description());
+            context.reportAnalysisProblem(Bundle.MessDetectorAnalyzerImpl_messDetector_error(), Bundle.MessDetectorAnalyzerImpl_messDetector_error_description());
             return Collections.emptyList();
         }
-        assert codeSniffer != null;
+        assert messDetector != null;
 
         Scope scope = context.getScope();
 
@@ -102,7 +102,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
 
         context.start(totalCount);
         try {
-            return doAnalyze(context, scope, codeSniffer, fileCount);
+            return doAnalyze(context, scope, messDetector, fileCount);
         } finally {
             context.finish();
         }
@@ -111,32 +111,29 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
     @Override
     public boolean cancel() {
         cancelled.set(true);
-        // XXX cancel code sniffer?
+        // XXX cancel mess detector?
         return true;
     }
 
     @NbBundle.Messages({
-        "CodeSnifferAnalyzerImpl.analyze.error=Error occured",
-        "CodeSnifferAnalyzerImpl.analyze.error.description=Error occured during analysis, review Output window for more information.",
+        "MessDetectorAnalyzerImpl.analyze.error=Error occured",
+        "MessDetectorAnalyzerImpl.analyze.error.description=Error occured during analysis, review Output window for more information.",
     })
-    private Iterable<? extends ErrorDescription> doAnalyze(Context context, Scope scope, CodeSniffer codeSniffer, Map<FileObject, Integer> fileCount) {
+    private Iterable<? extends ErrorDescription> doAnalyze(Context context, Scope scope, MessDetector messDetector, Map<FileObject, Integer> fileCount) {
         List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-        String codeSnifferStandard = null;
         Preferences settings = context.getSettings();
-        if (settings != null) {
-            codeSnifferStandard = settings.get(CodeSnifferCustomizerPanel.STANDARD, null);
-        }
-        if (codeSnifferStandard == null) {
-            codeSnifferStandard = AnalysisOptions.getInstance().getCodeSnifferStandard();
+        List<String> messDetectorRuleSets = MessDetectorCustomizerPanel.getRuleSets(settings);
+        if (messDetectorRuleSets == null) {
+            messDetectorRuleSets = AnalysisOptions.getInstance().getMessDetectorRuleSets();
         }
         int progress = 0;
         for (FileObject root : scope.getSourceRoots()) {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
-            List<Result> results = codeSniffer.analyze(codeSnifferStandard, root);
+            List<Result> results = messDetector.analyze(messDetectorRuleSets, root);
             if (results == null) {
-                context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
+                context.reportAnalysisProblem(Bundle.MessDetectorAnalyzerImpl_analyze_error(), Bundle.MessDetectorAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
             }
             errors.addAll(Mappers.map(results));
@@ -148,9 +145,9 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
-            List<Result> results = codeSniffer.analyze(codeSnifferStandard, file);
+            List<Result> results = messDetector.analyze(messDetectorRuleSets, file);
             if (results == null) {
-                context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
+                context.reportAnalysisProblem(Bundle.MessDetectorAnalyzerImpl_analyze_error(), Bundle.MessDetectorAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
             }
             errors.addAll(Mappers.map(results));
@@ -163,9 +160,18 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 return Collections.emptyList();
             }
             FileObject folder = nonRecursiveFolder.getFolder();
-            List<Result> results = codeSniffer.analyze(codeSnifferStandard, folder, true);
+            List<FileObject> dataChildren = new ArrayList<FileObject>();
+            for (FileObject child : folder.getChildren()) {
+                if (child.isData()) {
+                    dataChildren.add(child);
+                }
+            }
+            if (dataChildren.isEmpty()) {
+                continue;
+            }
+            List<Result> results = messDetector.analyze(messDetectorRuleSets, dataChildren);
             if (results == null) {
-                context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
+                context.reportAnalysisProblem(Bundle.MessDetectorAnalyzerImpl_analyze_error(), Bundle.MessDetectorAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
             }
             errors.addAll(Mappers.map(results));
@@ -181,15 +187,15 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
     //~ Inner classes
 
     @ServiceProvider(service=AnalyzerFactory.class)
-    public static final class CodeSnifferAnalyzerFactory extends AnalyzerFactory {
+    public static final class MessDetectorAnalyzerFactory extends AnalyzerFactory {
 
         @StaticResource
-        private static final String ICON_PATH = "org/netbeans/modules/php/analysis/ui/resources/code-sniffer.png"; // NOI18N
+        private static final String ICON_PATH = "org/netbeans/modules/php/analysis/ui/resources/mess-detector.png"; // NOI18N
 
 
-        @NbBundle.Messages("CodeSnifferAnalyzerFactory.displayName=Code Sniffer")
-        public CodeSnifferAnalyzerFactory() {
-            super("PhpCodeSniffer", Bundle.CodeSnifferAnalyzerFactory_displayName(), ICON_PATH); // NOI18N
+        @NbBundle.Messages("MessDetectorAnalyzerFactory.displayName=Mess Detector")
+        public MessDetectorAnalyzerFactory() {
+            super("PhpMessDetector", Bundle.MessDetectorAnalyzerFactory_displayName(), ICON_PATH); // NOI18N
         }
 
         @Override
@@ -198,27 +204,27 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
         }
 
         @Override
-        public CustomizerProvider<Void, CodeSnifferCustomizerPanel> getCustomizerProvider() {
-            return new CustomizerProvider<Void, CodeSnifferCustomizerPanel>() {
+        public CustomizerProvider<Void, MessDetectorCustomizerPanel> getCustomizerProvider() {
+            return new CustomizerProvider<Void, MessDetectorCustomizerPanel>() {
                 @Override
                 public Void initialize() {
                     return null;
                 }
                 @Override
-                public CodeSnifferCustomizerPanel createComponent(CustomizerContext<Void, CodeSnifferCustomizerPanel> context) {
-                    return new CodeSnifferCustomizerPanel(context.getSettings());
+                public MessDetectorCustomizerPanel createComponent(CustomizerContext<Void, MessDetectorCustomizerPanel> context) {
+                    return new MessDetectorCustomizerPanel(context.getSettings());
                 }
             };
         }
 
         @Override
         public Analyzer createAnalyzer(Context context) {
-            return new CodeSnifferAnalyzerImpl(context);
+            return new MessDetectorAnalyzerImpl(context);
         }
 
         @Override
         public void warningOpened(ErrorDescription warning) {
-            HintsController.setErrors(warning.getFile(), "phpCodeSnifferWarning", Collections.singleton(warning)); // NOI18N
+            HintsController.setErrors(warning.getFile(), "phpMessDetectorWarning", Collections.singleton(warning)); // NOI18N
         }
 
     }

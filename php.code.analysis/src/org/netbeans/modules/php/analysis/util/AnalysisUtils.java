@@ -59,6 +59,7 @@ import org.netbeans.modules.php.analysis.ui.CodeSnifferStandardsComboBoxModel;
 import org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelController;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.openide.filesystems.FileObject;
@@ -67,15 +68,26 @@ import org.openide.util.RequestProcessor;
 
 public final class AnalysisUtils {
 
+    private static final String SERIALIZE_DELIMITER = "|"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("Code analysis standards fetcher"); // NOI18N
 
 
     private AnalysisUtils() {
     }
 
-    public static void connect(final JComboBox comboBox, final CodeSnifferStandardsComboBoxModel standardsComboBoxModel, @NullAllowed final String selectedStandard,
-            @NullAllowed final Runnable errorTaks) {
-        comboBox.setModel(standardsComboBoxModel);
+    public static String serialize(List<String> input) {
+        return StringUtils.implode(input, SERIALIZE_DELIMITER);
+    }
+
+    public static List<String> deserialize(String input) {
+        return StringUtils.explode(input, SERIALIZE_DELIMITER);
+    }
+
+    public static void initCodeSnifferStandardsComponent(final JComboBox comboBox, final CodeSnifferStandardsComboBoxModel standardsComboBoxModel,
+            @NullAllowed final String selectedStandard, @NullAllowed final Runnable errorTaks) {
+        if (comboBox.getModel() != standardsComboBoxModel) {
+            comboBox.setModel(standardsComboBoxModel);
+        }
         comboBox.setEnabled(false);
         RP.post(new Runnable() {
             @Override
@@ -194,9 +206,12 @@ public final class AnalysisUtils {
         return lineOffsets;
     }
 
-    private static int countPhpFiles(FileObject folder, boolean recursive) {
+    private static int countPhpFiles(FileObject fileObject, boolean recursive) {
         int count = 0;
-        Enumeration<? extends FileObject> children = folder.getChildren(recursive);
+        if (FileUtils.isPhpFile(fileObject)) {
+            count++;
+        }
+        Enumeration<? extends FileObject> children = fileObject.getChildren(recursive);
         while (children.hasMoreElements()) {
             FileObject child = children.nextElement();
             if (FileUtils.isPhpFile(child)) {

@@ -117,6 +117,10 @@ public final class CodeSniffer {
         return PhpExecutableValidator.validateCommand(codeSnifferPath, Bundle.CodeSniffer_script_label());
     }
 
+    public static void clearCachedStandards() {
+        CACHED_STANDARDS.clear();
+    }
+
     @CheckForNull
     public List<Result> analyze(String standard, FileObject file) {
         return analyze(standard, file, false);
@@ -138,6 +142,7 @@ public final class CodeSniffer {
             // cancelled
             return Collections.emptyList();
         } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
             UiUtils.processExecutionException(ex, AnalysisOptionsPanelController.OPTIONS_SUB_PATH);
         }
         return null;
