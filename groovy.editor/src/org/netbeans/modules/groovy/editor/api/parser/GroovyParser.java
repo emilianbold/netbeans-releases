@@ -293,15 +293,25 @@ public class GroovyParser extends Parser {
                         int removeChars = 0;
                         int removeEnd = lineEnd+1;
 
+                        // We can have either Java Field Override operator .@ or Spread Java Field *.@
+                        // at the end of the line
+                        if (line.endsWith(GroovyTokenId.AT.fixedText())) {
+                            removeChars = 1;
+                        }
+                        
                         if (line.endsWith(GroovyTokenId.OPTIONAL_DOT.fixedText()) ||
                             line.endsWith(GroovyTokenId.ELVIS_OPERATOR.fixedText()) ||
                             line.endsWith(GroovyTokenId.MEMBER_POINTER.fixedText()) ||
                             line.endsWith(GroovyTokenId.SPREAD_DOT.fixedText())) {
                             
-                            removeChars = 2;
+                            // += operator is used here because there can either simple
+                            // Spread Operator *. or enhanced Spread Java Field *.@
+                            removeChars += 2;
                         } else if (line.endsWith(".") || line.endsWith("(")) { // NOI18N
-                            removeChars = 1;
-                        } else if (line.endsWith(",")) { // NOI18N                            removeChars = 1;
+                            
+                            // += for similar reasons as above, either simple dot or Java Field operator .@
+                            removeChars += 1;
+                        } else if (line.endsWith(",")) { // NOI18N
                             removeChars = 1;
                         } else if (line.endsWith(", ")) { // NOI18N
                             removeChars = 2;

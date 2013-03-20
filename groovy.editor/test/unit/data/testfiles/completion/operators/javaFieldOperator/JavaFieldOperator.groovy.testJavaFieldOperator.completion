@@ -1,0 +1,5 @@
+Code completion result for source line:
+tester.@b|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+FIELD      bytes                                      byte[]
