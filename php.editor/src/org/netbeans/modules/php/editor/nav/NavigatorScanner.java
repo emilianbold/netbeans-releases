@@ -55,8 +55,11 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.AliasedName;
+import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -74,6 +77,7 @@ import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseScope;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.util.ImageUtilities;
 
@@ -87,6 +91,8 @@ public final class NavigatorScanner {
     private static ImageIcon traitIcon = null;
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
     private static final String CLOSE_FONT = "</font>"; //NOI18N
+    private Set<TypeElement> deprecatedTypes;
+    private Model model;
 
     public static NavigatorScanner create() {
         return new NavigatorScanner();
@@ -98,7 +104,7 @@ public final class NavigatorScanner {
     public List<? extends StructureItem> scan(final ParserResult info) {
         final List<StructureItem> items = new ArrayList<StructureItem>();
         PHPParseResult result = (PHPParseResult) info;
-        final Model model = result.getModel();
+        model = result.getModel();
         FileScope fileScope = model.getFileScope();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope nameScope : declaredNamespaces) {
@@ -168,6 +174,25 @@ public final class NavigatorScanner {
             }
         }
         return items;
+    }
+
+    private Set<TypeElement> getDeprecatedTypes() {
+        if (deprecatedTypes == null) {
+            deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
+        }
+        return deprecatedTypes;
+    }
+
+    private boolean isDeprecatedType(String type, ModelElement modelElement) {
+        boolean result = false;
+        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(type), modelElement.getOffset(), modelElement.getInScope());
+        for (TypeElement typeElement : getDeprecatedTypes()) {
+            if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private abstract class PHPStructureItem implements StructureItem {
@@ -329,7 +354,14 @@ public final class NavigatorScanner {
                                         if (i > 1) {
                                             formatter.appendText("|"); //NOI18N
                                         }
+                                        boolean deprecatedType = isDeprecatedType(typeName.toString(), function);
+                                        if (deprecatedType) {
+                                            formatter.deprecated(true);
+                                        }
                                         formatter.appendText(typeName.toString());
+                                        if (deprecatedType) {
+                                            formatter.deprecated(false);
+                                        }
                                     }
                                 }
                             }
@@ -351,7 +383,14 @@ public final class NavigatorScanner {
                     if (i > 1) {
                         formatter.appendText(", "); //NOI18N
                     }
+                    boolean deprecatedType = isDeprecatedType(type.toString(), function);
+                    if (deprecatedType) {
+                        formatter.deprecated(true);
+                    }
                     formatter.appendText(type);
+                    if (deprecatedType) {
+                        formatter.deprecated(false);
+                    }
                 }
                 formatter.appendHtml(CLOSE_FONT);
             }
@@ -396,8 +435,14 @@ public final class NavigatorScanner {
                     if (i > 1) {
                         formatter.appendText(", "); //NOI18N
                     }
+                    boolean deprecatedType = isDeprecatedType(type, field);
+                    if (deprecatedType) {
+                        formatter.deprecated(true);
+                    }
                     formatter.appendText(type);
-
+                    if (deprecatedType) {
+                        formatter.deprecated(false);
+                    }
                 }
                 formatter.appendHtml(CLOSE_FONT);
             }
@@ -458,12 +503,20 @@ public final class NavigatorScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
-            formatter.appendText(getName());
             UseScope useElement = (UseScope) getElementHandle();
+            String name = getName();
+            boolean deprecatedType = isDeprecatedType(name, useElement);
+            if (deprecatedType) {
+                formatter.deprecated(true);
+            }
+            formatter.appendText(name);
             final AliasedName aliasedName = useElement.getAliasedName();
             if (aliasedName != null) {
                 formatter.appendText(" as "); //NOI18N
                 formatter.appendText(aliasedName.getAliasName());
+            }
+            if (deprecatedType) {
+                formatter.deprecated(false);
             }
             return formatter.getText();
         }
