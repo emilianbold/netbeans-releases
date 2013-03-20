@@ -304,8 +304,10 @@ public final class NavigatorScanner {
                 formatter.deprecated(true);
             }
             formatter.appendText(function.getName());
+            if (function.isDeprecated()) {
+                formatter.deprecated(false);
+            }
             formatter.appendText("(");   //NOI18N
-
             List<? extends ParameterElement> parameters = function.getParameters();
             if (parameters != null && parameters.size() > 0) {
                 boolean first = true;
@@ -315,28 +317,23 @@ public final class NavigatorScanner {
                     if (name != null) {
                         if (!first) {
                             formatter.appendText(", "); //NOI18N
-
                         }
-
                         if (!types.isEmpty()) {
                             formatter.appendHtml(FONT_GRAY_COLOR);
-                            StringBuilder typeSb = new StringBuilder();
+                            int i = 0;
                             for (TypeResolver typeResolver : types) {
+                                i++;
                                 if (typeResolver.isResolved()) {
                                     QualifiedName typeName = typeResolver.getTypeName(false);
                                     if (typeName != null) {
-                                        if (typeSb.length() > 0) {
-                                            typeSb.append("|"); //NOI18N
+                                        if (i > 1) {
+                                            formatter.appendText("|"); //NOI18N
                                         }
-                                        typeSb.append(typeName.toString());
+                                        formatter.appendText(typeName.toString());
                                     }
                                 }
                             }
-                            if (typeSb.length() > 0) {
-                                formatter.appendText(typeSb.toString());
-                            }
                             formatter.appendText(" ");   //NOI18N
-
                             formatter.appendHtml(CLOSE_FONT);
                         }
                         formatter.appendText(name);
@@ -348,20 +345,15 @@ public final class NavigatorScanner {
             Collection<? extends String> returnTypes = function.getReturnTypeNames();
             if (!returnTypes.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
-                StringBuilder sb = null;
+                int i = 0;
                 for (String type : returnTypes) {
-                    if (sb == null) {
-                        sb = new StringBuilder();
-                    } else {
-                        sb.append(", "); //NOI18N
+                    i++;
+                    if (i > 1) {
+                        formatter.appendText(", "); //NOI18N
                     }
-                    sb.append(type);
+                    formatter.appendText(type);
                 }
-                formatter.appendText(sb.toString());
                 formatter.appendHtml(CLOSE_FONT);
-            }
-            if (function.isDeprecated()) {
-                formatter.deprecated(false);
             }
         }
     }
