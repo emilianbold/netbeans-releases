@@ -161,6 +161,9 @@ Other names may be trademarks of their respective owners.
         <!-- Revert Modifications dialog -->
         <mapID target="org.netbeans.modules.subversion.ui.search.revert" url="svnmodule/csh/svn_search_rev_dialog.html" />
 
+        <!-- Update To Revision dialog -->
+        <mapID target="org.netbeans.modules.subversion.ui.search.update" url="svnmodule/csh/svn_search_rev_dialog.html" />
+
         <!-- TODO: find out what this target is for -->
         <mapID target="org.netbeans.modules.subversion.ui.search.urlpattern" url="svnmodule/csh/svn_search_rev_dialog.html" />
 
