@@ -157,7 +157,7 @@ public final class CodeSnifferReportParser extends DefaultHandler {
     private void processResultEnd() {
         assert currentResult != null;
         assert description != null;
-        currentResult.setDescription(description.toString());
+        currentResult.setDescription(description.toString().trim());
         results.add(currentResult);
         currentResult = null;
         description = null;
