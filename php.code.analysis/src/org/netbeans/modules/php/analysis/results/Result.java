@@ -50,7 +50,6 @@ public final class Result {
     private volatile int line = -1;
     private volatile int column = -1;
     private volatile String category;
-    private volatile String subCategory;
     private volatile String description;
 
 
@@ -88,15 +87,6 @@ public final class Result {
     public void setCategory(String category) {
         assert category != null;
         this.category = category;
-    }
-
-    public String getSubCategory() {
-        return subCategory;
-    }
-
-    public void setSubCategory(String subCategory) {
-        assert subCategory != null;
-        this.subCategory = subCategory;
     }
 
     public String getDescription() {
