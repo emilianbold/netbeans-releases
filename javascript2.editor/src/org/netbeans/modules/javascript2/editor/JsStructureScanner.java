@@ -99,7 +99,8 @@ public class JsStructureScanner implements StructureScanner {
         
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
-            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
+                    && !child.getName().equals("prototype")) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
