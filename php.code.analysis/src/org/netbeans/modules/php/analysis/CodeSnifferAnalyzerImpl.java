@@ -89,13 +89,9 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
     @NbBundle.Messages({
         "CodeSnifferAnalyzerImpl.codeSniffer.error=Code sniffer is not valid",
         "CodeSnifferAnalyzerImpl.codeSniffer.error.description=Invalid code sniffer set in IDE Options.",
-        "CodeSnifferAnalyzerImpl.analyze.error=Error occured",
-        "CodeSnifferAnalyzerImpl.analyze.error.description=Error occured during analysis, review Output window for more information."
     })
     @Override
     public Iterable<? extends ErrorDescription> analyze() {
-        List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-
         CodeSniffer codeSniffer;
         try {
             codeSniffer = CodeSniffer.getDefault();
@@ -115,7 +111,26 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
         }
 
         context.start(totalCount);
+        try {
+            return doAnalyze(context, scope, codeSniffer, fileCount);
+        } finally {
+            context.finish();
+        }
+    }
 
+    @Override
+    public boolean cancel() {
+        cancelled.set(true);
+        // XXX cancel code sniffer?
+        return true;
+    }
+
+    @NbBundle.Messages({
+        "CodeSnifferAnalyzerImpl.analyze.error=Error occured",
+        "CodeSnifferAnalyzerImpl.analyze.error.description=Error occured during analysis, review Output window for more information.",
+    })
+    private Iterable<? extends ErrorDescription> doAnalyze(Context context, Scope scope, CodeSniffer codeSniffer, Map<FileObject, Integer> fileCount) {
+        List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
         String codeSnifferStandard = null;
         Preferences settings = context.getSettings();
         if (settings != null) {
@@ -125,18 +140,16 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
             codeSnifferStandard = AnalysisOptions.getInstance().getCodeSnifferStandard();
         }
         int progress = 0;
-        boolean analysisError = false;
         for (FileObject root : scope.getSourceRoots()) {
             if (cancelled.get()) {
                 return Collections.emptyList();
             }
             List<Result> results = codeSniffer.analyze(codeSnifferStandard, root);
-            if (results != null) {
-                errors.addAll(map(results));
-            } else if (!analysisError) {
-                analysisError = true;
+            if (results == null) {
                 context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
+                return Collections.emptyList();
             }
+            errors.addAll(map(results));
             progress += fileCount.get(root);
             context.progress(progress);
         }
@@ -146,12 +159,11 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 return Collections.emptyList();
             }
             List<Result> results = codeSniffer.analyze(codeSnifferStandard, file);
-            if (results != null) {
-                errors.addAll(map(results));
-            } else if (!analysisError) {
-                analysisError = true;
+            if (results == null) {
                 context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
+                return Collections.emptyList();
             }
+            errors.addAll(map(results));
             progress += fileCount.get(file);
             context.progress(progress);
         }
@@ -162,12 +174,11 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
             }
             FileObject folder = nonRecursiveFolder.getFolder();
             List<Result> results = codeSniffer.analyze(codeSnifferStandard, folder, true);
-            if (results != null) {
-                errors.addAll(map(results));
-            } else if (!analysisError) {
-                analysisError = true;
+            if (results == null) {
                 context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
+                return Collections.emptyList();
             }
+            errors.addAll(map(results));
             progress += fileCount.get(folder);
             context.progress(progress);
         }
@@ -175,13 +186,6 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
         context.finish();
 
         return errors;
-    }
-
-    @Override
-    public boolean cancel() {
-        cancelled.set(true);
-        // XXX cancel code sniffer?
-        return true;
     }
 
     //~ Mappers
