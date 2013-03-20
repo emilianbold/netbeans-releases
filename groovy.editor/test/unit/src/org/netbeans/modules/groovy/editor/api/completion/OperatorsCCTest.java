@@ -113,20 +113,19 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "SpreadOperator2.groovy", "        ['cat', 'elephant']*.s^", true);
     }
 
-    public void testSpreadOperator3_stringArray_all() throws Exception {
+    public void testSpreadOperator3_intArray_all() throws Exception {
         checkCompletion(BASE + "SpreadOperator3.groovy", "        [1,2]*.^", true);
     }
 
-    public void testSpreadOperator4_stringArray_sPrefix() throws Exception {
+    public void testSpreadOperator4_intArray_sPrefix() throws Exception {
         checkCompletion(BASE + "SpreadOperator4.groovy", "        [1,2]*.s^", true);
     }
     
-    /*
-     *  Not implemented yet (see issue #151034) - only for TDD purpose
-     */
-    
-    /*
     public void testJavaFieldOperator() throws Exception {
-        checkCompletion(BASE + "JavaFieldOperator.groovy", "        def something = x.@^", true);
-    }*/
+        checkCompletion(BASE + "JavaFieldOperator.groovy", "        tester.@b^", true);
+    }
+    
+    public void testSpreadJavaFieldOperator() throws Exception {
+        checkCompletion(BASE + "SpreadJavaFieldOperator.groovy", "        [\"abc\", \"def\"]*.@b^", true);
+    }
 }
