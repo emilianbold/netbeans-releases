@@ -52,9 +52,13 @@ public final class AnalysisOptionsValidator {
     private final ValidationResult result = new ValidationResult();
 
 
-    public AnalysisOptionsValidator validate(String codeSnifferPath, String codeSnifferStandard, String messDetectorPath, List<String> messDetectorRuleSets) {
+    public AnalysisOptionsValidator validateCodeSniffer(String codeSnifferPath, String codeSnifferStandard) {
         validateCodeSnifferPath(codeSnifferPath);
         validateCodeSnifferStandard(codeSnifferStandard);
+        return this;
+    }
+
+    public AnalysisOptionsValidator validateMessDetector(String messDetectorPath, List<String> messDetectorRuleSets) {
         validateMessDetectorPath(messDetectorPath);
         validateMessDetectorRuleSets(messDetectorRuleSets);
         return this;
