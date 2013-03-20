@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.php.analysis;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +49,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
@@ -59,24 +56,17 @@ import org.netbeans.modules.php.analysis.results.Result;
 import org.netbeans.modules.php.analysis.ui.analyzer.CodeSnifferCustomizerPanel;
 import org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelController;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
+import org.netbeans.modules.php.analysis.util.Mappers;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
-import org.netbeans.spi.editor.hints.LazyFixList;
-import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 public class CodeSnifferAnalyzerImpl implements Analyzer {
-
-    private static final String ANALYZER_PREFIX = "codeSniffer:"; // NOI18N
-    private static final LazyFixList EMPTY_LAZY_FIX_LIST = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
 
     private final Context context;
     private final AtomicBoolean cancelled = new AtomicBoolean();
@@ -149,7 +139,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
             }
-            errors.addAll(map(results));
+            errors.addAll(Mappers.map(results));
             progress += fileCount.get(root);
             context.progress(progress);
         }
@@ -163,7 +153,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
             }
-            errors.addAll(map(results));
+            errors.addAll(Mappers.map(results));
             progress += fileCount.get(file);
             context.progress(progress);
         }
@@ -178,7 +168,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
                 context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_analyze_error(), Bundle.CodeSnifferAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
             }
-            errors.addAll(map(results));
+            errors.addAll(Mappers.map(results));
             progress += fileCount.get(folder);
             context.progress(progress);
         }
@@ -186,35 +176,6 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
         context.finish();
 
         return errors;
-    }
-
-    //~ Mappers
-
-    private Collection<? extends ErrorDescription> map(List<Result> results) {
-        List<ErrorDescription> errorDescriptions = new ArrayList<ErrorDescription>(results.size());
-        FileObject file = null;
-        String filePath = null;
-        int[] lineMap = null;
-        for (Result result : results) {
-            String currentFilePath = result.getFilePath();
-            if (!currentFilePath.equals(filePath)) {
-                filePath = currentFilePath;
-                file = FileUtil.toFileObject(new File(currentFilePath));
-                assert file != null : "File object not found for " + currentFilePath;
-                lineMap = AnalysisUtils.computeLineMap(file, FileEncodingQuery.getEncoding(file));
-            }
-            assert file != null;
-            assert filePath != null;
-            assert lineMap != null;
-            errorDescriptions.add(map(result, file, lineMap));
-        }
-        return errorDescriptions;
-    }
-
-    private ErrorDescription map(Result result, FileObject file, int[] lineMap) {
-        int line = 2 * (Math.min(result.getLine(), lineMap.length / 2) - 1);
-        return ErrorDescriptionFactory.createErrorDescription(ANALYZER_PREFIX + result.getCategory(), Severity.VERIFIER, result.getCategory(),
-                result.getDescription(), EMPTY_LAZY_FIX_LIST, file, lineMap[line], lineMap[line + 1]);
     }
 
     //~ Inner classes
