@@ -1143,13 +1143,18 @@ public class Css3ParserScssTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-    
+
     public void testIfControlExpression() {
         assertParses(" @if $arg != null and $arg2 != transparent { }");
         assertParses(" @if not $arg != null and $arg2 != transparent { }");
         assertParses(" @if not $arg != null or not $arg2 != transparent { }");
         assertParses(" @if true or not $arg2 != transparent { }");
     }
-    
-    
+
+    public void testMixinWithFirstParamOnNewLine() {
+        assertParses("@mixin color(\n"
+                + "$bgcolor: red,"
+                + "$fgcolor: blue) {\n"
+                + "}");
+    }
 }

@@ -997,9 +997,9 @@ cp_term
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_declaration
     :
-    {isLessSource()}? DOT cp_mixin_name ws? LPAREN cp_args_list? RPAREN ws? (less_mixin_guarded ws?)?
+    {isLessSource()}? DOT cp_mixin_name ws? LPAREN ws? cp_args_list? RPAREN ws? (less_mixin_guarded ws?)?
     |
-    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN cp_args_list? RPAREN ws?)?
+    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN ws? cp_args_list? RPAREN ws?)?
     ;
 
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
