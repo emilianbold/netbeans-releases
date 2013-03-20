@@ -45,6 +45,7 @@ import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Priority;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
@@ -68,6 +69,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevAttribute;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.IRepositoryElement;
 import org.eclipse.mylyn.tasks.core.ITask;
@@ -86,12 +88,9 @@ import org.netbeans.modules.mylyn.util.PostAttachmentCommand;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.netbeans.modules.odcs.tasks.C2C;
 import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
-import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 import org.netbeans.modules.odcs.tasks.util.C2CUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -283,7 +282,7 @@ public class C2CIssue {
         } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             assert getSeenAttributes() != null;
-            for (IssueField f : getConfiguration().getFields()) {
+            for (IssueField f : IssueField.getFields()) {
                 if (f == IssueField.MODIFIED || f == IssueField.CREATED || f == IssueField.REPORTER
                         || f == IssueField.ATTACHEMENT_COUNT && data.isPartial() // attachments not available with partial data
                         ) {
@@ -402,7 +401,7 @@ public class C2CIssue {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
             String value;
-            for (IssueField field : getConfiguration().getFields()) {
+            for (IssueField field : IssueField.getFields()) {
                 value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {                 // NOI18N
                     attributes.put(field.getKey(), value);
@@ -522,15 +521,16 @@ public class C2CIssue {
         assert !data.isNew();
 
         String value = getFieldValue(IssueField.STATUS);
-        if(!value.equals("RESOLVED")) {                                         // NOI18N
-            // XXX hacked!
-            // see https://q.tasktop.com/alm/#projects/netbeanssupport/wiki/p/C2C+Mylyn+connector+usage+in+NetBeans-Query 
-            // and implement appropriatelly
-            final C2CData clientData = C2C.getInstance().getClientData(repository);
+        if(!value.equals("RESOLVED")) { // NOI18N
+            RepositoryConfiguration clientData = repository.getRepositoryConfiguration(false);
             List<TaskResolution> resolutions = clientData.getResolutions(); 
             for (TaskResolution r : resolutions) {
                 if(r.getValue().equals(resolution)) {
-                    C2CExtender.resolve(data, r);
+                    TaskAttribute rta = data.getRoot();
+                    TaskAttribute ta = rta.getMappedAttribute(CloudDevAttribute.STATUS.getTaskName());
+                    ta.setValue("RESOLVED"); // NOI18N
+                    ta = rta.getMappedAttribute(CloudDevAttribute.RESOLUTION.getTaskName());
+                    ta.setValue(r.getValue());
                 }
             }
         }
@@ -697,12 +697,12 @@ public class C2CIssue {
 
     TaskResolution getResolution() {
         String value = getFieldValue(IssueField.RESOLUTION);
-        return C2CUtil.getResolutionByValue(C2C.getInstance().getClientData(repository), value);
+        return C2CUtil.getResolutionByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     Priority getPriority() {
         String value = getFieldValue(IssueField.PRIORITY);
-        return C2CUtil.getPriorityByValue(C2C.getInstance().getClientData(repository), value);
+        return C2CUtil.getPriorityByValue(repository.getRepositoryConfiguration(false), value);
     }
     
     String getType() {
@@ -711,22 +711,22 @@ public class C2CIssue {
 
     TaskSeverity getSeverity() {
         String value = getFieldValue(IssueField.SEVERITY);
-        return C2CUtil.getSeverityByValue(C2C.getInstance().getClientData(repository), value);
+        return C2CUtil.getSeverityByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     TaskStatus getStatus() {
         String value = getFieldValue(IssueField.STATUS);
-        return C2CUtil.getStatusByValue(C2C.getInstance().getClientData(repository), value);
+        return C2CUtil.getStatusByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     Iteration getIteration() {
         String value = getFieldValue(IssueField.ITERATION);
-        return C2CUtil.getIterationByValue(C2C.getInstance().getClientData(repository), value);
+        return C2CUtil.getIterationByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     Milestone getMilestone() {
         String value = getFieldValue(IssueField.MILESTONE);
-        return C2CUtil.getMilestoneByValue(C2C.getInstance().getClientData(repository), value);
+        return C2CUtil.getMilestoneByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     private static class IssueFieldColumnDescriptor extends ColumnDescriptor<String> {
@@ -1091,8 +1091,8 @@ public class C2CIssue {
         };
     }
 
-    private C2CData getConfiguration () {
-        return C2C.getInstance().getClientData(repository);
+    private RepositoryConfiguration getConfiguration () {
+        return repository.getRepositoryConfiguration(false);
     }
 
     class Comment {

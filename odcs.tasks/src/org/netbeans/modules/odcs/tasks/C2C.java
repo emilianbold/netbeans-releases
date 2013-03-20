@@ -42,14 +42,13 @@
 package org.netbeans.modules.odcs.tasks;
 
 import java.util.logging.Logger;
-import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
-import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
 import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
 import org.netbeans.modules.odcs.tasks.query.C2CQuery;
 import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
-import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -61,8 +60,7 @@ public class C2C {
     private static C2C instance;
     public final static Logger LOG = Logger.getLogger("org.netbeans.modules.c2c.tasks"); // NOI18N
     
-    private AbstractRepositoryConnector cfcrc;
-    private TaskRepositoryLocationFactory trlf;
+    private CloudDevRepositoryConnector rc;
     
     private RequestProcessor rp;
     
@@ -79,22 +77,11 @@ public class C2C {
     private BugtrackingFactory<C2CRepository, C2CQuery, C2CIssue> bf;
 
     private void init() {
-        AbstractRepositoryConnector rc = C2CExtender.create();
-        trlf = new TaskRepositoryLocationFactory();
-        C2CExtender.assignTaskRepositoryLocationFactory(rc, trlf);
-        cfcrc = rc;
+        rc = new CloudDevRepositoryConnector();
     }
     
-    public C2CData getClientData(C2CRepository repository) {
-        return C2CExtender.getData(cfcrc, repository.getTaskRepository(), false);
-    }
-    
-    public void refreshClientData(C2CRepository repository) {
-        C2CExtender.getData(cfcrc, repository.getTaskRepository(), true);
-    }
-    
-    public AbstractRepositoryConnector getRepositoryConnector() {
-        return cfcrc;
+    public CloudDevRepositoryConnector getRepositoryConnector() {
+        return rc;
     }
     
     public BugtrackingFactory<C2CRepository, C2CQuery, C2CIssue> getBugtrackingFactory() {
@@ -128,6 +115,10 @@ public class C2C {
             rp = new RequestProcessor("C2C", 1, true); // NOI18N
         }
         return rp;
+    }
+
+    public CloudDevClient getCloudDevClient(TaskRepository taskRepository) {
+        return rc.getCloudDevClient(taskRepository);
     }
     
 }

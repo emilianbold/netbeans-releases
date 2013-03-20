@@ -44,11 +44,13 @@ package org.netbeans.modules.odcs.tasks;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import junit.framework.Test;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -81,7 +83,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
 import org.openide.modules.Places;
 
 /**
@@ -160,7 +161,7 @@ public class SynchronizationTest extends AbstractC2CTestCase {
         trm.addRepository(taskRepository);
     }
     
-    public void testSynch() throws CoreException, MalformedURLException {
+    public void testSynch() throws CoreException, MalformedURLException, IOException {
         String summary = "testsynch" + System.currentTimeMillis();
         TaskData td = createIssue(summary);
         
@@ -169,7 +170,7 @@ public class SynchronizationTest extends AbstractC2CTestCase {
         CriteriaBuilder cb = new CriteriaBuilder();
         cb.column(QueryParameters.Column.SUMMARY.toString(), Criteria.Operator.EQUALS, summary);
         
-        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
+        query.setAttribute(CloudDevConstants.QUERY_CRITERIA, cb.toCriteria().toQueryString());
         
         taskList.deleteQuery(query); // cleanup from previous run
         taskList.addQuery(query);
@@ -260,7 +261,7 @@ public class SynchronizationTest extends AbstractC2CTestCase {
         synch(sqj, ++c);
     }
     
-    public TaskData createIssue(String summary) throws CoreException, MalformedURLException {
+    public TaskData createIssue(String summary) throws CoreException, MalformedURLException, IOException {
         return createTaskData(summary, "testing synching", "bug");
     }
 

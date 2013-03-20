@@ -45,8 +45,10 @@ package org.netbeans.modules.odcs.tasks.query;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaParser;
+import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Product;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -88,11 +90,9 @@ import org.netbeans.modules.odcs.tasks.C2C;
 import org.netbeans.modules.odcs.tasks.C2CConfig;
 import org.netbeans.modules.odcs.tasks.C2CConnector;
 import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
-import org.netbeans.modules.odcs.tasks.query.Bundle;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters.ByDateParameter;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters.Parameter;
 import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
 import org.netbeans.modules.odcs.tasks.util.C2CUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -309,25 +309,25 @@ public class C2CQueryController extends QueryController implements ItemListener,
                     }
                     logPopulate("Starting populate query controller{0}"); // NOI18N
                     repository.ensureCredentials();
-                    final C2CData clientData = C2C.getInstance().getClientData(repository);
+                    final RepositoryConfiguration rc = repository.getRepositoryConfiguration(false);
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             try {
                                 // XXX preselect default values
-                                parameters.getListParameter(QueryParameters.Column.PRODUCT).populate(clientData.getProducts());
-                                populateProductDetails(clientData);
+                                parameters.getListParameter(QueryParameters.Column.PRODUCT).populate(rc.getProducts());
+                                populateProductDetails(rc);
                                 
-                                parameters.getListParameter(QueryParameters.Column.TASK_TYPE).populate(clientData.getTaskTypes());
-                                parameters.getListParameter(QueryParameters.Column.PRIORITY).populate(clientData.getPriorities());
-                                parameters.getListParameter(QueryParameters.Column.SEVERITY).populate(clientData.getSeverities());
+                                parameters.getListParameter(QueryParameters.Column.TASK_TYPE).populate(rc.getTaskTypes());
+                                parameters.getListParameter(QueryParameters.Column.PRIORITY).populate(rc.getPriorities());
+                                parameters.getListParameter(QueryParameters.Column.SEVERITY).populate(rc.getSeverities());
 
-                                parameters.getListParameter(QueryParameters.Column.STATUS).populate(clientData.getStatuses());
-                                parameters.getListParameter(QueryParameters.Column.RESOLUTION).populate(clientData.getResolutions());
+                                parameters.getListParameter(QueryParameters.Column.STATUS).populate(rc.getStatuses());
+                                parameters.getListParameter(QueryParameters.Column.RESOLUTION).populate(rc.getResolutions());
 
-                                parameters.getListParameter(QueryParameters.Column.KEYWORDS).populate(clientData.getKeywords());
+                                parameters.getListParameter(QueryParameters.Column.KEYWORDS).populate(rc.getKeywords());
                                 
-                                parameters.getByPeopleParameter().populatePeople(clientData.getUsers());
+                                parameters.getByPeopleParameter().populatePeople(rc.getUsers());
                                 
                                 synchronized(CRITERIA_LOCK) {
                                     if(criteria != null) {
@@ -695,7 +695,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onProductChanged(ListSelectionEvent e) {
-        populateProductDetails(C2C.getInstance().getClientData(repository));
+        populateProductDetails(repository.getRepositoryConfiguration(false));
     }
 
     public void autoRefresh() {
@@ -831,13 +831,13 @@ public class C2CQueryController extends QueryController implements ItemListener,
         query.remove();
     }
 
-    private void populateProductDetails(C2CData clientData) {
+    private void populateProductDetails(RepositoryConfiguration rc) {
         Set<com.tasktop.c2c.server.tasks.domain.Component> newComponents = new HashSet<com.tasktop.c2c.server.tasks.domain.Component>();
-        Set<String> newIterations = new HashSet<String>();
+        Set<Iteration> newIterations = new HashSet<Iteration>();
         Set<Milestone> newMilestones = new HashSet<Milestone>();
         
         // XXX why not product specific?
-        newIterations.addAll(clientData.getActiveIterations());
+        newIterations.addAll(rc.getIterations());
         
         Object[] values = panel.productList.getSelectedValues();
         if(values != null && values.length > 0)  {
@@ -846,12 +846,12 @@ public class C2CQueryController extends QueryController implements ItemListener,
                 if(!(v instanceof Product)) {
                     continue;
                 }
-                newComponents.addAll(clientData.getComponents((Product) v));
-                newMilestones.addAll(clientData.getMilestones((Product) v));
+                newComponents.addAll(rc.getComponents((Product) v));
+                newMilestones.addAll(rc.getMilestones((Product) v));
             }
         } else {
-            newComponents.addAll(clientData.getComponents());
-            newMilestones.addAll(clientData.getMilestones());
+            newComponents.addAll(rc.getComponents());
+            newMilestones.addAll(rc.getMilestones());
         }
         
         parameters.getListParameter(QueryParameters.Column.COMPONENT).populate(newComponents);

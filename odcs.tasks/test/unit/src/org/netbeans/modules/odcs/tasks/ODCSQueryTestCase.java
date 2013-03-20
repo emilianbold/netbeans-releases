@@ -45,13 +45,18 @@ package org.netbeans.modules.odcs.tasks;
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
+import static junit.framework.Assert.assertEquals;
 import junit.framework.Test;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -62,8 +67,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
-import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 
 /**
  *
@@ -71,6 +74,9 @@ import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
  */
 public class ODCSQueryTestCase extends AbstractC2CTestCase {
 
+    private static final String UNIT_TEST_QUERY = "UnitTestQuery";
+    private static final String UNIT_TEST_SUMMARY = "The first unit test task";
+    
     public static Test suite() {
         return NbModuleSuite.emptyConfiguration()  
                 .addTest(ODCSQueryTestCase.class)
@@ -85,7 +91,7 @@ public class ODCSQueryTestCase extends AbstractC2CTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp(); 
-        System.setProperty("httpclient.wire.level", "-1");
+//        System.setProperty("httpclient.wire.level", "-1");
     }
 
     @Override
@@ -128,99 +134,133 @@ public class ODCSQueryTestCase extends AbstractC2CTestCase {
 //        }
 //    }
 
-    public void testGetSavedQueries() throws IOException {
-        C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
-        List<SavedTaskQuery> l = clientData.getRepositoryConfiguration().getSavedTaskQueries();
+    public void testSavedQueries() throws IOException, CoreException {
+        RepositoryConfiguration conf = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(true, nullProgressMonitor);
+        List<SavedTaskQuery> l = conf.getSavedTaskQueries();
         assertNotNull(l);
         assertFalse(l.isEmpty());
-    }
-    
-    public void testEqualsQueryCriteria() throws IOException {
-        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
-        String summary = "The first unit test task";
-        CriteriaBuilder cb = new CriteriaBuilder();
-        cb.column(QueryParameters.Column.SUMMARY.toString(), Criteria.Operator.EQUALS, summary);
+        SavedTaskQuery stq = null;
+        for (SavedTaskQuery q : l) {
+            if(q.getName().equals(UNIT_TEST_QUERY)) {
+                stq = q;
+            }
+        }
+        assertNotNull(stq);
         
-        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
-        
-        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), stq.getName());
+        query.setAttribute(CloudDevConstants.QUERY_CRITERIA, stq.getQueryString());
+        query.setUrl(CloudDevConstants.CRITERIA_QUERY);
         
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
-        assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertEquals("Status not OK", IStatus.OK, status.getCode());
+        assertEquals(1, c.arr.size());
+        assertEquals(UNIT_TEST_SUMMARY, c.arr.get(0).getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue());
+    }
+    
+    public void testPredefinedQueries() throws IOException {
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), PredefinedTaskQuery.RECENT.getLabel());
+        query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
+        query.setAttribute(CloudDevConstants.QUERY_NAME, PredefinedTaskQuery.RECENT.toString());
+        
+        Collector c = new Collector();
+        IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
+        assertEquals("Status not OK", IStatus.OK, status.getCode());
+        assertFalse(c.arr.isEmpty());
+    }
+    
+    public void testEqualsQueryCriteria() throws IOException, CoreException {
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
+        
+        String summary = UNIT_TEST_SUMMARY;
+        CriteriaBuilder cb = new CriteriaBuilder();
+        cb.column(QueryParameters.Column.SUMMARY.toString(), Criteria.Operator.EQUALS, summary);
+        
+        String crit = getCriteriaString(cb);
+        query.setAttribute(CloudDevConstants.QUERY_CRITERIA, crit);
+        query.setUrl(CloudDevConstants.CRITERIA_QUERY);
+        System.out.println(" Query Criteria : " + crit);
+        
+        Collector c = new Collector();
+        IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
+        assertEquals("Status not OK", IStatus.OK, status.getCode());
         assertEquals(1, c.arr.size());
         assertEquals(summary, c.arr.get(0).getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue());
     }
     
-    public void testContainsQueryCriteria() throws IOException {
+    public void testContainsQueryCriteria() throws IOException, CoreException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         String containsSummary = "test task";
         CriteriaBuilder cb = new CriteriaBuilder();
         cb.column(QueryParameters.Column.SUMMARY.toString(), Criteria.Operator.STRING_CONTAINS, "test task");
         
-        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
-        
-        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        String crit = getCriteriaString(cb);
+        query.setAttribute(CloudDevConstants.QUERY_CRITERIA, crit);
+        query.setUrl(CloudDevConstants.CRITERIA_QUERY);
+        System.out.println(" Query Criteria : " + crit);
         
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
-        assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertEquals(2, c.arr.size());
         for (TaskData td : c.arr) {
             assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue().contains(containsSummary));
         }
     }
     
-    public void testQueryProduct() throws IOException {
+    public void testQueryProduct() throws IOException, CoreException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
         cb.column(QueryParameters.Column.PRODUCT.toString(), Criteria.Operator.EQUALS, TEST_PRODUCT);
         
-        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
-        
-        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        String crit = getCriteriaString(cb);
+        query.setAttribute(CloudDevConstants.QUERY_CRITERIA, crit);
+        query.setUrl(CloudDevConstants.CRITERIA_QUERY);
+        System.out.println(" Query Criteria : " + crit);
         
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
-        assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertFalse(c.arr.isEmpty());
     }
     
-    public void testC1AndC2() throws IOException {
+    public void testC1AndC2() throws IOException, CoreException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
         cb.column(QueryParameters.Column.PRODUCT.toString(), Criteria.Operator.EQUALS, TEST_PRODUCT);
         cb.and(QueryParameters.Column.COMPONENT.toString(), Criteria.Operator.EQUALS, TEST_COMPONENT2);
         
-        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
-        
-        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        String crit = getCriteriaString(cb);
+        query.setAttribute(CloudDevConstants.QUERY_CRITERIA, crit);
+        query.setUrl(CloudDevConstants.CRITERIA_QUERY);
+        System.out.println(" Query Criteria : " + crit);
         
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
-        assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertEquals(1, c.arr.size());
         assertTrue(c.arr.get(0).getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT2));
     }
     
-    public void testC1OrC2() throws IOException {
+    public void testC1OrC2() throws IOException, CoreException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
         cb.column(QueryParameters.Column.COMPONENT.toString(), Criteria.Operator.EQUALS, TEST_COMPONENT2);
         cb.or(QueryParameters.Column.COMPONENT.toString(), Criteria.Operator.EQUALS, TEST_COMPONENT3);
         
-        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
-        
-        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        String crit = getCriteriaString(cb);
+        query.setAttribute(CloudDevConstants.QUERY_CRITERIA, crit);
+        query.setUrl(CloudDevConstants.CRITERIA_QUERY);
+        System.out.println(" Query Criteria : " + crit);
         
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
-        assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertEquals(3, c.arr.size());
         for (TaskData td : c.arr) {
             assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT2) ||
@@ -228,7 +268,7 @@ public class ODCSQueryTestCase extends AbstractC2CTestCase {
         }
     }
     
-    public void testC1And_C2OrC3() throws IOException {
+    public void testC1And_C2OrC3() throws IOException, CoreException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
@@ -238,13 +278,14 @@ public class ODCSQueryTestCase extends AbstractC2CTestCase {
                     .or(QueryParameters.Column.COMPONENT.toString(), Criteria.Operator.EQUALS, TEST_COMPONENT3)
                .toCriteria());
         
-        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
-        
-        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        String crit = getCriteriaString(cb);
+        query.setAttribute(CloudDevConstants.QUERY_CRITERIA, crit);
+        query.setUrl(CloudDevConstants.CRITERIA_QUERY);
+        System.out.println(" Query Criteria : " + crit);
         
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
-        assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertEquals(3, c.arr.size());
         for (TaskData td : c.arr) {
             assertTrue(td.getRoot().getMappedAttribute(TaskAttribute.COMPONENT).getValue().equals(TEST_COMPONENT2) ||
@@ -252,35 +293,73 @@ public class ODCSQueryTestCase extends AbstractC2CTestCase {
         }
     }
 
+    public void testGetManyTasks() throws IOException, CoreException {
+        IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), PredefinedTaskQuery.RECENT.getLabel());
+        query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
+        query.setAttribute(CloudDevConstants.QUERY_NAME, PredefinedTaskQuery.RECENT.toString());
+        
+        Collector c = new Collector();
+        IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
+        assertEquals("Status not OK", IStatus.OK, status.getCode());
+        assertTrue(c.arr.size() > 50);
+    }    
+    
     public void testQueryByDate() throws IOException, CoreException {
         long t1 = System.currentTimeMillis();
         String summary = "summary-" + t1;
         TaskData td = createTaskData(summary, "This is the description of bug " + summary, "bug");
+        String id = td.getTaskId();
         
-        ColumnCriteria dateGreaterThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.GREATER_THAN, new Date(t1 - 24 * 60 * 60 * 1000));
-        ColumnCriteria dateLessThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.LESS_THAN, new Date(t1 + 24 * 60 * 60 * 1000));
-
+        Date d = new Date(t1);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(d);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE,      0);
+        cal.set(Calendar.SECOND,      0);
+        cal.set(Calendar.MILLISECOND, 0);
+   
+        Date dateGreater = new Date(cal.getTimeInMillis() - 24 * 60 * 60 * 1000);
+        Date dateLess = new Date(cal.getTimeInMillis() + 24 * 60 * 60 * 1000);
+        ColumnCriteria cGreaterThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.GREATER_THAN, dateGreater);
+        ColumnCriteria cLessThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.LESS_THAN, dateLess);
+        
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
         
         CriteriaBuilder cb = new CriteriaBuilder();
-        cb.result = dateGreaterThan;
-        cb.and(dateLessThan);
-        
-        query.setAttribute(C2CData.ATTR_QUERY_CRITERIA, cb.toCriteria().toQueryString());
-        
-        System.out.println(" Query Criteria : " + cb.toCriteria().toQueryString());
+        cb.result = cGreaterThan;
+        cb.and(cLessThan);
+         
+//        String crit = getCriteriaString(cb);
+        // creationDate > date1363129200000 AND creationDate < date1363302000000 AND (creationDate > date1363129200000 AND creationDate < date1363302000000)
+        String crit = "creationDate > date1363129200000 AND creationDate < date1363302000000 AND (creationDate > date1363129200000 AND creationDate < date1363302000000)";
+        query.setAttribute(CloudDevConstants.QUERY_CRITERIA, crit);
+        query.setUrl(CloudDevConstants.CRITERIA_QUERY);
+        System.out.println("==============================================");
+        System.out.println(" Query Criteria : " + crit);
+        System.out.println(" dateGreater    : " + dateGreater);
+        System.out.println(" dateLess       : " + dateLess);
+        System.out.println("==============================================");
         
         Collector c = new Collector();
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
-        assertEquals("Status is OK", status.getCode(), IStatus.OK);
+        assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertFalse(c.arr.isEmpty());
+        System.out.println(" ret size : " + c.arr.size());
+        System.out.println("==============================================");
         for (TaskData data : c.arr) {
-            if(summary.equals(data.getRoot().getMappedAttribute(C2CData.ATTR_SUMMARY).getValue())) {
+            if(id.equals(data.getTaskId())) {
                 return;
             }
+//            if(summary.equals(data.getRoot().getMappedAttribute(C2CData.ATTR_SUMMARY).getValue())) {
+//                return;
+//            }
         }
         fail("query should return TaskData with sumary '" + summary + "'");
     }    
+    
+    private String getCriteriaString(CriteriaBuilder cb) throws IOException, CoreException {
+        return cb.toCriteria().toQueryString(); // serializeAsString(cb.toCriteria());
+    }
     
     private class Collector extends TaskDataCollector {
         List<TaskData> arr = new ArrayList<TaskData>();

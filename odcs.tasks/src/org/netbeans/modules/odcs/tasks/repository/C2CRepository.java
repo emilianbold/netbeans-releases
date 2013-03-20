@@ -61,6 +61,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
+import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
@@ -82,9 +88,9 @@ import org.netbeans.modules.odcs.tasks.C2CConnector;
 import org.netbeans.modules.odcs.tasks.C2CExecutor;
 import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
 import org.netbeans.modules.odcs.tasks.query.C2CQuery;
-import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 import org.netbeans.modules.odcs.tasks.util.C2CUtil;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -203,7 +209,9 @@ public class C2CRepository implements PropertyChangeListener {
     
     static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
-        return MylynUtils.createTaskRepository(rc.getConnectorKind(), name, url, user, password, httpUser, httpPassword);
+        TaskRepository taskRepository = MylynUtils.createTaskRepository(rc.getConnectorKind(), name, url, user, password, httpUser, httpPassword);
+        patchHttpCredentials(taskRepository, user, password);        
+        return taskRepository;
     }
     
     public void ensureCredentials() {
@@ -219,6 +227,7 @@ public class C2CRepository implements PropertyChangeListener {
         if (!oldUser.equals(user)) {
             resetRepository(user.isEmpty());
         }
+        patchHttpCredentials(taskRepository, user, password);        
     }
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
@@ -239,12 +248,6 @@ public class C2CRepository implements PropertyChangeListener {
             } else {
                 remoteSavedQueries = null;
             }
-        }
-        if(getTaskRepository() != null) {
-            C2CExtender.repositoryRemoved(
-                C2C.getInstance().getRepositoryConnector(),
-                getTaskRepository()
-            );
         }
     }
 
@@ -396,7 +399,7 @@ public class C2CRepository implements PropertyChangeListener {
     protected void requestRemoteSavedQueries () {
         List<C2CQuery> queries = new ArrayList<C2CQuery>();
         ensureCredentials();
-        RepositoryConfiguration conf = C2C.getInstance().getClientData(this).getRepositoryConfiguration();
+        RepositoryConfiguration conf = getRepositoryConfiguration(false);
         if (conf != null) {
             List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
             for (SavedTaskQuery sq : savedQueries) {
@@ -420,7 +423,10 @@ public class C2CRepository implements PropertyChangeListener {
         if (predefinedQueries == null) {
             Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
             for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
-                queries.put(ptq, C2CExtender.getQuery(C2C.getInstance().getRepositoryConnector(), ptq, ptq.getLabel(), getTaskRepository().getConnectorKind()));
+                RepositoryQuery query = new RepositoryQuery(getTaskRepository().getConnectorKind(), ptq.getLabel());
+                query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
+                query.setAttribute(CloudDevConstants.QUERY_NAME, ptq.toString());        
+                queries.put(ptq, query);
             }
             synchronized(QUERIES_LOCK) {
                 predefinedQueries = new EnumMap<PredefinedTaskQuery, C2CQuery>(PredefinedTaskQuery.class);
@@ -470,10 +476,6 @@ public class C2CRepository implements PropertyChangeListener {
         return NbBundle.getMessage(C2CRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, user, url}); // NOI18N
     }
 
-    public void refreshConfiguration() {
-        C2C.getInstance().refreshClientData(this);
-    }
-
     public String getID() {
         return info.getId();
     }
@@ -517,6 +519,29 @@ public class C2CRepository implements PropertyChangeListener {
 
     private void fireQueryListChanged() {
         support.firePropertyChange(RepositoryProvider.EVENT_QUERY_LIST_CHANGED, null, null);
+    }
+
+    private static void patchHttpCredentials(TaskRepository taskRepository, String user, char[] password) {
+        // XXX have to setup http credentials as that is requested by the odcs client
+        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user != null ? user : "", password != null ? new String(password) : ""); // NOI18N
+        taskRepository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
+    }
+
+    public void refreshConfiguration() {
+        getRepositoryConfiguration(true);
+    }
+
+    public synchronized RepositoryConfiguration getRepositoryConfiguration(boolean forceRefresh) {
+        CloudDevClient client = C2C.getInstance().getCloudDevClient(taskRepository);
+        RepositoryConfiguration configuration;
+        try {
+            configuration = client.getRepositoryConfiguration(forceRefresh, new NullProgressMonitor());
+        } catch (CoreException ex) {
+            // XXX
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        return configuration;
     }
     
     private class Cache extends IssueCache<C2CIssue, TaskData> {

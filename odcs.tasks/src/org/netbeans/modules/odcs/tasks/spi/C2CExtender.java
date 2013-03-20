@@ -75,6 +75,7 @@ public abstract class C2CExtender<Data> {
     
     public static final String TASKTOP_EXTENDER = "org.netbeans.modules.odcs.tasks.tasktop.TaskTopExtender"; // NOI18N
     public static final String NETBEANS_EXTENDER = "org.netbeans.modules.odcs.tasks.nb.NbExtender"; // NOI18N
+    public static final String ORACLE_EXTENDER = "org.netbeans.modules.odcs.tasks.oracle.OracleExtender"; // NOI18N
     private static boolean extenderLogged;
     
     protected C2CExtender() {
@@ -116,7 +117,7 @@ public abstract class C2CExtender<Data> {
 
     private static C2CExtender getDefault() {
         Collection<? extends C2CExtender> extenders = Lookup.getDefault().lookupAll(C2CExtender.class);
-        String preferedExtenderName = System.getProperty("odcs.tasks.preferedExtender", TASKTOP_EXTENDER); // NOI18N
+        String preferedExtenderName = System.getProperty("odcs.tasks.preferedExtender", ORACLE_EXTENDER); // NOI18N
         if(!preferedExtenderName.isEmpty()) {
             for (C2CExtender extender : extenders) {
                 if(extender.getClass().getName().equals(preferedExtenderName)) {

@@ -45,6 +45,7 @@ import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Priority;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
@@ -59,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevAttribute;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
@@ -76,7 +78,6 @@ import org.netbeans.modules.odcs.tasks.C2CConnector;
 import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
 import org.netbeans.modules.odcs.tasks.query.C2CQuery;
 import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
 import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -119,34 +120,33 @@ public class C2CUtil {
         TaskData data = new TaskData(attributeMapper, rc.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
         
         TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.createMappedAttribute(TaskAttribute.USER_ASSIGNED);
-        ta = rta.createMappedAttribute(TaskAttribute.SUMMARY);
-        ta = rta.createMappedAttribute(TaskAttribute.DESCRIPTION);
-        ta = rta.createMappedAttribute(C2CData.ATTR_TASK_TYPE);
-        ta = rta.createMappedAttribute(TaskAttribute.PRODUCT);
-        ta = rta.createMappedAttribute(TaskAttribute.COMPONENT);
-        ta = rta.createMappedAttribute(C2CData.ATTR_MILESTONE);
-        ta = rta.createMappedAttribute(C2CData.ATTR_ITERATION);
-        ta = rta.createMappedAttribute(TaskAttribute.PRIORITY);
-        ta = rta.createMappedAttribute(TaskAttribute.SEVERITY);
-        ta = rta.createMappedAttribute(TaskAttribute.STATUS);
-        ta = rta.createMappedAttribute(TaskAttribute.RESOLUTION);
+        rta.createMappedAttribute(TaskAttribute.USER_ASSIGNED);
+        rta.createMappedAttribute(TaskAttribute.SUMMARY);
+        rta.createMappedAttribute(TaskAttribute.DESCRIPTION);
+        rta.createMappedAttribute(CloudDevAttribute.TASK_TYPE.getTaskName());
+        rta.createMappedAttribute(TaskAttribute.PRODUCT);
+        rta.createMappedAttribute(TaskAttribute.COMPONENT);
+        rta.createMappedAttribute(CloudDevAttribute.MILESTONE.getTaskName());
+        rta.createMappedAttribute(CloudDevAttribute.ITERATION.getTaskName());
+        rta.createMappedAttribute(TaskAttribute.PRIORITY);
+        rta.createMappedAttribute(TaskAttribute.SEVERITY);
+        rta.createMappedAttribute(TaskAttribute.STATUS);
+        rta.createMappedAttribute(TaskAttribute.RESOLUTION);
 //        ta.setValue(clientData.getResolutions("UNCONFIRMED").getValue());
-        ta = rta.createMappedAttribute(C2CData.ATTR_DUPLICATE_OF);
-        ta = rta.createMappedAttribute(C2CData.ATTR_DUEDATE);
-        ta = rta.createMappedAttribute(C2CData.ATTR_FOUND_IN_RELEASE);
-        ta = rta.createMappedAttribute(C2CData.ATTR_TAGS);
-        ta = rta.createMappedAttribute(C2CData.ATTR_EXTERNAL_LINKS);
-        ta = rta.createMappedAttribute(C2CData.ATTR_OWNER);
-        ta = rta.createMappedAttribute(C2CData.ATTR_VERSION);
-        ta = rta.createMappedAttribute(C2CData.ATTR_ESTIMATE_WITH_UNITS);
-        ta = rta.createMappedAttribute(C2CData.ATTR_CC);
-        ta = rta.createMappedAttribute(C2CData.ATTR_NEWCC);
-        ta = rta.createMappedAttribute(C2CData.ATTR_PARENT);
-        ta = rta.createMappedAttribute(C2CData.ATTR_SUBTASK);
-        ta = rta.createMappedAttribute(C2CData.ATTR_NEWCOMMENT);
-
-        ta = rta.createMappedAttribute(C2CData.ATTR_REPORTER);
+        rta.createMappedAttribute(CloudDevAttribute.DUPLICATE_OF.getTaskName());
+        rta.createMappedAttribute(TaskAttribute.DATE_DUE);
+        rta.createMappedAttribute(CloudDevAttribute.FOUND_IN_RELEASE.getTaskName());
+        rta.createMappedAttribute(TaskAttribute.KEYWORDS);
+//         rta.createMappedAttribute(CloudDevAttribute.EXTERNAL_LINKS);
+        rta.createMappedAttribute(TaskAttribute.USER_ASSIGNED);
+         rta.createMappedAttribute(TaskAttribute.VERSION);
+        rta.createMappedAttribute(CloudDevAttribute.ESTIMATED_TIME.getTaskName());
+        rta.createMappedAttribute(CloudDevAttribute.CC.getTaskName());
+        rta.createMappedAttribute(CloudDevAttribute.PARENT_TASK.getTaskName());
+        rta.createMappedAttribute(CloudDevAttribute.SUBTASKS.getTaskName());
+        rta.createMappedAttribute(TaskAttribute.COMMENT_NEW);
+        
+        TaskAttribute ta = rta.createMappedAttribute(CloudDevAttribute.REPORTER.getTaskName());
         ta.setValue(taskRepository.getUserName());
         
         return data;
@@ -228,8 +228,8 @@ public class C2CUtil {
         return repository;
     }
 
-    public static TaskResolution getResolutionByValue(C2CData cd, String value) {
-        List<TaskResolution> resolutions = cd.getResolutions();
+    public static TaskResolution getResolutionByValue(RepositoryConfiguration rc, String value) {
+        List<TaskResolution> resolutions = rc.getResolutions();
         for (TaskResolution r : resolutions) {
             if(r.getValue().equals(value)) {
                 return r;
@@ -238,12 +238,18 @@ public class C2CUtil {
         return null;
     }
     
-    public static TaskStatus getStatusByValue(C2CData cd, String value) {
-        return cd.getStatusByValue(value);
+    public static TaskStatus getStatusByValue(RepositoryConfiguration rc, String value) {
+        List<TaskStatus> statuses = rc.getStatuses();
+        for (TaskStatus taskStatus : statuses) {
+            if(taskStatus.getValue().equals(value)) {
+                return taskStatus;
+            }
+        }
+        return null;
     }
     
-    public static Priority getPriorityByValue(C2CData cd, String value) {
-        List<Priority> priorities = cd.getPriorities();
+    public static Priority getPriorityByValue(RepositoryConfiguration rc, String value) {
+        List<Priority> priorities = rc.getPriorities();
         for (Priority p : priorities) {
             if(p.getValue().equals(value)) {
                 return p;
@@ -252,8 +258,8 @@ public class C2CUtil {
         return null;
     }
     
-    public static TaskSeverity getSeverityByValue(C2CData cd, String value) {
-        List<TaskSeverity> severities = cd.getSeverities();
+    public static TaskSeverity getSeverityByValue(RepositoryConfiguration rc, String value) {
+        List<TaskSeverity> severities = rc.getSeverities();
         for (TaskSeverity s : severities) {
             if(s.getValue().equals(value)) {
                 return s;
@@ -262,8 +268,8 @@ public class C2CUtil {
         return null;
     }
 
-    public static Iteration getIterationByValue(C2CData cd, String value) {
-        List<Iteration> iterations = cd.getRepositoryConfiguration().getIterations();
+    public static Iteration getIterationByValue(RepositoryConfiguration rc, String value) {
+        List<Iteration> iterations = rc.getIterations();
         for (Iteration i : iterations) {
             if(i.getValue().equals(value)) {
                 return i;
@@ -273,8 +279,8 @@ public class C2CUtil {
     }
 
 
-    public static Milestone getMilestoneByValue(C2CData cd, String value) {
-        List<Milestone> milestones = cd.getMilestones();
+    public static Milestone getMilestoneByValue(RepositoryConfiguration rc, String value) {
+        List<Milestone> milestones = rc.getMilestones();
         for (Milestone m : milestones) {
             if(m.getValue().equals(value)) {
                 return m;
@@ -291,11 +297,11 @@ public class C2CUtil {
         }
 
         try {
-            C2CData cd = C2C.getInstance().getClientData(repository);
-            if(cd == null) {
+            RepositoryConfiguration rc = repository.getRepositoryConfiguration(false);
+            if(rc == null) {
                 return keywordString;
             }
-            Collection<Keyword> keywords = cd.getKeywords(); 
+            Collection<Keyword> keywords = rc.getKeywords(); 
             List<String> keywordsList = new ArrayList<String>(keywords.size());
             for (Keyword keyword : keywords) {
                 keywordsList.add(keyword.getName());
@@ -319,11 +325,11 @@ public class C2CUtil {
         }
 
         try {
-            C2CData cd = C2C.getInstance().getClientData(repository);
-            if(cd == null) {
+            RepositoryConfiguration rc = repository.getRepositoryConfiguration(false);
+            if(rc == null) {
                 return usersString;
             }
-            List<TaskUserProfile> userProfiles = cd.getUsers();
+            List<TaskUserProfile> userProfiles = rc.getUsers();
             List<ListValuePicker.ListValue> usersList = new ArrayList<ListValuePicker.ListValue>(userProfiles.size());
             for (TaskUserProfile up : userProfiles) {
                 usersList.add(new ListValuePicker.ListValue(up.getRealname() + " (" + up.getLoginName() + ")", up.getLoginName()));

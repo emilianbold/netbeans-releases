@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
@@ -68,7 +69,6 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
@@ -78,8 +78,6 @@ import org.netbeans.modules.odcs.tasks.C2C;
 import org.netbeans.modules.odcs.tasks.C2CConnector;
 import org.netbeans.modules.odcs.tasks.issue.C2CIssue;
 import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
-import org.netbeans.modules.odcs.tasks.util.C2CUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -292,7 +290,7 @@ public abstract class C2CQuery {
         executeQuery(new Runnable() {
             @Override
             public void run() {
-                C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(C2CData.ATTR_QUERY_CRITERIA)}); // NOI18N
+                C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(CloudDevConstants.QUERY_CRITERIA)}); // NOI18N
                 IssuesCollector ic = new IssuesCollector();
                 try {
                     
@@ -335,7 +333,7 @@ public abstract class C2CQuery {
                         logQueryEvent(issues.size(), autoRefresh);
                     }
                     if(C2C.LOG.isLoggable(Level.FINE)) {
-                        C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(C2CData.ATTR_QUERY_CRITERIA)}); // NOI18N
+                        C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(CloudDevConstants.QUERY_CRITERIA)}); // NOI18N
                     }
                 }
             }
@@ -414,6 +412,7 @@ public abstract class C2CQuery {
             // XXX synchronize
             if(repositoryQuery == null) {
                 repositoryQuery = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODCS query -" + getDisplayName()); // NOI18N
+                repositoryQuery.setUrl(CloudDevConstants.CRITERIA_QUERY);                
             }
             return repositoryQuery;
         }
@@ -432,7 +431,7 @@ public abstract class C2CQuery {
             if(savedQuery != null) {
                 savedQuery.setQueryString(queryString);
             } 
-            getRepositoryQuery().setAttribute(C2CData.ATTR_QUERY_CRITERIA, queryString);
+            getRepositoryQuery().setAttribute(CloudDevConstants.QUERY_CRITERIA, queryString);      
             refreshIntern(autoRefresh);
         }
 

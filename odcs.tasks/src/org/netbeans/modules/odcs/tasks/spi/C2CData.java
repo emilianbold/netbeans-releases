@@ -64,23 +64,41 @@ import org.netbeans.modules.odcs.tasks.issue.IssueField;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class C2CData {
+    public static final String CRITERIA_QUERY = "findTasksWithCriteria";
+    public static final String PREDEFINED_QUERY = "findTasksWithQuery";
+    public static final String QUERY_CRITERIA = "QueryCriteria";
+    public static final String QUERY_NAME = "QueryName";
+    
     public static final String ATTR_QUERY_CRITERIA = "query_criteria";
     public static final String ATTR_SUMMARY = "task.common.summary";
     public static final String ATTR_DESCRIPTION = "task.common.description";
+//    public static final String ATTR_DESCRIPTION = TaskAttribute.DESCRIPTION; //"task.common.description";
     public static final String ATTR_OWNER = "task.common.user.assigned";
+//    public static final String ATTR_OWNER = TaskAttribute.USER_ASSIGNED; //"task.common.user.assigned";
     public static final String ATTR_PARENT = "blocks";
+//    public static final String ATTR_PARENT = "PARENT_BLOCKS"; //"PARENT_BLOCKS";
     public static final String ATTR_SUBTASK = "dependson";
+//    public static final String ATTR_SUBTASK = "SUBTASKS";
     public static final String ATTR_MILESTONE = "milestone";
+//    public static final String ATTR_MILESTONE = "MILESTONE";
     public static final String ATTR_ITERATION = "iteration";
+//    public static final String ATTR_ITERATION = "ITERATION";
     public static final String ATTR_TASK_TYPE = "task_type";
+//    public static final String ATTR_TASK_TYPE = "TASK_TYPE"; //"task_type";
     public static final String ATTR_DUPLICATE_OF = "duplicate_of";
+//    public static final String ATTR_DUPLICATE_OF = "DUPLICATE_OF"; //"duplicate_of";
     public static final String ATTR_DUEDATE = "task.common.date.due";
     public static final String ATTR_FOUND_IN_RELEASE = "softwareVersion";
+//    public static final String ATTR_FOUND_IN_RELEASE = "FOUND_IN_RELEASE"; //"softwareVersion";
     public static final String ATTR_TAGS = "keywords";
+//    public static final String ATTR_TAGS = TaskAttribute.KEYWORDS; // "keywords";
     public static final String ATTR_EXTERNAL_LINKS = "task_relations";
     public static final String ATTR_ESTIMATE_WITH_UNITS = "estimate_with_units";
+//    public static final String ATTR_ESTIMATE_WITH_UNITS = "ESTIMATED_TIME"; // estimate_with_units";
     public static final String ATTR_REPORTER = "task.common.user.reporter";
+//    public static final String ATTR_REPORTER = TaskAttribute.USER_REPORTER; //"task.common.user.reporter";
     public static final String ATTR_CC = "cc";
+//    public static final String ATTR_CC = "cloud.dev.cc"; //"cc";
     public static final String ATTR_NEWCC = "newcc";
     public static final String ATTR_NEWCOMMENT = "task.common.comment.new";
     public static final String ATTR_MODIFIED = "task.common.date.modified";
@@ -216,7 +234,7 @@ public final class C2CData {
             fields.add(IssueField.ITERATION);
             fields.add(IssueField.MILESTONE);
             fields.add(IssueField.MODIFIED);
-            fields.add(IssueField.NEWCC);
+//            fields.add(IssueField.NEWCC);
             fields.add(IssueField.OWNER);
             fields.add(IssueField.PARENT);
             fields.add(IssueField.PRIORITY);

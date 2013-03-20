@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.odcs.tasks.issue;
 
+import java.util.ArrayList;
+import java.util.List;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,30 +57,29 @@ public class IssueField {
     
     public static final IssueField ID = new IssueField(TaskAttribute.TASK_KEY, "CTL_Issue_ID_Title", "CTL_Issue_ID_Desc"); // NOI18N
     public static final IssueField SUMMARY = new IssueField(TaskAttribute.SUMMARY, "CTL_Issue_Summary_Title", "CTL_Issue_Summary_Desc"); // NOI18N
-    public static final IssueField CC = new IssueField(C2CData.ATTR_CC, "CTL_Issue_CC_Title", "CTL_Issue_CC_Desc"); // NOI18N
+    public static final IssueField CC = new IssueField(CloudDevAttribute.CC.getTaskName(), "CTL_Issue_CC_Title", "CTL_Issue_CC_Desc"); // NOI18N
     public static final IssueField COMPONENT = new IssueField(TaskAttribute.COMPONENT, "CTL_Issue_Component_Title", "CTL_Issue_Component_Desc"); // NOI18N
     public static final IssueField DESCRIPTION = new IssueField(TaskAttribute.DESCRIPTION, "CTL_Issue_Description_Title", "CTL_Issue_Description_Desc"); // NOI18N
-    public static final IssueField DUEDATE = new IssueField(C2CData.ATTR_DUEDATE, "CTL_Issue_DueDate_Title", "CTL_Issue_DueDate_Desc"); // NOI18N
-    public static final IssueField ESTIMATE = new IssueField(C2CData.ATTR_ESTIMATE_WITH_UNITS, "CTL_Issue_Estimate_Title", "CTL_Issue_Estimate_Desc"); //NOI18N
-    public static final IssueField FOUNDIN = new IssueField(C2CData.ATTR_FOUND_IN_RELEASE, "CTL_Issue_FoundIn_Title", "CTL_Issue_FoundIn_Title"); //NOI18N
-    public static final IssueField ITERATION = new IssueField(C2CData.ATTR_ITERATION, "CTL_Issue_Iteration_Title", "CTL_Issue_Iteration_Desc"); // NOI18N
-    public static final IssueField MILESTONE = new IssueField(C2CData.ATTR_MILESTONE, "CTL_Issue_Milestone_Title", "CTL_Issue_Milestone_Desc"); // NOI18N
+    public static final IssueField DUEDATE = new IssueField(TaskAttribute.DATE_DUE, "CTL_Issue_DueDate_Title", "CTL_Issue_DueDate_Desc"); // NOI18N
+    public static final IssueField ESTIMATE = new IssueField(CloudDevAttribute.ESTIMATED_TIME.getTaskName(), "CTL_Issue_Estimate_Title", "CTL_Issue_Estimate_Desc"); //NOI18N
+    public static final IssueField FOUNDIN = new IssueField(CloudDevAttribute.FOUND_IN_RELEASE.getTaskName(), "CTL_Issue_FoundIn_Title", "CTL_Issue_FoundIn_Title"); //NOI18N
+    public static final IssueField ITERATION = new IssueField(CloudDevAttribute.ITERATION.getTaskName(), "CTL_Issue_Iteration_Title", "CTL_Issue_Iteration_Desc"); // NOI18N
+    public static final IssueField MILESTONE = new IssueField(CloudDevAttribute.MILESTONE.getTaskName(), "CTL_Issue_Milestone_Title", "CTL_Issue_Milestone_Desc"); // NOI18N
     public static final IssueField PRIORITY = new IssueField(TaskAttribute.PRIORITY, "CTL_Issue_Priority_Title", "CTL_Issue_Priority_Desc"); // NOI18N
     public static final IssueField PRODUCT = new IssueField(TaskAttribute.PRODUCT, "CTL_Issue_Product_Title", "CTL_Issue_Product_Desc"); // NOI18N
     public static final IssueField STATUS = new IssueField(TaskAttribute.STATUS, "CTL_Issue_Status_Title", "CTL_Issue_Status_Desc"); // NOI18N
     public static final IssueField RESOLUTION = new IssueField(TaskAttribute.RESOLUTION, "CTL_Issue_Resolution_Title", "CTL_Issue_Resolution_Desc"); // NOI18N
-    public static final IssueField DUPLICATE = new IssueField(C2CData.ATTR_DUPLICATE_OF, "CTL_Issue_Duplicate_Title", "CTL_Issue_Duplicate_Desc"); // NOI18N
+    public static final IssueField DUPLICATE = new IssueField(CloudDevAttribute.DUPLICATE_OF.getTaskName(), "CTL_Issue_Duplicate_Title", "CTL_Issue_Duplicate_Desc"); // NOI18N
     public static final IssueField SEVERITY = new IssueField(TaskAttribute.SEVERITY, "CTL_Issue_Severity_Title", "CTL_Issue_Severity_Desc"); // NOI18N
-    public static final IssueField TASK_TYPE = new IssueField(C2CData.ATTR_TASK_TYPE, "CTL_Issue_Task_Type_Title", "CTL_Issue_Task_Type_Desc"); // NOI18N
-    public static final IssueField REPORTER = new IssueField(C2CData.ATTR_REPORTER, "CTL_Issue_Reporter_Title", "CTL_Issue_Reporter_Title"); // NOI18N
-    public static final IssueField OWNER = new IssueField(C2CData.ATTR_OWNER, "CTL_Issue_Owner_Title", "CTL_Issue_Owner_Desc"); // NOI18N
-    public static final IssueField KEYWORDS = new IssueField(C2CData.ATTR_TAGS, "CTL_Issue_Keywords_Title", "CTL_Issue_Keywords_Desc"); // NOI18N
-    public static final IssueField PARENT = new IssueField(C2CData.ATTR_PARENT, "CTL_Issue_Parent_Title", "CTL_Issue_Parent_Desc"); // NOI18N
-    public static final IssueField SUBTASK = new IssueField(C2CData.ATTR_SUBTASK, "CTL_Issue_Subtask_Title", "CTL_Issue_Subtask_Desc"); // NOI18N
-    public static final IssueField MODIFIED = new IssueField(C2CData.ATTR_MODIFIED, "CTL_Issue_Modification_Title", "CTL_Issue_Modification_Desc"); // NOI18N
-    public static final IssueField CREATED = new IssueField(C2CData.ATTR_MODIFIED, "CTL_Issue_Creation_Title", "CTL_Issue_Creation_Desc"); // NOI18N
+    public static final IssueField TASK_TYPE = new IssueField(CloudDevAttribute.TASK_TYPE.getTaskName(), "CTL_Issue_Task_Type_Title", "CTL_Issue_Task_Type_Desc"); // NOI18N
+    public static final IssueField REPORTER = new IssueField(TaskAttribute.USER_REPORTER, "CTL_Issue_Reporter_Title", "CTL_Issue_Reporter_Title"); // NOI18N
+    public static final IssueField OWNER = new IssueField(TaskAttribute.USER_ASSIGNED, "CTL_Issue_Owner_Title", "CTL_Issue_Owner_Desc"); // NOI18N
+    public static final IssueField KEYWORDS = new IssueField(CloudDevAttribute.KEYWORDS.getTaskName(), "CTL_Issue_Keywords_Title", "CTL_Issue_Keywords_Desc"); // NOI18N
+    public static final IssueField PARENT = new IssueField(CloudDevAttribute.PARENT_TASK.getTaskName(), "CTL_Issue_Parent_Title", "CTL_Issue_Parent_Desc"); // NOI18N
+    public static final IssueField SUBTASK = new IssueField(CloudDevAttribute.SUBTASKS.getTaskName(), "CTL_Issue_Subtask_Title", "CTL_Issue_Subtask_Desc"); // NOI18N
+    public static final IssueField MODIFIED = new IssueField(CloudDevAttribute.MODIFIED_DATE.getTaskName(), "CTL_Issue_Modification_Title", "CTL_Issue_Modification_Desc"); // NOI18N
+    public static final IssueField CREATED = new IssueField(CloudDevAttribute.CREATION_DATE.getTaskName(), "CTL_Issue_Creation_Title", "CTL_Issue_Creation_Desc"); // NOI18N
     
-    public static final IssueField NEWCC = new IssueField(C2CData.ATTR_NEWCC, null, null); // NOI18N
     public static final IssueField COMMENT_COUNT = new IssueField(TaskAttribute.TYPE_COMMENT, null, null, false);
     public static final IssueField ATTACHEMENT_COUNT = new IssueField(TaskAttribute.TYPE_ATTACHMENT, null, null, false);
 
@@ -117,4 +118,38 @@ public class IssueField {
         return singleFieldAttribute;
     }
 
+    private static List<IssueField> issueFields;
+    public static List<IssueField> getFields() {
+        if (issueFields == null) {
+            List<IssueField> fields = new ArrayList<IssueField>(40);
+            fields.add(IssueField.ATTACHEMENT_COUNT);
+            fields.add(IssueField.CC);
+            fields.add(IssueField.COMMENT_COUNT);
+            fields.add(IssueField.COMPONENT);
+            fields.add(IssueField.CREATED);
+            fields.add(IssueField.DESCRIPTION);
+            fields.add(IssueField.DUEDATE);
+            fields.add(IssueField.DUPLICATE);
+            fields.add(IssueField.ESTIMATE);
+            fields.add(IssueField.FOUNDIN);
+            fields.add(IssueField.ITERATION);
+            fields.add(IssueField.MILESTONE);
+            fields.add(IssueField.MODIFIED);
+            fields.add(IssueField.OWNER);
+            fields.add(IssueField.PARENT);
+            fields.add(IssueField.PRIORITY);
+            fields.add(IssueField.PRODUCT);
+            fields.add(IssueField.REPORTER);
+            fields.add(IssueField.RESOLUTION);
+            fields.add(IssueField.SEVERITY);
+            fields.add(IssueField.STATUS);
+            fields.add(IssueField.SUBTASK);
+            fields.add(IssueField.SUMMARY);
+            fields.add(IssueField.KEYWORDS);
+            fields.add(IssueField.TASK_TYPE);
+            
+            issueFields = fields;
+        }
+        return issueFields;
+    }    
 }

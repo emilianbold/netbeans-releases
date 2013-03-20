@@ -41,12 +41,13 @@
  */
 package org.netbeans.modules.odcs.tasks.issue;
 
-import com.tasktop.c2c.server.tasks.domain.AbstractDomainObject;
+import com.tasktop.c2c.server.tasks.domain.Iteration;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.Product;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
@@ -133,7 +134,6 @@ import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.odcs.tasks.C2C;
 import org.netbeans.modules.odcs.tasks.issue.C2CIssue.C2CAttachment;
 import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
 import org.netbeans.modules.odcs.tasks.util.C2CUtil;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;
@@ -268,8 +268,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void initWikiPanels(){
         GroupLayout layout = (GroupLayout) getLayout();
-        C2CData clientData = C2C.getInstance().getClientData(issue.getRepository());
-        wikiLanguage = clientData.getRepositoryConfiguration().getMarkupLanguage();
+        RepositoryConfiguration rc = issue.getRepository().getRepositoryConfiguration(false);
+        wikiLanguage = rc.getMarkupLanguage();
         addCommentPanel = WikiUtils.getWikiPanel(wikiLanguage, true, true);
         layout.replace(dummyAddCommentPanel, addCommentPanel);
 
@@ -326,7 +326,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         initWikiPanels();
 //        initCustomFields(); XXX
         
-        Collection<Keyword> kws = C2C.getInstance().getClientData(issue.getRepository()).getKeywords();
+        Collection<Keyword> kws = issue.getRepository().getRepositoryConfiguration(false).getKeywords();
         keywords.clear();
         for (Keyword keyword : kws) {
             keywords.add(keyword.getName());
@@ -388,31 +388,31 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }    
     
     private void initCombos() {
-        C2CData cd = C2C.getInstance().getClientData(issue.getRepository());
+        RepositoryConfiguration rc = issue.getRepository().getRepositoryConfiguration(false);
         
-        productCombo.setModel(toComboModel(cd.getProducts()));
+        productCombo.setModel(toComboModel(rc.getProducts()));
         productCombo.setRenderer(new ClientDataRenderer());
         
         // componentCombo, versionCombo, targetMilestoneCombo are filled
         // automatically when productCombo is set/changed
 
         // List<String> resolutions = new LinkedList<String>(cd.getResolutions());
-        resolutionCombo.setModel(toComboModel(cd.getResolutions()));
+        resolutionCombo.setModel(toComboModel(rc.getResolutions()));
         resolutionCombo.setRenderer(new ClientDataRenderer());
         
-        initPriorityCombo(cd);
+        initPriorityCombo(rc);
         
-        initSeverityCombo(cd);
+        initSeverityCombo(rc);
 
-        ownerCombo.setModel(toComboModel(cd.getUsers()));
+        ownerCombo.setModel(toComboModel(rc.getUsers()));
         ownerCombo.setRenderer(new ClientDataRenderer());
 
-        iterationCombo.setModel(toComboModel(new ArrayList<String>(issue.isNew() 
-                ? cd.getActiveIterations() 
-                : cd.getAllIterations())));
+        iterationCombo.setModel(toComboModel(new ArrayList<Iteration>(issue.isNew() 
+                ? rc.getActiveIterations()
+                : rc.getIterations())));
         iterationCombo.setRenderer(new ClientDataRenderer());
 
-        issueTypeCombo.setModel(toComboModel(new ArrayList<String>(cd.getTaskTypes())));
+        issueTypeCombo.setModel(toComboModel(new ArrayList<String>(rc.getTaskTypes())));
         
         // statusCombo and resolution fields are filled in reloadForm
     }
@@ -837,7 +837,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             ComboBoxModel model = combo.getModel();
             for (int i = 0; i < model.getSize(); ++i) {
                 Object item = model.getElementAt(i);
-                if (value.toString().equals(convertItem(item))) {
+                if (value.toString().equals(convert(item))) {
                     combo.setSelectedItem(item);
                     break;
                 }
@@ -860,41 +860,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if(item == null) {
             return null;
         }
-        String value = convertItem(item);
+        String value = convert(item);
         return value;
     }
 
-    private String convertItem (Object item) {
-        if(item instanceof Priority) {
-            return ((Priority) item).getValue();
-        } else if(item instanceof TaskSeverity) {
-            return ((TaskSeverity) item).getValue();
-        } else if(item instanceof TaskResolution) {
-            return ((TaskResolution) item).getValue();
-        } else if(item instanceof Product) {
-            return ((Product) item).getName();
-        } else if(item instanceof TaskUserProfile) {
-            return ((TaskUserProfile) item).getLoginName();
-        } else if(item instanceof TaskStatus) {
-            return ((TaskStatus) item).getValue();
-        } else if(item instanceof com.tasktop.c2c.server.tasks.domain.Component) {
-            return ((com.tasktop.c2c.server.tasks.domain.Component) item).getName();
-        } else if (item instanceof Milestone) {
-            return ((Milestone) item).getValue();
-        } else {
-            assert item instanceof String : "Wrong value";                 // NOI18N
-        }
-        return item.toString();
-    }
-    
     private void initStatusCombo(String status, String initialValue) {
         // Init statusCombo - allowed transitions (heuristics):
         // Open -> Open-Unconfirmed-Reopened+Resolved
         // Resolved -> Reopened+Close
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
-        C2CData cd = C2C.getInstance().getClientData(issue.getRepository());
+        RepositoryConfiguration rc = issue.getRepository().getRepositoryConfiguration(false);
         
-        List<TaskStatus> statuses = cd.computeValidStatuses(initialValue == null ? null : cd.getStatusByValue(initialValue));
+        List<TaskStatus> statuses = rc.computeValidStatuses(initialValue == null ? null : C2CUtil.getStatusByValue(rc, initialValue));
         
         // XXX evaluate statuses for open and active
         resolvedIndex = statuses.size(); // if there is no RESOLVED
@@ -908,7 +885,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         
         statusCombo.setModel(toComboModel(statuses));
         statusCombo.setRenderer(new ClientDataRenderer());
-        selectInCombo(statusCombo, cd.getStatusByValue(status), false);
+        selectInCombo(statusCombo, C2CUtil.getStatusByValue(rc, status), false);
     }    
     
     private void updateReadOnlyField(JTextField field) {
@@ -1054,8 +1031,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
-    private void initPriorityCombo (C2CData cd) {
-        List<Priority> priorities = cd.getPriorities();
+    private void initPriorityCombo (RepositoryConfiguration rc) {
+        List<Priority> priorities = rc.getPriorities();
         Priority defaultPriority = null;
         for (Priority p : priorities) {
             if (DEFAULT_PRIORITY.equals(p.getValue())) {
@@ -1069,8 +1046,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
-    private void initSeverityCombo (C2CData cd) {
-        List<TaskSeverity> severities = cd.getSeverities();
+    private void initSeverityCombo (RepositoryConfiguration rc) {
+        List<TaskSeverity> severities = rc.getSeverities();
         TaskSeverity defaultSeverity = null;
         for (TaskSeverity s : severities) {
             if (DEFAULT_SEVERITY.equals(s.getValue())) {
@@ -1114,25 +1091,35 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
     }
 
+    private static String convert(Object item) {
+        if(item instanceof Priority) {
+            return ((Priority) item).getValue();
+        } else if(item instanceof Iteration) {
+            return ((Iteration) item).getValue();
+        } else if(item instanceof TaskSeverity) {
+            return ((TaskSeverity) item).getValue();
+        } else if(item instanceof TaskResolution) {
+            return ((TaskResolution) item).getValue();
+        } else if(item instanceof Product) {
+            return ((Product) item).getName();
+        } else if(item instanceof TaskUserProfile) {
+            return ((TaskUserProfile) item).getLoginName();
+        } else if(item instanceof TaskStatus) {
+            return ((TaskStatus) item).getValue();
+        } else if(item instanceof com.tasktop.c2c.server.tasks.domain.Component) {
+            return ((com.tasktop.c2c.server.tasks.domain.Component) item).getName();
+        } else if (item instanceof Milestone) {
+            return ((Milestone) item).getValue();
+        } else {
+            assert item instanceof String : "Wrong value type : " + item.getClass().getName(); // NOI18N
+        }
+        return item.toString();
+    }
+
     private static class ClientDataRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if(value instanceof Priority) {
-                value = ((Priority) value).getValue();
-            } else if(value instanceof TaskSeverity) {
-                value = ((TaskSeverity) value).getValue();
-            } else if(value instanceof TaskResolution) {
-                value = ((TaskResolution) value).getValue();
-            } else if(value instanceof Product) {
-                value = ((Product) value).getName();
-            } else if(value instanceof TaskUserProfile) {
-                value = ((TaskUserProfile) value).getRealname();
-            } else if(value instanceof TaskStatus) {
-                value = ((TaskStatus) value).getValue();
-            } else {
-                assert value instanceof String : "Wrong value type : " + value.getClass().getName(); // NOI18N
-            }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            return super.getListCellRendererComponent(list, convert(value), index, isSelected, cellHasFocus);
         }
     }
 
@@ -2314,7 +2301,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         resolutionCombo.setVisible(false);
         resolutionLabel.setVisible(false);
         // Hide/show resolution combo
-        C2CData cd = C2C.getInstance().getClientData(issue.getRepository());
+        RepositoryConfiguration rc = issue.getRepository().getRepositoryConfiguration(false);
         String initialStatus = initialValues.get(IssueField.STATUS.getKey());
         boolean resolvedInitial = RESOLUTION_RESOLVED.equals(initialStatus); // NOI18N
         if (!resolvedInitial) {
@@ -2323,9 +2310,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 return;
             }
             TaskStatus status = (TaskStatus) statusCombo.getSelectedItem();
-            TaskStatus resolvedStatus = cd.getStatusByValue(RESOLUTION_RESOLVED);
+            TaskStatus resolvedStatus = C2CUtil.getStatusByValue(rc, RESOLUTION_RESOLVED);
             if (resolvedStatus.equals(status)) { // NOI18N
-                TaskResolution fixedResolution = C2CUtil.getResolutionByValue(cd, STATUS_FIXED);
+                TaskResolution fixedResolution = C2CUtil.getResolutionByValue(rc, STATUS_FIXED);
                 resolutionCombo.setSelectedItem(fixedResolution); 
                 resolutionCombo.setVisible(true);
                 resolutionLabel.setVisible(true);
@@ -2581,7 +2568,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (resolutionCombo.getParent() == null) {
             return;
         }
-        TaskResolution duplicate = C2CUtil.getResolutionByValue(C2C.getInstance().getClientData(issue.getRepository()), RESOLUTION_DUPLICATE);
+        TaskResolution duplicate = C2CUtil.getResolutionByValue(issue.getRepository().getRepositoryConfiguration(false), RESOLUTION_DUPLICATE);
         boolean shown = duplicate.equals(resolutionCombo.getSelectedItem()); // NOI18N
         duplicateField.setVisible(shown);
         duplicateButton.setVisible(shown && duplicateField.isEditable());

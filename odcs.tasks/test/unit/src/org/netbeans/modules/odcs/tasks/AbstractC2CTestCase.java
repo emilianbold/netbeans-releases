@@ -42,7 +42,10 @@
 
 package org.netbeans.modules.odcs.tasks;
 
+import com.tasktop.c2c.server.tasks.domain.Component;
+import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Product;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -50,20 +53,19 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.logging.Level;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevAttribute;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
-import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
-import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 import org.netbeans.modules.odcs.tasks.util.C2CUtil;
 import org.openide.util.Exceptions;
 
@@ -84,7 +86,7 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
     protected static final String TEST_COMPONENT3 = "Component3";
             
     protected TaskRepository taskRepository;
-    protected AbstractRepositoryConnector rc;
+    protected CloudDevRepositoryConnector rc;
     protected TaskRepositoryManager trm;
     protected NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
     
@@ -132,7 +134,6 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         trm = new TaskRepositoryManager();
         rc = C2C.getInstance().getRepositoryConnector(); // reuse the only one RC instance
         trlf = new TaskRepositoryLocationFactory();
-        C2CExtender.assignTaskRepositoryLocationFactory(rc, trlf);
         
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
 //        taskRepository = new TaskRepository(rc.getConnectorKind(), "https://q.tasktop.com/alm/s/anagramgame/tasks");
@@ -155,38 +156,49 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         trm.addRepositoryConnector(rc);
         trm.addRepository(taskRepository);
 
+        //        System.setProperty("httpclient.wire.level", "-1");
+        
     }
 
-    public TaskData createTaskData(String summary, String desc, String typeName) throws CoreException, MalformedURLException {
+    public TaskData createTaskData(String summary, String desc, String typeName) throws CoreException, MalformedURLException, IOException {
         TaskData data = C2CUtil.createTaskData(taskRepository);
-        C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
+        RepositoryConfiguration conf = C2C.getInstance().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
         ta.setValue(summary);
         ta = rta.getMappedAttribute(TaskAttribute.DESCRIPTION);
         ta.setValue(desc);
-        ta = rta.getMappedAttribute(C2CData.ATTR_TASK_TYPE);
-        ta.setValue(clientData.getTaskTypes().iterator().next());
-        Product product = clientData.getProducts().get(0);
+        ta = rta.getMappedAttribute(CloudDevAttribute.TASK_TYPE.getTaskName());
+        ta.setValue(conf.getTaskTypes().iterator().next());
+        Product product = conf.getProducts().get(0);
         ta = rta.getMappedAttribute(TaskAttribute.PRODUCT);
         ta.setValue(product.getName());
         ta = rta.getMappedAttribute(TaskAttribute.COMPONENT);
+        
+        Component component = product.getComponents().get(0);
         ta.setValue(product.getComponents().get(0).getName());
-        ta = rta.getMappedAttribute(C2CData.ATTR_MILESTONE);
+        ta = rta.getMappedAttribute(CloudDevAttribute.MILESTONE.getTaskName());
         ta.setValue(product.getMilestones().get(0).getValue());
-        ta = rta.getMappedAttribute(C2CData.ATTR_ITERATION);
-        Collection<String> c = clientData.getActiveIterations();
+        ta = rta.getMappedAttribute(CloudDevAttribute.ITERATION.getTaskName());
+        Collection<Iteration> c = conf.getIterations();
         if (!c.isEmpty()) {
-            ta.setValue(c.iterator().next());
+            ta.setValue(c.iterator().next().getValue());
         }
         ta = rta.getMappedAttribute(TaskAttribute.PRIORITY);
-        ta.setValue(clientData.getPriorities().get(0).getValue());
+        ta.setValue(conf.getPriorities().get(0).getValue());
         ta = rta.getMappedAttribute(TaskAttribute.SEVERITY);
-        ta.setValue(clientData.getSeverities().get(0).getValue());
+        ta.setValue(conf.getSeverities().get(0).getValue());
         ta = rta.getMappedAttribute(TaskAttribute.STATUS);
-        ta.setValue(clientData.getStatusByValue("UNCONFIRMED").getValue());
+        ta.setValue(C2CUtil.getStatusByValue(conf, "UNCONFIRMED").getValue());
+        
+        ta = rta.getMappedAttribute(TaskAttribute.USER_ASSIGNED);
+        ta.setValue(component.getInitialOwner().getLoginName());
+        
+        ta = rta.getMappedAttribute(CloudDevAttribute.REPORTER.getTaskName());
+        ta.setValue(component.getInitialOwner().getLoginName());
+        
         RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, data);
-        assertEquals(RepositoryResponse.ResponseKind.TASK_CREATED, rr.getReposonseKind());
+        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
         String taskId = rr.getTaskId();
         assertNotNull(taskId);
         data = rc.getTaskData(taskRepository, taskId, nullProgressMonitor);
@@ -194,6 +206,5 @@ public abstract class AbstractC2CTestCase extends NbTestCase  {
         C2C.LOG.log(Level.FINE, " dataRoot after get {0}", data.getRoot().toString());
         return data;
     }
-
 
 }

@@ -43,13 +43,17 @@
 package org.netbeans.modules.odcs.tasks;
 
 import com.tasktop.c2c.server.tasks.domain.Component;
+import com.tasktop.c2c.server.tasks.domain.Iteration;
+import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.Product;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -58,8 +62,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.fail;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevAttribute;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.IRepositoryElement;
@@ -70,8 +76,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.odcs.tasks.issue.IssueField;
-import org.netbeans.modules.odcs.tasks.spi.C2CData;
-import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 import org.netbeans.modules.odcs.tasks.util.C2CUtil;
 
 /**
@@ -82,36 +86,60 @@ public class ODCSTaskTestCase extends NbTestSuite {
 
     private static final IssueField[] SIMPLE_TEXT_FIELDS = new IssueField[] {
         IssueField.SUMMARY,
-        IssueField.DESCRIPTION
+        IssueField.DESCRIPTION,
+        IssueField.FOUNDIN,
+    };
+    private static final IssueField[] DATE_FIELDS = new IssueField[] {
+        IssueField.DUEDATE
+    };
+    private static final IssueField[] NUMBER_FIELDS = new IssueField[] {
+        IssueField.ESTIMATE
     };
             
     private static final String ATTACHMENT_DATA = "attachment data";
     
     private TaskData taskData;
-    private TaskData subTaskData;
+    
+    /**
+    public static final IssueField DUEDATE = new IssueField(C2CData.ATTR_DUEDATE, "CTL_Issue_DueDate_Title", "CTL_Issue_DueDate_Desc"); // NOI18N
+    public static final IssueField ESTIMATE = new IssueField(C2CData.ATTR_ESTIMATE_WITH_UNITS, "CTL_Issue_Estimate_Title", "CTL_Issue_Estimate_Desc"); //NOI18N
+    **/
     
     public ODCSTaskTestCase() throws IllegalArgumentException, IllegalAccessException {
         addTest(new CreateTaskTestCase());
+        addTest(new ChangeTypeTestCase());
+        addTest(new MidairTestCase());
         for (IssueField f : SIMPLE_TEXT_FIELDS) {
             addTest(new ChangeTextTestCase(escape(f.getDisplayName()), f));
         }
+        for (IssueField f : DATE_FIELDS) {
+            addTest(new ChangeDateTestCase(escape(f.getDisplayName()), f));
+        }
+        for (IssueField f : NUMBER_FIELDS) {
+            addTest(new ChangeNumberTestCase(escape(f.getDisplayName()), f));
+        }
+        addTest(new ChangeCCTestCase());
         addTest(new ChangePriorityTestCase());
         addTest(new ChangeSeverityTestCase());
         addTest(new ChangeIterationTestCase());
-        addTest(new ChangeProductTestCase());
+        addTest(new ChangeKeywordTestCase());
+        addTest(new ChangeProductComponentMilestoneTestCase());
         addTest(new ChangeCustomFieldTestCase());
         addTest(new CommentTestCase());
         addTest(new ReassignTestCase());
         addTest(new AttachementsTestCase());
         addTest(new ResolveTestCase());
-        addTest(new SubtaskTestCase());
-        addTest(new RemoveSubtaskTestCase());
+        addTest(new RemoveParentFromSubtaskTestCase());
+        addTest(new RemoveSubtaskFromParentTestCase());
         addTest(new DuplicateTestCase());
     }
     
     private String getDifferentUser(String user, List<TaskUserProfile> users) {
         for (TaskUserProfile tup : users) {
-            if(!tup.getLoginName().toLowerCase().contains(user)) {
+            if(user == null || "".equals(user.trim())) {
+                return tup.getLoginName();
+            }
+            if(tup.getLoginName().toLowerCase().contains(user)) {
                 return tup.getLoginName();
             }
         }
@@ -122,7 +150,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
         C2C.LOG.log(Level.INFO, " *************************************************** ");
         C2C.LOG.log(Level.INFO, " id : " + data.getTaskId());
         C2C.LOG.log(Level.INFO, "   summary : " + data.getRoot().getAttribute(TaskAttribute.SUMMARY).getValue());
-        C2C.LOG.log(Level.INFO, "   owner : " + data.getRoot().getAttribute(C2CData.ATTR_OWNER).getValue());
+        C2C.LOG.log(Level.INFO, "   owner : " + data.getRoot().getAttribute(TaskAttribute.USER_ASSIGNED).getValue());
         C2C.LOG.log(Level.INFO, "   status : " + data.getRoot().getAttribute(TaskAttribute.STATUS).getValue());
 //        C2C.LOG.log(Level.INFO, "   parent : " + data.getRoot().getAttribute(C2CData.ATTR_PARENT).getValue());
 //        C2C.LOG.log(Level.INFO, "   subtask : " + data.getRoot().getAttribute(C2CData.ATTR_SUBTASK).getValue());
@@ -184,9 +212,48 @@ public class ODCSTaskTestCase extends NbTestSuite {
             taskData = getTaskData(taskData.getTaskId());
             assertNotNull(taskData);
             printTaskData(taskData); 
+            rta = taskData.getRoot();
             assertEquals(newValue, rta.getMappedAttribute(field.getKey()).getValue());
         }  
-        protected abstract String getDifferentValue(String value);
+        protected abstract String getDifferentValue(String value) throws CoreException;
+    }
+    
+     private class MidairTestCase extends TaskTestCase {
+        public MidairTestCase() {
+            super("MidairTestCase");
+        }
+        @Override
+        public void runTest() throws Throwable {
+            TaskData midAirTaskData1 = createTaskData("this is a bug", "a bug", "bug");
+            
+            // change 1
+            TaskAttribute rta1 = midAirTaskData1.getRoot();
+            TaskAttribute ta1 = rta1.getMappedAttribute(IssueField.SUMMARY.getKey());
+            String newValue1 = ta1.getValue() + ".change1";
+            ta1.setValue(newValue1);
+            
+            // change 2
+            TaskData midAirTaskData2 = getTaskData(midAirTaskData1.getTaskId());
+            TaskAttribute rta2 = midAirTaskData2.getRoot();
+            TaskAttribute ta2 = rta2.getMappedAttribute(IssueField.SUMMARY.getKey());
+            String newValue2 = ta2.getValue() + ".change2";
+            ta2.setValue(newValue2);
+            
+            // post 1
+            RepositoryResponse rr1 = C2CUtil.postTaskData(rc, taskRepository, midAirTaskData1);
+            assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr1.getReposonseKind());
+
+            // post 2
+            Throwable catched = null;
+            try {
+                RepositoryResponse rr2 = C2CUtil.postTaskData(rc, taskRepository, midAirTaskData2);
+            } catch (Throwable t) {
+                if(t.getMessage().contains("Task is out of date with server, please synchronize before submitting")) {
+                    catched = t;
+                }
+            }
+            assertNotNull("expected a midair exception to be raised", catched);
+        }  
     }
     
     private class ChangeTextTestCase extends ChangeTestCase {
@@ -195,7 +262,54 @@ public class ODCSTaskTestCase extends NbTestSuite {
         }
         @Override
         protected String getDifferentValue(String value) {
-            return value + ".2";
+            return value + "-changed";
+        }
+    }
+    
+    private class ChangeDateTestCase extends ChangeTestCase {
+        public ChangeDateTestCase(String fieldName, IssueField field) {
+            super(fieldName, field);
+        }
+        @Override
+        protected String getDifferentValue(String value) {
+            Date d;
+            if(value == null || "".equals(value.trim())) {
+                d = new Date(System.currentTimeMillis());
+            } else {
+                d = C2CUtil.parseLongDate(value);
+            }
+            return Long.toString(new Date(d.getTime() + (24 * 60 * 60 * 1000)).getTime());
+        }
+    }
+    
+    private class ChangeNumberTestCase extends ChangeTestCase {
+        public ChangeNumberTestCase(String fieldName, IssueField field) {
+            super(fieldName, field);
+        }
+        @Override
+        protected String getDifferentValue(String value) {
+            if(value == null || "".equals(value.trim())) { 
+                return "1";
+            }
+            return Long.toString(Long.parseLong(value) + 1);
+        }
+    }
+    
+    private class ChangeTypeTestCase extends ChangeTestCase {
+        public ChangeTypeTestCase() {
+            super("Type", IssueField.TASK_TYPE);
+        }
+
+        @Override
+        protected String getDifferentValue(String value) throws CoreException {
+            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            for (String t : clientData.getTaskTypes()) {
+                if(!t.equals(value)) {
+                    return t;
+                }
+            }
+            fail();
+            return null;
         }
     }
     
@@ -205,8 +319,8 @@ public class ODCSTaskTestCase extends NbTestSuite {
         }
 
         @Override
-        protected String getDifferentValue(String value) {
-            C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
+        protected String getDifferentValue(String value) throws CoreException {
+            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             for (Priority p : clientData.getPriorities()) {
                 if(!p.getValue().equals(value)) {
                     return p.getValue();
@@ -223,8 +337,8 @@ public class ODCSTaskTestCase extends NbTestSuite {
         }
 
         @Override
-        protected String getDifferentValue(String value) {
-            C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
+        protected String getDifferentValue(String value) throws CoreException {
+            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             for (TaskSeverity s : clientData.getSeverities()) {
                 if(!s.getValue().equals(value)) {
                     return s.getValue();
@@ -241,11 +355,11 @@ public class ODCSTaskTestCase extends NbTestSuite {
         }
 
         @Override
-        protected String getDifferentValue(String value) {
-            C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
-            for (String i : clientData.getActiveIterations()) {
-                if(!i.equals(value)) {
-                    return i;
+        protected String getDifferentValue(String value) throws CoreException {
+            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            for (Iteration i : clientData.getIterations()) {
+                if(!i.getValue().equals(value)) {
+                    return i.getValue();
                 }
             }
             fail();
@@ -253,14 +367,32 @@ public class ODCSTaskTestCase extends NbTestSuite {
         }
     }
     
-    private class ChangeProductTestCase extends TaskTestCase {
-        public ChangeProductTestCase() {
-            super("testChangeProduct");
+    private class ChangeKeywordTestCase extends ChangeTestCase {
+        public ChangeKeywordTestCase() {
+            super("Keyword", IssueField.KEYWORDS);
+        }
+
+        @Override
+        protected String getDifferentValue(String value) throws CoreException {
+            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            for (Keyword k : clientData.getKeywords()) {
+                if(!k.getName().equals(value)) {
+                    return k.getName();
+                }
+            }
+            fail();
+            return null;
+        }
+    }
+    
+    private class ChangeProductComponentMilestoneTestCase extends TaskTestCase {
+        public ChangeProductComponentMilestoneTestCase() {
+            super("testChangeProductComponentMilestone");
         }
 
         @Override
         protected void runTest() throws Throwable {
-            C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
+            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             
             TaskAttribute rta = taskData.getRoot();
             TaskAttribute ta = rta.getMappedAttribute(IssueField.PRODUCT.getKey());
@@ -272,9 +404,11 @@ public class ODCSTaskTestCase extends NbTestSuite {
                     product = p.getName();
                     for (Component c : clientData.getComponents(p)) {
                         component = c.getName();
+                        break;
                     }
                     for (Milestone m : clientData.getMilestones(p)) {
                         milestone = m.getValue();
+                        break;
                     }
                 }
             }
@@ -295,6 +429,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
             printTaskData(taskData); 
             assertEquals(product, rta.getMappedAttribute(IssueField.PRODUCT.getKey()).getValue());
             assertEquals(component, rta.getMappedAttribute(IssueField.COMPONENT.getKey()).getValue());
+            assertEquals(milestone, rta.getMappedAttribute(IssueField.MILESTONE.getKey()).getValue());
         }
 
     }
@@ -305,11 +440,11 @@ public class ODCSTaskTestCase extends NbTestSuite {
         }
         @Override
         public void runTest() throws Throwable {
-            C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
+            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             
             // change custom field
             TaskAttribute rta = taskData.getRoot();
-            String customFieldName = C2CData.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName();
+            String customFieldName = clientData.getCustomFields().get(0).getName();
             TaskAttribute ta = rta.getMappedAttribute(customFieldName);
             String newValue = "custom value";
             ta.setValue(newValue);
@@ -320,24 +455,39 @@ public class ODCSTaskTestCase extends NbTestSuite {
             taskData = getTaskData(taskData.getTaskId());
             assertNotNull(taskData);
             printTaskData(taskData); 
+            
+            ta = taskData.getRoot().getMappedAttribute(customFieldName);
+            assertNotNull(ta);
             C2C.LOG.log(Level.FINE, "   custom field name : " + customFieldName);
-            C2C.LOG.log(Level.FINE, "   custom field value : " + taskData.getRoot().getAttribute(customFieldName).getValue());
-            assertEquals(newValue, rta.getMappedAttribute(customFieldName).getValue());
+            C2C.LOG.log(Level.FINE, "   custom field value : " + ta.getValue());
+            assertEquals(newValue, ta.getValue());
         }        
     }
         
+    private class ChangeCCTestCase extends ChangeTestCase {
+        public ChangeCCTestCase() {
+            super("CC", IssueField.CC);
+        }
+
+        @Override
+        protected String getDifferentValue(String value) throws CoreException {
+            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            return getDifferentUser(value, clientData.getUsers());
+        }
+    }
+    
     private class ReassignTestCase extends TaskTestCase {
         public ReassignTestCase() {
             super("testReassign");
         }
         @Override
         public void runTest() throws Throwable {
-            C2CData clientData = C2CExtender.getData(rc, taskRepository, false);
+            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             
             // reassign
             TaskAttribute rta = taskData.getRoot();
             TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.USER_ASSIGNED);
-            String newValue = getDifferentUser(ta.getValue(), clientData.getUsers());
+            String newValue = getDifferentUser("vrabec", clientData.getUsers());
             ta.setValue(newValue);
             
             RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
@@ -410,13 +560,16 @@ public class ODCSTaskTestCase extends NbTestSuite {
         }
         @Override
         public void runTest() throws Throwable {
-            // create attachment
+            // get curretn count of comments
+            List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_COMMENT);
+            assertTrue(attrs.isEmpty());
             
+            // create new comment attribute
             String comment = "new comment";
             TaskAttribute ta = taskData.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
             ta.setValue(comment);
             
-
+            // post 
             Date now = new Date(System.currentTimeMillis());
             RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
             assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
@@ -428,7 +581,8 @@ public class ODCSTaskTestCase extends NbTestSuite {
             assertNotNull(taskData);
             printTaskData(taskData);
             
-            List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_COMMENT);
+            // assert 
+            attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_COMMENT);
             assertFalse(attrs.isEmpty());
             ta = attrs.get(attrs.size() - 1);
             
@@ -436,10 +590,10 @@ public class ODCSTaskTestCase extends NbTestSuite {
             TaskAttribute authorAttr = ta.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
             String author = authorAttr.getValue();
             String authorName = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME).getValue();
-            long number = Long.parseLong(getMappedValue(ta, TaskAttribute.COMMENT_NUMBER));
+            long count = Long.parseLong(getMappedValue(ta, TaskAttribute.COMMENT_NUMBER));
             String commentText = getMappedValue(ta, TaskAttribute.COMMENT_TEXT);
             
-            assertEquals(number, 1);
+            assertEquals(1, count);
             assertEquals(comment, commentText);
             assertEquals("tomas.stupka@oracle.com", author);
             assertEquals("Tomas Stupka", authorName);
@@ -467,67 +621,105 @@ public class ODCSTaskTestCase extends NbTestSuite {
             TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.STATUS);
             ta.setValue("RESOLVED");
             
+            ta = rta.getMappedAttribute(TaskAttribute.OPERATION);
+            ta.setValue("RESOLVED");
+            
             RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
             assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
 
             taskData = getTaskData(taskData.getTaskId());
             assertNotNull(taskData);
             assertEquals("RESOLVED", taskData.getRoot().getMappedAttribute(TaskAttribute.STATUS).getValue());
+            assertEquals("FIXED", taskData.getRoot().getMappedAttribute(TaskAttribute.RESOLUTION).getValue());
 
             printTaskData(taskData);
         }        
     }
 
-    private class SubtaskTestCase extends TaskTestCase {
-        public SubtaskTestCase() {
-            super("testSubtask");
+    private abstract class AbstractSubtaskTestCase extends TaskTestCase {
+        protected TaskData subTaskData;
+        public AbstractSubtaskTestCase(String name) {
+            super(name);
         }
         @Override
         public void runTest() throws Throwable {
             // subtask 
-            subTaskData = createTaskData("this is a subbug", "a subbug", "subbug");
+            createSubtask();
+            
+            // removeSubtask
+            removeSubtask();
+        }
+
+        protected abstract void removeSubtask() throws CoreException;
+
+        private void createSubtask() throws IOException, CoreException {
             assertNotNull(taskData);
 
+            subTaskData = createTaskData("this is a subbug", "a subbug", "subbug");
             printTaskData(subTaskData); 
 
             TaskAttribute rta = taskData.getRoot();
-            TaskAttribute ta = rta.getMappedAttribute(C2CData.ATTR_SUBTASK);
+            TaskAttribute ta = rta.getMappedAttribute(CloudDevAttribute.SUBTASKS.getTaskName());
             ta.setValue(subTaskData.getTaskId());
             RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
             assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
-
             subTaskData = getTaskData(subTaskData.getTaskId());
-            assertNotNull(subTaskData);
-            assertEquals(taskData.getTaskId(), subTaskData.getRoot().getMappedAttribute(C2CData.ATTR_PARENT).getValue());
             taskData = getTaskData(taskData.getTaskId());
-            assertEquals(subTaskData.getTaskId(), taskData.getRoot().getMappedAttribute(C2CData.ATTR_SUBTASK).getValue());
+            
+            // assert
+            assertEquals(taskData.getTaskId(), subTaskData.getRoot().getMappedAttribute(CloudDevAttribute.PARENT_TASK.getTaskName()).getValue());
+            assertEquals(subTaskData.getTaskId(), taskData.getRoot().getMappedAttribute(CloudDevAttribute.SUBTASKS.getTaskName()).getValue());
             assertNotNull(taskData);
 
             printTaskData(taskData); 
-            printTaskData(subTaskData); 
-        }        
+            printTaskData(subTaskData);
+        }
     }
 
-    private class RemoveSubtaskTestCase extends TaskTestCase {
-        public RemoveSubtaskTestCase() {
-            super("testRemoveSubtask");
+    private class RemoveSubtaskFromParentTestCase extends AbstractSubtaskTestCase {
+        public RemoveSubtaskFromParentTestCase() {
+            super("testSubtaskFromParentTestCase");
         }
+
         @Override
-        public void runTest() throws Throwable {
+        protected void removeSubtask() throws CoreException {
+            // removing subtask
+            TaskAttribute rta = taskData.getRoot();
+            TaskAttribute ta = rta.getMappedAttribute(CloudDevAttribute.SUBTASKS.getTaskName());
+            ta.setValues(Collections.<String>emptyList());
+            RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
+            assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
+
+            taskData = getTaskData(subTaskData.getTaskId());
+            assertNotNull(taskData);
+            assertEquals("", taskData.getRoot().getMappedAttribute(CloudDevAttribute.SUBTASKS.getTaskName()).getValue());
+            subTaskData = getTaskData(subTaskData.getTaskId());
+            assertNotNull(subTaskData);
+            assertEquals("", subTaskData.getRoot().getMappedAttribute(CloudDevAttribute.PARENT_TASK.getTaskName()).getValue());
+        }
+    }
+    
+    private class RemoveParentFromSubtaskTestCase extends AbstractSubtaskTestCase {
+        public RemoveParentFromSubtaskTestCase() {
+            super("testRemoveParentFromSubtaskTestCase");
+        }
+
+        @Override
+        protected void removeSubtask() throws CoreException {
             // removing subtask
             TaskAttribute rta = subTaskData.getRoot();
-            TaskAttribute ta = rta.getMappedAttribute(C2CData.ATTR_PARENT);
+            TaskAttribute ta = rta.getMappedAttribute(CloudDevAttribute.PARENT_TASK.getTaskName());
             ta.setValues(Collections.<String>emptyList());
             RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, subTaskData);
             assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
 
             subTaskData = getTaskData(subTaskData.getTaskId());
             assertNotNull(subTaskData);
-            assertEquals("", subTaskData.getRoot().getMappedAttribute(C2CData.ATTR_PARENT).getValue());
+            assertEquals("", subTaskData.getRoot().getMappedAttribute(CloudDevAttribute.PARENT_TASK.getTaskName()).getValue());
             taskData = getTaskData(taskData.getTaskId());
-            assertEquals("", taskData.getRoot().getMappedAttribute(C2CData.ATTR_SUBTASK).getValue());
+            assertEquals("", taskData.getRoot().getMappedAttribute(CloudDevAttribute.SUBTASKS.getTaskName()).getValue());
             assertNotNull(taskData);
-        }        
+        }
     }
 
     private class DuplicateTestCase extends TaskTestCase {
@@ -538,45 +730,27 @@ public class ODCSTaskTestCase extends NbTestSuite {
 
         @Override
         public void runTest() throws Throwable {
+            
+            TaskData duplicateTaskData = createTaskData("this is a duplicate", "a duplicate", "duplicate");
+            
             // duplicate
-            TaskAttribute rta = taskData.getRoot();
+            TaskAttribute rta = duplicateTaskData.getRoot();
             TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.STATUS);
             ta.setValue("RESOLVED");
-            ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
+            ta = rta.getMappedAttribute(TaskAttribute.OPERATION);
             ta.setValue("DUPLICATE");
-            ta = rta.getMappedAttribute(C2CData.ATTR_DUPLICATE_OF);
-            ta.setValue(subTaskData.getTaskId());
+            ta = rta.getMappedAttribute(CloudDevAttribute.DUPLICATE_OF.getTaskName());
+            ta.setValue(taskData.getTaskId());
             
-            RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
+            RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, duplicateTaskData);
             assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
 
-            taskData = getTaskData(rr.getTaskId());
-            assertNotNull(taskData);
-            assertEquals("RESOLVED", taskData.getRoot().getMappedAttribute(TaskAttribute.STATUS).getValue());
-            assertEquals("DUPLICATE", taskData.getRoot().getMappedAttribute(TaskAttribute.RESOLUTION).getValue());
-            assertEquals(subTaskData.getTaskId(), taskData.getRoot().getMappedAttribute(C2CData.ATTR_DUPLICATE_OF).getValue());
-
-                // get history
-    //            TaskHistory history = rc.getTaskHistory(taskRepository, new ITaskImpl(taskData), nullProgressMonitor);
-    //            List<TaskRevision> revisions = history.getRevisions();
-    //            C2C.LOG.log(Level.FINE, " ************************************************* ");
-    //            C2C.LOG.log(Level.FINE, " History: ");
-    //            for (TaskRevision r : revisions) {
-    //                C2C.LOG.log(Level.FINE, "   rev : " + r.getId());
-    //                C2C.LOG.log(Level.FINE, "   author : " + r.getAuthor());
-    //                C2C.LOG.log(Level.FINE, "   date : " + r.getDate());
-    //                C2C.LOG.log(Level.FINE, "   changes : ");
-    //                List<Change> changes = r.getChanges();
-    //                for (Change c : changes) {
-    //                    C2C.LOG.log(Level.FINE, "    ----------------------------------------- ");
-    //                    C2C.LOG.log(Level.FINE, "     attr : " + c.getAttributeId());
-    //                    C2C.LOG.log(Level.FINE, "     field : " + c.getField());
-    //                    C2C.LOG.log(Level.FINE, "     removed : " + c.getRemoved());
-    //                    
-    //                }
-    //            }
-            }        
-    
+            duplicateTaskData = getTaskData(rr.getTaskId());
+            assertNotNull(duplicateTaskData);
+            assertEquals("RESOLVED", duplicateTaskData.getRoot().getMappedAttribute(TaskAttribute.STATUS).getValue());
+            assertEquals("DUPLICATE", duplicateTaskData.getRoot().getMappedAttribute(TaskAttribute.RESOLUTION).getValue());
+            assertEquals(taskData.getTaskId(), duplicateTaskData.getRoot().getMappedAttribute(CloudDevAttribute.DUPLICATE_OF.getTaskName()).getValue());
+        }        
     }
 
     private class ITaskImpl implements ITask {
