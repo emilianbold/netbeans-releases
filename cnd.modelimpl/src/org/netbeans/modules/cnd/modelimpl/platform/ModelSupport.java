@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -199,6 +198,7 @@ public class ModelSupport implements PropertyChangeListener {
         modifiedListener.clean();
         ModelImpl model = theModel;
         if (model != null) {
+             model.closing();
             // we have to wait openedProjects to be empty
             // because opened projects should be closed by closeProjectsIfNeeded
             // otherwise project metadata can be cleaned up and csm project
@@ -449,7 +449,7 @@ public class ModelSupport implements PropertyChangeListener {
             Diagnostic.trace("### ModelSupport.closeProject: " + toString(project)); // NOI18N
         }
         ModelImpl model = theModel;
-        if (model == null || model.getState() != CsmModelState.ON) {
+        if (model == null) {
             return;
         }
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
