@@ -44,7 +44,6 @@ package org.netbeans.modules.php.analysis.ui.options;
 
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -56,7 +55,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.AbstractListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -80,6 +78,7 @@ import org.netbeans.modules.php.analysis.commands.CodeSniffer;
 import org.netbeans.modules.php.analysis.commands.MessDetector;
 import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
 import org.netbeans.modules.php.analysis.ui.CodeSnifferStandardsComboBoxModel;
+import org.netbeans.modules.php.analysis.ui.MessDetectorRuleSetsListModel;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -104,7 +103,7 @@ public class AnalysisOptionsPanel extends JPanel {
 
     final CodeSnifferStandardsComboBoxModel codeSnifferStandardsModel = new CodeSnifferStandardsComboBoxModel();
 
-    private final RuleSetsListModel ruleSetsListModel = new RuleSetsListModel();
+    private final MessDetectorRuleSetsListModel ruleSetsListModel = new MessDetectorRuleSetsListModel();
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
@@ -238,7 +237,7 @@ public class AnalysisOptionsPanel extends JPanel {
     void selectRuleSets(List<String> ruleSets) {
         messDetectorRuleSetsList.clearSelection();
         for (String ruleSet : ruleSets) {
-            int indexOf = MessDetector.RULE_SETS.indexOf(ruleSet);
+            int indexOf = MessDetectorRuleSetsListModel.getAllRuleSets().indexOf(ruleSet);
             assert indexOf != -1 : "Rule set not found: " + ruleSet;
             messDetectorRuleSetsList.addSelectionInterval(indexOf, indexOf);
         }
@@ -660,33 +659,6 @@ public class AnalysisOptionsPanel extends JPanel {
                 return;
             }
             fireChange();
-        }
-
-    }
-
-    private static final class RuleSetsListModel extends AbstractListModel {
-
-        private static final long serialVersionUID = -5761457612154L;
-
-        // @GuardedBy("EDT")
-        private final List<String> ruleSets;
-
-
-        public RuleSetsListModel() {
-            assert EventQueue.isDispatchThread();
-            this.ruleSets = new ArrayList<String>(MessDetector.RULE_SETS);
-        }
-
-        @Override
-        public int getSize() {
-            assert EventQueue.isDispatchThread();
-            return ruleSets.size();
-        }
-
-        @Override
-        public Object getElementAt(int index) {
-            assert EventQueue.isDispatchThread();
-            return ruleSets.get(index);
         }
 
     }
