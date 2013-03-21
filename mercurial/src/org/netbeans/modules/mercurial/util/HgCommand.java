@@ -1302,11 +1302,13 @@ public class HgCommand {
         return tags.toArray(new HgTag[tags.size()]);
     }
 
-    public static HgLogMessage[] getIncomingMessages(final File root, String toRevision, boolean bShowMerges, boolean bGetFileInfo, boolean getParents, int limitRevisions, OutputLogger logger) {
+    public static HgLogMessage[] getIncomingMessages(final File root, String toRevision, String branchName,
+            boolean bShowMerges, boolean bGetFileInfo, boolean getParents,
+            int limitRevisions, OutputLogger logger) {
         List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
         try {
-            List<String> list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, bGetFileInfo, getParents, limitRevisions, logger);
+            List<String> list = HgCommand.doIncomingForSearch(root, toRevision, branchName, bShowMerges, bGetFileInfo, getParents, limitRevisions, logger);
             messages = processLogMessages(root, null, list, true);
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
@@ -1319,11 +1321,12 @@ public class HgCommand {
         return messages.toArray(new HgLogMessage[0]);
     }
 
-    public static HgLogMessage[] getOutMessages(final File root, String toRevision, boolean bShowMerges, int limitRevisions, OutputLogger logger) {
+    public static HgLogMessage[] getOutMessages(final File root, String toRevision, String branchName,
+            boolean bShowMerges, boolean getParents, int limitRevisions, OutputLogger logger) {
         List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
         try {
-            List<String> list = HgCommand.doOutForSearch(root, toRevision, bShowMerges, limitRevisions, logger);
+            List<String> list = HgCommand.doOutForSearch(root, toRevision, branchName, bShowMerges, getParents, limitRevisions, logger);
             messages = processLogMessages(root, null, list, true);
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
@@ -1649,15 +1652,15 @@ public class HgCommand {
      * @return List<String> cmdOutput of the out entries for the specified repo.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doOutForSearch(File repository, String to, boolean bShowMerges, int limit, OutputLogger logger) throws HgException {
+    public static List<String> doOutForSearch(File repository, String to, String branchName, boolean bShowMerges, boolean getParents, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
         if (HgUtils.isNullOrEmpty(defaultPush)) {
-            Mercurial.LOG.log(Level.INFO, "No push url, falling back to command without target");
+            Mercurial.LOG.log(Level.FINE, "No push url, falling back to command without target");
         } else {
             try {
                 HgURL pushUrl = new HgURL(defaultPush);
-                return doOutForSearch(repository, pushUrl, to, bShowMerges, limit, logger);
+                return doOutForSearch(repository, pushUrl, to, branchName, bShowMerges, getParents, limit, logger);
             } catch (URISyntaxException ex) {
                 Mercurial.LOG.log(Level.INFO, "Invalid push url: {0}, falling back to command without target", defaultPush);
             }
@@ -1673,7 +1676,9 @@ public class HgCommand {
         if(!bShowMerges){
             command.add(HG_LOG_NO_MERGES_CMD);
         }
-        command.add(HG_LOG_DEBUG_CMD);
+        if (getParents) {
+            command.add(HG_LOG_DEBUG_CMD);
+        }
         String revStr = handleIncomingRev(to);
         if(revStr != null){
             command.add(HG_FLAG_REV_CMD);
@@ -1713,7 +1718,8 @@ public class HgCommand {
         }
     }
     
-    private static List<String> doOutForSearch (File repository, HgURL repositoryUrl, String to, boolean bShowMerges, int limit, OutputLogger logger) throws HgException {
+    private static List<String> doOutForSearch (File repository, HgURL repositoryUrl, String to, String branchName,
+            boolean bShowMerges, boolean getParents, int limit, OutputLogger logger) throws HgException {
         InterRepositoryCommand command = new InterRepositoryCommand();
         command.defaultUrl = new HgConfigFiles(repository).getDefaultPush(false);
         command.hgCommandType = HG_OUTGOING_CMD;
@@ -1727,11 +1733,17 @@ public class HgCommand {
         if(!bShowMerges){
             command.additionalOptions.add(HG_LOG_NO_MERGES_CMD);
         }
-        command.additionalOptions.add(HG_LOG_DEBUG_CMD);
+        if (getParents) {
+            command.additionalOptions.add(HG_LOG_DEBUG_CMD);
+        }
         String revStr = handleIncomingRev(to);
         if(revStr != null){
             command.additionalOptions.add(HG_FLAG_REV_CMD);
             command.additionalOptions.add(revStr);
+        }
+        if (branchName != null) {
+            command.additionalOptions.add(HG_PARAM_BRANCH);
+            command.additionalOptions.add(branchName);
         }
         if (limit > 0) {
             command.additionalOptions.add(HG_LOG_LIMIT_CMD);
@@ -1758,15 +1770,17 @@ public class HgCommand {
      * @return List<String> cmdOutput of the out entries for the specified repo.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doIncomingForSearch(File repository, String to, boolean bShowMerges, boolean bGetFileInfo, boolean getParents, int limit, OutputLogger logger) throws HgException {
+    public static List<String> doIncomingForSearch(File repository, String to, String branchName,
+            boolean bShowMerges, boolean bGetFileInfo, boolean getParents,
+            int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
         if (HgUtils.isNullOrEmpty(defaultPull)) {
-            Mercurial.LOG.log(Level.INFO, "No pull url, falling back to command without target");
+            Mercurial.LOG.log(Level.FINE, "No pull url, falling back to command without target");
         } else {
             try {
                 HgURL pullUrl = new HgURL(defaultPull);
-                return doIncomingForSearch(repository, pullUrl, to, bShowMerges, bGetFileInfo, getParents, limit, logger);
+                return doIncomingForSearch(repository, pullUrl, to, branchName, bShowMerges, bGetFileInfo, getParents, limit, logger);
             } catch (URISyntaxException ex) {
                 Mercurial.LOG.log(Level.INFO, "Invalid pull url: {0}, falling back to command without target", defaultPull);
             }
@@ -1789,6 +1803,10 @@ public class HgCommand {
         if(revStr != null){
             command.add(HG_FLAG_REV_CMD);
             command.add(revStr);
+        }
+        if (branchName != null) {
+            command.add(HG_PARAM_BRANCH);
+            command.add(branchName);
         }
         if (limit > 0) {
             command.add(HG_LOG_LIMIT_CMD);
@@ -1857,7 +1875,8 @@ public class HgCommand {
         }
     }
     
-    private static List<String> doIncomingForSearch (File repository, HgURL repositoryUrl, String to, boolean bShowMerges, boolean bGetFileInfo, boolean getParents, int limit, OutputLogger logger) throws HgException {
+    private static List<String> doIncomingForSearch (File repository, HgURL repositoryUrl, String to, String branchName,
+            boolean bShowMerges, boolean bGetFileInfo, boolean getParents, int limit, OutputLogger logger) throws HgException {
         InterRepositoryCommand command = new InterRepositoryCommand();
         command.defaultUrl = new HgConfigFiles(repository).getDefaultPull(false);
         command.hgCommandType = HG_INCOMING_CMD;
@@ -1879,6 +1898,10 @@ public class HgCommand {
         if(revStr != null){
             command.additionalOptions.add(HG_FLAG_REV_CMD);
             command.additionalOptions.add(revStr);
+        }
+        if (branchName != null) {
+            command.additionalOptions.add(HG_PARAM_BRANCH);
+            command.additionalOptions.add(branchName);
         }
         if (limit > 0) {
             command.additionalOptions.add(HG_LOG_LIMIT_CMD);
