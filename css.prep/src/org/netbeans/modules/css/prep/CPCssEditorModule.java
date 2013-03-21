@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -116,7 +117,7 @@ public class CPCssEditorModule extends CssEditorModule {
         if (model == null) {
             return Collections.emptyList();
         }
-        List<CompletionProposal> allVars = getVariableCompletionProposals(context, model);
+        List<CompletionProposal> allVars = new ArrayList<CompletionProposal>(getVariableCompletionProposals(context, model));
 
         //errorneous source
         TokenSequence<CssTokenId> ts = context.getTokenSequence();
@@ -208,9 +209,9 @@ public class CPCssEditorModule extends CssEditorModule {
         return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
 
-    private static List<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
+    private static Collection<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        Collection<CompletionProposal> proposals = new LinkedHashSet<CompletionProposal>();
         for (CPElement var : model.getVariables(context.getCaretOffset())) {
             if (var.getType() != CPElementType.VARIABLE_USAGE && !var.getRange().containsInclusive(context.getCaretOffset())) {
                 ElementHandle handle = new CPCslElementHandle(context.getFileObject(), var.getName());
@@ -256,9 +257,9 @@ public class CPCssEditorModule extends CssEditorModule {
         return proposals;
     }
 
-    private static List<CompletionProposal> getMixinsCompletionProposals(final CompletionContext context, CPModel model) {
+    private static Collection<CompletionProposal> getMixinsCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        Collection<CompletionProposal> proposals = new LinkedHashSet<CompletionProposal>();
         for (CPElement mixin : model.getMixins()) {
             if (mixin.getType() == CPElementType.MIXIN_DECLARATION) {
                 ElementHandle handle = new CPCslElementHandle(context.getFileObject(), mixin.getName());

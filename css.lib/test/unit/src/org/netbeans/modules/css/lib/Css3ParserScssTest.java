@@ -1185,4 +1185,26 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    @return color-offset($bg-color, $contrast, $tmpmode, $inverse: true);\n"
                 + "}");
     }
+
+    public void testWeirdControlBlockOperator() {
+        assertParses("@if $right =< 0 {}");
+        assertParses("@if $right <= 0 {}");
+        assertParses("@if $right >= 0 {}");
+        assertParses("@if $right => 0 {}");
+    }
+
+    public void testWSBetweenMixinCallArgAndComma() {
+        assertParses(".clz {\n"
+                + "     @include background-gradient(\n"
+                + "         $background-color ,\n"
+                + "         $background-direction\n"
+                + ");\n"
+                + "}");
+    }
+
+    public void testPropertyValue2_fails() {
+        assertParses(".#{$prefix}#{$cls-ui}-tr {\n"
+                + "    background-position: 0 (-$frame-max);\n"
+                + "}");
+    }
 }

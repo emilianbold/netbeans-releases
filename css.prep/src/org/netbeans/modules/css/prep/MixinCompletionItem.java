@@ -123,4 +123,30 @@ public class MixinCompletionItem extends CssCompletionItem {
         }
     }
     
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 89 * hash + (this.origin != null ? this.origin.hashCode() : 0);
+        hash = 89 * hash + getName().hashCode();
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MixinCompletionItem other = (MixinCompletionItem) obj;
+        if ((this.origin == null) ? (other.origin != null) : !this.origin.equals(other.origin)) {
+            return false;
+        }
+        if (!getName().equals(other.getName())) {
+            return false;
+        }
+        return true;
+    }
+
 }
