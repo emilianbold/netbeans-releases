@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -48,6 +49,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
@@ -55,10 +57,12 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public class JsObjectReference extends JsObjectImpl {
  
-    private final JsObjectImpl original;
-    
-    public JsObjectReference(JsObject parent, Identifier declarationName, JsObjectImpl original, boolean isDeclared) {
+    private final JsObject original;
+
+    public JsObjectReference(JsObject parent, Identifier declarationName,
+            JsObject original, boolean isDeclared) {
         super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
+        assert original != null;
         this.original = original;
     }
 
@@ -102,9 +106,18 @@ public class JsObjectReference extends JsObjectImpl {
     }
 
     @Override
+    public Collection<? extends TypeUsage> getAssignmentForOffset(int offset) {
+        return original.getAssignmentForOffset(offset);
+    }
+
+    @Override
+    public Collection<? extends TypeUsage> getAssignments() {
+        return original.getAssignments();
+    }
+
+    @Override
     public void resolveTypes(JsDocumentationHolder docHolder) {
         // do nothing
     }
 
-    
 }
