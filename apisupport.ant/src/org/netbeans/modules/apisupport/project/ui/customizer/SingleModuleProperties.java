@@ -991,8 +991,11 @@ public final class SingleModuleProperties extends ModuleProperties {
                 String binPath = item.getFilePath();
                 if (binPath != null) {
                     FileObject fo = FileUtil.toFileObject(PropertyUtils.resolveFile(getProjectDirectoryFile(), binPath));
-                    String runtimePath = ApisupportAntUtils.CPEXT_RUNTIME_RELATIVE_PATH + fo.getNameExt();
-                    newCpExt.put(runtimePath, binPath);
+                    if(fo != null)
+                    {
+                        String runtimePath = ApisupportAntUtils.CPEXT_RUNTIME_RELATIVE_PATH + fo.getNameExt();
+                        newCpExt.put(runtimePath, binPath);
+                    }
                 }
             }
 
