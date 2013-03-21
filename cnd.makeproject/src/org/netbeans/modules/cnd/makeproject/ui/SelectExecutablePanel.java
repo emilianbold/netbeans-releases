@@ -43,11 +43,18 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -64,7 +71,9 @@ import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public class SelectExecutablePanel extends javax.swing.JPanel {
 
@@ -77,6 +86,10 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private final MakeConfiguration conf;
     private final FileObject buildWorkingDirFO;
     private final PathMap mapper;
+    private static final RequestProcessor RP = new RequestProcessor("SelectExecutable",1); //NOI18N
+    private final AtomicBoolean canceled = new AtomicBoolean(false);
+    private final Map<String,FileObject> searchResult = new TreeMap<String,FileObject>();
+    private boolean resetList = false;
 
     /** Creates new form SelectExecutable */
     public SelectExecutablePanel(ProjectActionEvent pae) {
@@ -93,15 +106,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         }
 
         buildWorkingDirFO = RemoteFileUtil.getFileObject(wd, conf.getDevelopmentHost().getExecutionEnvironment());
-        String[] executables = findAllExecutables(buildWorkingDirFO);
-        exeList = new JList(executables);
+        exeList = new JList();
         executableList.setViewportView(exeList);
-
         exeList.addListSelectionListener(new MyListSelectionListener());
-
-        if (executables.length > 0) {
-            exeList.setSelectedIndex(0);
-        }
 
         documentListener = new DocumentListener() {
 
@@ -125,6 +132,33 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(600, 300));
 
         validateExe();
+        progress.setText(NbBundle.getMessage(SelectExecutablePanel.class, "Search_In_Progress")); //NOI18N
+        progress.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/exclamation.gif", false)); //NOI18N
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                findAllExecutables(buildWorkingDirFO);
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        progress.setVisible(false);
+                    }
+                });
+            }
+        });
+        this.addHierarchyListener(new HierarchyListener() {
+
+            @Override
+            public void hierarchyChanged(HierarchyEvent e) {
+                if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
+                    if (!e.getChanged().isVisible()){
+                        canceled.set(true);
+                    }
+                }
+            }
+        });
     }
 
     public void setDialogDescriptor(DialogDescriptor dialogDescriptor) {
@@ -136,6 +170,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
 
         @Override
         public void valueChanged(ListSelectionEvent e) {
+            if (resetList) {
+                return;
+            }
             if (e.getValueIsAdjusting() == false) {
                 int i = exeList.getSelectedIndex();
                 if (i >= 0) {
@@ -188,58 +225,98 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         return path;
     }
 
-    private String[] findAllExecutables(FileObject root) {
+    private void findAllExecutables(FileObject root) {
         if (root == null || !root.isValid() || !root.isFolder()) {
             // Something is wrong
-            return new String[]{};
-        }
-        ArrayList<String> aLlist = new ArrayList<String>();
-        addExecutables(root, aLlist);
-        
-        // See IZ 205812, sort the list
-        String[] res = aLlist.toArray(new String[aLlist.size()]);
-        Arrays.sort(res);
-        return res;
-    }
-
-    private void addExecutables(FileObject dir, List<String> filesAdded) {
-        FileObject[] files = dir.getChildren();
-        if (files == null) {
             return;
         }
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].isFolder()) {
-                // FIXUP: is this the best way to deal with files under SCCS?
-                // Unfortunately the SCCS directory contains data files with the same
-                // suffixes as the the source files, and a simple file filter based on
-                // a file's suffix cannot see the difference between the source file and
-                // the data file. Only the source file should be added.
-                if (files[i].getName().equals("SCCS")) // NOI18N
-                {
+        addExecutables(root);
+    }
+
+    private void addExecutables(FileObject dir) {
+        ArrayList<FileObject> downPrev = new ArrayList<FileObject>();
+        downPrev.add(dir);
+        while (!downPrev.isEmpty()) {
+            ArrayList<FileObject> downNext = new ArrayList<FileObject>();
+            for (FileObject  folder : downPrev) {
+                if (canceled.get()) {
+                    return;
+                }
+                folder.refresh();
+                FileObject[] files = folder.getChildren();
+                if (files == null) {
                     continue;
                 }
-                addExecutables(files[i], filesAdded);
-            } else {
-                if (FileFilterFactory.getAllFileFilter().accept(files[i])) {
-                    continue;
-                }
-                if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                    if (exeExecutableFileFilter.accept(files[i])) {
-                        filesAdded.add(files[i].getPath());
+                for (int i = 0; i < files.length; i++) {
+                    if (canceled.get()) {
+                        return;
                     }
-                } else if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
-                    if (machOExecutableFileFilter.accept(files[i])) {
-                        filesAdded.add(files[i].getPath());
-                    }
-                } else {
-                    if (elfExecutableFileFilter.accept(files[i])) {
-                        filesAdded.add(files[i].getPath());
+                    if (files[i].isFolder()) {
+                        // FIXUP: is this the best way to deal with files under SCCS?
+                        // Unfortunately the SCCS directory contains data files with the same
+                        // suffixes as the the source files, and a simple file filter based on
+                        // a file's suffix cannot see the difference between the source file and
+                        // the data file. Only the source file should be added.
+                        final String aName = files[i].getName();
+                        if (aName.equals("SCCS") || aName.equals("CVS") || aName.equals(".hg") || aName.equals("SunWS_cache") || aName.equals(".svn")) // NOI18N
+                        {
+                            continue;
+                        }
+                        downNext.add(files[i]);
+                    } else {
+                        if (FileFilterFactory.getAllFileFilter().accept(files[i])) {
+                            continue;
+                        }
+                        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+                            if (exeExecutableFileFilter.accept(files[i])) {
+                                searchResult.put(files[i].getPath(), files[i]);
+                                updateList();
+                            }
+                        } else if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                            if (machOExecutableFileFilter.accept(files[i])) {
+                                searchResult.put(files[i].getPath(), files[i]);
+                                updateList();
+                            }
+                        } else {
+                            if (elfExecutableFileFilter.accept(files[i])) {
+                                searchResult.put(files[i].getPath(), files[i]);
+                                updateList();
+                            }
+                        }
                     }
                 }
             }
+            downPrev = downNext;
         }
     }
 
+    private void updateList() {
+        final List<String> keySet = new ArrayList<String>(searchResult.keySet());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                DefaultListModel model = new DefaultListModel();
+                Object selected = exeList.getSelectedValue();
+                Object first = null;
+                for(String path : keySet) {
+                    if (first == null) {
+                        first = path;
+                    }
+                    model.addElement(path);
+                }
+                resetList = true;
+                exeList.setModel(model);
+                if (selected != null) {
+                    exeList.setSelectedValue(selected, true);
+                }
+                resetList = false;
+                if (selected == null) {
+                    exeList.setSelectedValue(first, true);
+                }
+            }
+        });
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -257,6 +334,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         executableTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
         errorLabel = new javax.swing.JLabel();
+        progress = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -335,6 +413,13 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 12, 0, 0);
         add(errorLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 12, 0, 0);
+        add(progress, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -380,6 +465,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private javax.swing.JTextField executableTextField;
     private javax.swing.JTextArea instructionsTextArea;
     private javax.swing.JList list;
+    private javax.swing.JLabel progress;
     // End of variables declaration//GEN-END:variables
 
     /** Look up i18n strings here */

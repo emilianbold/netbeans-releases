@@ -43,9 +43,11 @@
  */
 package org.netbeans.modules.java.source.pretty;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import static com.sun.source.tree.Tree.*;
 import com.sun.source.tree.VariableTree;
@@ -297,6 +299,26 @@ public final class VeryPretty extends JCTree.Visitor {
             if (!oldTrees.contains(t)) return false;
             if (t.getKind() == Kind.ARRAY_TYPE) {
                 return false;//XXX #197584: C-like array are cannot be copied as old trees.
+            }
+        }
+        
+        if (toPrint.size() > 1) {
+            //verify that all the toPrint trees belong to the same parent, and appear
+            //in the same uninterrupted order under that parent:
+            TreePath tp = TreePath.getPath(diffContext.mainUnit, toPrint.get(0));
+            TreePath parent = tp.getParentPath();
+            
+            if (parent == null) return false; //XXX: should not happen, right?
+            if (parent.getLeaf().getKind() != Kind.BLOCK) return false; //TODO: CaseTree
+            
+            java.util.List<? extends StatementTree> statements = ((BlockTree) parent.getLeaf()).getStatements();
+            
+            int startIndex = statements.indexOf(toPrint.get(0));
+            
+            if (startIndex < 0) return false; //XXX: should not happen
+            
+            for (JCTree t : toPrint) {
+                if (statements.get(startIndex++) != t) return false;
             }
         }
 
@@ -1347,7 +1369,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
-    public void visitAssign(JCAssign tree) {
+    public void visitAssign(final JCAssign tree) {
         int col = out.col;
 	printExpr(tree.lhs, TreeInfo.assignPrec + 1);
         boolean spaceAroundAssignOps = cs.spaceAroundAssignOps();
@@ -1355,23 +1377,11 @@ public final class VeryPretty extends JCTree.Visitor {
             print(' ');
 	print('=');
 	int rm = cs.getRightMargin();
-        switch(cs.wrapAssignOps()) {
-        case WRAP_IF_LONG:
-            if (widthEstimator.estimateWidth(tree.rhs, rm - out.col) + out.col <= cs.getRightMargin()) {
-                if(spaceAroundAssignOps)
-                    print(' ');
-                break;
+        wrapTree(cs.wrapAssignOps(), spaceAroundAssignOps, cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+            @Override public void run() {
+                printExpr(tree.rhs, TreeInfo.assignPrec);
             }
-        case WRAP_ALWAYS:
-            newline();
-            toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
-            break;
-        case WRAP_NEVER:
-            if(spaceAroundAssignOps)
-                print(' ');
-            break;
-        }
-	printExpr(tree.rhs, TreeInfo.assignPrec);
+        });
     }
 
     @Override
@@ -2359,11 +2369,12 @@ public final class VeryPretty extends JCTree.Visitor {
             }
             
             if (!first || wrapFirst) {
-                switch(wrapStyle) {
+                switch(first && wrapStyle != WrapStyle.WRAP_NEVER ? WrapStyle.WRAP_IF_LONG : wrapStyle) {
                 case WRAP_IF_LONG:
                     int rm = cs.getRightMargin();
-                    if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
-                        if (cs.spaceAfterComma() && !first)
+                    boolean space = cs.spaceAfterComma() && !first;
+                    if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + (space ? 1 : 0) <= rm) {
+                        if (space)
                             print(' ');
                         break;
                     }
@@ -2394,6 +2405,7 @@ public final class VeryPretty extends JCTree.Visitor {
             int oldc = out.col;
             int oldu = out.used;
             int oldm = out.leftMargin;
+            int oldPrec = prec;
             try {
                 if (needsSpaceBefore)
                     needSpace();
@@ -2405,6 +2417,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 out.col = oldc;
                 out.used = oldu;
                 out.leftMargin = oldm;
+                prec = oldPrec;
             }
         case WRAP_ALWAYS:
             if (out.col > 0)

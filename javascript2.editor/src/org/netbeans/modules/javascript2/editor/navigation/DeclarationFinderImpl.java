@@ -156,18 +156,17 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
-        OffsetRange result = OffsetRange.NONE;
+        OffsetRange result;
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
         if (ts != null) {
             ts.move(caretOffset);
             if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
-                result =  new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+                return new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
             }
         }
-        if(result == null) {
-            JQueryDeclarationFinder jQueryFinder = new JQueryDeclarationFinder();
-            result =  jQueryFinder.getReferenceSpan(doc, caretOffset);
-        }
+        
+        JQueryDeclarationFinder jQueryFinder = new JQueryDeclarationFinder();
+        result =  jQueryFinder.getReferenceSpan(doc, caretOffset);
         return result;
     }
 

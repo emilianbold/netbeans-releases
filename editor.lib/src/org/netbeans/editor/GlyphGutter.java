@@ -892,6 +892,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             EditorUI eui = editorUI;
             if (eui==null)
                 return;
+            eui.getComponent().requestFocus();
             // cycling button was clicked by left mouse button
             if (e.getModifiers() == InputEvent.BUTTON1_MASK) {
                 if (isMouseOverCycleButton(e)) {

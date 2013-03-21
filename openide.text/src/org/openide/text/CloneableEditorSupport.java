@@ -2129,6 +2129,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         lastReusable.clear();
         updateTitles();
 
+        if (ERR.isLoggable(Level.FINE)) {
+            ERR.log(Level.FINE, "notifyModified returns true; env.isModified()=" + env.isModified());
+        }
         return true;
     }
 

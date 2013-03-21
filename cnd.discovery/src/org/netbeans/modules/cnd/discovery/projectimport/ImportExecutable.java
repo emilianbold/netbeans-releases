@@ -182,7 +182,7 @@ public class ImportExecutable implements PropertyChangeListener {
         String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean defaultToolchain = Boolean.TRUE.equals(map.get(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
-        MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain, defaultToolchain); // NOI18N
+        MakeConfiguration conf = MakeConfiguration.createMakefileConfiguration(projectFolder, "Default",  hostUID, toolchain, defaultToolchain); // NOI18N
         String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalizeSlashes(baseDir),  sourcesPath,
                 MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
@@ -238,6 +238,7 @@ public class ImportExecutable implements PropertyChangeListener {
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
             }
             model = CsmModelAccessor.getModel();
+            switchModel(model, false, lastSelectedProject);
             extension = Lookup.getDefault().lookup(IteratorExtension.class);
             OpenProjects.getDefault().open(new Project[]{lastSelectedProject}, false);
         } catch (IOException ex) {
@@ -265,6 +266,7 @@ public class ImportExecutable implements PropertyChangeListener {
     }
 
     public void process(final DiscoveryExtension extension){
+        model = CsmModelAccessor.getModel();
         switchModel(model, false, lastSelectedProject);
         Runnable run = new Runnable() {
 

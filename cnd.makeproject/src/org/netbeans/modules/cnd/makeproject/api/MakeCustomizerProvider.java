@@ -99,6 +99,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<MakeContext.Kind, String>(MakeContext.Kind.class);
     private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
     private static final RequestProcessor RP = new RequestProcessor("MakeCustomizerProvider", 1); //NOI18N
+    private static final RequestProcessor RP_SAVE = new RequestProcessor("MakeCustomizerProviderSave", 1); //NOI18N
 
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
@@ -265,8 +266,9 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             currentCommand = e.getActionCommand();
 
             if (currentCommand.equals(COMMAND_OK) || currentCommand.equals(COMMAND_APPLY)) {
+                makeCustomizer.save();
                 //non UI actions such as as update of MakeConfiguration accessing filesystem should be invoked from non EDT
-                RP.post(new Runnable() {
+                RP_SAVE.post(new Runnable() {
                     @Override
                     public void run() {
                         int previousVersion = projectDescriptor.getVersion();
@@ -304,9 +306,6 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                             projectDescriptor.setVersion(currentVersion);
                         }
 
-                        //projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
-                        makeCustomizer.save();
-
                         List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
                         List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
                         List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
@@ -338,6 +337,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 fireActionEvent(new ActionEvent(project, 0, currentCommand));
             }
             if (currentCommand.equals(COMMAND_APPLY)) {
+                
                 makeCustomizer.refresh();
             }
 

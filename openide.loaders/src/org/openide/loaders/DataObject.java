@@ -479,9 +479,21 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * the data object is removed from the registry.
     */
     public void setModified(boolean modif) {
+        boolean log = OBJ_LOG.isLoggable(Level.FINE);
+        if (log) {
+            String msg = "setModified(): modif=" + modif + ", original-modif=" + this.modif; // NOI18N
+            if (OBJ_LOG.isLoggable(Level.FINEST)) {
+                OBJ_LOG.log(Level.FINEST, msg, new Exception());
+            } else {
+                OBJ_LOG.log(Level.FINE, msg);
+            }
+        }
         if (this.modif != modif) {
             this.modif = modif;
             Savable present = getLookup().lookup(AbstractSavable.class);
+            if (log) {
+                OBJ_LOG.log(Level.FINE, "setModified(): present={0}", new Object[]{present}); // NOI18N
+            }
             if (modif) {
                 syncModified.add (this);
                 if (present == null) {

@@ -1272,34 +1272,34 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                             } else if (outputValue.endsWith(".a")) { // NOI18N
                                 icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged-static.png", false); // NOI18N
                             } else {
-                                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png", false); // NOI18N
+                                icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_MAKEFILE_ICON, false);
                             }
                         } else {
-                            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png", false); // NOI18N
+                            icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_MAKEFILE_ICON, false); // NOI18N
                         }
                     }
                     break;
                 }
                 case MakeConfiguration.TYPE_APPLICATION:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_APPLICATION_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_DB_APPLICATION:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-database.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_DB_APPLICATION_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_DYNAMIC_LIB:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-dynamic.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_DYNAMIC_LIB_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_STATIC_LIB:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-managed-static.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_STATIC_LIB_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_QT_APPLICATION:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_QT_APPLICATION_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-dynamic.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_QT_DYNAMIC_LIB_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_QT_STATIC_LIB:
-                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
+                    icon = ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_QT_STATIC_LIB_ICON, false);
                     break;
                 case MakeConfiguration.TYPE_CUSTOM:
                     MakeProjectCustomizer makeProjectCustomizer = project.getProjectCustomizer(project.getProjectCustomizerId());

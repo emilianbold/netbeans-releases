@@ -66,7 +66,6 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     private Trees trees;
     private MethodTree methodTree;
     private boolean hasParameters;
-    private boolean initialized = false;
     private Problem problem;
     private HashMap<Tree, Tree> original2Translated;
     private Deque<Map<Tree, List<StatementTree>>> queue;
@@ -82,14 +81,17 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     }
 
     @Override
-    public Tree scan(Tree tree, Element p) {
-        if (!initialized) {
-            initialized = true;
+    public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
+        try {
             trees = workingCopy.getTrees();
             methodTree = (MethodTree) trees.getTree(p);
             hasParameters = methodTree.getParameters().size() > 0;
+            return super.visitCompilationUnit(node, p);
+        } finally {
+            trees = null;
+            methodTree = null;
+            hasParameters = false;
         }
-        return super.scan(tree, p);
     }
 
     @Override

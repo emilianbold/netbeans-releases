@@ -49,8 +49,10 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -143,9 +145,14 @@ public class Move {
                             transformInitializer(var.getInitializer(), var.getType(), make))));
                     
                     if(synthetic) {
-                        translated = GeneratorUtilities.get(wc).insertClassMember(translated, make.Constructor(
-                                make.Modifiers(method.getModifiers().getFlags(), method.getModifiers().getAnnotations()),
-                                method.getTypeParameters(), method.getParameters(), method.getThrows(), make.Block(statements, false)));
+                        Tree constructor;
+                        if (parentPath.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
+                            constructor = make.Block(Collections.singletonList(statements.get(1)), false);
+                        } else {
+                            constructor = make.Constructor(make.Modifiers(method.getModifiers().getFlags(), method.getModifiers().getAnnotations()),
+                                                                method.getTypeParameters(), method.getParameters(), method.getThrows(), make.Block(statements, false));
+                        }
+                        translated = GeneratorUtilities.get(wc).insertClassMember(translated, constructor);
                     } else {
                         original2translated.put(body, make.Block(statements, false));
                     }

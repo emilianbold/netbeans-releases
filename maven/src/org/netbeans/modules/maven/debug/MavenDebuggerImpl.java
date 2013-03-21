@@ -47,6 +47,7 @@ import java.util.Map;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileUtil;
@@ -84,6 +85,10 @@ public class MavenDebuggerImpl implements MavenDebugger {
         properties.put("name", name); //NOI18N
         properties.put("jdksources", jdkSourcePath); //NOI18N
         properties.put("baseDir", FileUtil.toFile(nbproject.getProjectDirectory())); // NOI18N
+        boolean appCos = RunUtils.hasApplicationCompileOnSaveEnabled(nbproject);
+        if (appCos) {
+            properties.put ("listeningCP", "sourcepath"); // NOI18N
+        }
 
         synchronized(lock) {
             RP.post(new Runnable() {

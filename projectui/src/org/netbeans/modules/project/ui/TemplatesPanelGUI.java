@@ -610,6 +610,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private static class CategoriesBeanTreeView extends BeanTreeView {
         CategoriesBeanTreeView() {
             this.tree.setEditable(false);
+            //#219709 - workaround for JDK bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=8003400
+            tree.setLargeModel( false );
         }
     }
 

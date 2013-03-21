@@ -92,6 +92,13 @@ public interface IteratorExtension {
      */
     void discoverHeadersByModel(Project project);
 
+    /**
+     * Method disable code model for project
+     * 
+     * @param project
+     */
+    void disableModel(Project project);
+
     public enum ProjectKind {
         Minimal, // include in project com
         IncludeDependencies,

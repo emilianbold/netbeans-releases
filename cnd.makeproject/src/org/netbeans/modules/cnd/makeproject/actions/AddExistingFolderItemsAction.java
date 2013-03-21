@@ -67,12 +67,23 @@ import org.openide.util.actions.NodeAction;
 import org.openide.windows.WindowManager;
 
 public final class AddExistingFolderItemsAction extends NodeAction {
+    
+    public AddExistingFolderItemsAction () {
+        //TODO: uncomment when problem iwth MakeProjectLogicalViewRootNode folder will be fixed, now "Folder" can be null when it should not be null
+        //putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+    }
 
     @Override
     protected boolean enable(Node[] activatedNodes)  {
         if (activatedNodes.length != 1) {
             return false;
         }
+        
+        Object project = activatedNodes[0].getValue("Project"); // NOI18N
+        if (project == null || (!(project instanceof Project))) {
+            return false;
+        }
+        
         Folder folder = (Folder)activatedNodes[0].getValue("Folder"); // NOI18N
         if (folder == null) {
             return false;

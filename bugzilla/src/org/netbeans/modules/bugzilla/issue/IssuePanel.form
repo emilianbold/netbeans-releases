@@ -369,11 +369,11 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="summaryWarning" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
                           <Component id="customFieldsPanelRight" alignment="0" max="32767" attributes="0"/>
+                          <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="issueTypeCombo" max="32767" attributes="1"/>
                                           <Component id="statusWhiteboardField" min="0" pref="0" max="32767" attributes="1"/>
@@ -481,10 +481,13 @@
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="submitButton" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="attachLogCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="viewLogButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="attachLogCheckBox" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
@@ -497,8 +500,8 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="headerField" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="separatorLabel2" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -509,7 +512,7 @@
                   <Component id="separatorLabel3" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="showInBrowserButton" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="productLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="productCombo" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -520,7 +523,7 @@
                   <Component id="modifiedField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="reportedStatusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="componentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="componentCombo" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -530,14 +533,14 @@
                   <Component id="assignedToStatusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="assignedToWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="versionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="versionWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                   <Component id="assignToDefaultCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="platformLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="platformCombo" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -548,7 +551,7 @@
                   <Component id="qaContactField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="qaContactWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="issueTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="issueTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -557,9 +560,9 @@
                   <Component id="ccField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ccWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="dummyLabel1" linkSize="8" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="priorityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="priorityCombo" linkSize="8" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -570,7 +573,7 @@
                   <Component id="statusCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="statusWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="targetMilestoneLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="targetMilestoneCombo" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -607,13 +610,13 @@
                   <Component id="blocksWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                   <Component id="blocksButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="statusWhiteboardLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="statusWhiteboardField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="statusWhiteboardWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="timetrackingLabel" min="-2" max="-2" attributes="0"/>
@@ -622,18 +625,14 @@
                   </Group>
                   <Component id="dummyTimetrackingPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="dummyLabel3" linkSize="8" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <Component id="dummyAttachmentsPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="attachLogCheckBox" min="-2" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="dummyAttachmentsPanel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
@@ -651,17 +650,25 @@
                   <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="scrollPane1" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="viewLogButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="attachLogCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                      <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Component id="messagePanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="messagePanel" pref="2" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="separator" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="dummyCommentsPanel" pref="24" max="32767" attributes="0"/>
+              <Component id="dummyCommentsPanel" pref="38" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -1426,6 +1433,19 @@
           <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.attachLogCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="attachLogCheckBoxActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="viewLogButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.viewLogButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="viewLogButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

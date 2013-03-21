@@ -59,6 +59,7 @@ Contributor(s):
                 <folder name="DiskFolder">
                     <file name="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Build/org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance"/>
+                        <attr name="position" intvalue="2500"/>
                     </file>
                 </folder>
             </folder>

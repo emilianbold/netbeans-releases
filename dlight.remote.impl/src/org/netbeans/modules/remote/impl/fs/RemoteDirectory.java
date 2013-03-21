@@ -461,6 +461,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         long time = System.currentTimeMillis();
         try {
             return getDirectoryStorageImpl(false, null, childName, false);
+        } catch (StackOverflowError soe) { // workaround for #130929
+            String text = "StackOverflowError when accessing " + getPath(); //NOI18N
+            Exceptions.printStackTrace(new Exception(text, soe));
+            throw new IOException(text, soe);
         } finally {
             if (trace) {
                 trace("getDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N

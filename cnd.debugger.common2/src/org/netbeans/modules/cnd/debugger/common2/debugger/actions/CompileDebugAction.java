@@ -102,7 +102,7 @@ public class CompileDebugAction extends CompileRunActionBase {
 
         @Override
         public void run() {
-            final MakeConfiguration configuration = new MakeConfiguration (buildDir, "Default", MakeConfiguration.TYPE_MAKEFILE);// NOI18N
+            final MakeConfiguration configuration = MakeConfiguration.createDefaultHostMakefileConfiguration(buildDir, "Default");// NOI18N
             configuration.getMakefileConfiguration().getOutput().setValue(buildDir + "/" + executable);// NOI18N
             final RunProfile profile = new RunProfile(configuration, null);
             StringBuilder buf = new StringBuilder();

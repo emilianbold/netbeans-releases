@@ -351,10 +351,10 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             HashMap<String, Object> params = new HashMap<String, Object>();
             String appContextTemplateName = "applicationContext-2.5.xml"; //NOI18N
             String dispServletTemplateName = "dispatcher-servlet-2.5.xml"; //NOI18N
-            if (version.startsWith("3.0")) {    //NOI18N
+            if (version.startsWith("3.")) {    //NOI18N
 //                params.put("springVersion3", Boolean.TRUE); //NOI18N
-                appContextTemplateName = "applicationContext-3.0.xml"; //NOI18N
-                dispServletTemplateName = "dispatcher-servlet-3.0.xml"; //NOI18N
+                appContextTemplateName = "applicationContext-3.1.xml"; //NOI18N
+                dispServletTemplateName = "dispatcher-servlet-3.1.xml"; //NOI18N
             }
             FileObject configFile = createFromTemplate(appContextTemplateName, webInfDO, "applicationContext",params); // NOI18N
             addFileToOpen(configFile);

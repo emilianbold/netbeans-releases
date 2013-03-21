@@ -56,7 +56,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,13 +71,9 @@ import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
-import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
-import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
-import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -89,10 +84,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfigura
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -101,11 +94,9 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -118,7 +109,6 @@ import org.openide.xml.XMLUtil;
  */
 final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListener, LookupListener, PropertyChangeListener {
 
-    private static final boolean SYNC_PROJECT_ACTION = Boolean.getBoolean("cnd.remote.sync.project.action"); // NOI18N
 
     private boolean brokenLinks;
     private boolean brokenIncludes;
@@ -488,30 +478,17 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             descriptor.getLogicalFolders();
         }
 
-        // Add standard actions
-        Action[] standardActions;
         MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
-        if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
-            standardActions = getAdditionalDiskFolderActions();
-        } else {
-            standardActions = getAdditionalLogicalFolderActions();
-        }
-        actions.addAll(Arrays.asList(standardActions));
+        String projectType = MakeProjectTypeImpl.PROJECT_TYPE;
+        Action[] projectActions = null;
+        if (active != null && active.isCustomConfiguration()) {
+            //TODO: fix it as all actions can use  HIDE_WHEN_DISABLE and be enabled in own context only
+            projectActions = active.getProjectCustomizer().getActions(getProject(), Arrays.asList(CommonProjectActions.forType(projectType)));            
+            projectType = active.getProjectCustomizer().getCustomizerId();                        
+        }        
+        projectActions = projectActions == null ? CommonProjectActions.forType(projectType) : projectActions;
+        actions.addAll(Arrays.asList(projectActions));
         actions.add(null);
-        //actions.add(new CodeAssistanceAction());
-        // makeproject sensitive actions
-        final MakeProjectTypeImpl projectKind = provider.getProject().getLookup().lookup(MakeProjectTypeImpl.class);
-        final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.projectActionsPath());
-        if (!actionsForMakeProject.isEmpty()) {
-            actions.addAll(actionsForMakeProject);
-            actions.add(null);
-        }
-        actions.add(SystemAction.get(org.openide.actions.FindAction.class));
-        // all project sensitive actions
-        actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
-        // Add remaining actions
-        actions.add(null);
-        //actions.add(SystemAction.get(ToolsAction.class));
         if (brokenLinks) {
             actions.add(new ResolveReferenceAction(provider.getProject()));
         }
@@ -520,14 +497,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
         if (incorrectPlatform) {
             actions.add(new ResolveIncorrectPlatformAction(this));
-        }
-        //actions.add(null);
-        actions.add(CommonProjectActions.customizeProjectAction());
-        if (active != null && active.isCustomConfiguration() && active.getProjectCustomizer().getActions(provider.getProject(), actions) != null) {
-            return active.getProjectCustomizer().getActions(provider.getProject(), actions);
-        } else {
-            return actions.toArray(new Action[actions.size()]);
-        }
+        }           
+        return actions.toArray(new Action[actions.size()]);        
     }
 
     @Override
@@ -561,120 +532,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
         super.createPasteTypes(transferable, list);
     }
-
-    // Private methods -------------------------------------------------
-    private Action[] getAdditionalLogicalFolderActions() {
-        
-        ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
-
-        MoreBuildActionsAction mba = null;        
-        ArrayList<Action> actions = new ArrayList<Action>();
-        if (gotMakeConfigurationDescriptor() && getMakeConfigurationDescriptor().getActiveConfiguration() != null && getMakeConfigurationDescriptor().getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-            actions.addAll(Arrays.asList(new Action[]{
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-            }));
-            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/LogicalFolder")); //NOI18N
-            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
-        } else {
-            actions.addAll(Arrays.asList(new Action[]{
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-            }));
-            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/LogicalFolder")); //NOI18N
-            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
-        }
-        
-        Action[] result = new Action[]{
-            CommonProjectActions.newFileAction(),
-            null,
-            SystemAction.get(AddExistingItemAction.class),
-            SystemAction.get(AddExistingFolderItemsAction.class),
-            SystemAction.get(NewFolderAction.class),
-            //new AddExternalItemAction(project),
-            null,
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N            
-            mba,
-            new SetConfigurationAction(getProject()),
-            new RemoteDevelopmentAction(getProject()),
-            null,
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null), // NOI18N
-            //new DebugMenuAction(project, helper),
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null),
-            //SystemAction.get(RunTestAction.class),
-            null,
-            CommonProjectActions.setAsMainProjectAction(),
-            CommonProjectActions.openSubprojectsAction(),
-            CommonProjectActions.closeProjectAction(),
-            null,
-            CommonProjectActions.renameProjectAction(),
-            CommonProjectActions.moveProjectAction(),
-            CommonProjectActions.copyProjectAction(),
-            CommonProjectActions.deleteProjectAction(),
-            null,};
-        if (SYNC_PROJECT_ACTION) {
-            result = NodeActionFactory.insertSyncActions(result, RemoteDevelopmentAction.class);
-        }
-        return result;
-    }
-
-    private Action[] getAdditionalDiskFolderActions() {
-
-        ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
-
-        MoreBuildActionsAction mba = null; 
-        ArrayList<Action> actions = new ArrayList<Action>();
-        if (gotMakeConfigurationDescriptor() && getMakeConfigurationDescriptor().getActiveConfiguration() != null && getMakeConfigurationDescriptor().getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-            actions.addAll(Arrays.asList(new Action[]{
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-            }));
-            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/DiskFolder")); //NOI18N
-            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
-        } else {
-            actions.addAll(Arrays.asList(new Action[]{
-                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-            }));
-            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/DiskFolder")); //NOI18N            
-            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
-        }
-        
-        Action[] result = new Action[]{
-            CommonProjectActions.newFileAction(),
-            //null,
-            //new AddExternalItemAction(project),
-            null,
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
-            mba,
-            new SetConfigurationAction(getProject()),
-            new RemoteDevelopmentAction(getProject()),
-            null,
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null), // NOI18N
-            //new DebugMenuAction(project, helper),
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
-            null,
-            CommonProjectActions.setAsMainProjectAction(),
-            CommonProjectActions.openSubprojectsAction(),
-            CommonProjectActions.closeProjectAction(),
-            null,
-            CommonProjectActions.renameProjectAction(),
-            CommonProjectActions.moveProjectAction(),
-            CommonProjectActions.copyProjectAction(),
-            CommonProjectActions.deleteProjectAction(),
-            null,};
-        if (SYNC_PROJECT_ACTION) {
-            result = NodeActionFactory.insertSyncActions(result, RemoteDevelopmentAction.class);
-        }
-        return result;
-    }
+   
 
     @Override
     public void resultChanged(LookupEvent ev) {

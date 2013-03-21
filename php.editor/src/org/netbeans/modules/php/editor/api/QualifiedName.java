@@ -206,6 +206,7 @@ public final class QualifiedName {
 
     }
     public static QualifiedName create(String name) {
+        name = name.trim();
         final QualifiedNameKind kind = QualifiedNameKind.resolveKind(name);
         if (kind.isUnqualified()) {
             return createUnqualifiedName(name);

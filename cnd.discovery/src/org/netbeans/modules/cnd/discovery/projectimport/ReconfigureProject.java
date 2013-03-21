@@ -551,7 +551,7 @@ public class ReconfigureProject {
                         if (descriptor != null) {
                             MakeConfiguration activeConfiguration = descriptor.getActiveConfiguration();
                             if (activeConfiguration != null) {
-                                vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(activeConfiguration)); // NOI18N
+                                vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(activeConfiguration, executionEnvironment)); // NOI18N
                             }
                         }
                     }

@@ -101,11 +101,11 @@ public class ElementNode extends AbstractNode {
     private OpenAction openAction;
     private StructureItem description;
     private ClassMemberPanelUI ui;
-    private FileObject fileObject; // For the root description
+    private final FileObject fileObject; // For the root description
            
     /** Creates a new instance of TreeNode */
     public ElementNode( StructureItem description, ClassMemberPanelUI ui, FileObject fileObject) {
-        super(description.isLeaf() ? Children.LEAF: new ElementChildren((List<StructureItem>)description.getNestedItems(), ui.getFilters(), ui, fileObject));
+        super(description.isLeaf() ? Children.LEAF: new ElementChildren(description, ui, fileObject));
         this.description = description;
         setDisplayName( description.getName() ); 
         this.ui = ui;
@@ -132,7 +132,11 @@ public class ElementNode extends AbstractNode {
                    
     @Override
     public java.lang.String getDisplayName() {
-        return description.getName();
+        if (description.getName() == null) {
+            return fileObject.getNameExt();
+        } else {
+            return description.getName();
+        }
     }
             
     @Override
@@ -289,7 +293,7 @@ public class ElementNode extends AbstractNode {
         //to ElementChildren to be able to hold the new child data
         if(!(ch instanceof ElementChildren) && newDescription.getNestedItems() != null && 
                 newDescription.getNestedItems().size()>0) {
-            ch=new ElementChildren((List<StructureItem>)Collections.EMPTY_LIST, ui.getFilters(), ui, fileObject);
+            ch=new ElementChildren(ui, fileObject);
             setChildren(ch);
         }
         
@@ -364,9 +368,23 @@ public class ElementNode extends AbstractNode {
     private static final class ElementChildren extends Children.Keys<StructureItem> {
         private ClassMemberPanelUI ui;
         private FileObject fileObject;
+        private StructureItem   parent;
         
-        public ElementChildren(List<StructureItem> descriptions, ClassMemberFilters filters, ClassMemberPanelUI ui, FileObject fileObject) {
-            resetKeys( descriptions, filters );            
+        @Override
+        protected void addNotify() {
+            super.addNotify();
+            if (parent != null) {
+                resetKeys((List<StructureItem>)parent.getNestedItems(), ui.getFilters());
+            }
+        }
+        
+        public ElementChildren(ClassMemberPanelUI ui, FileObject fileObject) {
+            this.ui = ui;
+            this.fileObject = fileObject;
+        }
+        
+        public ElementChildren(StructureItem parent, ClassMemberPanelUI ui, FileObject fileObject) {
+            this.parent = parent;
             this.ui = ui;
             this.fileObject = fileObject;
         }

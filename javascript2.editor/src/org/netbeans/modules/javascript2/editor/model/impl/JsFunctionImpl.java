@@ -187,7 +187,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                     if(jsObject != null) {
                        Collection<TypeUsage> resolveAssignments = resolveAssignments(jsObject, type.getOffset());
                        for (TypeUsage typeResolved: resolveAssignments) {
-                           if (!nameReturnTypes.contains(type.getType())){
+                           if (!nameReturnTypes.contains(typeResolved.getType())){
                               returns.add(typeResolved);
                               nameReturnTypes.add(typeResolved.getType());
                            }

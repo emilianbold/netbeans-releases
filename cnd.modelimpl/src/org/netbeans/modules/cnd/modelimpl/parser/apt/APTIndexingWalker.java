@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.repository.api.CacheLocation;
  * @author Vladimir Voskresensky
  */
 public final class APTIndexingWalker extends APTWalker {
-    private final Set<String> ids = new HashSet<String>();
+    private final Set<CharSequence> ids = new HashSet<CharSequence>();
     private final CndTextIndexKey key;
     private final CacheLocation location;
     
@@ -168,7 +168,7 @@ public final class APTIndexingWalker extends APTWalker {
     private boolean analyzeToken(APTToken token) {
         if (token != null && !APTUtils.isEOF(token)) {
             if (APTUtils.isID(token) || token.getType() == APTTokenTypes.ID_DEFINED) {
-                ids.add(token.getText());
+                ids.add(token.getTextID());
                 return true;
             }
         }
