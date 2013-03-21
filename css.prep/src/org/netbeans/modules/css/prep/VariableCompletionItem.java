@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.css.prep;
 
-import com.sun.istack.internal.NotNull;
 import javax.swing.ImageIcon;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -72,7 +72,7 @@ public class VariableCompletionItem extends CssCompletionItem {
      * @param anchorOffset
      * @param origin Origin is null for current file. File displayname otherwise.
      */
-    public VariableCompletionItem(@NotNull ElementHandle elementHandle, @NotNull CPElementHandle handle, int anchorOffset, @NullAllowed String origin) {
+    public VariableCompletionItem(@NonNull ElementHandle elementHandle, @NonNull CPElementHandle handle, int anchorOffset, @NullAllowed String origin) {
         super(elementHandle, handle.getName(), anchorOffset, false);
         this.handle = handle;
         this.origin = origin;
