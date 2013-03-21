@@ -116,7 +116,7 @@ public class ExtApplyFunctionInterceptor implements FunctionInterceptor {
 
                         for(JsObject property: definedObject.getProperties().values()) {
                             if (property.isDeclared()) {
-                                parent.addProperty(property.getName(), factory.newReference(parent, property.getName(), property.getDeclarationName().getOffsetRange(), property, true));
+                                parent.addProperty(property.getName(), factory.newReference(parent, property.getName(), property.getDeclarationName().getOffsetRange(), property, true, property.getModifiers()));
                             }
                         }
 //                    }

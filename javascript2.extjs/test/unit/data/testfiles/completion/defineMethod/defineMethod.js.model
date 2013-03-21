@@ -1,6 +1,6 @@
 FUNCTION defineMethod [ANONYMOUS: false, DECLARED: true - defineMethod, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Anonym$0 : OBJECT Anonym$0 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PUBLIC, ANONYMOUS_OBJECT]
          # PROPERTIES
