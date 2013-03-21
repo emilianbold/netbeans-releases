@@ -289,7 +289,9 @@ public class CommitAction extends ContextAction {
         }
         if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
             al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
+            panel.closed();
         } else if (dd.getValue() == commitButton) {
+            panel.closed();
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
             final boolean commitAllFiles = panel.cbAllFiles.isSelected() || afterMerge.get();

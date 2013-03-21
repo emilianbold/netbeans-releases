@@ -195,6 +195,12 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         um = UndoRedoSupport.register(messageTextArea);
     }
 
+    void closed () {
+        for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
+            e.getValue().componentClosed();
+        }
+    }
+
     private void initCollapsibleSections() {
         initSectionButton(filesSectionButton, filesSectionPanel2,
                           "initFilesPanel",                             //NOI18N
