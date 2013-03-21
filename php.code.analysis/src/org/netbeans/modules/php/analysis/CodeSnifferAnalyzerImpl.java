@@ -46,19 +46,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
+import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
 import org.netbeans.modules.php.analysis.results.Result;
 import org.netbeans.modules.php.analysis.ui.analyzer.CodeSnifferCustomizerPanel;
-import org.netbeans.modules.php.analysis.ui.options.AnalysisOptionsPanelController;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.analysis.util.Mappers;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
-import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -67,6 +70,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 public class CodeSnifferAnalyzerImpl implements Analyzer {
+
+    private static final Logger LOGGER = Logger.getLogger(CodeSnifferAnalyzerImpl.class.getName());
 
     private final Context context;
     private final AtomicBoolean cancelled = new AtomicBoolean();
@@ -79,18 +84,22 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
     @NbBundle.Messages({
         "CodeSnifferAnalyzerImpl.codeSniffer.error=Code sniffer is not valid",
         "CodeSnifferAnalyzerImpl.codeSniffer.error.description=Invalid code sniffer set in IDE Options.",
+        "CodeSnifferAnalyzerImpl.codeSniffer.standard.error=Code sniffer standard is not valid",
+        "CodeSnifferAnalyzerImpl.codeSniffer.standard.error.description=Invalid code sniffer standard set in IDE Options.",
     })
     @Override
     public Iterable<? extends ErrorDescription> analyze() {
-        CodeSniffer codeSniffer;
-        try {
-            codeSniffer = CodeSniffer.getDefault();
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getMessage(), AnalysisOptionsPanelController.OPTIONS_SUB_PATH);
+        CodeSniffer codeSniffer = getValidCodeSniffer();
+        if (codeSniffer == null) {
             context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_codeSniffer_error(), Bundle.CodeSnifferAnalyzerImpl_codeSniffer_error_description());
             return Collections.emptyList();
         }
-        assert codeSniffer != null;
+
+        String codeSnifferStandard = getValidCodeSnifferStandard();
+        if (codeSnifferStandard == null) {
+            context.reportAnalysisProblem(Bundle.CodeSnifferAnalyzerImpl_codeSniffer_standard_error(), Bundle.CodeSnifferAnalyzerImpl_codeSniffer_standard_error_description());
+            return Collections.emptyList();
+        }
 
         Scope scope = context.getScope();
 
@@ -102,7 +111,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
 
         context.start(totalCount);
         try {
-            return doAnalyze(context, scope, codeSniffer, fileCount);
+            return doAnalyze(scope, codeSniffer, codeSnifferStandard, fileCount);
         } finally {
             context.finish();
         }
@@ -116,19 +125,11 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
     }
 
     @NbBundle.Messages({
-        "CodeSnifferAnalyzerImpl.analyze.error=Error occured",
-        "CodeSnifferAnalyzerImpl.analyze.error.description=Error occured during analysis, review Output window for more information.",
+        "CodeSnifferAnalyzerImpl.analyze.error=Code sniffer analysis error",
+        "CodeSnifferAnalyzerImpl.analyze.error.description=Error occured during code sniffer analysis, review Output window for more information.",
     })
-    private Iterable<? extends ErrorDescription> doAnalyze(Context context, Scope scope, CodeSniffer codeSniffer, Map<FileObject, Integer> fileCount) {
+    private Iterable<? extends ErrorDescription> doAnalyze(Scope scope, CodeSniffer codeSniffer, String codeSnifferStandard, Map<FileObject, Integer> fileCount) {
         List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-        String codeSnifferStandard = null;
-        Preferences settings = context.getSettings();
-        if (settings != null) {
-            codeSnifferStandard = settings.get(CodeSnifferCustomizerPanel.STANDARD, null);
-        }
-        if (codeSnifferStandard == null) {
-            codeSnifferStandard = AnalysisOptions.getInstance().getCodeSnifferStandard();
-        }
         int progress = 0;
         for (FileObject root : scope.getSourceRoots()) {
             if (cancelled.get()) {
@@ -172,10 +173,38 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
             progress += fileCount.get(folder);
             context.progress(progress);
         }
-
-        context.finish();
-
         return errors;
+    }
+
+    @CheckForNull
+    private CodeSniffer getValidCodeSniffer() {
+        try {
+            return CodeSniffer.getDefault();
+        } catch (InvalidPhpExecutableException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private String getValidCodeSnifferStandard() {
+        String codeSnifferStandard = null;
+        Preferences settings = context.getSettings();
+        if (settings != null) {
+            codeSnifferStandard = settings.get(CodeSnifferCustomizerPanel.STANDARD, null);
+        }
+        if (codeSnifferStandard == null) {
+            codeSnifferStandard = AnalysisOptions.getInstance().getCodeSnifferStandard();
+        }
+        ValidationResult result = new AnalysisOptionsValidator()
+                .validateCodeSnifferStandard(codeSnifferStandard)
+                .getResult();
+        if (result.hasErrors()
+                || result.hasWarnings()) {
+            return null;
+        }
+        assert codeSnifferStandard != null;
+        return codeSnifferStandard;
     }
 
     //~ Inner classes

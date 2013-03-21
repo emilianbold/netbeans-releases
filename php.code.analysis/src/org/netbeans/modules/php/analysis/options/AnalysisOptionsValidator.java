@@ -78,7 +78,7 @@ public final class AnalysisOptionsValidator {
     }
 
     @NbBundle.Messages("AnalysisOptionsValidator.codeSniffer.standard.empty=Valid code sniffer standard must be set.")
-    private AnalysisOptionsValidator validateCodeSnifferStandard(String codeSnifferStandard) {
+    public AnalysisOptionsValidator validateCodeSnifferStandard(String codeSnifferStandard) {
         if (!StringUtils.hasText(codeSnifferStandard)) {
             result.addWarning(new ValidationResult.Message("codeSniffer.standard", Bundle.AnalysisOptionsValidator_codeSniffer_standard_empty())); // NOI18N
         }
@@ -94,7 +94,7 @@ public final class AnalysisOptionsValidator {
     }
 
     @NbBundle.Messages("AnalysisOptionsValidator.messDetector.ruleSets.empty=At least one rule set must be set.")
-    private AnalysisOptionsValidator validateMessDetectorRuleSets(List<String> messDetectorRuleSets) {
+    public AnalysisOptionsValidator validateMessDetectorRuleSets(List<String> messDetectorRuleSets) {
         if (messDetectorRuleSets.isEmpty()) {
             result.addWarning(new ValidationResult.Message("messDetector.ruleSets", Bundle.AnalysisOptionsValidator_messDetector_ruleSets_empty())); // NOI18N
         }
