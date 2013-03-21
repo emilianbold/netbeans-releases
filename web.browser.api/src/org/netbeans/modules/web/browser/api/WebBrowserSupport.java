@@ -169,7 +169,7 @@ public final class WebBrowserSupport {
     }
 
     private static WebBrowser findWebBrowserById(String id) {
-        for (WebBrowser wb : WebBrowsers.getInstance().getAll(false, true, true, false)) {
+        for (WebBrowser wb : WebBrowsers.getInstance().getAll(false, true, true, true, false)) {
             if (wb.getId().equals(id)) {
                 return wb;
             }
