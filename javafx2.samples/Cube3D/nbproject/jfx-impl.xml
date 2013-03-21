@@ -1646,6 +1646,12 @@
                         preloaderclass = project.getProperty("javafx.preloader.class");
                         app.setPreloaderClass(preloaderclass);
                     }
+                    var appversion = project.getProperty("javafx.application.implementation.version");
+                    if(appversion != null) {
+                        app.setVersion(appversion);
+                    } else {
+                        app.setVersion("1.0");
+                    }
                     // fx:param, fx:argument
                     var searchHides = project.getProperties().keys();
                     var hides = new Array();
@@ -1753,10 +1759,12 @@
                     a2.setName("Implementation-Title");
                     a2.setValue(a2val);
                     man.addConfiguredAttribute(a2);
-                    var a3 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
-                    a3.setName("Implementation-Version");
-                    a3.setValue("1.0");
-                    man.addConfiguredAttribute(a3);
+                    if(appversion != null && appversion.length() > 0) {
+                        var a3 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                        a3.setName("Implementation-Version");
+                        a3.setValue(appversion);
+                        man.addConfiguredAttribute(a3);
+                    }
                     var a4prop = project.getProperty("javafx.deploy.disable.proxy");
                     if(isTrue(a4prop)) {
                         var a4 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
@@ -2011,6 +2019,12 @@
                     if(isTrue(withpreloader)) {
                         preloaderclass = project.getProperty("javafx.preloader.class");
                         app.setPreloaderClass(preloaderclass);
+                    }
+                    var appversion = project.getProperty("javafx.application.implementation.version");
+                    if(appversion != null) {
+                        app.setVersion(appversion);
+                    } else {
+                        app.setVersion("1.0");
                     }
                     // fx:param, fx:argument
                     var searchHides = project.getProperties().keys();

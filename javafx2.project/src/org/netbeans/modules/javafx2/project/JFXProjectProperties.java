@@ -87,6 +87,7 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.project.ui.JFXApplicationPanel;
 import org.netbeans.modules.javafx2.project.ui.JFXPackagingPanel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -208,7 +209,11 @@ public final class JFXProjectProperties {
     
     // Deployment - callbacks
     public static final String JAVASCRIPT_CALLBACK_PREFIX = "javafx.jscallback."; // NOI18N
-
+    
+    // Application
+    public static final String IMPLEMENTATION_VERSION = "javafx.application.implementation.version"; // NOI18N
+    public static final String IMPLEMENTATION_VERSION_DEFAULT = "1.0"; // NOI18N
+    
     // folders and files
     public static final String PROJECT_CONFIGS_DIR = JFXProjectConfigurations.PROJECT_CONFIGS_DIR;
     public static final String PROJECT_PRIVATE_CONFIGS_DIR = JFXProjectConfigurations.PROJECT_PRIVATE_CONFIGS_DIR;
@@ -233,6 +238,14 @@ public final class JFXProjectProperties {
             packagingPanel = new JFXPackagingPanel(this);
         }
         return packagingPanel;
+    }
+
+    private JFXApplicationPanel applicationPanel = null;
+    public JFXApplicationPanel getApplicationPanel() {
+        if(applicationPanel == null) {
+            applicationPanel = new JFXApplicationPanel(this);
+        }
+        return applicationPanel;
     }
 
     // CustomizerRun
@@ -506,6 +519,15 @@ public final class JFXProjectProperties {
     public void setRequestedRT(String rt) {
         this.requestedRT = rt;
     }
+    
+    // Application
+    String implVersion;
+    public String getImplementationVersion() {
+        return implVersion;
+    }
+    public void setImplementationVersion(String implVer) {
+        implVersion = implVer;
+    }
         
     // Project related references
     private J2SEPropertyEvaluator j2sePropEval;
@@ -652,6 +674,7 @@ public final class JFXProjectProperties {
             CONFIGS.setActive(evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG));
             preloaderClassModel = new PreloaderClassComboBoxModel();
 
+            initVersion(evaluator);
             initIcons(evaluator);
             initSigning(evaluator);
             initNativeBundling(evaluator);
@@ -1174,6 +1197,8 @@ public final class JFXProjectProperties {
     }
 
     private void storeRest(@NonNull EditableProperties editableProps, @NonNull EditableProperties privProps) {
+        // store implementation version
+        setOrRemove(editableProps, IMPLEMENTATION_VERSION, implVersion);
         // store signing info
         editableProps.setProperty(JAVAFX_SIGNING_ENABLED, signingEnabled ? "true" : "false"); //NOI18N
         editableProps.setProperty(JAVAFX_SIGNING_TYPE, signingType.getString());
@@ -1295,6 +1320,13 @@ public final class JFXProjectProperties {
         }
     }
 
+    private void initVersion(PropertyEvaluator eval) {
+        implVersion = eval.getProperty(IMPLEMENTATION_VERSION);
+        if(implVersion == null) {
+            implVersion = IMPLEMENTATION_VERSION_DEFAULT;
+        }
+    }
+    
     private void initIcons(PropertyEvaluator eval) {
         wsIconPath = eval.getProperty(ICON_FILE);
         splashImagePath = eval.getProperty(SPLASH_IMAGE_FILE);
