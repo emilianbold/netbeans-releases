@@ -257,9 +257,9 @@ public class CPCssEditorModule extends CssEditorModule {
         return proposals;
     }
 
-    private static List<CompletionProposal> getMixinsCompletionProposals(final CompletionContext context, CPModel model) {
+    private static Collection<CompletionProposal> getMixinsCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        Collection<CompletionProposal> proposals = new LinkedHashSet<CompletionProposal>();
         for (CPElement mixin : model.getMixins()) {
             if (mixin.getType() == CPElementType.MIXIN_DECLARATION) {
                 ElementHandle handle = new CPCslElementHandle(context.getFileObject(), mixin.getName());
