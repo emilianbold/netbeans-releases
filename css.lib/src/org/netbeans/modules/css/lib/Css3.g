@@ -1114,14 +1114,14 @@ scss_selector_interpolation_expression
         ( 
             scss_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA)
         )
         ( 
             ws?
             (
                 scss_interpolation_expression_var
                 |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA)
             )
         )*
 
