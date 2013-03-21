@@ -94,6 +94,10 @@ public final class AnalysisOptions {
     }
 
     public void setCodeSnifferStandard(String standard) {
+        // avoid NPE, can happen if invalid code sniffer is selected
+        if (standard == null) {
+            standard = ""; // NOI18N
+        }
         getPreferences().put(CODE_SNIFFER_STANDARD, standard);
     }
 
