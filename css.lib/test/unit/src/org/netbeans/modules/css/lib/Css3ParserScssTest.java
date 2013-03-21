@@ -1179,4 +1179,10 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testIfCondition() {
         assertParses(" @if ($mode == light) {}");
     }
+
+    public void testSassFunctionWhereWithArgDefiningValue() {
+        assertParses("@function color-by-background($bg-color, $contrast: $default-text-contrast) {\n"
+                + "    @return color-offset($bg-color, $contrast, $tmpmode, $inverse: true);\n"
+                + "}");
+    }
 }

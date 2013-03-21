@@ -871,15 +871,12 @@ function
 	: 	functionName ws?
 		LPAREN ws?
 		(
-                    {isCssPreprocessorSource()}? cp_variable_value
+                    (cp_args_list)=>cp_args_list
+                    | (cp_variable_value)=>cp_variable_value
+                    | expression
+                    | fnAttribute (COMMA ws? fnAttribute )*
                     |
-                    expression
-		| 
-		  	(
-				fnAttribute (COMMA ws? fnAttribute )*				
-			) 
-                |
-                {isCssPreprocessorSource()}? //empty
+                    {isCssPreprocessorSource()}? //empty
 		)
 		RPAREN
 	;
