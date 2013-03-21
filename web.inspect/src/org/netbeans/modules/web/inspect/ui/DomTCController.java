@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.openide.filesystems.FileObject;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -82,6 +83,34 @@ public class DomTCController implements PropertyChangeListener {
         inspector.addPropertyChangeListener(this);
         TopComponent.Registry registry = WindowManager.getDefault().getRegistry();
         registry.addPropertyChangeListener(this);
+        initActiveComponent();
+    }
+
+    /**
+     * Initializes the information about the active editor {@code TopComponent}.
+     */
+    private void initActiveComponent() {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                WindowManager manager = WindowManager.getDefault();
+                TopComponent.Registry registry = manager.getRegistry();
+                TopComponent active = registry.getActivated();
+                if ((active != null) && manager.isOpenedEditorTopComponent(active)) {
+                    componentActivated(active);
+                } else {
+                    for (Mode mode : manager.getModes()) {
+                        if (manager.isEditorMode(mode)) {
+                            active = mode.getSelectedTopComponent();
+                            if (active != null) {
+                                componentActivated(active);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -108,33 +137,30 @@ public class DomTCController implements PropertyChangeListener {
     private Reference<TopComponent> lastTC;
     private void componentActivated(TopComponent tc) {
         if (!WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {
+            synchronized (this) {
+                if (lastTC != null) {
+                    // Check if lastTC is still valid
+                    TopComponent active = lastTC.get();
+                    if (active == null || !WindowManager.getDefault().isOpenedEditorTopComponent(active)) {
+                        lastTC = null;
+                        lastMimeType = null;
+                        updateDomTC0();
+                    }
+                }
+            }
             return;
         }
         FileObject fob = tc.getLookup().lookup(FileObject.class);
         synchronized (this) {
-            lastMimeType = (fob == null) ? null : fob.getMIMEType();
-            lastTC = new WeakReference<TopComponent>(tc);
+            if (fob == null) {
+                lastTC = null;
+                lastMimeType = null;
+            } else {
+                lastTC = new WeakReference<TopComponent>(tc);
+                lastMimeType = fob.getMIMEType();
+            }
         }
         updateDomTC();
-    }
-
-    /**
-     * Returns the MIME type of the last active file in the editor.
-     * 
-     * @return MIME type of the last active file in the editor (or {@code null}
-     * when all editor {@code TopComponent}s are closed).
-     */
-    private String getLastMimeType() {
-        synchronized (this) {
-            if (lastTC != null) {
-                TopComponent tc = lastTC.get();
-                if (tc == null || !WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {
-                    lastTC = null;
-                    lastMimeType = null;
-                }
-            }
-            return lastMimeType;
-        }
     }
 
     /**
@@ -174,12 +200,12 @@ public class DomTCController implements PropertyChangeListener {
             TopComponent tc = WindowManager.getDefault().findTopComponent(DomTC.ID);
             boolean opened = tc.isOpened();
             if (inspectionActive) {
-                if (!opened && DOM_TC_MIME_TYPES.contains(getLastMimeType())) {
+                if (!opened && DOM_TC_MIME_TYPES.contains(lastMimeType)) {
                     // Open DOM Tree view
                     tc.open();
                     tc.requestActive();
                 }
-                if (opened && NAVIGATOR_MIME_TYPES.contains(getLastMimeType())) {
+                if (opened && ((lastMimeType == null) || NAVIGATOR_MIME_TYPES.contains(lastMimeType))) {
                     TopComponent navigator = WindowManager.getDefault().findTopComponent("navigatorTC"); // NOI18N
                     if (navigator != null && navigator.isOpened()) {
                         // Close DOM Tree view and activate Navigator instead
