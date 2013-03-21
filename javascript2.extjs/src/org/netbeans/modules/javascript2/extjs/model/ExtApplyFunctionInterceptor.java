@@ -45,39 +45,46 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-import javax.lang.model.element.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 
 /**
  *
- * @author Petr Hejl, Petr Pisl
+ * @author Petr Pisl
  */
-@FunctionInterceptor.Registration(priority = 10)
-public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
+@FunctionInterceptor.Registration(priority = 9)
+public class ExtApplyFunctionInterceptor implements FunctionInterceptor {
 
-    public ExtDefineFunctionInterceptor() {
+    @Override
+    public Pattern getNamePattern() {
+        return Pattern.compile("Ext\\.apply");
     }
 
     @Override
-    public void intercept(String functionName, JsObject globalObject, DeclarationScope scope,
-            ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public void intercept(String functionName, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (args.size() == 2) {
             Iterator<FunctionArgument> iterator = args.iterator();
             FunctionArgument arg1 = iterator.next();
             FunctionArgument arg2 = iterator.next();
             int offset = arg1.getOffset();
-            if (arg1.getKind() == FunctionArgument.Kind.STRING && arg2.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
+            if (arg1.getKind() == FunctionArgument.Kind.REFERENCE && arg2.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
                 JsObject parent = globalObject;
                 JsObject oldParent = parent;
-                for (StringTokenizer st = new StringTokenizer((String) arg1.getValue(), "."); st.hasMoreTokens();) {
-                    String name = st.nextToken();
-                    if (st.hasMoreElements()) {
+                String objectName = "";
+                if (arg1.getValue() instanceof Collection) {
+                    for(String simple : (Collection<String>)arg1.getValue()) {
+                        objectName = objectName + simple;
+                    }
+                }
+                String name = "";
+                for (StringTokenizer st = new StringTokenizer(objectName, "."); st.hasMoreTokens();) {
+                    name = st.nextToken();
+//                    if (st.hasMoreElements()) {
                         JsObject jsObject = oldParent.getProperty(name);
                         OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
                         if (jsObject == null) {
@@ -95,37 +102,28 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
                             oldParent = jsObject;
                             jsObject = newJsObject;
                         }
-                        else {
-                            jsObject.addOccurrence(offsetRange);
-                        }
+                        
                         parent = jsObject;
-                    }
-                    else {
+//                    }
+                        offset += name.length() + 1;
+                }
+//                    else {
                         JsObject definedObject = (JsObject) arg2.getValue();
                         if(definedObject.getModifiers().remove(org.netbeans.modules.csl.api.Modifier.PRIVATE)) {
                             definedObject.getModifiers().add(org.netbeans.modules.csl.api.Modifier.PUBLIC);
                         }
+                        
 
-                        OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
-                        JsObject jsObject = factory.newObject(parent, name, offsetRange, true);
-                        jsObject.addAssignment(factory.newType(definedObject.getFullyQualifiedName(), offset, false), offset);
-
-                        parent.addProperty(name, jsObject);
-                        for (Occurrence occurrence : jsObject.getOccurrences()) {
-                            jsObject.addOccurrence(occurrence.getOffsetRange());
+                        for(JsObject property: definedObject.getProperties().values()) {
+                            if (property.isDeclared()) {
+                                parent.addProperty(property.getName(), factory.newReference(parent, property.getName(), property.getDeclarationName().getOffsetRange(), property, true));
+                            }
                         }
-                        jsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
-
-                    }
-                    offset += name.length() + 1;
-                }
+//                    }
+                    
+//                }
             }
         }
     }
-
-    @Override
-    public Pattern getNamePattern() {
-        return Pattern.compile("Ext\\.define");
-    }
-
+    
 }
