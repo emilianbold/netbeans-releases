@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.core.IDESettings;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
@@ -60,6 +61,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Access to browsers available in the IDE.
@@ -79,6 +81,7 @@ public final class WebBrowsers {
     
     private static final WebBrowsers INST = new WebBrowsers();
     private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
+    private static final String MOBILE_BROWSERS_FOLDER = "Services/MobileBrowsers"; // NOI18N
     
     //private WebBrowserFactories fact;
     private PropertyChangeSupport sup = new PropertyChangeSupport(this);
@@ -172,28 +175,43 @@ public final class WebBrowsers {
         return null;
     }
 
+    public List<WebBrowser> getAll(boolean includeSystemDefaultBrowser,
+            boolean includeBrowsersWithNBIntegration,
+            boolean includeIDEGlobalBrowserOption,
+            boolean sortBrowsers) {
+        return getAll(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration,
+                includeIDEGlobalBrowserOption, false, sortBrowsers);
+    }
+
     /**
      * Returns all browsers registered in the IDE.
      */
     public List<WebBrowser> getAll(boolean includeSystemDefaultBrowser,
             boolean includeBrowsersWithNBIntegration,
             boolean includeIDEGlobalBrowserOption,
+            boolean includeMobileBrowsers,
             boolean sortBrowsers) {
         if (sortBrowsers) {
-            return getSortedBrowsers(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration, includeIDEGlobalBrowserOption);
+            return getSortedBrowsers(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration, 
+                    includeIDEGlobalBrowserOption, includeMobileBrowsers);
         } else {
-            return getUnsortedBrowsers(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration, includeIDEGlobalBrowserOption);
+            return getUnsortedBrowsers(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration, 
+                    includeIDEGlobalBrowserOption, includeMobileBrowsers);
         }
     }
 
     private List<WebBrowser> getSortedBrowsers(boolean includeSystemDefaultBrowser, 
             boolean includeBrowsersWithNBIntegration,
-            boolean includeIDEGlobalBrowserOption) {
+            boolean includeIDEGlobalBrowserOption,
+            boolean includeMobileBrowsers) {
         List<BrowserWrapper> browsers = new ArrayList<BrowserWrapper>();
         int chrome = 200;
         int chromium = 300;
         int others = 400;
         for (WebBrowserFactoryDescriptor desc : getFactories(includeSystemDefaultBrowser)) {
+            if (desc.getBrowserFamily().isMobile() && !includeMobileBrowsers) {
+                continue;
+            }
             WebBrowser browser = new WebBrowser(desc, false);
             if (browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
                 browsers.add(new BrowserWrapper(browser, 100));
@@ -243,12 +261,16 @@ public final class WebBrowsers {
 
     private List<WebBrowser> getUnsortedBrowsers(boolean includeSystemDefaultBrowser, 
             boolean includeBrowsersWithNBIntegration,
-            boolean includeIDEGlobalBrowserOption) {
+            boolean includeIDEGlobalBrowserOption,
+            boolean includeMobileBrowsers) {
         List<WebBrowser> browsers = new ArrayList<WebBrowser>();
         if (includeIDEGlobalBrowserOption) {
             browsers.add(createIDEGlobalDelegate());
         }
         for (WebBrowserFactoryDescriptor desc : getFactories(includeSystemDefaultBrowser)) {
+            if (desc.getBrowserFamily().isMobile() && !includeMobileBrowsers) {
+                continue;
+            }
             WebBrowser browser = new WebBrowser(desc, false);
             browsers.add(browser);
             if (includeBrowsersWithNBIntegration && (
@@ -332,6 +354,22 @@ public final class WebBrowsers {
                     browserSetting, 
                     isDefault,
                     fact));
+        }
+        Lookup l = Lookups.forPath(MOBILE_BROWSERS_FOLDER);
+        for (HtmlBrowser.Factory f : l.lookupAll(HtmlBrowser.Factory.class)) {
+            if (!(f instanceof EnhancedBrowserFactory)) {
+                continue;
+            }
+            EnhancedBrowserFactory fact = (EnhancedBrowserFactory)f;
+            // TODO: consider whether below solution is OK or whether we need
+            //       to enhance the SPI with getID() method:
+            String browserId = fact.getBrowserFamilyId().toString();
+            browsers.add(
+                new WebBrowserFactoryDescriptor(
+                    browserId,
+                    null,
+                    false,
+                    f));
         }
         return browsers;
     }

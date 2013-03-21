@@ -53,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jan Becicka
  */
-//@ServiceProvider(service = HtmlBrowser.Factory.class)
+@ServiceProvider(service = HtmlBrowser.Factory.class, path="Services/MobileBrowsers")
 public class CordovaBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory {
 
     @Override

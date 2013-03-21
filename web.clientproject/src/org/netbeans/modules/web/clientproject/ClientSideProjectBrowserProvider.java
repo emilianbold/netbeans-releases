@@ -79,7 +79,7 @@ public class ClientSideProjectBrowserProvider implements ProjectBrowserProvider 
 
     @Override
     public Collection<WebBrowser> getBrowsers() {
-        return WebBrowsers.getInstance().getAll(false, true, false, true);
+        return WebBrowsers.getInstance().getAll(false, true, false, true, true);
     }
 
     @Override
