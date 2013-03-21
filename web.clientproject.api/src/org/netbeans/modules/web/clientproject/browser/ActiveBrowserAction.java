@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.browser;
 
 import java.awt.Component;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -81,7 +82,6 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.awt.DropDownButtonFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -117,6 +117,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
     private JMenu menuAction;
     
     private static final RequestProcessor RP = new RequestProcessor(ActiveBrowserAction.class);
+    private static final String ARROW_IMAGE_NAME = "org/openide/awt/resources/arrow.png"; //NOI18N
 
     public ActiveBrowserAction() {
         lookup = LastActivatedWindowLookup.INSTANCE;
@@ -255,10 +256,15 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
 
     @Override
     public Component getToolbarPresenter() {
-        JPopupMenu menu = new JPopupMenu();
-        JButton button = DropDownButtonFactory.createSimpleDropDownButton(
-                new ImageIcon(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)), menu);
-        button.setDisabledIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png")));
+        final JPopupMenu menu = new JPopupMenu();
+        final JButton button = new JButton();
+        button.setAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                menu.show(button, 0, button.getHeight());
+            }
+        });
+        button.setDisabledIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png"))));
         button.setEnabled(false);
         menu.add(new JMenuItem("xxx")); // NOI18N
         ProjectBrowserProvider pbp = getBrowserProvider();
@@ -344,17 +350,19 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         JButton tb = toolbarButton;
         if (tb != null) {
             if (pbp == null) {
-                tb.setIcon(new ImageIcon(new BufferedImage(24, 24, BufferedImage.TYPE_INT_RGB)));
+                tb.setIcon(new ImageIcon(new BufferedImage(30, 24, BufferedImage.TYPE_INT_RGB)));
                 tb.setToolTipText(null);
             } else {
                 WebBrowser wb = pbp.getActiveBrowser();
+                Image im;
                 if (wb != null) {
-                    tb.setIcon(new ImageIcon(wb.getIconImage()));
+                    im = wb.getIconImage();
                     tb.setToolTipText(wb.getName());
                 } else {
-                    tb.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-generic.png")));
+                    im = ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-generic.png");
                     tb.setToolTipText(null);
                 }
+                tb.setIcon(new ImageIcon(badgeImageWithArrow(im)));
             }
             tb.setEnabled(pbp != null);
         }
@@ -364,9 +372,13 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         }
     }
 
+    private Image badgeImageWithArrow(Image im) {
+        return ImageUtilities.mergeImages(im,
+            ImageUtilities.loadImage("org/openide/awt/resources/arrow.png"), 28, 10);
+    }
 
 
-    
+
     // XXX: copy&pasted from project.ui.actions.LookupSensitiveAction.LastActivatedWindowLookup
     /**
      * #120721: do not want to use Utilities.actionsGlobalContext since that does not survive focus change,
