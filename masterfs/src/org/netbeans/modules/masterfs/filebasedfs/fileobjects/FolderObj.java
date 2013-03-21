@@ -548,10 +548,7 @@ public final class FolderObj extends BaseFileObj {
         }
         boolean validityFlag = FileChangedManager.getInstance().exists(getFileName().getFile());
         if (!validityFlag) {
-            getFactory().invalidateSubtree(this);
-            if (fire) {
-                fireFileDeletedEvent(expected);
-            }
+            getFactory().invalidateSubtree(this, fire, expected);
         }
 
         if (previous != -1) {

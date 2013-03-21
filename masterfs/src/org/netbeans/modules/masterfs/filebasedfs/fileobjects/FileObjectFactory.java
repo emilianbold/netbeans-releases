@@ -372,7 +372,7 @@ public final class FileObjectFactory {
                         exist = touchExists(file, realExists);
                         if (!exist) {
                             //parent is exception must be issued even if not valid
-                            invalidateSubtree(retval);
+                            invalidateSubtree(retval, false, false);
                         }
                     }
                     assert checkCacheState(exist, file, caller);
@@ -426,14 +426,21 @@ public final class FileObjectFactory {
         }
     }
 
-    void invalidateSubtree(BaseFileObj root) {
+    void invalidateSubtree(BaseFileObj root, boolean fire, boolean expected) {
+        List<BaseFileObj> notify = fire ? new ArrayList<BaseFileObj>() : Collections.<BaseFileObj>emptyList();
         synchronized (allIBaseFileObjects) {
             for (FileNaming fn : NamingFactory.findSubTree(root.getFileName())) {
                 BaseFileObj cached = getCachedOnly(fn.getFile());
-                if (cached != null) {
-                    cached.setValid(false);
+                if (cached != null && cached.isValid()) {
+                    cached.invalidateFO(false, expected, false);
+                    if (fire) {
+                        notify.add(cached);
+                    }
                 }
             }
+        }
+        for (BaseFileObj fo : notify) {
+            fo.notifyDeleted(expected);
         }
     }
     

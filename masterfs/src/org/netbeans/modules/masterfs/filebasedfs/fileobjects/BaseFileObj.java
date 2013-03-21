@@ -837,7 +837,7 @@ public abstract class BaseFileObj extends FileObject {
                     final boolean isDir = file.isDirectory();
                     final boolean isFile = file.isFile();
                     if (isDir == isFile || isFolder() != isDir || isData() != isFile) {
-                        invalidateFO(fire, expected);
+                        invalidateFO(fire, expected, true);
                     }
                 } else if (isData()) {
                     refreshExistingParent(expected, fire);
@@ -851,11 +851,11 @@ public abstract class BaseFileObj extends FileObject {
     void refreshExistingParent(final boolean expected, boolean fire) {
         boolean validityFlag = FileChangedManager.getInstance().exists(getFileName().getFile());
         if (!validityFlag) {
-            invalidateFO(fire, expected);
+            invalidateFO(fire, expected, true);
         } 
     }
 
-    private void invalidateFO(boolean fire, final boolean expected) {
+    final void invalidateFO(boolean fire, final boolean expected, boolean createNewFN) {
         //fileobject is invalidated
         FolderObj parent = getExistingParent();
         if (parent != null) {
@@ -873,11 +873,17 @@ public abstract class BaseFileObj extends FileObject {
             }
         }
         setValid(false);
-        FileNaming newFN = NamingFactory.fromFile(getFileName().getParent(), getFileName().getFile(), true);
-        if (fire) {
-            getProvidedExtensions().deletedExternally(this);
-            fireFileDeletedEvent(expected);
+        if (createNewFN) {
+            NamingFactory.fromFile(getFileName().getParent(), getFileName().getFile(), true);
         }
+        if (fire) {
+            notifyDeleted(expected);
+        }
+    }
+    
+    final void notifyDeleted(final boolean expected) {
+        getProvidedExtensions().deletedExternally(this);
+        fireFileDeletedEvent(expected);
     }
 
     private void updateFileName(FileNaming oldName, FileNaming oldRoot, FileNaming newRoot) {
@@ -898,7 +904,7 @@ public abstract class BaseFileObj extends FileObject {
         
         afterRename();
     }
-    
+
 
     //TODO: attributes written by VCS must be readable by FileBaseFS and vice versa  
 /**
