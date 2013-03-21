@@ -107,11 +107,6 @@ public final class Setup extends AbstractDiffSetup {
     
     private final File      baseFile;
 
-    /**
-     * Name of the file's property if the setup represents a property diff setup, null otherwise.
-     */
-    private final String    propertyName;
-
     private final HgRevision    firstRevision;
     private final HgRevision    secondRevision;
     private final FileInformation info;
@@ -126,7 +121,6 @@ public final class Setup extends AbstractDiffSetup {
 
     public Setup(File baseFile, String propertyName, int type) {
         this.baseFile = baseFile;
-        this.propertyName = propertyName;
         info = Mercurial.getInstance().getFileStatusCache().getStatus(baseFile);
         int status = info.getStatus();
         FileStatus fileStatus = info.getStatus(null);
@@ -221,7 +215,6 @@ public final class Setup extends AbstractDiffSetup {
      */
     public Setup(File baseFile, HgRevision firstRevision, HgRevision secondRevision, FileInformation info, final boolean forceNonEditable) {
         this.baseFile = baseFile;
-        this.propertyName = null;
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
         this.info = info;
@@ -238,10 +231,6 @@ public final class Setup extends AbstractDiffSetup {
                 return !forceNonEditable && super.isEditable();
             }
         };
-    }
-
-    public String getPropertyName() {
-        return propertyName;
     }
 
     public File getBaseFile() {
