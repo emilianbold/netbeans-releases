@@ -115,6 +115,25 @@ public class LexerOperatorsTest extends GroovyTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.MEMBER_POINTER, ".&");
     }
     
+    public void testSpreadOperatorOnMap() {
+        TokenSequence<GroovyTokenId> ts = createTokenSequenceFor("foo(1:\"a\", *:x)");
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.IDENTIFIER, "foo");
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.LPAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.NUM_INT, "1");
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.COLON, ":");
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.STRING_LITERAL, "\"a\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.COMMA, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.WHITESPACE, " ");
+        
+        // Not sure why Star + Colon, I would expected Spread_Map_Arg token instead
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.STAR, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.COLON, ":");
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, GroovyTokenId.RPAREN, ")");
+    }
+    
     public void testJavaFieldOverrideOperator() {
         TokenSequence<GroovyTokenId> ts = createTokenSequenceFor("abc.@");
         

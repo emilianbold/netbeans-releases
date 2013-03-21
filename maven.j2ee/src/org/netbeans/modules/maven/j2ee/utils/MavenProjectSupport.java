@@ -414,7 +414,11 @@ public class MavenProjectSupport {
     }
     
     private static void setSettings(Project project, String key, String value, boolean shared) {
-        getPreferences(project, shared).put(key, value);
+        if (value != null) {
+            getPreferences(project, shared).put(key, value);
+        } else {
+            getPreferences(project, shared).remove(key);
+        }
     }
     
     /**
