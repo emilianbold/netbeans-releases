@@ -1635,8 +1635,8 @@ PIPE            : '|'       ;
 CP_EQ           : '=='       ;
 CP_NOT_EQ       : '!='       ;
 LESS            : '<'       ;
-GREATER_OR_EQ   : '>='      ;
-LESS_OR_EQ      : '=<'      ;
+GREATER_OR_EQ   : '>=' | '=>'; //a weird operator variant supported by SASS
+LESS_OR_EQ      : '=<' | '<='; //a weird operator variant supported by SASS
 LESS_WHEN       : 'WHEN'    ;
 LESS_AND        : '&'     ;
 LESS_DOTS       : '...';

@@ -1185,4 +1185,11 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    @return color-offset($bg-color, $contrast, $tmpmode, $inverse: true);\n"
                 + "}");
     }
+    
+    public void testWeirdControlBlockOperator() {
+        assertParses("@if $right =< 0 {}");
+        assertParses("@if $right <= 0 {}");
+        assertParses("@if $right >= 0 {}");
+        assertParses("@if $right => 0 {}");
+    }
 }

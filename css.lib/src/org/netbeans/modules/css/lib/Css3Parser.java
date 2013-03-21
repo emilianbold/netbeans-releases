@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-03-21 13:48:08
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-03-21 13:54:30
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -205,40 +205,39 @@ public class Css3Parser extends DebugParser {
     // delegators
 
     public static final String[] ruleNames = new String[] {
-        "invalidRule", "declarations", "sass_function_return", "sass_while", 
-        "functionName", "synpred1_Css3", "sass_each_list", "synpred12_Css3", 
-        "sass_control_block", "sass_extend_only_selector", "cp_variable", 
-        "synpred18_Css3", "unaryOperator", "synpred3_Css3", "moz_document_function", 
-        "less_fn_name", "elementName", "synpred2_Css3", "syncTo_RBRACE", 
-        "sass_interpolation_expression_var", "synpred7_Css3", "declaration", 
-        "sass_content", "typeSelector", "synpred11_Css3", "cssId", "synpred8_Css3", 
-        "cp_mixin_call_args", "cp_mixin_name", "imports", "fnAttributeName", 
-        "operator", "sass_extend", "margin", "syncTo_SEMI", "prio", "mediaQueryOperator", 
-        "less_function_in_condition", "mediaQueryList", "synpred19_Css3", 
-        "margin_sym", "generic_at_rule", "rule", "less_condition", "esPred", 
-        "webkitKeyframeSelectors", "sass_for", "sass_control_expression", 
-        "selector", "less_condition_operator", "fnAttributeValue", "mediaExpression", 
-        "expressionPredicate", "cp_mixin_call", "sass_mq_interpolation_expression", 
-        "slAttributeName", "synpred15_Css3", "sass_debug", "sass_each", 
-        "synpred14_Css3", "simpleSelectorSequence", "cp_additionExp", "body", 
-        "cp_term", "importItem", "slAttribute", "cp_mixin_declaration", 
-        "cp_compare_expr", "webkitKeyframesBlock", "sass_declaration_interpolation_expression", 
-        "page", "cp_multiplyExp", "slAttributeValue", "syncToFollow", "sass_else", 
-        "hexColor", "vendorAtRule", "cp_args_list", "selectorsGroup", "namespacePrefixName", 
-        "pseudoPage", "expression", "synpred10_Css3", "combinator", "cp_mixin_call_arg", 
-        "synpred16_Css3", "propertyValue", "sass_control_expression_condition", 
-        "cp_variable_declaration", "atRuleId", "mediaQuery", "ws", "synpred21_Css3", 
-        "sass_selector_interpolation_expression", "property", "synpred22_Css3", 
-        "moz_document", "function", "sass_declaration_property_value_interpolation_expression", 
-        "charSet", "styleSheet", "pseudo", "fnAttribute", "term", "sass_function_declaration", 
-        "counterStyle", "synpred5_Css3", "cp_atomExp", "synpred13_Css3", 
-        "sass_nested_properties", "namespaces", "namespacePrefix", "namespace", 
-        "synpred9_Css3", "charSetValue", "mediaType", "synpred20_Css3", 
-        "cp_compare_expr_atom", "elementSubsequent", "bodyItem", "cp_variable_value", 
-        "synpred17_Css3", "webkitKeyframes", "cp_expression", "mediaFeature", 
-        "syncToDeclarationsRule", "less_mixin_guarded", "sass_function_name", 
-        "media", "synpred4_Css3", "sass_if", "cp_arg", "sass_control", "cssClass", 
-        "synpred6_Css3", "resourceIdentifier", "fontFace"
+        "invalidRule", "synpred17_Css3", "cssClass", "sass_content", "synpred21_Css3", 
+        "synpred9_Css3", "rule", "counterStyle", "slAttributeName", "property", 
+        "sass_extend_only_selector", "generic_at_rule", "sass_interpolation_expression_var", 
+        "fontFace", "declaration", "cp_additionExp", "charSetValue", "slAttribute", 
+        "mediaQueryOperator", "synpred6_Css3", "fnAttributeName", "unaryOperator", 
+        "importItem", "mediaType", "cp_mixin_declaration", "media", "moz_document_function", 
+        "cp_term", "operator", "mediaExpression", "cp_mixin_name", "styleSheet", 
+        "mediaFeature", "cp_compare_expr_atom", "mediaQueryList", "hexColor", 
+        "ws", "cp_compare_expr", "cp_arg", "sass_function_return", "resourceIdentifier", 
+        "sass_control", "synpred19_Css3", "moz_document", "syncToDeclarationsRule", 
+        "cp_atomExp", "simpleSelectorSequence", "synpred14_Css3", "sass_control_block", 
+        "elementSubsequent", "less_fn_name", "syncTo_SEMI", "syncTo_RBRACE", 
+        "prio", "cp_mixin_call_args", "sass_mq_interpolation_expression", 
+        "synpred12_Css3", "typeSelector", "bodyItem", "synpred5_Css3", "sass_extend", 
+        "sass_for", "functionName", "synpred8_Css3", "synpred2_Css3", "namespace", 
+        "declarations", "atRuleId", "less_condition_operator", "synpred3_Css3", 
+        "sass_else", "charSet", "cp_mixin_call_arg", "sass_declaration_property_value_interpolation_expression", 
+        "less_mixin_guarded", "sass_control_expression", "elementName", 
+        "selector", "pseudoPage", "esPred", "sass_while", "synpred1_Css3", 
+        "cp_multiplyExp", "pseudo", "vendorAtRule", "webkitKeyframeSelectors", 
+        "sass_each_list", "less_function_in_condition", "syncToFollow", 
+        "cp_expression", "sass_selector_interpolation_expression", "cp_mixin_call", 
+        "synpred7_Css3", "sass_debug", "term", "synpred20_Css3", "propertyValue", 
+        "margin", "mediaQuery", "body", "slAttributeValue", "cssId", "margin_sym", 
+        "cp_variable_value", "sass_function_name", "imports", "sass_if", 
+        "page", "selectorsGroup", "cp_variable", "synpred13_Css3", "sass_control_expression_condition", 
+        "expressionPredicate", "cp_args_list", "namespacePrefixName", "sass_declaration_interpolation_expression", 
+        "sass_nested_properties", "synpred22_Css3", "combinator", "less_condition", 
+        "synpred10_Css3", "webkitKeyframes", "synpred15_Css3", "synpred11_Css3", 
+        "namespaces", "synpred4_Css3", "cp_variable_declaration", "expression", 
+        "fnAttribute", "synpred18_Css3", "function", "namespacePrefix", 
+        "webkitKeyframesBlock", "sass_function_declaration", "sass_each", 
+        "fnAttributeValue", "synpred16_Css3"
     };
     public static final boolean[] decisionCanBacktrack = new boolean[] {
         false, // invalid decision
@@ -19008,9 +19007,9 @@ public class Css3Parser extends DebugParser {
                         int index16_25 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (!(evalPredicate((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))),""))) ) {s = 33;}
+                        if ( (!(evalPredicate(((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")),""))) ) {s = 33;}
 
-                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 1;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))) ) {s = 1;}
 
                          
                         input.seek(index16_25);
