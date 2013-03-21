@@ -166,7 +166,7 @@ public class AnalysisOptionsPanel extends JPanel {
     @CheckForNull
     public String getCodeSnifferStandard() {
         if (!codeSnifferStandardComboBox.isEnabled()) {
-            // fetching standards or some error
+            // fetching standards
             return null;
         }
         return codeSnifferStandardsModel.getSelectedStandard();

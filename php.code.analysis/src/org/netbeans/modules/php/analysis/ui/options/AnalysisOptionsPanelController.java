@@ -88,10 +88,7 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
     @Override
     public void applyChanges() {
         getAnalysisOptions().setCodeSnifferPath(getAnalysisOptionsPanel().getCodeSnifferPath());
-        String codeSnifferStandard = getAnalysisOptionsPanel().getCodeSnifferStandard();
-        if (codeSnifferStandard != null) {
-            getAnalysisOptions().setCodeSnifferStandard(codeSnifferStandard);
-        }
+        getAnalysisOptions().setCodeSnifferStandard(getAnalysisOptionsPanel().getCodeSnifferStandard());
         getAnalysisOptions().setMessDetectorPath(getAnalysisOptionsPanel().getMessDetectorPath());
         getAnalysisOptions().setMessDetectorRuleSets(getAnalysisOptionsPanel().getMessDetectorRuleSets());
 
