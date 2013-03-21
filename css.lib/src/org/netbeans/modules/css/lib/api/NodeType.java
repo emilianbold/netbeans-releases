@@ -383,13 +383,13 @@ public enum NodeType {
     cp_mixin_call_args,
     cp_mixin_name,
     
-    scss_selector_interpolation_expression,
-    scss_declaration_interpolation_expression,
-    scss_mq_interpolation_expression,
+    sass_selector_interpolation_expression,
+    sass_declaration_interpolation_expression,
+    sass_mq_interpolation_expression,
     
-    scss_interpolation_expression_var,
+    sass_interpolation_expression_var,
     
-    scss_nested_properties,
+    sass_nested_properties,
     sass_extend,
     sass_extend_only_selector,
     sass_debug,
@@ -404,7 +404,7 @@ public enum NodeType {
     sass_control_block,
     sass_control_expression,
     
-    scss_declaration_property_value_interpolation_expression,
+    sass_declaration_property_value_interpolation_expression,
     
     sass_function_declaration,
     sass_function_name,

@@ -365,7 +365,7 @@ media
     : MEDIA_SYM ws? 
         
         (
-            ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> scss_mq_interpolation_expression ws? 
+            ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_mq_interpolation_expression ws? 
             |
             (mediaQueryList)=>mediaQueryList
         )
@@ -373,7 +373,7 @@ media
         LBRACE ws?
             ( 
                 //allow just semicolon closed declaration
-                (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
+                (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>declaration SEMI ws?
                 | {isScssSource()}? sass_extend ws?
                 | {isScssSource()}? sass_debug ws?
                 | {isScssSource()}? sass_control ws?
@@ -567,7 +567,7 @@ property
     (
         //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
         //(the IE allows also just ident as its content)
-        (~(HASH_SYMBOL|COLON)* HASH_SYMBOL LBRACE)=>scss_declaration_interpolation_expression
+        (~(HASH_SYMBOL|COLON)* HASH_SYMBOL LBRACE)=>sass_declaration_interpolation_expression
         | IDENT 
         | GEN 
         | {isCssPreprocessorSource()}? cp_variable
@@ -612,7 +612,7 @@ declarations
                 //we be still able to recover INSIDE the declaration
 		(~(LBRACE|SEMI|RBRACE|COLON)* COLON ~(SEMI|LBRACE|RBRACE)* SEMI)=>declaration SEMI ws?
 		|
-		(scss_nested_properties)=>scss_nested_properties ws?
+		(sass_nested_properties)=>sass_nested_properties ws?
 		|
                 (rule)=>rule ws?
                 |
@@ -640,7 +640,7 @@ declarations
 selectorsGroup
     :	
         // looking for #{, lookeahead exited by { (rule beginning)
-        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> scss_selector_interpolation_expression ws? 
+        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_selector_interpolation_expression ws? 
 	|
         selector (COMMA ws? selector)*
     ;
@@ -778,7 +778,7 @@ propertyValue
 	:
         //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
         //(the IE allows also just ident as its content)
-        (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>scss_declaration_property_value_interpolation_expression
+        (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>sass_declaration_property_value_interpolation_expression
         | (expressionPredicate)=>expression
         | 
         
@@ -1109,35 +1109,35 @@ less_condition_operator
 //why there're two almost same selector_interpolation_expression-s?
 //the problem is that the one for selector can contain COLON inside the expression
 //whereas the later cann't. 
-scss_selector_interpolation_expression
+sass_selector_interpolation_expression
     :
         ( 
-            scss_interpolation_expression_var
+            sass_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA)
         )
         ( 
             ws?
             (
-                scss_interpolation_expression_var
+                sass_interpolation_expression_var
                 |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA)
             )
         )*
 
     ;
     
-scss_declaration_interpolation_expression
+sass_declaration_interpolation_expression
     :
         ( 
-            scss_interpolation_expression_var
+            sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
         )
         ( 
             ws?
             (
-                scss_interpolation_expression_var
+                sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
             )
@@ -1145,17 +1145,17 @@ scss_declaration_interpolation_expression
 
     ;
 
-scss_declaration_property_value_interpolation_expression
+sass_declaration_property_value_interpolation_expression
     :
         ( 
-            scss_interpolation_expression_var
+            sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
         )
         ( 
             ws?
             (
-                scss_interpolation_expression_var
+                sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
             )
@@ -1163,17 +1163,17 @@ scss_declaration_property_value_interpolation_expression
 
     ;
     
-scss_mq_interpolation_expression
+sass_mq_interpolation_expression
     :
         ( 
-            scss_interpolation_expression_var
+            sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
         )
         ( 
             ws?
             (
-                scss_interpolation_expression_var
+                sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
             )
@@ -1181,7 +1181,7 @@ scss_mq_interpolation_expression
 
     ;
     
-scss_interpolation_expression_var
+sass_interpolation_expression_var
     :
         HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition | IDENT ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
     ;
@@ -1204,7 +1204,7 @@ scss_interpolation_expression_var
 //    weight: bold;
 //  }
 //}
-scss_nested_properties
+sass_nested_properties
     :
     property COLON ws? propertyValue? LBRACE ws? syncToFollow declarations RBRACE
     ;

@@ -1171,4 +1171,8 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testImportInDeclarations() {
         assertParses(".clz { @import \"hello\"; }");
     }
+    
+    public void testCommaInSelectorInterpolationExpression() {
+        assertParses(".#{$prefix}sg,.#{$prefix}ag .#{$prefix}xx { }");
+    }
 }
