@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.php.api.phpmodule;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+
 /**
  * Instance of this class can be found in global lookup.
  * <p>
@@ -58,6 +61,7 @@ public interface PhpOptions {
      * @return the PHP interpreter file path or <code>null</code> if none is found.
      * @see PhpInterpreter#getDefault()
      */
+    @CheckForNull
     String getPhpInterpreter();
 
     /**
@@ -65,6 +69,7 @@ public interface PhpOptions {
      * @return debugger session ID
      * @since 2.12
      */
+    @NonNull
     String getDebuggerSessionId();
 
 }

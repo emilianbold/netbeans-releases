@@ -43,6 +43,7 @@ package org.netbeans.modules.php.api.validation;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.util.Parameters;
 
 /**
  * Validation result. This class can used by miscellaneous validators
@@ -71,8 +72,21 @@ public final class ValidationResult {
     }
 
     /**
+     * Check whether there are no errors and no warnings present.
+     * @return {@code true} if the validation result contains no errors and no warnings
+     * @see #hasErrors()
+     * @see #hasWarnings()
+     * @since 2.16
+     */
+    public boolean isFaultless() {
+        return !hasErrors()
+                && !hasWarnings();
+    }
+
+    /**
      * Check whether there are some errors present.
      * @return {@code true} if the validation result contains any error
+     * @see #isFaultless()
      */
     public boolean hasErrors() {
         return !errors.isEmpty();
@@ -89,6 +103,7 @@ public final class ValidationResult {
     /**
      * Check whether there are some warnings present.
      * @return {@code true} if the validation result contains any warning
+     * @see #isFaultless()
      */
     public boolean hasWarnings() {
         return !warnings.isEmpty();
@@ -108,6 +123,7 @@ public final class ValidationResult {
      * @param error error to be added
      */
     public void addError(Message error) {
+        Parameters.notNull("error", error); // NOI18N
         errors.add(error);
     }
 
@@ -116,6 +132,7 @@ public final class ValidationResult {
      * @param warning  warning to be added
      */
     public void addWarning(Message warning) {
+        Parameters.notNull("warning", warning); // NOI18N
         warnings.add(warning);
     }
 
@@ -127,6 +144,7 @@ public final class ValidationResult {
      * @param otherResult validation result to be merged to this one
      */
     public void merge(ValidationResult otherResult) {
+        Parameters.notNull("otherResult", otherResult); // NOI18N
         errors.addAll(otherResult.errors);
         warnings.addAll(otherResult.warnings);
     }
@@ -148,6 +166,8 @@ public final class ValidationResult {
          * @param message message itself, e.g. "Invalid directory specified."
          */
         public Message(String source, String message) {
+            Parameters.notNull("source", source); // NOI18N
+            Parameters.notNull("message", message); // NOI18N
             this.source = source;
             this.message = message;
         }
