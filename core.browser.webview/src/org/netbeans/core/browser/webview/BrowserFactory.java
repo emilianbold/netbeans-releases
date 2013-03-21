@@ -131,4 +131,9 @@ public class BrowserFactory implements HtmlBrowser.Factory, EnhancedBrowserFacto
     public String getDisplayName() {
         return null;
     }
+
+    @Override
+    public String getId() {
+        return null;
+    }
 }

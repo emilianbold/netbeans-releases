@@ -361,9 +361,11 @@ public final class WebBrowsers {
                 continue;
             }
             EnhancedBrowserFactory fact = (EnhancedBrowserFactory)f;
-            // TODO: consider whether below solution is OK or whether we need
-            //       to enhance the SPI with getID() method:
-            String browserId = fact.getBrowserFamilyId().toString();
+            String browserId = fact.getId();
+            if (browserId == null) {
+                // fallback:
+                browserId = fact.getBrowserFamilyId().toString();
+            }
             browsers.add(
                 new WebBrowserFactoryDescriptor(
                     browserId,

@@ -70,5 +70,13 @@ public interface EnhancedBrowserFactory {
      * used instead)
      */
     String getDisplayName();
-    
+
+    /**
+     * An ID which uniquely identifies this browser and can be persisted for
+     * future references to this browser.
+     * @return can be null (in which case browser instance is expected
+     * to be registered as file in default filesystem and its Lookup.Item.getId
+     * is used instead.)
+     */
+    String getId();
 }
