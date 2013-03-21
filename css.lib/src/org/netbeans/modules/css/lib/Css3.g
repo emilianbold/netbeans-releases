@@ -1249,9 +1249,20 @@ sass_control_expression
 
 sass_control_expression_condition
     :
-    (NOT ws?)? cp_expression (( CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
+//    (NOT ws?)? cp_expression (( CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
+    (NOT ws?)? cp_compare_expr
     ;
 
+cp_compare_expr
+    :    cp_compare_expr_atom 
+         ( ( CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ ) ws? cp_compare_expr_atom )* 
+    ;
+
+cp_compare_expr_atom
+    :    (cp_expression)=>cp_expression
+    |    LPAREN ws? cp_compare_expr RPAREN ws?
+    ;
+    
 sass_for
     :
     SASS_FOR ws cp_variable ws IDENT /*from*/ ws cp_term IDENT /*to*/ ws cp_term sass_control_block

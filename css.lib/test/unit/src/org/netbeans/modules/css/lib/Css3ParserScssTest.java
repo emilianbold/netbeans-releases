@@ -1167,12 +1167,16 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     }
-    
+
     public void testImportInDeclarations() {
         assertParses(".clz { @import \"hello\"; }");
     }
-    
+
     public void testCommaInSelectorInterpolationExpression() {
         assertParses(".#{$prefix}sg,.#{$prefix}ag .#{$prefix}xx { }");
+    }
+
+    public void testIfCondition() {
+        assertParses(" @if ($mode == light) {}");
     }
 }
