@@ -104,12 +104,21 @@ public final class CodeSniffer {
      * @throws InvalidPhpExecutableException if Code Sniffer is not valid.
      */
     public static CodeSniffer getDefault() throws InvalidPhpExecutableException {
-        String codeSnifferPath = AnalysisOptions.getInstance().getCodeSnifferPath();
-        String error = validate(codeSnifferPath);
+        return getCustom(AnalysisOptions.getInstance().getCodeSnifferPath());
+    }
+
+    /**
+     * Get the custom, <b>valid only</b> Code Sniffer.
+     * @param path custom path
+     * @return the custom, <b>valid only</b> Code Sniffer.
+     * @throws InvalidPhpExecutableException if Code Sniffer is not valid.
+     */
+    public static CodeSniffer getCustom(String path) throws InvalidPhpExecutableException {
+        String error = validate(path);
         if (error != null) {
             throw new InvalidPhpExecutableException(error);
         }
-        return new CodeSniffer(codeSnifferPath);
+        return new CodeSniffer(path);
     }
 
     @NbBundle.Messages("CodeSniffer.script.label=Code sniffer")
