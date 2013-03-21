@@ -66,18 +66,18 @@ import org.openide.util.Parameters;
 
 /**
  * JButton with a small arrow that displays popup menu when clicked.
- * 
+ *
  * @author S. Aubrecht
  * @since 6.11
  */
 class DropDownButton extends JButton {
-    
+
     private boolean mouseInButton = false;
     private boolean mouseInArrowArea = false;
-    
+
     private Map<String,Icon> regIcons = new HashMap<String,Icon>( 5 );
     private Map<String,Icon> arrowIcons = new HashMap<String,Icon>( 5 );
-    
+
     private static final String ICON_NORMAL = "normal"; //NOI18N
     private static final String ICON_PRESSED = "pressed"; //NOI18N
     private static final String ICON_ROLLOVER = "rollover"; //NOI18N
@@ -85,32 +85,30 @@ class DropDownButton extends JButton {
     private static final String ICON_SELECTED = "selected"; //NOI18N
     private static final String ICON_DISABLED = "disabled"; //NOI18N
     private static final String ICON_DISABLED_SELECTED = "disabledSelected"; //NOI18N
-    
+
     private static final String ICON_ROLLOVER_LINE = "rolloverLine"; //NOI18N
     private static final String ICON_ROLLOVER_SELECTED_LINE = "rolloverSelectedLine"; //NOI18N
 
     private PopupMenuListener menuListener;
-    private boolean arrowHasSeparateState;
-    
+
     /** Creates a new instance of MenuToggleButton */
-    public DropDownButton( Icon icon, JPopupMenu popup, boolean arrowHasSeparateState) {
+    public DropDownButton( Icon icon, JPopupMenu popup ) {
         Parameters.notNull("icon", icon); //NOI18N
         assert null != icon;
-        this.arrowHasSeparateState = arrowHasSeparateState;
-        
+
         putClientProperty( DropDownButtonFactory.PROP_DROP_DOWN_MENU, popup );
-        
+
         setIcon( icon );
         setDisabledIcon(ImageUtilities.createDisabledIcon(icon));
-        
+
         resetIcons();
-        
+
         addPropertyChangeListener(  DropDownButtonFactory.PROP_DROP_DOWN_MENU,new PropertyChangeListener() {
             public void propertyChange( PropertyChangeEvent e ) {
                 resetIcons();
             }
         });
-        
+
         addMouseMotionListener( new MouseMotionAdapter() {
             @Override
             public void mouseMoved( MouseEvent e ) {
@@ -120,22 +118,18 @@ class DropDownButton extends JButton {
                 }
             }
         });
-        
+
         addMouseListener( new MouseAdapter() {
             private boolean popupMenuOperation = false;
-            
+
             @Override
             public void mousePressed( MouseEvent e ) {
-                if (!isEnabled()) { // when button is disabled no popup should be shown
-                    return;
-                }
                 popupMenuOperation = false;
                 JPopupMenu menu = getPopupMenu();
                 if ( menu != null && getModel() instanceof Model ) {
                     Model model = (Model) getModel();
                     if ( !model._isPressed() ) {
-                        if( (isInArrowArea( e.getPoint() ) || !DropDownButton.this.arrowHasSeparateState)
-                                && menu.getComponentCount() > 0 ) {
+                        if( isInArrowArea( e.getPoint() ) && menu.getComponentCount() > 0 ) {
                             model._press();
                             menu.addPopupMenuListener( getMenuListener() );
                             menu.show( DropDownButton.this, 0, getHeight() );
@@ -177,10 +171,10 @@ class DropDownButton extends JButton {
                 }
             }
         });
-        
+
         setModel( new Model() );
     }
-    
+
     private PopupMenuListener getMenuListener() {
         if( null == menuListener ) {
             menuListener = new PopupMenuListener() {
@@ -206,42 +200,42 @@ class DropDownButton extends JButton {
         }
         return menuListener;
     }
-        
+
     private void updateRollover( Icon rollover, Icon rolloverSelected ) {
         super.setRolloverIcon( rollover );
         super.setRolloverSelectedIcon( rolloverSelected );
     }
-    
+
     private void resetIcons() {
         Icon icon = regIcons.get( ICON_NORMAL );
         if( null != icon )
             setIcon( icon );
-        
+
         icon = regIcons.get( ICON_PRESSED );
         if( null != icon )
             setPressedIcon( icon );
-        
+
         icon = regIcons.get( ICON_ROLLOVER );
         if( null != icon )
             setRolloverIcon( icon );
-        
+
         icon = regIcons.get( ICON_ROLLOVER_SELECTED );
         if( null != icon )
             setRolloverSelectedIcon( icon );
-        
+
         icon = regIcons.get( ICON_SELECTED );
         if( null != icon )
             setSelectedIcon( icon );
-        
+
         icon = regIcons.get( ICON_DISABLED );
         if( null != icon )
             setDisabledIcon( icon );
-        
+
         icon = regIcons.get( ICON_DISABLED_SELECTED );
         if( null != icon )
             setDisabledSelectedIcon( icon );
     }
-    
+
     private Icon _getRolloverIcon() {
         Icon icon = null;
         icon = arrowIcons.get( mouseInArrowArea ? ICON_ROLLOVER : ICON_ROLLOVER_LINE );
@@ -249,12 +243,12 @@ class DropDownButton extends JButton {
             Icon orig = regIcons.get( ICON_ROLLOVER );
             if( null == orig )
                 orig = regIcons.get( ICON_NORMAL );
-            icon = new IconWithArrow( orig, arrowHasSeparateState ? !mouseInArrowArea : false );
+            icon = new IconWithArrow( orig, !mouseInArrowArea );
             arrowIcons.put( mouseInArrowArea ? ICON_ROLLOVER : ICON_ROLLOVER_LINE, icon );
         }
         return icon;
     }
-    
+
     private Icon _getRolloverSelectedIcon() {
         Icon icon = null;
         icon = arrowIcons.get( mouseInArrowArea ? ICON_ROLLOVER_SELECTED : ICON_ROLLOVER_SELECTED_LINE );
@@ -264,12 +258,12 @@ class DropDownButton extends JButton {
                 orig = regIcons.get( ICON_ROLLOVER );
             if( null == orig )
                 orig = regIcons.get( ICON_NORMAL );
-            icon = new IconWithArrow( orig, arrowHasSeparateState ? !mouseInArrowArea : false );
+            icon = new IconWithArrow( orig, !mouseInArrowArea );
             arrowIcons.put( mouseInArrowArea ? ICON_ROLLOVER_SELECTED : ICON_ROLLOVER_SELECTED_LINE, icon );
         }
         return icon;
     }
-    
+
     JPopupMenu getPopupMenu() {
         Object menu = getClientProperty( DropDownButtonFactory.PROP_DROP_DOWN_MENU );
         if( menu instanceof JPopupMenu ) {
@@ -277,11 +271,11 @@ class DropDownButton extends JButton {
         }
         return null;
     }
-    
+
     boolean hasPopupMenu() {
         return null != getPopupMenu();
     }
-    
+
     private boolean isInArrowArea( Point p ) {
         return p.getLocation().x >= getWidth() - IconWithArrow.getArrowAreaWidth() - getInsets().right;
     }
@@ -310,7 +304,7 @@ class DropDownButton extends JButton {
         }
         return arrow;
     }
-    
+
     @Override
     public void setPressedIcon(Icon icon) {
         Icon arrow = updateIcons( icon, ICON_PRESSED );
@@ -362,17 +356,17 @@ class DropDownButton extends JButton {
     public String getText() {
         return null;
     }
-    
+
     private class Model extends DefaultButtonModel {
         private boolean _pressed = false;
-        
+
         @Override
         public void setPressed(boolean b) {
             if( mouseInArrowArea || _pressed )
                 return;
             super.setPressed( b );
         }
-    
+
         public void _press() {
             if((isPressed()) || !isEnabled()) {
                 return;
@@ -383,7 +377,7 @@ class DropDownButton extends JButton {
             fireStateChanged();
             _pressed = true;
         }
-        
+
         public void _release() {
             _pressed = false;
             mouseInArrowArea = false;
@@ -396,7 +390,7 @@ class DropDownButton extends JButton {
         public boolean _isPressed() {
             return _pressed;
         }
-        
+
         @Override
         protected void fireStateChanged() {
             if( _pressed )
