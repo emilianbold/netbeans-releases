@@ -73,6 +73,10 @@ public interface Constants {
      */
     public static final String HINT_JDK_PLATFORM = "netbeans.hint.jdkPlatform"; //NOI18N
 
+    /**
+     * maven property disabling whitelist processing in netbeans module projects.
+     */
+//    public static final String HINT_WHITELIST = "netbeans.hint.disable.whitelist";
     
     /**
      * Maven property that hints netbeans to handle the project as if it were of given packaging..
@@ -81,6 +85,11 @@ public interface Constants {
      * Meaningful values include: jar,war,ejb,ear,nbm
      */ 
     public static final String HINT_PACKAGING = "netbeans.hint.packaging"; //NOI18N
+    
+    /**
+     * allows to customize project's display name. The global equivalent is $userhome/Preferences/org/netbeans/modules/maven.properties' property of project.displayName
+     */
+    public static final String HINT_DISPLAY_NAME = "netbeans.hint.displayName";
     
     /**
      * apache maven default groupid for maven plugins. 

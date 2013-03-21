@@ -188,8 +188,8 @@ public class BugzillaQuery {
                     archivedIssues.clear();
                     if(isSaved()) {
                         if(!wasRun() && !issues.isEmpty()) {
-                                Bugzilla.LOG.log(Level.WARNING, "query {0} supposed to be run for the first time yet already contains issues.", getDisplayName()); // NOI18N
-                                assert false;
+                            Bugzilla.LOG.log(Level.WARNING, "query {0} supposed to be run for the first time yet already contains issues.", getDisplayName()); // NOI18N
+                            assert false;
                         }
                         // read the stored state ...
                         queryIssues.addAll(repository.getIssueCache().readQueryIssues(getStoredQueryName()));

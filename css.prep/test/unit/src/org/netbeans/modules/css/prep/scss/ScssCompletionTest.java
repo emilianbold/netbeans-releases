@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.prep.scss;
 
+import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
+import org.netbeans.modules.css.prep.model.CPModel;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -55,8 +57,25 @@ public class ScssCompletionTest extends CssModuleTestBase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        super.setUp(); 
+        CPModel.topLevelSnapshotMimetype = getTopLevelSnapshotMimetype();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown(); 
+        CPModel.topLevelSnapshotMimetype = null;
+    }
+    
+    @Override
     protected String getTopLevelSnapshotMimetype() {
         return "text/scss";
+    }
+
+    @Override
+    protected String getCompletionItemText(CompletionProposal cp) {
+        return cp.getInsertPrefix();
     }
     
     public void testVarCompletionInSimplePropertyValue() throws ParseException {
@@ -90,6 +109,21 @@ public class ScssCompletionTest extends CssModuleTestBase {
 //        checkCC("$var: 1;  .clz { $foo: $v| }", arr("$var", "$foo"), Match.CONTAINS);
         checkCC("$var: 1;  .clz { $foo: $v| }", arr("$var"), Match.CONTAINS);
         
+    }
+    
+    public void testKeywordsCompletion() throws ParseException {
+        checkCC("@| ", arr("@mixin"), Match.CONTAINS);
+        checkCC("@mix| ", arr("@mixin"), Match.EXACT);
+    }
+    
+    public void testContentKeywordsCompletion() throws ParseException {
+        checkCC("@| ", arr("@content"), Match.CONTAINS);
+        checkCC("@cont| ", arr("@content"), Match.EXACT);
+    }
+    
+    public void testMixinsCompletion() throws ParseException {
+        checkCC("@mixin mymixin() {}\n @include | ", arr("mymixin"), Match.CONTAINS);
+        checkCC("@mixin mymixin() {}\n @include mymi| ", arr("mymixin"), Match.EXACT);
     }
     
 }

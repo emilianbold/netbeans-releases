@@ -71,7 +71,11 @@ class HudsonFolderNode extends AbstractNode {
     HudsonFolderNode(HudsonFolder folder) {
         super(Children.create(new HudsonFolderChildren(folder), true), Lookups.singleton(folder));
         this.folder = folder;
-        setName(folder.getName());
+        String name = folder.getName();
+        setName(name);
+        setDisplayName(!name.contains("/") ? name //NOI18N
+                : name.substring(name.lastIndexOf("/") + 1, //NOI18N
+                name.length()));
     }
 
     public @Override Image getIcon(int type) {

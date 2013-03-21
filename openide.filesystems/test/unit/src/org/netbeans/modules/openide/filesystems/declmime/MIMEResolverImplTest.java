@@ -250,7 +250,11 @@ public class MIMEResolverImplTest extends NbTestCase {
         Logger.getLogger(DefaultParser.class.getName()).addHandler(handler);
         MIMEResolver declarativeResolver = createResolver(resolversRoot.getFileObject(resolver));
         declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
-        assertFalse("Resolver " + resolver + "\nMessages:\n" + sb, failed.get() ^ fails);
+        if (fails) {
+            assertTrue("Resolver " + resolver + " should fail\nMessages:\n" + sb, failed.get());
+        } else {
+            assertFalse("Resolver " + resolver + " should succeed\nMessages:\n" + sb, failed.get());
+        }
     }
 
     public void testPatternElementValidityValid() throws Exception {

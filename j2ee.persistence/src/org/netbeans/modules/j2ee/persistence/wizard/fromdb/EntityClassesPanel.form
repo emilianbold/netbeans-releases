@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -34,7 +34,6 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="specifyNamesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="classNamesLabel" min="-2" max="-2" attributes="0"/>
@@ -44,30 +43,24 @@
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="spacerPanel" pref="428" max="32767" attributes="0"/>
+                  <Component id="spacerPanel" pref="458" max="32767" attributes="0"/>
                   <Component id="packageComboBox" alignment="0" pref="428" max="32767" attributes="2"/>
                   <Component id="locationComboBox" alignment="0" pref="428" max="32767" attributes="2"/>
                   <Component id="projectTextField" alignment="1" pref="428" max="32767" attributes="2"/>
                   <Component id="classNamesScrollPane" alignment="0" pref="428" max="32767" attributes="2"/>
               </Group>
           </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="generateJAXBCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="generateFinderMethodsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="createPUCheckbox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="cmpFieldsInInterfaceCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
           <Component id="createPUWarningLabel" alignment="0" pref="540" max="32767" attributes="0"/>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="specifyNamesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="generateJAXBCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="generateFinderMethodsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="createPUCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cmpFieldsInInterfaceCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -80,7 +73,7 @@
                   <Component id="classNamesScrollPane" pref="80" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="spacerPanel" min="-2" pref="24" max="-2" attributes="0"/>
+              <Component id="spacerPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="projectTextField" alignment="3" min="-2" max="-2" attributes="0"/>

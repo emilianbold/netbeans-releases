@@ -359,7 +359,7 @@ importItem
         IMPORT_SYM ws? resourceIdentifier ws? mediaQueryList SEMI
         |
         //multiple imports in one directive
-        {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier) mediaQueryList SEMI
+        {isScssSource()}? IMPORT_SYM ws? resourceIdentifier ws? (COMMA ws? resourceIdentifier)* mediaQueryList SEMI
     ;
 media
     : MEDIA_SYM ws? 
@@ -377,12 +377,17 @@ media
                 | {isScssSource()}? sass_extend ws?
                 | {isScssSource()}? sass_debug ws?
                 | {isScssSource()}? sass_control ws?
+                | {isScssSource()}? sass_content ws?
                 
                 | rule  ws?
                 | page  ws?
                 | fontFace  ws?
                 | vendorAtRule  ws?
-                | {isScssSource()}? media ws?
+                
+                //Just a partial hotfix for nested MQ
+                //complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
+                | media ws?
+//                | {isScssSource()}? media ws?
                 
             )*
          RBRACE
@@ -410,7 +415,7 @@ mediaExpression
     ;
  
 mediaFeature
- : IDENT
+ : IDENT | GEN | {isCssPreprocessorSource()}? cp_variable
  ;
  
  body	:	
@@ -419,25 +424,24 @@ mediaFeature
  
 bodyItem
     : 
-    	rule
+        //following combination of semantic and syntactic predicated doesn't work
+//        | {isCssPreprocessorSource()}? (cp_mixin_call)=>cp_mixin_call
+        (cp_mixin_call)=>cp_mixin_call
+    	| rule
         | media
         | page
         | counterStyle
         | fontFace
         | vendorAtRule
         | {isCssPreprocessorSource()}? cp_variable_declaration
-        | {isCssPreprocessorSource()}? cp_mixin_call
         | {isCssPreprocessorSource()}? importItem //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
         | {isScssSource()}? sass_debug
         | {isScssSource()}? sass_control
         | {isScssSource()}? sass_function_declaration
-    ;
-
-//    	catch[ RecognitionException rce] {
-//        reportError(rce);
-//        syncToRBRACE(0); //nesting aware, initial nest == 0
-//        input.consume(); //consume the RBRACE as well
-//        }
+    ; catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(NL)); 
+    }
     
 vendorAtRule
 : moz_document | webkitKeyframes | generic_at_rule;
@@ -575,9 +579,11 @@ property
     
 rule 
     :   ( 
-            ( {isCssPreprocessorSource()}? cp_mixin_declaration )
+             
+//            ( {isCssPreprocessorSource()}? (cp_mixin_declaration)=>cp_mixin_declaration )
+            (cp_mixin_declaration)=>cp_mixin_declaration 
             | 
-            ( selectorsGroup )
+            selectorsGroup 
         )
 //        LBRACE ws? syncToDeclarationsRule
         LBRACE ws? syncToFollow
@@ -594,6 +600,8 @@ rule
 declarations
     :
             (
+                (cp_variable_declaration)=>cp_variable_declaration ws?
+                |
                 //the DECLARATION rule needs to be before the RULE rule as the 
                 //syn.predicate for the RULE rule also accepts the declaration,
                 //(is less specific).
@@ -617,6 +625,12 @@ declarations
                 {isCssPreprocessorSource()}? media ws?
                 |
                 {isCssPreprocessorSource()}? cp_mixin_call ws?
+                |
+                {isScssSource()}? sass_content ws?
+                |
+                {isScssSource()}? sass_function_return ws? //not nice
+                |
+                {isScssSource()}? importItem ws?
                 |
                 (~SEMI* SEMI)=>syncTo_SEMI //doesn't work :-(
             )*
@@ -764,7 +778,7 @@ propertyValue
 	:
         //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
         //(the IE allows also just ident as its content)
-        (~(HASH_SYMBOL|SEMI)* HASH_SYMBOL LBRACE)=>scss_declaration_property_value_interpolation_expression
+        (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>scss_declaration_property_value_interpolation_expression
         | (expressionPredicate)=>expression
         | 
         
@@ -857,7 +871,9 @@ function
 	: 	functionName ws?
 		LPAREN ws?
 		(
-			expression
+                    {isCssPreprocessorSource()}? cp_variable_value
+                    |
+                    expression
 		| 
 		  	(
 				fnAttribute (COMMA ws? fnAttribute )*				
@@ -985,9 +1001,9 @@ cp_term
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_declaration
     :
-    {isLessSource()}? DOT cp_mixin_name ws? LPAREN cp_args_list? RPAREN ws? (less_mixin_guarded ws?)?
+    {isLessSource()}? DOT cp_mixin_name ws? LPAREN ws? cp_args_list? RPAREN ws? (less_mixin_guarded ws?)?
     |
-    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN cp_args_list? RPAREN ws?)?
+    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN ws? cp_args_list? RPAREN ws?)?
     ;
 
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
@@ -999,7 +1015,7 @@ cp_mixin_call
         |
         {isScssSource()}? SASS_INCLUDE ws cp_mixin_name
     )
-    (ws? LPAREN cp_mixin_call_args? RPAREN)? ws? SEMI
+    (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? ws? SEMI
     ;
         
 cp_mixin_name
@@ -1011,7 +1027,16 @@ cp_mixin_call_args
     : 
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    term ( (COMMA | SEMI) ws? term)*     
+    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*     
+    ;
+    
+cp_mixin_call_arg
+    :
+//    term
+    cp_arg
+    | cp_expression
+//    | term
+//    cp_arg | cp_expression /*term*/
     ;
 
 //.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
@@ -1027,7 +1052,7 @@ cp_args_list
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
 cp_arg
     :
-    cp_variable ( COLON ws? cp_expression )?
+    cp_variable ( ws? COLON ws? cp_expression )?
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {
@@ -1087,16 +1112,16 @@ less_condition_operator
 scss_selector_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            scss_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                scss_interpolation_expression_var
                 |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON)
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
             )
         )*
 
@@ -1105,14 +1130,14 @@ scss_selector_interpolation_expression
 scss_declaration_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            scss_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                scss_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
             )
@@ -1123,14 +1148,14 @@ scss_declaration_interpolation_expression
 scss_declaration_property_value_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            scss_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                scss_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
             )
@@ -1141,14 +1166,14 @@ scss_declaration_property_value_interpolation_expression
 scss_mq_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            scss_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                scss_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
             )
@@ -1158,7 +1183,7 @@ scss_mq_interpolation_expression
     
 scss_interpolation_expression_var
     :
-        HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
+        HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition | IDENT ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
     ;
     
 //SASS nested properties:
@@ -1206,12 +1231,25 @@ sass_control
 
 sass_if
     :
-    SASS_IF ws sass_control_expression sass_control_block
+    SASS_IF ws sass_control_expression sass_control_block (ws? sass_else)?
     ;
     
+sass_else
+    :
+    SASS_ELSE ws? sass_control_block 
+    |
+    SASS_ELSE ws? {"if".equalsIgnoreCase(input.LT(1).getText())}? IDENT /* if */ ws? sass_control_expression sass_control_block (ws? sass_else)?
+    ;
+
 sass_control_expression
     :
-    cp_expression (( CP_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
+    sass_control_expression_condition ( (OR | AND) ws? sass_control_expression_condition)*    
+
+    ;
+
+sass_control_expression_condition
+    :
+    (NOT ws?)? cp_expression (( CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
     ;
 
 sass_for
@@ -1242,8 +1280,10 @@ sass_control_block
 sass_function_declaration
     :
     //I assume there can be not only the return statement in the function block, 
-    //but so far haven't found any such example so assuming the simplier case
-    SASS_FUNCTION ws sass_function_name ws? LPAREN cp_args_list? RPAREN ws? LBRACE ws? sass_function_return ws? RBRACE
+    //but so far haven't found any such example so I put the declarations rule inside
+    //and added the sass_function_return into the declarations rule itself (not fully correct) 
+    //as the return should be allowed only from the sass function declaration
+    SASS_FUNCTION ws sass_function_name ws? LPAREN cp_args_list? RPAREN ws? LBRACE ws? declarations RBRACE
     ;
     
 sass_function_name
@@ -1255,6 +1295,12 @@ sass_function_return
     :
     SASS_RETURN ws cp_expression SEMI
     ;
+    
+sass_content
+    :
+    SASS_CONTENT ws? SEMI
+    ;
+
 //*** END OF LESS SYNTAX ***
 
 // ==============================================================
@@ -1579,6 +1625,7 @@ TILDE		: '~'       ;
 PIPE            : '|'       ;
 
 CP_EQ           : '=='       ;
+CP_NOT_EQ       : '!='       ;
 LESS            : '<'       ;
 GREATER_OR_EQ   : '>='      ;
 LESS_OR_EQ      : '=<'      ;
@@ -1608,6 +1655,7 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
 ONLY 		: 'ONLY';
 NOT		: 'NOT'; 
 AND		: 'AND';
+OR		: 'OR';
 
 // -------------
 // Identifier.  Identifier tokens pick up properties names and values
@@ -1651,12 +1699,15 @@ MOZ_DOCUMENT_SYM      : '@-MOZ-DOCUMENT';
 WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 
 //this generic at rule must be after the last of the specific at rule tokens
+SASS_CONTENT        : '@CONTENT';
 SASS_MIXIN          : '@MIXIN';
 SASS_INCLUDE        : '@INCLUDE';
 SASS_EXTEND         : '@EXTEND';
 SASS_DEBUG          : '@DEBUG';
 SASS_WARN           : '@WARN';
 SASS_IF             : '@IF';
+SASS_ELSE           : '@ELSE';
+//SASS_ELSEIF         : '@ELSE' WS? 'IF'; //@elseif, @else if, @else    if 
 SASS_FOR            : '@FOR';
 SASS_FUNCTION       : '@FUNCTION';
 SASS_RETURN         : '@RETURN';

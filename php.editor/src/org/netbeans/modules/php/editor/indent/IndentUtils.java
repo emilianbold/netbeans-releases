@@ -42,7 +42,12 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.ArrayUtilities;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
 /**
  * This class will be unnecessary when issue #192289 is fixed.
@@ -126,5 +131,67 @@ public final class IndentUtils {
         }
         ArrayUtilities.appendSpaces(sb, indent);
         return sb.toString();
+    }
+
+
+    /**
+     * This method count new indent ofr braces and parent
+     *
+     * @param doc
+     * @param offset - the original offset, where is cursor
+     * @param currentIndent - the indnet that should be modified
+     * @param previousIndent - indent of the line abot
+     * @return
+     */
+    public static int countIndent(BaseDocument doc, int offset, int previousIndent) {
+        int value = previousIndent;
+        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
+        if (ts != null) {
+            ts.move(offset);
+            if (!ts.movePrevious() || !ts.moveNext()) {
+                return previousIndent;
+            }
+            Token<? extends PHPTokenId> token = ts.token();
+            while (token.id() != PHPTokenId.PHP_CURLY_OPEN
+                    && token.id() != PHPTokenId.PHP_SEMICOLON
+                    && !(token.id() == PHPTokenId.PHP_TOKEN
+                    && ("(".equals(token.text())
+                    || "[".equals(token.text())))
+                    && ts.movePrevious()) {
+                token = ts.token();
+            }
+            if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                while (token.id() != PHPTokenId.PHP_CLASS
+                        && token.id() != PHPTokenId.PHP_FUNCTION
+                        && token.id() != PHPTokenId.PHP_IF
+                        && token.id() != PHPTokenId.PHP_ELSE
+                        && token.id() != PHPTokenId.PHP_ELSEIF
+                        && token.id() != PHPTokenId.PHP_FOR
+                        && token.id() != PHPTokenId.PHP_FOREACH
+                        && token.id() != PHPTokenId.PHP_WHILE
+                        && token.id() != PHPTokenId.PHP_DO
+                        && token.id() != PHPTokenId.PHP_SWITCH
+                        && ts.movePrevious()) {
+                    token = ts.token();
+                }
+                CodeStyle codeStyle = CodeStyle.get(doc);
+                CodeStyle.BracePlacement bracePlacement = codeStyle.getOtherBracePlacement();
+                if (token.id() == PHPTokenId.PHP_CLASS) {
+                    bracePlacement = codeStyle.getClassDeclBracePlacement();
+                } else if (token.id() == PHPTokenId.PHP_FUNCTION) {
+                    bracePlacement = codeStyle.getMethodDeclBracePlacement();
+                } else if (token.id() == PHPTokenId.PHP_IF || token.id() == PHPTokenId.PHP_ELSE || token.id() == PHPTokenId.PHP_ELSEIF) {
+                    bracePlacement = codeStyle.getIfBracePlacement();
+                } else if (token.id() == PHPTokenId.PHP_FOR || token.id() == PHPTokenId.PHP_FOREACH) {
+                    bracePlacement = codeStyle.getForBracePlacement();
+                } else if (token.id() == PHPTokenId.PHP_WHILE || token.id() == PHPTokenId.PHP_DO) {
+                    bracePlacement = codeStyle.getWhileBracePlacement();
+                } else if (token.id() == PHPTokenId.PHP_SWITCH) {
+                    bracePlacement = codeStyle.getSwitchBracePlacement();
+                }
+                value = bracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? previousIndent + codeStyle.getIndentSize() : previousIndent;
+            }
+        }
+        return value;
     }
 }

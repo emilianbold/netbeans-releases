@@ -67,6 +67,7 @@ import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.netbeans.modules.web.browser.api.Page;
+import org.netbeans.modules.web.common.api.DependentFileQuery;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -204,7 +205,9 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     private void update() {
         if (EventQueue.isDispatchThread()) {
             PageModel pageModel = PageInspectorImpl.getDefault().getPage();
-            if (pageModel != null && lastRelatedFileObject != null && lastRelatedFileObject.equals(inspectedFileObject)) {
+            if (pageModel != null && lastRelatedFileObject != null
+                    && inspectedFileObject != null
+                    && DependentFileQuery.isDependent(inspectedFileObject, lastRelatedFileObject)) {
                 removeAll();
                 PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
                 add(stylesView.getView(), BorderLayout.CENTER);

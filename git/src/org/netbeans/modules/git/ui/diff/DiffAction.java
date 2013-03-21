@@ -44,6 +44,7 @@ package org.netbeans.modules.git.ui.diff;
 
 import java.io.File;
 import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
@@ -57,6 +58,10 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.diff.DiffAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_DiffAction_Name")
+@NbBundle.Messages({
+    "LBL_DiffAction_Name=&Diff To Base",
+    "LBL_DiffAction_PopupName=Diff To Base"
+})
 public class DiffAction extends GitAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/diff.png"; //NOI18N
     
@@ -76,8 +81,12 @@ public class DiffAction extends GitAction {
     }
 
     public void diff (VCSContext context) {
+        diff(context, Revision.BASE, Revision.LOCAL);
+    }
+
+    public void diff (VCSContext context, Revision left, Revision right) {
         String contextName = Utils.getContextDisplayName(context);
-        MultiDiffPanelController controller = new MultiDiffPanelController(context);
+        MultiDiffPanelController controller = new MultiDiffPanelController(context, left, right);
         DiffTopComponent tc = new DiffTopComponent(controller);
         controller.setActions(tc);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); //NOI18N
@@ -85,7 +94,7 @@ public class DiffAction extends GitAction {
         tc.requestActive();
     }
 
-    public void diff (File file, String rev1, String rev2) {
+    public void diff (File file, Revision rev1, Revision rev2) {
         MultiDiffPanelController controller = new MultiDiffPanelController(file, rev1, rev2);
         DiffTopComponent tc = new DiffTopComponent(controller);
         controller.setActions(tc);

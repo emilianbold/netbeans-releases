@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
@@ -76,7 +77,7 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
         String[] parts = node.getValue().trim().split("\\s+", 3); //NOI18N
         if (parts.length == 1 || (parts.length > 0 && parts[0].trim().indexOf("(") > 0)) {
             // expect that the type is void
-            returnType = "void";
+            returnType = Type.VOID;
             String[] methodNames = parts[0].split("[(, ]", 2);
             if (methodNames.length > 0) {
                 methodName = methodNames[0];

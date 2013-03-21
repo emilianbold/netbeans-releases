@@ -90,7 +90,7 @@ public class HighlightingPanelController implements FontsColorsController{
         return getHighlightingPanel();
     }
 
-    private HighlightingPanel getHighlightingPanel() {
+    private synchronized HighlightingPanel getHighlightingPanel() {
         if (component == null) {
             component = new HighlightingPanel();
         }

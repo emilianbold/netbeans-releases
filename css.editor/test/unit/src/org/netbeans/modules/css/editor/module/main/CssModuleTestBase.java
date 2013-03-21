@@ -457,11 +457,15 @@ public class CssModuleTestBase extends CslTestBase {
     protected String[] arr(String... args) {
         return args;
     }
+    
+    protected String getCompletionItemText(CompletionProposal cp) {
+        return cp.getName();
+    }
 
     private void assertCompletionItemNames(String[] expected, CodeCompletionResult ccresult, Match type) {
         Collection<String> real = new ArrayList<String>();
         for (CompletionProposal ccp : ccresult.getItems()) {
-            real.add(ccp.getName());
+            real.add(getCompletionItemText(ccp));
         }
         Collection<String> exp = new ArrayList<String>(Arrays.asList(expected));
 

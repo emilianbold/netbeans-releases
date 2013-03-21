@@ -206,6 +206,7 @@ final class CreateFilesWorker {
                 }
             } finally {
                 countDownLatch.countDown();
+                Notificator.instance().flush();
             }
         }
         private boolean createProjectFilesIfNeedRun(NativeFileItem nativeFileItem){

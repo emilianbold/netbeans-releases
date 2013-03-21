@@ -44,10 +44,11 @@
 
 package org.netbeans.editor.ext.java;
 
-import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.spi.editor.fold.FoldManager;
+
+import static org.netbeans.editor.ext.java.Bundle.*;
+import org.openide.util.NbBundle;
 
 /**
  * Java fold maintainer creates and updates folds for java sources.
@@ -58,13 +59,23 @@ import org.netbeans.spi.editor.fold.FoldManager;
 
 public abstract class JavaFoldManager implements FoldManager {
 
-    public static final FoldType INITIAL_COMMENT_FOLD_TYPE = new FoldType("initial-comment"); // NOI18N
+    public static final FoldType INITIAL_COMMENT_FOLD_TYPE = FoldType.INITIAL_COMMENT; // NOI18N
 
-    public static final FoldType IMPORTS_FOLD_TYPE = new FoldType("imports"); // NOI18N
+    @NbBundle.Messages("FoldType_Imports=Imports")
+    public static final FoldType IMPORTS_FOLD_TYPE = FoldType.create("import", FoldType_Imports(), 
+	     new org.netbeans.api.editor.fold.FoldTemplate(0, 0, "...")); // NOI18N
     
-    public static final FoldType JAVADOC_FOLD_TYPE = new FoldType("javadoc"); // NOI18N
+    @NbBundle.Messages("FoldType_Javadoc=Javadoc Comments")
+    public static final FoldType JAVADOC_FOLD_TYPE = FoldType.DOCUMENTATION.derive("javadoc", FoldType_Javadoc(), 
+	     new org.netbeans.api.editor.fold.FoldTemplate(3, 2, "/**...*/")); // NOI18N
 
-    public static final FoldType CODE_BLOCK_FOLD_TYPE = new FoldType("code-block"); // NOI18N
+    @NbBundle.Messages("FoldType_Methods=Methods")
+    public static final FoldType CODE_BLOCK_FOLD_TYPE = FoldType.MEMBER.derive("method", FoldType_Methods(), 
+	     new org.netbeans.api.editor.fold.FoldTemplate(1, 1, "{...}")); // NOI18N
+    
+    @NbBundle.Messages("FoldType_InnerClasses=Inner Classes")
+    public static final FoldType INNERCLASS_TYPE = FoldType.NESTED.derive("innerclass", "Inner Classes", 
+	     new org.netbeans.api.editor.fold.FoldTemplate(1, 1, "{...}")); // NOI18N
     
     private static final String IMPORTS_FOLD_DESCRIPTION = "..."; // NOI18N
 
@@ -73,18 +84,26 @@ public abstract class JavaFoldManager implements FoldManager {
     private static final String JAVADOC_FOLD_DESCRIPTION = "/**...*/"; // NOI18N
     
     private static final String CODE_BLOCK_FOLD_DESCRIPTION = "{...}"; // NOI18N
-    
+
+    @Deprecated
     public static final FoldTemplate INITIAL_COMMENT_FOLD_TEMPLATE
         = new FoldTemplate(INITIAL_COMMENT_FOLD_TYPE, COMMENT_FOLD_DESCRIPTION, 2, 2);
 
+    @Deprecated
     public static final FoldTemplate IMPORTS_FOLD_TEMPLATE
         = new FoldTemplate(IMPORTS_FOLD_TYPE, IMPORTS_FOLD_DESCRIPTION, 0, 0);
 
+    @Deprecated
     public static final FoldTemplate JAVADOC_FOLD_TEMPLATE
         = new FoldTemplate(JAVADOC_FOLD_TYPE, JAVADOC_FOLD_DESCRIPTION, 3, 2);
 
+    @Deprecated
     public static final FoldTemplate CODE_BLOCK_FOLD_TEMPLATE
         = new FoldTemplate(CODE_BLOCK_FOLD_TYPE, CODE_BLOCK_FOLD_DESCRIPTION, 1, 1);
+
+    @Deprecated
+    public static final FoldTemplate INNER_CLASS_FOLD_TEMPLATE
+        = new FoldTemplate(INNERCLASS_TYPE, CODE_BLOCK_FOLD_DESCRIPTION, 1, 1);
 
     
     protected static final class FoldTemplate {

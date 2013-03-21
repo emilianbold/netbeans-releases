@@ -113,12 +113,12 @@ public final class CompositeFCS extends FontColorSettings {
             mimePath = mimePath.getPrefix(mimePath.size() - 1);
         }
 
-        MimePath[] allPaths = computeInheritedMimePaths(mimePath);
-        assert allPaths.length > 0 : "allPaths should always contain at least MimePath.EMPTY"; //NOI18N
+        List<MimePath> allPaths = mimePath.getIncludedPaths();
+        assert allPaths.size() > 0 : "allPaths should always contain at least MimePath.EMPTY"; //NOI18N
 
-        this.allFcsi = new FontColorSettingsImpl[allPaths.length];
-        for (int i = 0; i < allPaths.length; i++) {
-            allFcsi[i] = FontColorSettingsImpl.get(allPaths[i]);
+        this.allFcsi = new FontColorSettingsImpl[allPaths.size()];
+        for (int i = 0; i < allPaths.size(); i++) {
+            allFcsi[i] = FontColorSettingsImpl.get(allPaths.get(i));
         }
 
         this.profile = profile;
@@ -273,31 +273,6 @@ public final class CompositeFCS extends FontColorSettings {
         sb.append(this.toString());
 
         System.out.println(sb.toString());
-    }
-
-    private static MimePath[] computeInheritedMimePaths(MimePath mimePath) {
-        List<String> paths = null;
-        try {
-            Method m = MimePath.class.getDeclaredMethod("getInheritedPaths", String.class, String.class); //NOI18N
-            m.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            List<String> ret = (List<String>) m.invoke(mimePath, null, null);
-            paths = ret;
-        } catch (Exception e) {
-            LOG.log(Level.WARNING, "Can't call org.netbeans.api.editor.mimelookup.MimePath.getInheritedPaths method.", e); //NOI18N
-        }
-
-        if (paths != null) {
-            ArrayList<MimePath> mimePaths = new ArrayList<MimePath>(paths.size());
-
-            for (String path : paths) {
-                mimePaths.add(MimePath.parse(path));
-            }
-
-            return mimePaths.toArray(new MimePath[mimePaths.size()]);
-        } else {
-            return new MimePath[]{mimePath, MimePath.EMPTY};
-        }
     }
 
     private Map<?, ?> getRenderingHints() {

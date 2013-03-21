@@ -396,6 +396,7 @@ public enum NodeType {
     
     sass_control,
     sass_if,
+    sass_else,
     sass_for,
     sass_each,
     sass_each_list,
@@ -410,6 +411,12 @@ public enum NodeType {
     sass_function_return,
     
     cp_variable_value,
+    
+    sass_content,
+    
+    cp_mixin_call_arg,
+    
+    sass_control_expression_condition,
     
     
     ;

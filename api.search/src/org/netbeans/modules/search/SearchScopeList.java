@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.search;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,6 +53,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.netbeans.spi.search.SearchScopeDefinitionProvider;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 
 /**
  * List of search scopes currently (at the time of creation of this object)
@@ -155,7 +157,16 @@ public class SearchScopeList {
     private class ProxyChangeListener implements ChangeListener {
 
         @Override
-        public void stateChanged(ChangeEvent e) {
+        public void stateChanged(final ChangeEvent e) {
+            Mutex.EVENT.writeAccess(new Runnable() {
+                @Override
+                public void run() {
+                    notifyDelegates(e);
+                }
+            });
+        }
+
+        private void notifyDelegates(ChangeEvent e) {
             synchronized (changeListeners) {
                 for (ChangeListener changeListener : changeListeners) {
                     changeListener.stateChanged(e);

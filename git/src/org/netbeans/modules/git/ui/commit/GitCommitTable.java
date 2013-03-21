@@ -44,6 +44,7 @@ package org.netbeans.modules.git.ui.commit;
 
 import java.util.List;
 import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
@@ -54,7 +55,7 @@ import org.openide.util.Utilities;
  *
  * @author Tomas Stupka
  */
-public class GitCommitTable extends VCSCommitTable<GitFileNode> {
+public class GitCommitTable extends VCSCommitTable<GitLocalFileNode> {
 
     private String errroMessage;
     private boolean amend;
@@ -65,7 +66,7 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
     }
 
     public GitCommitTable (boolean editable, boolean allowEmpty) {
-        super(new VCSCommitTableModel<GitFileNode>(), editable);
+        super(new VCSCommitTableModel<GitLocalFileNode>(), editable);
         this.emptyAllowed = allowEmpty;
     }
 
@@ -73,14 +74,14 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
     @NbBundle.Messages("MSG_Warning_RenamedFiles=Some files were renamed only by changing the case in their names. "
             + "You should use a commandline client to commit this state, the NetBeans IDE cannot handle it properly.")
     public boolean containsCommitable() {
-        List<GitFileNode> list = getCommitFiles();
+        List<GitLocalFileNode> list = getCommitFiles();
         boolean ret = false;        
         errroMessage = null;
         boolean isEmpty = true;
         if (amend) {
             return true;
         }
-        for(GitFileNode fileNode : list) {                        
+        for (GitLocalFileNode fileNode : list) {                        
             
             VCSCommitOptions co = fileNode.getCommitOptions();
             if(co == VCSCommitOptions.EXCLUDE) {

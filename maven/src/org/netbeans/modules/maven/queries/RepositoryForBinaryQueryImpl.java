@@ -171,7 +171,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                                         classifier = end.substring(0, end.indexOf('.'));
                                     }
                                 }
-                                File srcs = new File(parent, start + (classifier != null ? ("-" + classifier) : "") + "-sources.jar"); //NOI18N
+                                File srcs = new File(parent, start + (classifier != null ? ("-" + ("tests".equals(classifier) ? "test" : classifier)) : "") + "-sources.jar"); //NOI18N
                                 SrcResult result = new SrcResult(groupId, artifact, version, classifier, FileUtil.getArchiveFile(url), srcs);
                                 srcCache.put(url, new WeakReference<SrcResult>(result));
                                 return result;
@@ -205,8 +205,8 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         }
 
         // Hack for Java EE jar docs which we ship with netbeans and which are not in any maven repository
-        if (binRoot.getPath().endsWith("/javax/javaee-api/7.0-b72/javaee-api-7.0-b72.jar")
-         || binRoot.getPath().endsWith("/javax/javaee-web-api/7.0-b72/javaee-web-api-7.0-b72.jar")) { //NOI18N
+        if (binRoot.getPath().endsWith("/javax/javaee-api/7.0-b78/javaee-api-7.0-b78.jar")
+         || binRoot.getPath().endsWith("/javax/javaee-web-api/7.0-b78/javaee-web-api-7.0-b78.jar")) { //NOI18N
             return new JavaEEJavadocResult();
         }
 
@@ -247,7 +247,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                                         classifier = end.substring(end.indexOf('.'));
                                     }
                                 }
-                                File javadoc = new File(parent, start + (classifier != null ? ("-" + classifier) : "") + "-javadoc.jar"); //NOI18N
+                                File javadoc = new File(parent, start + (classifier != null ? ("-" + ("tests".equals(classifier) ? "test" : classifier)) : "") + "-javadoc.jar"); //NOI18N
                                 JavadocResult result = new JavadocResult(groupId, artifact, version, classifier, binRoot, javadoc);
                                 javadocCache.put(url, new WeakReference<JavadocResult>(result));
                                 return result;

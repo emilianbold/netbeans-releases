@@ -104,7 +104,7 @@ public class FromDBTest extends CRUDTest {
             files.addAll(getFiles("controller")); //NOI18N
             files.addAll(getFiles("controller.exceptions")); //NOI18N
         }
-        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
+        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion()) || JavaEEVersion.JAVAEE7.equals(getJavaEEversion())) {
             assertEquals("Some files were not generated", 8, files.size()); //NOI18N
         } else {
             assertEquals("Some files were not generated", 18, files.size()); //NOI18N

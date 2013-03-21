@@ -113,16 +113,20 @@ public class IssueTest extends NbTestCase {
         APITestIssue apiIssue = getAPIIssue();
         Issue issue = getIssue();
         
-        assertFalse(apiIssue.wasRefreshed);
+        apiIssue.wasRefreshed = false;
         issue.refresh();
         assertTrue(apiIssue.wasRefreshed);
     }
     
-    public void testOpen() throws InterruptedException {
+    /**
+     * invoked from BugtrackingViewsTest
+     * @throws InterruptedException 
+     */
+    public void _testOpen() throws InterruptedException {
         APITestIssue apiIssue = getAPIIssue();
         Issue issue = getIssue();
         
-        assertFalse(apiIssue.wasOpened);
+        apiIssue.wasOpened = false;
         issue.open();
         assertOpened(apiIssue);
         
@@ -141,9 +145,8 @@ public class IssueTest extends NbTestCase {
         APITestIssue apiIssue = getAPIIssue();
         Issue issue = getIssue();
         
-        
-        assertFalse(apiIssue.wasClosedOnComment);
-        assertNull(apiIssue.addedComment);
+        apiIssue.wasClosedOnComment = false;
+        apiIssue.addedComment = null;
         
         String comment = "cmt";
         boolean refresh = true;
@@ -162,8 +165,8 @@ public class IssueTest extends NbTestCase {
         APITestIssue apiIssue = getAPIIssue();
         Issue issue = getIssue();
         
-        assertNull(apiIssue.attachedFile);
-        assertNull(apiIssue.attachedPatchDesc);
+        apiIssue.attachedFile = null;
+        apiIssue.attachedPatchDesc = null;
         
         String desc = "desc";
         File file = new File("somefile");

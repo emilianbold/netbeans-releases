@@ -2126,10 +2126,14 @@ public class HgCommand {
                 }
             } else {
                 // Perhaps the file has changed its name
-                String newRevision = Integer.toString(Integer.parseInt(revision)+1);
-                File prevFile = getPreviousName(repository, file, newRevision, tryHard);
-                if (prevFile != null) {
-                    doCat(repository, prevFile, outFile, revision, false, logger); //NOI18N
+                try {
+                    String newRevision = Integer.toString(Integer.parseInt(revision)+1);
+                    File prevFile = getPreviousName(repository, file, newRevision, tryHard);
+                    if (prevFile != null) {
+                        doCat(repository, prevFile, outFile, revision, false, logger); //NOI18N
+                    }
+                } catch (NumberFormatException ex) {
+                    // revision is not a number
                 }
             }
         }
@@ -3340,15 +3344,19 @@ public class HgCommand {
         }
     }
 
-    private static String getRelativePathFromStatusLine (String statusLine) {
+    private static String getRelativePathFromStatusLine (String statusLine, String repositoryPath) {
         String path = statusLine.substring(2);
+        if (Utilities.isWindows() && path.startsWith(repositoryPath)) {
+            path = path.substring(repositoryPath.length() + 1);
+        }
         return path;
     }
 
     private static File getFileFromStatusLine (String statusLine, File repository) {
         File file;
-        String path = getRelativePathFromStatusLine(statusLine);
-        if(Utilities.isWindows() && path.startsWith(repository.getAbsolutePath())) {
+        String repositoryPath = repository.getAbsolutePath();
+        String path = getRelativePathFromStatusLine(statusLine, repositoryPath);
+        if(Utilities.isWindows() && path.startsWith(repositoryPath)) {
             file = new File(path);  // prevent bogus paths (C:\tmp\hg\C:\tmp\hg\whatever) - see issue #139500
         } else {
             file = new File(repository, path);
@@ -3879,6 +3887,9 @@ public class HgCommand {
             }
             final List<String> commandLine = toCommandList(command, outputStyleFile);
             final ProcessBuilder pb = new ProcessBuilder(commandLine);
+            if (repository != null && repository.isDirectory()) {
+                pb.directory(repository);
+            }
             Map<String, String> envOrig = pb.environment();
             setGlobalEnvVariables(envOrig);
             if (env != null && env.size() > 0) {
@@ -4828,6 +4839,9 @@ public class HgCommand {
             if (m.matches()) {
                 String path = m.group(1);
                 while (path.endsWith(" ")) path = path.substring(0, path.length() - 1);
+                if (Utilities.isWindows()) {
+                    path = path.replace("/", File.separator); //NOI18N
+                }
                 changedFiles.add(path);
             }
         }
@@ -4839,6 +4853,7 @@ public class HgCommand {
         Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>(commandOutput.size());
         File file = null;
         FileInformation prev_info = null;
+        String repositoryPath = repository.getAbsolutePath();
         for (String statusLine : commandOutput) {
             FileInformation info = getFileInformationFromStatusLine(statusLine);
             Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): status line {0}  info {1}", new Object[]{statusLine, info}); // NOI18N
@@ -4863,7 +4878,7 @@ public class HgCommand {
             if(info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED 
                     || info.getStatus() == FileInformation.STATUS_UNKNOWN) continue;
             if (changedPaths == null || (info.getStatus() & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY) == 0
-                    || changedPaths.contains(getRelativePathFromStatusLine(statusLine))) {
+                    || changedPaths.contains(getRelativePathFromStatusLine(statusLine, repositoryPath))) {
                 file = getFileFromStatusLine(statusLine, repository);
             } else {
                 // uninteresting file, changed in the middle of revision range and back again

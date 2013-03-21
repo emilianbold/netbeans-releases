@@ -66,7 +66,7 @@ import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -311,21 +311,21 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         TableCellStyle style = getDefaultCellStyle(table, issueTable, p, isSelected, row);
         try {
             // set text format and background depending on selection and issue status
-            int status = -2;
+            IssueStatusProvider.Status status = null;
             IssueImpl issue = APIAccessor.IMPL.getImpl(p.getIssue());
             if(!queryImpl.contains(issue.getID())) {
                 // archived issues
                 style.format     = isSelected ? style.format           : issueObsoleteFormat;
                 style.background = isSelected ? obsoleteHighlightColor : style.background;
             } else {
-                status = IssueCacheUtils.getStatus(issue);
-                if(!IssueCacheUtils.wasSeen(issue)) {
+                status = issue.getStatus();
+                if(status != IssueStatusProvider.Status.SEEN) {
                     switch(status) {
-                        case IssueCache.ISSUE_STATUS_NEW :
+                        case NEW :
                             style.format     = isSelected ? style.format      : issueNewFormat;
                             style.background = isSelected ? newHighlightColor : style.background;
                             break;
-                        case IssueCache.ISSUE_STATUS_MODIFIED :
+                        case MODIFIED :
                             style.format     = isSelected ? style.format           : issueModifiedFormat;
                             style.background = isSelected ? modifiedHighlightColor : style.background;
                             break;
@@ -345,15 +345,15 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                     sb.append("<br>").append(issueObsoleteFormat.format(new Object[] { labelObsolete }, new StringBuffer(), null)); // NOI18N
                     sb.append(msgObsolete);
                 } else {
-                    if(status == -2) {
-                        status = IssueCacheUtils.getStatus(issue);
+                    if(status == null) {
+                        status = issue.getStatus();
                     }
                     switch(status) {
-                        case IssueCache.ISSUE_STATUS_NEW :
+                        case NEW :
                             sb.append("<br>").append(issueNewFormat.format(new Object[] { labelNew }, new StringBuffer(), null)); // NOI18N
                             sb.append(msgNew);
                             break;
-                        case IssueCache.ISSUE_STATUS_MODIFIED :
+                        case MODIFIED :
                             sb.append("<br>").append(issueModifiedFormat.format(new Object[] { labelModified }, new StringBuffer(), null)); // NOI18N
                             sb.append(msgModified);
                             sb.append(IssueCacheUtils.getRecentChanges(issue));

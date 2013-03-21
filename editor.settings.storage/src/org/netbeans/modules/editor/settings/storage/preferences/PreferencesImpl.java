@@ -486,20 +486,9 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
     
     private Preferences getInherited() {
         if (inherited == null && mimePath.length() > 0) {
-            List<String> paths = null;
-            try {
-                Method m = MimePath.class.getDeclaredMethod("getInheritedPaths", String.class, String.class); //NOI18N
-                m.setAccessible(true);
-                @SuppressWarnings("unchecked")
-                List<String> ret = (List<String>) m.invoke(MimePath.parse(mimePath), null, null);
-                paths = ret;
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "Can't call org.netbeans.api.editor.mimelookup.MimePath.getInheritedPaths method.", e); //NOI18N
-            }
-            
-            if (paths != null) {
-                assert paths.size() > 1 : "Wrong getInheritedPaths result size: " + paths.size(); //NOI18N
-                inherited = get(MimePath.parse(paths.get(1)));
+            String type = MimePath.parse(mimePath).getInheritedType();
+            if (type != null) {
+                inherited = get(MimePath.parse(type));
             } else {
                 inherited = get(MimePath.EMPTY);
             }

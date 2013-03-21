@@ -41,16 +41,29 @@
  */
 package org.netbeans.modules.css.prep.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Stack;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
+import static org.netbeans.modules.css.lib.api.NodeType.cp_variable_declaration;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.prep.CPType;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * naive temporary impl.
@@ -59,8 +72,25 @@ import org.netbeans.modules.css.prep.CPType;
  */
 public class CPModel {
 
+    public static String topLevelSnapshotMimetype; //set by unit tests
+    private static final Collection<String> SASS_DIRECTIVES = Arrays.asList(new String[]{
+        "@content",
+        "@debug",
+        "@each",
+        "@extend",
+        "@if",
+        "@include",
+        "@for",
+        "@else",
+        "@else if",
+        "@function",
+        "@mixin",
+        "@return",
+        "@warn",
+        "@while"
+    });
     private CssParserResult result;
-    private Set<Variable> vars;
+//    private Set<Element> vars;
     private CPType cpType;
 
     public static CPModel getModel(CssParserResult result) {
@@ -72,13 +102,46 @@ public class CPModel {
         return curr;
     }
 
+    /**
+     * Will run parsing task!.
+     *
+     * XXX CPModel shouldn't be exposed outside of the parsing task :-(
+     *
+     * @param file
+     * @return
+     */
+    public static CPModel getModel(FileObject file) throws ParseException {
+        final AtomicReference<CPModel> model_ref = new AtomicReference<CPModel>();
+        Source source = Source.create(file);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                ResultIterator cssRI = WebUtils.getResultIterator(resultIterator, "text/css");
+                if (cssRI != null) {
+                    CssParserResult result = (CssParserResult) cssRI.getParserResult();
+                    if (result != null) {
+                        model_ref.set(CPModel.getModel(result));
+                    }
+                }
+            }
+        });
+
+        return model_ref.get();
+    }
+
     private CPModel(CssParserResult result) {
         this.result = result;
     }
 
+    public FileObject getFile() {
+        return result.getSnapshot().getSource().getFileObject();
+    }
+
     public CPType getPreprocessorType() {
         if (cpType == null) {
-            String fileMimetype = result.getSnapshot().getSource().getFileObject().getMIMEType();
+            String fileMimetype = topLevelSnapshotMimetype != null
+                    ? topLevelSnapshotMimetype //unit tests - fileless snapshots
+                    : result.getSnapshot().getSource().getFileObject().getMIMEType();
             if (fileMimetype == null) {
                 cpType = CPType.NONE;
             } else {
@@ -94,47 +157,229 @@ public class CPModel {
         return cpType;
     }
 
-    //xxx just per current file
-    public Collection<Variable> getVariables() {
-        if (vars == null) {
-            vars = new HashSet<Variable>();
-            NodeVisitor visitor = new NodeVisitor() {
-                @Override
-                public boolean visit(Node node) {
-                    switch (node.type()) {
-                        case cp_variable:
-                            vars.add(new Variable(node.image().toString(), new OffsetRange(node.from(), node.to())));
-                            break;
+    /**
+     * Gets both var and mixin elements.
+     *
+     * @return
+     */
+    public Collection<CPElement> getElements() {
+        Collection<CPElement> all = new ArrayList<CPElement>();
+        all.addAll(getVariables());
+        all.addAll(getMixins());
+        return all;
+    }
 
-//                        case error:
-//                        case recovery:
-//                            //skip errorneous content, do not visit
-//                            break;
-
-                        default:
-                            //visit children
-                            List<Node> children = node.children();
-                            if (children != null) {
-                                for (Node child : children) {
-                                    visit(child);
-                                }
-                            }
-                    }
-
-                    return false;
-                }
-            };
-            visitor.visit(result.getParseTree());
+    /**
+     * Gets a collection of variables accessible(visible) at the given location.
+     *
+     * @param offset
+     * @return
+     */
+    public Collection<CPElement> getVariables(int offset) {
+        Collection<CPElement> visible = new ArrayList<CPElement>();
+        for (CPElement var : getVariables()) {
+            OffsetRange context = var.getScope();
+            if (context == null || context.containsInclusive(offset)) {
+                visible.add(var);
+            }
         }
+        return visible;
+    }
 
+    /**
+     * Returns a variable at the given position if there's any.
+     * @param offset
+     * @return found variable or null
+     */
+    public CPElement getVariableAtOffset(int offset) {
+        for (CPElement var : getVariables()) {
+            OffsetRange context = var.getRange();
+            if (context == null || context.containsInclusive(offset)) {
+                return var;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets all variables from this file's model.
+     *
+     * @return
+     */
+    public Collection<CPElement> getVariables() {
+        final Collection<CPElement> vars = new ArrayList<CPElement>();
+        NodeVisitor visitor = new NodeVisitor() {
+            private boolean in_cp_variable_declaration, in_block_control, in_block;
+            private Stack<OffsetRange> contexts = new Stack<OffsetRange>();
+            private Collection<CPElement> elementsAwaitingBlockNode = new ArrayList<CPElement>();
+            
+            @Override
+            public boolean visit(Node node) {
+
+                switch (node.type()) {
+                    case sass_control_block:
+                    case declarations:
+                        OffsetRange range = new OffsetRange(node.from(), node.to());
+                        contexts.push(range);
+                        
+                        //set scope to the elements preceeding this block node but defining its scope as the block content
+                        for(CPElement e : elementsAwaitingBlockNode) {
+                            e.setScope(range);
+                        }
+                        elementsAwaitingBlockNode.clear();
+                        
+                        //the declarations node represents a content of a code block
+                        in_block = true;
+
+                        _visitChildren(this, node);
+
+                        contexts.pop();
+                        in_block = false;
+                        break;
+
+                    case cp_variable_declaration:
+                        in_cp_variable_declaration = true;
+
+                        _visitChildren(this, node);
+
+                        in_cp_variable_declaration = false;
+                        break;
+
+                    case sass_control:
+                    case cp_args_list:
+                        in_block_control = true;
+
+                        _visitChildren(this, node);
+
+                        in_block_control = false;
+                        break;
+
+                    case cp_variable:
+                        //determine the variable type
+                        CPElementType type;
+                        if (in_block_control && !in_block /* for sass_control which contains also the block */) {
+                            type = CPElementType.VARIABLE_DECLARATION_IN_BLOCK_CONTROL;
+                        } else {
+                            if (in_cp_variable_declaration) {
+                                if (in_block) {
+                                    type = CPElementType.VARIABLE_LOCAL_DECLARATION;
+                                } else {
+                                    type = CPElementType.VARIABLE_GLOBAL_DECLARATION;
+                                }
+                            } else {
+                                type = CPElementType.VARIABLE_USAGE;
+                            }
+                        }
+                        OffsetRange scope = contexts.isEmpty() ? null : contexts.peek();
+
+                        CPElementHandle handle = new CPElementHandle(getFile(), node.image().toString().trim(), type, NodeUtil.getElementId(node));
+                        OffsetRange variableRange = new OffsetRange(node.from(), node.to());
+                        CPElement element = new CPElement(handle, variableRange, scope);
+
+                        switch(type) {
+                            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
+                                //scope is null as the variable is declared in sass control before the actual block node
+                                //just remember the element and we will set the proper block scope later during parsing
+                                elementsAwaitingBlockNode.add(element);
+                                break;
+                        }
+
+                        vars.add(element);
+                        break;
+
+                    case token:
+                        //ignore toke nodes
+                        break;
+
+                    default:
+                        _visitChildren(this, node);
+
+                }
+                return false;
+            }
+        };
+        visitor.visit(result.getParseTree());
         return vars;
     }
 
-    public Collection<String> getVarNames() {
-        Collection<String> varNames = new HashSet<String>();
-        for (Variable v : getVariables()) {
-            varNames.add(v.getName());
+    private static void _visitChildren(NodeVisitor visitor, Node node) {
+        List<Node> children = node.children();
+        if (children != null) {
+            for (Node child : children) {
+                visitor.visit(child);
+            }
         }
-        return varNames;
+    }
+
+    //XXX mixin usages!
+    public Collection<CPElement> getMixins() {
+        final Collection<CPElement> mixins = new ArrayList<CPElement>();
+        NodeVisitor visitor = new NodeVisitor() {
+            @Override
+            public boolean visit(Node node) {
+                switch (node.type()) {
+                    case cp_mixin_declaration:
+                        Node mixin_name = NodeUtil.getChildByType(node, NodeType.cp_mixin_name);
+                        if (mixin_name != null) {
+                            CPElementHandle handle = new CPElementHandle(getFile(), mixin_name.image().toString().trim(), CPElementType.MIXIN_DECLARATION, NodeUtil.getElementId(node));
+                            OffsetRange variableRange = new OffsetRange(mixin_name.from(), mixin_name.to());
+                            OffsetRange scope = null; //TODO implement!
+                            CPElement element = new CPElement(handle, variableRange, scope);
+                            mixins.add(element);
+                        }
+                        break;
+                        
+                    case cp_mixin_call:
+                        mixin_name = NodeUtil.getChildByType(node, NodeType.cp_mixin_name);
+                        if (mixin_name != null) {
+                            CPElementHandle handle = new CPElementHandle(getFile(), mixin_name.image().toString().trim(), CPElementType.MIXIN_USAGE, NodeUtil.getElementId(node));
+                            OffsetRange variableRange = new OffsetRange(mixin_name.from(), mixin_name.to());
+                            OffsetRange scope = null; //TODO implement!
+                            CPElement element = new CPElement(handle, variableRange, scope);
+                            mixins.add(element);
+                        }
+                        break;
+                        
+                    default:
+                        //visit children
+                        List<Node> children = node.children();
+                        if (children != null) {
+                            for (Node child : children) {
+                                visit(child);
+                            }
+                        }
+                        break;
+                }
+                return false;
+            }
+        };
+        visitor.visit(result.getParseTree());
+        return mixins;
+    }
+
+    public Collection<String> getMixinNames() {
+        return getElementNames(getMixins());
+    }
+
+    public Collection<String> getVarNames() {
+        return getElementNames(getVariables());
+    }
+
+    private static Collection<String> getElementNames(Collection<? extends CPElement> elements) {
+        Collection<String> names = new HashSet<String>();
+        for (CPElement e : elements) {
+            names.add(e.getName().toString());
+        }
+        return names;
+    }
+
+    public Collection<String> getDirectives() {
+        switch (getPreprocessorType()) {
+            case SCSS:
+                return SASS_DIRECTIVES;
+            default:
+                //nothing
+                return Collections.emptyList();
+        }
     }
 }

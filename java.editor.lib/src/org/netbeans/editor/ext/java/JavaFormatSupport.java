@@ -47,6 +47,7 @@ package org.netbeans.editor.ext.java;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.TokenID;
+import java.util.Collections;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.FormatTokenPosition;

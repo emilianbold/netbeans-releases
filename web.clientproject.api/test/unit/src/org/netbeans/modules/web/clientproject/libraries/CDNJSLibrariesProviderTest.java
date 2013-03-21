@@ -72,7 +72,7 @@ public class CDNJSLibrariesProviderTest {
 
     @Test
     public void testGetLibraries() {
-        CDNJSLibrariesProvider instance = new CDNJSLibrariesProvider();
+        CDNJSLibrariesProvider instance = CDNJSLibrariesProvider.getDefault();
         LibraryImplementation[] result = instance.getLibraries();
         assertTrue("libraries are succcessfully parsed and recreated", result.length >= 476);
     }

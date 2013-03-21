@@ -533,7 +533,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             cboxFileNamePattern.getComponent().setSelectedIndex(0);
         }
         cboxFileNamePattern.setRegularExpression(memory.isFilePathRegex());
-        if (cboxReplacement != null && cboxReplacement.getItemCount() != 0) {
+        if (cboxReplacement != null && cboxReplacement.getItemCount() != 0
+                && FindDialogMemory.getDefault().isReplacePatternSpecified()) {
             cboxReplacement.setSelectedIndex(0);
         }
 
@@ -704,9 +705,11 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             memory.setFileNamePatternSpecified(false);
         }
         if (replacementPatternEditor != null) {
-            SearchHistory.getDefault().addReplace(
-                    ReplacePattern.create(replacementPatternEditor.getText(),
-                    chkPreserveCase.isSelected()));
+            String replaceText = replacementPatternEditor.getText();
+            SearchHistory.getDefault().addReplace(ReplacePattern.create(
+                    replaceText, chkPreserveCase.isSelected()));
+            FindDialogMemory.getDefault().setReplacePatternSpecified(
+                    replaceText != null && !replaceText.isEmpty());
         }
         memory.setWholeWords(chkWholeWords.isSelected());
         memory.setCaseSensitive(chkCaseSensitive.isSelected());

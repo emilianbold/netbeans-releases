@@ -50,6 +50,7 @@ import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.PhpElementImpl.Separator;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.openide.util.Exceptions;
 
 /**
@@ -296,7 +297,7 @@ public final class ParameterElementImpl implements ParameterElement {
         boolean forDeclaration = outputType.equals(OutputType.SHORTEN_DECLARATION) || outputType.equals(OutputType.COMPLETE_DECLARATION);
         if (forDeclaration && hasDeclaredType()) {
             if (typesResolvers.size() > 1) {
-                sb.append("mixed").append(' '); //NOI18N
+                sb.append(Type.MIXED).append(' ');
             } else {
                 for (TypeResolver typeResolver : typesResolvers) {
                     if (typeResolver.isResolved()) {

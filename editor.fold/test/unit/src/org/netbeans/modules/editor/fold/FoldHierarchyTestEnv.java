@@ -60,15 +60,15 @@ import org.netbeans.spi.editor.fold.FoldManagerFactory;
  *
  * @author mmetelka
  */
-class FoldHierarchyTestEnv {
+public class FoldHierarchyTestEnv {
     
     private JEditorPane pane;
     
-    FoldHierarchyTestEnv(FoldManagerFactory factory) {
+    public FoldHierarchyTestEnv(FoldManagerFactory factory) {
         this(new FoldManagerFactory[] { factory });
     }
 
-    FoldHierarchyTestEnv(FoldManagerFactory[] factories) {
+    public FoldHierarchyTestEnv(FoldManagerFactory... factories) {
         pane = new JEditorPane();
         assert (getMimeType() != null);
 

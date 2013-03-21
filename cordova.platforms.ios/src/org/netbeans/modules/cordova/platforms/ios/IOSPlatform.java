@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
@@ -127,8 +128,12 @@ public class IOSPlatform implements MobilePlatform {
 
     @Override
     public SDK getPrefferedTarget() {
-        if (Utilities.isMac())
-            return getSDKs().iterator().next();
+        if (Utilities.isMac()) {
+            final Iterator<SDK> iterator = getSDKs().iterator();
+            if (iterator.hasNext()) {
+                return iterator.next();
+            }
+        }
         return DEFAULT;
     }
 

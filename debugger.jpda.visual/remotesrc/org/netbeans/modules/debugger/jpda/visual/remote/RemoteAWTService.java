@@ -80,14 +80,20 @@ public class RemoteAWTService {
     public RemoteAWTService() {
     }
     
-    static void startAccessLoop() {
+    static boolean startAccessLoop() {
         if (!awtAccessLoop) {
+            Thread loop;
+            try {
+                loop = new Thread(new AWTAccessLoop(), AWTAccessThreadName);
+                loop.setDaemon(true);
+                loop.setPriority(Thread.MIN_PRIORITY);
+            } catch (SecurityException se) {
+                return false;
+            }
             awtAccessLoop = true;
-            Thread loop = new Thread(new AWTAccessLoop(), AWTAccessThreadName);
-            loop.setDaemon(true);
-            loop.setPriority(Thread.MIN_PRIORITY);
             loop.start();
         }
+        return true;
     }
     
     static void stopAccessLoop() {

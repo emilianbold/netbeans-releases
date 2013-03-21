@@ -43,10 +43,7 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -66,25 +63,7 @@ class SourceLevelQueryImpl implements org.netbeans.spi.java.queries.SourceLevelQ
     
     @Override
     public String getSourceLevel(FileObject javaFile) {
-        return findSourceLevel(evaluator);
-    }
-
-    static String findSourceLevel (final PropertyEvaluator eval) {
-        final String activePlatform = eval.getProperty("platform.active"); //NOI18N
-        if (CommonProjectUtils.getActivePlatform(activePlatform) != null) {
-            String sl = eval.getProperty("javac.source"); //NOI18N
-            if (sl != null && sl.length() > 0) {
-                return sl;
-            }
-            return null;
-        }
-
-        EditableProperties props = PropertyUtils.getGlobalProperties();
-        String sl = props.get("default.javac.source"); //NOI18N
-        if (sl != null && sl.length() > 0) {
-            return sl;
-        }
-        return null;
-    }
+        return SourceLevelQueryImpl2.findSourceLevel(evaluator);
+    }    
     
 }

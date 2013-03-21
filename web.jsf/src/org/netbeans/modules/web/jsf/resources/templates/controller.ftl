@@ -22,6 +22,7 @@
     keyGetter - entity getter method returning primaty key instance
     keySetter - entity setter method to set primary key instance
     embeddedIdFields - contains information about embedded primary IDs
+    cdiEnabled - project contains beans.xml, so Named beans can be used
 
   This template is accessible via top level menu Tools->Templates and can
   be found in category JavaServer Faces->JSF from Entity.
@@ -51,7 +52,7 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 </#if>
 <#if managedBeanName??>
-<#if cdiEnabled?? && cdiEnabled == true>
+<#if cdiEnabled??>
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 <#else>
@@ -78,7 +79,7 @@ import javax.persistence.Persistence;
 
 
 <#if managedBeanName??>
-<#if cdiEnabled?? && cdiEnabled == true>
+<#if cdiEnabled??>
 @Named("${managedBeanName}")
 <#else>
 @ManagedBean(name="${managedBeanName}")
@@ -323,6 +324,12 @@ public class ${controllerClassName} implements Serializable {
 </#if>
     }
 
+<#if ejbClassName?? && cdiEnabled??>
+    public ${entityClassName} get${entityClassName}(${keyType} id) {
+        return ejbFacade.find(id);
+    }
+</#if>
+
     @FacesConverter(forClass=${entityClassName}.class)
     public static class ${controllerClassName}Converter implements Converter {
 <#if keyEmbedded>
@@ -331,6 +338,7 @@ public class ${controllerClassName} implements Serializable {
         private static final String SEPARATOR_ESCAPED = "\\#";
 </#if>
 
+        @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
                 return null;
@@ -338,7 +346,11 @@ public class ${controllerClassName} implements Serializable {
             ${controllerClassName} controller = (${controllerClassName})facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "${managedBeanName}");
 <#if ejbClassName??>
+<#if cdiEnabled??>
+            return controller.get${entityClassName}(getKey(value));
+<#else>
             return controller.ejbFacade.find(getKey(value));
+</#if>
 <#elseif jpaControllerClassName??>
             return controller.getJpaController().find${entityClassName}(getKey(value));
 </#if>
@@ -351,11 +363,12 @@ ${keyBody}
         }
 
         String getStringKey(${keyType} value) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 ${keyStringBody}
             return sb.toString();
         }
 
+        @Override
         public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
             if (object == null) {
                 return null;

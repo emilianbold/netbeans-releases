@@ -51,9 +51,11 @@ import org.netbeans.spi.editor.mimelookup.MimeLocation;
 /**
  *  This interface should implement all components that need to be added
  *  in the editor sidebar. Known implementing class is i.e GlyphGutter.
- *
+ *  
  *  @author  Martin Roskanin
+ *  @deprecated use {@link org.netbeans.spi.editor.SideBarFactory} from editor.lib2 module.
  */
+@Deprecated
 @MimeLocation(subfolderName="SideBar")
 public interface SideBarFactory {
 

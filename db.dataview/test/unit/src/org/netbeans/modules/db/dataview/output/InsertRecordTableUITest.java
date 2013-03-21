@@ -44,11 +44,12 @@ package org.netbeans.modules.db.dataview.output;
 import java.sql.Connection;
 import java.sql.Date;
 import javax.swing.SortOrder;
-import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.spi.DBConnectionProviderImpl;
+import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
 import org.netbeans.modules.db.dataview.util.DBTestUtil;
 import org.netbeans.modules.db.dataview.util.DbUtil;
 import org.netbeans.modules.db.dataview.util.TestCaseContext;
@@ -96,13 +97,15 @@ public class InsertRecordTableUITest extends NbTestCase {
         DataView dv = DataView.create(dbconn, sqlString, 5);
         dv.createComponents();
 
-        InsertRecordDialog ird = new InsertRecordDialog(dv);
+        DataViewPageContext pageContext = dv.getPageContext(0);
+        DBTable table = pageContext.getTableMetaData().getTable(0);
 
-        DefaultTableModel model =
-                (DefaultTableModel) ird.insertRecordTableUI.getModel();
-        ird.insertRecordTableUI.createNewRow();
-        model.addRow(ird.insertRecordTableUI.createNewRow());
-        model.addRow(ird.insertRecordTableUI.createNewRow());
+        InsertRecordDialog ird = new InsertRecordDialog(dv, pageContext, table);
+
+        ResultSetTableModel model = ird.insertRecordTableUI.getModel();
+        ird.insertRecordTableUI.appendEmptyRow();
+        ird.insertRecordTableUI.appendEmptyRow();
+
         // Column 5 is the date column => Insert a "real" Date
         // => creates conflict with String inserted by "createNewRow"
         ird.insertRecordTableUI.setValueAt(

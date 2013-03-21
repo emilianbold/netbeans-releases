@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -57,6 +58,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -171,7 +173,8 @@ public class Utils {
                     }
                 }
             } else {
-                problems.add(NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent"));//NOI18N
+                HashMap<String,String> props = JPAEditorUtil.findDatabaseConnectionProperties(pu, pe.getProject());
+                problems.add(NbBundle.getMessage(Utils.class, "DatabaseConnectionAbsent", props.get(JPAEditorUtil.JDBCURLKEY), props.get(JPAEditorUtil.JDBCDRIVERKEY), props.get(JPAEditorUtil.JDBCUSERKEY)));//NOI18N
             }
         }
         return problems;

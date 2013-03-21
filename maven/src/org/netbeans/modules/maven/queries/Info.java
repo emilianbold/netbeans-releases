@@ -45,25 +45,34 @@ package org.netbeans.modules.maven.queries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import static org.netbeans.modules.maven.queries.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 @ProjectServiceProvider(service=ProjectInformation.class, projectType="org-netbeans-modules-maven")
 public final class Info implements ProjectInformation, PropertyChangeListener {
     
     private static final RequestProcessor RP = new RequestProcessor(Info.class.getName(), 10);
+    private static final Logger LOG = Logger.getLogger(Info.class.getName());
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final Project project;
@@ -104,6 +113,26 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
         if (NbMavenProject.isErrorPlaceholder(pr)) {
             return LBL_misconfigured_project(project.getProjectDirectory().getNameExt());
         }
+        String custom = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_DISPLAY_NAME, true);
+        if (custom == null) {
+            custom = NbPreferences.forModule(Info.class).get("project.displayName", null);
+        }
+        if (custom != null) {
+            //we evaluate because of global property and property in nb-configuration.xml file. The pom.xml originating value should be already resolved.
+            ExpressionEvaluator evaluator = PluginPropertyUtils.createEvaluator(project);
+            try {
+                Object s = evaluator.evaluate(custom);
+                if (s != null) {
+                    //just make sure the name gets resolved
+                    String ss = s.toString().replace("${project.name)", "" + pr.getGroupId() + ":" + pr.getArtifactId());
+                    return ss;
+                }
+            } catch (ExpressionEvaluationException ex) {
+                //now just continue to the default processing
+                LOG.log(Level.INFO, "bad display name expression:" + custom, ex);
+            }
+        }
+
         String toReturn = pr.getName();
         if (toReturn == null) {
             String grId = pr.getGroupId();
@@ -116,6 +145,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
         }
         return toReturn;
     }
+
     
     @Override public Icon getIcon() {
         final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);

@@ -99,7 +99,8 @@ public class JsStructureScanner implements StructureScanner {
         
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
-            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
+                    && !child.getName().equals("prototype")) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
@@ -125,12 +126,22 @@ public class JsStructureScanner implements StructureScanner {
                     collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
             }
          }
+        
+        if (jsObject instanceof JsFunction) {
+            for (JsObject param: ((JsFunction)jsObject).getParameters()) {
+                if (hasDeclaredProperty(param)) { 
+                    final List<StructureItem> items = new ArrayList<StructureItem>();
+                    getEmbededItems(result, param, items);
+                    collectedItems.add(new JsObjectStructureItem(param, items, result));
+                }
+            }
+        }
         return collectedItems;
     }
 
     private boolean containsFunction(JsObject jsObject) {
         for (JsObject property: jsObject.getProperties().values()) {
-            if (property.getJSKind().isFunction() && property.isDeclared()) {
+            if (property.getJSKind().isFunction() && property.isDeclared() && !property.isAnonymous()) {
                 return true;
             }
         }
@@ -359,17 +370,18 @@ public class JsStructureScanner implements StructureScanner {
         }
         
         protected void appendTypeInfo(HtmlFormatter formatter, Collection<? extends Type> types) {
-            if (!types.isEmpty()) {
+            Collection<String> displayNames = Utils.getDisplayNames(types);
+            if (!displayNames.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR);
                 formatter.appendText(" : ");
                 boolean addDelimiter = false;
-                for (Type type : types) {
+                for (String displayName : displayNames) {
                     if (addDelimiter) {
                         formatter.appendText("|");
                     } else {
                         addDelimiter = true;
                     }
-                    formatter.appendHtml(type.getType());
+                    formatter.appendHtml(displayName);
                 }
                 formatter.appendHtml(CLOSE_FONT);
             }

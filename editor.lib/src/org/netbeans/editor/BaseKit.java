@@ -1283,7 +1283,7 @@ public class BaseKit extends DefaultEditorKit {
                 }
 
                 if (caretPosition != -1) {
-                    assert caretPosition >= 0 && (caretPosition < insertionText.length() || (insertionText.isEmpty() && caretPosition == 0));
+                    assert caretPosition >= 0 && (caretPosition <= insertionText.length());
                     caret.setDot(insertionOffset + caretPosition);
                 }
             } finally {
@@ -1764,7 +1764,10 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 // ScreenMenuItem from screen menu on Mac OS X should extend java.awt.MenuItem
-                if (disableDeleteFromScreenMenu && (evt.getSource() instanceof java.awt.MenuItem)) {
+                if (disableDeleteFromScreenMenu &&
+                        ((evt.getSource() instanceof java.awt.MenuItem) ||
+                         (evt.getSource() instanceof javax.swing.JMenuItem)))
+                {
                     return;
                 }
                 if (!target.isEditable() || !target.isEnabled()) {

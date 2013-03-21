@@ -41,7 +41,11 @@
  */
 package org.netbeans.modules.css.lib;
 
+import java.io.IOException;
+import javax.swing.text.BadLocationException;
+import junit.framework.AssertionFailedError;
 import org.netbeans.modules.css.lib.api.*;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
@@ -932,7 +936,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
     }
-    
+
     public void testVariableDeclarationWithCommaSeparatedValues() {
         String source = "$blueprint-font-family: Helvetica Neue, Arial, Helvetica, sans-serif;";
 
@@ -941,5 +945,230 @@ public class Css3ParserScssTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
+    }
+
+    public void testAmpProblem_fails() {
+        String source =
+                ".clazz {\n"
+                + "    &.position#{$i} {\n"
+                + "    left: ($i * -910px); \n"
+                + "}\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testMergedScssTests() throws ParseException, BadLocationException, IOException {
+        CssParserResult result = TestUtil.parse(getTestFile("testfiles/scss/scss-tests-merged.scss"));
+//        TestUtil.dumpResult(result);
+        assertResult(result, 0);
+    }
+
+    public void testLocalVariableDeclaration() {
+        String source =
+                "p {\n"
+                + "  $width: 1000px;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+        //the "$width: 1000px;" is supposed to be parsed as variable declaration, not property declaration!
+        assertNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration"));
+        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/cp_variable_declaration"));
+
+    }
+
+    public void testMixinCallWithWSBeforeFirstArgument() {
+        String source =
+                "@mixin a {\n"
+                + "  @include b( linear-gradient(\n"
+                + "      lighten($bg-color, 5%),\n"
+                + "      darken($bg-color, 5%)\n"
+                + "    )\n"
+                + "  );\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testUnexpectedANDInMedia() {
+        String source =
+                "@media screen and ($width-name : $target-width) {\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testIf_Else() {
+        String source =
+                "$type: monster;\n"
+                + "p {\n"
+                + "  @if $type == ocean {\n"
+                + "    color: blue;\n"
+                + "  } @else if $type == matador {\n"
+                + "    color: red;\n"
+                + "  } @else if $type == monster {\n"
+                + "    color: green;\n"
+                + "  } @else {\n"
+                + "    color: black;\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+        //only 'if' is allowed as the ident after @else keyword
+        source =
+                "p {\n"
+                + "  @if $type == ocean {\n"
+                + "    color: blue;\n"
+                + "  } @else Yf $type == matador {\n"
+                + "    color: red;\n"
+                + "  }\n"
+                + "}";
+
+        result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertTrue(result.getDiagnostics().size() > 0);
+
+    }
+
+    public void testContentDirective() {
+        String source =
+                "@mixin apply-to-ie6-only {\n"
+                + "  * html {\n"
+                + "    @content;\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testContentDirectiveInMedia() {
+        String source =
+                "@mixin respond-to($media) {\n"
+                + "  @if $media == handhelds {\n"
+                + "    @media only screen and (max-width: $break-small) { @content; }\n"
+                + "  } @else if $media == medium-screens {\n"
+                + "    @media only screen and (min-width: $break-small + 1) and (max-width:\n"
+                + "$break-large - 1) { @content; }\n"
+                + "  }\n"
+                + "  @else if $media == wide-screens {\n"
+                + "    @media only screen and (min-width: $break-large) { @content; }\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testMixinCallArgWithPropertyName() {
+        String source =
+                "@mixin border-radius($radius: 5px, $moz: true, $webkit: true, $ms: true) {\n"
+                + "}\n"
+                + "div{\n"
+                + "    @include border-radius($webkit:false);\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testMixinCallArgWithValueSeparatedByWS() {
+        String source =
+                "#id {\n"
+                + "    @include border-radius(5px, -moz -webkit);\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+    }
+
+    public void testPropertyValueSyntacticPredicateBoundary() {
+        //the scss_declaration_property_value_interpolation_expression synt. predicate
+        //was terminated just by colon so it seen the interpolation expression
+        //few lines below and caused bad parsing
+        String source =
+                "#test2 { \n"
+                + "    background-color: cyan\n"
+                + "}\n"
+                + "#test#{$i} { }";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testMultiplicityOperatorInPropertyValueFunction() {
+        String source =
+                ".c {\n"
+                + "    background-color: darken(orange, $i*5);\n"
+                + "}\n"
+                + "";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
+
+    public void testIfControlExpression() {
+        assertParses(" @if $arg != null and $arg2 != transparent { }");
+        assertParses(" @if not $arg != null and $arg2 != transparent { }");
+        assertParses(" @if not $arg != null or not $arg2 != transparent { }");
+        assertParses(" @if true or not $arg2 != transparent { }");
+    }
+
+    public void testMixinWithFirstParamOnNewLine() {
+        assertParses("@mixin color(\n"
+                + "$bgcolor: red,"
+                + "$fgcolor: blue) {\n"
+                + "}");
+    }
+
+    public void testFunctionInIfStatementExpression() {
+        assertParses("@function myfn($color) {\n"
+                + "    @if lightness($color) > 50 {\n"
+                + "        @return light;\n"
+                + "    } @else {\n"
+                + "        @return dark;\n"
+                + "    }\n"
+                + "}");
+    }
+    
+    public void testImportInDeclarations() {
+        assertParses(".clz { @import \"hello\"; }");
     }
 }

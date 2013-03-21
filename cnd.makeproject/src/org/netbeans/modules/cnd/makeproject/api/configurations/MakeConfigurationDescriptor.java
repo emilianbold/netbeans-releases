@@ -143,6 +143,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private Project project = null;
     
     private final RequestProcessor RP;
+    private final RequestProcessor RP_LISTENER;
     
     /*
      * For full remote, configuration base and project base might be different -
@@ -168,9 +169,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
-    private volatile Task initFoldersTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
-    private boolean defaultConfigurationsRestored = false;
     
     private static ConcurrentHashMap<String, Object> projectWriteLocks = new ConcurrentHashMap<String, Object>();
 
@@ -189,6 +188,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         this.projectDirFO = projectDirFO;
         RP = new RequestProcessor("MakeConfigurationDescriptor " + projectDirFO.getPath(), 1); // NOI18N
+        RP_LISTENER =  new RequestProcessor("Add listeners " + projectDirFO.getPath(), 1); // NOI18N
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
@@ -199,16 +199,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             return;
         }
         ToolsPanelSupport.addCompilerSetModifiedListener(this);
-        for (Item item : getProjectItems()) {
-            if (interrupter != null && interrupter.cancelled()) {
-                return;
-            }
-            item.onOpen();
-        }        
-        Task foldersTask = this.initFoldersTask;
-        if (foldersTask != null) {
-            foldersTask.schedule(0);
-        }
+        //for (Item item : getProjectItems()) {
+        //    if (interrupter != null && interrupter.cancelled()) {
+        //        return;
+        //    }
+        //    item.onOpen();
+        //}        
+        //Task foldersTask = this.initFoldersTask;
+        //if (foldersTask != null) {
+        //    foldersTask.schedule(0);
+        //}
     }
 
     /*
@@ -227,8 +227,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (folder != null) {
             for (Folder f : folder.getAllFolders(false)) {
                 f.detachListener();
+                f.onClose();
             }
             folder.detachListener();
+            folder.onClose();
         }
     }
 
@@ -242,7 +244,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
         }
         projectItems.clear();
-        rootFolder = null;
+        sourceRoots.clear();
+        testRoots.clear();
+        rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N;
+        sourceFileItems = null;
+        headerFileItems = null;
+        resourceFileItems = null;
+        testItems = null;
+        externalFileItems = null;
     }
 
     public static MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project project) {
@@ -1090,14 +1099,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return (oldLock == null) ? lock : oldLock;
     }
 
-    public void setFoldersTask(Task task) {
-        RequestProcessor.Task prevTask = this.initFoldersTask;
-        if (prevTask != null) {
-            prevTask.cancel();
-        }
-        this.initFoldersTask = task;
-    }
-
     private class SaveRunnable implements Runnable {
 
         private boolean ret = false;
@@ -1798,7 +1799,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
-    public void addFilesFromRoot(Folder folder, FileObject dir, ProgressHandle handle, Interrupter interrupter,
+    public void addFilesFromRoot(Folder folder, FileObject dir, ProgressHandle handle, final Interrupter interrupter,
                 boolean attachListeners, Folder.Kind folderKind, @NullAllowed FileObjectFilter fileFilter) {
         CndUtils.assertTrueInConsole(folder != null, "null folder"); //NOI18N
         CndUtils.assertTrueInConsole(dir != null, "null directory"); //NOI18N
@@ -1806,8 +1807,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             return;
         }
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder srcRoot;
-        srcRoot = folder.findFolderByAbsolutePath(dir.getPath());
+        Folder srcRoot = folder.findFolderByAbsolutePath(dir.getPath());
         String rootPath = null;
         if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
             rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
@@ -1826,7 +1826,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            srcRoot.attachListeners(interrupter);
+            final Folder aSrcRoot = srcRoot;
+            RP_LISTENER.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    aSrcRoot.attachListeners(interrupter);
+                }
+            });
         }
 
         addSourceRoot(dir.getPath());

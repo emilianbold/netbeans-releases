@@ -55,7 +55,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -109,7 +108,7 @@ public class IssueAction extends SystemAction {
                             if (refresh && !issue.refresh()) {
                                 return;
                             }
-                            IssueCacheUtils.setSeen(issue, true);
+                            issue.setSeen(true);
                         } finally {
                             UIUtils.setWaitCursor(false);
                             if(handle != null) handle.finish();
@@ -221,7 +220,7 @@ public class IssueAction extends SystemAction {
                                         tc.setIssue(impl);
                                     }
                                 });
-                                IssueCacheUtils.setSeen(impl, true);
+                                impl.setSeen(true);
                             }
                         } finally {
                             if(handle != null) handle.finish();

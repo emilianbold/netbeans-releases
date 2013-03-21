@@ -80,10 +80,16 @@ import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.add.AddAction;
+import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
+import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HeadRevisionPicker;
+import org.netbeans.modules.mercurial.ui.status.OpenInEditorAction;
+import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
@@ -96,6 +102,9 @@ import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.awt.Mnemonics;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -381,6 +390,78 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         cancelBackgroundTasks(); 
     }
 
+    JPopupMenu getPopup() {
+        JPopupMenu menu = null;
+
+        if (isLocal()) {
+            menu = new JPopupMenu();
+            JMenuItem item;
+            item = menu.add(new OpenInEditorAction());
+            Mnemonics.setLocalizedText(item, item.getText());
+            if (isLocalToBase()) {
+                menu.addSeparator();
+                item = menu.add(new SystemActionBridge(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "CTL_PopupMenuItem_Add"))); // NOI18N
+                Mnemonics.setLocalizedText(item, item.getText());
+                item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
+                Mnemonics.setLocalizedText(item, item.getText());
+
+                menu.addSeparator();
+                item = menu.add(new SystemActionBridge(SystemAction.get(AnnotateAction.class),
+                                                       ((AnnotateAction)SystemAction.get(AnnotateAction.class)).visible(null) ?
+                                                       actionString("CTL_PopupMenuItem_HideAnnotations") : //NOI18N
+                                                       actionString("CTL_PopupMenuItem_ShowAnnotations"))); //NOI18N
+                Mnemonics.setLocalizedText(item, item.getText());
+                menu.addSeparator();
+
+                boolean allLocallyDeleted = true;
+                FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+                Set<File> files = HgUtils.getCurrentContext(null).getRootFiles();
+
+                for (File file : files) {
+                    FileInformation info = cache.getStatus(file);
+                    if (info.getStatus() != FileInformation.STATUS_VERSIONED_DELETEDLOCALLY && info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+                        allLocallyDeleted = false;
+                    }
+                }
+                if (allLocallyDeleted) {
+                    item = menu.add(new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_RevertDelete"))); //NOI18N
+                } else {
+                    item = menu.add(new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_GetClean"))); //NOI18N
+                }
+                Mnemonics.setLocalizedText(item, item.getText());
+
+                item = menu.add(new AbstractAction(actionString("CTL_PopupMenuItem_ExportDiffChanges")) { //NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        SystemAction.get(ExportDiffChangesAction.class).performContextAction(null, true);
+                    }
+                });
+                Mnemonics.setLocalizedText(item, item.getText());
+
+                String label;
+                ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
+                if (exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING) {
+                    label = actionString("CTL_PopupMenuItem_IncludeInCommit");  //NOI18N
+                } else {
+                    label = actionString("CTL_PopupMenuItem_ExcludeFromCommit"); //NOI18N
+                }
+                item = menu.add(new SystemActionBridge(exclude, label));
+                Mnemonics.setLocalizedText(item, item.getText());
+            }
+        }
+
+        return menu;
+    }
+
+    /**
+     * Workaround.
+     * I18N Test Wizard searches for keys in syncview package Bundle.properties
+     */
+    private String actionString(String key) {
+        ResourceBundle actionsLoc = NbBundle.getBundle(MercurialAnnotator.class);
+        return actionsLoc.getString(key);
+    }
+
     public void requestActive() {
         if (fileTable != null) {
             fileTable.getTable().requestFocusInWindow();
@@ -505,7 +586,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         } else {
             if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
         }
-        return revisionRight == HgRevision.CURRENT && containsFile(file);
+        return isLocal() && containsFile(file);
     }
     
     private boolean containsFile (File file) {
@@ -669,7 +750,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         executeStatusSupport = new HgProgressSupport() {
             @Override
             public void perform() {
-                if (context != null && revisionLeft == HgRevision.BASE && revisionRight == HgRevision.CURRENT) {
+                if (context != null && revisionLeft == HgRevision.BASE && isLocal()) {
                     StatusAction.executeStatus(context, this);
                 }
                 refreshSetups();
@@ -775,7 +856,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
         final int localDisplayStatuses = status;
         final Setup[] localSetups;
-        if (revisionLeft == HgRevision.BASE && revisionRight == HgRevision.CURRENT) {
+        if (revisionLeft == HgRevision.BASE && isLocal()) {
             File [] files = HgUtils.getModifiedFiles(context, status, true);
             localSetups = computeSetups(files);
         } else {
@@ -831,8 +912,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     Dimension dim = fileTable.getComponent().getPreferredSize();
                     fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
                     setDiffIndex(0, 0, false);
-                    commitButton.setEnabled(revisionRight == HgRevision.CURRENT &&
-                            (revisionLeft == HgRevision.BASE || revisionLeft == HgRevision.QDIFF_BASE));
+                    commitButton.setEnabled(isLocalToBase());
                     dpt = new DiffPrepareTask(setups);
                     prepareTask = Mercurial.getInstance().getRequestProcessor().post(dpt);
                 }
@@ -849,6 +929,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 Mercurial.LOG.log(Level.FINE, null, ex);
             }
         }
+    }
+
+    private boolean isLocal () {
+        return revisionRight == HgRevision.CURRENT;
+    }
+
+    private boolean isLocalToBase () {
+        return isLocal() && (revisionLeft == HgRevision.BASE || revisionLeft == HgRevision.QDIFF_BASE);
     }
 
     private Setup[] computeSetups(File[] files) {
@@ -902,8 +990,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             // optimalization, let's not run the command when the revisions are the same
             if (!revLeft.getChangesetId().equals(revRight.getChangesetId())) {
                 Map<File, FileInformation> statuses = HgCommand.getStatus(repository, new ArrayList<File>(context.getRootFiles()),
-                        revisionLeft.getChangesetId(), revisionRight.getChangesetId(), false, revisionRight == HgRevision.CURRENT && (
-                        revisionLeft == HgRevision.BASE || revisionLeft == HgRevision.QDIFF_BASE));
+                        revisionLeft.getChangesetId(), revisionRight.getChangesetId(), false, isLocalToBase());
                 statuses.keySet().retainAll(HgUtils.flattenFiles(context.getRootFiles().toArray(
                         new File[context.getRootFiles().size()]), statuses.keySet()));
                 List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
@@ -912,7 +999,17 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     FileInformation fi = e.getValue();
                     if (isVisible(file, fi)) {
                         Setup setup = new Setup(file, revisionLeft, revisionRight, fi, false);
-                        setup.setNode(new DiffNode(setup, new HgFileNode(file)));
+                        setup.setNode(new DiffNode(setup, new HgFileNode(file)) {
+                            @Override
+                            public Action getPreferredAction () {
+                                return new AbstractAction() {
+                                    @Override
+                                    public void actionPerformed (ActionEvent e) {
+                                        // nothing
+                                    }
+                                };
+                            }
+                        });
                         newSetups.add(setup);
                     }
                 }
@@ -948,6 +1045,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         if (fixedRevisions) {
             treeSelectionPanel.setVisible(false);
         } else {
+            cmbDiffTreeFirst.setMinimumSize(cmbDiffTreeFirst.getMinimumSize());
+            cmbDiffTreeSecond.setMinimumSize(cmbDiffTreeSecond.getMinimumSize());
+            treeSelectionPanel.setMinimumSize(treeSelectionPanel.getMinimumSize());
             cmbDiffTreeFirst.setRenderer(new HgRevisionCellRenderer());
             cmbDiffTreeFirst.setModel(new DefaultComboBoxModel(new HgRevision[] { revisionRight }));
             cmbDiffTreeFirst.addActionListener(this);
@@ -1316,12 +1416,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cmbDiffTreeFirst, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cmbDiffTreeFirst, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cmbDiffTreeSecond, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
+                .addComponent(cmbDiffTreeSecond, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         treeSelectionPanelLayout.setVerticalGroup(
             treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1342,10 +1442,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(controlsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(treeSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
+            .addComponent(splitPane)
+            .addComponent(treeSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

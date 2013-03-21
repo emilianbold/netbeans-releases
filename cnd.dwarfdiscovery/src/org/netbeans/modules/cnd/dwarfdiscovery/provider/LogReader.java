@@ -159,6 +159,18 @@ public class LogReader {
                                     }
                                     return false;
                                 }
+
+                                @Override
+                                public List<String> list(String path) {
+                                    List<String> res = new ArrayList<String>();
+                                    FileObject fo = fileSystem.findResource(path);
+                                    if (fo != null && fo.isValid() && fo.isFolder()) {
+                                        for (FileObject f : fo.getChildren()) {
+                                            res.add(f.getPath());
+                                        }
+                                    }
+                                    return res;
+                                }
                             };
                             if (localMapper.discover(fs, root, path)) {
                                 resolvedPath = localMapper.getPath(path);
@@ -186,6 +198,18 @@ public class LogReader {
                                         return true;
                                     }
                                     return false;
+                                }
+
+                                @Override
+                                public List<String> list(String path) {
+                                    List<String> res = new ArrayList<String>();
+                                    FileObject fo = fileSystem.findResource(path);
+                                    if (fo != null && fo.isValid() && fo.isFolder()) {
+                                        for (FileObject f : fo.getChildren()) {
+                                            res.add(f.getPath());
+                                        }
+                                    }
+                                    return res;
                                 }
                             };
                             if (localMapper.discover(fs, root, path)) {

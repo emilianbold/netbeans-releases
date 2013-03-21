@@ -61,7 +61,9 @@ public class testCCTwig extends cc {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(testCCTwig.class).addTest(
                 "CreateApplication",
-                "testPhpTwigCodeCompletion").enableModules(".*").clusters(".*") //.gui( true )                
+                "testPhpTwigCodeCompletion",
+                "testPhpTwigCodeCompletionAll",
+                "testPhpTwigCodeTemplateCompletion").enableModules(".*").clusters(".*") //.gui( true )                
                 );
     }
     
@@ -81,6 +83,31 @@ public class testCCTwig extends cc {
         CompletionInfo jCompl = GetCompletion();
         String[] ideal = {"else", "elseif", "else", "elseif"};
         CheckCompletionItems(jCompl.listItself, ideal);
+        endTest();
+    }
+    
+    public void testPhpTwigCodeCompletionAll() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "Twig HTML file", null);
+        startTest();
+        file.setCaretPosition("#}", false);
+        TypeCode(file, "{% a");
+        file.typeKey(' ', InputEvent.CTRL_MASK);
+        new EventTool().waitNoEvent(1000);
+        CompletionInfo jCompl = GetCompletion();
+        String[] ideal = {"autoescape", "abs", "attribute", "and", "as"};
+        CheckCompletionItems(jCompl.listItself, ideal);
+        endTest();
+    }
+    
+    public void testPhpTwigCodeTemplateCompletion() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "Twig HTML file", null);
+        startTest();
+        file.setCaretPosition("#}", false);
+        TypeCode(file, "\n{% ae");
+        file.pushTabKey();
+        new EventTool().waitNoEvent(1000);
+        String ideal = "{% autoescape\n";
+        CheckResult(file, ideal);//file.getLineNumber(2);
         endTest();
     }
 }

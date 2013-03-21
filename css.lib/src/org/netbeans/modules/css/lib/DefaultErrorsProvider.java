@@ -103,7 +103,7 @@ public class DefaultErrorsProvider implements ErrorsProvider {
         return Severity.ERROR;
     }
     
-    private static class CssDefaultError extends DefaultError {
+    private static class CssDefaultError extends DefaultError implements Error.Badging {
 
         private CssDefaultError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity) {
             super(key, displayName, description, file, start, end, lineError, severity);
@@ -166,6 +166,11 @@ public class DefaultErrorsProvider implements ErrorsProvider {
         @Override
         public String toString() {
             return super.toString() + " (file:" + getFile() + ", from:" + getStartPosition() + ", to:" + getEndPosition() + ")";
+        }
+
+        @Override
+        public boolean showExplorerBadge() {
+            return getSeverity() == Severity.ERROR || getSeverity() == Severity.FATAL;
         }
         
         

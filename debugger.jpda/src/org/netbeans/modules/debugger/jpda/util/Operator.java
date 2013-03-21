@@ -159,8 +159,9 @@ public class Operator {
         } catch (VMDisconnectedExceptionWrapper ex) {
             eventQueue = null;
         }
-        if (eventQueue == null)
+        if (eventQueue == null) {
             throw new NullPointerException ();
+        }
         this.debugger = debugger;
         final AWTGrabHandler awtGrabHandler = new AWTGrabHandler(debugger);
         final SuspendCount suspendCount = new SuspendCount();
@@ -203,7 +204,9 @@ public class Operator {
                      if (eventSet == null) {
                         try {
                             synchronized (Operator.this) {
-                                if (stop) break;
+                                if (stop) {
+                                    break;
+                                }
                                 canInterrupt = true;
                             }
                             if (logger.isLoggable(Level.FINE)) {
@@ -261,7 +264,9 @@ public class Operator {
                      }
                  }
              }// for
-             if (finalizer != null) finalizer.run ();
+             if (finalizer != null) {
+                 finalizer.run ();
+             }
              //S ystem.out.println ("Operator end"); // NOI18N
              finalizer = null;
              eventQueue = null;
@@ -331,6 +336,16 @@ public class Operator {
             debugger.getThreadsCache().assureThreadIsCached(thref);
         }
         boolean suspendedCurrentThread = suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD && thref != null;
+        // Check if it's a thread death event
+        boolean isThreadDeath = false;
+        for (Event e: eventSet) {
+            if (e instanceof ThreadDeathEvent) {
+                isThreadDeath = true;
+            } else {
+                isThreadDeath = false;
+                break;
+            }
+        }
         if (!silent) {
             if (suspendedAll) {
                 eventAccessLock = debugger.accessLock.writeLock();
@@ -343,7 +358,7 @@ public class Operator {
             }
             if (eventAccessLock != null) {
                 eventAccessLock.lock();
-                if (thref != null) {
+                if (thref != null && !isThreadDeath) {
                     try {
                         if (!ThreadReferenceWrapper.isSuspended(thref)) {
                             // Can not do anything, someone already resumed the thread in the mean time.
@@ -464,9 +479,9 @@ public class Operator {
                     if (logger.isLoggable(Level.FINE)) {
                         logger.fine("EVENT: " + e + " REQUEST: null"); // NOI18N
                     }
-                } else
+                } else {
                     exec = eventsToProcess.get(e);
-
+                }
                 if (logger.isLoggable(Level.FINE)) {
                     printEvent (e, exec);
                 }
@@ -506,16 +521,6 @@ public class Operator {
             logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
         }
         if (isThreadEvent && suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD && !resume) {
-            // Check if it's a thread death event
-            boolean isThreadDeath = false;
-            for (Event e: eventSet) {
-                if (e instanceof ThreadDeathEvent) {
-                    isThreadDeath = true;
-                } else {
-                    isThreadDeath = false;
-                    break;
-                }
-            }
             // We must resume the thread death event, because otherwise nobody would do that in this case.
             if (isThreadDeath) {
                 resume = true;
@@ -530,7 +535,7 @@ public class Operator {
                 } else {
                     List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false, ignoredThreads);
                     if (eventAccessLock != null) {
-                        logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                        logger.log(Level.FINER, "Write access lock RELEASED:{0}", eventAccessLock);
                         eventAccessLock.unlock();
                         eventAccessLock = null;
                     }
@@ -546,7 +551,7 @@ public class Operator {
                 } else {
                     PropertyChangeEvent event = suspendedThread.notifySuspended(false, false);
                     if (eventAccessLock != null) {
-                        logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                        logger.log(Level.FINER, "Write access lock RELEASED:{0}", eventAccessLock);
                         eventAccessLock.unlock();
                         eventAccessLock = null;
                     }
@@ -618,12 +623,14 @@ public class Operator {
             if (session != null) {
                 DebuggerManager.getDebuggerManager().setCurrentSession(session);
             }
-            if (thref != null) debugger.setStoppedState (thref, suspendedAll);
+            if (thref != null) {
+                debugger.setStoppedState (thref, suspendedAll);
+            }
         }
 
         } finally {
             if (eventAccessLock != null) {
-                logger.finer("Write access lock RELEASED:"+eventAccessLock);
+                logger.log(Level.FINER, "Write access lock RELEASED:{0}", eventAccessLock);
                 eventAccessLock.unlock();
             }
             if (resume && threadWasInitiallySuspended) {
@@ -678,7 +685,9 @@ public class Operator {
     }
     
     private static void dumpThreadsStatus(VirtualMachine vm) {
-        if (!logger.isLoggable(Level.FINE)) return;
+        if (!logger.isLoggable(Level.FINE)) {
+            return;
+        }
         logger.fine("DUMP of threads:\n");
         List<ThreadReference> allThreads = vm.allThreads();
         for (ThreadReference t : allThreads) {
@@ -748,7 +757,9 @@ public class Operator {
      */
     public void stop() {
         synchronized (this) {
-            if (stop) return ; // Do not interrupt the thread when we're stopped
+            if (stop) {
+                return ;    // Do not interrupt the thread when we're stopped
+            }
             stop = true;
             if (canInterrupt) {
                 thread.interrupt();
@@ -897,13 +908,13 @@ public class Operator {
         int suspendPolicy = EventSetWrapper.suspendPolicy(eventSet);
         if (suspendPolicy == EventRequest.SUSPEND_ALL) {
             // Event suspended all threads, including those in which a method is being invoked.
-            logger.fine("methodInvokingThreads = "+methodInvokingThreads);
+            logger.log(Level.FINE, "methodInvokingThreads = {0}", methodInvokingThreads);
             synchronized (methodInvokingThreads) {
                 for (ThreadReference tr : methodInvokingThreads) {
                     try {
                         ThreadReferenceWrapper.resume(tr);
                         resumedThreads.add(tr);
-                        logger.fine("  resumed threads = "+resumedThreads);
+                        logger.log(Level.FINE, "  resumed threads = {0}", resumedThreads);
                     } catch (ObjectCollectedExceptionWrapper ex) {
                     } catch (IllegalThreadStateExceptionWrapper ex) {
                     }
@@ -917,7 +928,7 @@ public class Operator {
                     resumed = resumedThreads;
                 }
                 threadsResumedForEvents.put(eventSet, resumed);
-                logger.fine("Set threadsResumedForEvents "+resumed+" for events "+System.identityHashCode(eventSet));
+                logger.log(Level.FINE, "Set threadsResumedForEvents {0} for events {1}", new Object[]{resumed, System.identityHashCode(eventSet)});
             }
             // We handle resumed threads later - exclude them from notifying, etc.
             // TODO: If we hit this just before a method invoke, the thread will be suspended double-times.
@@ -946,7 +957,7 @@ public class Operator {
                     // Ignore events that occur during method invocations
                     // in the invocation thread completely
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("testIgnoreEvent("+eventSet+") = "+Collections.emptySet());
+                        logger.log(Level.FINE, "testIgnoreEvent({0}) = []", eventSet);
                     }
                     return Collections.emptySet();
                 }
@@ -955,7 +966,7 @@ public class Operator {
         Set<ThreadReference> threadsToResume = null;
         if (suspendPolicy == EventRequest.SUSPEND_ALL) {
             // Event suspended all threads, including those in which a method is being invoked.
-            logger.fine("methodInvokingThreads = "+methodInvokingThreads);
+            logger.log(Level.FINE, "methodInvokingThreads = {0}", methodInvokingThreads);
             synchronized (methodInvokingThreads) {
                 if (!methodInvokingThreads.isEmpty()) {
                     threadsToResume = new HashSet<ThreadReference>(methodInvokingThreads);

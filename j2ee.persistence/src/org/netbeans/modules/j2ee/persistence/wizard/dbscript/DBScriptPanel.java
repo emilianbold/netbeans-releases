@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.TypeElement;
 import javax.swing.ComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
@@ -58,17 +57,12 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
@@ -159,7 +153,7 @@ public class DBScriptPanel extends javax.swing.JPanel {
                 }
             }
         }
-        
+        createDropScriptCheckbox.setVisible(false);//isn't supported yet
         uniqueName();
     }
     
@@ -173,10 +167,6 @@ public class DBScriptPanel extends javax.swing.JPanel {
     
     public String getScriptName() {
         return scriptNameTextField.getText();
-    }
-    
-    public boolean getCreatePersistenceUnit() {
-        return createDropScriptCheckbox.isVisible() && createDropScriptCheckbox.isSelected();
     }
     
     private void locationChanged() {
@@ -360,6 +350,7 @@ public class DBScriptPanel extends javax.swing.JPanel {
         private WizardDescriptor wizardDescriptor;
         private Project project;
         private List<Provider> providers;
+        private boolean deepVerify = true;
         
         public WizardPanel() {
         }
@@ -385,7 +376,7 @@ public class DBScriptPanel extends javax.swing.JPanel {
         
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx(DBScriptPanel.class);
+            return new HelpCtx("org.netbeans.modules.j2ee.persistence.wizard.dbscript.DBScriptPanel");//NOI18N
         }
         
         @Override
@@ -447,13 +438,13 @@ public class DBScriptPanel extends javax.swing.JPanel {
                     if (providers == null) {
                         providers = PersistenceLibrarySupport.getProvidersFromLibraries();
                     }
-                    if (providers.size() == 0) {
+                    if (providers.isEmpty()) {
                         setErrorMessage(NbBundle.getMessage(DBScriptPanel.class, "ERR_NoJavaPersistenceAPI")); // NOI18N
                         return false;
                     }
                 }
             } else {
-                LOGGER.warning("Cannot get a classpath for package " + packageName + " in " + sourceGroup); // NOI18N
+                LOGGER.log(Level.WARNING, "Cannot get a classpath for package {0} in {1}", new Object[]{packageName, sourceGroup}); // NOI18N
             }
             String name = getComponent().getScriptName().trim();
             if (name.length() == 0) {
@@ -470,13 +461,22 @@ public class DBScriptPanel extends javax.swing.JPanel {
                     return false;
                 }
             }
+            if(deepVerify) {
+                PersistenceEnvironment pe = project.getLookup().lookup(PersistenceEnvironment.class);
+                List<String> problems = DBScriptWizard.run(project, null, pe, null, true);
+                if(problems != null && !problems.isEmpty()){
+                    setErrorMessage(problems.get(0));
+                    return false;
+                }
+                deepVerify = false;
+            }
             setErrorMessage(" "); // NOI18N
             return true;
         }
         
         @Override
         public void storeSettings(Object settings) {
-            WizardDescriptor wizardDescriptor = (WizardDescriptor) settings;
+            WizardDescriptor wizDescriptor = (WizardDescriptor) settings;
             SourceGroup sourceGroup = getComponent().getLocationValue();
             String packageName = getComponent().getPackageName().trim();
             FileObject packageFO = null;
@@ -485,8 +485,8 @@ public class DBScriptPanel extends javax.swing.JPanel {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            Templates.setTargetFolder(wizardDescriptor, packageFO);
-            Templates.setTargetName(wizardDescriptor, getComponent().getScriptName());
+            Templates.setTargetFolder(wizDescriptor, packageFO);
+            Templates.setTargetName(wizDescriptor, getComponent().getScriptName());
         }
         
         @Override

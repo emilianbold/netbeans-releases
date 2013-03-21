@@ -41,16 +41,27 @@
  */
 package org.netbeans.modules.web.clientproject.api.network;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.web.clientproject.api.network.ui.NetworkErrorPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -59,6 +70,9 @@ import org.openide.util.Parameters;
  * @since 1.13
  */
 public final class NetworkSupport {
+
+    private static final Logger LOGGER = Logger.getLogger(NetworkSupport.class.getName());
+
 
     private NetworkSupport() {
     }
@@ -119,6 +133,52 @@ public final class NetworkSupport {
         });
         descriptor.setAdditionalOptions(new Object[] {configureProxyButton});
         return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
+    }
+
+    /**
+     * Download the given URL to the target file.
+     * <p>
+     * This method must be called only in a background thread.
+     * @param url URL to be downloaded
+     * @param target target file
+     * @throws NetworkException if any network error occurs
+     * @throws IOException if any error occurs
+     * @since 1.22
+     */
+    public static void download(@NonNull String url, @NonNull File target) throws NetworkException, IOException {
+        Parameters.notNull("url", url);
+        Parameters.notNull("target", target);
+        if (EventQueue.isDispatchThread()) {
+            throw new IllegalStateException("Cannot run in UI thread");
+        }
+        InputStream is;
+        try {
+            is = new URL(url).openStream();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            throw new NetworkException(url, ex);
+        }
+        try {
+            copyToFile(is, target);
+        } catch (IOException ex) {
+            // error => ensure file is deleted
+            if (!target.delete()) {
+                // nothing we can do about it
+            }
+            throw ex;
+        } finally {
+            is.close();
+        }
+    }
+
+    private static File copyToFile(InputStream is, File target) throws IOException {
+        OutputStream os = new FileOutputStream(target);
+        try {
+            FileUtil.copy(is, os);
+        } finally {
+            os.close();
+        }
+        return target;
     }
 
 }

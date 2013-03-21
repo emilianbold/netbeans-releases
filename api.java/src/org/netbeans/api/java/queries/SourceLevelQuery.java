@@ -176,7 +176,42 @@ public class SourceLevelQuery {
          *     a source level synonym e.g. "5" for "1.5" the returned value is always normalized.
          */
         public @CheckForNull String getSourceLevel() {
-            return delegate.hasFirst() ? normalize(delegate.first().getSourceLevel()) : SourceLevelQuery.getSourceLevel(delegate.second());
+            if (delegate.hasFirst()) {
+                String sourceLevel = normalize(delegate.first().getSourceLevel());
+                if (sourceLevel != null && !SOURCE_LEVEL.matcher(sourceLevel).matches()) {
+                    LOGGER.log(
+                        Level.WARNING,
+                        "#83994: Ignoring bogus source level {0} from {2}",  //NOI18N
+                        new Object[] {
+                            sourceLevel,
+                            delegate.first()
+                        });
+                    sourceLevel = null;
+                }
+                return sourceLevel;
+            } else {
+                return SourceLevelQuery.getSourceLevel(delegate.second());
+            }
+        }
+
+        /**
+         * Returns the name of the required profile.
+         * @return a name of the required profile or null if the profile is either unknown
+         * or unsupported by actual source level.
+         * <div class="nonnormative">
+         * The JDK 8 provides three limited profiles (compact1, compact2, compact3) in addition
+         * to the full JDK. Each profile specifies a specific set of Java API packages and
+         * contains all of the APIs of the smaller profile, @see http://openjdk.java.net/jeps/161
+         * </div>
+         * @since 1.45
+         */
+        @CheckForNull
+        public String getProfile() {
+            final SourceLevelQueryImplementation2.Result delegate = getDelegate();
+            if (!(delegate instanceof SourceLevelQueryImplementation2.Result2)) {
+                return null;
+            }
+            return ((SourceLevelQueryImplementation2.Result2)delegate).getProfile();
         }
 
         /**

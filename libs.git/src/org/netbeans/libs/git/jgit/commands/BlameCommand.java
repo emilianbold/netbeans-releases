@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.Repository;
@@ -85,9 +86,13 @@ public class BlameCommand extends GitCommand {
             cmd.setTextComparator(new AutoCRLFComparator());
         }
         cmd.setFollowFileRenames(true);
-        BlameResult cmdResult = cmd.call();
-        if (cmdResult != null) {
-            result = getClassFactory().createBlameResult(cmdResult, repository);
+        try {
+            BlameResult cmdResult = cmd.call();
+            if (cmdResult != null) {
+                result = getClassFactory().createBlameResult(cmdResult, repository);
+            }
+        } catch (GitAPIException ex) {
+            throw new GitException(ex);
         }
     }
 

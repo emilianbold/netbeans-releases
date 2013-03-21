@@ -59,7 +59,7 @@ public class IteratorToForTest {
                 + "            System.err.println(s);\n"
                 + "        }\n"
                 + "    }\n"
-                + "}\n").run(IteratorToFor.class).assertWarnings("2:33-9:5:verifier:" + Bundle.ERR_IteratorToFor());
+                + "}\n").run(IteratorToFor.class).assertWarnings("4:8-4:13:verifier:" + Bundle.ERR_IteratorToFor());
     }
 
     @Test public void whileUsedSpecially() throws Exception {
@@ -123,7 +123,7 @@ public class IteratorToForTest {
                 + "        }\n"
                 + "    }\n"
                 + "    static class MyList extends ArrayList<String> {}\n"
-                + "}\n").run(IteratorToFor.class).assertWarnings("2:27-9:5:verifier:" + Bundle.ERR_IteratorToFor());
+                + "}\n").run(IteratorToFor.class).assertWarnings("4:8-4:13:verifier:" + Bundle.ERR_IteratorToFor());
     }
 
     @Test public void whileNotIterable() throws Exception {
@@ -156,7 +156,7 @@ public class IteratorToForTest {
                 + "            System.err.println(bundle);\n"
                 + "        }\n"
                 + "    }\n"
-                + "}\n").run(IteratorToFor.class).assertWarnings("2:49-9:5:verifier:" + Bundle.ERR_IteratorToFor());
+                + "}\n").run(IteratorToFor.class).assertWarnings("4:8-4:13:verifier:" + Bundle.ERR_IteratorToFor());
     }
 
     @Test public void whileGenericSubtype() throws Exception {
@@ -170,7 +170,7 @@ public class IteratorToForTest {
                 + "            System.out.println(list);\n"
                 + "        }\n"
                 + "    }\n"
-                + "}\n").run(IteratorToFor.class).findWarning("2:42-8:5:verifier:" + Bundle.ERR_IteratorToFor()).
+                + "}\n").run(IteratorToFor.class).findWarning("4:8-4:13:verifier:" + Bundle.ERR_IteratorToFor()).
                 applyFix().
                 assertCompilable().
                 assertOutput("package test;\n"
@@ -214,7 +214,7 @@ public class IteratorToForTest {
                 + "        }\n"
                 + "        System.out.println();\n"
                 + "    }\n"
-                + "}\n").run(IteratorToFor.class).findWarning("2:33-12:5:verifier:" + Bundle.ERR_IteratorToFor()).
+                + "}\n").run(IteratorToFor.class).findWarning("5:8-5:13:verifier:" + Bundle.ERR_IteratorToFor()).
                 applyFix().
                 assertCompilable()
                 .assertOutput("package test;\n"

@@ -227,8 +227,16 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         assemblerRequired = new LanguageBooleanConfiguration();
         makefileConfiguration = new MakefileConfiguration(this);
         compileConfiguration = new CompileConfiguration(this);
-        dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
-        rebuildPropChanged = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getRebuildPropChanged());
+        if (isMakefileConfiguration()) {
+            dependencyChecking = new BooleanConfiguration(false);
+        } else {
+            dependencyChecking = new BooleanConfiguration(true);
+            dependencyChecking.setValue(MakeProjectOptions.getDepencyChecking());
+        }
+        rebuildPropChanged = new BooleanConfiguration(false);
+        if (!isMakefileConfiguration()) {
+            rebuildPropChanged.setValue(MakeProjectOptions.getRebuildPropChanged());
+        }
         cCompilerConfiguration = new CCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
         ccCompilerConfiguration = new CCCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
         fortranCompilerConfiguration = new FortranCompilerConfiguration(fsPath.getPath(), null); //XXX:fullRemote:fileSystem - use FSPath

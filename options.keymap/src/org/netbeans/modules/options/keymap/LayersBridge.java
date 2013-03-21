@@ -187,14 +187,14 @@ public class LayersBridge extends KeymapManager implements KeymapManager.WithRev
         }
     }
     
-    private List<String> keymapNames;
-    private Map<String, String> keymapDisplayNames;
+    private volatile List<String> keymapNames;
+    private volatile Map<String, String> keymapDisplayNames;
 
     private void refreshKeymapNames() {
         DataFolder root = getRootFolder(KEYMAPS_FOLDER, null);
         Enumeration en = root.children(false);
-        keymapNames = new ArrayList<String>();
-        keymapDisplayNames = new HashMap<String, String>();
+        List<String> names = new ArrayList<String>();
+        Map<String, String> displayNames = new HashMap<String, String>();
         while (en.hasMoreElements()) {
             FileObject f = ((DataObject) en.nextElement()).getPrimaryFile();
             if (f.isFolder()) {
@@ -207,24 +207,36 @@ public class LayersBridge extends KeymapManager implements KeymapManager.WithRev
                     // ignore
                     displayName = name;
                 }
-                keymapNames.add(name);
-                keymapDisplayNames.put(name, displayName);
+                names.add(name);
+                displayNames.put(name, displayName);
             }
         }
-        if (keymapNames.isEmpty()) {
-            keymapNames.add("NetBeans"); //NOI18N
+        if (names.isEmpty()) {
+            names.add("NetBeans"); //NOI18N
+        }
+        synchronized (this) {
+            this.keymapNames = names;
+            this.keymapDisplayNames = displayNames;
         }
     }
 
     public List<String> getProfiles() {
-        if (keymapNames == null) {
+        List<String> names = keymapNames;
+        if (names == null) {
             refreshKeymapNames();
+            // keymapNames is not erased
+            names = keymapNames;
         }
-        return Collections.unmodifiableList(keymapNames);
+        return Collections.unmodifiableList(names);
     }
     
     public @Override String getProfileDisplayName(String profileName) {
-        String displayName = keymapDisplayNames.get(profileName);
+        Map<String, String> m = keymapDisplayNames;
+        if (m == null) {
+            refreshKeymapNames();
+            m = keymapDisplayNames;
+        }
+        String displayName = m.get(profileName);
         return displayName == null ? profileName : displayName;
     }
     

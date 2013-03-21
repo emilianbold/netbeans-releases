@@ -49,6 +49,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * KeyListener trasforming keystrokes to human-readable and displaying them
@@ -161,7 +162,13 @@ public class ShortcutListener implements KeyListener {
     }
 
     private void addKeyStroke(KeyStroke keyStroke, boolean add) {
+        String s = Utilities.keyToString(keyStroke, true);
+        KeyStroke mappedStroke = Utilities.stringToKey(s);
+        if (!keyStroke.equals(mappedStroke)) {
+            return;
+        }
         String k = KeyStrokeUtils.getKeyStrokeAsText(keyStroke);
+        // check if the text can be mapped back
         if (key.equals("")) { //NOI18N
             textField.setText(k);
             if (add)
