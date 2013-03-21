@@ -1201,4 +1201,10 @@ public class Css3ParserScssTest extends CssTestBase {
                 + ");\n"
                 + "}");
     }
+
+    public void testPropertyValue2_fails() {
+        assertParses(".#{$prefix}#{$cls-ui}-tr {\n"
+                + "    background-position: 0 (-$frame-max);\n"
+                + "}");
+    }
 }
