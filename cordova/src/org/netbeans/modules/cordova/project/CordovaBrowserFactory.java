@@ -58,7 +58,7 @@ public class CordovaBrowserFactory implements EnhancedBrowserFactory, HtmlBrowse
 
     @Override
     public BrowserFamilyId getBrowserFamilyId() {
-        return BrowserFamilyId.ANDROID;
+        return BrowserFamilyId.PHONEGAP;
     }
 
     @Override

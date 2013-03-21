@@ -54,10 +54,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cordova.platforms.ConfigUtils;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -66,6 +70,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * @author Jan Becicka
@@ -80,6 +85,9 @@ public class MobileConfigurationsProvider implements ProjectConfigurationProvide
     private static final Logger LOGGER = Logger.getLogger(MobileConfigurationsProvider.class.getName());
     private FileChangeListener fclWeakNB;
     private FileChangeListener fclWeakConfig;    
+    
+    private static final String PROP_CONFIG = "config"; //NOI18N
+    
     
     private final FileChangeListener fcl = new FileChangeAdapter() {
 
@@ -198,13 +206,36 @@ public class MobileConfigurationsProvider implements ProjectConfigurationProvide
 
     @Override
     public MobileConfigurationImpl getActiveConfiguration() {
-        return null;
+        if (configs == null) {
+            calculateConfigs();
+        }
+        Preferences c = ProjectUtils.getPreferences(p, MobileConfigurationsProvider.class, false);
+        String config = c.get(PROP_CONFIG, null);;
+        if (config != null && configs.containsKey(config)) {
+            return configs.get(config);
+        }
+        return getDefaultConfiguration();
     }
 
     @Override
-    public void setActiveConfiguration(MobileConfigurationImpl configuration) throws IllegalArgumentException, IOException {
+
+    public void setActiveConfiguration(MobileConfigurationImpl c) throws IllegalArgumentException, IOException {
+        if (configs == null) {
+            calculateConfigs();
+        }
+        Preferences prefs = ProjectUtils.getPreferences(p, MobileConfigurationsProvider.class, false);
+        prefs.put(PROP_CONFIG, c.getId());
     }
 
+    private MobileConfigurationImpl getDefaultConfiguration() {
+        if (configs.size() > 0) {
+            return configs.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    
     @Override
     public boolean hasCustomizer() {
         return false;

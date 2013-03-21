@@ -42,21 +42,18 @@
 
 package org.netbeans.modules.cordova.project;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cordova.CordovaPlatform;
+import static org.netbeans.modules.cordova.PropertyNames.PROP_PHONEGAP;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -71,12 +68,12 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
     ClientProjectEnhancedBrowserImpl(Project project, WebBrowser browser) {
         this.project = project;
         this.browser = browser;
-        if (browser.getBrowserFamily() == BrowserFamilyId.ANDROID) {
-            platform = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
-        } else {
-            assert browser.getBrowserFamily() == BrowserFamilyId.IOS;
-            platform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
-    }
+//        if (browser.getBrowserFamily() == BrowserFamilyId.ANDROID) {
+//            platform = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+//        } else {
+//            assert browser.getBrowserFamily() == BrowserFamilyId.IOS;
+//            platform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
+//    }
         // configsProvider should be created with configurations for concrete MobilePlatform
         configsProvider = new MobileConfigurationsProvider(project);
     }
@@ -93,20 +90,19 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
 
     @Override
     public ActionProvider getActionProvider() {
-        //return getDevice().getActionProvider(project);
-        return null;
+        final MobileConfigurationImpl activeConfiguration = configsProvider.getActiveConfiguration();
+        if (activeConfiguration == null) {
+            return null;
+        }
+        Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
+        preferences.put(PROP_PHONEGAP, Boolean.TRUE.toString());
+        return activeConfiguration.getDevice().getActionProvider(project);
     }
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        //return getDevice().getProjectConfigurationCustomizer(project, this);
-    
-        // UI should show a combo box at the top with list of configurations
-        // user can choose from for particular family of browsers, that is
-        // different configuration can be shown for IOS and ANDROID and PHONEGAP
-        // type of browser
-
-        return null;
+        final MobileConfigurationImpl activeConfiguration = configsProvider.getActiveConfiguration();
+        return activeConfiguration.getDevice().getProjectConfigurationCustomizer(project, activeConfiguration);
     }
 
     @Override

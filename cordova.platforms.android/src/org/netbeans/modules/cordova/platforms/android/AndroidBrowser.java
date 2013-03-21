@@ -43,16 +43,28 @@ package org.netbeans.modules.cordova.platforms.android;
 
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.modules.cordova.platforms.Device;
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Becicka
  */
 public class AndroidBrowser extends HtmlBrowser.Impl {
+    private final Kind kind;
+    
+    public static enum Kind {
+        DEVICE_DEFAULT,
+        DEVICE_CHROME,
+        EMULATOR_DEFAULT
+    }
+    
+
+    public AndroidBrowser(Kind kind) {
+        this.kind = kind;
+    }
+    
     private URL url;
 
     @Override
@@ -70,7 +82,27 @@ public class AndroidBrowser extends HtmlBrowser.Impl {
 
     @Override
     public void setURL(URL url) {
-        this.url=url;
+        this.url = url;
+        Browser b;
+        boolean emulator;
+        switch (kind) {
+            case DEVICE_CHROME:
+                b = Browser.CHROME;
+                emulator = false;
+                break;
+            case DEVICE_DEFAULT:
+                b = Browser.DEFAULT;
+                emulator = false;
+                break;
+            case EMULATOR_DEFAULT:
+                b = Browser.DEFAULT;
+                emulator = false;
+                break;
+            default:
+                throw new IllegalStateException();
+        }
+        Device d = new AndroidDevice("android", b, emulator);
+        d.openUrl(url.toExternalForm());
     }
 
     @Override

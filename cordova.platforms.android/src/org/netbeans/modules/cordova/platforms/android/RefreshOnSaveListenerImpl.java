@@ -40,34 +40,25 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cordova.project;
+package org.netbeans.modules.cordova.platforms.android;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
-import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
+import org.openide.filesystems.FileObject;
 
-@ProjectServiceProvider(
-        projectType = "org-netbeans-modules-web-clientproject",
-        service=ClientProjectEnhancedBrowserProvider.class)
-public class ClientProjectEnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
-    private Project p;
+/**
+ * @author Jan Becicka
+ */
+public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
 
-    public ClientProjectEnhancedBrowserProviderImpl(Project p) {
-        this.p = p;
+    public RefreshOnSaveListenerImpl() {
     }
     
     @Override
-    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser) {
-        if (webBrowser == null) {
-            return null;
-        }
-        if (BrowserFamilyId.PHONEGAP == webBrowser.getBrowserFamily()) {
-            return new ClientProjectEnhancedBrowserImpl(p, webBrowser);
-        }
-        return null;
+    public void fileChanged(FileObject fo) {
+    }
+
+    @Override
+    public void fileDeleted(FileObject fo) {
     }
 
 }

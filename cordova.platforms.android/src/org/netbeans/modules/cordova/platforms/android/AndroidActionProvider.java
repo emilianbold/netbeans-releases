@@ -175,7 +175,7 @@ public class AndroidActionProvider implements ActionProvider {
             "ERR_ConnectAndroidDevice=Please connect Android device and enable USB debugging.",
             "ERR_RunAndroidEmulator=Please run Android Emulator.",
             "ERR_Unknown=Unknown Error."})
-    private String checkDevices(Project p) {
+    static String checkDevices(Project p) {
         PropertyProvider config = (PropertyProvider) p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
         try {
             if (Device.DEVICE.equals(config.getProperty(Device.DEVICE_PROP))) { //NOI18N
@@ -200,7 +200,7 @@ public class AndroidActionProvider implements ActionProvider {
     }
     
     @NbBundle.Messages("ERR_AndroidNotConfigured=Android Platform is not configured.\nConfigure?")
-    private String checkAndroid() {
+    static String checkAndroid() {
         if (!PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
             return Bundle.ERR_AndroidNotConfigured();
         }

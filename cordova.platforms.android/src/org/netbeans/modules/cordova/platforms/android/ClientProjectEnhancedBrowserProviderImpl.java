@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cordova.project;
+package org.netbeans.modules.cordova.platforms.android;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
@@ -49,6 +49,9 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
+/**
+ * @author Jan Becicka
+ */
 @ProjectServiceProvider(
         projectType = "org-netbeans-modules-web-clientproject",
         service=ClientProjectEnhancedBrowserProvider.class)
@@ -64,7 +67,7 @@ public class ClientProjectEnhancedBrowserProviderImpl implements ClientProjectEn
         if (webBrowser == null) {
             return null;
         }
-        if (BrowserFamilyId.PHONEGAP == webBrowser.getBrowserFamily()) {
+        if (BrowserFamilyId.ANDROID == webBrowser.getBrowserFamily()) {
             return new ClientProjectEnhancedBrowserImpl(p, webBrowser);
         }
         return null;
