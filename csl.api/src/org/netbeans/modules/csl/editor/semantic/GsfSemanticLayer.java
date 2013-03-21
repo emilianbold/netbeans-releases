@@ -56,6 +56,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -333,18 +334,23 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
 
         @Override
         public int getStartOffset() {
-            return layer.getShiftedPos(element.range.getStart());
+            return (element != null)
+                    ? layer.getShiftedPos(element.range.getStart())
+                    : Integer.MAX_VALUE;
         }
 
         @Override
         public int getEndOffset() {
-            return Math.min(layer.getShiftedPos(element.range.getEnd()), nextElementStartOffset);
+            return (element != null)
+                    ? Math.min(layer.getShiftedPos(element.range.getEnd()), nextElementStartOffset)
+                    : Integer.MAX_VALUE;
         }
 
         @Override
         public AttributeSet getAttributes() {
-            Coloring coloring = element.coloring;
-            return layer.getColoring(coloring, element.language);
+            return (element != null)
+                    ? layer.getColoring(element.coloring, element.language)
+                    : SimpleAttributeSet.EMPTY;
         }
     }
 }
