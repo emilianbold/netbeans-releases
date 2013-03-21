@@ -56,4 +56,8 @@ public class ExtModelTest extends ModelTestBase {
     public void testExtDefineMethod() throws Exception {
         checkModel("testfiles/completion/defineMethod/defineMethod.js");
     }
+    
+    public void testExtApplyMethod() throws Exception {
+        checkModel("testfiles/completion/applyMethod/ClassManager.js");
+    }
 }
