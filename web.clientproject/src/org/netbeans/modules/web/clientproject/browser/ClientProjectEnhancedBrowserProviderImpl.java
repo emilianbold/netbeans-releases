@@ -61,6 +61,10 @@ public class ClientProjectEnhancedBrowserProviderImpl implements ClientProjectEn
     
     @Override
     public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser) {
+        //is this necessary?
+        if (webBrowser == null) {
+            return null;
+        }
         if (webBrowser.getBrowserFamily().isMobile()) {
             return null;
         }
