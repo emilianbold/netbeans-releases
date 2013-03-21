@@ -104,7 +104,7 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
     private File[] currRoots;
     private int currLimit;
     private boolean addition;
-    private final int DEFAULT_LIMIT = 1;
+    private final int DEFAULT_LIMIT = 10;
     
     /** Creates new form RevisionsPanel */
     public RevisionListPanel() {
@@ -241,9 +241,6 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                 sb.append(revStr.length() > 7 ? revStr.substring(0, 7) : revStr).append(" - "); //NOI18N
                 sb.append(revision.getMessage());
                 tooltip = sb.toString();
-                if (sb.length() > 33) {
-                    sb.delete(30, sb.length()).append("..."); //NOI18N
-                }
                 sd.remove(0, sd.getLength());
                 String text = sb.toString();
                 sd.insertString(0, text, style);
