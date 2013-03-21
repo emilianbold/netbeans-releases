@@ -67,6 +67,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
@@ -104,7 +105,7 @@ public class ModelVisitor extends PathNodeVisitor {
     private final JsParserResult parserResult;
 
     // keeps objects that are created as arguments of a function call
-    private Collection<JsObjectImpl> functionArguments = new ArrayList<JsObjectImpl>();
+    private final Stack<Collection<JsObjectImpl>> functionArgumentStack = new Stack<Collection<JsObjectImpl>>();
     private Map<FunctionInterceptor, Collection<FunctionCall>> functionCalls = null;
     
     private JsObjectImpl fromAN = null;
@@ -368,7 +369,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(CallNode callNode) {
-        functionArguments.clear();
+        functionArgumentStack.push(new ArrayList<JsObjectImpl>(3));
         if (callNode.getFunction() instanceof IdentNode) {
             IdentNode iNode = (IdentNode)callNode.getFunction();
             addOccurence(iNode, false, true, callNode.getArgs().size());
@@ -383,6 +384,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node leave(CallNode callNode) {
+        Collection<JsObjectImpl> functionArguments = functionArgumentStack.pop();
         if(callNode.getFunction() instanceof AccessNode) {
                 List<Identifier> funcName = getName((AccessNode)callNode.getFunction(), parserResult);
                 if (funcName != null) {
@@ -768,7 +770,9 @@ public class ModelVisitor extends PathNodeVisitor {
             JsObjectImpl object = ModelElementFactory.createAnonymousObject(parserResult, objectNode,  modelBuilder);
             modelBuilder.setCurrentObject(object);
             object.setJsKind(JsElement.Kind.OBJECT_LITERAL);
-            functionArguments.add(object);
+            if (!functionArgumentStack.isEmpty()) {
+                functionArgumentStack.peek().add(object);
+            }
             return super.enter(objectNode);
         } else if (previousVisited instanceof ReturnNode) {
             JsObjectImpl objectScope = ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
