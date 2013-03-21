@@ -185,7 +185,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
     public void deployed(Iterable<ArtifactListener.Artifact> artifacts) {
         ClientSideDevelopmentSupport easelSupport = project.getLookup().lookup(ClientSideDevelopmentSupport.class);
         
-        if (!easelSupport.canReload()) {
+        if (easelSupport == null || !easelSupport.canReload()) {
             return;
         }
         for (ArtifactListener.Artifact artifact : artifacts) {
