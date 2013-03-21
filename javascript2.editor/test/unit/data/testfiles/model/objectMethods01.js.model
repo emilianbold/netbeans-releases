@@ -1,10 +1,10 @@
 FUNCTION objectMethods01 [ANONYMOUS: false, DECLARED: true - objectMethods01, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Ridic : FUNCTION Ridic [ANONYMOUS: false, DECLARED: true - Ridic, MODIFIERS: PUBLIC, CONSTRUCTOR]
       # RETURN TYPES
-      Ridic
+      Ridic, RESOLVED: true
       # PARAMETERS
       OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
       OBJECT surname [ANONYMOUS: false, DECLARED: true - surname, MODIFIERS: PUBLIC, PARAMETER]
@@ -18,7 +18,7 @@ Ridic : FUNCTION Ridic [ANONYMOUS: false, DECLARED: true - Ridic, MODIFIERS: PUB
                 # PROPERTIES
                 getInfo : FUNCTION getInfo [ANONYMOUS: false, DECLARED: true - getInfo, MODIFIERS: PUBLIC, METHOD]
                         # RETURN TYPES
-                        String
+                        String, RESOLVED: true
                         # PROPERTIES
                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
       surname   : OBJECT surname [ANONYMOUS: false, DECLARED: true - surname, MODIFIERS: PUBLIC, PROPERTY]

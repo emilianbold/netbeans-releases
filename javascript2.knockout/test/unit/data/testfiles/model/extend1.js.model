@@ -1,6 +1,6 @@
 FUNCTION extend1 [ANONYMOUS: false, DECLARED: true - extend1, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 ko : OBJECT ko [ANONYMOUS: false, DECLARED: false - ko, MODIFIERS: PUBLIC, OBJECT]
    # PROPERTIES
@@ -18,7 +18,7 @@ x  : OBJECT x [ANONYMOUS: false, DECLARED: true - x, MODIFIERS: PUBLIC, OBJECT_L
    b : OBJECT b [ANONYMOUS: false, DECLARED: true - b, MODIFIERS: PUBLIC, PROPERTY]
    r : FUNCTION r [ANONYMOUS: false, DECLARED: true - r, MODIFIERS: PUBLIC, METHOD]
      # RETURN TYPES
-     undefined
+     undefined, RESOLVED: true
      # PROPERTIES
      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 y  : OBJECT y [ANONYMOUS: false, DECLARED: true - y, MODIFIERS: PUBLIC, OBJECT_LITERAL]
@@ -28,6 +28,6 @@ y  : OBJECT y [ANONYMOUS: false, DECLARED: true - y, MODIFIERS: PUBLIC, OBJECT_L
    c : OBJECT c [ANONYMOUS: false, DECLARED: true - c, MODIFIERS: PUBLIC, PROPERTY]
    r : FUNCTION r [ANONYMOUS: false, DECLARED: true - r, MODIFIERS: PUBLIC, METHOD]
      # RETURN TYPES
-     undefined
+     undefined, RESOLVED: true
      # PROPERTIES
      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]

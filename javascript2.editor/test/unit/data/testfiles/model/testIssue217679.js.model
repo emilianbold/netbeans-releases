@@ -1,10 +1,10 @@
 FUNCTION testIssue217679 [ANONYMOUS: false, DECLARED: true - testIssue217679, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Aloha : FUNCTION Aloha [ANONYMOUS: false, DECLARED: true - Aloha, MODIFIERS: PUBLIC, CONSTRUCTOR]
       # RETURN TYPES
-      Aloha
+      Aloha, RESOLVED: true
       # PARAMETERS
       OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
       OBJECT surname [ANONYMOUS: false, DECLARED: true - surname, MODIFIERS: PUBLIC, PARAMETER]
@@ -12,7 +12,7 @@ Aloha : FUNCTION Aloha [ANONYMOUS: false, DECLARED: true - Aloha, MODIFIERS: PUB
       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 Dog   : FUNCTION Dog [ANONYMOUS: false, DECLARED: true - Dog, MODIFIERS: PUBLIC, CONSTRUCTOR]
       # RETURN TYPES
-      Dog
+      Dog, RESOLVED: true
       # PARAMETERS
       OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
       OBJECT surname [ANONYMOUS: false, DECLARED: true - surname, MODIFIERS: PUBLIC, PARAMETER]
@@ -20,7 +20,7 @@ Dog   : FUNCTION Dog [ANONYMOUS: false, DECLARED: true - Dog, MODIFIERS: PUBLIC,
       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 Ridic : FUNCTION Ridic [ANONYMOUS: false, DECLARED: true - Ridic, MODIFIERS: PUBLIC, CONSTRUCTOR]
       # RETURN TYPES
-      Ridic
+      Ridic, RESOLVED: true
       # PARAMETERS
       OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
       OBJECT surname [ANONYMOUS: false, DECLARED: true - surname, MODIFIERS: PUBLIC, PARAMETER]

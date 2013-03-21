@@ -1,17 +1,17 @@
 FUNCTION arguments [ANONYMOUS: false, DECLARED: true - arguments, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 ArgumentsContext : OBJECT ArgumentsContext [ANONYMOUS: false, DECLARED: true - ArgumentsContext, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                  # PROPERTIES
                  getFunction  : FUNCTION getFunction [ANONYMOUS: false, DECLARED: true - getFunction, MODIFIERS: PUBLIC, METHOD]
                               # RETURN TYPES
-                              Function
+                              Function, RESOLVED: true
                               # PROPERTIES
                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                  testFunction : FUNCTION testFunction [ANONYMOUS: false, DECLARED: true - testFunction, MODIFIERS: PUBLIC, METHOD]
                               # RETURN TYPES
-                              Number
+                              Number, RESOLVED: true
                               # PARAMETERS
                               OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
                               OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
@@ -48,7 +48,7 @@ formatter        : OBJECT formatter [ANONYMOUS: false, DECLARED: false - formatt
                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 testFunction     : FUNCTION testFunction [ANONYMOUS: false, DECLARED: true - testFunction, MODIFIERS: PUBLIC, FUNCTION]
                  # RETURN TYPES
-                 Number
+                 Number, RESOLVED: true
                  # PARAMETERS
                  OBJECT param1 [ANONYMOUS: false, DECLARED: true - param1, MODIFIERS: PUBLIC, PARAMETER]
                  OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]

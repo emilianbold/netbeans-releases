@@ -1,10 +1,10 @@
 FUNCTION variables01 [ANONYMOUS: false, DECLARED: true - variables01, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Address   : FUNCTION Address [ANONYMOUS: false, DECLARED: true - Address, MODIFIERS: PUBLIC, CONSTRUCTOR]
           # RETURN TYPES
-          Address
+          Address, RESOLVED: true
           # PARAMETERS
           OBJECT town [ANONYMOUS: false, DECLARED: true - town, MODIFIERS: PUBLIC, PARAMETER]
           OBJECT state [ANONYMOUS: false, DECLARED: true - state, MODIFIERS: PUBLIC, PARAMETER]
@@ -15,7 +15,7 @@ Address   : FUNCTION Address [ANONYMOUS: false, DECLARED: true - Address, MODIFI
           id        : OBJECT id [ANONYMOUS: false, DECLARED: true - id, MODIFIERS: PUBLIC, PROPERTY]
           print     : FUNCTION print [ANONYMOUS: false, DECLARED: true - print, MODIFIERS: PROTECTED, METHOD]
                     # RETURN TYPES
-                    String
+                    String, RESOLVED: true
                     # PROPERTIES
                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                     result    : OBJECT result [ANONYMOUS: false, DECLARED: true - result, MODIFIERS: PRIVATE, VARIABLE]

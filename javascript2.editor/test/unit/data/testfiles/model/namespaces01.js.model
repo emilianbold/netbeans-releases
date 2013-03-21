@@ -1,6 +1,6 @@
 FUNCTION namespaces01 [ANONYMOUS: false, DECLARED: true - namespaces01, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 MyContext     : OBJECT MyContext [ANONYMOUS: false, DECLARED: true - MyContext, MODIFIERS: PUBLIC, OBJECT_LITERAL]
               # PROPERTIES
@@ -24,7 +24,7 @@ Ns1           : OBJECT Ns1 [ANONYMOUS: false, DECLARED: false - Ns1, MODIFIERS: 
                       fix : OBJECT fix [ANONYMOUS: false, DECLARED: true - fix, MODIFIERS: PUBLIC, PROPERTY]
 addProperties : FUNCTION addProperties [ANONYMOUS: false, DECLARED: true - addProperties, MODIFIERS: PUBLIC, FUNCTION]
               # RETURN TYPES
-              undefined
+              undefined, RESOLVED: true
               # PARAMETERS
               OBJECT arg [ANONYMOUS: false, DECLARED: true - arg, MODIFIERS: PUBLIC, PARAMETER]
               # PROPERTIES

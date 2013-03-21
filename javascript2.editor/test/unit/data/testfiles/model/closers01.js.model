@@ -1,25 +1,25 @@
 FUNCTION closers01 [ANONYMOUS: false, DECLARED: true - closers01, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 _L1       : FUNCTION _L1 [ANONYMOUS: true, DECLARED: true - _L1, MODIFIERS: PUBLIC, FUNCTION]
           # RETURN TYPES
-          undefined
+          undefined, RESOLVED: true
           # PROPERTIES
           MyContext : OBJECT MyContext [ANONYMOUS: false, DECLARED: true - MyContext, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                     # PROPERTIES
                     createTextWrapper : FUNCTION createTextWrapper [ANONYMOUS: false, DECLARED: true - createTextWrapper, MODIFIERS: PUBLIC, METHOD]
                                       # RETURN TYPES
-                                      _L1.MyContext.createTextWrapper.wrapper
+                                      _L1.MyContext.createTextWrapper.wrapper, RESOLVED: true
                                       # PROPERTIES
                                       CreateNeco : FUNCTION CreateNeco [ANONYMOUS: false, DECLARED: true - CreateNeco, MODIFIERS: PRIVATE, CONSTRUCTOR]
                                                  # RETURN TYPES
-                                                 _L1.MyContext.createTextWrapper.CreateNeco
+                                                 _L1.MyContext.createTextWrapper.CreateNeco, RESOLVED: true
                                                  # PROPERTIES
                                                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                  nazdar    : FUNCTION nazdar [ANONYMOUS: false, DECLARED: true - nazdar, MODIFIERS: PROTECTED, METHOD]
                                                            # RETURN TYPES
-                                                           String
+                                                           String, RESOLVED: true
                                                            # PROPERTIES
                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                       arguments  : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
@@ -34,7 +34,7 @@ _L1       : FUNCTION _L1 [ANONYMOUS: true, DECLARED: true - _L1, MODIFIERS: PUBL
                                                  # PROPERTIES
                                                  print : FUNCTION print [ANONYMOUS: false, DECLARED: true - print, MODIFIERS: PUBLIC, METHOD]
                                                        # RETURN TYPES
-                                                       _L1.MyContext.createTextWrapper.wrapper
+                                                       _L1.MyContext.createTextWrapper.wrapper, RESOLVED: true
                                                        # PARAMETERS
                                                        OBJECT text [ANONYMOUS: false, DECLARED: true - text, MODIFIERS: PUBLIC, PARAMETER]
                                                        # PROPERTIES

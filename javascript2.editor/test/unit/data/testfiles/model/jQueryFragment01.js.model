@@ -1,10 +1,10 @@
 FUNCTION jQueryFragment01 [ANONYMOUS: false, DECLARED: true - jQueryFragment01, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 _L2            : FUNCTION _L2 [ANONYMOUS: true, DECLARED: true - _L2, MODIFIERS: PUBLIC, FUNCTION]
                # RETURN TYPES
-               undefined
+               undefined, RESOLVED: true
                # PROPERTIES
                arguments   : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                functionVar : OBJECT functionVar [ANONYMOUS: false, DECLARED: true - functionVar, MODIFIERS: PRIVATE, VARIABLE]
@@ -27,7 +27,7 @@ _L2            : FUNCTION _L2 [ANONYMOUS: true, DECLARED: true - _L2, MODIFIERS:
                                              setData    : OBJECT setData [ANONYMOUS: false, DECLARED: true - setData, MODIFIERS: PUBLIC, PROPERTY]
                                              test       : FUNCTION test [ANONYMOUS: false, DECLARED: true - test, MODIFIERS: PUBLIC, METHOD]
                                                         # RETURN TYPES
-                                                        undefined
+                                                        undefined, RESOLVED: true
                                                         # PROPERTIES
                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                  name        : OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PROPERTY]

@@ -1,6 +1,6 @@
 FUNCTION propertyWithNew [ANONYMOUS: false, DECLARED: true - propertyWithNew, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Anonym$0         : OBJECT Anonym$0 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                  # PROPERTIES

@@ -1,10 +1,10 @@
 FUNCTION typeInferenceNew [ANONYMOUS: false, DECLARED: true - typeInferenceNew, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Address   : FUNCTION Address [ANONYMOUS: false, DECLARED: true - Address, MODIFIERS: PUBLIC, CONSTRUCTOR]
           # RETURN TYPES
-          Address
+          Address, RESOLVED: true
           # PARAMETERS
           OBJECT street [ANONYMOUS: false, DECLARED: true - street, MODIFIERS: PUBLIC, PARAMETER]
           OBJECT town [ANONYMOUS: false, DECLARED: true - town, MODIFIERS: PUBLIC, PARAMETER]
@@ -16,7 +16,7 @@ Address   : FUNCTION Address [ANONYMOUS: false, DECLARED: true - Address, MODIFI
           town      : OBJECT town [ANONYMOUS: false, DECLARED: true - town, MODIFIERS: PUBLIC, PROPERTY]
 Car       : FUNCTION Car [ANONYMOUS: false, DECLARED: true - Car, MODIFIERS: PUBLIC, CONSTRUCTOR]
           # RETURN TYPES
-          Car
+          Car, RESOLVED: true
           # PARAMETERS
           OBJECT color [ANONYMOUS: false, DECLARED: true - color, MODIFIERS: PUBLIC, PARAMETER]
           OBJECT maker [ANONYMOUS: false, DECLARED: true - maker, MODIFIERS: PUBLIC, PARAMETER]

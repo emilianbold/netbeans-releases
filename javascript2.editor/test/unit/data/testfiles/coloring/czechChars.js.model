@@ -1,10 +1,10 @@
 FUNCTION czechChars [ANONYMOUS: false, DECLARED: true - czechChars, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 _L1    : FUNCTION _L1 [ANONYMOUS: true, DECLARED: true - _L1, MODIFIERS: PUBLIC, FUNCTION]
        # RETURN TYPES
-       undefined
+       undefined, RESOLVED: true
        # PARAMETERS
        OBJECT $ [ANONYMOUS: false, DECLARED: true - $, MODIFIERS: PUBLIC, PARAMETER]
                # PROPERTIES

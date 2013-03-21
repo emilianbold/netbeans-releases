@@ -1,10 +1,10 @@
 FUNCTION simpleFunction [ANONYMOUS: false, DECLARED: true - simpleFunction, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 createInfo : FUNCTION createInfo [ANONYMOUS: false, DECLARED: true - createInfo, MODIFIERS: PUBLIC, FUNCTION]
            # RETURN TYPES
-           undefined
+           undefined, RESOLVED: true
            # PARAMETERS
            OBJECT text [ANONYMOUS: false, DECLARED: true - text, MODIFIERS: PUBLIC, PARAMETER]
            OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]

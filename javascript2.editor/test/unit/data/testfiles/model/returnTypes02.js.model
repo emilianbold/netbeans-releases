@@ -1,10 +1,10 @@
 FUNCTION returnTypes02 [ANONYMOUS: false, DECLARED: true - returnTypes02, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Man           : FUNCTION Man [ANONYMOUS: false, DECLARED: true - Man, MODIFIERS: PUBLIC, CONSTRUCTOR]
               # RETURN TYPES
-              Man
+              Man, RESOLVED: true
               # PARAMETERS
               OBJECT firstName [ANONYMOUS: false, DECLARED: true - firstName, MODIFIERS: PUBLIC, PARAMETER]
               OBJECT lastName [ANONYMOUS: false, DECLARED: true - lastName, MODIFIERS: PUBLIC, PARAMETER]
@@ -14,7 +14,7 @@ Man           : FUNCTION Man [ANONYMOUS: false, DECLARED: true - Man, MODIFIERS:
               # PROPERTIES
               Address       : FUNCTION Address [ANONYMOUS: false, DECLARED: true - Address, MODIFIERS: PRIVATE, CONSTRUCTOR]
                             # RETURN TYPES
-                            Man.Address
+                            Man.Address, RESOLVED: true
                             # PARAMETERS
                             OBJECT streetp [ANONYMOUS: false, DECLARED: true - streetp, MODIFIERS: PUBLIC, PARAMETER]
                             OBJECT townp [ANONYMOUS: false, DECLARED: true - townp, MODIFIERS: PUBLIC, PARAMETER]
@@ -23,7 +23,7 @@ Man           : FUNCTION Man [ANONYMOUS: false, DECLARED: true - Man, MODIFIERS:
                             arguments    : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             correct      : FUNCTION correct [ANONYMOUS: false, DECLARED: true - correct, MODIFIERS: PROTECTED, METHOD]
                                          # RETURN TYPES
-                                         Man.Address
+                                         Man.Address, RESOLVED: true
                                          # PROPERTIES
                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             getZip       : FUNCTION getZip [ANONYMOUS: false, DECLARED: true - getZip, MODIFIERS: PROTECTED, METHOD]
@@ -31,7 +31,7 @@ Man           : FUNCTION Man [ANONYMOUS: false, DECLARED: true - Man, MODIFIERS:
                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             printAddress : FUNCTION printAddress [ANONYMOUS: false, DECLARED: true - printAddress, MODIFIERS: PROTECTED, METHOD]
                                          # RETURN TYPES
-                                         undefined
+                                         undefined, RESOLVED: true
                                          # PROPERTIES
                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                          tmp       : OBJECT tmp [ANONYMOUS: false, DECLARED: true - tmp, MODIFIERS: PRIVATE, OBJECT]
@@ -46,7 +46,7 @@ Man           : FUNCTION Man [ANONYMOUS: false, DECLARED: true - Man, MODIFIERS:
               arguments     : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               createAddress : FUNCTION createAddress [ANONYMOUS: false, DECLARED: true - createAddress, MODIFIERS: PRIVATE, METHOD]
                             # RETURN TYPES
-                            Man.Address
+                            Man.Address, RESOLVED: true
                             # PARAMETERS
                             OBJECT street [ANONYMOUS: false, DECLARED: true - street, MODIFIERS: PUBLIC, PARAMETER]
                             OBJECT town [ANONYMOUS: false, DECLARED: true - town, MODIFIERS: PUBLIC, PARAMETER]
@@ -61,7 +61,7 @@ Man           : FUNCTION Man [ANONYMOUS: false, DECLARED: true - Man, MODIFIERS:
                                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               print         : FUNCTION print [ANONYMOUS: false, DECLARED: true - print, MODIFIERS: PROTECTED, METHOD]
                             # RETURN TYPES
-                            Man
+                            Man, RESOLVED: true
                             # PROPERTIES
                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 createAddress : FUNCTION createAddress [ANONYMOUS: false, DECLARED: false - createAddress, MODIFIERS: PUBLIC, FUNCTION]

@@ -1,10 +1,10 @@
 FUNCTION staticMethods01 [ANONYMOUS: false, DECLARED: true - staticMethods01, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Ridic : FUNCTION Ridic [ANONYMOUS: false, DECLARED: true - Ridic, MODIFIERS: PUBLIC, CONSTRUCTOR]
       # RETURN TYPES
-      Ridic
+      Ridic, RESOLVED: true
       # PARAMETERS
       OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
       OBJECT surname [ANONYMOUS: false, DECLARED: true - surname, MODIFIERS: PUBLIC, PARAMETER]
@@ -12,7 +12,7 @@ Ridic : FUNCTION Ridic [ANONYMOUS: false, DECLARED: true - Ridic, MODIFIERS: PUB
       arguments  : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
       getFormula : FUNCTION getFormula [ANONYMOUS: false, DECLARED: true - getFormula, MODIFIERS: PUBLIC, STATIC, METHOD]
                  # RETURN TYPES
-                 String
+                 String, RESOLVED: true
                  # PARAMETERS
                  OBJECT type [ANONYMOUS: false, DECLARED: true - type, MODIFIERS: PUBLIC, PARAMETER]
                  # PROPERTIES
@@ -25,7 +25,7 @@ Ridic : FUNCTION Ridic [ANONYMOUS: false, DECLARED: true - Ridic, MODIFIERS: PUB
                  # PROPERTIES
                  getInfo : FUNCTION getInfo [ANONYMOUS: false, DECLARED: true - getInfo, MODIFIERS: PUBLIC, METHOD]
                          # RETURN TYPES
-                         String
+                         String, RESOLVED: true
                          # PROPERTIES
                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
       surname    : OBJECT surname [ANONYMOUS: false, DECLARED: true - surname, MODIFIERS: PUBLIC, PROPERTY]

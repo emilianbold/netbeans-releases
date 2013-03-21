@@ -1,6 +1,6 @@
 FUNCTION property01 [ANONYMOUS: false, DECLARED: true - property01, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 fruit : OBJECT fruit [ANONYMOUS: false, DECLARED: true - fruit, MODIFIERS: PUBLIC, OBJECT_LITERAL]
       # PROPERTIES

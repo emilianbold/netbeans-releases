@@ -1,10 +1,10 @@
 FUNCTION jQueryFragment02 [ANONYMOUS: false, DECLARED: true - jQueryFragment02, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 _L1    : FUNCTION _L1 [ANONYMOUS: true, DECLARED: true - _L1, MODIFIERS: PUBLIC, FUNCTION]
        # RETURN TYPES
-       undefined
+       undefined, RESOLVED: true
        # PARAMETERS
        OBJECT window [ANONYMOUS: false, DECLARED: true - window, MODIFIERS: PUBLIC, PARAMETER]
                # PROPERTIES
@@ -22,14 +22,14 @@ _L1    : FUNCTION _L1 [ANONYMOUS: true, DECLARED: true - _L1, MODIFIERS: PUBLIC,
        navigator : OBJECT navigator [ANONYMOUS: false, DECLARED: true - navigator, MODIFIERS: PRIVATE, VARIABLE]
 _L8    : FUNCTION _L8 [ANONYMOUS: true, DECLARED: true - _L8, MODIFIERS: PUBLIC, FUNCTION]
        # RETURN TYPES
-       undefined
+       undefined, RESOLVED: true
        # PROPERTIES
        _$         : OBJECT _$ [ANONYMOUS: false, DECLARED: true - _$, MODIFIERS: PRIVATE, VARIABLE]
        _jQuery    : OBJECT _jQuery [ANONYMOUS: false, DECLARED: true - _jQuery, MODIFIERS: PRIVATE, VARIABLE]
        arguments  : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
        jQuery     : FUNCTION jQuery [ANONYMOUS: false, DECLARED: true - jQuery, MODIFIERS: PRIVATE, METHOD]
                   # RETURN TYPES
-                  @exp;jQuery@pro;fn@call;init
+                  @exp;jQuery@pro;fn@call;init, RESOLVED: false
                   # PARAMETERS
                   OBJECT selector [ANONYMOUS: false, DECLARED: true - selector, MODIFIERS: PUBLIC, PARAMETER]
                   OBJECT context [ANONYMOUS: false, DECLARED: true - context, MODIFIERS: PUBLIC, PARAMETER]

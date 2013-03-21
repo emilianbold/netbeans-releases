@@ -1,12 +1,12 @@
 FUNCTION objectAsParameter [ANONYMOUS: false, DECLARED: true - objectAsParameter, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Anonym$0  : OBJECT Anonym$0 [ANONYMOUS: true, DECLARED: true, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
           # PROPERTIES
           callMaker : FUNCTION callMaker [ANONYMOUS: false, DECLARED: true - callMaker, MODIFIERS: PUBLIC, METHOD]
                     # RETURN TYPES
-                    undefined
+                    undefined, RESOLVED: true
                     # PROPERTIES
                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
           color     : OBJECT color [ANONYMOUS: false, DECLARED: true - color, MODIFIERS: PUBLIC, PROPERTY]
@@ -23,7 +23,7 @@ furniture : OBJECT furniture [ANONYMOUS: false, DECLARED: true - furniture, MODI
           # PROPERTIES
           getDescription : FUNCTION getDescription [ANONYMOUS: false, DECLARED: true - getDescription, MODIFIERS: PUBLIC, METHOD]
                          # RETURN TYPES
-                         undefined
+                         undefined, RESOLVED: true
                          # PROPERTIES
                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                          param     : OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PRIVATE, OBJECT]

@@ -1,10 +1,10 @@
 FUNCTION kolo [ANONYMOUS: false, DECLARED: true - kolo, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Kolo      : FUNCTION Kolo [ANONYMOUS: false, DECLARED: true - Kolo, MODIFIERS: PUBLIC, CONSTRUCTOR]
           # RETURN TYPES
-          Kolo
+          Kolo, RESOLVED: true
           # PROPERTIES
           arguments   : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
           ctverec     : OBJECT ctverec [ANONYMOUS: false, DECLARED: true - ctverec, MODIFIERS: PRIVATE, VARIABLE]
@@ -13,13 +13,13 @@ Kolo      : FUNCTION Kolo [ANONYMOUS: false, DECLARED: true - Kolo, MODIFIERS: P
                       guma   : OBJECT guma [ANONYMOUS: false, DECLARED: true - guma, MODIFIERS: PUBLIC, PROPERTY]
                       print  : FUNCTION print [ANONYMOUS: false, DECLARED: true - print, MODIFIERS: PUBLIC, METHOD]
                              # RETURN TYPES
-                             undefined
+                             undefined, RESOLVED: true
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                       prumer : OBJECT prumer [ANONYMOUS: false, DECLARED: true - prumer, MODIFIERS: PUBLIC, PROPERTY]
           description : FUNCTION description [ANONYMOUS: false, DECLARED: true - description, MODIFIERS: PROTECTED, METHOD]
                       # RETURN TYPES
-                      undefined
+                      undefined, RESOLVED: true
                       # PROPERTIES
                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
           trojuhelnik : OBJECT trojuhelnik [ANONYMOUS: false, DECLARED: true - trojuhelnik, MODIFIERS: PUBLIC, PROPERTY]

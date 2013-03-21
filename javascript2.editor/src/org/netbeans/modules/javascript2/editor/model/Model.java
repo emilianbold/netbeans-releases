@@ -107,6 +107,8 @@ public final class Model {
             + "(, (PUBLIC|STATIC|PROTECTED|PRIVATE|DEPRECATED|ABSTRACT))*))?" // NOI18N
             + ", (FUNCTION|METHOD|CONSTRUCTOR|OBJECT|PROPERTY|VARIABLE|FIELD|FILE|PARAMETER|ANONYMOUS_OBJECT|PROPERTY_GETTER|PROPERTY_SETTER|OBJECT_LITERAL|CATCH_BLOCK)\\]"); // NOI18N
 
+    private static final Pattern RETURN_TYPE_PATTERN = Pattern.compile("(\\S+), RESOLVED: (true|false)");
+
     private static enum ParsingState {
         RETURN, PARAMETER, PROPERTY
     }
@@ -270,7 +272,12 @@ public final class Model {
                 }
                 switch (state) {
                     case RETURN:
-                        ((JsFunctionImpl) object).addReturnType(new TypeUsageImpl(line.trim(), -1, true));
+                        Matcher matcher = RETURN_TYPE_PATTERN.matcher(line.trim());
+                        if (!matcher.matches()) {
+                            throw new IOException("Unexpected line: " + line);
+                        }
+                        ((JsFunctionImpl) object).addReturnType(
+                                new TypeUsageImpl(matcher.group(1), -1, Boolean.parseBoolean(matcher.group(2))));
                         break;
                     case PARAMETER:
                         JsObject parameterObject = readObject(object, line.trim(),
@@ -393,7 +400,7 @@ public final class Model {
                 for (TypeUsage type : returnTypes) {
                     newLine(printer, sb, ident);
 
-                    sb.append(type.getType());
+                    sb.append(type.getType() + ", RESOLVED: " + type.isResolved());
                 }
             }
             if (!function.getParameters().isEmpty()) {

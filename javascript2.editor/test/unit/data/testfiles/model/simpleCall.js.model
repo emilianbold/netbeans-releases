@@ -1,6 +1,6 @@
 FUNCTION simpleCall [ANONYMOUS: false, DECLARED: true - simpleCall, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 Backbone : OBJECT Backbone [ANONYMOUS: false, DECLARED: false - Backbone, MODIFIERS: PUBLIC, OBJECT]
          # PROPERTIES

@@ -1,21 +1,21 @@
 FUNCTION anonymousFunction [ANONYMOUS: false, DECLARED: true - anonymousFunction, MODIFIERS: PUBLIC, FILE]
 # RETURN TYPES
-undefined
+undefined, RESOLVED: true
 # PROPERTIES
 _L44 : FUNCTION _L44 [ANONYMOUS: true, DECLARED: true - _L44, MODIFIERS: PUBLIC, FUNCTION]
      # RETURN TYPES
-     undefined
+     undefined, RESOLVED: true
      # PROPERTIES
      Car       : OBJECT Car [ANONYMOUS: false, DECLARED: true - Car, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                # PROPERTIES
                getColor : FUNCTION getColor [ANONYMOUS: false, DECLARED: true - getColor, MODIFIERS: PUBLIC, METHOD]
                         # RETURN TYPES
-                        String
+                        String, RESOLVED: true
                         # PROPERTIES
                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                getInfo  : FUNCTION getInfo [ANONYMOUS: false, DECLARED: true - getInfo, MODIFIERS: PUBLIC, METHOD]
                         # RETURN TYPES
-                        String
+                        String, RESOLVED: true
                         # PROPERTIES
                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
