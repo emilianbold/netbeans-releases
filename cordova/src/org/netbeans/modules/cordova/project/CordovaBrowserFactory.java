@@ -75,5 +75,10 @@ public class CordovaBrowserFactory implements EnhancedBrowserFactory, HtmlBrowse
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         return new CordovaBrowser();
     }
+
+    @Override
+    public String getId() {
+        return "Cordova"; // NOI18N
+    }
     
 }

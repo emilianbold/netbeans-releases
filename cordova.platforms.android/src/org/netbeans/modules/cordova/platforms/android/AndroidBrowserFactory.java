@@ -83,6 +83,12 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         public HtmlBrowser.Impl createHtmlBrowserImpl() {
             return new AndroidBrowser(AndroidBrowser.Kind.DEVICE_DEFAULT);
         }
+
+        @Override
+        public String getId() {
+            return "Android-Default"; // NOI18N
+        }
+
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
@@ -97,6 +103,11 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         public HtmlBrowser.Impl createHtmlBrowserImpl() {
             return new AndroidBrowser(AndroidBrowser.Kind.DEVICE_CHROME);
         }
+
+        @Override
+        public String getId() {
+            return "Android-Chrome"; // NOI18N
+        }
     }
     
     //@ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
@@ -110,6 +121,11 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         @Override
         public HtmlBrowser.Impl createHtmlBrowserImpl() {
             return new AndroidBrowser(AndroidBrowser.Kind.EMULATOR_DEFAULT);
+        }
+
+        @Override
+        public String getId() {
+            return "Android-Emulator"; // NOI18N
         }
     }
     
