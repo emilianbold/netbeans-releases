@@ -128,4 +128,9 @@ public class JsObjectReference extends JsObjectImpl {
         // do nothing
     }
 
+    @Override
+    public String getDocumentation() {
+        return original.getDocumentation(); 
+    }
+    
 }
