@@ -524,7 +524,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     //}
     }
 
-    public void closing() {
+    void notifyClosing() {
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.closing");
         }
