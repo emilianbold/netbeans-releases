@@ -44,6 +44,7 @@ package org.netbeans.modules.php.analysis.options;
 import java.util.List;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
 import org.netbeans.modules.php.analysis.commands.MessDetector;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.openide.util.NbBundle;
 
@@ -78,7 +79,7 @@ public final class AnalysisOptionsValidator {
 
     @NbBundle.Messages("AnalysisOptionsValidator.codeSniffer.standard.empty=Valid code sniffer standard must be set.")
     private AnalysisOptionsValidator validateCodeSnifferStandard(String codeSnifferStandard) {
-        if (codeSnifferStandard == null) {
+        if (!StringUtils.hasText(codeSnifferStandard)) {
             result.addWarning(new ValidationResult.Message("codeSniffer.standard", Bundle.AnalysisOptionsValidator_codeSniffer_standard_empty())); // NOI18N
         }
         return this;
