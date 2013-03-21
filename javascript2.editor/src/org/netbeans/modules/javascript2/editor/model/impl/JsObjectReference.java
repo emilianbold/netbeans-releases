@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -59,11 +60,15 @@ public class JsObjectReference extends JsObjectImpl {
  
     private final JsObject original;
 
+    private final Set<Modifier> modifiers;
+
     public JsObjectReference(JsObject parent, Identifier declarationName,
-            JsObject original, boolean isDeclared) {
-        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared);
+            JsObject original, boolean isDeclared, Set<Modifier> modifiers) {
+        super(parent, declarationName, declarationName.getOffsetRange(), isDeclared,
+                modifiers == null ? EnumSet.noneOf(Modifier.class) : modifiers);
         assert original != null;
         this.original = original;
+        this.modifiers = modifiers;
     }
 
     @Override
@@ -98,6 +103,9 @@ public class JsObjectReference extends JsObjectImpl {
 
     @Override
     public Set<Modifier> getModifiers() {
+        if (modifiers != null) {
+            return modifiers;
+        }
         return original.getModifiers();
     }
     

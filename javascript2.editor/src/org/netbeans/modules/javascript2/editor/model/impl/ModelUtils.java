@@ -398,7 +398,7 @@ public class ModelUtils {
                             ? (JsFunctionImpl) property
                             : ((JsFunctionReference)property).getOriginal();
                     object.getParent().addProperty(object.getName(), new JsFunctionReference(
-                            object.getParent(), object.getDeclarationName(), function, true));
+                            object.getParent(), object.getDeclarationName(), function, true, null));
                 }
             }
         } else if (type.getType().startsWith("@new;")) {

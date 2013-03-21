@@ -42,6 +42,8 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
+import java.util.Set;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -57,8 +59,8 @@ public class JsFunctionReference extends JsObjectReference implements JsFunction
     private final JsFunction original;
     
     public JsFunctionReference(JsObject parent, Identifier declarationName,
-            JsFunction original, boolean isDeclared) {
-        super(parent, declarationName, original, isDeclared);
+            JsFunction original, boolean isDeclared, Set<Modifier> modifiers) {
+        super(parent, declarationName, original, isDeclared, modifiers);
         this.original = original;
     }
 

@@ -119,7 +119,7 @@ public class KnockoutExtendInterceptor implements FunctionInterceptor {
             }
             for (Map.Entry<String, ? extends JsObject> entry : value.getProperties().entrySet()) {
                 object.addProperty(entry.getKey(),
-                        factory.newReference(object, entry.getKey(), offsetRange, entry.getValue(), true));
+                        factory.newReference(object, entry.getKey(), offsetRange, entry.getValue(), true, null));
             }
         }
     }
@@ -155,16 +155,8 @@ public class KnockoutExtendInterceptor implements FunctionInterceptor {
         if (identifier.isEmpty()) {
             return object;
         }
-        int index = 0;
-//        if (object.getName().equals(identifier.get(0))) {
-//            if (identifier.size() == 1) {
-//                return object;
-//            } else {
-//                index++;
-//            }
-//        }
-        return getReference(object.getProperty(identifier.get(index)),
-                identifier.subList(index + 1, identifier.size()));
+        return getReference(object.getProperty(identifier.get(0)),
+                identifier.subList(1, identifier.size()));
     }
 
     private static JsObject findJsObjectByAssignment(JsObject globalObject,

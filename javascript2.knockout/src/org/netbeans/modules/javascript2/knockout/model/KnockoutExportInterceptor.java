@@ -43,13 +43,16 @@ package org.netbeans.modules.javascript2.knockout.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -87,8 +90,6 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
             FunctionArgument valueArgument = iterator.next();
 
             int offset = nameArgument.getOffset();
-
-            System.out.println("---" + nameArgument.getValue());
             
             JsObject object = null;
             if (objectArgument.getKind() == FunctionArgument.Kind.REFERENCE) {
@@ -117,11 +118,14 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
             String name = (String) nameArgument.getValue();
             OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
             if (object != null && value != null) {
-                System.out.println("===" + name);
-                System.out.println("===" + object.getFullyQualifiedName());
-                System.out.println("===" + value.getFullyQualifiedName());
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Exporting property {0} to {1} as {2}",
+                            new Object[] {name, object.getFullyQualifiedName(), value.getFullyQualifiedName()});
+                }
+                EnumSet modifiers = EnumSet.copyOf(value.getModifiers());
+                modifiers.remove(Modifier.STATIC);
                 object.addProperty(name,
-                        factory.newReference(object, name, offsetRange, value, true));
+                        factory.newReference(object, name, offsetRange, value, true, modifiers));
             }
         } else if (args.size() == 2) {
             JsObject ko = globalObject.getProperty(GLOBAL_KO_OBJECT); // NOI18N
@@ -208,7 +212,8 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
                             }
                         }
 
-                        parent.addProperty(name, factory.newReference(parent, name, offsetRange, value, true));
+                        parent.addProperty(name, factory.newReference(
+                                parent, name, offsetRange, value, true, null));
                     }
                 }
 
@@ -247,16 +252,8 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
         if (identifier.isEmpty()) {
             return object;
         }
-        int index = 0;
-        if (object.getName().equals(identifier.get(0))) {
-            if (identifier.size() == 1) {
-                return object;
-            } else {
-                index++;
-            }
-        }
-        return getReference(object.getProperty(identifier.get(index)),
-                identifier.subList(index + 1, identifier.size()));
+        return getReference(object.getProperty(identifier.get(0)),
+                identifier.subList(1, identifier.size()));
     }
 
     private static JsObject findJsObjectByAssignment(JsObject globalObject,

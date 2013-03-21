@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -151,11 +152,13 @@ public final class ModelElementFactory {
     }
 
     public JsObject newReference(JsObject parent, String name, OffsetRange offsetRange,
-            JsObject original, boolean isDeclared) {
+            JsObject original, boolean isDeclared, @NullAllowed Set<Modifier> modifiers) {
         if (original instanceof JsFunction) {
-            return new JsFunctionReference(parent, new IdentifierImpl(name, offsetRange), (JsFunction) original, isDeclared);
+            return new JsFunctionReference(parent, new IdentifierImpl(name, offsetRange),
+                    (JsFunction) original, isDeclared, modifiers);
         }
-        return new JsObjectReference(parent, new IdentifierImpl(name, offsetRange), original, isDeclared);
+        return new JsObjectReference(parent, new IdentifierImpl(name, offsetRange),
+                original, isDeclared, modifiers);
     }
 
     public JsObject newReference(String name, JsObject original, boolean isDeclared) {
@@ -173,7 +176,7 @@ public final class ModelElementFactory {
 
         public OriginalParentFunctionReference(Identifier declarationName, JsFunction original,
                 boolean isDeclared) {
-            super(original.getParent(), declarationName, original, isDeclared);
+            super(original.getParent(), declarationName, original, isDeclared, null);
         }
 
         @Override
@@ -185,7 +188,7 @@ public final class ModelElementFactory {
     private static class OriginalParentObjectReference extends JsObjectReference {
 
         public OriginalParentObjectReference(Identifier declarationName, JsObject original, boolean isDeclared) {
-            super(original.getParent(), declarationName, original, isDeclared);
+            super(original.getParent(), declarationName, original, isDeclared, null);
         }
 
         @Override

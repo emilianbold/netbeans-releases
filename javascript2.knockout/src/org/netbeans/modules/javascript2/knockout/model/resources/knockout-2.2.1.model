@@ -124,7 +124,7 @@ cleanNode                   : FUNCTION cleanNode [ANONYMOUS: false, DECLARED: tr
                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: true - computed, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
-                            _L21.ko.dependentObservable.dependentObservable, RESOLVED: true
+                            ko.dependentObservable.dependentObservable, RESOLVED: true
                             # PARAMETERS
                             OBJECT evaluatorFunctionOrOptions [ANONYMOUS: false, DECLARED: true - evaluatorFunctionOrOptions, MODIFIERS: PUBLIC, PARAMETER]
                             OBJECT evaluatorFunctionTarget [ANONYMOUS: false, DECLARED: true - evaluatorFunctionTarget, MODIFIERS: PUBLIC, PARAMETER]
@@ -171,27 +171,27 @@ computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: tru
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             arguments                             : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                            dependentObservable                   : FUNCTION dependentObservable [ANONYMOUS: false, DECLARED: true - dependentObservable, MODIFIERS: PRIVATE, METHOD]
+                            dependentObservable                   : FUNCTION dependentObservable [ANONYMOUS: false, DECLARED: true - dependentObservable, MODIFIERS: PRIVATE, CONSTRUCTOR]
                                                                   # RETURN TYPES
-                                                                  _L21.ko, RESOLVED: true
-                                                                  _L21.ko.dependentObservable._latestValue, RESOLVED: true
+                                                                  ko, RESOLVED: true
+                                                                  ko.dependentObservable._latestValue, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments            : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
                                                                                        # PROPERTIES
                                                                                        length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
-                                                                  dispose              : FUNCTION dispose [ANONYMOUS: false, DECLARED: true - dispose, MODIFIERS: PUBLIC, STATIC, METHOD]
+                                                                  dispose              : FUNCTION dispose [ANONYMOUS: false, DECLARED: true - dispose, MODIFIERS: PUBLIC, METHOD]
                                                                                        # RETURN TYPES
                                                                                        undefined, RESOLVED: true
                                                                                        # PROPERTIES
                                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                  getDependenciesCount : FUNCTION getDependenciesCount [ANONYMOUS: false, DECLARED: true - getDependenciesCount, MODIFIERS: PUBLIC, STATIC, METHOD]
+                                                                  getDependenciesCount : FUNCTION getDependenciesCount [ANONYMOUS: false, DECLARED: true - getDependenciesCount, MODIFIERS: PUBLIC, METHOD]
                                                                                        # RETURN TYPES
                                                                                        @exp;_subscriptionsToDependencies@pro;length, RESOLVED: false
                                                                                        # PROPERTIES
                                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                   hasWriteFunction     : OBJECT hasWriteFunction [ANONYMOUS: false, DECLARED: true - hasWriteFunction, MODIFIERS: PUBLIC, STATIC, PROPERTY]
-                                                                  isActive             : OBJECT isActive [ANONYMOUS: false, DECLARED: true - isActive, MODIFIERS: PUBLIC, STATIC, PROPERTY]
-                                                                  peek                 : OBJECT peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, STATIC, PROPERTY]
+                                                                  isActive             : OBJECT isActive [ANONYMOUS: false, DECLARED: true - isActive, MODIFIERS: PUBLIC, PROPERTY]
+                                                                  peek                 : OBJECT peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, PROPERTY]
                             dispose                               : FUNCTION dispose [ANONYMOUS: false, DECLARED: true - dispose, MODIFIERS: PUBLIC, METHOD]
                                                                   # RETURN TYPES
                                                                   undefined, RESOLVED: true
@@ -266,7 +266,7 @@ computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: tru
                             notifySubscribers                     : OBJECT notifySubscribers [ANONYMOUS: false, DECLARED: false - notifySubscribers, MODIFIERS: PUBLIC, PROPERTY]
                             peek                                  : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PRIVATE, METHOD]
                                                                   # RETURN TYPES
-                                                                  _L21.ko.dependentObservable._latestValue, RESOLVED: true
+                                                                  ko.dependentObservable._latestValue, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             readFunction                          : OBJECT readFunction [ANONYMOUS: false, DECLARED: true - readFunction, MODIFIERS: PRIVATE, OBJECT]
@@ -306,7 +306,7 @@ dataFor                     : FUNCTION dataFor [ANONYMOUS: false, DECLARED: true
                                       $data : OBJECT $data [ANONYMOUS: false, DECLARED: false - $data, MODIFIERS: PUBLIC, PROPERTY]
 dependentObservable         : FUNCTION dependentObservable [ANONYMOUS: false, DECLARED: true - dependentObservable, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
-                            _L21.ko.dependentObservable.dependentObservable, RESOLVED: true
+                            ko.dependentObservable.dependentObservable, RESOLVED: true
                             # PARAMETERS
                             OBJECT evaluatorFunctionOrOptions [ANONYMOUS: false, DECLARED: true - evaluatorFunctionOrOptions, MODIFIERS: PUBLIC, PARAMETER]
                             OBJECT evaluatorFunctionTarget [ANONYMOUS: false, DECLARED: true - evaluatorFunctionTarget, MODIFIERS: PUBLIC, PARAMETER]
@@ -353,27 +353,27 @@ dependentObservable         : FUNCTION dependentObservable [ANONYMOUS: false, DE
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             arguments                             : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                            dependentObservable                   : FUNCTION dependentObservable [ANONYMOUS: false, DECLARED: true - dependentObservable, MODIFIERS: PRIVATE, METHOD]
+                            dependentObservable                   : FUNCTION dependentObservable [ANONYMOUS: false, DECLARED: true - dependentObservable, MODIFIERS: PRIVATE, CONSTRUCTOR]
                                                                   # RETURN TYPES
-                                                                  _L21.ko, RESOLVED: true
-                                                                  _L21.ko.dependentObservable._latestValue, RESOLVED: true
+                                                                  ko, RESOLVED: true
+                                                                  ko.dependentObservable._latestValue, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments            : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
                                                                                        # PROPERTIES
                                                                                        length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
-                                                                  dispose              : FUNCTION dispose [ANONYMOUS: false, DECLARED: true - dispose, MODIFIERS: PUBLIC, STATIC, METHOD]
+                                                                  dispose              : FUNCTION dispose [ANONYMOUS: false, DECLARED: true - dispose, MODIFIERS: PUBLIC, METHOD]
                                                                                        # RETURN TYPES
                                                                                        undefined, RESOLVED: true
                                                                                        # PROPERTIES
                                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                  getDependenciesCount : FUNCTION getDependenciesCount [ANONYMOUS: false, DECLARED: true - getDependenciesCount, MODIFIERS: PUBLIC, STATIC, METHOD]
+                                                                  getDependenciesCount : FUNCTION getDependenciesCount [ANONYMOUS: false, DECLARED: true - getDependenciesCount, MODIFIERS: PUBLIC, METHOD]
                                                                                        # RETURN TYPES
                                                                                        @exp;_subscriptionsToDependencies@pro;length, RESOLVED: false
                                                                                        # PROPERTIES
                                                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                   hasWriteFunction     : OBJECT hasWriteFunction [ANONYMOUS: false, DECLARED: true - hasWriteFunction, MODIFIERS: PUBLIC, STATIC, PROPERTY]
-                                                                  isActive             : OBJECT isActive [ANONYMOUS: false, DECLARED: true - isActive, MODIFIERS: PUBLIC, STATIC, PROPERTY]
-                                                                  peek                 : OBJECT peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, STATIC, PROPERTY]
+                                                                  isActive             : OBJECT isActive [ANONYMOUS: false, DECLARED: true - isActive, MODIFIERS: PUBLIC, PROPERTY]
+                                                                  peek                 : OBJECT peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, PROPERTY]
                             dispose                               : FUNCTION dispose [ANONYMOUS: false, DECLARED: true - dispose, MODIFIERS: PUBLIC, METHOD]
                                                                   # RETURN TYPES
                                                                   undefined, RESOLVED: true
@@ -448,7 +448,7 @@ dependentObservable         : FUNCTION dependentObservable [ANONYMOUS: false, DE
                             notifySubscribers                     : OBJECT notifySubscribers [ANONYMOUS: false, DECLARED: false - notifySubscribers, MODIFIERS: PUBLIC, PROPERTY]
                             peek                                  : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PRIVATE, METHOD]
                                                                   # RETURN TYPES
-                                                                  _L21.ko.dependentObservable._latestValue, RESOLVED: true
+                                                                  ko.dependentObservable._latestValue, RESOLVED: true
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             readFunction                          : OBJECT readFunction [ANONYMOUS: false, DECLARED: true - readFunction, MODIFIERS: PRIVATE, OBJECT]
@@ -627,7 +627,7 @@ extenders                   : OBJECT extenders [ANONYMOUS: false, DECLARED: true
                             # PROPERTIES
                             notify   : FUNCTION notify [ANONYMOUS: false, DECLARED: true - notify, MODIFIERS: PUBLIC, METHOD]
                                      # RETURN TYPES
-                                     _L21.ko.extenders.notify.target, RESOLVED: true
+                                     ko.extenders.notify.target, RESOLVED: true
                                      # PARAMETERS
                                      OBJECT target [ANONYMOUS: false, DECLARED: true - target, MODIFIERS: PUBLIC, PARAMETER]
                                              # PROPERTIES
@@ -935,7 +935,6 @@ jsonExpressionRewriting     : OBJECT jsonExpressionRewriting [ANONYMOUS: true, D
                                                      # PROPERTIES
                                                      arguments   : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                      propWriters : OBJECT propWriters [ANONYMOUS: false, DECLARED: true - propWriters, MODIFIERS: PRIVATE, VARIABLE]
-ko                          : OBJECT ko [ANONYMOUS: false, DECLARED: true - ko, MODIFIERS: PUBLIC, OBJECT_LITERAL]
 memoization                 : OBJECT memoization [ANONYMOUS: true, DECLARED: true - memoization, MODIFIERS: PRIVATE, ANONYMOUS_OBJECT]
                             # PROPERTIES
                             memoize                        : FUNCTION memoize [ANONYMOUS: false, DECLARED: true - memoize, MODIFIERS: PUBLIC, METHOD]
@@ -1034,7 +1033,7 @@ nativeTemplateEngine        : FUNCTION nativeTemplateEngine [ANONYMOUS: false, D
                                                            useNodesIfAvailable : OBJECT useNodesIfAvailable [ANONYMOUS: false, DECLARED: true - useNodesIfAvailable, MODIFIERS: PRIVATE, VARIABLE]
 observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: true - observable, MODIFIERS: PUBLIC, METHOD]
                             # RETURN TYPES
-                            _L21.ko.observable.observable, RESOLVED: true
+                            ko.observable.observable, RESOLVED: true
                             # PARAMETERS
                             OBJECT initialValue [ANONYMOUS: false, DECLARED: true - initialValue, MODIFIERS: PUBLIC, PARAMETER]
                             # PROPERTIES
@@ -1054,8 +1053,8 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
                                                            oldValueIsPrimitive : OBJECT oldValueIsPrimitive [ANONYMOUS: false, DECLARED: true - oldValueIsPrimitive, MODIFIERS: PRIVATE, VARIABLE]
                             observable    : FUNCTION observable [ANONYMOUS: false, DECLARED: true - observable, MODIFIERS: PRIVATE, CONSTRUCTOR]
                                           # RETURN TYPES
-                                          _L21.ko, RESOLVED: true
-                                          _L21.ko.observable.observable._latestValue, RESOLVED: true
+                                          ko, RESOLVED: true
+                                          ko.observable.observable._latestValue, RESOLVED: true
                                           # PROPERTIES
                                           _latestValue      : OBJECT _latestValue [ANONYMOUS: false, DECLARED: true - _latestValue, MODIFIERS: PUBLIC, STATIC, PROPERTY]
                                           arguments         : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, OBJECT]
@@ -1072,15 +1071,15 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
                                                             arguments           : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                             oldValueIsPrimitive : OBJECT oldValueIsPrimitive [ANONYMOUS: false, DECLARED: true - oldValueIsPrimitive, MODIFIERS: PRIVATE, VARIABLE]
                                           notifySubscribers : OBJECT notifySubscribers [ANONYMOUS: false, DECLARED: false - notifySubscribers, MODIFIERS: PUBLIC, PROPERTY]
-                                          peek              : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, STATIC, METHOD]
+                                          peek              : FUNCTION peek [ANONYMOUS: false, DECLARED: true - peek, MODIFIERS: PUBLIC, METHOD]
                                                             # PROPERTIES
                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                          valueHasMutated   : FUNCTION valueHasMutated [ANONYMOUS: false, DECLARED: true - valueHasMutated, MODIFIERS: PUBLIC, STATIC, METHOD]
+                                          valueHasMutated   : FUNCTION valueHasMutated [ANONYMOUS: false, DECLARED: true - valueHasMutated, MODIFIERS: PUBLIC, METHOD]
                                                             # RETURN TYPES
                                                             undefined, RESOLVED: true
                                                             # PROPERTIES
                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                          valueWillMutate   : FUNCTION valueWillMutate [ANONYMOUS: false, DECLARED: true - valueWillMutate, MODIFIERS: PUBLIC, STATIC, METHOD]
+                                          valueWillMutate   : FUNCTION valueWillMutate [ANONYMOUS: false, DECLARED: true - valueWillMutate, MODIFIERS: PUBLIC, METHOD]
                                                             # RETURN TYPES
                                                             undefined, RESOLVED: true
                                                             # PROPERTIES
