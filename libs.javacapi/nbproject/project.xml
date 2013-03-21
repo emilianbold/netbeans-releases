@@ -16,6 +16,7 @@
                 <package>javax.lang.model.type</package>
                 <package>javax.lang.model.util</package>
                 <package>javax.tools</package>
+                <package>jdk</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/nb-javac-api.jar</runtime-relative-path>
