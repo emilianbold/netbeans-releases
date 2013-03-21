@@ -809,8 +809,8 @@
     </target>
     <target name="-check-webstart-in-unix" depends="-pre-check-webstart-in-unix" if="running.on.unix-active.webstart.executable">
         <local name="exec.which.javaws.result"/>
-        <exec executable="which" failifexecutionfails="false" failonerror="false" resultproperty="exec.which.javaws.result" outputproperty="exec.which.javaws.output">
-            <arg value="javaws"/>
+        <exec executable="command" failifexecutionfails="false" failonerror="false" resultproperty="exec.which.javaws.result" outputproperty="exec.which.javaws.output">
+            <arg line="-v javaws"/>
         </exec>
         <condition property="do.set.webstart.in.unix">
             <and>
@@ -3032,6 +3032,7 @@
                 <or>
                     <equals arg1="${javafx.native.bundling.type}" arg2="all" casesensitive="false"/>
                     <equals arg1="${javafx.native.bundling.type}" arg2="installer" casesensitive="false"/>
+                    <equals arg1="${javafx.native.bundling.type}" arg2="exe" casesensitive="false"/>
                 </or>
             </and>
         </condition>
@@ -3042,11 +3043,32 @@
                 <or>
                     <equals arg1="${javafx.native.bundling.type}" arg2="all" casesensitive="false"/>
                     <equals arg1="${javafx.native.bundling.type}" arg2="installer" casesensitive="false"/>
+                    <equals arg1="${javafx.native.bundling.type}" arg2="msi" casesensitive="false"/>
+                </or>
+            </and>
+        </condition>
+        <condition property="need.dpkg.presence">
+            <and>
+                <isset property="running.on.unix"/>
+                <isset property="javafx.native.bundling.type"/>
+                <or>
+                    <equals arg1="${javafx.native.bundling.type}" arg2="deb" casesensitive="false"/>
+                </or>
+            </and>
+        </condition>
+        <condition property="need.rpmbuild.presence">
+            <and>
+                <isset property="running.on.unix"/>
+                <isset property="javafx.native.bundling.type"/>
+                <or>
+                    <equals arg1="${javafx.native.bundling.type}" arg2="rpm" casesensitive="false"/>
                 </or>
             </and>
         </condition>
         <echo message="need.Inno.presence:${need.Inno.presence}" level="verbose"/>
         <echo message="need.WiX.presence:${need.WiX.presence}" level="verbose"/>
+        <echo message="need.dpkg.presence:${need.dpkg.presence}" level="verbose"/>
+        <echo message="need.rpmbuild.presence:${need.rpmbuild.presence}" level="verbose"/>
     </target>
     <target name="-check-Inno-presence" depends="-check-native-bundling-type" if="need.Inno.presence">
         <local name="exec-output"/>
@@ -3084,9 +3106,41 @@
             </and></not>
         </condition>
     </target>
-    <target name="-check-native-packager-external-tools" depends="-check-Inno-presence, -check-WiX-presence">
-        <property name="missing.Inno.message" value="JavaFX native packager requires external Inno Setup 5+ tools installed and included on PATH. See http://www.jrsoftware.org/"/>
-        <property name="missing.WiX.message" value="JavaFX native packager requires external WiX 3.0+ tools installed and included on PATH. See http://wix.sourceforge.net/"/>
+    <target name="-check-dpkg-presence" depends="-check-native-bundling-type" if="need.dpkg.presence">
+        <local name="exec.which.dpkg.result"/>
+        <local name="exec.which.dpkg.output"/>
+        <exec executable="command" failifexecutionfails="false" failonerror="false" resultproperty="exec.which.dpkg.result" outputproperty="exec.which.dpkg.output">
+            <arg line="-v dpkg"/>
+        </exec>
+        <condition property="missing.dpkg">
+            <not><and>
+                <isset property="exec.which.dpkg.result"/>
+                <equals arg1="${exec.which.dpkg.result}" arg2="0"/>
+                <isset property="exec.which.dpkg.output"/>
+                <not><equals arg1="${exec.which.dpkg.output}" arg2=""/></not>
+            </and></not>
+        </condition>
+    </target>
+    <target name="-check-rpmbuild-presence" depends="-check-native-bundling-type" if="need.rpmbuild.presence">
+        <local name="exec.which.rpmbuild.result"/>
+        <local name="exec.which.rpmbuild.output"/>
+        <exec executable="command" failifexecutionfails="false" failonerror="false" resultproperty="exec.which.rpmbuild.result" outputproperty="exec.which.rpmbuild.output">
+            <arg line="-v rpmbuild"/>
+        </exec>
+        <condition property="missing.rpmbuild">
+            <not><and>
+                <isset property="exec.which.rpmbuild.result"/>
+                <equals arg1="${exec.which.rpmbuild.result}" arg2="0"/>
+                <isset property="exec.which.rpmbuild.output"/>
+                <not><equals arg1="${exec.which.rpmbuild.output}" arg2=""/></not>
+            </and></not>
+        </condition>
+    </target>
+    <target name="-check-native-packager-external-tools" depends="-check-Inno-presence, -check-WiX-presence, -check-dpkg-presence, -check-rpmbuild-presence">
+        <property name="missing.Inno.message" value="JavaFX native packager requires external Inno Setup 5+ tools installed and included on PATH to create EXE installer. See http://www.jrsoftware.org/"/>
+        <property name="missing.WiX.message" value="JavaFX native packager requires external WiX 3.0+ tools installed and included on PATH to create MSI installer. See http://wix.sourceforge.net/"/>
+        <property name="missing.dpkg.message" value="JavaFX native packager requires Debian Packager tools to create DEB package, but dpkg could not be found."/>
+        <property name="missing.rpmbuild.message" value="JavaFX native packager requires RPMBuild to create RPM package, but rpmbuild could not be found."/>
         <condition property="missing.Inno.WiX">
             <and>
                 <isset property="missing.Inno"/>
@@ -3096,6 +3150,8 @@
         <fail message="Error:${line.separator}${missing.Inno.message}${line.separator}${missing.WiX.message}" if="missing.Inno.WiX"/>
         <fail message="Error:${line.separator}${missing.Inno.message}" if="missing.Inno"/>
         <fail message="Error:${line.separator}${missing.WiX.message}" if="missing.WiX"/>
+        <fail message="Error:${line.separator}${missing.dpkg.message}" if="missing.dpkg"/>
+        <fail message="Error:${line.separator}${missing.rpmbuild.message}" if="missing.rpmbuild"/>
     </target>
 
     <!-- Project Run Support -->

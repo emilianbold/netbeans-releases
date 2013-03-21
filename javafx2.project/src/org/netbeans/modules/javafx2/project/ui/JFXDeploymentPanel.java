@@ -60,6 +60,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -152,6 +153,29 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         refreshIconsLabel();
         setupNativeBundlingCombo();
         initComboRT();
+    }
+    
+    private void setupNativeBundlingCombo() {
+        comboBoxNativeBundlingActionRunning = true;
+        comboBoxBundle.removeAllItems ();
+        BundlingType.OS bundlingOS = 
+                Utilities.isWindows() ? BundlingType.OS.WIN : 
+                (Utilities.isMac() ? BundlingType.OS.MAC :
+                (Utilities.getOperatingSystem() == Utilities.OS_LINUX ? BundlingType.OS.LINUX :
+                BundlingType.OS.NONE));
+        for (BundlingType bundleType : BundlingType.values()) {
+            if(bundleType != BundlingType.NONE) {
+                if(bundleType.getExtent() == BundlingType.OS.ALL || bundleType.getExtent() == bundlingOS) {
+                    comboBoxBundle.addItem(bundleType);
+                }
+            }
+        }
+        BundlingType bundleType = jfxProps.getNativeBundlingType();
+        boolean sel = jfxProps.getNativeBundlingEnabled();
+        comboBoxBundle.setSelectedItem(bundleType);
+        comboBoxBundle.setEnabled(sel && bundleType != BundlingType.NONE);
+        checkBoxBundle.setSelected(sel && bundleType != BundlingType.NONE);
+        comboBoxNativeBundlingActionRunning = false;
     }
     
     private void initComboRT() {
@@ -673,14 +697,14 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         jfxProps.setNativeBundlingEnabled(sel);
         if(jfxProps.getNativeBundlingEnabled() && jfxProps.getNativeBundlingType() == JFXProjectProperties.BundlingType.NONE) {
             jfxProps.setNativeBundlingType(JFXProjectProperties.BundlingType.ALL);
-            comboBoxBundle.setSelectedItem(JFXProjectProperties.BundlingType.ALL.getString());
+            comboBoxBundle.setSelectedItem(JFXProjectProperties.BundlingType.ALL);
         }
     }//GEN-LAST:event_checkBoxBundleActionPerformed
 
     private void comboBoxBundleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxBundleActionPerformed
         if(!comboBoxNativeBundlingActionRunning) {
             comboBoxNativeBundlingActionRunning = true;
-            String sel = (String)comboBoxBundle.getSelectedItem();
+            JFXProjectProperties.BundlingType sel = (JFXProjectProperties.BundlingType)comboBoxBundle.getSelectedItem();
             jfxProps.setNativeBundlingType(sel);
             comboBoxNativeBundlingActionRunning = false;
         }
@@ -744,22 +768,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelIconsMessage.setText(msg);
     }
 
-    private void setupNativeBundlingCombo() {
-        comboBoxNativeBundlingActionRunning = true;
-        comboBoxBundle.removeAllItems ();
-        for (BundlingType bundleType : BundlingType.values()) {
-            if(bundleType != BundlingType.NONE) {
-                comboBoxBundle.addItem(bundleType.getString());
-            }
-        }
-        BundlingType bundleType = jfxProps.getNativeBundlingType();
-        boolean sel = jfxProps.getNativeBundlingEnabled();
-        comboBoxBundle.setSelectedItem(bundleType.getString());
-        comboBoxBundle.setEnabled(sel && bundleType != BundlingType.NONE);
-        checkBoxBundle.setSelected(sel && bundleType != BundlingType.NONE);
-        comboBoxNativeBundlingActionRunning = false;
-    }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCustomJSMessage;
     private javax.swing.JButton buttonDownloadMode;

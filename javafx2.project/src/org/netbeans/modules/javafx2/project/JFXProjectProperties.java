@@ -408,18 +408,36 @@ public final class JFXProjectProperties {
     
     // Deployment - Native Packaging (JDK 7u6+)
     public enum BundlingType {
-        NONE("None"), // NOI18N
-        ALL("All"), // NOI18N
-        IMAGE("Image"), // NOI18N
-        INSTALLER("Installer"); // NOI18N
+        NONE("none", OS.ALL, "None"), // NOI18N
+        ALL("all", OS.ALL, "All Artifacts"), // NOI18N
+        IMAGE("image", OS.ALL, "Image Only"), // NOI18N
+        INSTALLER("installer", OS.ALL, "All Installers"), // NOI18N
+        DEB("deb", OS.LINUX, "DEB Package"), // NOI18N
+        RPM("rpm", OS.LINUX, "RPM Package"), // NOI18N
+        DMG("dmg", OS.MAC, "DMG Image"), // NOI18N
+        EXE("exe", OS.WIN, "EXE Installer"), // NOI18N
+        MSI("msi", OS.WIN, "MSI Installer"); // NOI18N
         private final String propertyValue;
-        BundlingType(String propertyValue) {
+        private final String description;
+        private final OS extent;
+        public enum OS {ALL, WIN, MAC, LINUX, NONE}
+        BundlingType(String propertyValue, OS os, String desc) {
             this.propertyValue = propertyValue;
+            this.extent = os;
+            this.description = desc;
         }
-        public String getString() {
+        public String getValue() {
             return propertyValue;
         }
+        public OS getExtent() {
+            return extent;
+        }
+        @Override
+        public String toString() {
+            return description;
+        }
     }
+
     boolean nativeBundlingEnabled;
     BundlingType nativeBundlingType;
     public boolean getNativeBundlingEnabled() {
@@ -436,7 +454,7 @@ public final class JFXProjectProperties {
     }
     public boolean setNativeBundlingType(String type) {
         for (BundlingType bundleType : BundlingType.values()) {
-            if(bundleType.getString().equalsIgnoreCase(type)) {
+            if(bundleType.getValue().equalsIgnoreCase(type)) {
                 this.nativeBundlingType = bundleType;
                 return true;
             }
@@ -1166,7 +1184,7 @@ public final class JFXProjectProperties {
         setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);        
         // store native bundling info
         editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : "false"); //NOI18N
-        editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_TYPE, nativeBundlingType.getString().toLowerCase());
+        editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_TYPE, nativeBundlingType.getValue().toLowerCase());
         // store icons
         setOrRemove(editableProps, ICON_FILE, wsIconPath);
         setOrRemove(editableProps, SPLASH_IMAGE_FILE, splashImagePath);
@@ -1317,19 +1335,36 @@ public final class JFXProjectProperties {
         String enabled = eval.getProperty(JAVAFX_NATIVE_BUNDLING_ENABLED);
         String bundleProp = eval.getProperty(JAVAFX_NATIVE_BUNDLING_TYPE);
         nativeBundlingEnabled = isTrue(enabled);
-        if(bundleProp == null) {
-            nativeBundlingType = BundlingType.NONE;
-        } else {
-            if(bundleProp.equalsIgnoreCase(BundlingType.ALL.getString())) {
+        nativeBundlingType = BundlingType.NONE;
+        if(bundleProp != null) {
+            if(bundleProp.equalsIgnoreCase(BundlingType.ALL.getValue())) {
                 nativeBundlingType = BundlingType.ALL;
             } else {
-                if(bundleProp.equalsIgnoreCase(BundlingType.IMAGE.getString())) {
+                if(bundleProp.equalsIgnoreCase(BundlingType.IMAGE.getValue())) {
                     nativeBundlingType = BundlingType.IMAGE;
                 } else {
-                    if(bundleProp.equalsIgnoreCase(BundlingType.INSTALLER.getString())) {
+                    if(bundleProp.equalsIgnoreCase(BundlingType.INSTALLER.getValue())) {
                         nativeBundlingType = BundlingType.INSTALLER;
                     } else {
-                        nativeBundlingType = BundlingType.NONE;
+                        if(bundleProp.equalsIgnoreCase(BundlingType.DEB.getValue())) {
+                            nativeBundlingType = BundlingType.DEB;
+                        } else {
+                            if(bundleProp.equalsIgnoreCase(BundlingType.DMG.getValue())) {
+                                nativeBundlingType = BundlingType.DMG;
+                            } else {
+                                if(bundleProp.equalsIgnoreCase(BundlingType.EXE.getValue())) {
+                                    nativeBundlingType = BundlingType.EXE;
+                                } else {
+                                    if(bundleProp.equalsIgnoreCase(BundlingType.MSI.getValue())) {
+                                        nativeBundlingType = BundlingType.MSI;
+                                    } else {
+                                        if(bundleProp.equalsIgnoreCase(BundlingType.RPM.getValue())) {
+                                            nativeBundlingType = BundlingType.RPM;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
