@@ -500,6 +500,11 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     public String getDisplayName() {
         return null;
     }
+
+    @Override
+    public String getId() {
+        return null;
+    }
     
     /** Default format that can format tags related to execution. 
      * Currently this is only the URL.
