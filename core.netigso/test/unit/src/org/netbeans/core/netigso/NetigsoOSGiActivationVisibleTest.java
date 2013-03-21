@@ -140,6 +140,13 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
         someModule = m2.getClassLoader().loadClass("org.foo.Something");
         loadClass = directBundle.getMethod("loadClass", String.class, ClassLoader.class);
     }
+
+    @Override
+    protected int timeOut() {
+        return 300000;
+    }
+    
+    
     
     public void testClassFromBundle() throws Exception {
         assertNotNull("Bundle knows how to load the class", directBundle);
