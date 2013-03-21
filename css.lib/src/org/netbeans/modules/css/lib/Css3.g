@@ -1049,7 +1049,7 @@ cp_args_list
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
 cp_arg
     :
-    cp_variable ( ws? COLON ws? cp_expression )?
+    cp_variable ws? ( COLON ws? cp_expression )?
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {
