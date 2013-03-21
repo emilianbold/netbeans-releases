@@ -73,13 +73,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
 import org.netbeans.modules.php.analysis.commands.MessDetector;
 import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
 import org.netbeans.modules.php.analysis.ui.CodeSnifferStandardsComboBoxModel;
 import org.netbeans.modules.php.analysis.ui.MessDetectorRuleSetsListModel;
-import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
@@ -107,16 +105,16 @@ public class AnalysisOptionsPanel extends JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
-    public AnalysisOptionsPanel(@NullAllowed String selectedCodeSnifferStandard) {
+    public AnalysisOptionsPanel() {
         initComponents();
 
-        init(selectedCodeSnifferStandard);
+        init();
     }
 
-    private void init(String selectedCodeSnifferStandard) {
+    private void init() {
         errorLabel.setText(" "); // NOI18N
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
-        initCodeSniffer(selectedCodeSnifferStandard, defaultDocumentListener);
+        initCodeSniffer(defaultDocumentListener);
         initMessDetector(defaultDocumentListener);
     }
 
@@ -125,17 +123,15 @@ public class AnalysisOptionsPanel extends JPanel {
         "# {1} - long script name",
         "AnalysisOptionsPanel.codeSniffer.hint=Full path of Code Sniffer script (typically {0} or {1}).",
     })
-    private void initCodeSniffer(String selectedCodeSnifferStandard, DocumentListener defaultDocumentListener) {
+    private void initCodeSniffer(DocumentListener defaultDocumentListener) {
         codeSnifferHintLabel.setText(Bundle.AnalysisOptionsPanel_codeSniffer_hint(CodeSniffer.NAME, CodeSniffer.LONG_NAME));
+        codeSnifferStandardComboBox.setModel(codeSnifferStandardsModel);
 
         // listeners
         codeSnifferTextField.getDocument().addDocumentListener(defaultDocumentListener);
-        codeSnifferTextField.getDocument().addDocumentListener(new CodeSnifferStandardDocumentListener());
+        codeSnifferTextField.getDocument().addDocumentListener(new CodeSnifferPathDocumentListener());
         ItemListener defaultItemListener = new DefaultItemListener();
         codeSnifferStandardComboBox.addItemListener(defaultItemListener);
-
-        // standards
-        setStandards(selectedCodeSnifferStandard);
     }
 
     @NbBundle.Messages({
@@ -154,14 +150,9 @@ public class AnalysisOptionsPanel extends JPanel {
         messDetectorRuleSetsList.setModel(ruleSetsListModel);
     }
 
-    @NbBundle.Messages("AnalysisOptionsPanel.codeSniffer.error.standards=Standards cannot be fetched, review Output window.")
-    void setStandards(final String selectedCodeSnifferStandard) {
-        AnalysisUtils.initCodeSnifferStandardsComponent(codeSnifferStandardComboBox, codeSnifferStandardsModel, selectedCodeSnifferStandard, new Runnable() {
-            @Override
-            public void run() {
-                setError(Bundle.AnalysisOptionsPanel_codeSniffer_error_standards());
-            }
-        });
+    void setStandards(final String selectedCodeSnifferStandard, String customCodeSnifferPath) {
+        codeSnifferStandardsModel.fetchStandards(codeSnifferStandardComboBox, customCodeSnifferPath);
+        codeSnifferStandardsModel.setSelectedItem(selectedCodeSnifferStandard);
     }
 
     public String getCodeSnifferPath() {
@@ -182,10 +173,6 @@ public class AnalysisOptionsPanel extends JPanel {
     }
 
     public void setCodeSnifferStandard(String standard) {
-        if (!codeSnifferStandardComboBox.isEnabled()) {
-            // fetching standards or some error
-            return;
-        }
         codeSnifferStandardsModel.setSelectedItem(standard);
     }
 
@@ -386,8 +373,8 @@ public class AnalysisOptionsPanel extends JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(messDetectorHintLabel)
-                            .addComponent(codeSnifferStandardComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(codeSnifferHintLabel))
+                            .addComponent(codeSnifferHintLabel)
+                            .addComponent(codeSnifferStandardComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
 
@@ -607,7 +594,7 @@ public class AnalysisOptionsPanel extends JPanel {
 
     }
 
-    private final class CodeSnifferStandardDocumentListener implements DocumentListener {
+    private final class CodeSnifferPathDocumentListener implements DocumentListener {
 
         @Override
         public void insertUpdate(DocumentEvent e) {
@@ -625,18 +612,15 @@ public class AnalysisOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
-            if (!codeSnifferStandardComboBox.isEnabled()) {
-                // reading standards...
-                return;
-            }
+            String codeSnifferPath = getCodeSnifferPath();
             // reset cached standards only if the new path is valid
             ValidationResult result = new AnalysisOptionsValidator()
-                    .validateCodeSnifferPath(getCodeSnifferPath())
+                    .validateCodeSnifferPath(codeSnifferPath)
                     .getResult();
             if (!result.hasErrors()
                     && !result.hasWarnings()) {
                 CodeSniffer.clearCachedStandards();
-                setStandards(getCodeSnifferStandard());
+                setStandards(getCodeSnifferStandard(), codeSnifferPath);
             }
         }
 

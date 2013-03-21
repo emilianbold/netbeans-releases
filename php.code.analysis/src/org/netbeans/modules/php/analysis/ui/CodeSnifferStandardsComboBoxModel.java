@@ -44,27 +44,42 @@ package org.netbeans.modules.php.analysis.ui;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.JComboBox;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel implements ComboBoxModel {
 
     private static final long serialVersionUID = -2876813217456578L;
 
-    @NbBundle.Messages("CodeSnifferStandardsComboBoxModel.noStandards=<no standards available>")
-    public static final String NO_STANDARDS_AVAILABLE = Bundle.CodeSnifferStandardsComboBoxModel_noStandards();
+    static final Logger LOGGER = Logger.getLogger(CodeSnifferStandardsComboBoxModel.class.getName());
+
+    private static final RequestProcessor RP = new RequestProcessor(CodeSnifferStandardsComboBoxModel.class);
+
+    @NbBundle.Messages("CodeSnifferStandardsComboBoxModel.standards.fetching=<fetching standards...>")
+    private static final String FETCHING_STANDARDS = Bundle.CodeSnifferStandardsComboBoxModel_standards_fetching();
+    @NbBundle.Messages("CodeSnifferStandardsComboBoxModel.standards.none=<no standards available>")
+    private static final String NO_STANDARDS_AVAILABLE = Bundle.CodeSnifferStandardsComboBoxModel_standards_none();
 
 
     // @GuardedBy("EDT")
     private final List<String> standards = new ArrayList<String>();
 
-    private volatile String selectedStandard = null;
+    volatile String selectedStandard = null;
 
 
     public CodeSnifferStandardsComboBoxModel() {
-        setNoStandards();
+        assert EventQueue.isDispatchThread();
+        setFetchingStandards();
     }
 
     @Override
@@ -80,9 +95,26 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel i
     }
 
     @Override
-    public void setSelectedItem(Object anItem) {
-        selectedStandard = (String) anItem;
-        fireContentsChanged();
+    public void setSelectedItem(final Object anItem) {
+        if (anItem == null) {
+            return;
+        }
+        // need to do that in the RP since fetch can be running
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        String standard = (String) anItem;
+                        if (standards.contains(standard)) {
+                            selectedStandard = standard;
+                            fireContentsChanged();
+                        }
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -96,13 +128,64 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel i
 
     @CheckForNull
     public String getSelectedStandard() {
-        if (selectedStandard == NO_STANDARDS_AVAILABLE) {
+        if (selectedStandard == NO_STANDARDS_AVAILABLE
+                || selectedStandard == FETCHING_STANDARDS) {
             return null;
         }
         return selectedStandard;
     }
 
-    public void setNoStandards() {
+    public void fetchStandards(final JComboBox component) {
+        fetchStandards(component, null);
+    }
+
+    public void fetchStandards(final JComboBox component, @NullAllowed final String customCodeSnifferPath) {
+        assert EventQueue.isDispatchThread();
+        assert component != null;
+
+        component.setEnabled(false);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                List<String> fetchedStandards = null;
+                CodeSniffer codeSniffer;
+                try {
+                    if (StringUtils.hasText(customCodeSnifferPath)) {
+                        codeSniffer = CodeSniffer.getCustom(customCodeSnifferPath);
+                    } else {
+                        codeSniffer = CodeSniffer.getDefault();
+                    }
+                    fetchedStandards = codeSniffer.getStandards();
+                } catch (InvalidPhpExecutableException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+                final List<String> standardsRef = fetchedStandards;
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        assert EventQueue.isDispatchThread();
+                        component.setEnabled(true);
+                        if (standardsRef == null) {
+                            setNoStandards();
+                            component.setPrototypeDisplayValue(NO_STANDARDS_AVAILABLE);
+                        } else {
+                            setStandards(standardsRef);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    void setFetchingStandards() {
+        assert EventQueue.isDispatchThread();
+        standards.clear();
+        standards.add(FETCHING_STANDARDS);
+        selectedStandard = FETCHING_STANDARDS;
+        fireContentsChanged();
+    }
+
+    void setNoStandards() {
         assert EventQueue.isDispatchThread();
         standards.clear();
         standards.add(NO_STANDARDS_AVAILABLE);
@@ -110,7 +193,7 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel i
         fireContentsChanged();
     }
 
-    public void setStandards(List<String> standards) {
+    void setStandards(List<String> standards) {
         assert EventQueue.isDispatchThread();
         this.standards.clear();
         this.standards.addAll(standards);
@@ -120,7 +203,7 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel i
         fireContentsChanged();
     }
 
-    private void fireContentsChanged() {
+    void fireContentsChanged() {
         fireContentsChanged(this, -1, -1);
     }
 

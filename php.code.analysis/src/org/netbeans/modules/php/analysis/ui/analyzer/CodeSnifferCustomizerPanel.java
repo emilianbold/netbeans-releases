@@ -51,7 +51,6 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
 import org.netbeans.modules.php.analysis.ui.CodeSnifferStandardsComboBoxModel;
-import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -75,8 +74,9 @@ public class CodeSnifferCustomizerPanel extends JPanel {
     }
 
     private void init() {
-        String selectedStandard = settings.get(STANDARD, AnalysisOptions.getInstance().getCodeSnifferStandard());
-        AnalysisUtils.initCodeSnifferStandardsComponent(standardComboBox, standardsModel, selectedStandard, null);
+        standardComboBox.setModel(standardsModel);
+        standardsModel.fetchStandards(standardComboBox);
+        standardsModel.setSelectedItem(settings.get(STANDARD, AnalysisOptions.getInstance().getCodeSnifferStandard()));
         // listeners
         standardComboBox.addItemListener(new ItemListener() {
             @Override
