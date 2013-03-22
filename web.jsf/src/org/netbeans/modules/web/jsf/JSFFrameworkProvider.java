@@ -458,7 +458,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.SERVER && panel.getServerLibrary() != null) {
                     jsfVersion = JSFVersion.forServerLibrary(panel.getServerLibrary());
                 } else {
-                    jsfVersion = JSFVersion.forWebModule(webModule, true);
+                    jsfVersion = JSFVersion.forWebModule(webModule);
                 }
             }
 

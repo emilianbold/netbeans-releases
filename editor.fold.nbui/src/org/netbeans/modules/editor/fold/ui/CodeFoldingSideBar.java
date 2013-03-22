@@ -1262,7 +1262,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
             if (prevInfo.getPaintOperation() == PAINT_END_MARK) {
                 // merge with start|single -> start mark + line-in
                 lineIn = true;
-            } else {
+            } else if (prevInfo.getPaintOperation() != SINGLE_PAINT_MARK) {
                 operation = PAINT_MARK;
             }
 

@@ -53,6 +53,7 @@ import org.netbeans.modules.web.browser.api.PageInspector;
 import org.openide.filesystems.FileObject;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
 /**
@@ -197,27 +198,28 @@ public class DomTCController implements PropertyChangeListener {
      */
     private void updateDomTC0() {
         synchronized (this) {
+            TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("DomTree"); // NOI18N
             TopComponent tc = WindowManager.getDefault().findTopComponent(DomTC.ID);
-            boolean opened = tc.isOpened();
             if (inspectionActive) {
-                if (!opened && DOM_TC_MIME_TYPES.contains(lastMimeType)) {
+                if (DOM_TC_MIME_TYPES.contains(lastMimeType)) {
                     // Open DOM Tree view
-                    tc.open();
-                    tc.requestActive();
+                    boolean wasOpened = tc.isOpened();
+                    group.open();
+                    if (!wasOpened && tc.isOpened()) {
+                        tc.requestActive();
+                    }
                 }
-                if (opened && ((lastMimeType == null) || NAVIGATOR_MIME_TYPES.contains(lastMimeType))) {
+                if ((lastMimeType == null) || NAVIGATOR_MIME_TYPES.contains(lastMimeType)) {
                     TopComponent navigator = WindowManager.getDefault().findTopComponent("navigatorTC"); // NOI18N
                     if (navigator != null && navigator.isOpened()) {
                         // Close DOM Tree view and activate Navigator instead
-                        tc.close();
+                        group.close();
                         navigator.requestActive();
                     }
                 }
             } else {
-                if (opened) {
-                    // Close DOM Tree view
-                    tc.close();
-                }
+                // Close DOM Tree view
+                group.close();
             }
         }
     }

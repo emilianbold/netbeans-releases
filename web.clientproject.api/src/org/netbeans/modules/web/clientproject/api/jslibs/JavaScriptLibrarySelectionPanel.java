@@ -93,8 +93,6 @@ import javax.swing.table.TableRowSorter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
@@ -711,10 +709,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }//GEN-LAST:event_updateLibrariesLabelMouseEntered
 
-    @NbBundle.Messages({
-        "JavaScriptLibrarySelectionPanel.progress.jsLibs.update=Updating available libraries...",
-        "JavaScriptLibrarySelectionPanel.error.jsLibs.update=Available libraries not updated, see IDE log for more details."
-    })
+    @NbBundle.Messages("JavaScriptLibrarySelectionPanel.error.jsLibs.update=Available libraries not updated, see IDE log for more details.")
     private void updateLibrariesLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_updateLibrariesLabelMousePressed
         if (!panelEnabled) {
             // panel not enabled
@@ -724,15 +719,12 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.JavaScriptLibrarySelectionPanel_progress_jsLibs_update());
-                progressHandle.start();
                 try {
-                    WebClientLibraryManager.getDefault().updateLibraries();
+                    WebClientLibraryManager.getDefault().updateLibraries(true);
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                     errorOccured(Bundle.JavaScriptLibrarySelectionPanel_error_jsLibs_update());
                 } finally {
-                    progressHandle.finish();
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {

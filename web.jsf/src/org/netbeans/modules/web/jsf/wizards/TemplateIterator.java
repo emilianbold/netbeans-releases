@@ -110,7 +110,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 JSFConfigUtilities.extendJsfFramework(dir, false);
             }
 
-            boolean isJSF20 = JSFUtils.isJSF20Plus(wm);
+            boolean isJSF20 = JSFUtils.isJSF20Plus(wm, true);
             String templateFile = TEMPLATE_XHTML;
             if (isJSF20) {
                 templateFile = TEMPLATE_XHTML2;
@@ -137,7 +137,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 if (!JSFConfigUtilities.hasJsfFramework(docBase)) {
                     JSFConfigUtilities.extendJsfFramework(dir, false);
                 }
-                final boolean isJSF20 = JSFUtils.isJSF20Plus(wm);
+                final boolean isJSF20 = JSFUtils.isJSF20Plus(wm, true);
 
                 df.getPrimaryFile().getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
                     public void run() throws IOException {

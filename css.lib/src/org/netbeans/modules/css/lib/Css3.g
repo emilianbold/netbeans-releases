@@ -780,19 +780,10 @@ propertyValue
         //(the IE allows also just ident as its content)
         (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>sass_declaration_property_value_interpolation_expression
         | (expressionPredicate)=>expression
-        | 
-        
-//this is a bit mysterious - if the use the semantic predicate for the less_expression
-//then the parser won't use the expression rule either?!?!?!?! and won't parse 
-//trivial sample like this:
-//a {
-//    color : black;
-//}
-//
-        ( {isCssPreprocessorSource()}? cp_expression )
+        | {isCssPreprocessorSource()}? cp_expression
 	;
 
-//an expression wich doesn't contain less expression operators
+//an expression wich doesn't contain cp expression operators
 expressionPredicate
     options { k = 1; }
     :
@@ -1111,14 +1102,14 @@ sass_selector_interpolation_expression
         ( 
             sass_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA)
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER )
         )
         ( 
             ws?
             (
                 sass_interpolation_expression_var
                 |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA)
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER)
             )
         )*
 
@@ -1147,14 +1138,16 @@ sass_declaration_property_value_interpolation_expression
         ( 
             sass_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
+//            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
         )
         ( 
             ws?
             (
                 sass_interpolation_expression_var
                 |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
+//                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
             )
         )*
 
@@ -1218,7 +1211,7 @@ sass_extend_only_selector
 
 sass_debug
     :
-    ( SASS_DEBUG | SASS_WARN ) ws cp_expression SEMI
+    ( SASS_DEBUG | SASS_WARN ) ws cp_full_expression SEMI
     ;
     
 sass_control
@@ -1240,24 +1233,21 @@ sass_else
 
 sass_control_expression
     :
-    sass_control_expression_condition ( (OR | AND) ws? sass_control_expression_condition)*    
-
+    cp_full_expression
     ;
 
-sass_control_expression_condition
-    :
-//    (NOT ws?)? cp_expression (( CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
-    (NOT ws?)? cp_compare_expr
+cp_full_expression
+    :    cp_full_expression_atom 
+         ( ( OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ ) ws? cp_full_expression_atom )* 
     ;
 
-cp_compare_expr
-    :    cp_compare_expr_atom 
-         ( ( CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ ) ws? cp_compare_expr_atom )* 
-    ;
-
-cp_compare_expr_atom
-    :    (cp_expression)=>cp_expression
-    |    LPAREN ws? cp_compare_expr RPAREN ws?
+cp_full_expression_atom
+    :    
+        (NOT ws?)? 
+        (
+            (cp_expression)=>cp_expression
+            | LPAREN ws? cp_full_expression RPAREN ws?
+        )
     ;
     
 sass_for
@@ -1301,7 +1291,7 @@ sass_function_name
 
 sass_function_return
     :
-    SASS_RETURN ws cp_expression SEMI
+    SASS_RETURN ws cp_full_expression SEMI
     ;
     
 sass_content
