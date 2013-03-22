@@ -953,6 +953,17 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 return StepRequest.STEP_OVER;
             }
             return 0; // Do not treat Lambda methods as synthetic, because they contain user code.
+        } else {
+            // Do check the class for being Lambda synthetic class:
+            ReferenceType declaringType = LocationWrapper.declaringType(loc);
+            try {
+                String className = ReferenceTypeWrapper.name(declaringType);
+                if (className.contains("$$Lambda$")) {                          // NOI18N
+                    // Lambda synthetic class
+                    return -1;
+                }
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            }
         }
         return TypeComponentWrapper.isSynthetic(m) ? -1 : 0;
     }
