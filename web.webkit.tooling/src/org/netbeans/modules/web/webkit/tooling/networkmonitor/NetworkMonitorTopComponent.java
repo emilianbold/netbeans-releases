@@ -747,6 +747,13 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             } else {
                 doc.insertString(doc.getLength(), "Request URL: ", boldStyle);
                 doc.insertString(doc.getLength(), wsRequest.getURL()+"\n", defaultStyle);
+                doc.insertString(doc.getLength(), "Status: ", boldStyle);
+                if (wsRequest.getErrorMessage() != null) {
+                    doc.insertString(doc.getLength(), wsRequest.getErrorMessage()+"\n", errorStyle);
+                } else {
+                    doc.insertString(doc.getLength(), wsRequest.isClosed() ? "Closed\n" :
+                        wsRequest.getHandshakeResponse() == null ? "Opening\n" : "Open\n", defaultStyle);
+                }
             }
 
             JSONObject requestHeaders = getRequestHeaders();
@@ -942,9 +949,10 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
         private boolean isError() {
             if (wsRequest != null) {
-                return false;
+                return wsRequest.getErrorMessage() != null;
+            } else {
+                return request.isFailed() || request.getResponseCode() >= 400;
             }
-            return request.isFailed() || request.getResponseCode() >= 400;
         }
 
         private boolean inactive = false;
@@ -957,6 +965,10 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
         boolean isInactive() {
             return inactive;
+        }
+
+        private boolean isLive() {
+            return wsRequest != null && !wsRequest.isClosed();
         }
 
     }
@@ -1207,6 +1219,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 ModelItem mi = (ModelItem)value;
                 if (mi.isError()) {
                     c.setForeground(Color.red);
+                } else if (mi.isLive()) {
+                    c.setForeground(Color.blue);
                 }
             }
             return c;
