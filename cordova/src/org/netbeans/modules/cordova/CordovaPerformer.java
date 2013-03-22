@@ -97,7 +97,10 @@ public class CordovaPerformer implements BuildPerformer {
     private MobileDebugTransport transport;
     private final int BUILD_SCRIPT_VERSION = 2;
     
-
+    public static CordovaPerformer getDefault() {
+        return Lookup.getDefault().lookup(CordovaPerformer.class);
+    }
+    
     @Override
     public void perform(String target, Project project) {
         if (!CordovaPlatform.getDefault().isReady()) {
