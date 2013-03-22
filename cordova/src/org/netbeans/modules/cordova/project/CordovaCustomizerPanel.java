@@ -210,8 +210,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         
         
         if (cordovaPanel.isPanelEnabled()) {
-            Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-android", project);
-            Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-ios", project);
+            CordovaPerformer.getDefault().createPlatforms(project);
         }
     }
 }

@@ -101,6 +101,15 @@ public class CordovaPerformer implements BuildPerformer {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
     }
     
+    public void createPlatforms(Project project) {
+        if (PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
+            perform("create-android", project);
+        }
+        if (PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
+            perform("create-ios", project);
+        }
+    }
+    
     @Override
     public void perform(String target, Project project) {
         if (!CordovaPlatform.getDefault().isReady()) {
