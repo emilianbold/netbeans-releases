@@ -216,6 +216,7 @@
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <friend>org.netbeans.modules.jbi.fuji.server.gfsupport</friend>
                 <friend>org.netbeans.modules.jbi.fuji.server.plugin</friend>
+                <friend>org.netbeans.modules.web.kit</friend>
                 <package>org.netbeans.modules.glassfish.spi</package>
             </friend-packages>
         </data>
