@@ -549,7 +549,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
             return cls;
         }
-        
+
+        @Override
+        public String toString() {
+            return "ClassBuilder{" + "kind=" + kind + ", memberBuilders=" + memberBuilders + //NOI18N
+                    ", friendBuilders=" + friendBuilders + ", inheritanceBuilders=" + inheritanceBuilders + //NOI18N
+                    ", instance=" + instance + super.toString() + '}'; //NOI18N
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
