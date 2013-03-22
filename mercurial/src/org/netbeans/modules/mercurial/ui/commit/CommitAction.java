@@ -83,6 +83,8 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.hooks.HgHook;
@@ -260,6 +262,7 @@ public class CommitAction extends ContextAction {
             }
         });
         computeNodes(data, panel, ctx, repository, cancelButton, afterMerge);
+        HgProgressSupport incomingChanges = checkForIncomingChanges(repository, panel, afterMerge);
         commitButton.setEnabled(false);
         panel.addVersioningListener(new VersioningListener() {
             @Override
@@ -282,6 +285,10 @@ public class CommitAction extends ContextAction {
         dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), "hg.commit.dialog")); // NOI18N
         dialog.pack();
         dialog.setVisible(true);
+        
+        if (incomingChanges != null) {
+            incomingChanges.cancel();
+        }
 
         final String message = panel.getCommitMessage().trim();
         if (dd.getValue() != commitButton && !message.isEmpty()) {
@@ -587,6 +594,47 @@ public class CommitAction extends ContextAction {
             return res == NotifyDescriptor.YES_OPTION;
         }
         return true;
+    }
+    
+    @NbBundle.Messages({
+        "MSG_CommitAction.warning.incomingChanges=There are incoming changes. You should pull from the remote repository first."
+    })
+    private static HgProgressSupport checkForIncomingChanges (final File repository, final CommitPanel panel,
+            final AtomicBoolean afterMerge) {
+        HgProgressSupport supp = new HgProgressSupport() {
+            @Override
+            protected void perform () {
+                if (afterMerge.get()) {
+                    return;
+                }
+                try {
+                    String branch = HgCommand.getBranch(repository);
+                    if (HgCommand.getOutMessages(repository, null, branch, true, false, 1,
+                            OutputLogger.getLogger(null)).length == 0) {
+                        if (!isCanceled() && HgCommand.getIncomingMessages(repository, null, branch, true, false, false, 1,
+                                OutputLogger.getLogger(null)).length > 0) {
+                            panel.setWarningMessage(Bundle.MSG_CommitAction_warning_incomingChanges());
+                        }
+                    }
+                } catch (HgException.HgCommandCanceledException ex) {
+                } catch (HgException ex) {
+                    Logger.getLogger(CommitAction.class.getName()).log(Level.FINE, null, ex);
+                }
+            }
+
+            @Override
+            protected ProgressHandle getProgressHandle () {
+                return null;
+            }
+
+            @Override
+            protected void startProgress () { }
+
+            @Override
+            protected void finnishProgress () { }
+        };
+        supp.start(Mercurial.getInstance().getRequestProcessor(repository));
+        return supp;
     }
 
     private static abstract class Cmd {

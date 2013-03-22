@@ -84,19 +84,9 @@ public class TypeUsageImpl implements TypeUsage {
         return resolved;
     }
     
-    private static String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
-    private static String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
-    
     @Override
     public String getDisplayName() {
-        String displayName = type;
-        if (displayName.contains(GENERATED_FUNCTION_PREFIX)) {
-            displayName = removeGeneratedFromFQN(displayName, GENERATED_FUNCTION_PREFIX);
-        }
-        if (displayName.contains(GENERATED_ANONYM_PREFIX)) {
-            displayName = removeGeneratedFromFQN(displayName, GENERATED_ANONYM_PREFIX);
-        }
-        return displayName;
+        return ModelUtils.getDisplayName(type);
     }
 
     /**

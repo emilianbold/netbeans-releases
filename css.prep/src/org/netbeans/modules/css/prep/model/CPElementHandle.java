@@ -52,11 +52,13 @@ public class CPElementHandle {
     private FileObject file;
     private String name;
     private CPElementType type;
+    private String elementId;
 
-    public CPElementHandle(FileObject file, String name, CPElementType type) {
+    public CPElementHandle(FileObject file, String name, CPElementType type, String elementId) {
         this.file = file;
         this.name = name;
         this.type = type;
+        this.elementId = elementId;
     }
 
     public FileObject getFile() {
@@ -71,12 +73,19 @@ public class CPElementHandle {
         return type;
     }
     
+    public String getElementId() {
+        return elementId;
+    }
+        
     /**
      * Resolve to {@link Element}.
      */
     public CPElement resolve(CPModel model) {
         for(CPElement var : model.getElements()) {
-            if(var.getType() == getType() && var.getName().equals(getName())) {
+            CPElementHandle handle = var.getHandle();
+            if(handle.getType() == getType() 
+                    && handle.getName().equals(getName()) 
+                    && handle.getElementId().equals(getElementId())) {
                 return var;
             }
         }

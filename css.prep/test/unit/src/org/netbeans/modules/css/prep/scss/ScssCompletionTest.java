@@ -122,7 +122,7 @@ public class ScssCompletionTest extends CssModuleTestBase {
     }
     
     public void testMixinsCompletion() throws ParseException {
-        checkCC("@mixin mymixin() {}\n @include | ", arr("mymixin"), Match.EXACT);
+        checkCC("@mixin mymixin() {}\n @include | ", arr("mymixin"), Match.CONTAINS);
         checkCC("@mixin mymixin() {}\n @include mymi| ", arr("mymixin"), Match.EXACT);
     }
     

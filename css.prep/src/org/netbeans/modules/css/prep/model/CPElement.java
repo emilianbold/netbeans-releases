@@ -43,6 +43,7 @@ package org.netbeans.modules.css.prep.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.openide.filesystems.FileObject;
 
@@ -89,8 +90,13 @@ public class CPElement {
      * 
      * null means no scope 
      */
+    @CheckForNull
     public OffsetRange getScope() {
         return scope;
+    }
+    
+    void setScope(OffsetRange scope) {
+        this.scope = scope;
     }
 
     public CPElementHandle getHandle() {

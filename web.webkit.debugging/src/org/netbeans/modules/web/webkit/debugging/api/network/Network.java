@@ -231,6 +231,14 @@ public class Network {
         req.addFrame(Direction.RECEIVED, params);
     }
 
+    private void webSocketFrameError(JSONObject params) {
+        String requestId = String.valueOf(params.get("requestId"));
+        assert requestId != null;
+        WebSocketRequest req = activeWebSocketRequests.get(requestId);
+        assert req != null;
+        req.setFrameError(params);
+    }
+
     private void webSocketClosed(JSONObject params) {
         String requestId = String.valueOf(params.get("requestId"));
         assert requestId != null;
@@ -277,16 +285,22 @@ public class Network {
         private boolean dataReady = false;
         private final Network network;
         private boolean failed = false;
+        private final String documentUrl;
 
         private Request(Network network, JSONObject params) {
             this.request = (JSONObject)params.get("request");
             this.initiator = (JSONObject)params.get("initiator");
             this.requestId = String.valueOf(params.get("requestId"));
             this.network = network;
+            this.documentUrl = (String)params.get("documentURL");
         }
 
         public String getInitiatorType() {
             return (String)getInitiator().get("type");
+        }
+
+        public String getDocumentUrl() {
+            return documentUrl;
         }
 
         public String getResponseType() {
@@ -394,6 +408,7 @@ public class Network {
         private PropertyChangeSupport support = new PropertyChangeSupport(this);
         private List<WebSocketFrame> frames = new ArrayList<WebSocketFrame>();
         private boolean closed = false;
+        private String errorMessage = null;
 
         private WebSocketRequest(JSONObject params) {
             this.requestId = String.valueOf(params.get("requestId"));
@@ -423,6 +438,15 @@ public class Network {
         private void setHandshakeResponse(JSONObject params) {
             this.handshakeResponse = (JSONObject)params.get("response");
             support.firePropertyChange(PROP_HANDSHAKE_RESPONSE, null, null);
+        }
+
+        private void setFrameError(JSONObject params) {
+            this.errorMessage = (String)params.get("errorMessage");
+            support.firePropertyChange(PROP_FRAMES, null, null);
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
         }
 
         private void addFrame(Direction direction, JSONObject params) {
@@ -538,6 +562,8 @@ public class Network {
                 webSocketFrameSent(response.getParams());
             } else if ("Network.webSocketFrameReceived".equals(response.getMethod())) {
                 webSocketFrameReceived(response.getParams());
+            } else if ("Network.webSocketFrameError".equals(response.getMethod())) {
+                webSocketFrameError(response.getParams());
             } else if ("Network.webSocketClosed".equals(response.getMethod())) {
                 webSocketClosed(response.getParams());
             }

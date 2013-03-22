@@ -365,7 +365,7 @@ media
     : MEDIA_SYM ws? 
         
         (
-            ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> scss_mq_interpolation_expression ws? 
+            ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_mq_interpolation_expression ws? 
             |
             (mediaQueryList)=>mediaQueryList
         )
@@ -373,7 +373,7 @@ media
         LBRACE ws?
             ( 
                 //allow just semicolon closed declaration
-                (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | scss_declaration_interpolation_expression COLON )=>declaration SEMI ws?
+                (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>declaration SEMI ws?
                 | {isScssSource()}? sass_extend ws?
                 | {isScssSource()}? sass_debug ws?
                 | {isScssSource()}? sass_control ws?
@@ -438,13 +438,10 @@ bodyItem
         | {isScssSource()}? sass_debug
         | {isScssSource()}? sass_control
         | {isScssSource()}? sass_function_declaration
-    ;
-
-//    	catch[ RecognitionException rce] {
-//        reportError(rce);
-//        syncToRBRACE(0); //nesting aware, initial nest == 0
-//        input.consume(); //consume the RBRACE as well
-//        }
+    ; catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(NL)); 
+    }
     
 vendorAtRule
 : moz_document | webkitKeyframes | generic_at_rule;
@@ -570,7 +567,7 @@ property
     (
         //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
         //(the IE allows also just ident as its content)
-        (~(HASH_SYMBOL|COLON)* HASH_SYMBOL LBRACE)=>scss_declaration_interpolation_expression
+        (~(HASH_SYMBOL|COLON)* HASH_SYMBOL LBRACE)=>sass_declaration_interpolation_expression
         | IDENT 
         | GEN 
         | {isCssPreprocessorSource()}? cp_variable
@@ -615,7 +612,7 @@ declarations
                 //we be still able to recover INSIDE the declaration
 		(~(LBRACE|SEMI|RBRACE|COLON)* COLON ~(SEMI|LBRACE|RBRACE)* SEMI)=>declaration SEMI ws?
 		|
-		(scss_nested_properties)=>scss_nested_properties ws?
+		(sass_nested_properties)=>sass_nested_properties ws?
 		|
                 (rule)=>rule ws?
                 |
@@ -631,6 +628,10 @@ declarations
                 |
                 {isScssSource()}? sass_content ws?
                 |
+                {isScssSource()}? sass_function_return ws? //not nice
+                |
+                {isScssSource()}? importItem ws?
+                |
                 (~SEMI* SEMI)=>syncTo_SEMI //doesn't work :-(
             )*
             declaration?
@@ -639,7 +640,7 @@ declarations
 selectorsGroup
     :	
         // looking for #{, lookeahead exited by { (rule beginning)
-        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> scss_selector_interpolation_expression ws? 
+        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_selector_interpolation_expression ws? 
 	|
         selector (COMMA ws? selector)*
     ;
@@ -777,7 +778,7 @@ propertyValue
 	:
         //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
         //(the IE allows also just ident as its content)
-        (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>scss_declaration_property_value_interpolation_expression
+        (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>sass_declaration_property_value_interpolation_expression
         | (expressionPredicate)=>expression
         | 
         
@@ -870,15 +871,12 @@ function
 	: 	functionName ws?
 		LPAREN ws?
 		(
-                    {isCssPreprocessorSource()}? cp_variable_value
+                    (cp_args_list)=>cp_args_list
+                    | (cp_variable_value)=>cp_variable_value
+                    | expression
+                    | fnAttribute (COMMA ws? fnAttribute )*
                     |
-                    expression
-		| 
-		  	(
-				fnAttribute (COMMA ws? fnAttribute )*				
-			) 
-                |
-                {isCssPreprocessorSource()}? //empty
+                    {isCssPreprocessorSource()}? //empty
 		)
 		RPAREN
 	;
@@ -1000,9 +998,9 @@ cp_term
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_declaration
     :
-    {isLessSource()}? DOT cp_mixin_name ws? LPAREN cp_args_list? RPAREN ws? (less_mixin_guarded ws?)?
+    {isLessSource()}? DOT cp_mixin_name ws? LPAREN ws? cp_args_list? RPAREN ws? (less_mixin_guarded ws?)?
     |
-    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN cp_args_list? RPAREN ws?)?
+    {isScssSource()}? SASS_MIXIN ws cp_mixin_name ws? (LPAREN ws? cp_args_list? RPAREN ws?)?
     ;
 
 //allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
@@ -1051,7 +1049,7 @@ cp_args_list
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
 cp_arg
     :
-    cp_variable ( ws? COLON ws? cp_expression )?
+    cp_variable ws? ( COLON ws? cp_expression )?
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {
@@ -1108,35 +1106,35 @@ less_condition_operator
 //why there're two almost same selector_interpolation_expression-s?
 //the problem is that the one for selector can contain COLON inside the expression
 //whereas the later cann't. 
-scss_selector_interpolation_expression
+sass_selector_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            sass_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                sass_interpolation_expression_var
                 |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND)
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA)
             )
         )*
 
     ;
     
-scss_declaration_interpolation_expression
+sass_declaration_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
             )
@@ -1144,17 +1142,17 @@ scss_declaration_interpolation_expression
 
     ;
 
-scss_declaration_property_value_interpolation_expression
+sass_declaration_property_value_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS)
             )
@@ -1162,17 +1160,17 @@ scss_declaration_property_value_interpolation_expression
 
     ;
     
-scss_mq_interpolation_expression
+sass_mq_interpolation_expression
     :
         ( 
-            (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+            sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
         )
         ( 
             ws?
             (
-                (HASH_SYMBOL LBRACE)=>scss_interpolation_expression_var
+                sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
             )
@@ -1180,9 +1178,9 @@ scss_mq_interpolation_expression
 
     ;
     
-scss_interpolation_expression_var
+sass_interpolation_expression_var
     :
-        HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
+        HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition | IDENT ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
     ;
     
 //SASS nested properties:
@@ -1203,7 +1201,7 @@ scss_interpolation_expression_var
 //    weight: bold;
 //  }
 //}
-scss_nested_properties
+sass_nested_properties
     :
     property COLON ws? propertyValue? LBRACE ws? syncToFollow declarations RBRACE
     ;
@@ -1242,9 +1240,26 @@ sass_else
 
 sass_control_expression
     :
-    cp_expression (( CP_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
+    sass_control_expression_condition ( (OR | AND) ws? sass_control_expression_condition)*    
+
     ;
 
+sass_control_expression_condition
+    :
+//    (NOT ws?)? cp_expression (( CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ) ws? cp_expression)?
+    (NOT ws?)? cp_compare_expr
+    ;
+
+cp_compare_expr
+    :    cp_compare_expr_atom 
+         ( ( CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ ) ws? cp_compare_expr_atom )* 
+    ;
+
+cp_compare_expr_atom
+    :    (cp_expression)=>cp_expression
+    |    LPAREN ws? cp_compare_expr RPAREN ws?
+    ;
+    
 sass_for
     :
     SASS_FOR ws cp_variable ws IDENT /*from*/ ws cp_term IDENT /*to*/ ws cp_term sass_control_block
@@ -1273,8 +1288,10 @@ sass_control_block
 sass_function_declaration
     :
     //I assume there can be not only the return statement in the function block, 
-    //but so far haven't found any such example so assuming the simplier case
-    SASS_FUNCTION ws sass_function_name ws? LPAREN cp_args_list? RPAREN ws? LBRACE ws? sass_function_return ws? RBRACE
+    //but so far haven't found any such example so I put the declarations rule inside
+    //and added the sass_function_return into the declarations rule itself (not fully correct) 
+    //as the return should be allowed only from the sass function declaration
+    SASS_FUNCTION ws sass_function_name ws? LPAREN cp_args_list? RPAREN ws? LBRACE ws? declarations RBRACE
     ;
     
 sass_function_name
@@ -1616,9 +1633,10 @@ TILDE		: '~'       ;
 PIPE            : '|'       ;
 
 CP_EQ           : '=='       ;
+CP_NOT_EQ       : '!='       ;
 LESS            : '<'       ;
-GREATER_OR_EQ   : '>='      ;
-LESS_OR_EQ      : '=<'      ;
+GREATER_OR_EQ   : '>=' | '=>'; //a weird operator variant supported by SASS
+LESS_OR_EQ      : '=<' | '<='; //a weird operator variant supported by SASS
 LESS_WHEN       : 'WHEN'    ;
 LESS_AND        : '&'     ;
 LESS_DOTS       : '...';
@@ -1645,6 +1663,7 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
 ONLY 		: 'ONLY';
 NOT		: 'NOT'; 
 AND		: 'AND';
+OR		: 'OR';
 
 // -------------
 // Identifier.  Identifier tokens pick up properties names and values

@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -116,7 +117,7 @@ public class CPCssEditorModule extends CssEditorModule {
         if (model == null) {
             return Collections.emptyList();
         }
-        List<CompletionProposal> allVars = getVariableCompletionProposals(context, model);
+        List<CompletionProposal> allVars = new ArrayList<CompletionProposal>(getVariableCompletionProposals(context, model));
 
         //errorneous source
         TokenSequence<CssTokenId> ts = context.getTokenSequence();
@@ -155,16 +156,38 @@ public class CPCssEditorModule extends CssEditorModule {
         }
 
         Node activeNode = context.getActiveNode();
-        boolean isError = activeNode.type() == NodeType.error;
-        if (isError) {
+        boolean isError = false;
+        //skip to first non error or recovery parent
+        while(activeNode.type() == NodeType.error || activeNode.type() == NodeType.recovery) {
+            isError = true;
             activeNode = activeNode.parent();
         }
-
 //        NodeUtil.dumpTree(context.getParseTreeRoot());
 
-
-
         switch (activeNode.type()) {
+            case bodyItem:
+                switch(tid) {
+                    case WS:
+                        //in stylesheet main body: @include |
+                        //check the previous token
+                        if(ts.movePrevious()) {
+                            Token<CssTokenId> previousToken = ts.token();
+                            if(previousToken.id() == CssTokenId.SASS_INCLUDE) {
+                                //add all mixins
+                                proposals.addAll(getMixinsCompletionProposals(context, model));
+                            }
+                        }
+                        break;
+                        
+                    case IDENT:
+                        //in stylesheet main body: @include mix|
+                        if(LexerUtils.followsToken(ts, CssTokenId.SASS_INCLUDE, true, false, CssTokenId.WS) != null) {
+                            //ok so the ident if preceeded by WS and then by SASS_INCLUDE token
+                            proposals.addAll(getMixinsCompletionProposals(context, model));
+                        }
+                        break;
+                }
+                break;
             case cp_mixin_call:
             //@include |
             case cp_mixin_name:
@@ -186,9 +209,9 @@ public class CPCssEditorModule extends CssEditorModule {
         return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
 
-    private static List<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
+    private static Collection<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        Collection<CompletionProposal> proposals = new LinkedHashSet<CompletionProposal>();
         for (CPElement var : model.getVariables(context.getCaretOffset())) {
             if (var.getType() != CPElementType.VARIABLE_USAGE && !var.getRange().containsInclusive(context.getCaretOffset())) {
                 ElementHandle handle = new CPCslElementHandle(context.getFileObject(), var.getName());
@@ -234,9 +257,9 @@ public class CPCssEditorModule extends CssEditorModule {
         return proposals;
     }
 
-    private static List<CompletionProposal> getMixinsCompletionProposals(final CompletionContext context, CPModel model) {
+    private static Collection<CompletionProposal> getMixinsCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        Collection<CompletionProposal> proposals = new LinkedHashSet<CompletionProposal>();
         for (CPElement mixin : model.getMixins()) {
             if (mixin.getType() == CPElementType.MIXIN_DECLARATION) {
                 ElementHandle handle = new CPCslElementHandle(context.getFileObject(), mixin.getName());
@@ -452,7 +475,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         //first look at the current file
                         CPModel model = CPModel.getModel(context.getParserResult());
                         for (CPElement var : model.getVariables()) {
-                            if (var.getType().isOfTypes(CPElementType.VARIABLE_GLOBAL_DECLARATION, CPElementType.VARIABLE_LOCAL_DECLARATION, CPElementType.VARIABLE_DECLARATION_MIXIN_PARAMS)) {
+                            if (var.getType().isOfTypes(CPElementType.VARIABLE_GLOBAL_DECLARATION, CPElementType.VARIABLE_LOCAL_DECLARATION, CPElementType.VARIABLE_DECLARATION_IN_BLOCK_CONTROL)) {
                                 if (LexerUtils.equals(varName, var.getName(), false, false)) {
                                     return new DeclarationLocation(context.getFileObject(), var.getRange().getStart());
                                 }
@@ -537,7 +560,7 @@ public class CPCssEditorModule extends CssEditorModule {
                 case MIXIN_DECLARATION:
                     mixins.add(new CPStructureItem.Mixin(element));
                     break;
-                case VARIABLE_DECLARATION_MIXIN_PARAMS:
+                case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
                 case VARIABLE_GLOBAL_DECLARATION:
                 case VARIABLE_LOCAL_DECLARATION:
                     vars.add(new CPStructureItem.Variable(element));

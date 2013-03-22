@@ -1,52 +1,28 @@
 Code completion result for source line:
-[1,2]*.s|^
+['cat', 'elephant']*.s|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      Scanner                                    null
-CLASS      Script                                     null
-CLASS      ScriptException                            null
-CLASS      SecureCacheResponse                        null
-CLASS      SecurityException                          null
-CLASS      SecurityManager                            null
-CLASS      Sequence                                   null
-CLASS      SequenceInputStream                        null
-CLASS      Serializable                               null
-CLASS      SerializablePermission                     null
-CLASS      ServerSocket                               null
-CLASS      ServiceConfigurationError                  null
-CLASS      ServiceLoader                              null
-CLASS      Set                                        null
-CLASS      Short                                      null
-CLASS      SimpleTimeZone                             null
-CLASS      Singleton                                  null
-CLASS      Socket                                     null
-CLASS      SocketAddress                              null
-CLASS      SocketException                            null
-CLASS      SocketImpl                                 null
-CLASS      SocketImplFactory                          null
-CLASS      SocketOptions                              null
-CLASS      SocketPermission                           null
-CLASS      SocketTimeoutException                     null
-CLASS      SortedMap                                  null
-CLASS      SortedSet                                  null
-CLASS      SpreadListEvaluatingException              null
-CLASS      SpreadMap                                  null
-CLASS      SpreadMapEvaluatingException               null
-CLASS      Stack                                      null
-CLASS      StackOverflowError                         null
-CLASS      StackTraceElement                          null
-CLASS      StreamCorruptedException                   null
-CLASS      StreamTokenizer                            null
-CLASS      StrictMath                                 null
-CLASS      String                                     null
-CLASS      StringBuffer                               null
-CLASS      StringBufferInputStream                    null
-CLASS      StringBuilder                              null
-CLASS      StringIndexOutOfBoundsExceptio             null
-CLASS      StringReader                               null
-CLASS      StringTokenizer                            null
-CLASS      StringWriter                               null
-CLASS      StringWriterIOException                    null
-CLASS      SuppressWarnings                           null
-CLASS      SyncFailedException                        null
-CLASS      System                                     null
+METHOD     setMetaClass(MetaClass)                    void
+METHOD     size()                                     int
+METHOD     sleep(long)                                void
+METHOD     sleep(long, Closure)                       void
+METHOD     split()                                    String[]
+METHOD     split(Closure)                             Collection
+METHOD     split(String)                   [PUBLIC]   String[]
+METHOD     split(String, int)              [PUBLIC]   String[]
+METHOD     splitEachLine(CharSequence, Cl             Object
+METHOD     splitEachLine(Pattern, Closure             Object
+METHOD     splitEachLine(String, Closure)             Object
+METHOD     sprintf(String, Object)                    String
+METHOD     sprintf(String, Object)                    String
+METHOD     startsWith(String)              [PUBLIC]   boolean
+METHOD     startsWith(String, int)         [PUBLIC]   boolean
+METHOD     stripIndent()                              String
+METHOD     stripIndent(int)                           String
+METHOD     stripMargin()                              String
+METHOD     stripMargin(CharSequence)                  String
+METHOD     stripMargin(String)                        String
+METHOD     stripMargin(char)                          String
+METHOD     subSequence(int, int)           [PUBLIC]   CharSequence
+METHOD     substring(int)                  [PUBLIC]   String
+METHOD     substring(int, int)             [PUBLIC]   String

@@ -1143,4 +1143,68 @@ public class Css3ParserScssTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
+
+    public void testIfControlExpression() {
+        assertParses(" @if $arg != null and $arg2 != transparent { }");
+        assertParses(" @if not $arg != null and $arg2 != transparent { }");
+        assertParses(" @if not $arg != null or not $arg2 != transparent { }");
+        assertParses(" @if true or not $arg2 != transparent { }");
+    }
+
+    public void testMixinWithFirstParamOnNewLine() {
+        assertParses("@mixin color(\n"
+                + "$bgcolor: red,"
+                + "$fgcolor: blue) {\n"
+                + "}");
+    }
+
+    public void testFunctionInIfStatementExpression() {
+        assertParses("@function myfn($color) {\n"
+                + "    @if lightness($color) > 50 {\n"
+                + "        @return light;\n"
+                + "    } @else {\n"
+                + "        @return dark;\n"
+                + "    }\n"
+                + "}");
+    }
+
+    public void testImportInDeclarations() {
+        assertParses(".clz { @import \"hello\"; }");
+    }
+
+    public void testCommaInSelectorInterpolationExpression() {
+        assertParses(".#{$prefix}sg,.#{$prefix}ag .#{$prefix}xx { }");
+    }
+
+    public void testIfCondition() {
+        assertParses(" @if ($mode == light) {}");
+    }
+
+    public void testSassFunctionWhereWithArgDefiningValue() {
+        assertParses("@function color-by-background($bg-color, $contrast: $default-text-contrast) {\n"
+                + "    @return color-offset($bg-color, $contrast, $tmpmode, $inverse: true);\n"
+                + "}");
+    }
+
+    public void testWeirdControlBlockOperator() {
+        assertParses("@if $right =< 0 {}");
+        assertParses("@if $right <= 0 {}");
+        assertParses("@if $right >= 0 {}");
+        assertParses("@if $right => 0 {}");
+    }
+
+    public void testWSBetweenMixinCallArgAndComma() {
+        assertParses(".clz {\n"
+                + "     @include background-gradient(\n"
+                + "         $background-color ,\n"
+                + "         $background-direction\n"
+                + ");\n"
+                + "}");
+    }
+
+    public void testPropertyValue2_fails() {
+        assertParses(".#{$prefix}#{$cls-ui}-tr {\n"
+                + "    background-position: 0 (-$frame-max);\n"
+                + "}");
+    }
 }

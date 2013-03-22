@@ -109,16 +109,14 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     private static RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
     private NetworkMonitor parent;
     private InputOutput io;
-    private Project project;
 
-    NetworkMonitorTopComponent(NetworkMonitor parent, Model m, Project p) {
+    NetworkMonitorTopComponent(NetworkMonitor parent, Model m) {
         initComponents();
         jResponse.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
         setName(Bundle.CTL_NetworkMonitorTopComponent());
         setToolTipText(Bundle.HINT_NetworkMonitorTopComponent());
         this.model = m;
         this.parent = parent;
-        this.project = p;
         jRequestsList.setModel(model);
         jRequestsList.setCellRenderer(new ListRendererImpl());
         jSplitPane.setDividerLocation(200);
@@ -130,6 +128,9 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     }
 
     Model getModel() {
+        if (model.canResetModel()) {
+            resetModel();
+        }
         return model;
     }
 
@@ -422,6 +423,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     @Override
     public void componentClosed() {
         parent.componentClosed();
+        model.reset();
     }
 
     @Override
@@ -460,7 +462,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             mi.updateResponsePane(jResponse, jRawResponseResponse.isSelected());
             mi.updateFramesPane(jFrames, jRawResponseFrames.isSelected());
             mi.updatePostDataPane(jRequest, jRawResponseRequest.isSelected());
-            mi.updateCallStack(project, io);
+            mi.updateCallStack(io);
         }
         updateTabVisibility(mi);
     }
@@ -494,9 +496,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         refreshDetailsView(lastSelectedItem);
     }
 
-    void resetModel(BrowserFamilyId browserFamilyId, Project p) {
-        model.reset(browserFamilyId);
-        this.project = p;
+    void resetModel() {
+        model.reset();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -551,10 +552,15 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         private ChangeListener changeListener;
         private String data = null;
         private String failureCause = null;
+        private BrowserFamilyId browserFamilyId;
+        private Project project;
 
-        public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest) {
+        public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest,
+                BrowserFamilyId browserFamilyId, Project project) {
             this.request = request;
             this.wsRequest = wsRequest;
+            this.browserFamilyId = browserFamilyId;
+            this.project = project;
             if (this.request != null) {
                 this.request.addPropertyChangeListener(this);
             } else {
@@ -562,7 +568,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             }
         }
 
-        public boolean canBeShownToUser(BrowserFamilyId browserFamilyId) {
+        public boolean canBeShownToUser() {
             if (wsRequest != null) {
                 return true;
             }
@@ -636,6 +642,9 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            if (Network.Request.PROP_RESPONSE_DATA.equals(evt.getPropertyName())) {
+                startLoadingData();
+            }
             fireChange();
         }
 
@@ -738,6 +747,13 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             } else {
                 doc.insertString(doc.getLength(), "Request URL: ", boldStyle);
                 doc.insertString(doc.getLength(), wsRequest.getURL()+"\n", defaultStyle);
+                doc.insertString(doc.getLength(), "Status: ", boldStyle);
+                if (wsRequest.getErrorMessage() != null) {
+                    doc.insertString(doc.getLength(), wsRequest.getErrorMessage()+"\n", errorStyle);
+                } else {
+                    doc.insertString(doc.getLength(), wsRequest.isClosed() ? "Closed\n" :
+                        wsRequest.getHandshakeResponse() == null ? "Opening\n" : "Open\n", defaultStyle);
+                }
             }
 
             JSONObject requestHeaders = getRequestHeaders();
@@ -808,7 +824,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 return;
             }
             try {
-                updateDataImpl(pane, rawData);
+                updateResponseDataImpl(pane, rawData);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -819,72 +835,75 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 return;
             }
             try {
-                updateDataImpl(pane, rawData);
+                updateFramesImpl(pane, rawData);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
 
-        private void updateDataImpl(JEditorPane pane, boolean rawData) throws BadLocationException {
-            if (request != null) {
-                if (!request.hasData()) {
-                    data = "";
-                }
-                if (data == null) {
-                    data = "loading...";
-                    loadRequestData();
-                    pane.setText(data);
-                } else {
-                    if (rawData || data.isEmpty()) {
-                        pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
-                        pane.setText(data);
-                    } else {
-                        String contentType = stripDownContentType((String)((JSONObject)request.getResponse().get("headers")).get("Content-Type"));
-                        reformatAndUseRightEditor(pane, data, contentType);
-                    }
-                }
-            } else {
-                Style defaultStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-                StyledDocument doc = (StyledDocument)pane.getDocument();
-                Style timingStyle = doc.addStyle("timing", defaultStyle);
-                StyleConstants.setForeground(timingStyle, Color.lightGray);
-                Style infoStyle = doc.addStyle("comment", defaultStyle);
-                StyleConstants.setForeground(infoStyle, Color.darkGray);
-                StyleConstants.setBold(infoStyle, true);
-                SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
-                pane.setText("");
-                StringBuilder sb = new StringBuilder();
-                int lastFrameType = -1;
-                for (Network.WebSocketFrame f : wsRequest.getFrames()) {
-                    int opcode = f.getOpcode();
-                    if (opcode == 0) { // "continuation frame"
-                        opcode = lastFrameType;
-                    } else {
-                        lastFrameType = opcode;
-                    }
-                    if (opcode == 1) { // "text frame"
-                        if (!rawData) {
-                            doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
-                            doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
-                        }
-                        doc.insertString(doc.getLength(), f.getPayload()+"\n", defaultStyle);
-                    } else if (opcode == 2) { // "binary frame"
-                        if (!rawData) {
-                            doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
-                            doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
-                        }
-                        // XXX: binary data???
-                        doc.insertString(doc.getLength(), f.getPayload()+"\n", defaultStyle);
-                    } else if (opcode == 8) { // "close frame"
-                        if (!rawData) {
-                            doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
-                            doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
-                        }
-                        doc.insertString(doc.getLength(), "Frame closed\n", infoStyle);
-                    }
-                }
-                data = sb.toString();
+        private void startLoadingData() {
+            if (!request.hasData()) {
+                data = "";
             }
+            if (data == null) {
+                data = "loading...";
+                loadRequestData();
+            }
+        }
+
+        private void updateResponseDataImpl(JEditorPane pane, boolean rawData) throws BadLocationException {
+            assert data != null;
+            if (rawData || data.isEmpty()) {
+                pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
+                pane.setText(data);
+            } else {
+                String contentType = stripDownContentType((JSONObject)request.getResponse().get("headers"));
+                reformatAndUseRightEditor(pane, data, contentType);
+            }
+            pane.setCaretPosition(0);
+        }
+
+        private void updateFramesImpl(JEditorPane pane, boolean rawData) throws BadLocationException {
+            Style defaultStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+            StyledDocument doc = (StyledDocument)pane.getDocument();
+            Style timingStyle = doc.addStyle("timing", defaultStyle);
+            StyleConstants.setForeground(timingStyle, Color.lightGray);
+            Style infoStyle = doc.addStyle("comment", defaultStyle);
+            StyleConstants.setForeground(infoStyle, Color.darkGray);
+            StyleConstants.setBold(infoStyle, true);
+            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
+            pane.setText("");
+            StringBuilder sb = new StringBuilder();
+            int lastFrameType = -1;
+            for (Network.WebSocketFrame f : wsRequest.getFrames()) {
+                int opcode = f.getOpcode();
+                if (opcode == 0) { // "continuation frame"
+                    opcode = lastFrameType;
+                } else {
+                    lastFrameType = opcode;
+                }
+                if (opcode == 1) { // "text frame"
+                    if (!rawData) {
+                        doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
+                        doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
+                    }
+                    doc.insertString(doc.getLength(), f.getPayload()+"\n", defaultStyle);
+                } else if (opcode == 2) { // "binary frame"
+                    if (!rawData) {
+                        doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
+                        doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
+                    }
+                    // XXX: binary data???
+                    doc.insertString(doc.getLength(), f.getPayload()+"\n", defaultStyle);
+                } else if (opcode == 8) { // "close frame"
+                    if (!rawData) {
+                        doc.insertString(doc.getLength(), formatter.format(f.getTimestamp()), timingStyle);
+                        doc.insertString(doc.getLength(), f.getDirection() == Network.Direction.SEND ? " SENT " : " RECV ", timingStyle);
+                    }
+                    doc.insertString(doc.getLength(), "Frame closed\n", infoStyle);
+                }
+            }
+            data = sb.toString();
             pane.setCaretPosition(0);
         }
 
@@ -894,13 +913,13 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                     pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
                     pane.setText(getPostData());
                 } else {
-                    String contentType = stripDownContentType((String)getRequestHeaders().get("Content-Type"));
+                    String contentType = stripDownContentType(getRequestHeaders());
                     reformatAndUseRightEditor(pane, getPostData(), contentType);
                 }
             }
         }
 
-        private void updateCallStack(Project project, InputOutput io) {
+        private void updateCallStack(InputOutput io) {
             try {
                 io.getOut().reset();
             } catch (IOException ex) {
@@ -930,14 +949,36 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
         private boolean isError() {
             if (wsRequest != null) {
-                return false;
+                return wsRequest.getErrorMessage() != null;
+            } else {
+                return request.isFailed() || request.getResponseCode() >= 400;
             }
-            return request.isFailed() || request.getResponseCode() >= 400;
+        }
+
+        private boolean inactive = false;
+        
+        void deactivateItem(Project p) {
+            if (project == p) {
+                inactive = true;
+            }
+        }
+
+        boolean isInactive() {
+            return inactive;
+        }
+
+        private boolean isLive() {
+            return wsRequest != null && !wsRequest.isClosed();
         }
 
     }
 
-    private static String stripDownContentType(String contentType) {
+    private static String stripDownContentType(JSONObject o) {
+        assert o != null;
+        String contentType = (String)o.get("Content-Type");
+        if (contentType == null) {
+            contentType = (String)o.get("content-type");
+        }
         if (contentType == null) {
             return null;
         }
@@ -957,12 +998,15 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 contentType = "application/json";
             }
         }
-        if ("application/json".equals(contentType)) {
+        if ("application/json".equals(contentType) || "text/x-json".equals(contentType)) {
             data = reformatJSON(data);
             contentType = "text/x-json";
         }
         if ("application/xml".equals(contentType)) {
             contentType = "text/xml";
+        }
+        if (contentType == null) {
+            contentType = "text/plain";
         }
         pane.setEditorKit(CloneableEditorSupport.getEditorKit(contentType));
         pane.setText(data);
@@ -1035,8 +1079,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         sb.append(text);
     }
 
-    private static String getJSONPResponse(String data) {
-        Pattern p = Pattern.compile("([0-9a-zA-Z_$]+?\\()([\\{\\[].*?[\\}\\]])(\\)\\;)");
+    static String getJSONPResponse(String data) {
+        Pattern p = Pattern.compile("([0-9a-zA-Z_$]+?\\()([\\{\\[].*?[\\}\\]])(\\)[\\;]?[\n\r]?)", Pattern.DOTALL);
         Matcher m = p.matcher(data);
         if (m.matches()) {
             return m.group(2);
@@ -1046,21 +1090,21 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
     static class Model extends AbstractListModel implements PropertyChangeListener {
 
-        private BrowserFamilyId browserFamilyId;
         private List<ModelItem> allRequests = new ArrayList<ModelItem>();
         private List<ModelItem> visibleRequests = new ArrayList<ModelItem>();
 
-        public Model(BrowserFamilyId browserFamilyId) {
-            this.browserFamilyId = browserFamilyId;
+        public Model() {
         }
         
-        public void add(Network.Request r) {
-            add(new ModelItem(r, null));
+        public void add(Network.Request r, BrowserFamilyId browserFamilyId, Project project) {
+            add(new ModelItem(r, null, browserFamilyId, project));
             r.addPropertyChangeListener(this);
+            // with regular request do not call updateVisibleItems() here as we need
+            // to receive response headers first and they will fire Network.Request.PROP_RESPONSE event
         }
 
-        public void add(Network.WebSocketRequest r) {
-            add(new ModelItem(null, r));
+        public void add(Network.WebSocketRequest r, BrowserFamilyId browserFamilyId, Project project) {
+            add(new ModelItem(null, r, browserFamilyId, project));
             r.addPropertyChangeListener(this);
             updateVisibleItems();
         }
@@ -1089,7 +1133,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         private void updateVisibleItems() {
             List<ModelItem> res = new ArrayList<ModelItem>();
             for (ModelItem mi : allRequests) {
-                if (mi.canBeShownToUser(browserFamilyId)) {
+                if (mi.canBeShownToUser()) {
                     res.add(mi);
                 }
             }
@@ -1106,8 +1150,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             });
         }
 
-        void reset(BrowserFamilyId browserFamilyId) {
-            this.browserFamilyId = browserFamilyId;
+        void reset() {
             allRequests = new ArrayList<ModelItem>();
             visibleRequests = new ArrayList<ModelItem>();
         }
@@ -1129,6 +1172,24 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                     mi.setFailureCause(message.getText());
                 }
             }
+        }
+
+        void close(Project project) {
+            for (ModelItem mi : allRequests) {
+                mi.deactivateItem(project);
+            }
+        }
+
+        public boolean canResetModel() {
+            boolean allDeactivated = true;
+            for (ModelItem mi : allRequests) {
+                if (!mi.isInactive()) {
+                    allDeactivated = false;
+                    break;
+                }
+            }
+            // if model contains only deactivated items they can be reset:
+            return allDeactivated;
         }
 
     }
@@ -1158,6 +1219,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
                 ModelItem mi = (ModelItem)value;
                 if (mi.isError()) {
                     c.setForeground(Color.red);
+                } else if (mi.isLive()) {
+                    c.setForeground(Color.blue);
                 }
             }
             return c;

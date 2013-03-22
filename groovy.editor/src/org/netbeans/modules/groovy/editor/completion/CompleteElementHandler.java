@@ -154,10 +154,17 @@ public final class CompleteElementHandler {
             }
         });
         ClassDefinition definition = loadDefinition(node);
+        
         ClassNode typeNode = definition.getNode();
+        String typeName = typeNode.getName();
+        
+        // In cases like 1.^ we have current type name "int" but indexer won't find anything for such a primitive
+        if ("int".equals(typeName)) { // NOI18N
+            typeName = "java.lang.Integer"; // NOI18N
+        }
 
         Map<MethodSignature, ? extends CompletionItem> groovyItems = GroovyElementHandler.forCompilationInfo(info)
-                .getMethods(index, typeNode.getName(), prefix, anchor, leaf, access, nameOnly);
+                .getMethods(index, typeName, prefix, anchor, leaf, access, nameOnly);
 
         fillSuggestions(groovyItems, result);
 
@@ -175,18 +182,18 @@ public final class CompleteElementHandler {
             }
 
             fillSuggestions(JavaElementHandler.forCompilationInfo(info)
-                    .getMethods(typeNode.getName(), prefix, anchor, typeParameters,
+                    .getMethods(typeName, prefix, anchor, typeParameters,
                             leaf, modifiedAccess, nameOnly), result);
         }
 
         // FIXME not sure about order of the meta methods, perhaps interface
         // methods take precedence
         fillSuggestions(MetaElementHandler.forCompilationInfo(info)
-                .getMethods(typeNode.getName(), prefix, anchor, nameOnly), result);
+                .getMethods(typeName, prefix, anchor, nameOnly), result);
 
         if (source != null) {
             fillSuggestions(DynamicElementHandler.forCompilationInfo(info)
-                    .getMethods(source.getName(), typeNode.getName(), prefix, anchor, nameOnly, leaf, definition.getFileObject()), result);
+                    .getMethods(source.getName(), typeName, prefix, anchor, nameOnly, leaf, definition.getFileObject()), result);
         }
 
         if (typeNode.getSuperClass() != null) {

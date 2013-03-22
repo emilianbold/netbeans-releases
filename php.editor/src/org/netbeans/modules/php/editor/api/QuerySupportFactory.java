@@ -60,6 +60,10 @@ public final class QuerySupportFactory {
     private QuerySupportFactory() {
     }
 
+    public static QuerySupport getDependent(FileObject source) {
+        return get(QuerySupport.findDependentRoots(source, false));
+    }
+
     public static QuerySupport get(final FileObject source) {
         return get(QuerySupport.findRoots(source,
                 Collections.singleton(PhpSourcePath.SOURCE_CP),

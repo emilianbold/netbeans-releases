@@ -42,11 +42,14 @@
 package org.netbeans.modules.css.prep;
 
 import javax.swing.ImageIcon;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.prep.model.CPElementHandle;
+import org.netbeans.modules.css.prep.model.CPElementType;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -69,7 +72,7 @@ public class VariableCompletionItem extends CssCompletionItem {
      * @param anchorOffset
      * @param origin Origin is null for current file. File displayname otherwise.
      */
-    public VariableCompletionItem(ElementHandle elementHandle, CPElementHandle handle, int anchorOffset, String origin) {
+    public VariableCompletionItem(@NonNull ElementHandle elementHandle, @NonNull CPElementHandle handle, int anchorOffset, @NullAllowed String origin) {
         super(elementHandle, handle.getName(), anchorOffset, false);
         this.handle = handle;
         this.origin = origin;
@@ -91,7 +94,7 @@ public class VariableCompletionItem extends CssCompletionItem {
             case VARIABLE_GLOBAL_DECLARATION:
                 prio -= GLOBAL_VAR_SORT_IMPORTANCE;
                 break;
-            case VARIABLE_DECLARATION_MIXIN_PARAMS:
+            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
             case VARIABLE_LOCAL_DECLARATION:
                 prio -= LOCAL_VAR_SORT_IMPORTANCE;
                 break;
@@ -104,7 +107,7 @@ public class VariableCompletionItem extends CssCompletionItem {
     public ImageIcon getIcon() {
         switch (handle.getType()) {
             case VARIABLE_LOCAL_DECLARATION:
-            case VARIABLE_DECLARATION_MIXIN_PARAMS:
+            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
                 return LOCAL_VAR_ICON;
             default:
                 return super.getIcon();
@@ -119,6 +122,10 @@ public class VariableCompletionItem extends CssCompletionItem {
     @Override
     public String getName() {
         return handle.getName().substring(1); //strip off the leading $ or @ sign
+    }
+    
+    private boolean isGlobalVar() {
+        return handle.getType() == CPElementType.VARIABLE_GLOBAL_DECLARATION;
     }
     
     @Override
@@ -151,5 +158,38 @@ public class VariableCompletionItem extends CssCompletionItem {
             return formatter.getText();
         }
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 89 * hash + (this.origin != null ? this.origin.hashCode() : 0);
+        hash = 89 * hash + getName().hashCode();
+        hash = 89 * hash + (isGlobalVar() ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final VariableCompletionItem other = (VariableCompletionItem) obj;
+        if ((this.origin == null) ? (other.origin != null) : !this.origin.equals(other.origin)) {
+            return false;
+        }
+        if (!getName().equals(other.getName())) {
+            return false;
+        }
+        if(isGlobalVar() != other.isGlobalVar()) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    
     
 }

@@ -81,6 +81,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.php.editor.nav.Bundle.*;
+import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
@@ -319,7 +320,7 @@ public final class FoldingScanner {
         }
 
         private void addFold(final ASTNode node) {
-            if (!(node instanceof ASTError)) {
+            if (!(node instanceof ASTError) && !(node instanceof EmptyStatement)) {
                 addFold(createOffsetRange(node));
             }
         }

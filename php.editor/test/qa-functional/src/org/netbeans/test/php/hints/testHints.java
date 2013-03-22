@@ -75,7 +75,8 @@ public class testHints extends GeneralPHP {
                 "testBinaryNotationCorrect",
                 "testShortArraySyntax",
                 "testPhp54RelatedHint",
-                "testPhp53RelatedHint").enableModules(".*").clusters(".*") //.gui( true )
+                "testPhp53RelatedHint",
+                "testSmartySurroundWith").enableModules(".*").clusters(".*") //.gui( true )
                 );
     }
 
@@ -214,7 +215,7 @@ public class testHints extends GeneralPHP {
         final int limit = expectedOccurences;
         try {
             new Waiter(new Waitable() {
-
+                
                 @Override
                 public Object actionProduced(Object oper) {
                     return eo.getAnnotations().length > limit ? Boolean.TRUE : null;
@@ -245,4 +246,15 @@ public class testHints extends GeneralPHP {
             Exceptions.printStackTrace(ex);
         }
     }
+
+    public void testSmartySurroundWith() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "Smarty Template", null);
+        startTest();
+        TypeCode(file, "\n<h1>SomeHeader</h1>\n");
+        file.select("SomeHeader");
+        file.save();
+        new EventTool().waitNoEvent(1000);
+        checkNumberOfAnnotationsContains("Surround with ...", 1, "Possibility to wrap code with chosen Smarty tag", file);
+        endTest();
+    } 
 }

@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.actions.Resource;
-import org.netbeans.modules.web.inspect.webkit.actions.GoToNodeSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -60,7 +59,6 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -275,7 +273,6 @@ public class DOMNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(SystemAction.get(GoToNodeSourceAction.class));
         for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
             if (action instanceof ContextAwareAction) {
                 action = ((ContextAwareAction)action).createContextAwareInstance(getLookup());
@@ -283,11 +280,6 @@ public class DOMNode extends AbstractNode {
             actions.add(action);
         }
         return actions.toArray(new Action[actions.size()]);
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(GoToNodeSourceAction.class);
     }
 
     /**
