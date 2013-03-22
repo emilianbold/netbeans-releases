@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component-set>
+    <components>
+        <component>
+            <role>org.sonatype.aether.repository.WorkspaceReader</role>
+            <role-hint>ide</role-hint>
+            <implementation>org.netbeans.modules.maven.workspace.reader.IDEWorkspaceReader</implementation>
+            <description />
+            <isolated-realm>false</isolated-realm>
+        </component>
+    </components>
+</component-set>
