@@ -451,7 +451,7 @@ made subject to such option by the copyright holder.
 		  SourcesView @ 900
 		  -->
 
-		<attr name="position" intvalue="1400"/>
+		<attr name="position" intvalue="1000"/>
 
 
 		<!-- after LocalsView and WatchesView -->

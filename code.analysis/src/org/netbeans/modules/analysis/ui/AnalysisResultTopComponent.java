@@ -89,7 +89,6 @@ autostore = false)
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "output", openAtStartup = false, position=12000)
 @ActionID(category = "Window", id = "org.netbeans.modules.analysis.ui.AnalysisResultTopComponent")
-@ActionReference(path = "Menu/Window/Output", position = 330)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_AnalysisResultAction",
 preferredID = "AnalysisResultTopComponent")
 @Messages({

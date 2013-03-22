@@ -215,7 +215,7 @@ made subject to such option by the copyright holder.
             <folder name="Debug">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
 
-                <attr name="position" intvalue="1400"/>
+                <attr name="position" intvalue="1000"/>
                 <file name="org-netbeans-modules-debugger-ui-actions-LocalsViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance"/>
                     <attr name="position" intvalue="100"/>
