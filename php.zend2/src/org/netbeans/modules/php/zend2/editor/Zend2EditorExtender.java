@@ -155,8 +155,10 @@ public class Zend2EditorExtender extends EditorExtender {
                     // add them to global variables...
                     allVariables.addAll(newVariables);
                     // ...and also as fields to $this variable
+                    PhpClass type = viewVariable.getType();
+                    assert type != null;
                     for (PhpVariable variable : newVariables) {
-                        viewVariable.getType().addField(variable.getName().substring(1), variable.getType(), variable.getFile(), variable.getOffset());
+                        type.addField(variable.getName().substring(1), variable.getType(), variable.getFile(), variable.getOffset());
                     }
                 }
 
