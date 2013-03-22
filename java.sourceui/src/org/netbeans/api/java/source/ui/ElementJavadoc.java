@@ -78,6 +78,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
 import org.netbeans.modules.java.source.JavadocHelper;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -265,11 +266,17 @@ public class ElementJavadoc {
                             URI uri = null;
                             try {
                                 uri = URI.create(idx < 0 ? link : link.substring(0, idx));
+                                if (!uri.isAbsolute() && ElementJavadoc.this.handle != null) {
+                                    Element e = ElementJavadoc.this.handle.resolve(controller);
+                                    PackageElement pe = controller.getElements().getPackageOf(e);                                        
+                                    uri = URI.create(FileObjects.getRelativePath(pe.getQualifiedName().toString(), uri.getPath()));
+                                }
                             } catch (IllegalArgumentException iae) {}
                             if (uri != null) {
-                                if (!uri.isAbsolute())
+                                if (!uri.isAbsolute()) {
                                     uri = uri.normalize();
-                                String path = uri.toString();
+                                }
+                                String path = uri.toString();                                
                                 int startIdx = path.lastIndexOf(".."); //NOI18N
                                 startIdx = startIdx < 0 ? 0 : startIdx + 3;
                                 int endIdx = path.lastIndexOf('.'); //NOI18N
