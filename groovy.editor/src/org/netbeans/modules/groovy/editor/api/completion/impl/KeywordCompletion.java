@@ -76,8 +76,11 @@ class KeywordCompletion extends BaseCompletion {
         LOG.log(Level.FINEST, "-> completeKeywords"); // NOI18N
         String prefix = request.prefix;
 
-        if (request.location == CaretLocation.INSIDE_PARAMETERS) {
-            LOG.log(Level.FINEST, "no keywords completion inside of parameters"); // NOI18N
+        if (request.dotContext == null ||
+            request.dotContext.isFieldsOnly() ||
+            request.dotContext.isMethodsOnly() ||
+            request.location == CaretLocation.INSIDE_PARAMETERS) {
+            
             return false;
         }
 

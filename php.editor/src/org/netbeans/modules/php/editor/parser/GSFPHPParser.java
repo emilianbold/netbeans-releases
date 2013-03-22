@@ -67,6 +67,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
@@ -75,8 +76,9 @@ import org.openide.util.WeakListeners;
  * @author Petr Pisl
  */
 public class GSFPHPParser extends Parser implements PropertyChangeListener {
-
     private static final Logger LOGGER = Logger.getLogger(GSFPHPParser.class.getName());
+    private static final boolean PARSE_BIG_FILES = Boolean.getBoolean("nb.php.parse.big.files"); //NOI18N
+    private static final int BIG_FILE_SIZE = Integer.getInteger("nb.php.big.file.size", 5000000); //NOI18N
     private boolean shortTags = true;
     private boolean aspTags = false;
     private ParserResult result = null;
@@ -107,14 +109,36 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         long startTime = System.currentTimeMillis();
-        FileObject file = snapshot.getSource().getFileObject();
-        PhpLanguageProperties languageProperties = PhpLanguageProperties.forFileObject(file);
+        FileObject fileObject = snapshot.getSource().getFileObject();
+        if (!PARSE_BIG_FILES && fileIsTooBig(fileObject)) {
+            doNotProcessParsing(fileObject, snapshot);
+        } else {
+            processParsing(fileObject, snapshot, event);
+        }
+        long endTime = System.currentTimeMillis();
+        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, System.identityHashCode(snapshot.getSource())}); //NOI18N
+    }
+
+    private static boolean fileIsTooBig(FileObject fileObject) {
+        return fileObject != null && fileObject.getSize() > BIG_FILE_SIZE;
+    }
+
+    private void doNotProcessParsing(FileObject fileObject, Snapshot snapshot) {
+        Program emptyProgram = new Program(0, snapshot.getText().toString().length(), Collections.<Statement>emptyList(), Collections.<Comment>emptyList());
+        result = new PHPParseResult(snapshot, emptyProgram);
+        LOGGER.log(
+                Level.INFO,
+                "Parsing of big file cancelled. Size: {0} Name: {1}",
+                new Object[] {fileObject.getSize(), FileUtil.getFileDisplayName(fileObject)});
+    }
+
+    private void processParsing(FileObject fileObject, Snapshot snapshot, SourceModificationEvent event) {
+        PhpLanguageProperties languageProperties = PhpLanguageProperties.forFileObject(fileObject);
         if (!projectPropertiesListenerAdded) {
             PropertyChangeListener weakListener = WeakListeners.propertyChange(this, languageProperties);
             languageProperties.addPropertyChangeListener(weakListener);
             projectPropertiesListenerAdded = true;
         }
-
         shortTags = languageProperties.areShortTagsEnabled();
         aspTags = languageProperties.areAspTagsEnabled();
         try {
@@ -131,8 +155,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
             result = new PHPParseResult(snapshot, emptyProgram);
         }
-        long endTime = System.currentTimeMillis();
-        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, System.identityHashCode(snapshot.getSource())}); //NOI18N
     }
 
     protected PHPParseResult parseBuffer(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception {

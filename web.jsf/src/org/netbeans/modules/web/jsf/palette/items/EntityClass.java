@@ -118,6 +118,7 @@ public abstract class EntityClass {
     public boolean handleTransfer(JTextComponent targetComponent) {
             try {
                 jsfLibrariesSupport = JsfLibrariesSupport.get(targetComponent);
+                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.HTML, DefaultLibraryInfo.JSF_CORE);
                 Caret caret = targetComponent.getCaret();
                 int position0 = Math.min(caret.getDot(), caret.getMark());
                 int position1 = Math.max(caret.getDot(), caret.getMark());
@@ -126,8 +127,6 @@ public abstract class EntityClass {
                         && targetComponent.getText(position1, len).contains("</f:view>");
                 String body = createBody(targetComponent, !containsFView);
                 JSFPaletteUtilities.insert(body, targetComponent);
-                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.HTML);
-                jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.JSF_CORE);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
                 return false;

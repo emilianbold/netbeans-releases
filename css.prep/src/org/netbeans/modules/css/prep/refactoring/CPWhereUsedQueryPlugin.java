@@ -44,6 +44,7 @@
 package org.netbeans.modules.css.prep.refactoring;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -113,6 +114,13 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
     }
 
     private void findVariables(RefactoringElementContext context, RefactoringElementsBag elements) throws IOException, ParseException {
+        for(RefactoringElement re : findVariables(context)) {
+            elements.add(refactoring, WhereUsedElement.create(re.getFile(), re.getName(), re.getRange(), ElementKind.VARIABLE));
+        }
+    }
+    
+    public static Collection<RefactoringElement> findVariables(RefactoringElementContext context) throws IOException, ParseException {
+        Collection<RefactoringElement> elements = new ArrayList<RefactoringElement>();
         String varName = context.getElementName();
         int offset = context.getCaret();
 
@@ -120,8 +128,7 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
         //find a variable the user tries to refactor on
         CPElement currentVar = model.getVariableAtOffset(offset);
         if (currentVar == null) {
-            //shouldn't happen
-            return;
+            throw new IllegalStateException();
         }
         
         //
@@ -140,27 +147,27 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
                 Collection<CPElement> visibleVars = model.getVariables(offset);
                 for (CPElement vvar : visibleVars) {
                     if (vvar.getName().equals(varName)) {
-                        WhereUsedElement elem = WhereUsedElement.create(context.getFileObject(), vvar.getName(), vvar.getRange(), ElementKind.VARIABLE);
-                        elements.add(refactoring, elem);
+                        elements.add(new RefactoringElement(context.getFileObject(), vvar.getRange(), vvar.getName()));
                     }
                 }
                 break;
-            case VARIABLE_DECLARATION_MIXIN_PARAMS:
+            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
+                //the VARIABLE_DECLARATION_MIXIN_PARAMS itself is not in its scope (the scope is the following declarations node).
+                elements.add(new RefactoringElement(context.getFileObject(), currentVar.getRange(), currentVar.getName()));
             case VARIABLE_LOCAL_DECLARATION:
                 //just find local usages in this file
                 OffsetRange scope = currentVar.getScope();
                 for (CPElement var : model.getVariables()) {
                     if (var.getName().equals(varName)) {
-                        if (scope.containsInclusive(var.getRange().getStart())) {
-                            WhereUsedElement elem = WhereUsedElement.create(context.getFileObject(), var.getName(), var.getRange(), ElementKind.VARIABLE);
-                            elements.add(refactoring, elem);
+                        if (scope != null && scope.containsInclusive(var.getRange().getStart())) {
+                            elements.add(new RefactoringElement(context.getFileObject(), var.getRange(), var.getName()));
                         }
                     }
                 }
-                return; //exit -- just local items, do not run the code below searching over related files
+                return elements; //exit -- just local items, do not run the code below searching over related files
 
             default:
-                return; //unsupported type
+                return elements; //unsupported type
         }
 
         //all files linked from the base file with their CP models
@@ -176,19 +183,26 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
                         if (var.getName().equals(varName)) {
                             CPElement cpElement = var.resolve(cpModel);
                             if (cpElement != null) {
-                                OffsetRange elementRange = cpElement.getRange();
-                                WhereUsedElement elem = WhereUsedElement.create(file, varName, elementRange, ElementKind.VARIABLE);
-                                elements.add(refactoring, elem);
-
-                            }
+                               OffsetRange elementRange = cpElement.getRange();
+                               elements.add(new RefactoringElement(file, elementRange, varName));
+                          }
                         }
                         break;
                 }
             }
         }
+        
+        return elements;
     }
 
     private void findMixins(RefactoringElementContext context, RefactoringElementsBag elements) throws IOException, ParseException {
+        for(RefactoringElement re : findMixins(context)) {
+            elements.add(refactoring, WhereUsedElement.create(re.getFile(), re.getName(), re.getRange(), ElementKind.METHOD));
+        }
+    }
+    
+    public static Collection<RefactoringElement> findMixins(RefactoringElementContext context) throws IOException, ParseException {
+        Collection<RefactoringElement> elements = new ArrayList<RefactoringElement>();
         String mixinName = context.getElementName();
 
         //all files linked from the base file with their CP models
@@ -203,12 +217,13 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
                     CPElement cpElement = var.resolve(cpModel);
                     if (cpElement != null) {
                         OffsetRange elementRange = cpElement.getRange();
-                        WhereUsedElement elem = WhereUsedElement.create(file, mixinName, elementRange, ElementKind.METHOD);
-                        elements.add(refactoring, elem);
+                        elements.add(new RefactoringElement(file, elementRange, mixinName));
                     }
                 }
             }
         }
+        
+        return elements;
     }
 
     @Override

@@ -99,7 +99,8 @@ public class JsStructureScanner implements StructureScanner {
         
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
-            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
+                    && !child.getName().equals("prototype")) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
@@ -369,13 +370,7 @@ public class JsStructureScanner implements StructureScanner {
         }
         
         protected void appendTypeInfo(HtmlFormatter formatter, Collection<? extends Type> types) {
-            List<String> displayNames = new ArrayList<String>(types.size());
-            for (Type type : types) { 
-                String displayName = type.getDisplayName();
-                if (!displayName.isEmpty()) {
-                    displayNames.add(displayName);
-                }
-            }
+            Collection<String> displayNames = Utils.getDisplayNames(types);
             if (!displayNames.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR);
                 formatter.appendText(" : ");

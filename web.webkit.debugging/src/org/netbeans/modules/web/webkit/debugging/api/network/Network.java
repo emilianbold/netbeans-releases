@@ -277,16 +277,22 @@ public class Network {
         private boolean dataReady = false;
         private final Network network;
         private boolean failed = false;
+        private final String documentUrl;
 
         private Request(Network network, JSONObject params) {
             this.request = (JSONObject)params.get("request");
             this.initiator = (JSONObject)params.get("initiator");
             this.requestId = String.valueOf(params.get("requestId"));
             this.network = network;
+            this.documentUrl = (String)params.get("documentURL");
         }
 
         public String getInitiatorType() {
             return (String)getInitiator().get("type");
+        }
+
+        public String getDocumentUrl() {
+            return documentUrl;
         }
 
         public String getResponseType() {

@@ -24,6 +24,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.php.code.analysis</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.php.dbgp</code-name-base>
                     <run-dependency>
                         <specification-version>1.23</specification-version>

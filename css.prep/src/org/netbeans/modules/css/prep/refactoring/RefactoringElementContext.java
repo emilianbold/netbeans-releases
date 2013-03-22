@@ -60,13 +60,16 @@ public class RefactoringElementContext {
     private CssParserResult result;
     private Snapshot topLevelSnapshot;
 
-    public RefactoringElementContext(CssParserResult result, Snapshot topLevelSnapshot, int caretOffset, int selectionFrom, int selectionTo) {
+    public RefactoringElementContext(CssParserResult result, int caretOffset) {
+        this(result, caretOffset, -1, -1);
+    }
+    
+    public RefactoringElementContext(CssParserResult result, int caretOffset, int selectionFrom, int selectionTo) {
         this.result = result;
         this.caretOffset = caretOffset;
         this.selectionFrom = selectionFrom;
         this.selectionTo = selectionTo;
         this.element = findCurrentElement();
-        this.topLevelSnapshot = topLevelSnapshot;
 
         assert element != null; //at least the root node should always be found
     }
@@ -87,10 +90,6 @@ public class RefactoringElementContext {
 
     public Document getDocument() {
         return result.getSnapshot().getSource().getDocument(false);
-    }
-
-    public Snapshot getTopLevelSnapshot() {
-        return topLevelSnapshot;
     }
 
     public CssParserResult getParserResult() {

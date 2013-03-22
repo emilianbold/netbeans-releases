@@ -55,7 +55,7 @@ public class NetworkMonitorFactoryImpl implements NetworkMonitorFactory {
 
     @Override
     public Lookup createNetworkMonitor(WebKitDebugging webkit, Lookup projectContext) {
-        NetworkMonitor monitor = new NetworkMonitor(projectContext);
+        NetworkMonitor monitor = NetworkMonitor.createNetworkMonitor(projectContext);
         webkit.getNetwork().addListener(monitor);
         webkit.getConsole().addListener(monitor);
         return Lookups.fixed(webkit, monitor);
