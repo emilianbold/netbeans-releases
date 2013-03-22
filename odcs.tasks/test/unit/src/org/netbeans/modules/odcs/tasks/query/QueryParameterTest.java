@@ -72,6 +72,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import static junit.framework.Assert.assertFalse;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters.ByDateParameter;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters.ByPeopleParameter;
@@ -115,6 +116,39 @@ public class QueryParameterTest extends NbTestCase {
         assertFalse(chk1.isEnabled());
         assertFalse(chk2.isEnabled());
         assertFalse(txt.isEnabled());
+    }
+    
+    public void testCheckedTextChanged() {
+        JCheckBox chk1 = new JCheckBox();
+        JCheckBox chk2 = new JCheckBox();
+        JTextField txt = new JTextField();
+        ByTextParameter cp = new QueryParameters.ByTextParameter(txt, chk1, chk2);
+        
+        assertFalse(cp.hasChanged());
+        
+        cp.setValues("abc", true, true);
+        assertFalse(cp.hasChanged());
+        
+        cp.clearValues();
+        assertFalse(cp.hasChanged());
+        
+        chk1.setSelected(true);
+        assertTrue(cp.hasChanged());
+        
+        cp.clearValues();
+        assertFalse(cp.hasChanged());
+        
+        chk2.setSelected(true);
+        assertTrue(cp.hasChanged());
+        
+        cp.clearValues();
+        assertFalse(cp.hasChanged());
+        
+        txt.setText("abc");
+        assertTrue(cp.hasChanged());
+        
+        cp.clearValues();
+        assertFalse(cp.hasChanged());
     }
     
     public void testCheckedTextValues() {
@@ -239,6 +273,23 @@ public class QueryParameterTest extends NbTestCase {
         assertEquals(VALUE4, cp.getValues().iterator().next());
     }
     
+    public void testComboParameterChanged() {
+        JComboBox combo = new JComboBox();
+        ComboParameter cp = new QueryParameters.ComboParameter(QueryParameters.Column.COMMENT, combo);
+        
+        cp.populate(VALUES);
+        assertFalse(cp.hasChanged());
+        
+        cp.setValues(Collections.singleton(VALUE3));
+        assertFalse(cp.hasChanged());
+        
+        combo.setSelectedItem(VALUE1);
+        assertTrue(cp.hasChanged());
+        
+        cp.clearValues();
+        assertFalse(cp.hasChanged());
+    }
+    
     public void testComboCleared() {
         JComboBox combo = new JComboBox();
         ComboParameter cp = new QueryParameters.ComboParameter(QueryParameters.Column.COMMENT, combo);
@@ -283,6 +334,23 @@ public class QueryParameterTest extends NbTestCase {
         
         list.setSelectedValue(VALUE4, false);
         assertEquals("comment = '" + VALUE4 + "'", lp.getCriteria().toQueryString());
+    }
+    
+    public void testListParametersChanged() {
+        JList list = new JList();
+        ListParameter lp = new ListParameter(list, QueryParameters.Column.COMMENT);
+        
+        lp.populate(VALUES);
+        assertFalse(lp.hasChanged());
+        
+        lp.setValues(Arrays.asList(new String[] {VALUE1, VALUE3}));
+        assertFalse(lp.hasChanged());
+
+        list.setSelectedValue(VALUE4, false);
+        assertTrue(lp.hasChanged());
+        
+        lp.clearValues();
+        assertFalse(lp.hasChanged());
     }
     
     public void testAddListCriteria() {
@@ -348,7 +416,19 @@ public class QueryParameterTest extends NbTestCase {
         text.setText(parameterValue);
         assertNull(tp.getCriteria()); // not implemented yet
         assertEquals(parameterValue, text.getText());
+    }
+    
+    public void testTextFieldParameterChanged() throws UnsupportedEncodingException {
+        JTextField text = new JTextField();
+        TextFieldParameter tp = new TextFieldParameter(QueryParameters.Column.COMMENT, text);
 
+        assertFalse(tp.hasChanged());
+        
+        tp.setValue(VALUE2);
+        assertTrue(tp.hasChanged());
+
+        tp.clearValues();
+        assertFalse(tp.hasChanged());
     }
 
     public void testTextParameterCleared() {
@@ -465,6 +545,59 @@ public class QueryParameterTest extends NbTestCase {
         
         chk1.setSelected(false);
         assertNull(cp.getCriteria());
+    }
+    
+    public void testByPeopleValuesChanged() {
+        JCheckBox chk1 = new JCheckBox();
+        JCheckBox chk2 = new JCheckBox();
+        JCheckBox chk3 = new JCheckBox();
+        JCheckBox chk4 = new JCheckBox();
+        JList list = new JList();
+        ByPeopleParameter bpp = new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
+        
+        assertFalse(bpp.hasChanged());
+        
+        List<TaskUserProfile> users = getUsers();
+        bpp.populatePeople(users);
+        assertFalse(bpp.hasChanged());
+        
+        TaskUserProfile u1 = getUsers().iterator().next();
+        getUsers().iterator().next();
+        bpp.setValues(Arrays.asList(new TaskUserProfile[] {u1}), true, true, false, false);
+        assertFalse(bpp.hasChanged());
+        
+        bpp.clearValues();
+        assertFalse(bpp.hasChanged());
+        
+        list.setSelectedIndex(0);
+        assertTrue(bpp.hasChanged());
+        
+        bpp.clearValues();
+        assertFalse(bpp.hasChanged());
+        
+        chk1.setSelected(true);
+        assertTrue(bpp.hasChanged());
+        
+        bpp.clearValues();
+        assertFalse(bpp.hasChanged());
+        
+        chk2.setSelected(true);
+        assertTrue(bpp.hasChanged());
+        
+        bpp.clearValues();
+        assertFalse(bpp.hasChanged());
+        
+        chk3.setSelected(true);
+        assertTrue(bpp.hasChanged());
+        
+        bpp.clearValues();
+        assertFalse(bpp.hasChanged());
+        
+        chk4.setSelected(true);
+        assertTrue(bpp.hasChanged());
+        
+        bpp.clearValues();
+        assertFalse(bpp.hasChanged());
     }
     
     public void testAddByPeopleCriteria() {
@@ -619,6 +752,36 @@ public class QueryParameterTest extends NbTestCase {
         assertEquals(new ColumnCriteria(Column.MODIFICATION.getColumnName(), Operator.LESS_THAN, sdf.parse(toString)), p.getCriteria());
     }
     
+    public void testByDateValuesChanged() throws ParseException {
+        JComboBox combo = new JComboBox();
+        JTextField from = new JTextField();
+        JTextField to = new JTextField();
+        ByDateParameter p = new ByDateParameter(combo, from, to);
+        
+        assertFalse(p.hasChanged());
+        
+        p.setValues(Column.CREATION, "2012-10-01", "2012-10-10");
+        assertFalse(p.hasChanged());
+        
+        combo.setSelectedItem(Column.MODIFICATION);
+        assertTrue(p.hasChanged());
+        
+        p.clearValues();
+        assertFalse(p.hasChanged());
+        
+        from.setText("A");
+        assertTrue(p.hasChanged());
+        
+        p.clearValues();
+        assertFalse(p.hasChanged());
+        
+        to.setText("A");
+        assertTrue(p.hasChanged());
+        
+        p.clearValues();
+        assertFalse(p.hasChanged());
+    }
+    
     public void testAddByCreateDateCriteria() throws ParseException {
         JComboBox combo = new JComboBox();
         JTextField from = new JTextField();
@@ -750,9 +913,9 @@ public class QueryParameterTest extends NbTestCase {
         NaryCriteria typeCriteria = initParameter(qp, Column.TASK_TYPE, getTypes());
         NaryCriteria iterationCriteria = initParameter(qp, Column.ITERATION, getIterations());
         NaryCriteria keywordCriteria = initParameter(qp, Column.KEYWORDS, getIterations());
-        
         // byText parameter
-        ByTextParameter byTextParameter = qp.createByTextParameter(new JTextField(), new JCheckBox(), new JCheckBox());
+        JTextField byTextTextField = new JTextField();
+        ByTextParameter byTextParameter = qp.createByTextParameter(byTextTextField, new JCheckBox(), new JCheckBox());
         ColumnCriteria summaryCriteria = new ColumnCriteria(Column.SUMMARY.getColumnName(), Operator.STRING_CONTAINS, "test");
         ColumnCriteria descriptionCriteria = new ColumnCriteria(Column.DESCRIPTION.getColumnName(), Operator.STRING_CONTAINS, "test");
         ColumnCriteria commentCriteria = new ColumnCriteria(Column.COMMENT.getColumnName(), Operator.STRING_CONTAINS, "test");
@@ -807,7 +970,7 @@ public class QueryParameterTest extends NbTestCase {
                 byDateCriteria,
                 byPeopleCriteria));
         
-        // assert that all list parametrs where properly preset
+        // assert that all list parameters where properly preset
         assertListCriteria(qp.getListParameter(Column.PRODUCT), productCriteria);
         assertListCriteria(qp.getListParameter(Column.COMPONENT), componentCriteria);
         assertListCriteria(qp.getListParameter(Column.SEVERITY), severityCriteria);
@@ -851,6 +1014,12 @@ public class QueryParameterTest extends NbTestCase {
         assertTrue(c.contains(commenterUser1Criteria));
         assertTrue(c.contains(creatorUser0Criteria));
         assertTrue(c.contains(creatorUser1Criteria));
+        
+        // assert changed
+        assertFalse(qp.parametersChanged());
+        
+        byTextTextField.setText("abc");
+        assertTrue(qp.parametersChanged());
         
     }
 

@@ -905,7 +905,7 @@ public class ODCSQueryController extends QueryController implements ItemListener
     String getQueryString() {
         String queryString = null;
         synchronized(CRITERIA_LOCK) {
-            if(criteria != null) {
+            if(criteria != null && !parameters.parametersChanged()) {
                 return criteria.toQueryString();
             }
             CriteriaBuilder cb = new CriteriaBuilder();

@@ -215,26 +215,41 @@ public class QueryParameters {
         for (Parameter p : getAll()) {
             p.clearValues();
         }
-        List<ParamCriteria> criterias = getCriterias(crit, null);
-        ParamCriteria productCrit = null;
-        
-        Iterator<ParamCriteria> it = criterias.iterator();
-        while(it.hasNext()) {
-            ParamCriteria pc = it.next();
-            if(pc.p == getListParameter(Column.PRODUCT)) {
-                productCrit = pc;
-                it.remove();
-                break;
+        try {
+            List<ParamCriteria> criterias = getCriterias(crit, null);
+            ParamCriteria productCrit = null;
+            
+            Iterator<ParamCriteria> it = criterias.iterator();
+            while (it.hasNext()) {
+                ParamCriteria pc = it.next();
+                if (pc.p == getListParameter(Column.PRODUCT)) {
+                    productCrit = pc;
+                    it.remove();
+                    break;
+                }
+            }
+            // set product first -> any change in the list triggers
+            // iteration and component repopulate
+            if (productCrit != null) {
+                productCrit.p.addCriteriaValue(productCrit.op, productCrit.cc);
+            }
+            for (ParamCriteria pc : criterias) {
+                pc.p.addCriteriaValue(pc.op, pc.cc);
+            }
+        } finally {
+            for (Parameter p : getAll()) {
+                p.resetChanged();
             }
         }
-        // set product first -> any change in the list triggers
-        // iteration and component repopulate
-        if(productCrit != null) {
-            productCrit.p.addCriteriaValue(productCrit.op, productCrit.cc);
+    }
+    
+    boolean parametersChanged() {
+        for (Parameter p : getAll()) {
+            if(p.hasChanged()) {
+                return true;
+            }
         }
-        for (ParamCriteria pc : criterias) {
-            pc.p.addCriteriaValue(pc.op, pc.cc);
-        }
+        return false;
     }
     
     private List<ParamCriteria> getCriterias(Criteria crit, Operator op) {
@@ -277,6 +292,8 @@ public class QueryParameters {
         Criteria getCriteria();
         void clearValues();
         void addCriteriaValue(Operator op, ColumnCriteria cc);
+        boolean hasChanged();
+        void resetChanged();        
     }
     
     static abstract class AbstractParameter implements Parameter {
@@ -316,6 +333,7 @@ public class QueryParameters {
     static class ComboParameter extends AbstractParameter {
         
         private final JComboBox combo;
+        private int selectedIdx = -1;
         
         public ComboParameter(Column column, JComboBox combo) {
             super(column);
@@ -330,32 +348,45 @@ public class QueryParameters {
         }
         
         public void populate(Collection values) {
-            ArrayList l = new ArrayList(values);
-            Collections.sort(l, new ParameterComparator());
-            combo.setModel(new DefaultComboBoxModel(l.toArray()));
+            try {
+                ArrayList l = new ArrayList(values);
+                Collections.sort(l, new ParameterComparator());
+                combo.setModel(new DefaultComboBoxModel(l.toArray()));
+            } finally {
+                resetChanged();
+            }
         }
         
         public void setValues(Collection values) {
-            if(values == null) {
-                combo.setSelectedIndex(-1);
-                return;
-            }
+            try {
+                if(values == null) {
+                    combo.setSelectedIndex(-1);
+                    return;
+                }
 
-            assert values.size() == 1;
-            if(values.isEmpty()) {
-                return;
-            }
+                assert values.size() == 1;
+                if(values.isEmpty()) {
+                    combo.setSelectedIndex(-1);
+                    return;
+                }
 
-            // need the index as the given ParameterValue might have a different displayName
-            int idx = ((DefaultComboBoxModel)combo.getModel()).getIndexOf(values.iterator().next());
-            if(idx != -1) {
-                combo.setSelectedIndex(idx);
-            } 
+                // need the index as the given ParameterValue might have a different displayName
+                int idx = ((DefaultComboBoxModel)combo.getModel()).getIndexOf(values.iterator().next());
+                if(idx != -1) {
+                    combo.setSelectedIndex(idx);
+                } 
+            } finally {
+                resetChanged();
+            }
         }
 
         @Override
         public void clearValues() {
-            combo.setSelectedIndex(-1);
+            try {
+                combo.setSelectedIndex(-1);
+            } finally {
+                resetChanged();
+            }
         }
         
         @Override
@@ -372,11 +403,22 @@ public class QueryParameters {
         public Criteria getCriteria() {
             return getCriteria(getValues());
         }        
+
+        @Override
+        public boolean hasChanged() {
+            return selectedIdx != combo.getSelectedIndex();
+        }
+
+        @Override
+        public void resetChanged() {
+            selectedIdx = combo.getSelectedIndex();
+        }
     }
 
     static class ListParameter extends AbstractParameter {
         
         private final JList list;
+        private int[] selectedIndices = new int[0];
         
         public ListParameter(JList list, Column column) {
             super(column);
@@ -396,20 +438,28 @@ public class QueryParameters {
         }
         
         public void populate(Collection values) {
-            DefaultListModel m = new DefaultListModel();
-            if(values != null) {
-                ArrayList l = new ArrayList(values);
-                Collections.sort(l, new ParameterComparator());
-                for (Object o : l) {
-                    m.addElement(o);
+            try {
+                DefaultListModel m = new DefaultListModel();
+                if(values != null) {
+                    ArrayList l = new ArrayList(values);
+                    Collections.sort(l, new ParameterComparator());
+                    for (Object o : l) {
+                        m.addElement(o);
+                    }
                 }
-            }
-            list.setModel(m);
+                list.setModel(m);
+            } finally {
+                resetChanged();
+            }   
         }
 
         @Override
         public void clearValues() {
-            list.clearSelection();
+            try {
+                list.clearSelection();
+            } finally {
+                resetChanged();
+            }
         }
         
         @Override
@@ -422,26 +472,30 @@ public class QueryParameters {
         }        
         
         public void setValues(Collection values) {
-            list.clearSelection();
-            if(values.isEmpty()) {
-                return;
-            }                                        
-            List<Integer> selectionList = new LinkedList<Integer>();
-            for (Object o : values) {
-                int idx = getItemIndex(list, o);
-                if(idx > -1) {
-                    selectionList.add(idx);
+            try {
+                list.clearSelection();
+                if(values.isEmpty()) {
+                    return;
+                }                                        
+                List<Integer> selectionList = new LinkedList<Integer>();
+                for (Object o : values) {
+                    int idx = getItemIndex(list, o);
+                    if(idx > -1) {
+                        selectionList.add(idx);
+                    }
                 }
-            }
-            int[] selection = new int[selectionList.size()];
-            int i = 0;
-            for (int s : selectionList) {
-                selection[i++] = s;
-            }
-            list.setSelectedIndices(selection);
-            int idx = selection.length > 0 ? selection[0] : -1;
-            if(idx > -1) {
-                list.scrollRectToVisible(list.getCellBounds(idx, idx));
+                int[] selection = new int[selectionList.size()];
+                int i = 0;
+                for (int s : selectionList) {
+                    selection[i++] = s;
+                }
+                list.setSelectedIndices(selection);
+                int idx = selection.length > 0 ? selection[0] : -1;
+                if(idx > -1) {
+                    list.scrollRectToVisible(list.getCellBounds(idx, idx));
+                }
+            } finally {
+                resetChanged();
             }
         }
         
@@ -462,11 +516,25 @@ public class QueryParameters {
                 }                
             }
         }
+
+        @Override
+        public boolean hasChanged() {
+            Arrays.sort(selectedIndices);
+            int[] currentIndices = list.getSelectedIndices();
+            Arrays.sort(currentIndices);
+            return !Arrays.equals(currentIndices, selectedIndices);
+        }
+
+        @Override
+        public void resetChanged() {
+            selectedIndices = list.getSelectedIndices();
+        }
     }
 
     static class TextFieldParameter extends AbstractParameter {
         
         private final JTextField txt;
+        private String text = ""; // NOI18N
         
         public TextFieldParameter(Column column, JTextField txt) {
             super(column);
@@ -479,7 +547,11 @@ public class QueryParameters {
 
         @Override
         public void clearValues() {
-            txt.setText(""); // NOI18N
+            try {
+                txt.setText(""); // NOI18N
+            } finally {
+                resetChanged();
+            }            
         }
         
         @Override
@@ -500,6 +572,16 @@ public class QueryParameters {
         public Criteria getCriteria() {
             return null;
         }
+
+        @Override
+        public boolean hasChanged() {
+            return !text.equals(txt.getText());
+        }
+
+        @Override
+        public void resetChanged() {
+            text = txt.getText() + ""; // NOI18N
+        }
     }
 
     static class ByTextParameter implements Parameter {
@@ -507,6 +589,9 @@ public class QueryParameters {
         private final JTextField txt;
         private final JCheckBox chkSummary;
         private final JCheckBox chkDescriptionOrComment;
+        private String text = ""; // NOI18N
+        private boolean summarySelected;
+        private boolean descriptionOrCommentSelected;
         
         public ByTextParameter(JTextField txt, JCheckBox chkSummary, JCheckBox chkDescription) {
             this.txt = txt;
@@ -516,9 +601,13 @@ public class QueryParameters {
 
         @Override
         public void clearValues() {
-            chkSummary.setSelected(false);
-            chkDescriptionOrComment.setSelected(false);
-            txt.setText(""); // NOI18N
+            try {
+                chkSummary.setSelected(false);
+                chkDescriptionOrComment.setSelected(false);
+                txt.setText(""); // NOI18N
+            } finally {
+                resetChanged();
+            }            
         }
         
         @Override
@@ -541,9 +630,13 @@ public class QueryParameters {
         }
 
         public void setValues(String text, boolean summary, boolean description) {
-            txt.setText(text != null ? text : ""); // NOI18N
-            chkSummary.setSelected(summary);
-            chkDescriptionOrComment.setSelected(description);
+            try {
+                txt.setText(text != null ? text : ""); // NOI18N
+                chkSummary.setSelected(summary);
+                chkDescriptionOrComment.setSelected(description);
+            } finally {
+                resetChanged();
+            }
         }
         
         @Override
@@ -580,6 +673,20 @@ public class QueryParameters {
                 }
             }
         }
+
+        @Override
+        public boolean hasChanged() {
+            return !text.equals(txt.getText()) ||
+                    summarySelected != chkSummary.isSelected() ||
+                    descriptionOrCommentSelected != chkDescriptionOrComment.isSelected();
+        }
+
+        @Override
+        public void resetChanged() {
+            text = txt.getText() + ""; // NOI18N
+            summarySelected = chkSummary.isSelected();
+            descriptionOrCommentSelected = chkDescriptionOrComment.isSelected();
+        }
     }
     
     static class ByPeopleParameter implements Parameter {
@@ -589,6 +696,11 @@ public class QueryParameters {
         private final JCheckBox ownerCheckField;
         private final JCheckBox commenterCheckField;
         private final JCheckBox ccCheckField;
+        private int[] selectedIndices = new int[0];
+        private boolean creatorSelected;
+        private boolean ownerSelected;
+        private boolean commenterSelected;
+        private boolean ccSelected;
         
         public ByPeopleParameter(JList list, JCheckBox creatorCheckField, JCheckBox ownerCheckField, JCheckBox commenterCheckField, JCheckBox ccCheckField) {
             this.list = list;
@@ -599,34 +711,38 @@ public class QueryParameters {
         }
         
         public void setValues(Collection<TaskUserProfile> values, boolean creator, boolean owner, boolean commenter, boolean cc) {
-            creatorCheckField.setSelected(creator);
-            ownerCheckField.setSelected(owner);
-            commenterCheckField.setSelected(commenter);
-            ccCheckField.setSelected(cc);
-            
-            list.clearSelection();
-            if(values == null || values.isEmpty()) {
-                return;
-            }
-            List<Integer> selectionList = new LinkedList<Integer>();
-            for (int i = 0; i < list.getModel().getSize(); i++) {
-                Object object = list.getModel().getElementAt(i);
-                if(object instanceof TaskUserProfile) {
-                    for (TaskUserProfile user : values) {
-                        String loginName = user.getLoginName();
-                        if(loginName != null && loginName.equals(((TaskUserProfile)object).getLoginName())) {
-                            selectionList.add(i);
+            try {
+                creatorCheckField.setSelected(creator);
+                ownerCheckField.setSelected(owner);
+                commenterCheckField.setSelected(commenter);
+                ccCheckField.setSelected(cc);
+
+                list.clearSelection();
+                if(values == null || values.isEmpty()) {
+                    return;
+                }
+                List<Integer> selectionList = new LinkedList<Integer>();
+                for (int i = 0; i < list.getModel().getSize(); i++) {
+                    Object object = list.getModel().getElementAt(i);
+                    if(object instanceof TaskUserProfile) {
+                        for (TaskUserProfile user : values) {
+                            String loginName = user.getLoginName();
+                            if(loginName != null && loginName.equals(((TaskUserProfile)object).getLoginName())) {
+                                selectionList.add(i);
+                            }
                         }
                     }
                 }
-            }
-            if(!selectionList.isEmpty()) {
-                int[] selection = new int[selectionList.size()];
-                int i = 0;
-                for (int s : selectionList) {
-                    selection[i++] = s;
+                if(!selectionList.isEmpty()) {
+                    int[] selection = new int[selectionList.size()];
+                    int i = 0;
+                    for (int s : selectionList) {
+                        selection[i++] = s;
+                    }
+                    list.setSelectedIndices(selection);
                 }
-                list.setSelectedIndices(selection);
+            } finally {
+                resetChanged();
             }
         }
         
@@ -688,11 +804,15 @@ public class QueryParameters {
 
         @Override
         public void clearValues() {
-            list.clearSelection();
-            creatorCheckField.setSelected(false);
-            ownerCheckField.setSelected(false);
-            commenterCheckField.setSelected(false);
-            ccCheckField.setSelected(false);
+            try {
+                list.clearSelection();
+                creatorCheckField.setSelected(false);
+                ownerCheckField.setSelected(false);
+                commenterCheckField.setSelected(false);
+                ccCheckField.setSelected(false);
+            } finally {
+                resetChanged();
+            }                
         }
         
         @Override
@@ -711,8 +831,33 @@ public class QueryParameters {
         }
 
         private void setValue(JList list, JCheckBox chk, ColumnCriteria cc) {
-            addSelectionInterval(list, cc.getColumnValue());
-            chk.setSelected(true);
+            try {
+                addSelectionInterval(list, cc.getColumnValue());
+                chk.setSelected(true);
+            } finally {
+                resetChanged();
+            }
+        }
+
+        @Override
+        public boolean hasChanged() {
+            Arrays.sort(selectedIndices);
+            int[] currentIndices = list.getSelectedIndices();
+            Arrays.sort(currentIndices);
+            return !Arrays.equals(selectedIndices, currentIndices) || 
+                   creatorSelected != creatorCheckField.isSelected() ||
+                   ownerSelected != ownerCheckField.isSelected() ||
+                   commenterSelected != commenterCheckField.isSelected() ||
+                   ccSelected != ccCheckField.isSelected();
+        }
+
+        @Override
+        public void resetChanged() {
+            selectedIndices = list.getSelectedIndices();
+            creatorSelected = creatorCheckField.isSelected();
+            ownerSelected = ownerCheckField.isSelected();
+            commenterSelected = commenterCheckField.isSelected();
+            ccSelected = ccCheckField.isSelected();
         }
     }
     
@@ -721,6 +866,9 @@ public class QueryParameters {
         private final JComboBox cbo;
         private final JTextField fromField;
         private final JTextField toField;
+        private int selectedIdx;
+        private String fromText = ""; // NOI18N
+        private String toText = ""; // NOI18N
         
         public ByDateParameter(JComboBox cbo, JTextField fromField, JTextField toField) {
             this.cbo = cbo;
@@ -733,13 +881,17 @@ public class QueryParameters {
         }
         
         public void setValues(Column c, String from, String to) {
-            if(c != null) {
-                cbo.setSelectedItem(c);
-            } else {
-                cbo.setSelectedIndex(-1);
-            }
-            fromField.setText(from);
-            toField.setText(to);
+            try {
+                if(c != null) {
+                    cbo.setSelectedItem(c);
+                } else {
+                    cbo.setSelectedIndex(-1);
+                }
+                fromField.setText(from);
+                toField.setText(to);
+            } finally {
+                resetChanged();
+            }  
         }
         
         @Override
@@ -811,9 +963,13 @@ public class QueryParameters {
 
         @Override
         public void clearValues() {
-            cbo.setSelectedIndex(-1);
-            fromField.setText(""); // NOI18N
-            toField.setText(Bundle.LBL_Now());
+            try {
+                cbo.setSelectedIndex(-1);
+                fromField.setText(""); // NOI18N
+                toField.setText(Bundle.LBL_Now());
+            } finally {
+                resetChanged();
+            }              
         }
 
         @Override
@@ -839,10 +995,25 @@ public class QueryParameters {
                 ODCS.LOG.log(Level.WARNING, "unexpected operator [{0}] in ByDateParameter. ColumnCriteria [{1}]", new Object[] {cc.getOperator(), cc}); // NOI18N
             }
         }
+
+        @Override
+        public boolean hasChanged() {
+            return selectedIdx != cbo.getSelectedIndex() ||
+                   !fromText.equals(fromField.getText()) ||
+                   !toText.equals(toField.getText());
+        }
+
+        @Override
+        public void resetChanged() {
+            selectedIdx = cbo.getSelectedIndex();
+            fromText = fromField.getText() + ""; // NOI18N
+            toText = toField.getText() + ""; // NOI18N
+        }
     }
     
     static class CheckBoxParameter extends AbstractParameter {
         private final JCheckBox chk;
+        private boolean selected;
         public CheckBoxParameter(JCheckBox chk, Column column) {
             super(column);
             this.chk = chk;
@@ -850,10 +1021,14 @@ public class QueryParameters {
         
         public void setValues(Object... values) {
             assert values.length == 1;
-            if(values.length == 0) {
-                return;
-            }
-            chk.setSelected((Boolean) values[0]); // NOI18N
+            try {
+                if(values.length == 0) {
+                    return;
+                }
+                chk.setSelected((Boolean) values[0]); // NOI18N
+            } finally {
+                resetChanged();
+            }              
         }
                 
         public void setValues(Collection b) {
@@ -872,12 +1047,26 @@ public class QueryParameters {
 
         @Override
         public void clearValues() {
-            chk.setSelected(false);
+            try {
+                chk.setSelected(false);
+            } finally {
+                resetChanged();
+            }              
         }
         
         @Override
         public void addCriteriaValue(Operator op, ColumnCriteria cc) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public boolean hasChanged() {
+            return selected != chk.isSelected();
+        }
+
+        @Override
+        public void resetChanged() {
+            selected = chk.isSelected();
         }
     }
 
