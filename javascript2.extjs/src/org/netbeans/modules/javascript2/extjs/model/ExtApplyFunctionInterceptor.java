@@ -75,24 +75,16 @@ public class ExtApplyFunctionInterceptor implements FunctionInterceptor {
             if (arg1.getKind() == FunctionArgument.Kind.REFERENCE && arg2.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
                 JsObject parent = globalObject;
                 JsObject oldParent = parent;
-                String objectName = "";
+
                 if (arg1.getValue() instanceof Collection) {
-                    for(String simple : (Collection<String>)arg1.getValue()) {
-                        objectName = objectName + simple;
-                    }
-                }
-                String name = "";
-                for (StringTokenizer st = new StringTokenizer(objectName, "."); st.hasMoreTokens();) {
-                    name = st.nextToken();
-//                    if (st.hasMoreElements()) {
+                    for (String name : (Collection<String>) arg1.getValue()) {
                         JsObject jsObject = oldParent.getProperty(name);
                         OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
                         if (jsObject == null) {
                             jsObject = factory.newObject(parent, name, offsetRange, true);
                             parent.addProperty(name, jsObject);
                             oldParent = jsObject;
-                        }
-                        else if (!jsObject.isDeclared()) {
+                        } else if (!jsObject.isDeclared()) {
                             JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
                             parent.addProperty(name, newJsObject);
                             for (Occurrence occurrence : jsObject.getOccurrences()) {
@@ -102,28 +94,24 @@ public class ExtApplyFunctionInterceptor implements FunctionInterceptor {
                             oldParent = jsObject;
                             jsObject = newJsObject;
                         }
-                        
-                        parent = jsObject;
-//                    }
-                        offset += name.length() + 1;
-                }
-//                    else {
-                        JsObject definedObject = (JsObject) arg2.getValue();
-                        if(definedObject.getModifiers().remove(org.netbeans.modules.csl.api.Modifier.PRIVATE)) {
-                            definedObject.getModifiers().add(org.netbeans.modules.csl.api.Modifier.PUBLIC);
-                        }
-                        
 
-                        for(JsObject property: definedObject.getProperties().values()) {
-                            if (property.isDeclared()) {
-                                parent.addProperty(property.getName(), factory.newReference(parent, property.getName(), property.getDeclarationName().getOffsetRange(), property, true, property.getModifiers()));
-                            }
-                        }
-//                    }
-                    
-//                }
+                        parent = jsObject;
+                        offset += name.length() + 1;
+                    }
+                }
+
+                JsObject definedObject = (JsObject) arg2.getValue();
+                if (definedObject.getModifiers().remove(org.netbeans.modules.csl.api.Modifier.PRIVATE)) {
+                    definedObject.getModifiers().add(org.netbeans.modules.csl.api.Modifier.PUBLIC);
+                }
+
+
+                for (JsObject property : definedObject.getProperties().values()) {
+                    if (property.isDeclared()) {
+                        parent.addProperty(property.getName(), factory.newReference(parent, property.getName(), property.getDeclarationName().getOffsetRange(), property, true, property.getModifiers()));
+                    }
+                }
             }
         }
     }
-    
 }
