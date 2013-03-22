@@ -46,9 +46,9 @@ package org.netbeans.modules.php.editor.nav;
  *
  * @author Petr Pisl
  */
-public class PhpStructureScannerTest extends PhpNavigatorTestBase{
+public class NavigatorTest extends PhpNavigatorTestBase{
 
-    public PhpStructureScannerTest(String testName) {
+    public NavigatorTest(String testName) {
         super(testName);
     }
 
@@ -120,38 +120,6 @@ public class PhpStructureScannerTest extends PhpNavigatorTestBase{
 
     public void testIssue170712() throws Exception {
         performTest("structure/issue170712");
-    }
-
-    public void testFoldingMethod() throws Exception {
-        checkFolds("testfiles/parser/foldingMethod.php");
-    }
-
-    public void testFoldingConditionalStatements() throws Exception {
-        checkFolds("testfiles/parser/foldingConditionalStatements.php");
-    }
-
-    public void testFoldingCycles() throws Exception {
-        checkFolds("testfiles/parser/foldingCycles.php");
-    }
-
-    public void testFoldingMethod_1() throws Exception {
-        checkFolds("testfiles/parser/foldingMethod_1.php");
-    }
-
-    public void testFoldingConditionalStatements_1() throws Exception {
-        checkFolds("testfiles/parser/foldingConditionalStatements_1.php");
-    }
-
-    public void testFoldingCycles_1() throws Exception {
-        checkFolds("testfiles/parser/foldingCycles_1.php");
-    }
-
-    public void testIssue213616() throws Exception {
-        checkFolds("testfiles/parser/issue213616.php");
-    }
-
-    public void testIssue216088() throws Exception {
-        checkFolds("testfiles/parser/issue216088.php");
     }
 
 }
