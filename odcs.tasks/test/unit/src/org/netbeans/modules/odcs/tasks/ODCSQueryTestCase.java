@@ -318,8 +318,8 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         cal.set(Calendar.SECOND,      0);
         cal.set(Calendar.MILLISECOND, 0);
    
-        Date dateGreater = new Date(cal.getTimeInMillis() - 24 * 60 * 60 * 1000);
-        Date dateLess = new Date(cal.getTimeInMillis() + 24 * 60 * 60 * 1000);
+        Date dateGreater = new Date(cal.getTimeInMillis() - (25* 60 * 60 * 1000));
+        Date dateLess = new Date(cal.getTimeInMillis() + (25 * 60 * 60 * 1000));
         ColumnCriteria cGreaterThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.GREATER_THAN, dateGreater);
         ColumnCriteria cLessThan = new ColumnCriteria(QueryParameters.Column.CREATION.toString(), Criteria.Operator.LESS_THAN, dateLess);
         
@@ -329,9 +329,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         cb.result = cGreaterThan;
         cb.and(cLessThan);
          
-//        String crit = getCriteriaString(cb);
-        // creationDate > date1363129200000 AND creationDate < date1363302000000 AND (creationDate > date1363129200000 AND creationDate < date1363302000000)
-        String crit = "creationDate > date1363129200000 AND creationDate < date1363302000000 AND (creationDate > date1363129200000 AND creationDate < date1363302000000)";
+        String crit = getCriteriaString(cb);
         query.setAttribute(CloudDevConstants.QUERY_CRITERIA, crit);
         query.setUrl(CloudDevConstants.CRITERIA_QUERY);
         System.out.println("==============================================");
@@ -350,9 +348,6 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
             if(id.equals(data.getTaskId())) {
                 return;
             }
-//            if(summary.equals(data.getRoot().getMappedAttribute(C2CData.ATTR_SUMMARY).getValue())) {
-//                return;
-//            }
         }
         fail("query should return TaskData with sumary '" + summary + "'");
     }    
