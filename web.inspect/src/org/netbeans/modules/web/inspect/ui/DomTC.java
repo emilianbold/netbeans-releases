@@ -71,9 +71,6 @@ import org.openide.windows.TopComponent;
 @ActionID(
         category = "Window", // NOI18N
         id = "org.netbeans.modules.web.inspect.ui.DomTC") // NOI18N
-@ActionReference(
-        path = "Menu/Window/Navigator", // NOI18N
-        position = 600)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_DomAction", // NOI18N
         preferredID = DomTC.ID)

@@ -67,7 +67,6 @@ import org.openide.awt.ActionRegistration;
 @ActionID(id = "org.netbeans.modules.subversion.ui.status.OpenVersioningAction", category = "Subversion")
 @ActionRegistration(displayName = "#CTL_MenuItem_OpenVersioning", iconBase=OpenVersioningAction.ICON_BASE)
 @ActionReferences({
-   @ActionReference(path="Menu/Window/Versioning", position=200),
    @ActionReference(path="OptionsDialog/Actions/Subversion")
 })
 public class OpenVersioningAction extends ShowAllChangesAction {

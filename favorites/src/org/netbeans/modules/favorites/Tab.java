@@ -356,7 +356,7 @@ implements Runnable, ExplorerManager.Provider {
     /** Finds default instance. Use in client code instead of {@link #getDefault()}. */
     @ActionID(id = "org.netbeans.modules.favorites.View", category = "Window")
     @OpenActionRegistration(displayName="#ACT_View")
-    @ActionReference(position = 350, path = "Menu/Window")
+    @ActionReference(position = 400, path = "Menu/Window")
     public static synchronized Tab findDefault() {
         if(DEFAULT == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("favorites"); // NOI18N

@@ -51,7 +51,7 @@ import org.openide.windows.TopComponent;
 
 @ActionID(category = "Window", id = DocViewAction.ID)
 @ActionRegistration(displayName = "#CTL_ShowDocViewAction", lazy=true)
-@ActionReference(path = "Menu/Window/Other", position = 570)
+@ActionReference(path = "Menu/Window/Tools", position = 500)
 @Messages("CTL_ShowDocViewAction=C/C++ Documentation")
 public final class DocViewAction implements ActionListener {
     static final String ID = "org.netbeans.modules.cnd.navigation.docview.DocViewAction"; //NOI18N
