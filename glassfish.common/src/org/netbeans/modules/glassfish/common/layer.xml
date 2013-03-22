@@ -60,8 +60,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider.createEe6"/>
             <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider"/>
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
-            <attr name="displayName" stringvalue="GlassFish Server"/>
-            <!--attr name="displayName" bundlevalue="org.netbeans.modules.glassfish.common.ui.Bundle#GlassFish_Node_Name"/-->
+            <attr name="displayName" bundlevalue="org.netbeans.modules.glassfish.common.wizards.Bundle#STR_V3_FAMILY_NAME"/>
         </file>
     </folder>
 </filesystem>
