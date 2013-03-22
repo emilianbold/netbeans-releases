@@ -297,8 +297,8 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         }
 
         if (configFile == null) {
-
-            if (!Utilities.isJavaEE6Plus((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig() && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20Plus(wm))) {
+            if (!Utilities.isJavaEE6Plus((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig()
+                    && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20Plus(wm, true))) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfigFile")); //NOI18N
                 return false;
@@ -324,7 +324,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
 
         Object scope = jComboBoxScope.getSelectedItem();
         if (scope instanceof NamedScope && scope == NamedScope.FLOW) {
-            JSFVersion jsfVersion = JSFVersion.forWebModule(wm, true);
+            JSFVersion jsfVersion = JSFVersion.forWebModule(wm);
             if (jsfVersion != null && !jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         Bundle.ManagedBeanPanelVisual_warn_flowScoped_low_version());

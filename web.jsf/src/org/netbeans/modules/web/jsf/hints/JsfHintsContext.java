@@ -64,7 +64,7 @@ public final class JsfHintsContext {
         this.compilationInfo = compilationInfo;
         this.project = FileOwnerQuery.getOwner(fileObject);
         WebModule webModule = project != null ? WebModule.getWebModule(project.getProjectDirectory()) : null;
-        this.jsfVersion = webModule != null ? JSFVersion.forWebModule(webModule, true) : null;
+        this.jsfVersion = webModule != null ? JSFVersion.forWebModule(webModule) : null;
     }
 
     public FileObject getFileObject() {
