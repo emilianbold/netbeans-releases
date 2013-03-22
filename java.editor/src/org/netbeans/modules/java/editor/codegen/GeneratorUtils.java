@@ -129,42 +129,21 @@ public class GeneratorUtils {
     }
     
     public static List<? extends ExecutableElement> findOverridable(CompilationInfo info, TypeElement impl) {
-        List<ExecutableElement> overridable = new ArrayList<ExecutableElement>();
-        List<TypeElement> classes = getAllClasses(impl);
-        
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
-            ERR.log(ErrorManager.INFORMATIONAL, "classes=" + classes);
-        
-        for (TypeElement te : classes.subList(1, classes.size())) {
-            for (ExecutableElement ee : ElementFilter.methodsIn(te.getEnclosedElements())) {
-                Set<Modifier> set = EnumSet.copyOf(NOT_OVERRIDABLE);
-                
-                set.removeAll(ee.getModifiers());
-                
-                if (set.size() != NOT_OVERRIDABLE.size())
-                    continue;
-                
-                if(ee.getModifiers().contains(Modifier.PRIVATE)) //do not offer overriding of private methods
-                    continue;
-                    
-                if(overridesPackagePrivateOutsidePackage(ee, impl)) //do not offer package private methods in case they're from different package
-                    continue;
-                
-                int thisElement = classes.indexOf(te);
-                
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log(ErrorManager.INFORMATIONAL, "ee=" + ee);
-                    ERR.log(ErrorManager.INFORMATIONAL, "thisElement = " + thisElement);
-                    ERR.log(ErrorManager.INFORMATIONAL, "classes.subList(0, thisElement + 1)=" + classes.subList(0, thisElement + 1));
-                    ERR.log(ErrorManager.INFORMATIONAL, "isOverridden(info, ee, classes.subList(0, thisElement + 1))=" + isOverridden(info, ee, classes.subList(0, thisElement + 1)));
-                }
-                
-                if (!isOverridden(info, ee, classes.subList(0, thisElement + 1))) {
-                    overridable.add(ee);
-                }
+            ERR.log(ErrorManager.INFORMATIONAL, "findOverridable(" + info + ", " + impl + ")");
+        List<ExecutableElement> overridable = new ArrayList<ExecutableElement>();
+        for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getAllMembers(impl))) {
+            Set<Modifier> set = EnumSet.copyOf(NOT_OVERRIDABLE);                
+            set.removeAll(ee.getModifiers());                
+            if (set.size() == NOT_OVERRIDABLE.size()
+                    && !overridesPackagePrivateOutsidePackage(ee, impl) //do not offer package private methods in case they're from different package
+                    && !isOverridden(info, ee, impl)) {
+                overridable.add(ee);
             }
         }
-        
+        if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
+            ERR.log(ErrorManager.INFORMATIONAL, "overridable=" + overridable);
+
         return overridable;
     }
 
@@ -541,33 +520,29 @@ public class GeneratorUtils {
         return result;
     }
     
-    private static boolean isOverridden(CompilationInfo info, ExecutableElement methodBase, List<TypeElement> classes) {
+    private static boolean isOverridden(CompilationInfo info, ExecutableElement methodBase, TypeElement origin) {
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "isOverridden(" + info + ", " + methodBase + ", " + classes + ")");
+            ERR.log(ErrorManager.INFORMATIONAL, "isOverridden(" + info + ", " + methodBase + ", " + origin + ")");
         }
         
-        for (TypeElement impl : classes) {
-            for (ExecutableElement methodImpl : ElementFilter.methodsIn(impl.getEnclosedElements())) {
-                if (   ERR.isLoggable(ErrorManager.INFORMATIONAL)
-                && info.getElements().overrides(methodImpl, methodBase, impl)) {
-                    ERR.log(ErrorManager.INFORMATIONAL, "overrides:");
-                    ERR.log(ErrorManager.INFORMATIONAL, "impl=" + impl);
-                    ERR.log(ErrorManager.INFORMATIONAL, "methodImpl=" + methodImpl);
-                }
-                
-                if (info.getElements().overrides(methodImpl, methodBase, impl))
-                    return true;
+        Element impl = info.getElementUtilities().getImplementationOf(methodBase, origin);
+        if (impl == null || impl == methodBase && origin != methodBase.getEnclosingElement()) {
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.log(ErrorManager.INFORMATIONAL, "no overriding methods");
             }
+            return false;
         }
-        
+
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "no overriding methods overrides:");
+            ERR.log(ErrorManager.INFORMATIONAL, "overrides:");
+            ERR.log(ErrorManager.INFORMATIONAL, "impl=" + impl.getEnclosingElement());
+            ERR.log(ErrorManager.INFORMATIONAL, "methodImpl=" + impl);
         }
-        
-        return false;
+                
+        return true;
     }
 
-    private static final Set<Modifier> NOT_OVERRIDABLE = /*EnumSet.noneOf(Modifier.class);/*/EnumSet.of(Modifier.ABSTRACT, Modifier.STATIC, Modifier.FINAL);
+    private static final Set<Modifier> NOT_OVERRIDABLE = EnumSet.of(Modifier.ABSTRACT, Modifier.STATIC, Modifier.FINAL, Modifier.PRIVATE);
 
     public static boolean isAccessible(TypeElement from, Element what) {
         if (what.getModifiers().contains(Modifier.PUBLIC))

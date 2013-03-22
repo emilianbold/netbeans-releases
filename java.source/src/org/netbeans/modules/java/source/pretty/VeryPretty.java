@@ -255,6 +255,7 @@ public final class VeryPretty extends JCTree.Visitor {
         return TreeInfo.getEndPos(t, diffContext.origUnit.endPositions);
     }
     public Set<Tree> oldTrees = Collections.emptySet();
+    private final Set<Tree> trailingCommentsHandled = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
     private void doAccept(JCTree t) {
         int start = toString().length();
 
@@ -342,8 +343,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 if (node != null) {
                     CommentSetImpl old = comments.getComments(node);
                     realEnd[0] = Math.max(realEnd[0], Math.max(CasualDiff.commentEnd(old, CommentSet.RelativePosition.INLINE), CasualDiff.commentEnd(old, CommentSet.RelativePosition.TRAILING)));
-                    old.clearComments(CommentSet.RelativePosition.INLINE);
-                    old.clearComments(CommentSet.RelativePosition.TRAILING);
+                    trailingCommentsHandled.add(node);
                 }
                 return super.scan(node, p);
             }
@@ -2232,6 +2232,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private void printTrailingComments(JCTree tree, boolean printWhitespace) {
+        if (trailingCommentsHandled.contains(tree)) return ;
         CommentSet commentSet = commentHandler.getComments(tree);
         java.util.List<Comment> cl = commentSet.getComments(CommentSet.RelativePosition.INLINE);
         for (Comment comment : cl) {

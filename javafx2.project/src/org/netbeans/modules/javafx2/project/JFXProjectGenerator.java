@@ -506,7 +506,7 @@ public class JFXProjectGenerator {
                 ep.setProperty(JFXProjectProperties.PERMISSIONS_ELEVATED, "true"); // NOI18N
             }
         }
-
+        ep.setProperty(JFXProjectProperties.IMPLEMENTATION_VERSION, JFXProjectProperties.IMPLEMENTATION_VERSION_DEFAULT);
         // TODO select from UI
         ep.setProperty(JFXProjectProperties.FALLBACK_CLASS, "com.javafx.main.NoJavaFXFallback"); // NOI18N
         //ep.setProperty(JFXProjectProperties.SIGNED_JAR, "${dist.dir}/" + validatePropertyValue(name) + "_signed.jar"); // NOI18N

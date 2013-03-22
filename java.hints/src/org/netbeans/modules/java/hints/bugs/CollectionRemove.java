@@ -264,55 +264,8 @@ public class CollectionRemove {
         return info.getTypeUtilities().isCastable(type1, type2);
     }
 
-    private static final Pattern SPLIT = Pattern.compile("(.+)\\.([^.]+)\\((.*)\\)");
-    
     private static ExecutableElement resolveMethod(CompilationInfo info, String name) {
-        Matcher m = SPLIT.matcher(name);
-
-        if (!m.matches()) {
-            throw new IllegalArgumentException();
-        }
-
-        String className = m.group(1);
-        String methodName = m.group(2);
-        String paramsSpec = m.group(3);
-
-        TypeElement te = info.getElements().getTypeElement(className);
-
-        if (te == null) {
-            return null;
-        }
-
-        String[] paramList = paramsSpec.split(",");
-        List<TypeMirror> params = new LinkedList<TypeMirror>();
-
-        TypeElement topLevel = info.getTopLevelElements().get(0);
-
-        for (String t : paramList) {
-            params.add(info.getTreeUtilities().parseType(t, topLevel));
-        }
-
-        for (ExecutableElement ee : ElementFilter.methodsIn(te.getEnclosedElements())) {
-            if (!methodName.equals(ee.getSimpleName().toString()) || ee.getParameters().size() != params.size()) {
-                continue;
-            }
-            
-            Iterator<TypeMirror> designed = params.iterator();
-            boolean found = true;
-
-            for (VariableElement param : ee.getParameters()) {
-                if (!info.getTypes().isSameType(info.getTypes().erasure(param.asType()), designed.next())) {
-                    found = false;
-                    break;
-                }
-            }
-
-            if (found) {
-                return ee;
-            }
-        }
-        
-        return null;
+        return (ExecutableElement) info.getElementUtilities().findElement(name);
     }
 
     private static ExecutableElement findEnclosingMethod(CompilationInfo info, TreePath path) {
