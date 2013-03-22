@@ -1202,9 +1202,109 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "}");
     }
 
-    public void testPropertyValue2_fails() {
-        assertParses(".#{$prefix}#{$cls-ui}-tr {\n"
-                + "    background-position: 0 (-$frame-max);\n"
+    public void testControlBlockExpression() {
+        assertParses("@if $arg != null and ($arg2 == val1 or $arg2 == val2) {}");
+    }
+
+    public void testControlBlockExpression2() {
+        assertParses("@if (not $arg or $arg2) and $arg3 != null {}");
+    }
+
+    public void testControlBlockExpression3() {
+        assertParses("@if ($arg or $arg2) and arg3 != null {}");
+    }
+
+    public void testControlBlockExpression4() {
+        assertParses("@if $arg != null and ($arg2 or arg3) {}");
+    }
+
+    public void testDashInSelectorInterpolationExpression() {
+        assertParses(".#{$v1}#{$v2}-post {}");
+    }
+
+    public void testFunctionReturnBooleanExpression() {
+        assertParses("@function even($number) {\n"
+                + "    @return ceil($number / 2) == ($number / 2);\n"
                 + "}");
+    }
+
+    public void testStarInSelectorInterpolationExpression() {
+        assertParses(".#{$prefix}border-box * {}");
+    }
+
+    public void testGreaterSymbolInSelectorInterpolationExpression() {
+        assertParses(".#{$prefix}rtl > .#{$prefix}box-item {}");
+    }
+
+    //fails as I cannot add LPAREN and RPAREN to the content of the 
+    //sass_declaration_property_value_interpolation_expression rule
+    //otherwise the DFA generation is endless - likely a "conflict" 
+    //in the propertyValue rule where the DFA needs to decide whether to dive
+    //into sass_declaration_property_value_interpolation_expression or 
+    //cp_expression (which can contain ( ) pairs)
+    public void testLRPARENInPropertyValueInterpolationExpression_fails() {
+        assertParses(".clz { $rotation: rotate(#{$angle}deg); }");
+    }
+
+    public void testX7() {
+        assertParses(".clz { background-position: 0 ($accordion-header-tool-size * -17); }");
+    }
+
+    public void testX7_2() {
+        assertParses(".clz { padding: $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2) $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2); }");
+    }
+
+    public void testX7_3() {
+        assertParses(".clz { $fieldset-collapse-tool-background-position-over: 0 (-$fieldset-collapse-tool-size) !default; }");
+    }
+
+    public void testX7_4() {
+        assertParses(".clz { background-image: slicer-corner-sprite(btn-#{$ui}-over, 'btn/btn-#{$ui}-over-corners'); }");
+    }
+
+    public void testX7_5() {
+        assertParses(".clz { padding-left: #{left($fieldset-header-padding) - 2}; }");
+    }
+
+    public void testX7_6() {
+        assertParses(".clz { padding-left: padding: top($form-error-under-padding) right($form-error-under-padding) bottom($form-error-under-padding) (left($form-error-under-padding) + $form-error-icon-width + $form-error-under-icon-spacing); }");
+    }
+
+    public void testX7_7() {
+        assertParses(".clz { padding-left: background-position: 0 (0 - $form-checkbox-size); }");
+    }
+
+    public void testX7_8() {
+        assertParses(".clz { background-position: (-$html-editor-toolbar-icon-size) 0; }");
+    }
+
+    public void testX7_9() {
+        assertParses(".clz { background-position: -($form-trigger-width * 3) (-$spinner-btn-height); }");
+        assertParses(".clz { background-position: 0 (-$spinner-btn-height); }");
+    }
+
+    public void testX8() {
+        assertParses("$panel-frame-header-padding:\n"
+                + "    (top($panel-header-padding) - top($panel-frame-border-width))\n"
+                + "    (right($panel-header-padding) - right($panel-frame-border-width))\n"
+                + "    (bottom($panel-header-padding) - bottom($panel-frame-border-width))\n"
+                + "    (left($panel-header-padding) - left($panel-frame-border-width))\n"
+                + "    !default;");
+    }
+
+    public void testX10() {
+        assertParses("@if not $supports-gradients or $compile-all {\n"
+                + "    .#{$prefix}nlg & {\n"
+                + "        background-image: slicer-background-image(tab-#{$ui}-top, 'tab/tab-#{$ui}-top-bg');\n"
+                + "    }\n"
+                + "}");
+    }
+
+    public void testX11() {
+        assertParses("$fieldset-header-font: #{$fieldset-header-font-size}/#{$fieldset-header-line-height} $fieldset-header-font-weight $fieldset-header-font-family !default;");
+        assertParses("$form-label-font: $form-label-font-weight #{$form-label-font-size}/#{$form-label-line-height} $form-label-font-family !default;");
+        assertParses("$grid-editor-font: normal #{$grid-row-cell-font-size}/#{$grid-editor-line-height} $font-family !default;");
+        assertParses("$grid-row-editor-border: $grid-row-editor-border-width solid $grid-row-editor-border-color !important !default;");
+        assertParses("$grid-row-cell-font: normal #{$grid-row-cell-font-size}/#{$grid-row-cell-line-height} $font-family !default;");
     }
 }
