@@ -66,7 +66,8 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({
     "ERR_Title=Error",
     "LBL_CheckingDevice=Checking android device...",
-    "ERR_WebDebug=Cannot connect to Chrome.\nPlease check if USB Web Debugging is enabled in Chrome on your mobile device."    
+    "ERR_WebDebug=Cannot connect to Chrome.\nPlease check if USB Web Debugging is enabled in Chrome on your mobile device.",    
+    "ERR_NO_PhoneGap=PhoneGap Platform is not configured.\nConfigure? "
 })
 /**
  * Cordova Action Provider. Invokes cordova build.
@@ -111,9 +112,39 @@ public class AndroidActionProvider implements ActionProvider {
         }
 
         if (COMMAND_BUILD.equals(command)) {
-            build.perform(build.BUILD_ANDROID, p);
+            try {
+                build.perform(build.BUILD_ANDROID, p);
+            } catch (IllegalStateException ex) {
+                NotifyDescriptor not = new NotifyDescriptor(
+                        Bundle.ERR_NO_PhoneGap(),
+                        Bundle.ERR_Title(),
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.ERROR_MESSAGE,
+                        null,
+                        null);
+                Object value = DialogDisplayer.getDefault().notify(not);
+                if (NotifyDescriptor.CANCEL_OPTION != value) {
+                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                }
+                return;
+            }
         } else if (COMMAND_CLEAN.equals(command)) {
-            build.perform(build.CLEAN_ANDROID, p);
+            try {
+                build.perform(build.CLEAN_ANDROID, p);
+            } catch (IllegalStateException ex) {
+                NotifyDescriptor not = new NotifyDescriptor(
+                        Bundle.ERR_NO_PhoneGap(),
+                        Bundle.ERR_Title(),
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.ERROR_MESSAGE,
+                        null,
+                        null);
+                Object value = DialogDisplayer.getDefault().notify(not);
+                if (NotifyDescriptor.CANCEL_OPTION != value) {
+                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                }
+                return;
+            }
         } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
             ProgressUtils.runOffEventDispatchThread(new Runnable() {
                 @Override
@@ -134,7 +165,22 @@ public class AndroidActionProvider implements ActionProvider {
                             checkDevices = checkDevices(p);
                         }
                     }
-                    build.perform(BuildPerformer.RUN_ANDROID, p);
+                    try {
+                        build.perform(BuildPerformer.RUN_ANDROID, p);
+            } catch (IllegalStateException ex) {
+                NotifyDescriptor not = new NotifyDescriptor(
+                        Bundle.ERR_NO_PhoneGap(),
+                        Bundle.ERR_Title(),
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.ERROR_MESSAGE,
+                        null,
+                        null);
+                Object value = DialogDisplayer.getDefault().notify(not);
+                if (NotifyDescriptor.CANCEL_OPTION != value) {
+                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                }
+                return;
+            }
                 }
             }, Bundle.LBL_CheckingDevice(), new AtomicBoolean(), false);
         }

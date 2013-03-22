@@ -100,6 +100,9 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public void perform(String target, Project project) {
+        if (!CordovaPlatform.getDefault().isReady()) {
+            throw new IllegalStateException();
+        }
         generateBuildScripts(project);
         FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
         try {
