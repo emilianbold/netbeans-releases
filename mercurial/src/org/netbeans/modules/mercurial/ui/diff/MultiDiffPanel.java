@@ -243,7 +243,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * It hides All, Local, Remote toggles and file chooser combo.
      */
     public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, boolean forceNonEditable) {
-        this(file, rev1, rev2, null, forceNonEditable);
+        this(file, rev1, rev2, new FileInformation(), forceNonEditable);
     }
 
     /**
@@ -268,6 +268,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
         // mimics refreshSetups()
         Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, fi, forceNonEditable)};
+        localSetups[0].setNode(new DiffNode(localSetups[0], new HgFileNode(file)));
         setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
         setDiffIndex(localSetups[0], 0, false);
         dpt = new DiffPrepareTask(setups);
@@ -722,11 +723,16 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
         } else if (source == listButton) {
             setActiveComponent(fileListComponent);
-            setDiffIndex(activeComponent.getSelectedNode().getSetup(), 0, false);
+            setActiveDiff();
         } else if (source == treeButton) {
             setActiveComponent(fileTreeComponent);
-            setDiffIndex(activeComponent.getSelectedNode().getSetup(), 0, false);
+            setActiveDiff();
         }
+    }
+
+    private void setActiveDiff () {
+        DiffNode selectedNode = activeComponent.getSelectedNode();
+        setDiffIndex(selectedNode == null ? null : selectedNode.getSetup(), 0, false);
     }
     
     private HgRevision getSelectedRevision (JComboBox cmbDiffTree) {

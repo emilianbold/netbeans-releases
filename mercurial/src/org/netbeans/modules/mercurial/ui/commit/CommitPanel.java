@@ -556,7 +556,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             File file = node.getFile();
             MultiDiffPanel panel = displayedDiffs.get(file);
             if (panel == null) {
-                panel = new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
+                panel = new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, node.getInformation(), false); // switch the last parameter to true if editable diff works poorly
                 displayedDiffs.put(file, panel);
             }
             if (tabbedPane.indexOfComponent(panel) == -1) {
