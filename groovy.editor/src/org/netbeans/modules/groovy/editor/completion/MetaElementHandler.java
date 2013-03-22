@@ -103,9 +103,7 @@ public final class MetaElementHandler {
             Map<MethodSignature, CompletionItem.MetaMethodItem> result = new HashMap<MethodSignature, CompletionItem.MetaMethodItem>();
 
             LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
-            for (Object method : metaClz.getMetaMethods()) {
-                LOG.log(Level.FINEST, method.toString());
-                //System.out.println("Method " + method.toString());
+            for (MetaMethod method : metaClz.getMetaMethods()) {
                 populateProposal(clz, method, prefix, anchor, result, nameOnly);
             }
 
@@ -152,24 +150,16 @@ public final class MetaElementHandler {
         return Collections.emptyMap();
     }
 
-    private void populateProposal(Class clz, Object method, String prefix, int anchor,
+    private void populateProposal(Class clz, MetaMethod method, String prefix, int anchor,
             Map<MethodSignature, CompletionItem.MetaMethodItem> methodList, boolean nameOnly) {
 
-        if (method != null && (method instanceof MetaMethod)) {
-            MetaMethod mm = (MetaMethod) method;
+        if (method.getName().startsWith(prefix)) {
+            LOG.log(Level.FINEST, "Found matching method: {0}", method.getName()); // NOI18N
 
-            if (mm.getName().startsWith(prefix)) {
-                LOG.log(Level.FINEST, "Found matching method: {0}", mm.getName()); // NOI18N
-
-                CompletionItem.MetaMethodItem item =
-                        new CompletionItem.MetaMethodItem(clz, mm, anchor, true, nameOnly);
-                addOrReplaceItem(methodList, item);
-            }
-
+            addOrReplaceItem(methodList, new CompletionItem.MetaMethodItem(clz, method, anchor, true, nameOnly));
         }
     }
 
-    // FIXME cleanup
     private void addOrReplaceItem(Map<MethodSignature, CompletionItem.MetaMethodItem> methodItemList,
             CompletionItem.MetaMethodItem itemToStore) {
 
@@ -179,47 +169,44 @@ public final class MetaElementHandler {
         // therefore take the one from String.
 
         MetaMethod methodToStore = itemToStore.getMethod();
-        int toStoreDistance = methodToStore.getDeclaringClass().getSuperClassDistance();
 
         for (CompletionItem.MetaMethodItem methodItem : methodItemList.values()) {
-            MetaMethod listMethod = methodItem.getMethod();
+            MetaMethod currentMethod = methodItem.getMethod();
 
-            // FIXME return types subtype
-            if (listMethod.getName().equals(methodToStore.getName())
-                    /*&& listMethod.isSame(methodToStore)*/ && isSame(listMethod, methodToStore)) {
-
-                if (listMethod.getReturnType().isAssignableFrom(methodToStore.getReturnType())
-                        && listMethod.getDeclaringClass().getSuperClassDistance() <= toStoreDistance) {
-                    LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
-                    methodItemList.remove(getSignature(listMethod));
-                    break; // it's unlikely that we have more then one Method with a smaller distance
-                } else {
-                    LOG.log(Level.FINEST, "Not removing existing method: {0}", listMethod.getName()); // NOI18N
-                    return;
+            if (isSameMethod(currentMethod, methodToStore)) {
+                if (isBetterDistance(currentMethod, methodToStore)) {
+                    methodItemList.remove(getSignature(currentMethod));
+                    methodItemList.put(getSignature(methodToStore), itemToStore);
                 }
+                return;
             }
         }
 
+        // We don't have method with the same signature yet
         methodItemList.put(getSignature(methodToStore), itemToStore);
     }
 
-    private static boolean isSame(MetaMethod listMethod, MetaMethod methodToStore) {
-        if (!listMethod.getName().equals(methodToStore.getName())) {
+    private static boolean isSameMethod(MetaMethod currentMethod, MetaMethod methodToStore) {
+        if (!currentMethod.getName().equals(methodToStore.getName())) {
             return false;
         }
-        int mask = java.lang.reflect.Modifier.PRIVATE | java.lang.reflect.Modifier.PROTECTED
-                | java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.STATIC;
-        if ((listMethod.getModifiers() & mask) != (methodToStore.getModifiers() & mask)) {
+        
+        int mask = java.lang.reflect.Modifier.PRIVATE |
+                   java.lang.reflect.Modifier.PROTECTED |
+                   java.lang.reflect.Modifier.PUBLIC |
+                   java.lang.reflect.Modifier.STATIC;
+        if ((currentMethod.getModifiers() & mask) != (methodToStore.getModifiers() & mask)) {
             return false;
         }
-        if (!isSame(listMethod.getParameterTypes(), methodToStore.getParameterTypes())) {
+        
+        if (!isSameParams(currentMethod.getParameterTypes(), methodToStore.getParameterTypes())) {
             return false;
         }
-
+        
         return true;
     }
 
-    private static boolean isSame(CachedClass[] parameters1, CachedClass[] parameters2) {
+    private static boolean isSameParams(CachedClass[] parameters1, CachedClass[] parameters2) {
         if (parameters1.length == parameters2.length) {
             for (int i = 0, size = parameters1.length; i < size; i++) {
                 if (parameters1[i] != parameters2[i]) {
@@ -238,5 +225,12 @@ public final class MetaElementHandler {
         }
 
         return new MethodSignature(method.getName(), parameters);
+    }
+    
+    private boolean isBetterDistance(MetaMethod currentMethod, MetaMethod methodToStore) {
+        if (currentMethod.getDeclaringClass().getSuperClassDistance() <= methodToStore.getDeclaringClass().getSuperClassDistance()) {
+            return true;
+        }
+        return false;
     }
 }
