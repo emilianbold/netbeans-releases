@@ -41,7 +41,7 @@
                     <Identifier start='18' end='19' name='B'/>
                     <Identifier start='20' end='21' name='C'/>
                 </NamespaceName>
-                <Block start='6' end='26' isCurly='true'>
+                <Block start='22' end='26' isCurly='true'>
                     <EmptyStatement start='23' end='25'/>
                     <InLineHtml start='25' end='26'/>
                 </Block>
