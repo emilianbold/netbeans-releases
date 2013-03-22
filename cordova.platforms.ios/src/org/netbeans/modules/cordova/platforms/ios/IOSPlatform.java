@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
@@ -80,7 +81,7 @@ public class IOSPlatform implements MobilePlatform {
     @Override
     public Collection<SDK> getSDKs()  {
         try {
-            String listSdks = ProcessUtils.callProcess("xcodebuild", true, "-showsdks"); //NOI18N
+            String listSdks = ProcessUtils.callProcess("xcodebuild", true, 5000, "-showsdks"); //NOI18N
             return IOSSDK.parse(listSdks);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -90,8 +91,19 @@ public class IOSPlatform implements MobilePlatform {
     
     public void openUrl(Device device, String url) {
         try {
-            String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
-            String a = ProcessUtils.callProcess(sim, false, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.0.sdk/Applications/MobileSafari.app", "--args", "-u", url); //NOI18N
+            String sim = InstalledFileLocator.getDefault().locate(
+                    "bin/ios-sim", 
+                    "org.netbeans.modules.cordova.platforms.ios", false)
+                    .getPath();
+            String a = ProcessUtils.callProcess(
+                    sim, 
+                    false, 
+                    5000, 
+                    "launch", 
+                    "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.0.sdk/Applications/MobileSafari.app", 
+                    "--args",
+                    "-u", 
+                    url); //NOI18N
             System.out.println(a);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -116,8 +128,12 @@ public class IOSPlatform implements MobilePlatform {
 
     @Override
     public SDK getPrefferedTarget() {
-        if (Utilities.isMac())
-            return getSDKs().iterator().next();
+        if (Utilities.isMac()) {
+            final Iterator<SDK> iterator = getSDKs().iterator();
+            if (iterator.hasNext()) {
+                return iterator.next();
+            }
+        }
         return DEFAULT;
     }
 

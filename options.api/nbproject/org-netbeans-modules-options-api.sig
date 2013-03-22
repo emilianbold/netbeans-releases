@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.26.1
+#Version 1.31.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -43,6 +43,10 @@ meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public final org.netbeans.api.options.OptionsDisplayer
 fld public final static java.lang.String ADVANCED = "Advanced"
+fld public final static java.lang.String EDITOR = "Editor"
+fld public final static java.lang.String FONTSANDCOLORS = "FontsAndColors"
+fld public final static java.lang.String GENERAL = "General"
+fld public final static java.lang.String KEYMAPS = "Keymaps"
 meth public boolean open()
 meth public boolean open(java.lang.String)
 meth public static org.netbeans.api.options.OptionsDisplayer getDefault()
@@ -74,6 +78,8 @@ fld public final static java.lang.String PROP_CHANGED = "changed"
 fld public final static java.lang.String PROP_HELP_CTX = "helpCtx"
 fld public final static java.lang.String PROP_VALID = "valid"
 innr public abstract interface static !annotation ContainerRegistration
+innr public abstract interface static !annotation Keywords
+innr public abstract interface static !annotation KeywordsRegistration
 innr public abstract interface static !annotation SubRegistration
 innr public abstract interface static !annotation TopLevelRegistration
 meth protected void setCurrentSubcategory(java.lang.String)
@@ -89,6 +95,7 @@ meth public abstract void update()
 meth public final static org.netbeans.spi.options.OptionsPanelController createAdvanced(java.lang.String)
  anno 0 java.lang.Deprecated()
 meth public org.openide.util.Lookup getLookup()
+meth public void handleSuccessfulSearch(java.lang.String,java.util.List<java.lang.String>)
 supr java.lang.Object
 
 CLSS public abstract interface static !annotation org.netbeans.spi.options.OptionsPanelController$ContainerRegistration
@@ -102,6 +109,22 @@ meth public abstract !hasdefault java.lang.String keywordsCategory()
 meth public abstract java.lang.String categoryName()
 meth public abstract java.lang.String iconBase()
 meth public abstract java.lang.String id()
+
+CLSS public abstract interface static !annotation org.netbeans.spi.options.OptionsPanelController$Keywords
+ outer org.netbeans.spi.options.OptionsPanelController
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String tabTitle()
+meth public abstract java.lang.String location()
+meth public abstract java.lang.String[] keywords()
+
+CLSS public abstract interface static !annotation org.netbeans.spi.options.OptionsPanelController$KeywordsRegistration
+ outer org.netbeans.spi.options.OptionsPanelController
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract org.netbeans.spi.options.OptionsPanelController$Keywords[] value()
 
 CLSS public abstract interface static !annotation org.netbeans.spi.options.OptionsPanelController$SubRegistration
  outer org.netbeans.spi.options.OptionsPanelController

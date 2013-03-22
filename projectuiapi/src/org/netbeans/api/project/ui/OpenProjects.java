@@ -199,7 +199,7 @@ public final class OpenProjects {
      * these projects are ignored. If the list contain duplicates, the duplicated
      * projects are opened just once.
      * @param openSubprojects if true subprojects are also opened
-     * @param showProgress show progress dialog during the open
+     * @param showProgress show progress dialog during the open, will run asynchronously in that case.
      * @since 1.35
      */
     public void open (Project[] projects, boolean openSubprojects, boolean showProgress) {

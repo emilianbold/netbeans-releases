@@ -91,7 +91,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
- * Test web project Java EE 6. It is a base class for other sub classes.
+ * Test web project Java EE 7. It is a base class for other sub classes.
  */
 public class WebProjectValidation extends J2eeTestCase {
 
@@ -108,6 +108,7 @@ public class WebProjectValidation extends J2eeTestCase {
     public static final String J2EE_4 = "J2EE 1.4";
     public static final String JAVA_EE_5 = "Java EE 5";
     public static final String JAVA_EE_6 = "Java EE 6";
+    public static final String JAVA_EE_7 = "Java EE 7";
     // location of sample project
     protected static String PROJECT_LOCATION;
     // name of sample project
@@ -146,7 +147,7 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     protected String getEEVersion() {
-        return JAVA_EE_6;
+        return JAVA_EE_7;
     }
 
     /** Test creation of web project.
@@ -181,7 +182,11 @@ public class WebProjectValidation extends J2eeTestCase {
         // wait project appear in projects view
         // wait 30 second
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
-        verifyWebPagesNode("index.jsp");
+        if (JAVA_EE_7.equals(getEEVersion())) {
+            verifyWebPagesNode("index.html");
+        } else {
+            verifyWebPagesNode("index.jsp");
+        }
         if (J2EE_4.equals(getEEVersion())) {
             verifyWebPagesNode("WEB-INF|web.xml");
         }
@@ -409,15 +414,24 @@ public class WebProjectValidation extends J2eeTestCase {
     public void testRunProject() throws Exception {
         initDisplayer();
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
-        new Node(rootNode, "Web Pages|index.jsp").performPopupAction("Open");
-        EditorOperator editor = new EditorOperator("index.jsp");
-        editor.replace("<title>JSP Page</title>",
-                "<title>SampleProject Index Page</title>");
-        editor.insert("Running Project\n", 16, 1);
+        EditorOperator editor;
+        if (JAVA_EE_7.equals(getEEVersion())) {
+            new Node(rootNode, "Web Pages|index.html").performPopupAction("Open");
+            editor = new EditorOperator("index.html");
+            editor.replace("<title>",
+                    "<title>SampleProject Index Page");
+            editor.replace("<body>", "<body>Running Project\n");
+        } else {
+            new Node(rootNode, "Web Pages|index.jsp").performPopupAction("Open");
+            editor = new EditorOperator("index.jsp");
+            editor.replace("<title>JSP Page</title>",
+                    "<title>SampleProject Index Page</title>");
+            editor.replace("<body>", "<body>Running Project\n");
+        }
         new Action(null, "Run").perform(rootNode);
         waitBuildSuccessful();
-        assertDisplayerContent("<title>SampleProject Index Page</title>");
-        editor.deleteLine(16);
+        assertDisplayerContent("<title>SampleProject Index Page");
+        editor.replace("Running Project", "");
         editor.save();
         EditorOperator.closeDiscardAll();
     }
@@ -627,8 +641,8 @@ public class WebProjectValidation extends J2eeTestCase {
         eOperator.save();
         //refresh navigator
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
-        new Node(rootNode, "Web Pages|index.jsp").performPopupAction("Open");
-        new EditorOperator("index.jsp").closeDiscard();
+        new Node(rootNode, "Web Pages|index").performPopupAction("Open");
+        new EditorOperator("index").closeDiscard();
         //wait for editor update
         new EventTool().waitNoEvent(300);
         int startCaretPos = eOperator.txtEditorPane().getCaretPosition();

@@ -111,6 +111,43 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>Adding support comparing trees of arbitrary commits</summary>
+            <version major="1" minor="9"/>
+            <date day="12" month="3" year="2013"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <ul>
+                    <li>Adding a new method GitClient.getStatus(File[], String, ProgressMonitor)
+                    allowing an API client to get statuses of local files not just against the HEAD but against
+                    an arbitrary commit.</li>
+                    <li>Adding a new method GitClient.getStatus(File[], String, String, ProgressMonitor)
+                    allowing an API client to get modifications from the Git history. It is similar to
+                    GitRevisionInfo.getModifications but returns file statuses between two arbitrary commits
+                    and not just a commit and its parent.</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <issue number="227348"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
+            <summary>Adding support for rebase to the API</summary>
+            <version major="1" minor="8"/>
+            <date day="11" month="3" year="2013"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <ul>
+                    <li>Adding a new method GitClient.rebase delegating to the rebase command.</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <class package="org.netbeans.libs.git" name="GitRebaseResult"/>
+            <issue number="226545"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>Adding new method to GitClient: commit(), amending the last commit</summary>
             <version major="1" minor="7"/>
             <date day="6" month="2" year="2013"/>

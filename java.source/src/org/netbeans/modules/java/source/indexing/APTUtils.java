@@ -76,7 +76,6 @@ import org.netbeans.modules.java.source.parsing.CachingArchiveClassLoader;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -96,6 +95,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final String APT_ENABLED = "aptEnabled"; //NOI18N
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
+    private static final String JRE_PROFILE = "jreProfile";        //NOI18N
     private static final Map<URL, APTUtils> knownSourceRootsMap = new HashMap<URL, APTUtils>();
     private static final Map<FileObject, Reference<APTUtils>> auxiliarySourceRootsMap = new WeakHashMap<FileObject, Reference<APTUtils>>();
     private static final Lookup HARDCODED_PROCESSORS = Lookups.forPath("Editors/text/x-java/AnnotationProcessors");
@@ -134,15 +134,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             return null;
         }
 
-        URL rootUrl;
-        
-        try {
-            rootUrl = root.getURL();
-        } catch (FileStateInvalidException ex) {
-            LOG.log(Level.FINE, null, ex);
-            return null;
-        }
-
+        final URL rootUrl = root.toURL();
         if (knownSourceRootsMap.containsKey(rootUrl)) {
             APTUtils utils = knownSourceRootsMap.get(rootUrl);
 
@@ -306,9 +298,16 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             return false;
         boolean vote = false;
         try {
-            URL url = fo.getURL();
+            final URL url = fo.toURL();
             if (JavaIndex.ensureAttributeValue(url, SOURCE_LEVEL_ROOT, sourceLevel.getSourceLevel(), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
+                vote = true;
+                if (checkOnly) {
+                    return vote;
+                }
+            }
+            if (JavaIndex.ensureAttributeValue(url, JRE_PROFILE, sourceLevel.getProfile(), checkOnly)) {
+                JavaIndex.LOG.fine("forcing reindex due to jre profile change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
                     return vote;

@@ -41,13 +41,19 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
+import java.awt.EventQueue;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.model.api.Body;
+import org.netbeans.modules.css.model.api.BodyItem;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Element;
@@ -55,6 +61,7 @@ import org.netbeans.modules.css.model.api.Media;
 import org.netbeans.modules.css.model.api.MediaQueryList;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
+import org.netbeans.modules.css.model.api.PropertyValue;
 import org.netbeans.modules.css.model.api.SelectorsGroup;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -250,6 +257,147 @@ public class Utilities {
         });
 
         return result[0];
+    }
+
+    /**
+     * Jumps into the meta-source of the specified rule. It does nothing
+     * if there is no meta-source of the rule, i.e., when the rule comes
+     * directly from some CSS stylesheet.
+     * 
+     * @param rule rule to jump to.
+     * @return {@code true} when the rule comes from some meta-source
+     * and the corresponding source file was opened successfully,
+     * returns {@code false} otherwise.
+     */
+    public static boolean goToMetaSource(org.netbeans.modules.css.model.api.Rule rule) {
+        Element parent = rule.getParent();
+        if (parent instanceof BodyItem) {
+            BodyItem bodyItem = (BodyItem)parent;
+            parent = bodyItem.getParent();
+            if (parent instanceof Body) {
+                Body body = (Body)parent;
+                List<BodyItem> bodyItems = body.getBodyItems();
+                int index = bodyItems.indexOf(bodyItem);
+                if (index > 0) {
+                    BodyItem previousBodyItem = bodyItems.get(index-1);
+                    Element element = previousBodyItem.getElement();
+                    if (element instanceof Media) {
+                        Media media = (Media)element;
+                        if (isMetaSourceInfo(media)) {
+                            return goToMetaSource(media);
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines whether the given media represents information
+     * about the meta-source of the next rule.
+     * 
+     * @param media media to check.
+     * @return {@code true} when the given media holds source-related
+     * information, returns {@code false} otherwise.
+     */
+    private static boolean isMetaSourceInfo(Media media) {
+        MediaQueryList queryList = media.getMediaQueryList();
+        Model sourceModel = media.getModel();
+        String queryListText = sourceModel.getElementSource(queryList).toString();
+        return "-sass-debug-info".equals(queryListText); // NOI18N
+    }
+
+    /**
+     * Jumps into the meta-source of the rule that follows the given media
+     * (that holds the information about the meta-source).
+     * 
+     * @param media media holding the source-related information.
+     * @return {@code true} when the source file was opened successfully,
+     * returns {@code false} otherwise.
+     */
+    private static boolean goToMetaSource(Media media) {
+        String originalFileName = null;
+        int originalLineNumber = -1;
+        for (org.netbeans.modules.css.model.api.Rule rule : media.getRules()) {
+            SelectorsGroup selectorGroup = rule.getSelectorsGroup();
+            Model sourceModel = media.getModel();
+            CharSequence image = sourceModel.getElementSource(selectorGroup);
+            String selector = image.toString();
+            if ("filename".equals(selector)) { // NOI18N
+                String value = propertyValue(rule, "font-family"); // NOI18N
+                if (value != null) {
+                    StringBuilder sb = new StringBuilder();
+                    boolean escape = false;
+                    for (int i=0; i<value.length(); i++) {
+                        char c = value.charAt(i);
+                        if (escape) {
+                            escape = false;
+                            sb.append(c);
+                        } else if (c == '\\') {
+                            escape = true;
+                        } else {
+                            sb.append(c);
+                        }
+                    }
+                    originalFileName = sb.toString();
+                    String prefix = "file://"; // NOI18N
+                    if (originalFileName.startsWith(prefix)) {
+                        originalFileName = originalFileName.substring(prefix.length());
+                    }
+                }
+            } else if ("line".equals(selector)) { // NOI18N
+                String value = propertyValue(rule, "font-family"); // NOI18N
+                String prefix = "\\00003"; // NOI18N
+                if (value != null && value.startsWith(prefix)) {
+                    String lineTxt = value.substring(prefix.length());
+                    try {
+                        originalLineNumber = Integer.parseInt(lineTxt);
+                    } catch (NumberFormatException nfex) {
+                        Logger.getLogger(Utilities.class.getName()).log(Level.INFO, null, nfex);
+                    }
+                }
+            }
+        }
+        if (originalFileName != null && originalLineNumber != -1) {
+            File file = new File(originalFileName);
+            final FileObject fob = FileUtil.toFileObject(file);
+            if (fob != null) {
+                final int lineNo = originalLineNumber - 1;
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        CSSUtils.openAtLine(fob, lineNo);
+                    }
+                });
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the value of the specified property in the given rule.
+     * 
+     * @param rule rule to extract the value from.
+     * @param propertyName name of the property whose value should be returned.
+     * @return value of the property or {@code null} when there is no
+     * property with the specified name in the given rule.
+     */
+    private static String propertyValue(org.netbeans.modules.css.model.api.Rule rule, String propertyName) {
+        String propertyValue = null;
+        Declarations declarations = rule.getDeclarations();
+        if (declarations != null) {
+            for (Declaration declaration : declarations.getDeclarations()) {
+                org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
+                String modelPropertyName = modelProperty.getContent().toString().trim();
+                if (propertyName.equals(modelPropertyName)) {
+                    PropertyValue value = declaration.getPropertyValue();
+                    propertyValue = value.getExpression().getContent().toString();
+                }
+            }
+        }
+        return propertyValue;
     }
 
     /**

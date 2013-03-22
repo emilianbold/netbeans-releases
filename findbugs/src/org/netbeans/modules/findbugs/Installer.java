@@ -59,24 +59,30 @@ public class Installer extends ModuleInstall {
         FileObject findbugsKeywords = FileUtil.getConfigFile("OptionsDialog/Keywords/findbugs");
         
         if (findbugsKeywords == null || !Integer.valueOf(CURRENT_FINDBUGS_KEYWORD_VERSION).equals(findbugsKeywords.getAttribute("version"))) {
-            try {
-                findbugsKeywords = FileUtil.createData(FileUtil.getConfigRoot(), "OptionsDialog/Keywords/findbugs");
-                findbugsKeywords.setAttribute("location", "Editor");
-                findbugsKeywords.setAttribute("tabTitle", NbBundle.getBundle("org.netbeans.modules.options.editor.Bundle").getString("CTL_Hints_DisplayName"));
-                
-                DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
-                StringBuilder keywords = new StringBuilder();
-                
-                for (BugPattern bp : dfc.getBugPatterns()) {
-                    keywords.append(RunFindBugs.computeFilterText(bp).toUpperCase());
-                    keywords.append(",");
-                }
-                
-                findbugsKeywords.setAttribute("keywords", keywords.toString());
-                findbugsKeywords.setAttribute("version", CURRENT_FINDBUGS_KEYWORD_VERSION);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            writeKeywords();
+        }
+    }
+    
+    static void writeKeywords() {
+        try {
+            FileObject findbugsKeywords = FileUtil.createData(FileUtil.getConfigRoot(), "OptionsDialog/Keywords/findbugs");
+            findbugsKeywords.setAttribute("location", "Editor");
+            findbugsKeywords.setAttribute("tabTitle", NbBundle.getBundle("org.netbeans.modules.options.editor.Bundle").getString("CTL_Hints_DisplayName"));
+
+            DetectorCollectionProvider.initializeDetectorFactoryCollection();
+
+            DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
+            StringBuilder keywords = new StringBuilder();
+
+            for (BugPattern bp : dfc.getBugPatterns()) {
+                keywords.append(RunFindBugs.computeFilterText(bp).toUpperCase());
+                keywords.append(",");
             }
+
+            findbugsKeywords.setAttribute("keywords", keywords.toString());
+            findbugsKeywords.setAttribute("version", CURRENT_FINDBUGS_KEYWORD_VERSION);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 

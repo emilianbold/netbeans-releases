@@ -64,24 +64,19 @@ import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.blame.AnnotateAction;
+import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
-import org.netbeans.modules.git.ui.commit.ExcludeFromCommitAction;
-import org.netbeans.modules.git.ui.commit.IncludeInCommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
-import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
-import org.netbeans.modules.git.ui.ignore.IgnoreAction;
-import org.netbeans.modules.git.ui.ignore.UnignoreAction;
 import org.netbeans.modules.git.ui.menu.BranchMenu;
 import org.netbeans.modules.git.ui.menu.CheckoutMenu;
-import org.netbeans.modules.git.ui.menu.ExportMenu;
+import org.netbeans.modules.git.ui.menu.DiffMenu;
+import org.netbeans.modules.git.ui.menu.PatchesMenu;
+import org.netbeans.modules.git.ui.menu.IgnoreMenu;
 import org.netbeans.modules.git.ui.menu.RemoteMenu;
 import org.netbeans.modules.git.ui.menu.RevertMenu;
-import org.netbeans.modules.git.ui.menu.TagMenu;
-import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.git.ui.reset.ResetAction;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -140,48 +135,26 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
+                actions.add(new DiffMenu(destination, null));
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
-                actions.add(SystemAction.get(DiffAction.class));
-                actions.add(new ExportMenu(ActionDestination.MainMenu, null));
-                actions.add(new RevertMenu(ActionDestination.MainMenu, null));
-                IgnoreAction ia = SystemAction.get(IgnoreAction.class);
-                UnignoreAction uia = SystemAction.get(UnignoreAction.class);
-                ExcludeFromCommitAction efca = SystemAction.get(ExcludeFromCommitAction.class);
-                IncludeInCommitAction iica = SystemAction.get(IncludeInCommitAction.class);
-                if (ia.isEnabled() || uia.isEnabled() || efca.isEnabled() || iica.isEnabled()) {
-                    actions.add(null);
-                    if (ia.isEnabled()) {
-                        actions.add(ia);
-                    }
-                    if (uia.isEnabled()) {
-                        actions.add(uia);
-                    }
-                    if (efca.isEnabled()) {
-                        actions.add(efca);
-                    } else if (iica.isEnabled()) {
-                        actions.add(iica);
-                    }
-                }
-                actions.add(null);
-                actions.add(SystemAction.get(RepositoryBrowserAction.class));
-                actions.add(null);
-                actions.add(new BranchMenu(ActionDestination.MainMenu, null));
-                actions.add(new TagMenu(ActionDestination.MainMenu, null));
-                actions.add(new CheckoutMenu(ActionDestination.MainMenu, null));
-                actions.add(SystemAction.get(MergeRevisionAction.class));
-                ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
-                if (a.isEnabled()) {
-                    actions.add(null);
-                    actions.add(a);
-                }
-                actions.add(null);
-                actions.add(SystemAction.get(ResetAction.class));
-                actions.add(null);
-                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions, true);
-                actions.add(new RemoteMenu(ActionDestination.MainMenu, null));
-                actions.add(SystemAction.get(SearchHistoryAction.class));
+                actions.add(SystemAction.get(RevertChangesAction.class));
                 actions.add(SystemAction.get(AnnotateAction.class));
+                actions.add(SystemAction.get(SearchHistoryAction.class));
+                actions.add(new CheckoutMenu(ActionDestination.MainMenu, null));
+                actions.add(SystemAction.get(ResolveConflictsAction.class));
+                actions.add(null);
+                
+                actions.add(new IgnoreMenu(null));
+                actions.add(new PatchesMenu(ActionDestination.MainMenu, null));
+                actions.add(null);
+                
+                actions.add(new BranchMenu(ActionDestination.MainMenu, null));
+                actions.add(new RemoteMenu(ActionDestination.MainMenu, null, null));
+                actions.add(new RevertMenu(ActionDestination.MainMenu, null));
+                actions.add(null);
+
+                actions.add(SystemAction.get(RepositoryBrowserAction.class));
             }
             Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
         } else {
@@ -191,46 +164,25 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             } else {
                 Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
+                actions.add(new DiffMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName"), lkp));
-                actions.add(new ExportMenu(ActionDestination.PopupMenu, lkp));
-                actions.add(new RevertMenu(ActionDestination.PopupMenu, lkp));
-                SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
-                SystemActionBridge uia = SystemActionBridge.createAction(SystemAction.get(UnignoreAction.class), NbBundle.getMessage(UnignoreAction.class, "LBL_UnignoreAction_PopupName"), lkp);
-                SystemActionBridge efca = SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class), NbBundle.getMessage(ExcludeFromCommitAction.class, "LBL_ExcludeFromCommitAction_PopupName"), lkp);
-                SystemActionBridge iica = SystemActionBridge.createAction(SystemAction.get(IncludeInCommitAction.class), NbBundle.getMessage(IncludeInCommitAction.class, "LBL_IncludeInCommitAction_PopupName"), lkp);
-                if (ia.isEnabled() || uia.isEnabled() || efca.isEnabled() || iica.isEnabled()) {
-                    actions.add(null);
-                    if (ia.isEnabled()) {
-                        actions.add(ia);
-                    }
-                    if (uia.isEnabled()) {
-                        actions.add(uia);
-                    }
-                    if (efca.isEnabled()) {
-                        actions.add(efca);
-                    } else if (iica.isEnabled()) {
-                        actions.add(iica);
-                    }
-                }
-                actions.add(null);
-                actions.add(new BranchMenu(ActionDestination.PopupMenu, lkp));
-                actions.add(new TagMenu(ActionDestination.PopupMenu, lkp));
-                actions.add(new CheckoutMenu(ActionDestination.PopupMenu, lkp));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(MergeRevisionAction.class), NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName"), lkp)); //NOI18N
-                SystemActionBridge a = SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp);
-                if (a.isEnabled()) {
-                    actions.add(null);
-                    actions.add(a);
-                }
-                actions.add(null);
-                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
-                actions.add(new RemoteMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(AnnotateAction.class), SystemAction.get(AnnotateAction.class).visible(nodes)
+                        ? NbBundle.getMessage(AnnotateAction.class, "LBL_HideAnnotateAction_PopupName") //NOI18N
+                        : NbBundle.getMessage(AnnotateAction.class, "LBL_ShowAnnotateAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(AnnotateAction.class), ((AnnotateAction)SystemAction.get(AnnotateAction.class)).visible(nodes) ?
-                                                                        NbBundle.getMessage(AnnotateAction.class, "LBL_HideAnnotateAction_PopupName") : //NOI18N
-                                                                        NbBundle.getMessage(AnnotateAction.class, "LBL_ShowAnnotateAction_PopupName"), lkp)); //NOI18N
+                actions.add(new CheckoutMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp));
+                actions.add(null);
+                
+                actions.add(new IgnoreMenu(lkp));
+                actions.add(new PatchesMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(null);
+                
+                actions.add(new BranchMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(new RemoteMenu(ActionDestination.PopupMenu, lkp, context));
+                actions.add(new RevertMenu(ActionDestination.PopupMenu, lkp));
             }
         }
 

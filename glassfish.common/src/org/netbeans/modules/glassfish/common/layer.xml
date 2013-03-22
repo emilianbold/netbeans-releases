@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Actions">
         <folder name="GlassFish">
@@ -9,17 +9,11 @@
         </folder>
     </folder>
     <folder name="Servers">
-        <!--
-        <file name="GlassfishWizardProvider.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider.createPrelude"/>
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider"/>
-            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
-        </file>
-        -->
         <file name="Ee6WizardProvider.instance">
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider.createEe6"/>
             <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider"/>
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.glassfish.common.wizards.Bundle#STR_V3_FAMILY_NAME"/>
         </file>
         
         <!--
@@ -31,13 +25,7 @@
         -->
 
         <file name="GlassfishInstanceProvider.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.common.GlassfishInstanceProvider.getPrelude"/>
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.common.GlassfishInstanceProvider"/>
-            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
-        </file>
-
-        <file name="Ee6InstanceProvider.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.common.GlassfishInstanceProvider.getEe6"/>
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.common.GlassfishInstanceProvider.getProvider"/>
             <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.common.GlassfishInstanceProvider"/>
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
         </file>

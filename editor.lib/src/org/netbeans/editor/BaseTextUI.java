@@ -100,8 +100,6 @@ public class BaseTextUI extends BasicTextUI implements
     /** Extended UI */
     private EditorUI editorUI;
 
-    private boolean foldingEnabled;
-    
     private boolean needsRefresh = false;
     
     /** ID of the component in registry */
@@ -116,24 +114,6 @@ public class BaseTextUI extends BasicTextUI implements
     = new GetFocusedComponentAction();
 
     private Preferences prefs = null;
-    private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
-        public void preferenceChange(PreferenceChangeEvent evt) {
-            if (evt == null || SimpleValueNames.CODE_FOLDING_ENABLE.equals(evt.getKey())) {
-                foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
-                JTextComponent component = getComponent();
-                if (component != null) {
-                    component.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, foldingEnabled);
-                    needsRefresh = true;
-                    Utilities.runInEventDispatchThread(new Runnable() {
-                        public void run() {
-                            refresh();
-                        }
-                    });
-                }
-            }
-        }
-    };
-    private PreferenceChangeListener weakListener = null;
     
     public BaseTextUI() {
     }
@@ -226,8 +206,7 @@ public class BaseTextUI extends BasicTextUI implements
         
         JTextComponent component = getComponent();
         prefs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(Preferences.class);
-        weakListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
-        prefs.addPreferenceChangeListener(weakListener);
+
         
         // set margin
         String value = prefs.get(SimpleValueNames.MARGIN, null);
@@ -235,8 +214,6 @@ public class BaseTextUI extends BasicTextUI implements
         component.setMargin(margin != null ? margin : EditorUI.NULL_INSETS);
 
         getEditorUI().installUI(component);
-        foldingEnabled  = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
-        component.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, foldingEnabled);
         
         // attach to the model and component
         //component.addPropertyChangeListener(this); already done in super class
@@ -271,7 +248,7 @@ public class BaseTextUI extends BasicTextUI implements
 
     /** Deinstalls the UI for a component */
     public @Override void uninstallUI(JComponent c) {
-        if (prefs == null && weakListener == null) {
+        if (prefs == null) {
             // already uninstalled or not installed at all
             return;
         }
@@ -280,9 +257,7 @@ public class BaseTextUI extends BasicTextUI implements
             super.uninstallUI(c);
         }
 
-        prefs.removePreferenceChangeListener(weakListener);
         prefs = null;
-        weakListener = null;
         
         if (c instanceof JTextComponent){        
             JTextComponent comp = (JTextComponent)c;
@@ -567,19 +542,7 @@ public class BaseTextUI extends BasicTextUI implements
     */
     public @Override View create(Element elem) {
 	    String kind = elem.getName();
-            /*
-            if (foldingEnabled){
-                Element parent = elem.getParentElement();
-                if (parent!=null){
-                    int index = parent.getElementIndex(elem.getStartOffset());
-                    if (index >=3 && index <=6){
-                        return  new CollapsedView(parent.getElement(3), parent.getElement(6));
-                    }
-                }
-            }
-            */
-            
-	    if (kind != null) {
+    if (kind != null) {
 		if (kind.equals(AbstractDocument.ContentElementName)) {
                     return new LabelView(elem);
 		} else if (kind.equals(AbstractDocument.ParagraphElementName)) {
@@ -618,10 +581,6 @@ public class BaseTextUI extends BasicTextUI implements
 
     public void invalidateStartY() {
         // no longer available
-    }
-
-    boolean isFoldingEnabled() {
-        return foldingEnabled;
     }
 
     protected void refresh(){

@@ -1536,7 +1536,7 @@ public class CasualDiff {
             tokenSequence.move(rhsBounds[0]);
             moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
             if (tokenSequence.token().id() != JavaTokenId.EQ) {
-                boolean spaceAroundAssignOps = parent.getKind() == Kind.ANNOTATION ? diffContext.style.spaceAroundAnnotationValueAssignOps() : diffContext.style.spaceAroundAssignOps();
+                boolean spaceAroundAssignOps = (parent.getKind() == Kind.ANNOTATION || parent.getKind() == Kind.TYPE_ANNOTATION) ? diffContext.style.spaceAroundAnnotationValueAssignOps() : diffContext.style.spaceAroundAssignOps();
                 if (spaceAroundAssignOps)
                     printer.print(" = ");
                 else
@@ -1841,6 +1841,31 @@ public class CasualDiff {
                     Measure.ARGUMENT
             );
         }
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];
+    }
+    
+    protected int diffAnnotatedType(JCAnnotatedType oldT, JCAnnotatedType newT, int[] bounds) {
+        int localPointer = bounds[0];
+        if (!listsMatch(oldT.annotations, newT.annotations)) {
+            int pos = oldT.annotations.nonEmpty() ? getOldPos(oldT.annotations.head) : bounds[0];
+            copyTo(localPointer, pos);
+            localPointer = diffParameterList(
+                    oldT.annotations,
+                    newT.annotations,
+                    null,
+                    null,
+                    pos,
+                    Measure.ARGUMENT,
+                    true, //TODO: should read the code style configuration
+                    false,
+                    false,
+                    ""
+            );
+        }
+        int[] underlyingBounds = getBounds(oldT.underlyingType);
+        copyTo(localPointer, underlyingBounds[0]);
+        localPointer = diffTree(oldT.underlyingType, newT.underlyingType, underlyingBounds);
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
@@ -2197,7 +2222,7 @@ public class CasualDiff {
               return matchWildcard((JCWildcard)t1, (JCWildcard)t2);
           case TYPEBOUNDKIND:
               return ((TypeBoundKind)t1).kind == ((TypeBoundKind)t2).kind;
-          case ANNOTATION:
+          case ANNOTATION: case TYPE_ANNOTATION:
               return matchAnnotation((JCAnnotation)t1, (JCAnnotation)t2);
           case LETEXPR:
               return matchLetExpr((LetExpr)t1, (LetExpr)t2);
@@ -2243,6 +2268,8 @@ public class CasualDiff {
           case DIV_ASG:
           case MOD_ASG:
               return matchAssignop((JCAssignOp)t1, (JCAssignOp)t2);
+          case ANNOTATED_TYPE:
+              return matchAnnotatedType((JCAnnotatedType) t1, (JCAnnotatedType) t2);
           default:
               String msg = ((com.sun.source.tree.Tree)t1).getKind().toString() +
                       " " + t1.getClass().getName();
@@ -2520,7 +2547,7 @@ public class CasualDiff {
                     JCTree tree = oldList.get(oldIndex++);
                     int[] bounds = getBounds(tree);
                     tokenSequence.move(bounds[0]);
-                    if (oldIndex != 1) {
+                    if (oldIndex != 1 && !separator.isEmpty()) {
                         moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
                     }
                     tokenSequence.moveNext();
@@ -2564,7 +2591,7 @@ public class CasualDiff {
                     }
                     int[] bounds = getCommentCorrectedBounds(item.element);
                     tokenSequence.move(bounds[0]);
-                    if (oldIndex != 1 && !wasLeadingDelete) {
+                    if (oldIndex != 1 && !wasLeadingDelete && !separator.isEmpty()) {
                         moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
                     }
                     tokenSequence.moveNext();
@@ -3471,7 +3498,7 @@ public class CasualDiff {
           case TYPEBOUNDKIND:
               retVal = diffTypeBoundKind((TypeBoundKind)oldT, (TypeBoundKind)newT, elementBounds);
               break;
-          case ANNOTATION:
+          case ANNOTATION: case TYPE_ANNOTATION:
               retVal = diffAnnotation((JCAnnotation)oldT, (JCAnnotation)newT, elementBounds);
               break;
           case LETEXPR:
@@ -3537,6 +3564,9 @@ public class CasualDiff {
               break;
           case REFERENCE:
               retVal = diffMemberReference((JCMemberReference) oldT, (JCMemberReference) newT, elementBounds);
+              break;
+          case ANNOTATED_TYPE:
+              retVal = diffAnnotatedType((JCAnnotatedType)oldT, (JCAnnotatedType)newT, elementBounds);
               break;
           default:
               // handle special cases like field groups and enum constants
@@ -3755,6 +3785,11 @@ public class CasualDiff {
     private boolean matchTypeApply(JCTypeApply t1, JCTypeApply t2) {
         return treesMatch(t1.clazz, t2.clazz) &&
                listsMatch(t1.arguments, t2.arguments);
+    }
+    
+    private boolean matchAnnotatedType(JCAnnotatedType t1, JCAnnotatedType t2) {
+        return treesMatch(t1.underlyingType, t2.underlyingType) &&
+               listsMatch(t1.annotations, t2.annotations);
     }
 
     private boolean matchTypeParameter(JCTypeParameter t1, JCTypeParameter t2) {

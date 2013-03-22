@@ -98,12 +98,16 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         final String mimeType = file.getMIMEType();
 
         LOG.log(Level.FINER, "run(), file: {0}", new Object[]{file});
+        
+        if(!mimeType.equals("text/css")) {
+            LOG.log(Level.FINE, "ignoring non-pure (text/css) file, actual mimetype is {0}", mimeType);
+            return ;
+        }
 
         cancelled = false;
 
         final int caretOffset;
         if (event == null) {
-            LOG.log(Level.FINE, "run() - NULL SchedulerEvent?!?!?!");
             caretOffset = -1;
         } else {
             if (event instanceof CursorMovedSchedulerEvent) {
@@ -156,6 +160,12 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
 
         //find rule corresponding to the offset
         Rule rule = findRuleAtOffset(result.getSnapshot(), model, caretOffset);
+        //>>hack, remove once the css.lib css grammar gets finalized
+        if(rule != null && rule.getSelectorsGroup() == null) {
+            rule = null;
+        }
+        //<<hack
+        
         
         if(rule != null) {
             //check whether the rule is virtual

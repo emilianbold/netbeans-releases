@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.31</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -176,6 +176,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.jvi</friend>
                 <friend>org.netbeans.modules.languages</friend>
                 <friend>org.netbeans.modules.options.editor</friend>
+                <friend>org.netbeans.modules.editor.fold</friend>
+                <friend>org.netbeans.modules.editor.fold.nbui</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
                 <package>org.netbeans.modules.editor.settings.storage.api</package>
                 <package>org.netbeans.modules.editor.settings.storage.spi</package>

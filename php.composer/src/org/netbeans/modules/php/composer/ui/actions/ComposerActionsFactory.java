@@ -91,7 +91,7 @@ public final class ComposerActionsFactory extends AbstractAction implements Pres
         @NbBundle.Messages("ComposerActionsFactory.name=Composer")
         public ComposerActions() {
             super(Bundle.ComposerActionsFactory_name());
-            add(new SearchAction());
+            add(new AddDependencyAction());
             addSeparator();
             add(new InitAction());
             add(new InstallAction());

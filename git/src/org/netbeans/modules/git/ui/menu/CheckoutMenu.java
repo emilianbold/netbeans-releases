@@ -67,8 +67,14 @@ public final class CheckoutMenu extends DynamicMenu {
     private final ActionDestination dest;
     private final Lookup lkp;
 
+    @NbBundle.Messages({
+        "CTL_MenuItem_CheckoutMenu=Chec&kout",
+        "CTL_MenuItem_CheckoutMenu.popup=Checkout"
+    })
     public CheckoutMenu (ActionDestination dest, Lookup lkp) {
-        super(NbBundle.getMessage(CheckoutMenu.class, dest.equals(ActionDestination.MainMenu) ? "CTL_MenuItem_CheckoutMenu" : "CTL_MenuItem_CheckoutMenu.popup")); //NOI18N
+        super(dest.equals(ActionDestination.MainMenu) 
+                ? Bundle.CTL_MenuItem_CheckoutMenu()
+                : Bundle.CTL_MenuItem_CheckoutMenu_popup());
         this.dest = dest;
         this.lkp = lkp;
     }

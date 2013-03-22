@@ -72,7 +72,7 @@ public abstract class VCSKenaiAccessor {
      */
     public final static String PROP_KENAI_VCS_NOTIFICATION = "kenai.vcs.notification"; // NOI18N
 
-    protected static Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.VCSKenaiSupport");
+    protected static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.VCSKenaiSupport");
 
     /**
      * A Kenai service
@@ -341,12 +341,14 @@ public abstract class VCSKenaiAccessor {
 
         protected static Logger LOG = VCSKenaiAccessor.LOG;
 
-        private RequestProcessor rp = new RequestProcessor("Kenai VCS notifications");                                  //NOI18N
+        private final RequestProcessor rp = new RequestProcessor("Kenai VCS notifications");                                  //NOI18N
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(VCSKenaiAccessor.PROP_KENAI_VCS_NOTIFICATION)) {
                 final VCSKenaiNotification notification = (VCSKenaiNotification) evt.getNewValue();
                 rp.post(new Runnable() {
+                    @Override
                     public void run() {
                         handleVCSNotification(notification);
                     }

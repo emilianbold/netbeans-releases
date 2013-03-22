@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Future;
@@ -57,6 +58,9 @@ import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.data.GlassFishAdminInterface;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
@@ -72,6 +76,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -97,9 +102,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public class Props implements Map<String, String> {
 
         private final Map<String, String> delegate;
-//        private transient Collection<String> values = null;
-//        private transient Set<String> keySet = null;
-//        private transient Set<Map.Entry<String, String>> entrySet = null;
 
         /**
          * Constructs a new properties map with the same mappings as the
@@ -405,8 +407,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             GlassfishInstanceProvider gip, boolean updateNow) {
         String deployerUri = ip.get(GlassfishModule.URL_ATTR);
         GlassfishInstance instance = null;
+        GlassFishVersion version = ServerUtils.getServerVersion(
+                ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR));
         try {
-            instance = new GlassfishInstance(ip, gip);
+            instance = new GlassfishInstance(ip, version, gip);
             tagUnderConstruction(deployerUri);
             CommonServerSupport commonSupport = new CommonServerSupport(instance);
             if (!instance.isPublicAccess()) {
@@ -491,9 +495,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     /** GlassFish server properties. */
     private transient Map<String, String> properties;
 
-    /** GlassFish server version. Initial storedValue is <code>null</code>.
-     *  Proper GlassFish server version is set after first <code>version</code>
-     *  administration command response is received. */
+    /** GlassFish server version.
+      * <p/>
+      * This is always version of local GlassFish related to JavaEE platform,
+      * even when registered domain is remote. */
     private transient GlassFishVersion version;
 
     //private transient CommonServerSupport commonSupport;
@@ -515,10 +520,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     ////////////////////////////////////////////////////////////////////////////
 
     @SuppressWarnings("LeakingThisInConstructor")
-    private GlassfishInstance(Map<String, String> ip,
+    private GlassfishInstance(Map<String, String> ip, GlassFishVersion version,
             GlassfishInstanceProvider instanceProvider) {
         String deployerUri = ip.get(GlassfishModule.URL_ATTR);
-        this.version = null;
+        this.version = version;
         ic = new InstanceContent();
         localLookup = new AbstractLookup(ic);
         full = localLookup;
@@ -720,6 +725,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     /**
      * Get GlassFish server version.
      * <p/>
+     * This is always version of local GlassFish related to JavaEE platform,
+     * even when registered domain is remote.
+     * <p/>
      * @return GlassFish server version or <code>null</code> when version is
      *         not known.
      */
@@ -735,7 +743,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      */
     @Override
     public GlassFishAdminInterface getAdminInterface() {
-        return GlassFishAdminInterface.HTTP;
+//        if (version.ordinal() < GlassFishVersion.GF_4.ordinal())
+            return GlassFishAdminInterface.HTTP;
+//        else
+//            return GlassFishAdminInterface.REST;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -751,7 +762,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * @return Value of <code>true</code> when this GlassFish server instance
      *         is remote or <code>false</code> otherwise.
      */
-    boolean isRemote() {
+    public boolean isRemote() {
         return properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
     }
 
@@ -846,6 +857,66 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         return properties.get(GlassfishModule.USERNAME_ATTR);
     }
 
+    /**
+     * Returns Java SE platform home configured for GlassFfish server.
+     * <p/>
+     * @return Java SE platform configured for GlassFfish server or null
+     *         if no such platform was configured.
+     */
+    public String getJavaHome() {
+        return properties.get(GlassfishModule.JAVA_PLATFORM_ATTR);
+    }
+
+    /**
+     * Sets Java SE platform home configured for GlassFfish server.
+     * <p/>
+     * Java SE platform home value is cleared when <code>javahome</code>
+     * is <code>null</code>.
+     * <p/>
+     * @param javahome Java SE platform home to be set for GlassFfish server.
+     */
+    public void setJavaHome(String javahome) {
+        if (javahome != null)
+            properties.put(GlassfishModule.JAVA_PLATFORM_ATTR, javahome);
+        else
+            properties.remove(GlassfishModule.JAVA_PLATFORM_ATTR);
+    }
+
+    /**
+     * Returns Java SE platform {@see JavaPlatform} object configured
+     * for GlassFfish server.
+     * <p/>
+     * Current code is not optimal. It does full scan of installed platforms
+     * to search for platform installation folder matching java home folder
+     * from GlassFfish server instance object.
+     * <p/>
+     * @return Returns Java SE platform {@see JavaPlatform} object configured
+     *         for GlassFfish server or null if no such platform was configured.
+     */
+    public JavaPlatform getJavaPlatform() {
+        String javaHome = getJavaHome();
+        if (javaHome == null || javaHome.length() == 0) {
+            return null;
+        }
+        JavaPlatform[] platforms
+                = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        File javaHomeFile = new File(javaHome);
+        JavaPlatform javaPlatform = null;
+        for (JavaPlatform platform : platforms) {
+            for (FileObject fo : platform.getInstallFolders()) {
+                if (javaHomeFile.equals(FileUtil.toFile(fo))) {
+                    javaPlatform = platform;
+                    break;
+                }
+            }
+            if (javaPlatform != null) {
+                break;
+            }
+        }
+        return javaPlatform;
+    }
+    
+
     public synchronized String getDomainsRoot() {
         String retVal = getDomainsFolder();
         if (null == retVal) {
@@ -881,7 +952,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     File destdirFile = FileUtil.toFile(destdir);
                     setDomainsFolder(destdirFile.getAbsolutePath());
                     retVal = destdirFile.getAbsolutePath();
-                    // getEe6() eventually creates a call to getDomainsRoot()... which can lead to a deadlock
+                    // getProvider() eventually creates a call to getDomainsRoot()... which can lead to a deadlock
                     //  forcing the call to happen after getDomainsRoot returns will 
                     // prevent the deadlock.
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -890,7 +961,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                         public void run() {
                             CreateDomain cd = new CreateDomain("anonymous", "", // NOI18N
                                     new File(getServerHome()),
-                                    properties, GlassfishInstanceProvider.getEe6(),
+                                    properties, GlassfishInstanceProvider.getProvider(),
                                     false, true, "INSTALL_ROOT_KEY"); // NOI18N
                             cd.start();
                         }
@@ -1175,7 +1246,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     // TODO -- this should be done differently
     @Override
     public String getServerDisplayName() {
-        return instanceProvider.getDisplayName(getDeployerUri());
+        return NbBundle.getMessage(GlassfishInstanceProvider.class,
+                "STR_SERVER_NAME", new Object[] {version.toString()});
     }
 
     @Override
@@ -1196,10 +1268,11 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         // But this should be made independent on CommonServerSupport object.
         CommonServerSupport commonSupport = getCommonSupport();
         JPanel commonCustomizer = new InstanceCustomizer(commonSupport);
-        JPanel vmCustomizer = new VmCustomizer(commonSupport);
+        JPanel vmCustomizer = new VmCustomizer(this);
 
         Collection<JPanel> pages = new LinkedList<JPanel>();
-        Collection<? extends CustomizerCookie> lookupAll = localLookup.lookupAll(CustomizerCookie.class);
+        Collection<? extends CustomizerCookie> lookupAll
+                = localLookup.lookupAll(CustomizerCookie.class);
         for(CustomizerCookie cookie : lookupAll) {
             pages.addAll(cookie.getCustomizerPages());
         }
@@ -1215,7 +1288,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             tabbedPane.add(page);
         }
         
-        return tabbedPane != null ? tabbedPane : commonCustomizer;
+        return tabbedPane;
     }
 
     @Override

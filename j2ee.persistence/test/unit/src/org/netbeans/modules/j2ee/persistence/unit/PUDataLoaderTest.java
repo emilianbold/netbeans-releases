@@ -75,10 +75,10 @@ public class PUDataLoaderTest extends PUDataObjectTestBase {
         super.setUp();
     }
     
-    public void testPUWithoutProjectOwnerIsNotRecognized() throws Exception {
+    public void testPUWithoutProjectOwnerIsRecognized() throws Exception {
         String persistenceFile = getDataDir().getAbsolutePath() + "/persistence.xml";
         FileObject puFO = FileUtil.toFileObject(new File(persistenceFile));
-        assertFalse("persistence unit without project owner is not recongnized." +
+        assertTrue("persistence unit without project owner is not recongnized." +
                 " Project owner: " + FileOwnerQuery.getOwner(puFO),
                 DataObject.find(puFO) instanceof PUDataObject);
     }

@@ -83,6 +83,8 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.hooks.HgHook;
@@ -111,7 +113,12 @@ public class CommitAction extends ContextAction {
 
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage"; // NOI18N
     static final String KEY_CANCELED_MESSAGE = "commit"; //NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/commit.png"; //NOI18N
 
+    public CommitAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
@@ -129,7 +136,7 @@ public class CommitAction extends ContextAction {
 
     @Override
     protected String iconResource () {
-        return "org/netbeans/modules/mercurial/resources/icons/commit.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 
     @Override
@@ -155,8 +162,29 @@ public class CommitAction extends ContextAction {
         commit(contentTitle, context);
     }
 
-    public static void commit (String contentTitle, final VCSContext ctx) {
-        commit(contentTitle, ctx, null);
+    @NbBundle.Messages({
+        "# {0} - repository name", "MSG_CommitAction.interruptedRebase.error=Repository {0} is in the middle of an interrupted rebase.\n"
+            + "Finish the rebase before committing changes."
+    })
+    public static void commit (final String contentTitle, final VCSContext ctx) {
+        Utils.post(new Runnable() {
+            @Override
+            public void run () {
+                File root = HgUtils.getRootFile(ctx);
+                if (HgUtils.isRebasing(root)) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            Bundle.MSG_CommitAction_interruptedRebase_error(root.getName()),
+                            NotifyDescriptor.ERROR_MESSAGE));
+                    return;
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        commit(contentTitle, ctx, null);
+                    }
+                });
+            }
+        });
     }
     
     private static void commit (String contentTitle, final VCSContext ctx, final String branchName) {
@@ -234,6 +262,7 @@ public class CommitAction extends ContextAction {
             }
         });
         computeNodes(data, panel, ctx, repository, cancelButton, afterMerge);
+        HgProgressSupport incomingChanges = checkForIncomingChanges(repository, panel, afterMerge);
         commitButton.setEnabled(false);
         panel.addVersioningListener(new VersioningListener() {
             @Override
@@ -256,6 +285,10 @@ public class CommitAction extends ContextAction {
         dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), "hg.commit.dialog")); // NOI18N
         dialog.pack();
         dialog.setVisible(true);
+        
+        if (incomingChanges != null) {
+            incomingChanges.cancel();
+        }
 
         final String message = panel.getCommitMessage().trim();
         if (dd.getValue() != commitButton && !message.isEmpty()) {
@@ -263,7 +296,9 @@ public class CommitAction extends ContextAction {
         }
         if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
             al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
+            panel.closed();
         } else if (dd.getValue() == commitButton) {
+            panel.closed();
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
             final boolean commitAllFiles = panel.cbAllFiles.isSelected() || afterMerge.get();
@@ -559,6 +594,47 @@ public class CommitAction extends ContextAction {
             return res == NotifyDescriptor.YES_OPTION;
         }
         return true;
+    }
+    
+    @NbBundle.Messages({
+        "MSG_CommitAction.warning.incomingChanges=There are incoming changes. You should pull from the remote repository first."
+    })
+    private static HgProgressSupport checkForIncomingChanges (final File repository, final CommitPanel panel,
+            final AtomicBoolean afterMerge) {
+        HgProgressSupport supp = new HgProgressSupport() {
+            @Override
+            protected void perform () {
+                if (afterMerge.get()) {
+                    return;
+                }
+                try {
+                    String branch = HgCommand.getBranch(repository);
+                    if (HgCommand.getOutMessages(repository, null, branch, true, false, 1,
+                            OutputLogger.getLogger(null)).length == 0) {
+                        if (!isCanceled() && HgCommand.getIncomingMessages(repository, null, branch, true, false, false, 1,
+                                OutputLogger.getLogger(null)).length > 0) {
+                            panel.setWarningMessage(Bundle.MSG_CommitAction_warning_incomingChanges());
+                        }
+                    }
+                } catch (HgException.HgCommandCanceledException ex) {
+                } catch (HgException ex) {
+                    Logger.getLogger(CommitAction.class.getName()).log(Level.FINE, null, ex);
+                }
+            }
+
+            @Override
+            protected ProgressHandle getProgressHandle () {
+                return null;
+            }
+
+            @Override
+            protected void startProgress () { }
+
+            @Override
+            protected void finnishProgress () { }
+        };
+        supp.start(Mercurial.getInstance().getRequestProcessor(repository));
+        return supp;
     }
 
     private static abstract class Cmd {

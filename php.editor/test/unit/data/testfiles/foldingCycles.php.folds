@@ -9,17 +9,17 @@
 -         }
 | 
 +         do {
-- 
-|         } while(true);
+| 
+-         } while(true);
 | 
 +         switch ($foo) {
 +             case 1: {
 | 
-|             }
+-             }
 | 
 +             default: {
 | 
-|             }
+-             }
 -         }
 | 
 +         for ($i = 0; $i < 10; $i++) {
@@ -30,7 +30,7 @@
 | 
 -         }
 | 
-|     }
+-     }
 | 
 - }
   
@@ -39,17 +39,17 @@
 - }
   
 + do {
-- 
-  } while(true);
+| 
+- } while(true);
   
 + switch ($foo) {
 +     case 1: {
 | 
-|     }
+-     }
 | 
 +     default: {
 | 
-|     }
+-     }
 - }
   
 + for ($i = 0; $i < 10; $i++) {

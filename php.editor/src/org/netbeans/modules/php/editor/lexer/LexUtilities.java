@@ -56,7 +56,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.indent.PHPBracketCompleter.LineBalance;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -396,6 +395,13 @@ public final class LexUtilities {
             return 0;
         }
     }
+
+    public static enum LineBalance {
+
+        PLAIN,
+        UP_FIRST, // } keyword {
+        DOWN_FIRST
+    };
 
     /**
      * The same as braceBalance but generalized to any pair of matching

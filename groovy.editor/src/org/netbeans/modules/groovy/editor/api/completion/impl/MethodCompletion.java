@@ -91,12 +91,12 @@ public class MethodCompletion extends BaseCompletion {
         this.request = request;
         this.anchor = anchor;
 
-        if (request.location == CaretLocation.INSIDE_PARAMETERS) {
-            LOG.log(Level.FINEST, "no method completion inside of parameters"); // NOI18N
-            return false;
-        }
-
-        if (request == null || request.ctx == null/* || request.ctx.before1 == null*/) {
+        if (request == null ||
+            request.ctx == null ||
+            request.dotContext == null ||
+            request.dotContext.isFieldsOnly() ||
+            request.location == CaretLocation.INSIDE_PARAMETERS) {
+            
             return false;
         }
 

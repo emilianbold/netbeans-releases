@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
+import org.netbeans.modules.cnd.dwarfdiscovery.RemoteJavaExecution;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +63,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -263,7 +265,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     }
     
     @Override
-    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
+    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         String set = (String)getProperty(EXECUTABLE_KEY).getValue();
         if (set == null || set.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "NoExecutable")));
@@ -291,11 +293,11 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     }
     
     @Override
-    public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
-        isStoped.set(false);
+    public List<Configuration> analyze(final ProjectProxy project, Progress progress, Interrupter interrupter) {
+        resetStopInterrupter(interrupter);
         List<Configuration> confs = new ArrayList<Configuration>();
         init(project);
-        if (!isStoped.get()){
+        if (!getStopInterrupter().cancelled()){
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
@@ -333,6 +335,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                                 System.arraycopy(add, 0, all, 1, add.length);
                                 myFileProperties = getSourceFileProperties(all,null, project, myDependencies, null, new CompileLineStorage());
                             }
+                            store(project);
                         }
                     }
                     return myFileProperties;
@@ -343,7 +346,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();
                         for(SourceFileProperties source : getSourcesConfiguration()){
-                            if (isStoped.get()) {
+                            if (getStopInterrupter().cancelled()) {
                                 break;
                             }
                             if (source instanceof DwarfSource) {
@@ -353,7 +356,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                         }
                         HashSet<String> unique = new HashSet<String>();
                         for(String path : set){
-                            if (isStoped.get()) {
+                            if (getStopInterrupter().cancelled()) {
                                 break;
                             }
                             File file = new File(path);

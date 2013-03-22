@@ -108,12 +108,16 @@ public final class ConsoleMessage {
 
         private JSONObject stack;
 
-        StackFrame(JSONObject stack) {
+        public StackFrame(JSONObject stack) {
             this.stack = stack;
         }
         
         public String getFunctionName() {
-            return (String)stack.get("functionName");
+            String s = (String)stack.get("functionName");
+            if (s == null || s.isEmpty()) {
+                s = "(anonymous function)";
+            }
+            return s;
         }
         
         public String getURLString() {

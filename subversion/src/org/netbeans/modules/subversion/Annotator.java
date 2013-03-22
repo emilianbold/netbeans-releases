@@ -44,13 +44,10 @@
 
 package org.netbeans.modules.subversion;
 
-import org.netbeans.modules.subversion.ui.copy.*;
-import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.subversion.ui.status.StatusAction;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.ui.update.*;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
-import org.netbeans.modules.subversion.ui.diff.ExportDiffAction;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.openide.util.actions.SystemAction;
@@ -62,7 +59,6 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.api.project.Project;
 import javax.swing.*;
 import java.util.*;
 import java.util.List;
@@ -72,18 +68,17 @@ import java.io.File;
 import java.awt.*;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
-import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
-import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.options.AnnotationColorProvider;
-import org.netbeans.modules.subversion.ui.wcadmin.CleanupAction;
-import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
-import org.netbeans.modules.subversion.ui.export.ExportAction;
 import org.netbeans.modules.subversion.ui.lock.LockAction;
 import org.netbeans.modules.subversion.ui.lock.UnlockAction;
+import org.netbeans.modules.subversion.ui.menu.CopyMenu;
+import org.netbeans.modules.subversion.ui.menu.IgnoreMenu;
+import org.netbeans.modules.subversion.ui.menu.PatchesMenu;
+import org.netbeans.modules.subversion.ui.menu.UpdateMenu;
+import org.netbeans.modules.subversion.ui.menu.WorkingCopyMenu;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
-import org.netbeans.modules.subversion.ui.wcadmin.UpgradeAction;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
@@ -123,7 +118,7 @@ public class Annotator {
 
     public static final String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE, ANNOTATION_COMMIT_REVISION,
                                                         ANNOTATION_COMMIT_DATE, ANNOTATION_COMMIT_AUTHOR};
-    private static final String ACTIONS_PATH_PREFIX = "Actions/Subversion/";          // NOI18N
+    public static final String ACTIONS_PATH_PREFIX = "Actions/Subversion/";          // NOI18N
 
     private final FileStatusCache cache;
     private MessageFormat format;
@@ -434,51 +429,42 @@ public class Annotator {
             noneVersioned = isNothingVersioned(files);
         }
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            // XXX use Actions.forID
-            Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance");
-            if(a != null) actions.add(a);
             if (noneVersioned) {
+                // XXX use Actions.forID
+                Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance");
+                if(a != null) actions.add(a);
                 a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance");
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            
                 if(a != null) actions.add(a);
             } else {
-                actions.add(SystemAction.get(RelocateAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
-                actions.add(SystemAction.get(UpdateToAction.class));
-                actions.add(null);
                 actions.add(SystemAction.get(StatusAction.class));
                 actions.add(SystemAction.get(DiffAction.class));
-                actions.add(SystemAction.get(UpdateAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(ExportDiffAction.class));
-                actions.add(SystemAction.get(PatchAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(CreateCopyAction.class));
-                actions.add(SystemAction.get(SwitchToAction.class));
-                actions.add(SystemAction.get(MergeAction.class));
-                actions.add(SystemAction.get(ExportAction.class));
-                actions.add(null);
+                actions.add(SystemAction.get(RevertModificationsAction.class));
                 actions.add(SystemAction.get(BlameAction.class));
                 actions.add(SystemAction.get(SearchHistoryAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(RevertModificationsAction.class));
+                actions.add(new UpdateMenu(destination, null));
                 actions.add(SystemAction.get(ResolveConflictsAction.class));
-                actions.add(SystemAction.get(IgnoreAction.class));
-                SystemAction lockAction = SystemAction.get(LockAction.class);
-                if (lockAction.isEnabled()) {
-                    actions.add(lockAction);
-                }
-                SystemAction unlockAction = SystemAction.get(UnlockAction.class);
-                if ((unlockAction = SystemAction.get(UnlockAction.class)).isEnabled()) {
-                    actions.add(unlockAction);
-                }
                 actions.add(null);
-                actions.add(SystemAction.get(CleanupAction.class));
-                actions.add(SystemAction.get(UpgradeAction.class));
+                
+                actions.add(new IgnoreMenu(null, null));
+                actions.add(new PatchesMenu(destination, null));
+                actions.add(null);
+                
+                actions.add(new CopyMenu(destination, null));
+                Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance");
+                if(a != null) actions.add(a);
+                actions.add(null);
+                
+                SystemAction unlockAction = SystemAction.get(UnlockAction.class);
+                if (unlockAction.isEnabled()) {
+                    actions.add(unlockAction);
+                } else {
+                    actions.add(SystemAction.get(LockAction.class));
+                }
+                actions.add(new WorkingCopyMenu(destination, null));
                 actions.add(SystemAction.get(VersioningInfoAction.class));
                 actions.add(SystemAction.get(SvnPropertiesAction.class));
             }
@@ -494,56 +480,35 @@ public class Annotator {
                 if(a != null) actions.add(a);
             } else {
                 Node[] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
-                boolean onlyFolders = onlyFolders(files);
-                boolean onlyProjects = onlyProjects(nodes);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context));
-                if (onlyProjects) {
-                    actions.add(new SystemActionBridge(SystemAction.get(UpdateWithDependenciesAction.class), loc.getString("CTL_PopupMenuItem_UpdateWithDeps")));
-                }
-                actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateToAction.class), loc.getString("CTL_PopupMenuItem_UpdateTo"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context));
-                actions.add(null);
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(SwitchToAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(ExportAction.class), loc.getString("CTL_PopupMenuItem_Export"), context));
-                actions.add(null);
-                if (!onlyFolders) {
-                    actions.add(SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
-                                                                ((BlameAction)SystemAction.get(BlameAction.class)).visible(nodes) ?
-                                                                        loc.getString("CTL_PopupMenuItem_HideAnnotations") :
-                                                                        loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context));
-                }
-                actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context));
-                actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
+                        ((BlameAction)SystemAction.get(BlameAction.class)).visible(nodes)
+                        ? loc.getString("CTL_PopupMenuItem_HideAnnotations")
+                        : loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context));
+                actions.add(new UpdateMenu(destination, context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context));
-                if (!onlyProjects) {
-                    actions.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
-                                                                ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ?
-                                                                        loc.getString("CTL_PopupMenuItem_Unignore") :
-                                                                        loc.getString("CTL_PopupMenuItem_Ignore"), context));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class),
-                        ((ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class)).getActionStatus(nodes) == ExcludeFromCommitAction.INCLUDING
-                        ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N
-                        : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
-                }
-                if (!onlyFolders) {
-                    SystemActionBridge lockAction = SystemActionBridge.createAction(SystemAction.get(LockAction.class), loc.getString("CTL_PopupMenuItem_Lock"), context);
-                    if (lockAction.isEnabled()) {
-                        actions.add(lockAction);
-                    }
-                    SystemActionBridge unlockAction = SystemActionBridge.createAction(SystemAction.get(UnlockAction.class), loc.getString("CTL_PopupMenuItem_Unlock"), context);
-                    if (unlockAction.isEnabled()) {
-                        actions.add(unlockAction);
-                    }
-                }
                 actions.add(null);
-                actions.add(SystemActionBridge.createAction(
-                                SystemAction.get(CleanupAction.class),
-                                loc.getString("CTL_PopupMenuItem_Cleanup"), context));
+                
+                actions.add(new IgnoreMenu(context, nodes));
+                actions.add(new PatchesMenu(destination, context));
+                actions.add(null);
+                
+                actions.add(new CopyMenu(destination, context));
+                Action a = Actions.forID("Subversion", "org.netbeans.modules.subversion.ui.checkout.CheckoutAction");
+                if(a != null) actions.add(a);
+                actions.add(null);
+                
+                SystemActionBridge unlockAction = SystemActionBridge.createAction(SystemAction.get(UnlockAction.class), loc.getString("CTL_PopupMenuItem_Unlock"), context);
+                if (unlockAction.isEnabled()) {
+                    actions.add(unlockAction);
+                } else {
+                    actions.add(SystemActionBridge.createAction(SystemAction.get(LockAction.class), loc.getString("CTL_PopupMenuItem_Lock"), context));
+                }
+                actions.add(new WorkingCopyMenu(destination, context));
                 actions.add(SystemActionBridge.createAction(
                                 SystemAction.get(VersioningInfoAction.class),
                                 loc.getString("CTL_PopupMenuItem_VersioningInfo"), context));
@@ -561,40 +526,6 @@ public class Annotator {
         }
         return true;
     }
-
-    private static boolean onlyProjects(Node[] nodes) {
-        if (nodes == null || nodes.length == 0) return false;
-        for (Node node : nodes) {
-            if (node.getLookup().lookup(Project.class) == null) return false;
-        }
-        return true;
-    }
-
-    private static boolean onlyFolders(File[] files) {
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        boolean onlyFolders = true;
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].isFile()) return false;
-            FileInformation status = cache.getCachedStatus(files[i]);
-            if (status == null) {
-                onlyFolders = false; // be optimistic, this can be a file
-            } else if (!files[i].exists() && !status.isDirectory()) {
-                onlyFolders = false;
-                break;
-            }
-        }
-        return onlyFolders;
-    }
-
-    private static MessageFormat getFormat(String key) {
-        String format = NbBundle.getMessage(Annotator.class, key);
-        return new MessageFormat(format);
-    }
-
-    private static final int STATUS_BADGEABLE =
-            FileInformation.STATUS_VERSIONED_UPTODATE |
-            FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY |
-            FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
     public Image annotateIcon(Image icon, VCSContext context, int includeStatus) {
         if(!checkClientAvailable("annotateIcon", context.getRootFiles().toArray(new File[context.getRootFiles().size()]))) { //NOI18N

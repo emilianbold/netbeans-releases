@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import org.netbeans.modules.bugtracking.api.APITestIssue;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.openide.nodes.Node;
@@ -80,7 +81,7 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
 
     @Override
     public Collection<TestIssue> getIssues(TestQuery q) {
-        return q.getIssues();
+        return (Collection<TestIssue>) q.getIssues();
     }
 
     @Override

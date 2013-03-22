@@ -142,7 +142,7 @@ public interface PHP5ErrorHandler extends ParserErrorHandler {
         FatalError(GSFPHPParser.Context context) {
             super(Bundle.MSG_FatalError(),
                 context.getSnapshot().getSource().getFileObject(),
-                0, context.getSource().length(),
+                0, context.getBaseSource().length(),
                 Severity.ERROR, null);
         }
 

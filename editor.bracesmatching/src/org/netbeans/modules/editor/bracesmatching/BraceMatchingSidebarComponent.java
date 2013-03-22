@@ -334,16 +334,16 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     }
     
     private void updatePreferredSize() {
-        if (showOutline) {
+        if (showOutline && baseUI != null) {
             setPreferredSize(new Dimension(barWidth, editor.getHeight()));
+            lineHeight = baseUI.getEditorUI().getLineHeight();
         } else {
             setPreferredSize(new Dimension(0,0));
         }
-        lineHeight = baseUI.getEditorUI().getLineHeight();
     }
     
     public void checkRepaint(ViewHierarchyEvent evt) {
-        if (!evt.isChangeY()) {
+        if (!evt.isChangeY() || baseUI == null) {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
@@ -586,6 +586,9 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     }
     
     private boolean isMatcherTooltipVisible() {
+        if (baseUI == null) {
+            return false;
+        }
         ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
         if (!(tts.isEnabled() && tts.isToolTipVisible())) {
             return false;

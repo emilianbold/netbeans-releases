@@ -199,9 +199,6 @@ final class CreateFilesWorker {
         @Override
         public void run() {
             try {
-                if (TraceFlags.PARSE_HEADERS_WITH_SOURCES && !sources) {
-                    return;
-                } 
                 for(NativeFileItem nativeFileItem : nativeFileItems) {
                     if (!createProjectFilesIfNeedRun(nativeFileItem)){
                         return;
@@ -209,6 +206,7 @@ final class CreateFilesWorker {
                 }
             } finally {
                 countDownLatch.countDown();
+                Notificator.instance().flush();
             }
         }
         private boolean createProjectFilesIfNeedRun(NativeFileItem nativeFileItem){

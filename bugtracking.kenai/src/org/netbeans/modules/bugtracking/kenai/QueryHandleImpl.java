@@ -54,6 +54,7 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
@@ -115,7 +116,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
         if(evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
             registerIssues();
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
-        } else if(evt.getPropertyName().equals(IssueCache.EVENT_ISSUE_SEEN_CHANGED)) {
+        } else if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_SEEN_CHANGED)) {
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         } 
     }
@@ -147,7 +148,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     private void registerIssues() {
         issues = query.getIssues();
         for (Issue issue : issues) {
-            KenaiUtil.addCacheListener(issue, this);
+            issue.addPropertyChangeListener(WeakListeners.propertyChange(this, issue));
         }
     }
 

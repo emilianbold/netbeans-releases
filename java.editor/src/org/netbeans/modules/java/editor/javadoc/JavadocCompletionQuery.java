@@ -119,6 +119,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     private List<CompletionItem> items;
     private boolean hasAdditionalItems;
     private JTextComponent component;
+    private boolean ignoreCancel;
     
 
     public JavadocCompletionQuery(int queryType) {
@@ -143,13 +144,26 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
     }
     
+    static List<CompletionItem> runCompletionQuery(int queryType, Document doc, int caret) {
+        JavadocCompletionQuery q = new JavadocCompletionQuery(queryType);
+        JavadocContext jdctx = new JavadocContext();
+        
+        q.items = new  ArrayList<CompletionItem>();
+        q.caretOffset = caret;
+        q.ignoreCancel = true;
+        
+        q.runInJavac(JavaSource.forDocument(doc), jdctx);
+        
+        return q.items;
+    }
+    
     private void queryImpl(CompletionResultSet resultSet, Document doc, int caretOffset) throws InterruptedException, ExecutionException {
         JavadocContext jdctx = new JavadocContext();
         items = new  ArrayList<CompletionItem>();
         this.caretOffset = caretOffset;
         runInJavac(JavaSource.forDocument(doc), jdctx);
         
-        if (isTaskCancelled()) {
+        if (!ignoreCancel && isTaskCancelled()) {
             return;
         }
         
@@ -184,7 +198,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController javac) throws Exception {
-                    if (isTaskCancelled()) {
+                    if (!ignoreCancel && isTaskCancelled()) {
                         return;
                     }
                     if (!JavadocCompletionUtils.isJavadocContext(javac.getTokenHierarchy(), caretOffset)) {

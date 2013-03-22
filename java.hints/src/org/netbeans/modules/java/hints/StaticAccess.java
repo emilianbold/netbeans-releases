@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav tulach
  */
-@Hint(displayName="#MSG_StaticAccessName", description="#HINT_StaticAccess", category="general", id="org.netbeans.modules.java.hints.StaticAccess", suppressWarnings=StaticAccess.SUPPRESS_WARNINGS_KEY)
+@Hint(displayName="#MSG_StaticAccessName", description="#HINT_StaticAccess", category="general", id="org.netbeans.modules.java.hints.StaticAccess", suppressWarnings={StaticAccess.SUPPRESS_WARNINGS_KEY, "", "AccessStaticViaInstance"})
 public class StaticAccess {
     
     static final String SUPPRESS_WARNINGS_KEY = "static-access";

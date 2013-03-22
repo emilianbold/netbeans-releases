@@ -209,11 +209,10 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             for (RepositoryRevision.Event event : revision.getEvents()) {
                 evts.add(new SvnLogEvent(master, event));
             }
-            List<SvnLogEvent> oldEvents = new ArrayList<SvnLogEvent>(events);
             List<SvnLogEvent> newEvents = new ArrayList<SvnLogEvent>(evts);
             events = evts;
             dummyEvents.clear();
-            eventsChanged(oldEvents, newEvents);
+            eventsChanged(null, newEvents);
         }
 
         @Override

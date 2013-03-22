@@ -157,19 +157,21 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
                             lastFileObject = fileObject;
                             fileScope = getFileScope(fileObject);
                         }
-                        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
-                        List typeNameResolvers = new ArrayList<TypeNameResolver>();
-                        if (fileObject != null && CodeUtils.isPhp52(fileObject)) {
-                            typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
-                        } else {
-                            typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
-                            typeNameResolvers.add(TypeNameResolverImpl.forSmartName(classScope, classScope.getOffset()));
+                        if (fileScope != null) {
+                            NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
+                            List typeNameResolvers = new ArrayList<TypeNameResolver>();
+                            if (fileObject != null && CodeUtils.isPhp52(fileObject)) {
+                                typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
+                            } else {
+                                typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
+                                typeNameResolvers.add(TypeNameResolverImpl.forSmartName(classScope, classScope.getOffset()));
+                            }
+                            TypeNameResolver typeNameResolver = TypeNameResolverImpl.forChainOf(typeNameResolvers);
+                            String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver);
+                            skeleton = skeleton.replace(ABSTRACT_PREFIX, ""); //NOI18N
+                            methodSkeletons.add(skeleton);
+                            lastMethodElement = methodElement;
                         }
-                        TypeNameResolver typeNameResolver = TypeNameResolverImpl.forChainOf(typeNameResolvers);
-                        String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver);
-                        skeleton = skeleton.replace(ABSTRACT_PREFIX, ""); //NOI18N
-                        methodSkeletons.add(skeleton);
-                        lastMethodElement = methodElement;
                     }
                 }
                 if (!methodSkeletons.isEmpty() && lastMethodElement != null) {

@@ -54,11 +54,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
@@ -74,10 +72,12 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -234,7 +234,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     }
 
     @Override
-    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
+    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
         if (set == null || set.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecLog.class, "NotFoundExecLog")));
@@ -254,22 +254,23 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         return res;
 
     }
-
     private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage) {
-        ExecLogReader clrf = new ExecLogReader(objFileName, root, project);
-        List<SourceFileProperties> list = clrf.getResults(progress, isStoped, storage);
-        buildArtifacts.addAll(clrf.getArtifacts(progress, isStoped, storage));
+        FileSystem fileSystem = getFileSystem(project);
+        ExecLogReader reader = new ExecLogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
+        List<SourceFileProperties> list = reader.getResults(progress, getStopInterrupter(), storage);
+        buildArtifacts.addAll(reader.getArtifacts(progress, getStopInterrupter(), storage));
         return list;
     }
+    
     private Progress progress;
 
     @Override
-    public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
-        isStoped.set(false);
+    public List<Configuration> analyze(final ProjectProxy project, Progress progress, Interrupter interrupter) {
+        resetStopInterrupter(interrupter);
         List<Configuration> confs = new ArrayList<Configuration>();
         init(project);
         this.progress = progress;
-        if (!isStoped.get()) {
+        if (!getStopInterrupter().cancelled()) {
             Configuration conf = new Configuration() {
 
                 private List<SourceFileProperties> myFileProperties;
@@ -293,6 +294,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
                         if (set != null && set.length() > 0) {
                             myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, myBuildArtifacts, new CompileLineStorage());
+                            store(project);
                         }
                     }
                     return myBuildArtifacts;
@@ -305,6 +307,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
                         if (set != null && set.length() > 0) {
                             myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, myBuildArtifacts, new CompileLineStorage());
+                            store(project);
                         }
                     }
                     return myFileProperties;
@@ -331,6 +334,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private List<String> buildArtifacts;
         private final ProjectProxy project;
         private final PathMap pathMapper;
+        private final RelocatablePathMapper localMapper;
         private final FileSystem fileSystem;
         private final CompilerSettings compilerSettings;
         private final Set<String> C_NAMES;
@@ -338,16 +342,12 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private final Set<String> FORTRAN_NAMES;
         private final Set<String> LIBREARIES_NAMES;
 
-        public ExecLogReader(String fileName, String root, ProjectProxy project) {
-            if (root.length() > 0) {
-                this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
-            } else {
-                this.root = root;
-            }
+        private ExecLogReader(String fileName, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
             this.fileName = fileName;
             this.project = project;
             this.pathMapper = getPathMapper(project);
-            this.fileSystem = getFileSystem(project);
+            this.localMapper = relocatablePathMapper;
+            this.fileSystem = fileSystem;
             this.compilerSettings = new CompilerSettings(project);
             C_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCompiler);
             CPP_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCCompiler);
@@ -355,6 +355,23 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             LIBREARIES_NAMES = new HashSet<String>();
             LIBREARIES_NAMES.add("ld"); //NOI18N
             LIBREARIES_NAMES.add("ar"); //NOI18N
+            if (project != null && root.isEmpty()) {
+                String sourceRoot = project.getSourceRoot();
+                if (sourceRoot != null && sourceRoot.length() > 1) {
+                    root = sourceRoot;
+                }
+            }
+            if (root.isEmpty()) {
+                String sourceRoot = PathUtilities.getDirName(fileName);
+                if (sourceRoot != null && sourceRoot.length() > 1) {
+                    root = sourceRoot;
+                }
+            }
+            if (root.length() > 0) {
+                this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
+            } else {
+                this.root = root;
+            }
         }
         
         private PathMap getPathMapper(ProjectProxy project) {
@@ -367,16 +384,6 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             return null;
         }
 
-        private FileSystem getFileSystem(ProjectProxy project) {
-            if (project != null) {
-                Project p = project.getProject();
-                if (p != null) {                
-                    return RemoteFileUtil.getProjectSourceFileSystem(p);
-                }
-            }
-            return CndFileUtils.getLocalFileSystem();
-        }
-        
         // Exec log format
         //called: /opt/solstudio12.2/bin/cc
         //        /var/tmp/as204739-cnd-test-downloads/pkg-config-0.25/popt
@@ -391,7 +398,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         //        findme.o
         //
 
-        private void run(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+        private void run(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
             result = new ArrayList<SourceFileProperties>();
             buildArtifacts = new ArrayList<String>();
             File file = new File(fileName);
@@ -411,7 +418,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         String tool = null;
                         List<String> params = new ArrayList<String>();
                         while (true) {
-                            if (isStoped.get()) {
+                            if (isStoped.cancelled()) {
                                 break;
                             }
                             String line = in.readLine();
@@ -461,14 +468,14 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             }
         }
 
-        public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+        public List<SourceFileProperties> getResults(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
             if (result == null) {
                 run(progress, isStoped, storage);
             }
             return result;
         }
 
-        public List<String> getArtifacts(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
+        public List<String> getArtifacts(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
             if (buildArtifacts == null) {
                 run(progress, isStoped, storage);
             }
@@ -559,9 +566,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     fullName = compilePath+"/"+what; //NOI18N
                     sourceName = what;
                 }
-                FileObject f = fileSystem.findResource(fullName);
-                if (f != null && f.isValid() && f.isData()) {
-                    fullName = PathCache.getString(f.getPath());
+                //FileObject f = fileSystem.findResource(fullName);
+                //if (f != null && f.isValid() && f.isData()) {
+                    fullName = PathCache.getString(fullName);
                     if (artifacts.languageArtifacts.contains("c")) { // NOI18N
                         language = ItemProperties.LanguageKind.C;
                     } else if (artifacts.languageArtifacts.contains("c++")) { // NOI18N
@@ -625,10 +632,52 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         res.handler = storage.putCompileLine(buf.toString());
                     }
                     result.add(res);
-                } else {
-                    continue;
+                //} else {
+                //    continue;
+                //}
+            }
+        }
+        
+        private FileObject convertPath(String path) {
+            FileObject fo = fileSystem.findResource(path);
+            if (localMapper != null) {
+                if (fo == null || !fo.isValid()) {
+                    RelocatablePathMapper.ResolvedPath resolvedPath = localMapper.getPath(path);
+                    if (resolvedPath == null) {
+                        if (root != null) {
+                            RelocatablePathMapper.FS fs = new RelocatablePathMapperImpl.FS() {
+                                @Override
+                                public boolean exists(String path) {
+                                    FileObject fo = fileSystem.findResource(path);
+                                    if (fo != null && fo.isValid()) {
+                                        return true;
+                                    }
+                                    return false;
+                                }
+
+                                @Override
+                                public List<String> list(String path) {
+                                    List<String> res = new ArrayList<String>();
+                                    FileObject fo = fileSystem.findResource(path);
+                                    if (fo != null && fo.isValid() && fo.isFolder()) {
+                                        for (FileObject f : fo.getChildren()) {
+                                            res.add(f.getPath());
+                                        }
+                                    }
+                                    return res;
+                                }
+                            };
+                            if (localMapper.discover(fs, root, path)) {
+                                resolvedPath = localMapper.getPath(path);
+                                fo = fileSystem.findResource(resolvedPath.getPath());
+                            }
+                        }
+                    } else {
+                        fo = fileSystem.findResource(resolvedPath.getPath());
+                    }
                 }
             }
+            return fo;
         }
         
         private void processLibrary(String tool, List<String> args, CompileLineStorage storage) {
@@ -709,6 +758,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     }
                     if (f != null && f.isValid() && f.isData()) {
                         buildArtifacts.add(fullName);
+                    } else {
+                        f = convertPath(fullName);   
+                        if (f != null && f.isValid() && f.isData()) {
+                            buildArtifacts.add(fullName);
+                        }
                     }
                 }
             }

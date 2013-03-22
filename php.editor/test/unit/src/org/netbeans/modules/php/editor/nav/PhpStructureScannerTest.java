@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -55,7 +58,10 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.ParserTestBase;
 import org.netbeans.modules.php.editor.parser.TestHtmlFormatter;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -139,6 +145,10 @@ public class PhpStructureScannerTest extends ParserTestBase{
 
     public void testDeprecatedDeclarations() throws Exception {
         performTest("structure/deprecatedDeclarations");
+    }
+
+    public void testDeprecatedTypes() throws Exception {
+        performTest("structure/deprecatedTypes");
     }
 
     public void testFoldingMethod() throws Exception {
@@ -236,5 +246,14 @@ public class PhpStructureScannerTest extends ParserTestBase{
         return text;
     }
 
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/structure"))
+            })
+        );
+    }
 
 }

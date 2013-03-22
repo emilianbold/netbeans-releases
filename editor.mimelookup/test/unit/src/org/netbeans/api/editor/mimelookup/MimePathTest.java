@@ -224,6 +224,36 @@ public class MimePathTest extends NbTestCase {
         assertNull("text/c++ is not a compound mime type", generic);
     }
     
+    public void testInheritedType() throws Exception {
+        // simple path must recognize the +xml
+        MimePath path = MimePath.parse("text/x-ant+xml");
+        String parentMime = path.getInheritedType();
+        assertEquals("text/xml", parentMime);
+        
+        // the same for nested path
+        path = MimePath.parse("text/x-ant+xml/text/x-java/text/x-ant+xml");
+        parentMime = path.getInheritedType();
+        assertEquals("text/xml", parentMime);
+        
+        // only the last component is considered, so no text/x-java as inherited type
+        path = MimePath.parse("text/x-ant+xml/text/x-java/text/x-javadoc");
+        parentMime = path.getInheritedType();
+        assertEquals("", parentMime);
+    }
+    
+    public void testIncludedPaths() throws Exception {
+        String path = "text/x-java/text/x-ant+xml/text/html/text/xml";
+        MimePath mp = MimePath.parse(path);
+        
+        List<MimePath> mpaths = mp.getIncludedPaths();
+        
+        assertEquals(mp, mpaths.get(0));
+        assertEquals(MimePath.parse("text/x-ant+xml/text/html/text/xml"), mpaths.get(1));
+        assertEquals(MimePath.parse("text/xml/text/html/text/xml"), mpaths.get(2));
+        assertEquals(MimePath.parse("text/html/text/xml"), mpaths.get(3));
+        assertEquals(MimePath.parse("text/xml"), mpaths.get(4));
+    }
+    
     private void checkPaths(List expectedPaths, List paths) {
         assertEquals("Wrong number of paths", expectedPaths.size(), paths.size());
         

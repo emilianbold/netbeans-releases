@@ -65,7 +65,7 @@ General options:\n\
   --trace <path>        path for launcher log (for trouble shooting)\n\
 \n";
 
-const char *PlatformLauncher::REQ_JAVA_VERSION = "1.6";
+const char *PlatformLauncher::REQ_JAVA_VERSION = "1.7";
 
 const char *PlatformLauncher::OPT_JDK_HOME = "-Djdk.home=";
 const char *PlatformLauncher::OPT_NB_PLATFORM_HOME = "-Dnetbeans.home=";
@@ -272,17 +272,21 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
             CHECK_ARG;
             bootclass = argv[++i];
         } else if (strcmp(ARG_NAME_JDKHOME, argv[i]) == 0) {
-            CHECK_ARG;
-            jdkhome = argv[++i];
-            if (!jvmLauncher.initialize(jdkhome.c_str())) {
-                logMsg("Cannot locate java installation in specified jdkhome: %s", jdkhome.c_str());
-                string errMsg = "Cannot locate java installation in specified jdkhome:\n";
-                errMsg += jdkhome;
-                errMsg += "\nDo you want to try to use default version?";
-                jdkhome = "";
-                if (::MessageBox(NULL, errMsg.c_str(), "Invalid jdkhome specified", MB_ICONQUESTION | MB_YESNO) == IDNO) {
-                    return false;
+            CHECK_ARG;            
+            if (jdkhome.empty()) {
+                jdkhome = argv[++i];
+                if (!jvmLauncher.initialize(jdkhome.c_str())) {
+                    logMsg("Cannot locate java installation in specified jdkhome: %s", jdkhome.c_str());
+                    string errMsg = "Cannot locate java installation in specified jdkhome:\n";
+                    errMsg += jdkhome;
+                    errMsg += "\nDo you want to try to use default version?";
+                    jdkhome = "";
+                    if (::MessageBox(NULL, errMsg.c_str(), "Invalid jdkhome specified", MB_ICONQUESTION | MB_YESNO) == IDNO) {
+                        return false;
+                    }
                 }
+            } else {
+                i++;
             }
         } else if (strcmp(ARG_NAME_CP_PREPEND, argv[i]) == 0
                 || strcmp(ARG_NAME_CP_PREPEND + 1, argv[i]) == 0) {

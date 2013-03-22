@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -94,10 +93,12 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         this.paremeters = info.getParameters();
         this.returnType = returnType;
     }
+
     FunctionScopeImpl(Scope inScope, LambdaFunctionDeclarationInfo info) {
         super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody(), inScope.isDeprecated());
         this.paremeters = info.getParameters();
     }
+
     protected FunctionScopeImpl(Scope inScope, MethodDeclarationInfo info, String returnType, boolean isDeprecated) {
         super(inScope, info, info.getAccessModifiers(), info.getOriginalNode().getFunction().getBody(), isDeprecated);
         this.paremeters = info.getParameters();
@@ -135,7 +136,10 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         if (!StringUtils.hasText(returnType)) {
             returnType = type;
         } else {
-            returnType += (TYPE_SEPARATOR + type);
+            Set<String> distinctTypes = new HashSet<String>();
+            distinctTypes.addAll(Arrays.asList(returnType.split(TYPE_SEPARATOR_REGEXP)));
+            distinctTypes.add(type);
+            returnType = StringUtils.implode(distinctTypes, TYPE_SEPARATOR);
         }
     }
 
@@ -246,7 +250,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     }
 
     private static boolean containsSelfDependentType(String[] typeNames) {
-        return (Arrays.binarySearch(typeNames, "\\self") >= 0) || (Arrays.binarySearch(typeNames, "object") >= 0); //NOI18N
+        return (Arrays.binarySearch(typeNames, "\\self") >= 0) || (Arrays.binarySearch(typeNames, Type.OBJECT) >= 0); //NOI18N
     }
 
     private void updateReturnTypes(String oldTypes, Collection<? extends TypeScope> resolvedReturnTypes) {
@@ -349,7 +353,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         }
         sb.append(Signature.ITEM_DELIMITER);
         String type = getReturnType();
-        if (type != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(type)) {
+        if (type != null && !Type.MIXED.equalsIgnoreCase(type)) {
             sb.append(type);
         }
         sb.append(Signature.ITEM_DELIMITER);

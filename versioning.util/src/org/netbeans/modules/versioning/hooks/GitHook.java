@@ -43,8 +43,7 @@
 package org.netbeans.modules.versioning.hooks;
 
 import java.io.IOException;
-import javax.swing.JPanel;
-import org.netbeans.modules.versioning.hooks.VCSHook;
+import java.util.Map;
 
 /**
  *
@@ -66,6 +65,11 @@ public abstract class GitHook extends VCSHook<GitHookContext>{
 
     public void afterPush(GitHookContext context) {
 
+    }
+
+    public void afterCommitReplace (GitHookContext originalContext, GitHookContext newContext,
+            Map<String, String> changesetMapping) {
+        
     }
 
 }

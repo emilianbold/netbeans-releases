@@ -129,17 +129,11 @@ public final class GoToOppositeAction implements TestLocator {
         }
         ClassPath srcClassPath = ClassPathSupport.createClassPath(srcRoots);
 
-        RequestProcessor requestProcessor = new RequestProcessor(GoToOppositeAction.class.getName(), 2);
-	requestProcessor.post(
-                new ActionImpl(plugin,
-                               callback,
-                               new Location(fileObj),
-                               sourceToTest,
-                               srcClassPath));
+        RequestProcessor requestProcessor = new RequestProcessor(GoToOppositeAction.class.getName(), 1);
 	JUnitPlugin pluginIT = TestUtil.getITPluginForProject(project);
         assert pluginIT != null;
 	requestProcessor.post(
-                new ActionImpl(pluginIT,
+                new ActionImpl(plugin, pluginIT,
                                callback,
                                new Location(fileObj),
                                sourceToTest,
@@ -225,19 +219,23 @@ public final class GoToOppositeAction implements TestLocator {
     private class ActionImpl implements Runnable {
         
         private final JUnitPlugin plugin;
+        private final JUnitPlugin pluginIT;
         private final Location currLocation;
         private final boolean sourceToTest;
         private final ClassPath srcClassPath;
         private final LocationListener callback;
         
         private Location oppoLocation;
+	private Location oppoLocationIT;
         
         ActionImpl(JUnitPlugin plugin,
+                   JUnitPlugin pluginIT,
                    LocationListener callback,
                    Location currLocation,
                    boolean sourceToTest,
                    ClassPath srcClassPath) {
             this.plugin = plugin;
+            this.pluginIT = pluginIT;
             this.currLocation = currLocation;
             this.sourceToTest = sourceToTest;
             this.srcClassPath = srcClassPath;
@@ -247,11 +245,11 @@ public final class GoToOppositeAction implements TestLocator {
         public void run() {
             if (!EventQueue.isDispatchThread()) {
                 findOppositeLocation();
-                if ((oppoLocation != null) || sourceToTest) {
+                if (oppoLocation != null || oppoLocationIT != null || sourceToTest) {
                     EventQueue.invokeLater(this);
                 }
             } else {
-                if (oppoLocation != null) {
+                if (oppoLocation != null || oppoLocationIT != null) {
                     goToOppositeLocation();
                 } else if (sourceToTest) {
                     displayNoOppositeLocationFound();
@@ -267,23 +265,24 @@ public final class GoToOppositeAction implements TestLocator {
                                                                   currLocation)
                   : JUnitPluginTrampoline.DEFAULT.getTestedLocation(plugin,
                                                                   currLocation);
+	    oppoLocationIT = sourceToTest
+		    ? JUnitPluginTrampoline.DEFAULT.getTestLocation(pluginIT,
+		    currLocation)
+		    : JUnitPluginTrampoline.DEFAULT.getTestedLocation(pluginIT,
+		    currLocation);
         }
         
         /**
          */
         private void goToOppositeLocation() {
-            assert oppoLocation != null;
-            assert oppoLocation.getFileObject() != null;
-
-            final FileObject oppoFile = oppoLocation.getFileObject();
-//            final ElementHandle<Element> elementHandle
-//                                         = oppoLocation.getElementHandle();
-//            if (elementHandle != null) {
-//                OpenTestAction.openFileAtElement(oppoFile, elementHandle);
-//            } else {
-//                OpenTestAction.openFile(oppoFile);
-                  callback.foundLocation(currLocation.getFileObject(), new LocationResult(oppoFile, -1));
-//            }
+	    if (oppoLocation != null) {
+		assert oppoLocation.getFileObject() != null;
+		callback.foundLocation(currLocation.getFileObject(), new LocationResult(oppoLocation.getFileObject(), -1));
+	    }
+	    if (oppoLocationIT != null) {
+		assert oppoLocationIT.getFileObject() != null;
+		callback.foundLocation(currLocation.getFileObject(), new LocationResult(oppoLocationIT.getFileObject(), -1));
+	    }
         }
         
         /**

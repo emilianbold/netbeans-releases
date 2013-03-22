@@ -59,7 +59,7 @@ public abstract class TestQuery {
 
     public abstract boolean isSaved();
 
-    public abstract Collection<TestIssue> getIssues();
+    public abstract Collection<? extends TestIssue> getIssues();
 
     public abstract boolean contains(String id);
 

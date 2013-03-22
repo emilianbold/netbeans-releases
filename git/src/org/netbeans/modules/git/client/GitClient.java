@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBlameResult;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient.DiffMode;
+import org.netbeans.libs.git.GitClient.RebaseOperationType;
 import org.netbeans.libs.git.GitClient.ResetType;
 import org.netbeans.libs.git.GitClientCallback;
 import org.netbeans.libs.git.GitRepository;
@@ -63,10 +64,12 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitPullResult;
 import org.netbeans.libs.git.GitPushResult;
+import org.netbeans.libs.git.GitRebaseResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevertResult;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitTransportUpdate;
@@ -76,6 +79,7 @@ import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NetworkSettings;
 import org.openide.util.RequestProcessor;
@@ -170,6 +174,7 @@ public final class GitClient {
             "fetch", //NOI18N - changes available remote heads or tags
             "merge", //NOI18N // creates a new head
             "pull", //NOI18N // creates a new head
+            "rebase", //NOI18N // creates new head and branches
             "remove", //NOI18N // may change state, e.g. MERGING->MERGED
             "reset", //NOI18N
             "removeRemote", //NOI18N - updates remotes
@@ -434,11 +439,25 @@ public final class GitClient {
     }
 
     public Map<File, GitStatus> getStatus (final File[] roots, final ProgressMonitor monitor) throws GitException {
+        return getStatus(roots, GitUtils.HEAD, monitor);
+    }
+
+    public Map<File, GitStatus> getStatus (final File[] roots, final String revision, final ProgressMonitor monitor) throws GitException {
         return new CommandInvoker().runMethod(new Callable<Map<File, GitStatus>>() {
 
             @Override
             public Map<File, GitStatus> call () throws Exception {
-                return delegate.getStatus(roots, monitor);
+                return delegate.getStatus(roots, revision, monitor);
+            }
+        }, "getStatus", roots); //NOI18N
+    }
+
+    public Map<File, GitFileInfo> getStatus (final File[] roots, final String revisionLeft, final String revisionRight, final ProgressMonitor monitor) throws GitException {
+        return new CommandInvoker().runMethod(new Callable<Map<File, GitFileInfo>>() {
+
+            @Override
+            public Map<File, GitFileInfo> call () throws Exception {
+                return delegate.getStatus(roots, revisionLeft, revisionRight, monitor);
             }
         }, "getStatus", roots); //NOI18N
     }
@@ -583,6 +602,16 @@ public final class GitClient {
                 return delegate.push(remote, pushRefSpecifications, fetchRefSpecifications, monitor);
             }
         }, "push"); //NOI18N
+    }
+    
+    public GitRebaseResult rebase (final RebaseOperationType operation, final String upstream, final ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
+        return new CommandInvoker().runMethod(new Callable<GitRebaseResult>() {
+
+            @Override
+            public GitRebaseResult call () throws Exception {
+                return delegate.rebase(operation, upstream, monitor);
+            }
+        }, "rebase"); //NOI18N
     }
     
     /**

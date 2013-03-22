@@ -105,6 +105,22 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="jre-profiles">
+            <api name="java-api-common"/>
+            <summary>Added UI support for JRE profiles.</summary>
+            <version major="1" minor="45"/>
+            <date day="4" month="3" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Addded factory methods to <code>PlatformUiSupport</code> to create
+                    a model and renderer for JDK 8 profiles.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.ui" name="PlatformUiSupport"/>
+            <issue number="226713"/>
+        </change>
         <change id="CommonProjectUtils.createJavaLibraryImplementation">
             <api name="java-api-common"/>
             <summary>Added a helper method creating <code>LibraryImplementation3</code> for ant and maven projects.</summary>

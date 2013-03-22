@@ -115,6 +115,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
         Profile profile = ejbModule.getJ2eeProfile();
         boolean isSimplified = Util.isAtLeastJavaEE5(profile);
         MessageGenerator generator = MessageGenerator.create(
+                profile,
                 Templates.getTargetName(wiz),
                 pkg,
                 ejbPanel.getDestination(),

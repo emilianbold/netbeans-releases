@@ -52,6 +52,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.UseScope;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.openide.util.NbBundle;
@@ -130,7 +131,7 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
         @Override
         public QualifiedName resolve(final QualifiedName qualifiedName) {
             QualifiedName result = qualifiedName;
-            if (!VariousUtils.isSpecialClassName(qualifiedName.getName()) && !VariousUtils.isPrimitiveType(qualifiedName.toString())) {
+            if (!VariousUtils.isSpecialClassName(qualifiedName.getName()) && !Type.isPrimitive(qualifiedName.toString())) {
                 result = processExactType(qualifiedName);
             }
             return result;

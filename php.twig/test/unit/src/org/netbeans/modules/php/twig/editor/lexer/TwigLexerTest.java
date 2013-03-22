@@ -556,6 +556,46 @@ public class TwigLexerTest extends TwigLexerTestBase {
         performTest("multi-interpolation");
     }
 
+    public void testIssue227066_01() throws Exception {
+        performTest("issue227066_01");
+    }
+
+    public void testIssue227066_02() throws Exception {
+        performTest("issue227066_02");
+    }
+
+    public void testIssue227066_03() throws Exception {
+        performTest("issue227066_03");
+    }
+
+    public void testIssue227066_04() throws Exception {
+        performTest("issue227066_04");
+    }
+
+    public void testIssue227066_05() throws Exception {
+        performTest("issue227066_05");
+    }
+
+    public void testIssue227066_06() throws Exception {
+        performTest("issue227066_06");
+    }
+
+    public void testIssue227066_07() throws Exception {
+        performTest("issue227066_07");
+    }
+
+    public void testIssue227066_08() throws Exception {
+        performTest("issue227066_08");
+    }
+
+    public void testIssue227066_09() throws Exception {
+        performTest("issue227066_09");
+    }
+
+    public void testIssue227066_10() throws Exception {
+        performTest("issue227066_10");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/twig/" + filename + ".twig"));

@@ -56,6 +56,7 @@ public interface ClassScope extends TypeScope, VariableScope, ClassElement, Trai
      * @return inherited fields only
      */
     Collection<? extends FieldElement> getInheritedFields();
+    Collection<? extends FieldElement> getFields();
 
     String getDefaultConstructorIndexSignature();
     //TODO: add getAllInheritedSuperClasses()

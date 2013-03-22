@@ -43,115 +43,125 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
+<!--
+    Generated file; DO NOT EDIT.
+-->
 <project name="NetBeansCordovaBuild" basedir="..">
-    <property file="nbproject/build.properties" />
     <property file="nbproject/configs/${config}.properties" />
     <property name="android.exec.android" value="${android.sdk.home}/tools/android" />
     <property name="ios.exec.simulator" value="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app/Contents/MacOS/iPhone Simulator"/>
     <property name="cordova.ios.template" value="${cordova.home}/lib/ios/bin/templates/project" />
-    
+    <property name="cordova.platforms" value="platforms"/>
+    <property name="cordova.build" value="build"/>
+
+    <scriptdef name="checkVersion" language="javascript">
+        <attribute name="first" />
+        <attribute name="property" />
+     <![CDATA[
+       var first = attributes.get("first");
+       if (first >= "2.4.0") {
+         project.setProperty(attributes.get("property"), true);
+       }
+     ]]>
+    </scriptdef>
+
+        <taskdef 
+            classname="org.netbeans.modules.cordova.updatetask.ReadConfigTask" 
+            classpath="${update.task.jar}"
+            name="readconfig"/>
+        
     <target name="check-phonegap-version">
-        <condition property="phonegap.ver.2">
-            <matches pattern="^[2-9]." string="${cordova.version}"/>
-        </condition>
-        <fail message="PhoneGap version 2.0 or greater required." unless="phonegap.ver.2"/>
+        <checkVersion first="${cordova.version}" property="phonegap.ver.2"/>
+        <fail message="PhoneGap version 2.4 or greater required." unless="phonegap.ver.2"/>
+        <readconfig/>
     </target>
     
     <target name="check-android-template">
-        <available file="${android.generated.dir}" property="android.generated.exists"/>
+        <available file="${cordova.platforms}/android" property="android.generated.exists"/>
     </target>
 
     <target name="check-ios-template">
-        <available file="${ios.generated.dir}" property="ios.generated.exists"/>
+        <available file="${cordova.platforms}/ios" property="ios.generated.exists"/>
     </target>
     
     <target name="create-android" depends="check-android-template,check-phonegap-version" unless="android.generated.exists">
-        <mkdir dir="${android.generated.dir}"/>
+        <mkdir dir="${cordova.platforms}"/>
         
-        <exec dir="${android.generated.dir}" executable="/bin/sh" osfamily="unix" resolveexecutable="true" failonerror="true">
+        <exec dir="${cordova.platforms}" executable="/bin/sh" osfamily="unix" resolveexecutable="true" failonerror="true">
             <env key="PATH" path="/usr/bin:/bin:${android.sdk.home}/tools"/>
             <arg value="${cordova.home}/lib/android/bin/create"/>
-            <arg value="${project.name}" />
+            <arg value="android"/>
             <arg value="${android.project.package}"/>
             <arg value="${android.project.activity}"/>
         </exec>
 
-        <exec dir="${android.generated.dir}" executable="cmd" osfamily="windows" resolveexecutable="true" failonerror="true" >
+        <exec dir="${cordova.platforms}" executable="cmd" osfamily="windows" resolveexecutable="true" failonerror="true" >
             <env key="PATH" path="%PATH%;c:\Windows\System32;${android.sdk.home}\tools;${ant.home}\bin;${jdk.home}\bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="/C"/>
             <arg value="${cordova.home}/lib/android/bin/create.bat"/>
-            <arg value="${project.name}" />
+            <arg value="android" />
             <arg value="${android.project.package}"/>
             <arg value="${android.project.activity}"/>
         </exec>
         
-        <!-- allow all hosts -->
-        <replace file="${android.generated.dir}/${project.name}/res/xml/config.xml">
-            <replacefilter>
-                <replacetoken>http://127.0.0.1</replacetoken>
-                <replacevalue>.</replacevalue>
-            </replacefilter>
-        </replace>
+        <!-- copy resources -->
+        <copydir src="${cordova.platforms}/android/assets/www/res" dest="${site.root}/res"/>
         
         <!-- delete www -->
-        <delete dir="${android.generated.dir}/${project.name}/assets/www" />
+        <delete dir="${cordova.platforms}/android/assets/www" />
 
-        <mkdir dir="${android.generated.dir}/${project.name}/assets/www" />
+        <mkdir dir="${cordova.platforms}/android/assets/www" />
         
 
     </target>
 
     <target name="create-ios" depends="check-ios-template,check-phonegap-version" unless="ios.generated.exists">
-        <mkdir dir="${ios.generated.dir}"/>
+        <mkdir dir="${cordova.platforms}/ios"/>
         
         <exec executable="${cordova.home}/lib/ios/bin/create">
-            <arg value="${ios.generated.dir}" />
+            <arg value="${cordova.platforms}/ios" />
             <arg value="${android.project.package}"/>
             <arg value="${android.project.activity}"/>
         </exec>
-                
-        <!-- allow all hosts -->
-        <replace file="${ios.generated.dir}/${project.name}/Cordova.plist">
-            <replacefilter>
-                <replacetoken><![CDATA[<array/>]]></replacetoken>
-                <replacevalue><![CDATA[<array><string>*</string></array>]]></replacevalue>
-            </replacefilter>
-        </replace>
-        <!-- delete www -->
-        <delete dir="${ios.generated.dir}/www" />
 
-        <mkdir dir="${ios.generated.dir}/www" />
+        <!-- copy resources -->
+        <copydir src="${cordova.platforms}/ios/www/res" dest="${site.root}/res"/>
+
+        <!-- delete www -->
+        <delete dir="${cordova.platforms}/ios/www" />
+
+        <mkdir dir="${cordova.platforms}/ios/www" />
        
     </target>
-    <target name="setup-ios" depends="create-ios">
+    <target name="setup-ios" depends="create-ios,update-ios">
      <!-- copy generated template into build -->
-        <copy todir="${ios.build.projects.dir}">
-            <fileset dir="${ios.generated.dir}"/>
+        <copy todir="${cordova.build}/ios">
+            <fileset dir="${cordova.platforms}/ios"/>
         </copy>
         
      <!-- delete old www -->
-        <delete dir="${ios.build.projects.dir}/www" />
+        <delete dir="${cordova.build}/ios/www" />
      <!-- copy all html -->
-        <copy todir="${ios.build.projects.dir}/www">
-            <fileset dir="${site.root}" excludes="generated/,build/,nbproject/,js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" />
+        <copy todir="${cordova.build}/ios/www">
+            <fileset dir="${site.root}" excludes="res/,js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" />
         </copy>
         
-        <copy todir="${ios.build.projects.dir}/www/js/libs/Cordova-${cordova.version}" 
-              file="${cordova.ios.template}/www/cordova-${cordova.version}.js" />
+        <copy tofile="${cordova.build}/ios/www/js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" 
+              file="${cordova.home}/lib/ios/CordovaLib/cordova.ios.js"/>
 
     </target>
     <target name="build-ios" depends="setup-ios">
         <property name="path" location="./build/ios/build"/>
-        <exec executable="xcodebuild" dir="${ios.build.projects.dir}">
+        <exec executable="xcodebuild" dir="${cordova.build}/ios">
             <arg value="-project"/>
-            <arg value="${project.name}.xcodeproj"/>
+            <arg value="${xcode.project.name}.xcodeproj"/>
             <arg value="-arch"/>   
             <arg value="${ios.build.arch}" />
             <arg value="-target"/>
-            <arg value="${project.name}"/>
+            <arg value="${xcode.project.name}"/>
             <arg value="-configuration"/> 
-            <arg value="${ios.build.configuration}"/>
+            <arg value="Release"/>
             <arg value="-sdk"/>   
             <arg value="${ios.build.sdk}" />
             <arg value="build"/>
@@ -160,44 +170,111 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="sim-ios" depends="build-ios">
-        <!-- <exec executable="${ios.exec.simulator}" dir="${ios.build.projects.dir}/${project.name}" spawn="true">
-            <arg value="-SimulateApplication"/>
-            <arg value="build/${ios.build.configuration}-iphonesimulator/${project.name}.app/${project.name}"/>
-        </exec> -->
-        <exec executable="${ios.sim.exec}" dir="${ios.build.projects.dir}">
+        <exec executable="${ios.sim.exec}" dir="${cordova.build}/ios">
             <arg line="launch build/${project.name}.app ${ios.device.args}"/>
         </exec> 
-        
     </target>
     
     <target name="open-url-ios">
-        <exec executable="${ios.sim.exec}" dir="${ios.build.projects.dir}">
+        <exec executable="${ios.sim.exec}" dir="${cordova.build}/ios">
             <arg line="launch /Applications/MobileSafari.app --args -u ${url}"/>
         </exec> 
-        
     </target>    
 
+    <target name="update-android">
+        <exec executable="${android.exec.android}" osfamily="unix" resolveexecutable="true" failonerror="true">
+            <arg value="update"/>
+            <arg value="project"/>
+            <arg value="--path"/>
+            <arg value="${cordova.platforms}/android"/>
+            <arg value="--name"/>
+            <arg value="${project.name}"/>
+        </exec>
 
-    <target name="setup-android" depends="create-android">
+        <exec executable="${android.exec.android}.bat" osfamily="windows" resolveexecutable="true" failonerror="true">
+            <arg value="update"/>
+            <arg value="project"/>
+            <arg value="--path"/>
+            <arg value="${cordova.platforms}/android"/>
+            <arg value="--name"/>
+            <arg value="${project.name}"/>
+        </exec>
+        
+        <move tofile="${cordova.platforms}/android/src/${android.project.package.folder}/${android.project.activity}.java">
+        <fileset dir="${cordova.platforms}/android/src">
+            <include name="**/*.java"/>
+        </fileset>
+        </move>
+
+        <replaceregexp 
+            file="${cordova.platforms}/android/src/${android.project.package.folder}/${android.project.activity}.java"
+            match="package (.*);"
+            replace="package ${android.project.package};"
+            byline="true"/>
+        
+        <replaceregexp 
+            file="${cordova.platforms}/android/src/${android.project.package.folder}/${android.project.activity}.java"
+            match="class (.*) extends"
+            replace="class ${android.project.activity} extends"
+            byline="true"/>
+        
+        <replaceregexp file="${cordova.platforms}/android/res/values/strings.xml"
+                             match="\&lt;string name=\&quot;app_name\&quot;\&gt;(.*)\&lt;/string\&gt;"
+                           replace="\&lt;string name=\&quot;app_name\&quot;\&gt;${project.name}\&lt;/string\&gt;"
+                           byline="true"/>
+        <taskdef 
+            classname="org.netbeans.modules.cordova.updatetask.AndroidUpdateTask" 
+            classpath="${update.task.jar}"
+            name="updateandroidproject"/>
+        
+        <updateandroidproject/>
+    </target>    
+        
+                           
+    <target name="update-ios">
+
+        <!-- update product name -->
+        <replaceregexp 
+            match="PRODUCT_NAME = (.*);"
+            replace="PRODUCT_NAME = ${project.name};"
+            byline="true">
+            <fileset dir="${cordova.platforms}/ios">
+                <include name="**/project.pbxproj"/>
+            </fileset>
+        </replaceregexp>
+
+        <!-- update -Info.plist -->
+        <taskdef 
+            classname="org.netbeans.modules.cordova.updatetask.IOSUpdateTask" 
+            classpath="${update.task.jar}"
+            name="updateiosproject"/>
+        
+        <updateiosproject/>
+        
+                           
+    </target>    
+    
+    
+    <target name="setup-android" depends="create-android,update-android ">
      <!-- copy generated template into build -->
-        <copy todir="${android.build.projects.dir}">
-            <fileset dir="${android.generated.dir}"/>
+        <copy todir="${cordova.build}/android">
+            <fileset dir="${cordova.platforms}/android"/>
         </copy>
 
         <!-- copy all html -->
-        <copy todir="${android.build.projects.dir}/${project.name}/assets/www">
-            <fileset dir="${site.root}" excludes="generated/,build/,nbproject/,js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" />
+        <copy todir="${cordova.build}/android/assets/www">
+            <fileset dir="${site.root}" excludes="res/,js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" />
         </copy>
-        <copy todir="${android.build.projects.dir}/${project.name}/assets/www/js/libs/Cordova-${cordova.version}" 
+        <copy todir="${cordova.build}/android/assets/www/js/libs/Cordova-${cordova.version}" 
               file="${cordova.home}/lib/android/cordova-${cordova.version}.js" />
         
     </target>
     
     <target name="build-android" depends="setup-android">
-        <ant dir="${android.build.projects.dir}/${project.name}" target="debug"/>
+        <ant dir="${cordova.build}/android" target="debug"/>
     </target>    
     <target name="sim-android" depends="build-android">
-        <ant dir="${android.build.projects.dir}/${project.name}" target="installd">
+        <ant dir="${cordova.build}/android" target="installd">
             <property name="adb.device.arg" value="${android.target.device.arg}"/>
         </ant>
         <exec executable="${android.sdk.home}/platform-tools/adb">
@@ -211,7 +288,7 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="open-url-android" depends="build-android">
-        <ant dir="${android.build.projects.dir}/${project.name}" target="installd">
+        <ant dir="${cordova.build}/android" target="installd">
             <property name="adb.device.arg" value="${android.target.device.arg}"/>
         </ant>
         <exec executable="${android.sdk.home}/platform-tools/adb">
@@ -229,10 +306,10 @@ made subject to such option by the copyright holder.
     
     
     <target name="clean-android">
-        <delete dir="${android.build.projects.dir}" />
+        <delete dir="${cordova.build}/android" />
     </target>
     
     <target name="clean-ios">
-        <delete dir="${ios.build.projects.dir}" />
+        <delete dir="${cordova.build}/ios" />
     </target>
 </project>

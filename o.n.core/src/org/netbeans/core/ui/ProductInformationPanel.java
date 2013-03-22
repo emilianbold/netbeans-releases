@@ -62,6 +62,7 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -121,6 +122,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         imageLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath(), "", FONT_SIZE, getJavaRuntime()));
         description.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        description.putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         RequestProcessor.getDefault().post(new Runnable() {
 
             @Override
@@ -141,6 +143,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         description.addHyperlinkListener(this);
         copyright.addHyperlinkListener(this);
         copyright.setBackground(getBackground());
+        copyright.putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 
         about = new ImageIcon(org.netbeans.core.startup.Splash.loadContent(true));
         imageLabel.setIcon(about);

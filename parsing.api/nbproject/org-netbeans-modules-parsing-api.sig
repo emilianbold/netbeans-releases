@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.55.1
+#Version 1.62.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -190,7 +190,7 @@ meth public void refreshIndexAndWait(java.net.URL,java.util.Collection<? extends
 meth public void refreshIndexAndWait(java.net.URL,java.util.Collection<? extends java.net.URL>,boolean)
 meth public void refreshIndexAndWait(java.net.URL,java.util.Collection<? extends java.net.URL>,boolean,boolean)
 supr java.lang.Object
-hfds inRefreshIndexAndWait,instance
+hfds LOG,inRefreshIndexAndWait,instance
 hcls MyAccessor
 
 CLSS public org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent
@@ -203,10 +203,19 @@ hfds caretOffset,markOffset
 
 CLSS public abstract org.netbeans.modules.parsing.spi.EmbeddingProvider
 cons public init()
+innr public abstract interface static !annotation Registration
 meth public abstract int getPriority()
 meth public abstract java.util.List<org.netbeans.modules.parsing.api.Embedding> getEmbeddings(org.netbeans.modules.parsing.api.Snapshot)
 meth public final java.lang.Class<? extends org.netbeans.modules.parsing.spi.Scheduler> getSchedulerClass()
 supr org.netbeans.modules.parsing.spi.SchedulerTask
+
+CLSS public abstract interface static !annotation org.netbeans.modules.parsing.spi.EmbeddingProvider$Registration
+ outer org.netbeans.modules.parsing.spi.EmbeddingProvider
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.String mimeType()
+meth public abstract java.lang.String targetMimeType()
 
 CLSS public abstract org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask<%0 extends org.netbeans.modules.parsing.spi.Parser$Result>
 cons protected init(org.netbeans.modules.parsing.spi.TaskIndexingMode)
@@ -370,7 +379,7 @@ meth public org.openide.filesystems.FileObject getIndexFolder()
 meth public org.openide.filesystems.FileObject getRoot()
 meth public void addSupplementaryFiles(java.net.URL,java.util.Collection<? extends java.net.URL>)
 supr java.lang.Object
-hfds allFilesJob,cancelRequest,checkForEditorModifications,factory,followUpJob,indexBaseFolder,indexFolder,indexerName,indexerVersion,indexingSupport,logContext,props,root,rootURL,sourceForBinaryRoot,suspendedStatus
+hfds allFilesJob,cancelRequest,checkForEditorModifications,factory,followUpJob,indexBaseFolder,indexBaseFolderFactory,indexFolder,indexerName,indexerVersion,indexingSupport,logContext,props,root,rootURL,sourceForBinaryRoot,suspendedStatus
 
 CLSS public abstract org.netbeans.modules.parsing.spi.indexing.CustomIndexer
 cons public init()
@@ -485,6 +494,8 @@ meth public boolean isValid()
 meth public org.netbeans.modules.parsing.spi.indexing.support.IndexDocument createDocument(org.netbeans.modules.parsing.spi.indexing.Indexable)
 meth public org.netbeans.modules.parsing.spi.indexing.support.IndexDocument createDocument(org.openide.filesystems.FileObject)
 meth public static org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport getInstance(org.netbeans.modules.parsing.spi.indexing.Context) throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void addDocument(org.netbeans.modules.parsing.spi.indexing.support.IndexDocument)
 meth public void markDirtyDocuments(org.netbeans.modules.parsing.spi.indexing.Indexable)
 meth public void removeDocuments(org.netbeans.modules.parsing.spi.indexing.Indexable)

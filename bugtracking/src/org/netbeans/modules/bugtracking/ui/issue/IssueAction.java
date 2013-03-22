@@ -52,20 +52,13 @@ import java.util.Collection;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -115,7 +108,7 @@ public class IssueAction extends SystemAction {
                             if (refresh && !issue.refresh()) {
                                 return;
                             }
-                            IssueCacheUtils.setSeen(issue, true);
+                            issue.setSeen(true);
                         } finally {
                             UIUtils.setWaitCursor(false);
                             if(handle != null) handle.finish();
@@ -227,7 +220,7 @@ public class IssueAction extends SystemAction {
                                         tc.setIssue(impl);
                                     }
                                 });
-                                IssueCacheUtils.setSeen(impl, true);
+                                impl.setSeen(true);
                             }
                         } finally {
                             if(handle != null) handle.finish();

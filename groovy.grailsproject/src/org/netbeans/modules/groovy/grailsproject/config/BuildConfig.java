@@ -74,22 +74,17 @@ import org.openide.filesystems.FileUtil;
 public final class BuildConfig {
 
     public static final String BUILD_CONFIG_PLUGINS = BuildConfig.class.getName() + ".plugins";
-
     private static final Logger LOGGER = Logger.getLogger(BuildConfig.class.getName());
 
     private final GrailsProject project;
-
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
 
     private Object buildSettingsInstance;
-
     private File projectRoot;
-
     private List<GrailsPlugin> localPlugins;
-
     private File projectPluginsDir;
-
     private File globalPluginsDir;
+    
 
     public BuildConfig(GrailsProject project) {
         this.project = project;
@@ -100,7 +95,7 @@ public final class BuildConfig {
         loadGlobalPluginsDirDefault();
     }
 
-    private boolean isFilePresent() {
+    private boolean isBuildConfigPresent() {
         FileObject root = project.getProjectDirectory();
         return root.getFileObject("grails-app/conf/BuildConfig.groovy") != null; // NOI18N
     }
@@ -109,7 +104,7 @@ public final class BuildConfig {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             File cached = config.getProjectPluginsDir();
-            if (cached != null && isFilePresent()) {
+            if (cached != null && isBuildConfigPresent()) {
                 projectPluginsDir = FileUtil.normalizeFile(cached);
             } else {
                 projectPluginsDir = getProjectPluginsDirDefault11();
@@ -162,7 +157,7 @@ public final class BuildConfig {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             File cached = config.getGlobalPluginsDir();
-            if (cached != null && isFilePresent()) {
+            if (cached != null && isBuildConfigPresent()) {
                 globalPluginsDir = FileUtil.normalizeFile(cached);
             } else {
                 globalPluginsDir = getGlobalPluginsDirDefault11();
@@ -205,7 +200,7 @@ public final class BuildConfig {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             Map<String, File> cached = config.getLocalPlugins();
-            if (cached != null && isFilePresent()) {
+            if (cached != null && isBuildConfigPresent()) {
                 localPlugins = new ArrayList<GrailsPlugin>();
                 for (Map.Entry<String, File> entry : cached.entrySet()) {
                     localPlugins.add(new GrailsPlugin(entry.getKey(), null, null, entry.getValue()));
@@ -497,6 +492,7 @@ public final class BuildConfig {
 
         private boolean changed = false;
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())
                     || GrailsProjectConfig.GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY.equals(evt.getPropertyName())

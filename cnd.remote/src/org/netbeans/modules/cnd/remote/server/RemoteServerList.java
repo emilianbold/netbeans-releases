@@ -385,10 +385,10 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         if (SwingUtilities.isEventDispatchThread()) {
             RemoteUtil.LOGGER.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
         }
-        int exit_status = RemoteCommandSupport.run(env, "test", "-x", path); // NOI18N
+        int exit_status = RemoteCommandSupport.run(env, "/usr/bin/test", "-x", path); // NOI18N
         if (exit_status != 0 && !CndPathUtilitities.isPathAbsolute(path)) {
             // Validate 'path' against user's PATH.
-            exit_status = RemoteCommandSupport.run(env, "test", "-x", "`which " + path + "`"); // NOI18N
+            exit_status = RemoteCommandSupport.run(env, "/usr/bin/test", "-x", "`/usr/bin/which " + path + "`"); // NOI18N
         }
         return exit_status == 0;
     }

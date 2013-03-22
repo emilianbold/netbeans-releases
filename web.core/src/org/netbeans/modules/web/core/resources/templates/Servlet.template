@@ -1,7 +1,7 @@
 <#assign licenseFirst = "/*">
 <#assign licensePrefix = " * ">
 <#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+<#include "${project.licensePath}">
 
 <#if package?? && package != "">
 package ${package};
@@ -42,7 +42,7 @@ public class ${name} extends HttpServlet {
         PrintWriter out = response.getWriter();
         try {
             /* TODO output your page here. You may use following sample code. */
-            out.println("${doctype}");
+            out.println("${doctype?j_string}");
             out.println("<html>");
             out.println("<head>");
             out.println("<title>Servlet ${name}</title>");  

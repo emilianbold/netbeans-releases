@@ -161,7 +161,7 @@ public class PagedMediaModule extends ExtCssEditorModule implements CssModule {
                 break;
         }
 
-        return Css3Utils.filterCompletionProposals(proposals, prefix, true);
+        return Utilities.filterCompletionProposals(proposals, prefix, true);
     }
 
     private static List<CompletionProposal> getPageMarginSymbolsCompletionProposals(CompletionContext context, boolean addAtPrefix) {

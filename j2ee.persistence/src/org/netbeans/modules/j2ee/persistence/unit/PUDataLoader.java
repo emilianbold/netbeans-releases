@@ -45,7 +45,6 @@
 package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.io.IOException;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
@@ -81,11 +80,4 @@ public class PUDataLoader extends UniFileLoader {
     protected String actionsContext() {
         return "Loaders/" + REQUIRED_MIME + "/Actions";
     }
-    
-    protected FileObject findPrimaryFile(FileObject fo) {
-        FileObject superFo = super.findPrimaryFile(fo);
-        return (superFo != null && FileOwnerQuery.getOwner(superFo) != null)
-                ? superFo : null;
-    }
-    
 }

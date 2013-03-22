@@ -254,6 +254,12 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         break;
 
                     case property:
+                        //do not overlap with sass interpolation expression sem.coloring
+                        //xxx this needs to be solved somehow grafefully!
+                        if(NodeUtil.getChildByType(node, NodeType.token) == null || node.children().size() > 1) {
+                            break; //not "normal" property which can only have one GEN or IDENT child token node
+                        }
+                        
                         dso = snapshot.getOriginalOffset(node.from());
                         deo = snapshot.getOriginalOffset(node.to());
                         if (dso >= 0 && deo >= 0) { //filter virtual nodes
@@ -477,24 +483,61 @@ public class DefaultCssEditorModule extends CssEditorModule {
     }
 
     @Override
-    public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
+    public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(final FeatureContext context, final T result) {
 
+        final List<StructureItem> imports = new ArrayList<StructureItem>();
         final List<StructureItem> rules = new ArrayList<StructureItem>();
         final List<StructureItem> atrules = new ArrayList<StructureItem>();
         final Set<StructureItem> classes = new HashSet<StructureItem>();
         final Set<StructureItem> ids = new HashSet<StructureItem>();
         final Set<StructureItem> elements = new HashSet<StructureItem>();
 
-        result.add(new TopLevelStructureItem.Rules(rules, context));
-        result.add(new TopLevelStructureItem.AtRules(atrules));
-        result.add(new TopLevelStructureItem.Classes(classes));
-        result.add(new TopLevelStructureItem.Ids(ids));
-        result.add(new TopLevelStructureItem.Elements(elements));
-
         final Snapshot snapshot = context.getSnapshot();
         final FileObject file = context.getFileObject();
         
         return new NodeVisitor<T>() {
+            
+            private void addElement(StructureItem si) {
+                if(elements.isEmpty()) {
+                    result.add(new TopLevelStructureItem.Elements(elements));
+                }
+                elements.add(si);
+            }
+           
+            private void addRule(StructureItem si) {
+                if(rules.isEmpty()) {
+                    result.add(new TopLevelStructureItem.Rules(rules, context));
+                }
+                rules.add(si);
+            }
+           
+            private void addAtRule(StructureItem si) {
+                if(atrules.isEmpty()) {
+                    result.add(new TopLevelStructureItem.AtRules(atrules));
+                }
+                atrules.add(si);
+            }
+            
+            private void addId(StructureItem si) {
+                if(ids.isEmpty()) {
+                    result.add(new TopLevelStructureItem.Ids(ids));
+                }
+                ids.add(si);
+            }
+            
+            private void addClass(StructureItem si) {
+                if(classes.isEmpty()) {
+                    result.add(new TopLevelStructureItem.Classes(classes));
+                }
+                classes.add(si);
+            }
+            
+            private void addImport(StructureItem si) {
+                if(imports.isEmpty()) {
+                    result.add(new TopLevelStructureItem.Imports(imports));
+                }
+                imports.add(si);
+            }
 
             @Override
             public boolean visit(Node node) {
@@ -509,41 +552,42 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         if (eo > so) {
                             //todo: filter out virtual selectors
                             StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(file, ruleNode), snapshot);
-                            rules.add(item);
+                            addRule(item);
                         }
                         break;
                     case elementName: //element
-                        elements.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
+                        addElement(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case cssClass:
-                        classes.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
+                        addClass(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case cssId:
-                        ids.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
+                        addId(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case charSet:
                     case imports:
                     case namespace:
-                        atrules.add(new CssRuleStructureItem(node.image(), CssNodeElement.createElement(file, node), snapshot));
+                        addAtRule(new CssRuleStructureItem(node.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case fontFace:
                         Node tokenNode = NodeUtil.getChildTokenNode(node, CssTokenId.FONT_FACE_SYM);
-                        atrules.add(new CssRuleStructureItem(tokenNode.image(), CssNodeElement.createElement(file, node), snapshot));
+                        addAtRule(new CssRuleStructureItem(tokenNode.image(), CssNodeElement.createElement(file, node), snapshot));
                         break;
                     case mediaQueryList:
                         Node mediaNode = node.parent();
-                        assert mediaNode.type() == NodeType.media;
                         StringBuilder image = new StringBuilder();
-                        image.append("@media "); //NOI18N
-                        image.append(node.image());
-                        atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(file, mediaNode), snapshot));
+                        if(mediaNode.type() == NodeType.media) {
+                            image.append("@media "); //NOI18N
+                            image.append(node.image());
+                            addAtRule(new CssRuleStructureItem(image, CssNodeElement.createElement(file, mediaNode), snapshot));
+                        }
                         break;
                     case page:
                         Node pageSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.PAGE_SYM);
                         Node lbraceSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE);
                         if(pageSymbolNode != null && lbraceSymbolNode != null) {
                             CharSequence headingAreaImage = snapshot.getText().subSequence(pageSymbolNode.from(), lbraceSymbolNode.from());
-                            atrules.add(new CssRuleStructureItem(headingAreaImage, CssNodeElement.createElement(file, node), snapshot));
+                            addAtRule(new CssRuleStructureItem(headingAreaImage, CssNodeElement.createElement(file, node), snapshot));
                         }
                         break;
                     case counterStyle:
@@ -552,7 +596,13 @@ public class DefaultCssEditorModule extends CssEditorModule {
                             image = new StringBuilder();
                             image.append("@counter-style "); //NOI18N
                             image.append(identNode.image());
-                            atrules.add(new CssRuleStructureItem(image, CssNodeElement.createElement(file, node), snapshot));
+                            addAtRule(new CssRuleStructureItem(image, CssNodeElement.createElement(file, node), snapshot));
+                        }
+                        break;
+                    case importItem:
+                        Node[] resourceIdentifiers = NodeUtil.getChildrenByType(node, NodeType.resourceIdentifier);
+                        for(Node ri : resourceIdentifiers) {
+                            addImport(new CssRuleStructureItem(WebUtils.unquotedValue(ri.image()), CssNodeElement.createElement(file, ri), snapshot));
                         }
                         break;
 

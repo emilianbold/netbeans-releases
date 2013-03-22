@@ -235,7 +235,7 @@ public abstract class BrandingModel {
                 default:
                     throw new IllegalArgumentException("Invalid icon size: " + size);
             }
-            if (icon != null) {
+            if (icon != null && url != null) {
                 icon.setBrandingSource(url);
             }
         }

@@ -65,7 +65,7 @@ import org.openide.windows.WindowManager;
 
 public class ClobFieldTableCellEditor extends AbstractCellEditor
         implements TableCellEditor,
-        ActionListener {
+        ActionListener, AlwaysEnable {
     
     private class CharsetSelector extends JPanel {
         private JComboBox charsetSelect;
@@ -102,7 +102,12 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
     protected JTable table;
     protected int currentRow;
     protected int currentColumn;
+    protected int currentModelRow;
+    protected int currentModelColumn;
     protected JMenuItem saveContentMenuItem;
+    protected JMenuItem editContentMenuItem;
+    protected JMenuItem loadContentMenuItem;
+    protected JMenuItem nullContentMenuItem;
     
     @SuppressWarnings("LeakingThisInConstructor")
     public ClobFieldTableCellEditor() {
@@ -118,8 +123,8 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
         button.setFont(new Font(button.getFont().getFamily(), Font.ITALIC, 9));
         
         popup = new JPopupMenu();
-        final JMenuItem miLobSaveAction = new JMenuItem(NbBundle.getMessage(ClobFieldTableCellEditor.class, "saveLob.title"));
-        miLobSaveAction.addActionListener(new ActionListener() {
+        saveContentMenuItem = new JMenuItem(NbBundle.getMessage(ClobFieldTableCellEditor.class, "saveLob.title"));
+        saveContentMenuItem.addActionListener(new ActionListener() {
             
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -127,10 +132,9 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
                 fireEditingCanceled();
             }
         });
-        saveContentMenuItem = miLobSaveAction;
-        popup.add(miLobSaveAction);
-        final JMenuItem miLobEditAction = new JMenuItem(NbBundle.getMessage(ClobFieldTableCellEditor.class, "editClob.title"));
-        miLobEditAction.addActionListener(new ActionListener() {
+        popup.add(saveContentMenuItem);
+        editContentMenuItem = new JMenuItem(NbBundle.getMessage(ClobFieldTableCellEditor.class, "editClob.title"));
+        editContentMenuItem.addActionListener(new ActionListener() {
             
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -138,9 +142,9 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
                 editCell();
             }
         });
-        popup.add(miLobEditAction);                
-        final JMenuItem miLobLoadAction = new JMenuItem(NbBundle.getMessage(ClobFieldTableCellEditor.class, "loadLob.title"));
-        miLobLoadAction.addActionListener(new ActionListener() {
+        popup.add(editContentMenuItem);
+        loadContentMenuItem = new JMenuItem(NbBundle.getMessage(ClobFieldTableCellEditor.class, "loadLob.title"));
+        loadContentMenuItem.addActionListener(new ActionListener() {
             
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -151,9 +155,9 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
                 fireEditingStopped();
             }
         });
-        popup.add(miLobLoadAction);
-        final JMenuItem miLobNullAction = new JMenuItem(NbBundle.getMessage(ClobFieldTableCellEditor.class, "nullLob.title"));
-        miLobNullAction.addActionListener(new ActionListener() {
+        popup.add(loadContentMenuItem);
+        nullContentMenuItem = new JMenuItem(NbBundle.getMessage(ClobFieldTableCellEditor.class, "nullLob.title"));
+        nullContentMenuItem.addActionListener(new ActionListener() {
             
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -161,7 +165,7 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
                 fireEditingStopped();
             }
         });
-        popup.add(miLobNullAction);
+        popup.add(nullContentMenuItem);
         
     }
     
@@ -175,6 +179,12 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         currentValue = (java.sql.Clob) value;
+        this.currentColumn = column;
+        this.currentRow = row;
+        this.table = table;
+        this.currentModelColumn = table.convertColumnIndexToModel(column);
+        this.currentModelRow = table.convertRowIndexToModel(row);
+        boolean editable = table.getModel().isCellEditable(currentModelRow, currentModelColumn);
         if (currentValue != null) {
             saveContentMenuItem.setEnabled(true);
             try {
@@ -197,9 +207,15 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
             saveContentMenuItem.setEnabled(false);
             button.setText("<NULL>");
         }
-        this.currentColumn = column;
-        this.currentRow = row;
-        this.table = table;
+        loadContentMenuItem.setEnabled(editable);
+        nullContentMenuItem.setEnabled(editable);
+        if (editable) {
+            editContentMenuItem.setEnabled(true);
+            editContentMenuItem.setText(NbBundle.getMessage(ClobFieldTableCellEditor.class, "editClob.title"));
+        } else {
+            editContentMenuItem.setEnabled(currentValue != null);
+            editContentMenuItem.setText(NbBundle.getMessage(ClobFieldTableCellEditor.class, "editClobReadOnly.title"));
+        }
         return button;
     }
     
@@ -354,9 +370,11 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
         }
         
         JTextArea textArea = new JTextArea(20, 80);
+        // Work around: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7100524
+        textArea.setDropTarget(null);
         textArea.setText(stringVal);
         textArea.setCaretPosition(0);
-        textArea.setEditable(table.isCellEditable(currentRow, currentColumn));
+        textArea.setEditable(table.getModel().isCellEditable(currentModelRow, currentModelColumn));
         
         JScrollPane pane = new JScrollPane(textArea);
         pane.addHierarchyListener(

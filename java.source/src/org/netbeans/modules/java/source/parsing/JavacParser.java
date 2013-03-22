@@ -101,6 +101,7 @@ import javax.swing.text.JTextComponent;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.EditorRegistry;
@@ -717,35 +718,62 @@ public class JavacParser extends Parser {
             final DiagnosticListener<? super JavaFileObject> diagnosticListener,
             final ClassNamesForFileOraculum oraculum,
             final boolean detached) {
-        String sourceLevel = null;
+        SourceLevelQuery.Result sourceLevel = null;
         if (file != null) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Created new JavacTask for: {0}", FileUtil.getFileDisplayName(file));
             }
-            sourceLevel = SourceLevelQuery.getSourceLevel(file);
+            sourceLevel = SourceLevelQuery.getSourceLevel2(file);
         }
         FQN2Files dcc = null;
         if (root != null) {
             try {
-                dcc = FQN2Files.forRoot(root.getURL());
+                dcc = FQN2Files.forRoot(root.toURL());
             } catch (IOException ex) {
                 LOGGER.log(Level.FINE, null, ex);
             }
         }
-        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, dcc, parser == null ? null : new DefaultCancelService(parser), APTUtils.get(root));
+        final JavacTaskImpl javacTask = createJavacTask(
+                cpInfo,
+                diagnosticListener,
+                sourceLevel != null ? sourceLevel.getSourceLevel() : null,
+                sourceLevel != null ? sourceLevel.getProfile() : null,
+                false,
+                oraculum,
+                dcc,
+                parser == null ? null : new DefaultCancelService(parser),
+                APTUtils.get(root));
         Context context = javacTask.getContext();
         TreeLoader.preRegister(context, cpInfo, detached);
         return javacTask;
     }
 
-    public static JavacTaskImpl createJavacTask (final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel, final ClassNamesForFileOraculum cnih, final DuplicateClassChecker dcc, final CancelService cancelService, APTUtils aptUtils) {
-        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, cnih, dcc, cancelService, aptUtils);
+    public static JavacTaskImpl createJavacTask (
+            @NonNull final ClasspathInfo cpInfo,
+            @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnosticListener,
+            @NullAllowed final String sourceLevel,
+            @NullAllowed final String sourceProfile,
+            @NullAllowed final ClassNamesForFileOraculum cnih,
+            @NullAllowed final DuplicateClassChecker dcc,
+            @NullAllowed final CancelService cancelService,
+            @NullAllowed final APTUtils aptUtils) {
+        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, sourceProfile, true, cnih, dcc, cancelService, aptUtils);
     }
 
-    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, final ClassNamesForFileOraculum cnih, final DuplicateClassChecker dcc, final CancelService cancelService, final APTUtils aptUtils) {
+    private static JavacTaskImpl createJavacTask(
+            @NonNull final ClasspathInfo cpInfo,
+            @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnosticListener,
+            @NullAllowed final String sourceLevel,
+            @NullAllowed final String sourceProfile,
+            final boolean backgroundCompilation,
+            @NullAllowed final ClassNamesForFileOraculum cnih,
+            @NullAllowed final DuplicateClassChecker dcc,
+            @NullAllowed final CancelService cancelService,
+            @NullAllowed final APTUtils aptUtils) {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
         com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
+        com.sun.tools.javac.jvm.Profile validatedProfile = validateSourceProfile(sourceProfile);
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
@@ -770,6 +798,10 @@ public class JavacParser extends Parser {
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
+        if (validatedProfile != null) {
+            options.add("-profile");    //NOI18N, Limit JRE to required compact profile
+            options.add(validatedProfile.name);
+        }
         options.add("-XDdiags=-source");  // NOI18N
         options.add("-XDdiagsFormat=%L%m|%L%m|%L%m");  // NOI18N
         boolean aptEnabled = aptUtils != null && aptUtils.aptEnabledOnScan() && (backgroundCompilation || aptUtils.aptEnabledInEditor())
@@ -839,7 +871,9 @@ public class JavacParser extends Parser {
         return task;
     }
 
-    private static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(@NullAllowed String sourceLevel, ClasspathInfo cpInfo) {
+    private static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(
+            @NullAllowed String sourceLevel,
+            @NonNull final ClasspathInfo cpInfo) {
         ClassPath bootClassPath = cpInfo.getClassPath(PathKind.BOOT);
         ClassPath srcClassPath = cpInfo.getClassPath(PathKind.SOURCE);
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
@@ -887,6 +921,15 @@ public class JavacParser extends Parser {
         else {
             return sources[sources.length-1];
         }
+    }
+
+    @CheckForNull
+    private static com.sun.tools.javac.jvm.Profile validateSourceProfile(
+            @NullAllowed String profileName) {
+        if (profileName == null) {
+            return null;
+        }
+        return com.sun.tools.javac.jvm.Profile.lookup(profileName);
     }
 
     private static void logTime (FileObject source, Phase phase, long time) {

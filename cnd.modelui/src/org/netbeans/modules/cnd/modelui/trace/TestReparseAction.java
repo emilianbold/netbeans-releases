@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -138,7 +139,8 @@ public class TestReparseAction extends TestProjectActionBase {
                 printError(out, fileImpl, line, column, "Unresolved include: " + lBracket + include.getIncludeName() + rBracket); //NOI18N
             }
         }
-        fileImpl.getErrors(new FileImpl.ErrorListener() {
+        
+        TraceModel.getFileErrors(fileImpl, new TraceModel.ErrorListener() {
             @Override
             public void error(String text, int line, int column) {
                 printError(out, fileImpl, line, column, text);

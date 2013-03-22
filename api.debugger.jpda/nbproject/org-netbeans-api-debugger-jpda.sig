@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.35.1
+#Version 2.39.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -648,6 +648,29 @@ hfds conditionException,conditionResult,debugger,event,referenceType,resume,thre
 CLSS public abstract interface org.netbeans.api.debugger.jpda.event.JPDABreakpointListener
 intf java.util.EventListener
 meth public abstract void breakpointReached(org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent)
+
+CLSS public abstract org.netbeans.spi.debugger.jpda.BreakpointsClassFilter
+cons public init()
+innr public abstract interface static !annotation Registration
+innr public static ClassNames
+meth public abstract org.netbeans.spi.debugger.jpda.BreakpointsClassFilter$ClassNames filterClassNames(org.netbeans.spi.debugger.jpda.BreakpointsClassFilter$ClassNames,org.netbeans.api.debugger.jpda.JPDABreakpoint)
+supr java.lang.Object
+hcls ContextAware
+
+CLSS public static org.netbeans.spi.debugger.jpda.BreakpointsClassFilter$ClassNames
+ outer org.netbeans.spi.debugger.jpda.BreakpointsClassFilter
+cons public init(java.lang.String[],java.lang.String[])
+meth public java.lang.String[] getClassNames()
+meth public java.lang.String[] getExcludedClassNames()
+supr java.lang.Object
+hfds classNames,excludedClassNames
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.BreakpointsClassFilter$Registration
+ outer org.netbeans.spi.debugger.jpda.BreakpointsClassFilter
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String path()
 
 CLSS public abstract org.netbeans.spi.debugger.jpda.EditorContext
 cons public init()

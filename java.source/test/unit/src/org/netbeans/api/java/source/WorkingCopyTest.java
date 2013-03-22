@@ -46,6 +46,7 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.tree.*;
 import java.io.File;
+import java.util.List;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -219,5 +220,10 @@ public class WorkingCopyTest extends NbTestCase {
                         "    }\n" +
                         "}";
         assertEquals(golden, fo.asText("UTF-8"));
+    }
+    
+    //will go away one TreeMaker.AnnotatedType is public:
+    public static AnnotatedTypeTree MakeAnnotatedTypeTemp(TreeMaker make, Tree underlyingType, List<? extends AnnotationTree> annotations) {
+        return make.AnnotatedType(underlyingType, annotations);
     }
 }

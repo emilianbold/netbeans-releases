@@ -56,6 +56,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
@@ -313,8 +314,17 @@ public class ClassFileUtil {
                 encodeType(((IntersectionType) type).getBounds().get(0), sb);
                 break;
             }
+            case ANNOTATED:
+            {
+                encodeType(((AnnotatedType) type).getUnderlyingType(), sb);
+                break;
+            }
 	    default:
-		throw new IllegalArgumentException ();
+		throw new IllegalArgumentException (
+                    String.format(
+                        "Unsupported type: %s, kind: %s",   //NOI18N
+                        type,
+                        type.getKind()));
 	}                
     }        
     

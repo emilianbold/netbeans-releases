@@ -63,6 +63,7 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
+import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -70,7 +71,6 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.ide.WatchProjects;
 
 /**
@@ -152,8 +152,6 @@ public class J2EEValidation extends J2eeTestCase {
         // wait 30 second
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
-        // wait index.jsp is opened in editor
-        EditorOperator editor = new EditorOperator("index.jsp"); // NOI18N
         // wait classpath scanning finished
         WatchProjects.waitScanFinished();
 
@@ -173,8 +171,14 @@ public class J2EEValidation extends J2eeTestCase {
         // confirm properties dialog
         propertiesDialogOper.ok();
 
-        // Compile JSP
+        // Create JSP
+        NewJspFileNameStepOperator nameStep = NewJspFileNameStepOperator.invoke();
+        nameStep.setJSPFileName("index");
+        nameStep.finish();
+        // wait index.jsp is opened in editor
+        EditorOperator editor = new EditorOperator("index.jsp"); // NOI18N
 
+        // Compile JSP
         Node projectRootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
         // "Web Pages"
         String webPagesLabel = Bundle.getString(
@@ -211,7 +215,7 @@ public class J2EEValidation extends J2eeTestCase {
         // Run project
         try {
             new Action(null, "Run").perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
-            waitText(SAMPLE_WEB_PROJECT_NAME, 240000, "JSP Page");
+            waitText(SAMPLE_WEB_PROJECT_NAME + "/index.jsp", 240000, "JSP Page");
         } catch (Exception ex) {
             LOG.log(Level.INFO, "=== Run Project failed:", ex);
         } finally {

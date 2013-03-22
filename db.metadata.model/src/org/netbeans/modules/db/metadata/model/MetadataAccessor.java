@@ -46,6 +46,7 @@ import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.ForeignKey;
 import org.netbeans.modules.db.metadata.model.api.ForeignKeyColumn;
+import org.netbeans.modules.db.metadata.model.api.Function;
 import org.netbeans.modules.db.metadata.model.api.Index;
 import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
@@ -61,6 +62,7 @@ import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ForeignKeyColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ForeignKeyImplementation;
+import org.netbeans.modules.db.metadata.model.spi.FunctionImplementation;
 import org.netbeans.modules.db.metadata.model.spi.IndexColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.IndexImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
@@ -119,6 +121,8 @@ public abstract class MetadataAccessor {
     public abstract PrimaryKey createPrimaryKey(PrimaryKeyImplementation impl);
 
     public abstract Procedure createProcedure(ProcedureImplementation impl);
+
+    public abstract Function createFunction(FunctionImplementation impl);
 
     public abstract Schema createSchema(SchemaImplementation impl);
 

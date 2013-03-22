@@ -9,7 +9,7 @@ public class Test {
 package test;
 public class Test {
     private void t(int v1, int v2) {
-        assert v1 != v2;
+        assert v2 != v1;
     }
 }
 %%TestCase pos-2
@@ -23,6 +23,6 @@ public class Test {
 package test;
 public class Test {
     private void t(boolean b1, boolean b2) {
-        assert !(b1 && b2);
+        assert !b1 || !b2;
     }
 }

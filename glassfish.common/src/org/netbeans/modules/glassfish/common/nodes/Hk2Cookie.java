@@ -59,7 +59,7 @@ import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.PartialCompletionException;
-import org.netbeans.modules.glassfish.common.Util;
+import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.common.nodes.actions.*;
 import org.netbeans.modules.glassfish.common.ui.BasePanel;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;

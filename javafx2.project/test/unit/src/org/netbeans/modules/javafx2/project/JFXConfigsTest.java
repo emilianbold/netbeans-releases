@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.ide.FXProjectSupport;
@@ -299,48 +301,54 @@ public class JFXConfigsTest extends NbTestCase {
 
     public void testParamProperties() throws Exception {
         assertNotNull(CONFIGS);
+        System.out.println("DEBUG");
+        System.out.println(CONFIGS.paramsToString());
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: empty"));
         // ensure CONFIGS is in required state before transparency testing
-        CONFIGS.eraseDefaultParams();
+        CONFIGS.eraseDefaultParamsTransparent();
         CONFIGS.eraseConfig(NONDEF1);
         CONFIGS.eraseConfig(NONDEF2);
         // add parameters to default config
-        CONFIGS.addDefaultParam("par1"); // nameless = argument
-        CONFIGS.addDefaultParam("par2", "val2"); // named
-        CONFIGS.addDefaultParam("par3", "val3");
-        assertTrue(CONFIGS.hasDefaultParam("par1"));
-        assertFalse(CONFIGS.hasDefaultParamValue("par1"));
-        assertTrue(CONFIGS.hasDefaultParam("par2"));
-        assertTrue(CONFIGS.hasDefaultParamValue("par2"));
-        assertTrue(CONFIGS.hasDefaultParam("par2", "val2"));
-        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getDefaultParamsAsString(false), "par1, par2=val2, par3=val3"));
-        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getDefaultParamsAsString(true), "par1 --par2=val2 --par3=val3"));
+        CONFIGS.addDefaultParamTransparent("par1"); // nameless = argument
+        CONFIGS.addDefaultParamTransparent("par2", "val2"); // named
+        CONFIGS.addDefaultParamTransparent("par3", "val3");
+        assertTrue(CONFIGS.hasDefaultParamTransparent("par1"));
+        assertFalse(CONFIGS.hasDefaultParamValueTransparent("par1"));
+        assertTrue(CONFIGS.hasDefaultParamTransparent("par2"));
+        assertTrue(CONFIGS.hasDefaultParamValueTransparent("par2"));
+        assertTrue(CONFIGS.hasDefaultParamTransparent("par2", "val2"));
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getDefaultParamsTransparentAsString(false), "par1, par2=val2, par3=val3"));
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getDefaultParamsTransparentAsString(true), "par1 --par2=val2 --par3=val3"));
         assertTrue(JFXProjectProperties.isEqual(CONFIGS.getParamsTransparentAsString(DEFAULT, false), "par1, par2=val2, par3=val3"));
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par1 name=par2 value=val2 name=par3 value=val3"));
         // add nondef params
         CONFIGS.setActive(NONDEF1);
-        CONFIGS.addActiveParam("par4");
-        CONFIGS.addParam(NONDEF1, "par5", "val5b");
-        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getActiveParamValue("par5"), "val5b"));
-        CONFIGS.addActiveParam("par5", "val5");
+        CONFIGS.addActiveParamTransparent("par4");
+        CONFIGS.addParamTransparent(NONDEF1, "par5", "val5b");
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getActiveParamValueTransparent("par5"), "val5b"));
+        CONFIGS.addActiveParamTransparent("par5", "val5");
         assertTrue(JFXProjectProperties.isEqual(CONFIGS.getActiveParamsAsString(false), "par4, par5=val5"));
         assertTrue(JFXProjectProperties.isEqual(CONFIGS.getActiveParamsAsString(true), "par4 --par5=val5"));
         assertTrue(JFXProjectProperties.isEqual(CONFIGS.getActiveParamsTransparentAsString(false), "par1, par2=val2, par3=val3, par4, par5=val5"));
         assertTrue(JFXProjectProperties.isEqual(CONFIGS.getActiveParamsTransparentAsString(true), "par1 --par2=val2 --par3=val3 par4 --par5=val5"));
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(), "MultiProperty: {null} name=par1 name=par2 value=val2 name=par3 value=val3 {nondef_test_config_1} name=par4 name=par5 value=val5"));
         CONFIGS.addActiveParamTransparent("par1"); // should not make another instance
         assertFalse(CONFIGS.hasActiveParam("par1"));
         assertTrue(CONFIGS.hasActiveParamTransparent("par1"));
         // erase params
-        CONFIGS.eraseParam(NONDEF1, "par5");
-        CONFIGS.eraseDefaultParam("par1");
-        CONFIGS.eraseParam(DEFAULT, "par3");
-        assertFalse(CONFIGS.hasParam(DEFAULT, "par1"));
-        assertTrue(CONFIGS.hasDefaultParam("par2"));
-        assertFalse(CONFIGS.hasParam(DEFAULT, "par3"));
-        assertTrue(CONFIGS.hasParam(NONDEF1, "par4"));
-        assertFalse(CONFIGS.hasParam(NONDEF1, "par5"));
+        CONFIGS.eraseParamTransparent(NONDEF1, "par5");
+        CONFIGS.eraseDefaultParamTransparent("par1");
+        CONFIGS.eraseParamTransparent(DEFAULT, "par3");
+        assertFalse(CONFIGS.hasParamTransparent(DEFAULT, "par1"));
+        assertTrue(CONFIGS.hasDefaultParamTransparent("par2"));
+        assertFalse(CONFIGS.hasParamTransparent(DEFAULT, "par3"));
+        assertTrue(CONFIGS.hasParamTransparent(NONDEF1, "par4"));
+        assertFalse(CONFIGS.hasParamTransparent(NONDEF1, "par5"));
         assertTrue(JFXProjectProperties.isEqual(CONFIGS.getActiveParamsTransparentAsString(false), "par2=val2, par4"));
         assertTrue(JFXProjectProperties.isEqual(CONFIGS.getActiveParamsTransparentAsString(true), "--par2=val2 par4"));
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par2 value=val2 {nondef_test_config_1} name=par4"));
     }
-
+    
     public void testSavedConfigFiles() throws Exception {
         assertNotNull(jfxprops);
         // Note: SFXProjectProperties.store() stores only properties in JFXConfig.PROJECT_PROPERTIES
@@ -379,6 +387,124 @@ public class JFXConfigsTest extends NbTestCase {
         assertTrue(ep.getProperty(PROP3).equals("dummy_2_3"));
         ep = JFXProjectUtils.readFromFile(projectDir.getFileObject(NONDEF2_PRIVATE_PROPERTIES_FILE));
         assertTrue(ep.size() == 0);
+    }
+    
+    public void testEraseParamProperties() throws Exception {
+        assertNotNull(CONFIGS);
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par2 value=val2 {nondef_test_config_1} name=par4"));
+        CONFIGS.addDefaultParamTransparent("par1"); 
+        CONFIGS.addParamTransparent(NONDEF1, "par3", "val3"); 
+        CONFIGS.setActive(NONDEF2);
+        CONFIGS.addActiveParamTransparent("par5");
+        CONFIGS.addActiveParamTransparent("par6");
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par1 name=par2 value=val2 {nondef_test_config_1} name=par3 value=val3 name=par4 {nondef_test_config_2} name=par5 name=par6"));
+        CONFIGS.eraseParamTransparent(NONDEF1, "par2");
+        CONFIGS.eraseDefaultParamTransparent("par1");
+        CONFIGS.eraseActiveParamTransparent("par5");
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par2 value=val2 {nondef_test_config_1} name=par2 hidden=true name=par3 value=val3 name=par4 {nondef_test_config_2} name=par6"));
+        CONFIGS.setActive(NONDEF1);
+        CONFIGS.addActiveParamTransparent("par2");
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par2 value=val2 {nondef_test_config_1} name=par2 name=par3 value=val3 name=par4 {nondef_test_config_2} name=par6"));
+        CONFIGS.addActiveParamTransparent("par2", "val2"); // should revert to default
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par2 value=val2 {nondef_test_config_1} name=par3 value=val3 name=par4 {nondef_test_config_2} name=par6"));
+        CONFIGS.setActive(NONDEF2);
+        CONFIGS.eraseActiveParamTransparent("par2");
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par2 value=val2 {nondef_test_config_1} name=par3 value=val3 name=par4 {nondef_test_config_2} name=par2 hidden=true name=par6"));
+        CONFIGS.eraseDefaultParamTransparent("par2");
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} {nondef_test_config_1} name=par3 value=val3 name=par4 {nondef_test_config_2} name=par6"));
+        CONFIGS.addDefaultParamTransparent("par3", "val3");
+        CONFIGS.addDefaultParamTransparent("par6");
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par3 value=val3 name=par6 {nondef_test_config_1} name=par4 {nondef_test_config_2}"));
+    }
+
+    public void testEraseParamSavedConfigFiles() throws Exception {
+        EditableProperties ep = new EditableProperties(true);
+        FileObject projectDir = jfxprops.getProject().getProjectDirectory();
+        JFXProjectUtils.deleteFile(projectDir.getFileObject(PROJECT_PROPERTIES_FILE));
+        JFXProjectUtils.deleteFile(projectDir.getFileObject(NONDEF1_PROJECT_PROPERTIES_FILE));
+        JFXProjectUtils.deleteFile(projectDir.getFileObject(NONDEF2_PROJECT_PROPERTIES_FILE));
+        CONFIGS.reset();
+        ep.setProperty("javafx.param.0.name", "par1");
+        ep.setProperty("javafx.param.0.value", "val1");
+        ep.setProperty("javafx.param.1.name", "par2");
+        ep.setProperty("javafx.param.1.hidden", "true");
+        ep.setProperty("javafx.param.2.name", "par3");
+        JFXProjectUtils.saveToFile(projectDir, PROJECT_PROPERTIES_FILE, ep);
+        CONFIGS.read();
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par1 value=val1 name=par2 hidden=true name=par3"));
+        ep.clear();
+        ep.setProperty("javafx.param.2.name", "par1");
+        ep.setProperty("javafx.param.2.hidden", "true");
+        ep.setProperty("javafx.param.4.name", "par2");
+        ep.setProperty("javafx.param.4.value", "val2");
+        ep.setProperty("javafx.param.5.name", "par4");
+        JFXProjectUtils.saveToFile(projectDir, NONDEF1_PROJECT_PROPERTIES_FILE, ep);
+        CONFIGS.read();
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par1 value=val1 name=par2 hidden=true name=par3 {nondef_test_config_1} name=par1 hidden=true name=par2 value=val2 name=par4"));
+        System.out.println("DEBUG");
+        System.out.println(CONFIGS.paramsToString());
+        ep.clear();
+        ep.setProperty("javafx.param.3.name", "par1");
+        ep.setProperty("javafx.param.4.name", "par2");
+        ep.setProperty("javafx.param.4.value", "val222");
+        ep.setProperty("javafx.param.5.name", "par4");
+        ep.setProperty("javafx.param.5.hidden", "true");
+        JFXProjectUtils.saveToFile(projectDir, NONDEF2_PROJECT_PROPERTIES_FILE, ep);
+        CONFIGS.read();
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par1 value=val1 name=par2 hidden=true name=par3 {nondef_test_config_1} name=par1 hidden=true name=par2 value=val2 name=par4 {nondef_test_config_2} name=par1 name=par2 value=val222 name=par4 hidden=true"));
+        //System.out.println("DEBUG");
+        //System.out.println(CONFIGS.paramsToString());
+        assertTrue(CONFIGS.hasDefaultParamTransparent("par1"));
+        assertFalse(CONFIGS.hasDefaultParamTransparent("par2"));
+        assertTrue(CONFIGS.hasDefaultParamTransparent("par3"));
+        assertFalse(CONFIGS.hasDefaultParamTransparent("par4"));
+        assertFalse(CONFIGS.hasParamTransparent(NONDEF1, "par1"));
+        assertTrue(CONFIGS.hasParamTransparent(NONDEF1, "par2"));
+        assertTrue(CONFIGS.hasParamTransparent(NONDEF1, "par3"));
+        assertTrue(CONFIGS.hasParamTransparent(NONDEF1, "par4"));
+        assertTrue(CONFIGS.hasParamTransparent(NONDEF2, "par1"));
+        assertTrue(CONFIGS.hasParamTransparent(NONDEF2, "par2"));
+        assertTrue(CONFIGS.hasParamTransparent(NONDEF2, "par3"));
+        assertFalse(CONFIGS.hasParamTransparent(NONDEF2, "par4"));
+        CONFIGS.setActive(NONDEF1);
+        CONFIGS.eraseActiveParamTransparent("par2");
+        assertFalse(CONFIGS.hasDefaultParamTransparent("par2"));
+        assertFalse(CONFIGS.hasActiveParamTransparent("par2"));
+        CONFIGS.addDefaultParamTransparent("par2", "val222");
+        assertTrue(CONFIGS.hasParamTransparent(NONDEF2, "par2"));
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par1 value=val1 name=par2 value=val222 name=par3 {nondef_test_config_1} name=par1 hidden=true name=par4 {nondef_test_config_2} name=par1 name=par4 hidden=true"));
+        CONFIGS.eraseDefaultParamTransparent("par1");
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.paramsToString(),"MultiProperty: {null} name=par2 value=val222 name=par3 {nondef_test_config_1} name=par4 {nondef_test_config_2} name=par1 name=par4 hidden=true"));
+    }
+
+    public void testCustomManifestEntries() throws Exception {
+        assertNotNull(CONFIGS);
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.manifestEntriesToString(),"MultiProperty: empty"));
+        assertEquals(CONFIGS.getNoOfDefaultManifestEntries(), 0);
+        assertEquals(CONFIGS.getNoOfActiveManifestEntries(), 0);
+        // ensure CONFIGS is in required state before transparency testing
+        CONFIGS.eraseDefaultManifestEntriesTransparent();
+        CONFIGS.eraseConfig(NONDEF1);
+        CONFIGS.eraseConfig(NONDEF2);
+        // add parameters to default config
+        CONFIGS.addDefaultManifestEntryTransparent("entry1"); // nameless = argument
+        CONFIGS.addDefaultManifestEntryTransparent("entry2", "val2"); // named
+        CONFIGS.addDefaultManifestEntryTransparent("entry3", "val3");
+        assertTrue(CONFIGS.hasDefaultManifestEntryTransparent("entry1"));
+        assertFalse(CONFIGS.hasDefaultManifestEntryValueTransparent("entry1"));
+        assertTrue(CONFIGS.hasDefaultManifestEntryTransparent("entry2"));
+        assertTrue(CONFIGS.hasDefaultManifestEntryValueTransparent("entry2"));
+        assertTrue(CONFIGS.hasDefaultManifestEntryTransparent("entry2", "val2"));
+        assertEquals(CONFIGS.getNoOfDefaultManifestEntries(), 3);
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getDefaultManifestEntriesTransparentAsString(), "entry1, entry2: val2, entry3: val3"));
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getManifestEntriesTransparentAsString(DEFAULT), "entry1, entry2: val2, entry3: val3"));
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.manifestEntriesToString(),"MultiProperty: {null} name=entry1 name=entry2 value=val2 name=entry3 value=val3"));
+        CONFIGS.eraseDefaultManifestEntryTransparent("dummy");
+        assertEquals(CONFIGS.getNoOfDefaultManifestEntries(), 3);
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getDefaultManifestEntriesTransparentAsString(), "entry1, entry2: val2, entry3: val3"));
+        CONFIGS.eraseDefaultManifestEntryTransparent("entry2");
+        assertEquals(CONFIGS.getNoOfDefaultManifestEntries(), 2);
+        assertTrue(JFXProjectProperties.isEqual(CONFIGS.getDefaultManifestEntriesTransparentAsString(), "entry1, entry3: val3"));
     }
     
 }

@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  * Hint catching comparsion of Strings with <code>==</code> or <code>!=</code>
  * @author phrebejk
  */
-@Hint(id="Wrong_String_Comparison", displayName="#LBL_WrongStringComparison", description="#DSC_WrongStringComparison", category="general", customizerProvider=WrongStringComparisonCustomizerProvider.class)
+@Hint(id="Wrong_String_Comparison", displayName="#LBL_WrongStringComparison", description="#DSC_WrongStringComparison", category="general", customizerProvider=WrongStringComparisonCustomizerProvider.class, suppressWarnings="StringEquality")
 public class WrongStringComparison {
 
             static final String TERNARY_NULL_CHECK = "ternary-null-check"; // NOI18N

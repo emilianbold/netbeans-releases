@@ -44,12 +44,18 @@ package org.netbeans.test.html5.debug;
 import java.util.Map;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperator;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.modules.debugger.actions.DeleteAllBreakpointsAction;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.test.html5.GeneralHTMLProject;
 
 /**
@@ -59,7 +65,7 @@ import org.netbeans.test.html5.GeneralHTMLProject;
 public class JavaScriptDebugger extends GeneralHTMLProject {
 
     public static final int VARIABLES_TIMEOUTS = 5000;
-    
+
     public JavaScriptDebugger(String arg0) {
         super(arg0);
     }
@@ -95,6 +101,34 @@ public class JavaScriptDebugger extends GeneralHTMLProject {
             }
         }).waitAction(eo);
         return line;
+    }
+
+    /**
+     * Creates a new XMLHTTPRequest breakpoint (note: not supported by embedded
+     * browser)
+     *
+     * @param urlFilter URL filter for which this breakpoint should be triggered
+     * (pass empty string to break on all URLs)
+     */
+    public void setXHRBreakpoint(String urlFilter) {
+        new Action("Window|Debugging|Breakpoints", null).perform();
+        BreakpointsWindowOperator window = BreakpointsWindowOperator.invoke();
+        new ActionNoBlock(null, "New Breakpoint").performPopup(window);
+        JDialogOperator nb = new JDialogOperator("New Breakpoint");
+        JComboBoxOperator box = new JComboBoxOperator(nb, 0);
+        box.selectItem("JavaScript");
+        box = new JComboBoxOperator(nb, 1);
+        box.selectItem("XMLHttpRequest");
+        JTextFieldOperator filter = new JTextFieldOperator(nb, 0);
+        filter.setText(urlFilter);
+        JButtonOperator bOk = new JButtonOperator(nb, "OK");
+        bOk.push();
+    }
+
+    public void disableAllBreakpoints() {
+        new Action("Window|Debugging|Breakpoints", null).perform();
+        BreakpointsWindowOperator window = BreakpointsWindowOperator.invoke();
+        new ActionNoBlock(null, "Disable All").performPopup(window);
     }
 
     public void cleanBreakpoints() {
@@ -134,11 +168,12 @@ public class JavaScriptDebugger extends GeneralHTMLProject {
 
     /**
      * Waits for given action to be enabled in Debug main menu
+     *
      * @param actionName action name to wait for
      */
     public void waitDebugger(String actionName) {
         for (int i = 0; i < 10; i++) {
-            boolean enabled = MainWindowOperator.getDefault().menuBar().showMenuItem("Debug|"+actionName).isEnabled();
+            boolean enabled = MainWindowOperator.getDefault().menuBar().showMenuItem("Debug|" + actionName).isEnabled();
             MainWindowOperator.getDefault().menuBar().closeSubmenus();
             if (!enabled) {
                 break;
@@ -146,13 +181,15 @@ public class JavaScriptDebugger extends GeneralHTMLProject {
             new EventTool().waitNoEvent(300);
         }
     }
-    
+
     /**
-     * Saves given file and then waits (waitNoEvent) for given time (for instance for file to be reloaded in browser)
+     * Saves given file and then waits (waitNoEvent) for given time (for
+     * instance for file to be reloaded in browser)
+     *
      * @param eo file to be saved
      * @param waitLimit time to wait in ms
      */
-    public void saveAndWait(EditorOperator eo, long waitLimit){
+    public void saveAndWait(EditorOperator eo, long waitLimit) {
         eo.save();
         evt.waitNoEvent(waitLimit);
     }

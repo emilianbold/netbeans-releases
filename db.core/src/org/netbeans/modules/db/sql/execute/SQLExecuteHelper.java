@@ -168,16 +168,40 @@ public final class SQLExecuteHelper {
                 return allStatements;
             }
             // Just the statement at offset startOffset.
-            for (StatementInfo stmt : allStatements) {
-                if (stmt.getRawStartOffset() <= startOffset && stmt.getRawEndOffset() >= endOffset) {
-                    return Collections.singletonList(stmt);
-                }
-            }
-            return Collections.emptyList();
+            StatementInfo foundStatement = findStatementAtOffset(
+                    allStatements, startOffset, script);
+            return foundStatement == null
+                    ? Collections.<StatementInfo>emptyList()
+                    : Collections.singletonList(foundStatement);
         } else {
             // Just execute the selected subscript.
             return split(script.substring(startOffset, endOffset), useHashComments);
         }
+    }
+
+    static StatementInfo findStatementAtOffset(List<StatementInfo> statements,
+            int offset, String script) {
+
+        StatementInfo prev = null;
+        for (StatementInfo stmt : statements) {
+            if (offset <= stmt.getRawEndOffset()) {
+                if (offset >= stmt.getStartOffset()) {
+                    return stmt; //directly in the script
+                } else if (offset >= stmt.getRawStartOffset()) {
+                    if (prev == null) {
+                        return stmt;
+                    } else {
+                        // check whether we are on the same line as the end of
+                        // previous statement
+                        String between = script.substring(
+                                prev.getRawEndOffset(), offset);
+                        return between.contains("\n") ? stmt : prev;    //NOI18N
+                    }
+                }
+            }
+            prev = stmt;
+        }
+        return prev;
     }
         
     public static List<StatementInfo> split(String script) {
