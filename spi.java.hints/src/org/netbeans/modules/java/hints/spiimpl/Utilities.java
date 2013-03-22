@@ -421,8 +421,6 @@ public class Utilities {
             expression = false;
         }
 
-        int syntheticOffset = 0;
-
         if (scope != null) {
             TypeMirror type = attributeTree(jti, patternTree, scope, patternTreeErrors);
 
@@ -483,12 +481,12 @@ public class Utilities {
                     }
                 }
             }
-
-            syntheticOffset = 1;
         }
 
         if (classMember) {
             List<? extends Tree> members = ((NewClassTree) patternTree).getClassBody().getMembers();
+            
+            int syntheticOffset = !members.isEmpty() && members.get(0).getKind() == Kind.METHOD && (((JCMethodDecl) members.get(0)).mods.flags & Flags.GENERATEDCONSTR) != 0 ? 1 : 0;
 
             if (members.size() > 1 + syntheticOffset) {
                 ModifiersTree mt = make.Modifiers(EnumSet.noneOf(Modifier.class));

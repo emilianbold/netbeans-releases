@@ -64,6 +64,12 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.DiffContext;
 
@@ -503,6 +509,23 @@ public class UtilitiesTest extends TestBase {
         String golden = "$mods$,@Deprecated(), [public]";
         
         assertEquals(golden.replaceAll("[ \n\r]+", " "), mods.getAnnotations().toString() + ", " + mods.getFlags().toString());
+    }
+    
+    public void testBrokenPlatform226678() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        JavaSource.create(ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, ClassPath.EMPTY), info.getFileObject()).runUserActionTask(new Task<CompilationController>() {
+            @Override public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+                info = parameter;
+            }
+        }, true);
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        String methodCode = "private int test(int i) { return i; }";
+        Tree result = Utilities.parseAndAttribute(info, methodCode, s);
+
+        assertEquals(Kind.METHOD, result.getKind());
+        assertEquals(methodCode.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " ").trim());
     }
     
     public void testToHumanReadableTime() {
