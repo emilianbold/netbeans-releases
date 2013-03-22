@@ -418,8 +418,8 @@ public enum NodeType {
     
     sass_control_expression_condition,
     
-    cp_compare_expr_atom,
-    cp_compare_expr
+    cp_full_expression_atom,
+    cp_full_expression
             
 
 
