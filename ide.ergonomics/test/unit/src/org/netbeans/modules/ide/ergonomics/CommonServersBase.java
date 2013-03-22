@@ -86,7 +86,6 @@ public abstract class CommonServersBase extends NbTestCase {
         Collections.sort(providers, comparator); // ?
         LOG.info("Iterating full");
         for (ServerWizardProvider wizard : providers.toArray(new ServerWizardProvider[0])) {
-/* HACK */ if (!wizard.getDisplayName().startsWith("GlassFish"))
            System.setProperty(propPrefix() + ++cnt, wizard.getDisplayName());
            LOG.log(Level.INFO, "full: {0}", wizard.getDisplayName());
         }
