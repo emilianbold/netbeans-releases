@@ -209,8 +209,8 @@ public final class NetworkSupport {
                 && startFinishProgress) {
             progressHandle.start();
         }
-        Pair<InputStream, Integer> result = prepareDownload(url, progressHandle);
-        doDownload(url, target, result, progressHandle, startFinishProgress);
+        Pair<InputStream, Integer> downloadSetup = prepareDownload(url, progressHandle);
+        doDownload(url, target, downloadSetup, progressHandle, startFinishProgress);
     }
 
     @NbBundle.Messages("NetworkSupport.progress.prepare=Preparing download...")
@@ -253,13 +253,13 @@ public final class NetworkSupport {
         return -1;
     }
 
-    private static void doDownload(String url, File target, Pair<InputStream, Integer> result, @NullAllowed ProgressHandle progressHandle, boolean startFinishProgress) throws IOException {
+    private static void doDownload(String url, File target, Pair<InputStream, Integer> downloadSetup, @NullAllowed ProgressHandle progressHandle, boolean startFinishProgress) throws IOException {
         if (progressHandle != null) {
             progressHandle.progress(Bundle.NetworkSupport_progress_download(url));
         }
-        InputStream is = result.getA();
+        InputStream is = downloadSetup.getA();
         try {
-            copyToFile(is, target, progressHandle, result.getB());
+            copyToFile(is, target, progressHandle, downloadSetup.getB());
         } catch (IOException ex) {
             // error => ensure file is deleted
             if (!target.delete()) {
