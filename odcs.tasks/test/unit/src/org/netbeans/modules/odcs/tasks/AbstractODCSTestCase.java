@@ -75,7 +75,6 @@ import org.openide.util.Exceptions;
  */
 public abstract class AbstractODCSTestCase extends NbTestCase  {
 
-    private static String uname = null;
     private static String passw = null;
     protected static String proxyHost = null;
     protected static String proxyPort = null;
@@ -84,24 +83,27 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
     protected static final String TEST_COMPONENT1 = "Component1";
     protected static final String TEST_COMPONENT2 = "Component2";
     protected static final String TEST_COMPONENT3 = "Component3";
+    
+    protected static final String TEST_USER1 = "odcs_testuser1@netbeans.org";
+    protected static final String TEST_USER2 = "odcs_testuser2@netbeans.org";
+    private static String username;
             
     protected TaskRepository taskRepository;
     protected CloudDevRepositoryConnector rc;
     protected TaskRepositoryManager trm;
     protected NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
     
-    private TaskRepositoryLocationFactory trlf;
-    
     static {
-        if (uname == null) {
-            uname = System.getProperty("team.user.login");
+        if (passw == null) {
+//            uname = System.getProperty("team.user.login");
             passw = System.getProperty("team.user.password");
         }
-        if (uname == null) { // if it is still null, check the file in ~
+        if (passw == null) { // if it is still null, check the file in ~
             BufferedReader br;
             try {
                 br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
-                uname = br.readLine();
+                username = br.readLine(); // skip username
+                username = TEST_USER1;
                 passw = br.readLine();
 
                 proxyHost = br.readLine();
@@ -133,7 +135,6 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
         
         trm = new TaskRepositoryManager();
         rc = ODCS.getInstance().getRepositoryConnector(); // reuse the only one RC instance
-        trlf = new TaskRepositoryLocationFactory();
         
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
 //        taskRepository = new TaskRepository(rc.getConnectorKind(), "https://q.tasktop.com/alm/s/anagramgame/tasks");
@@ -142,7 +143,7 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
 //        taskRepository.setProperty("cloud-dev-project", "qa-dev_netbeans-test");
         
         
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(uname, passw);
+        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(username, passw);
         taskRepository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
         taskRepository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
         
@@ -198,7 +199,7 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
         ta.setValue(component.getInitialOwner().getLoginName());
         
         RepositoryResponse rr = ODCSUtil.postTaskData(rc, taskRepository, data);
-        assertEquals(RepositoryResponse.ResponseKind.TASK_UPDATED, rr.getReposonseKind());
+        assertEquals(RepositoryResponse.ResponseKind.TASK_CREATED, rr.getReposonseKind());
         String taskId = rr.getTaskId();
         assertNotNull(taskId);
         data = rc.getTaskData(taskRepository, taskId, nullProgressMonitor);

@@ -100,11 +100,6 @@ public class ODCSTaskTestCase extends NbTestSuite {
     
     private TaskData taskData;
     
-    /**
-    public static final IssueField DUEDATE = new IssueField(C2CData.ATTR_DUEDATE, "CTL_Issue_DueDate_Title", "CTL_Issue_DueDate_Desc"); // NOI18N
-    public static final IssueField ESTIMATE = new IssueField(C2CData.ATTR_ESTIMATE_WITH_UNITS, "CTL_Issue_Estimate_Title", "CTL_Issue_Estimate_Desc"); //NOI18N
-    **/
-    
     public ODCSTaskTestCase() throws IllegalArgumentException, IllegalAccessException {
         addTest(new CreateTaskTestCase());
         addTest(new ChangeTypeTestCase());
@@ -136,13 +131,11 @@ public class ODCSTaskTestCase extends NbTestSuite {
     
     private String getDifferentUser(String user, List<TaskUserProfile> users) {
         for (TaskUserProfile tup : users) {
-            if(user == null || "".equals(user.trim())) {
-                return tup.getLoginName();
-            }
-            if(tup.getLoginName().toLowerCase().contains(user)) {
+            if(tup.getLoginName().toLowerCase().contains(AbstractODCSTestCase.TEST_USER2)) {
                 return tup.getLoginName();
             }
         }
+        fail("expected to find a user with login " + AbstractODCSTestCase.TEST_USER2);
         return null;
     }
 
@@ -248,7 +241,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
             try {
                 RepositoryResponse rr2 = ODCSUtil.postTaskData(rc, taskRepository, midAirTaskData2);
             } catch (Throwable t) {
-                if(t.getMessage().contains("Task is out of date with server, please synchronize before submitting")) {
+                if(t.getMessage().contains("Mid-air collision occurred. Synchronize task and re-submit changes")) {
                     catched = t;
                 }
             }
@@ -595,8 +588,8 @@ public class ODCSTaskTestCase extends NbTestSuite {
             
             assertEquals(1, count);
             assertEquals(comment, commentText);
-            assertEquals("tomas.stupka@oracle.com", author);
-            assertEquals("Tomas Stupka", authorName);
+            assertEquals("odcs_testuser1@netbeans.org", author);
+            assertEquals("Netbeans TestUser1", authorName);
             assertEquals(SimpleDateFormat.getDateInstance().format(now), SimpleDateFormat.getDateInstance().format(d));
         }  
         
