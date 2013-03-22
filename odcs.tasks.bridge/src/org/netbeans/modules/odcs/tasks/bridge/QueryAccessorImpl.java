@@ -43,6 +43,8 @@ package org.netbeans.modules.odcs.tasks.bridge;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -55,6 +57,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,6 +65,7 @@ import org.netbeans.modules.team.ui.spi.QueryResultHandle;
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.team.ui.spi.QueryAccessor.class)
 public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
+    private QueryHandle naQueryHandle;
 
     public QueryAccessorImpl () {
     }
@@ -90,10 +94,23 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
         return queries.get(0);
     }
 
+    @NbBundle.Messages({"LBL_NA=N/A"})
     @Override
     public List<QueryHandle> getQueries (ProjectHandle<ODCSProject> projectHandle) {
         if (!projectHandle.getTeamProject().hasTasks()) {
-            return null;
+            if(naQueryHandle == null) {
+                naQueryHandle = new QueryHandle() {
+                    @Override
+                    public String getDisplayName() {
+                        return Bundle.LBL_NA();
+                    }
+                    @Override
+                    public void addPropertyChangeListener(PropertyChangeListener l) { }
+                    @Override
+                    public void removePropertyChangeListener(PropertyChangeListener l) { }
+                };
+            }
+            return Collections.unmodifiableList(Arrays.asList(naQueryHandle));
         }
         Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
         assert repo != null;
@@ -121,12 +138,18 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
 
     @Override
     public Action getFindIssueAction (ProjectHandle<ODCSProject> projectHandle) {
+        if (!projectHandle.getTeamProject().hasTasks()) {
+            return null;
+        }        
         final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
         return Support.getInstance().getODCSHandler(projectHandle, this).getFindIssuesAction(repo);
     }
 
     @Override
     public Action getCreateIssueAction (ProjectHandle<ODCSProject> projectHandle) {
+        if (!projectHandle.getTeamProject().hasTasks()) {
+            return null;
+        }
         final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
         return Support.getInstance().getODCSHandler(projectHandle, this).getCreateIssueAction(repo);
     }
