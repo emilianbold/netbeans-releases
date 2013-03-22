@@ -40,42 +40,38 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cordova.project;
+package org.netbeans.modules.cordova.platforms.ios;
 
-import java.util.prefs.Preferences;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cordova.CordovaPlatform;
-import static org.netbeans.modules.cordova.PropertyNames.PROP_PHONEGAP;
-import org.netbeans.modules.cordova.platforms.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.spi.project.ActionProvider;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN_SINGLE;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
- *
+ * @author Jan Becicka
  */
-public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
+public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
 
     final private Project project;
-    final private WebBrowser browser;
-    private MobilePlatform platform;
-    private MobileConfigurationsProvider configsProvider;
+    private final WebBrowser browser;
+    private static final Logger LOGGER = Logger.getLogger(EnhancedBrowserImpl.class.getName());
 
-    ClientProjectEnhancedBrowserImpl(Project project, WebBrowser browser) {
+    EnhancedBrowserImpl(Project project, WebBrowser browser) {
         this.project = project;
         this.browser = browser;
-//        if (browser.getBrowserFamily() == BrowserFamilyId.ANDROID) {
-//            platform = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
-//        } else {
-//            assert browser.getBrowserFamily() == BrowserFamilyId.IOS;
-//            platform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
-//    }
-        // configsProvider should be created with configurations for concrete MobilePlatform
-        configsProvider = new MobileConfigurationsProvider(project);
     }
 
     @Override
@@ -85,24 +81,17 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
 
     @Override
     public RefreshOnSaveListener getRefreshOnSaveListener() {
-        return new RefreshOnSaveListenerImpl(/*???*/);
+        return new RefreshListener();
     }
 
     @Override
     public ActionProvider getActionProvider() {
-        final MobileConfigurationImpl activeConfiguration = configsProvider.getActiveConfiguration();
-        if (activeConfiguration == null) {
-            return null;
-        }
-        Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
-        preferences.put(PROP_PHONEGAP, Boolean.TRUE.toString());
-        return activeConfiguration.getDevice().getActionProvider(project);
+        return new ActionProviderImpl();
     }
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        final MobileConfigurationImpl activeConfiguration = configsProvider.getActiveConfiguration();
-        return activeConfiguration.getDevice().getProjectConfigurationCustomizer(project, activeConfiguration);
+        return null;
     }
 
     @Override
@@ -116,7 +105,49 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
 
     @Override
     public ProjectConfigurationProvider getProjectConfigurationProvider() {
-        return configsProvider;
+        return null;
+    }
+
+    private class ActionProviderImpl implements ActionProvider {
+
+        public ActionProviderImpl() {
+        }
+
+        @Override
+        public String[] getSupportedActions() {
+            return new String[]{
+                COMMAND_RUN,
+                COMMAND_RUN_SINGLE
+            };
+        }
+
+        @Override
+        public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
+            if (!Utilities.isMac()) {
+                NotifyDescriptor not = new NotifyDescriptor(
+                        Bundle.LBL_NoMac(),
+                        Bundle.ERR_Title(),
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.ERROR_MESSAGE,
+                        null,
+                        null);
+                DialogDisplayer.getDefault().notify(not);
+                return;
+            }
+            final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
+            assert build != null;
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                @Override
+                public void run() {
+                    IOSDevice.IPHONE.openUrl(build.getUrl(project, context));
+                }
+            }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
+        }
+
+        @Override
+        public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+            return true;
+        }
     }
 
 }

@@ -55,9 +55,9 @@ public class AndroidBrowser extends HtmlBrowser.Impl {
     private final Kind kind;
     
     public static enum Kind {
-        DEVICE_DEFAULT,
-        DEVICE_CHROME,
-        EMULATOR_DEFAULT
+        ANDROID_DEVICE_DEFAULT,
+        ANDROID_DEVICE_CHROME,
+        ANDROID_EMULATOR_DEFAULT
     }
     
 
@@ -86,15 +86,15 @@ public class AndroidBrowser extends HtmlBrowser.Impl {
         Browser b;
         boolean emulator;
         switch (kind) {
-            case DEVICE_CHROME:
+            case ANDROID_DEVICE_CHROME:
                 b = Browser.CHROME;
                 emulator = false;
                 break;
-            case DEVICE_DEFAULT:
+            case ANDROID_DEVICE_DEFAULT:
                 b = Browser.DEFAULT;
                 emulator = false;
                 break;
-            case EMULATOR_DEFAULT:
+            case ANDROID_EMULATOR_DEFAULT:
                 b = Browser.DEFAULT;
                 emulator = false;
                 break;

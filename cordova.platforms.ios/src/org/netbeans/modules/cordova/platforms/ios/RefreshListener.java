@@ -39,74 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cordova.platforms.ios;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
+import org.openide.filesystems.FileObject;
 
 /**
- * Cordova build action
  * @author Jan Becicka
- * 
  */
-public class IOSActionProvider implements ActionProvider {
-    private final Project p;
+public class RefreshListener implements RefreshOnSaveListener {
 
-    public IOSActionProvider(Project p) {
-        this.p = p;
+    public RefreshListener() {
     }
     
     @Override
-    public String[] getSupportedActions() {
-        return new String[]{
-                    COMMAND_BUILD,
-                    COMMAND_CLEAN,
-                    COMMAND_RUN,
-                    COMMAND_RUN_SINGLE
-                };
-    }
-
-    @NbBundle.Messages({
-        "ERR_NotMac=iOS Development is available only on Mac OS X",
-        "ERR_Title=Error",
-        "LBL_Opening=Opening url"    
-    })
-    @Override
-    public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
-        if (!Utilities.isMac()) {
-                NotifyDescriptor not = new NotifyDescriptor(
-                        Bundle.LBL_NoMac(), 
-                        Bundle.ERR_Title(), 
-                        NotifyDescriptor.DEFAULT_OPTION, 
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        null, 
-                        null);
-                DialogDisplayer.getDefault().notify(not);
-                return;
-        }
-        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
-        assert build != null;
-        if (COMMAND_BUILD.equals(command)) {
-            build.perform(BuildPerformer.BUILD_IOS, p);
-        } else if (COMMAND_CLEAN.equals(command)) {
-            build.perform(build.CLEAN_IOS, p);
-        } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
-                build.perform(build.RUN_IOS,p);
-        }
+    public void fileChanged(FileObject fo) {
     }
 
     @Override
-    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        return true;
+    public void fileDeleted(FileObject fo) {
     }
-    
+
 }

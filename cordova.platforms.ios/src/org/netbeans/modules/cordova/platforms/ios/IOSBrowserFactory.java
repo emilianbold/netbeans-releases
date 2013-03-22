@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.android;
+package org.netbeans.modules.cordova.platforms.ios;
 
 import java.awt.Image;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
@@ -55,24 +55,43 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Becicka
  */
 @NbBundle.Messages({
-    "LBL_DeviceDefault=Android Device (Default Browser)",
-    "LBL_DeviceChrome=Android Device (Chrome)",
-    "LBL_EmulatorDefault=Android Emulator (Default Browser)"
+    "LBL_DeviceDefault=iOS Device",
+    "LBL_SimulatorDefault=iOS Simulator"
 })
-public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory {
+public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory {
 
     @Override
     public BrowserFamilyId getBrowserFamilyId() {
-        return BrowserFamilyId.ANDROID;
+        return BrowserFamilyId.IOS;
     }
 
     @Override
     public Image getIconImage() {
-        return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androidbrowser.png", false);
+        return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/apple.png", false);
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
-    public static class DeviceDefault extends AndroidBrowserFactory {
+    public static class DeviceDefault extends IOSBrowserFactory {
+
+        @Override
+        public String getDisplayName() {
+            return Bundle.LBL_SimulatorDefault();
+        }
+
+        @Override
+        public HtmlBrowser.Impl createHtmlBrowserImpl() {
+            return new IOSBrowser(IOSBrowser.Kind.IOS_SIMULATOR_DEFAULT);
+        }
+
+        @Override
+        public String getId() {
+            return IOSBrowser.Kind.IOS_SIMULATOR_DEFAULT.toString(); // NOI18N
+        }
+
+    }
+
+    //@ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
+    public static class EmulatorDefault extends IOSBrowserFactory {
 
         @Override
         public String getDisplayName() {
@@ -81,53 +100,12 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
 
         @Override
         public HtmlBrowser.Impl createHtmlBrowserImpl() {
-            return new AndroidBrowser(AndroidBrowser.Kind.ANDROID_DEVICE_DEFAULT);
+            return new IOSBrowser(IOSBrowser.Kind.IOS_DEVICE_DEFAULT);
         }
 
         @Override
         public String getId() {
-            return AndroidBrowser.Kind.ANDROID_DEVICE_DEFAULT.toString(); // NOI18N
-        }
-
-    }
-
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
-    public static class DeviceChrome extends AndroidBrowserFactory {
-
-        @Override
-        public String getDisplayName() {
-            return Bundle.LBL_DeviceChrome();
-        }
-
-        @Override
-        public HtmlBrowser.Impl createHtmlBrowserImpl() {
-            return new AndroidBrowser(AndroidBrowser.Kind.ANDROID_DEVICE_CHROME);
-        }
-
-        @Override
-        public String getId() {
-            return AndroidBrowser.Kind.ANDROID_DEVICE_CHROME.toString(); // NOI18N
+            return IOSBrowser.Kind.IOS_DEVICE_DEFAULT.toString(); // NOI18N
         }
     }
-    
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/MobileBrowsers")
-    public static class EmulatorDefault extends AndroidBrowserFactory {
-
-        @Override
-        public String getDisplayName() {
-            return Bundle.LBL_EmulatorDefault();
-        }
-
-        @Override
-        public HtmlBrowser.Impl createHtmlBrowserImpl() {
-            return new AndroidBrowser(AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT);
-        }
-
-        @Override
-        public String getId() {
-            return AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT.toString(); // NOI18N
-        }
-    }
-    
-
 }

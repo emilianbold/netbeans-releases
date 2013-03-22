@@ -40,37 +40,81 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cordova.platforms.android;
+package org.netbeans.modules.cordova.project;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
-import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
+import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.util.Exceptions;
 
 /**
+ * PhoneGap pseudo browser
  * @author Jan Becicka
  */
-@ProjectServiceProvider(
-        projectType = "org-netbeans-modules-web-clientproject",
-        service=ClientProjectEnhancedBrowserProvider.class)
-public class ClientProjectEnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
-    private Project p;
+public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
 
-    public ClientProjectEnhancedBrowserProviderImpl(Project p) {
-        this.p = p;
-    }
+    final private Project project;
+    private MobileConfigurationsProvider configsProvider;
+
+    EnhancedBrowserImpl(Project project, WebBrowser browser) {
+        this.project = project;
+     
+        final File f = new File(project.getProjectDirectory().getPath() + "/nbproject/configs"); //NOI18N
+        if (!f.exists()) {
+            try {
+                MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     
+        configsProvider = new MobileConfigurationsProvider(project);
+    }
+
     @Override
-    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser) {
-        if (webBrowser == null) {
+    public void save() {
+        // this should save changes in UI for particular configuration
+    }
+
+    @Override
+    public RefreshOnSaveListener getRefreshOnSaveListener() {
+        return new RefreshListener(/*???*/);
+    }
+
+    @Override
+    public ActionProvider getActionProvider() {
+        final MobileConfigurationImpl activeConfiguration = configsProvider.getActiveConfiguration();
+        if (activeConfiguration == null) {
             return null;
         }
-        if (BrowserFamilyId.ANDROID == webBrowser.getBrowserFamily()) {
-            return new ClientProjectEnhancedBrowserImpl(p, webBrowser);
-        }
-        return null;
+        return activeConfiguration.getDevice().getActionProvider(project);
+    }
+
+    @Override
+    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
+        final MobileConfigurationImpl activeConfiguration = configsProvider.getActiveConfiguration();
+        return activeConfiguration.getDevice().getProjectConfigurationCustomizer(project, activeConfiguration);
+    }
+
+    @Override
+    public void deactivate() {
+    }
+
+    @Override
+    public boolean isHighlightSelectionEnabled() {
+        return true;
+    }
+
+    @Override
+    public ProjectConfigurationProvider getProjectConfigurationProvider() {
+        return configsProvider;
     }
 
 }

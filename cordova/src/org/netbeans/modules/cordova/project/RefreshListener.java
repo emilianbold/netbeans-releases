@@ -48,9 +48,9 @@ import org.openide.filesystems.FileObject;
 /**
  *
  */
-public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
+public class RefreshListener implements RefreshOnSaveListener {
 
-    public RefreshOnSaveListenerImpl() {
+    public RefreshListener() {
     }
     
     @Override

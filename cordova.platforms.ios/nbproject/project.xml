@@ -40,6 +40,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.browser.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.12</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.clientproject.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -69,6 +77,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.29</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

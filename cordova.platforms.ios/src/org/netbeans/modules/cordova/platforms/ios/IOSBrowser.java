@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,101 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cordova.platforms.ios;
 
-package org.netbeans.modules.cordova.platforms.android;
-
-import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
-import org.openide.filesystems.FileObject;
+import java.awt.Component;
+import java.beans.PropertyChangeListener;
+import java.net.URL;
+import org.openide.awt.HtmlBrowser;
 
 /**
+ *
  * @author Jan Becicka
  */
-public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
-
-    public RefreshOnSaveListenerImpl() {
+public class IOSBrowser extends HtmlBrowser.Impl {
+    private final Kind kind;
+    
+    public static enum Kind {
+        IOS_DEVICE_DEFAULT,
+        IOS_SIMULATOR_DEFAULT
     }
     
+
+    public IOSBrowser(Kind kind) {
+        this.kind = kind;
+    }
+    
+    private URL url;
+
     @Override
-    public void fileChanged(FileObject fo) {
+    public Component getComponent() {
+        return null;
     }
 
     @Override
-    public void fileDeleted(FileObject fo) {
+    public void reloadDocument() {
     }
 
+    @Override
+    public void stopLoading() {
+    }
+
+    @Override
+    public void setURL(URL url) {
+        this.url = url;
+        IOSDevice.IPHONE.openUrl(url.toExternalForm());
+    }
+
+    @Override
+    public URL getURL() {
+        return url;
+    }
+
+    @Override
+    public String getStatusMessage() {
+        return "Status";
+    }
+
+    @Override
+    public String getTitle() {
+        return "Title";
+    }
+
+    @Override
+    public boolean isForward() {
+        return false;
+    }
+
+    @Override
+    public void forward() {
+    }
+
+    @Override
+    public boolean isBackward() {
+        return false;
+    }
+
+    @Override
+    public void backward() {
+    }
+
+    @Override
+    public boolean isHistory() {
+        return false;
+    }
+
+    @Override
+    public void showHistory() {
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+    }
+    
 }

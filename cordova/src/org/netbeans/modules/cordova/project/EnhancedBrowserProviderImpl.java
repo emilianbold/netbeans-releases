@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cordova.project;
 
 import org.netbeans.api.project.Project;
@@ -51,23 +50,28 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 
 @ProjectServiceProvider(
         projectType = "org-netbeans-modules-web-clientproject",
-        service=ClientProjectEnhancedBrowserProvider.class)
-public class ClientProjectEnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
+        service = ClientProjectEnhancedBrowserProvider.class)
+/**
+ * PhoneGap pseudo browser
+ *
+ * @author Jan Becicka
+ */
+public class EnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
+
     private Project p;
 
-    public ClientProjectEnhancedBrowserProviderImpl(Project p) {
+    public EnhancedBrowserProviderImpl(Project p) {
         this.p = p;
     }
-    
+
     @Override
     public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser) {
         if (webBrowser == null) {
             return null;
         }
         if (BrowserFamilyId.PHONEGAP == webBrowser.getBrowserFamily()) {
-            return new ClientProjectEnhancedBrowserImpl(p, webBrowser);
+            return new EnhancedBrowserImpl(p, webBrowser);
         }
         return null;
     }
-
 }

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cordova.platforms.android;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,17 +53,12 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.Device;
-import org.netbeans.modules.cordova.platforms.PropertyProvider;
-import static org.netbeans.modules.cordova.platforms.android.AndroidBrowser.Kind.DEVICE_CHROME;
-import static org.netbeans.modules.cordova.platforms.android.AndroidBrowser.Kind.DEVICE_DEFAULT;
-import static org.netbeans.modules.cordova.platforms.android.AndroidBrowser.Kind.EMULATOR_DEFAULT;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.spi.project.ActionProvider;
-import static org.netbeans.spi.project.ActionProvider.COMMAND_BUILD;
-import static org.netbeans.spi.project.ActionProvider.COMMAND_CLEAN;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN_SINGLE;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -75,13 +71,13 @@ import org.openide.windows.WindowManager;
 /**
  * @author Jan Becicka
  */
-public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
+public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
 
     final private Project project;
     private final WebBrowser browser;
-    private static final Logger LOGGER = Logger.getLogger(ClientProjectEnhancedBrowserImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(EnhancedBrowserImpl.class.getName());
 
-    ClientProjectEnhancedBrowserImpl(Project project, WebBrowser browser) {
+    EnhancedBrowserImpl(Project project, WebBrowser browser) {
         this.project = project;
         this.browser = browser;
     }
@@ -93,7 +89,7 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
 
     @Override
     public RefreshOnSaveListener getRefreshOnSaveListener() {
-        return new RefreshOnSaveListenerImpl();
+        return new RefreshListener();
     }
 
     @Override
@@ -156,7 +152,7 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     @Override
                     public void run() {
-                        String checkDevices = checkDevices(project);
+                        String checkDevices = checkDevices();
                         while (checkDevices != null) {
                             NotifyDescriptor not = new NotifyDescriptor(
                                     checkDevices,
@@ -169,15 +165,15 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
                             if (NotifyDescriptor.CANCEL_OPTION == value) {
                                 return;
                             } else {
-                                checkDevices = checkDevices(project);
+                                checkDevices = checkDevices();
                             }
                         }
                         Browser b;
                         boolean emulator;
-                        if (Bundle.LBL_DeviceDefault().equals(browser.getName())) {
+                        if (browser.getId().equals(AndroidBrowser.Kind.ANDROID_DEVICE_DEFAULT.toString())) {
                             b=Browser.DEFAULT;
                             emulator = false;
-                        } else if (Bundle.LBL_DeviceChrome().equals(browser.getName())) {
+                        } else if (browser.getId().equals(AndroidBrowser.Kind.ANDROID_DEVICE_CHROME.toString())) {
                             b=Browser.CHROME;
                             emulator = false;
                         } else {
@@ -187,7 +183,7 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
                         Device device = new AndroidDevice("android", b, emulator);
                         
                         device.openUrl(build.getUrl(project, context));
-                        if (Browser.CHROME.getName().equals(b)) {
+                        if (Browser.CHROME.getName().equals(b.getName())) {
                             try {
                                 Thread.sleep(5000);
                             } catch (InterruptedException ex) {
@@ -200,7 +196,9 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
                                 SwingUtilities.invokeLater(new Runnable() {
                                     @Override
                                     public void run() {
-                                        JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), Bundle.ERR_WebDebug());
+                                        JOptionPane.showMessageDialog(
+                                                WindowManager.getDefault().getMainWindow(),
+                                                Bundle.ERR_WebDebug());
                                     }
                                 });
                             }
@@ -208,8 +206,27 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
 
                     }
 
-                    private String checkDevices(Project project) {
-                        return null;
+                    private String checkDevices() {
+                        try {
+                            if (browser.getId().equals(AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT.toString())) { //NOI18N
+                                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
+                                    if (dev.isEmulator()) {
+                                        return null;
+                                    }
+                                }
+                                return Bundle.ERR_RunAndroidEmulator();
+                            } else {
+                                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
+                                    if (!dev.isEmulator()) {
+                                        return null;
+                                    }
+                                }
+                                return Bundle.ERR_ConnectAndroidDevice();
+                            }
+                        } catch (IOException iOException) {
+                            Exceptions.printStackTrace(iOException);
+                        }
+                        return Bundle.ERR_Unknown();
                     }
                 }, Bundle.LBL_CheckingDevice(), new AtomicBoolean(), false);
             }

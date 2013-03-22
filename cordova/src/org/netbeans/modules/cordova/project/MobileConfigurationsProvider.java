@@ -229,7 +229,7 @@ public class MobileConfigurationsProvider implements ProjectConfigurationProvide
 
     private MobileConfigurationImpl getDefaultConfiguration() {
         if (configs.size() > 0) {
-            return configs.get(0);
+            return configs.values().iterator().next();
         } else {
             return null;
         }

@@ -39,74 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.progress.ProgressUtils;
+package org.netbeans.modules.cordova.platforms.android;
+
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
- * Cordova build action
  * @author Jan Becicka
- * 
  */
-public class IOSActionProvider implements ActionProvider {
-    private final Project p;
+@ProjectServiceProvider(
+        projectType = "org-netbeans-modules-web-clientproject",
+        service=ClientProjectEnhancedBrowserProvider.class)
+public class EnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
+    private Project p;
 
-    public IOSActionProvider(Project p) {
+    public EnhancedBrowserProviderImpl(Project p) {
         this.p = p;
     }
     
     @Override
-    public String[] getSupportedActions() {
-        return new String[]{
-                    COMMAND_BUILD,
-                    COMMAND_CLEAN,
-                    COMMAND_RUN,
-                    COMMAND_RUN_SINGLE
-                };
+    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser) {
+        if (webBrowser == null) {
+            return null;
+        }
+        if (BrowserFamilyId.ANDROID == webBrowser.getBrowserFamily()) {
+            return new EnhancedBrowserImpl(p, webBrowser);
+        }
+        return null;
     }
 
-    @NbBundle.Messages({
-        "ERR_NotMac=iOS Development is available only on Mac OS X",
-        "ERR_Title=Error",
-        "LBL_Opening=Opening url"    
-    })
-    @Override
-    public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
-        if (!Utilities.isMac()) {
-                NotifyDescriptor not = new NotifyDescriptor(
-                        Bundle.LBL_NoMac(), 
-                        Bundle.ERR_Title(), 
-                        NotifyDescriptor.DEFAULT_OPTION, 
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        null, 
-                        null);
-                DialogDisplayer.getDefault().notify(not);
-                return;
-        }
-        final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
-        assert build != null;
-        if (COMMAND_BUILD.equals(command)) {
-            build.perform(BuildPerformer.BUILD_IOS, p);
-        } else if (COMMAND_CLEAN.equals(command)) {
-            build.perform(build.CLEAN_IOS, p);
-        } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
-                build.perform(build.RUN_IOS,p);
-        }
-    }
-
-    @Override
-    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        return true;
-    }
-    
 }

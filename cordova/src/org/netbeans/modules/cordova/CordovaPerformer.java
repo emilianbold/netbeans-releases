@@ -55,7 +55,6 @@ import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.project.ClientProjectEnhancedBrowserImpl;
 import org.netbeans.modules.cordova.project.ClientProjectUtilities;
 import org.netbeans.modules.cordova.project.MobileConfigurationImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
