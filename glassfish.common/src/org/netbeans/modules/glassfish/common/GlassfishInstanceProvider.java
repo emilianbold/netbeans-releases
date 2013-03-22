@@ -72,6 +72,11 @@ import org.openide.util.lookup.Lookups;
  * @author vince kraemer
  */
 public final class GlassfishInstanceProvider implements ServerInstanceProvider, LookupListener {
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(GlassfishInstanceProvider.class);
+
     public static final String GLASSFISH_AUTOREGISTERED_INSTANCE = "glassfish_autoregistered_instance";
 
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
@@ -212,7 +217,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
 
     @Override
     public void resultChanged(LookupEvent ev) {
-        Logger.getLogger("glassfish").log(Level.FINE, "***** resultChanged fired ********  {0}", hashCode()); // NOI18N
+        LOGGER.log(Level.FINE, "***** resultChanged fired ********  {0}", hashCode()); // NOI18N
         RegisteredDDCatalog catalog = getDDCatalog();
         if (null != catalog) {
             catalog.registerEE6RunTimeDDCatalog(this);
@@ -228,10 +233,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
      */
     public static synchronized boolean initialized() {
         return ee6Provider != null;
-    }
-
-    public static Logger getLogger() {
-        return Logger.getLogger("glassfish"); // NOI18N
     }
 
     private static RegisteredDDCatalog getDDCatalog() {
@@ -265,7 +266,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 }
                 writeInstanceToFile(si,true);
             } catch(IOException ex) {
-                getLogger().log(Level.INFO, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
 
@@ -349,7 +350,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                     result.add(si);
                 } else {
                     String message = "invalid commonInstance for " + instance.getDeployerUri(); // NOI18N
-                    Logger.getLogger("glassfish").log(Level.WARNING, message);   // NOI18N
+                    LOGGER.log(Level.WARNING, message);   // NOI18N
                     if (null != instance.getDeployerUri())
                         instanceMap.remove(instance.getDeployerUri());
                 }
@@ -380,7 +381,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             rv = instance.getCommonInstance();
             if (null == rv) {
                 String message = "invalid commonInstance for " + instance.getDeployerUri(); // NOI18N
-                Logger.getLogger("glassfish").log(Level.WARNING, message);
+                LOGGER.log(Level.WARNING, message);
                 if (null != instance.getDeployerUri())
                     instanceMap.remove(instance.getDeployerUri());
             }
@@ -409,7 +410,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             try {
                 loadServerInstances();
             } catch (RuntimeException ex) {
-                getLogger().log(Level.INFO, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
             RegisteredDDCatalog catalog = getDDCatalog();
             if (null != catalog) {
@@ -447,12 +448,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                             if (si != null) {
                                 activeDisplayNames.add(si.getDisplayName());
                             } else {
-                                getLogger().log(Level.FINER,
+                                LOGGER.log(Level.FINER,
                                         "Unable to create glassfish instance for {0}", // NOI18N
                                         instanceFOs[i].getPath());
                             }
                         } catch (IOException ex) {
-                            getLogger().log(Level.INFO, null, ex);
+                            LOGGER.log(Level.INFO, null, ex);
                         }
                     }
                 }
@@ -469,12 +470,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                             .put(AUTOINSTANCECOPIED, "true"); // NOI18N
                     NbPreferences.forModule(this.getClass()).flush();
                 } catch (BackingStoreException ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO,
+                    LOGGER.log(Level.INFO,
                             "auto-registered instance may reappear", ex); // NOI18N
                 }
                 activeDisplayNames.add(igi.getDisplayName());
             } catch (IOException ex) {
-                getLogger().log(Level.INFO, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
     }
@@ -547,7 +548,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 WarnPanel.gf312WSWarning(instance.getName());
             }
         } else {
-            getLogger().log(Level.FINER,
+            LOGGER.log(Level.FINER,
                     "GlassFish folder {0} is not a valid install.",
                     instanceFO.getPath()); // NOI18N
             instanceFO.delete();
@@ -559,7 +560,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     private void writeInstanceToFile(GlassfishInstance instance,boolean search) throws IOException {
         String glassfishRoot = instance.getGlassfishRoot();
         if(glassfishRoot == null) {
-            getLogger().log(Level.SEVERE, NbBundle.getMessage(GlassfishInstanceProvider.class, "MSG_NullServerFolder")); // NOI18N
+            LOGGER.log(Level.SEVERE, NbBundle.getMessage(GlassfishInstanceProvider.class, "MSG_NullServerFolder")); // NOI18N
             return;
         }
 
@@ -619,7 +620,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             try {
                 instanceFO.delete();
             } catch(IOException ex) {
-                getLogger().log(Level.INFO, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
     }
@@ -647,7 +648,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             try {
                 dir = FileUtil.createFolder(FileUtil.getConfigRoot(), path);
             } catch(IOException ex) {
-                getLogger().log(Level.INFO, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
         return dir;
@@ -701,7 +702,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         try {
             fo.setAttribute(key, value);
         } catch (IOException ioe) {
-            getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Cannot update file object value: {0} -> {1} in {2}",
                     new Object[]{key, value, fo.getPath()});
         }
