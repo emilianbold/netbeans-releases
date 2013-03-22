@@ -119,6 +119,7 @@ import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
+import org.netbeans.modules.j2ee.common.project.BaseClientSideDevelopmentSupport;
 import org.netbeans.modules.j2ee.common.project.EMGenStrategyResolverImpl;
 import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
@@ -2374,16 +2375,10 @@ public final class WebProject implements Project {
 
     }
 
-    private class ClientSideDevelopmentSupport implements ServerURLMappingImplementation, 
-            URLDisplayerImplementation, PageInspectorCustomizer {
-
-        private String projectRootURL = null;
-        private FileObject webDocumentRoot;
-        private boolean initialized = false;
-        private BrowserSupport browserSupport = null;
-        private boolean browserSupportInitialized = false;
+    private class ClientSideDevelopmentSupport extends BaseClientSideDevelopmentSupport {
 
         public ClientSideDevelopmentSupport() {
+            super (WebProject.this);
             evaluator().addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -2395,238 +2390,16 @@ public final class WebProject implements Project {
         }
 
         @Override
-        public void showURL(URL applicationRootURL, URL urlToOpenInBrowser, FileObject context) {
-            projectRootURL = WebUtils.urlToString(applicationRootURL);
-            if (projectRootURL != null && !projectRootURL.endsWith("/")) {
-                projectRootURL += "/";
-            }
-            BrowserSupport bs = getBrowserSupport();
-            if (bs != null) {
-                bs.load(urlToOpenInBrowser, context);
-            } else {
-                HtmlBrowser.URLDisplayer.getDefault().showURL(urlToOpenInBrowser);
-            }
+        protected String getBrowserID() {
+            return evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
         }
 
         @Override
-        public URL toServer(int projectContext, FileObject projectFile) {
-            init();
-            if (projectRootURL == null || webDocumentRoot == null) {
-                return null;
-            }
-            String relPath = FileUtil.getRelativePath(webDocumentRoot, projectFile);
-            relPath = applyServletPattern(relPath);
-            try {
-                return new URL(projectRootURL + relPath);
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-        }
-
-        @Override
-        public FileObject fromServer(int projectContext, URL serverURL) {
-            init();
-            if (projectRootURL == null || webDocumentRoot == null) {
-                return null;
-            }
-            String u = WebUtils.urlToString(serverURL);
-            if (u.startsWith(projectRootURL)) {
-                String name = u.substring(projectRootURL.length());
-                if (name.isEmpty()) {
-                    // name is empty - try to map server URL to one of the welcome files:
-                    return getExistingWelcomeFile();
-                } else {
-                    // use servlet mappings to map server URL to a project file:
-                    return convertServerURLToProjectFile(name);
-                }
-            }
-            return null;
-        }
-
-        boolean canReload() {
-            String selectedBrowser = evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
-            return WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
-        }
-
-        void reload(FileObject fo) {
+        public void reload(FileObject fo) {
             if (!RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fo)) {
                 return;
             }
-            BrowserSupport bs = getBrowserSupport();
-            if (bs == null) {
-                return;
-            }
-            URL u = bs.getBrowserURL(fo, true);
-            if (u == null) {
-                // check if given file is one of the welcome files and therefore
-                // project folder should be used for reload instead of welcome file:
-                if (isWelcomeFile(fo)) {
-                    u = bs.getBrowserURL(getProjectDirectory(), true);
-                }
-            }
-            if (u != null) {
-                assert bs.canReload(u) : u;
-                bs.reload(u);
-            }
-        }
-
-        private void init() {
-            if (initialized) {
-                return;
-            }
-            webDocumentRoot = webModule.getDocumentBase();
-            readWebAppMetamodelData();
-            initialized = true;
-        }
-
-        @Override
-        public boolean isHighlightSelectionEnabled() {
-            return true;
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-        }
-
-        private synchronized void resetBrowserSupport() {
-            if (browserSupport != null) {
-                browserSupport.close(false);
-            }
-            browserSupport = null;
-            browserSupportInitialized = false;
-        }
-
-        private synchronized BrowserSupport getBrowserSupport() {
-            if (browserSupportInitialized) {
-                return browserSupport;
-            }
-            String selectedBrowser = evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
-            WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
-            if (selectedBrowser == null || browser == null) {
-                browserSupport = null;
-            } else {
-                boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
-                browserSupport = BrowserSupport.create(browser, !integrated);
-            }
-            browserSupportInitialized = true;
-            return browserSupport;
-        }
-
-        private List<String> servletURLPatterns = new CopyOnWriteArrayList<String>();
-        private List<String> welcomeFiles = new CopyOnWriteArrayList<String>();
-
-        private void readWebAppMetamodelData() {
-            try {
-                webModule.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
-                    public Void run(WebAppMetadata metadata) throws Exception {
-                        List<String> l = new ArrayList<String>();
-                        for (ServletInfo si : metadata.getServlets()) {
-                            for (String pattern : si.getUrlPatterns()) {
-                                // only some patterns are currently handled;
-                                // see comments in convertServerURLToLocalFile method
-                                if (!pattern.endsWith("*")) { // NOI18N
-                                    continue;
-                                } else {
-                                    pattern = pattern.substring(0, pattern.length()-1);
-                                }
-                                if (pattern.startsWith("/")) { // NOI18N
-                                    pattern = pattern.substring(1);
-                                }
-                                l.add(pattern);
-                            }
-                        }
-                        // WelcomeList file is not available in merged WebAppMetadata;
-                        // below code will also ignore WelcomeList from web-fragment.xml which
-                        // on the other hand should be OK most of the time - a framework/web library
-                        // should not define what welcome files an application is going to have
-                        FileObject fo = webModule.getDeploymentDescriptor();
-                        if (fo != null) {
-                            WebApp ddRoot = DDProvider.getDefault().getDDRoot(fo);
-                            if (ddRoot != null && ddRoot.getSingleWelcomeFileList() != null) {
-                                welcomeFiles.addAll(Arrays.asList(ddRoot.getSingleWelcomeFileList().getWelcomeFile()));
-                            }
-                        }
-                        welcomeFiles.add("index.html"); // NOI18N
-                        welcomeFiles.add("index.htm"); // NOI18N
-                        welcomeFiles.add("index.jsp"); // NOI18N
-                        servletURLPatterns.addAll(l);
-                        return null;
-                    }
-                });
-            } catch (MetadataModelException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        private FileObject getExistingWelcomeFile() {
-            // try to map it to welcome-file-list:
-            for (String welcomeFile : welcomeFiles) {
-                for (String pattern : servletURLPatterns) {
-                    if (welcomeFile.startsWith(pattern)) {
-                        FileObject fo = webDocumentRoot.getFileObject(welcomeFile.substring(pattern.length()));
-                        if (fo != null) {
-                            return fo;
-                        }
-                    }
-                }
-                FileObject fo = webDocumentRoot.getFileObject(welcomeFile);
-                if (fo != null) {
-                    return fo;
-                }
-            }
-            return null;
-        }
-
-        private FileObject convertServerURLToProjectFile(String name) {
-            // bellow code is limited to understand following simple usecase:
-            // pattern "/faces/*" means that URL /faces/index.anything maps to
-            // file web-root/index.anything and vice versa:
-            for (String pattern : servletURLPatterns) {
-                if (name.startsWith(pattern)) {
-                    FileObject fo = webDocumentRoot.getFileObject(name.substring(pattern.length()));
-                    if (fo != null) {
-                        return fo;
-                    }
-                }
-            }
-            return webDocumentRoot.getFileObject(name);
-        }
-
-        private boolean isWelcomeFile(FileObject context) {
-            for (String welcomeFile : welcomeFiles) {
-                for (String pattern : servletURLPatterns) {
-                    if (welcomeFile.startsWith(pattern)) {
-                        FileObject fo = webDocumentRoot.getFileObject(welcomeFile.substring(pattern.length()));
-                        if (fo != null && fo.equals(context)) {
-                            return true;
-                        }
-                    }
-                }
-                FileObject fo = webDocumentRoot.getFileObject(welcomeFile);
-                if (fo != null && fo.equals(context)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // TODO: below code works well for JSF framework but could broke impl
-        // of ServerURLMappingImplementation.toServer for a custom servlet; if
-        // this turns to be a problem then readWebAppMetamodelData() should be
-        // changed to read servlet URL patterns only from a well-known servlets
-        // like JSF.
-        private String applyServletPattern(String relPath) {
-            for (String pattern : servletURLPatterns) {
-                return pattern + relPath;
-            }
-            return relPath;
+            super.reload(fo);
         }
 
     }
