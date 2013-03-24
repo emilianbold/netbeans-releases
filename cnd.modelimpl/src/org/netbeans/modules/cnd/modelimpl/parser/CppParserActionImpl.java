@@ -1765,6 +1765,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 newName = declBuilder.getTypeBuilder().getName();
             }        
             declaratorBuilder.setName(newName);
+            declaratorBuilder.setNameBuilder(nameBuilder);
             declBuilder.setTypeBuilder(null);
             if(newName != null && newName.toString().contains("~")) { // NOI18N
                 declBuilder.setDestructor();
@@ -1963,7 +1964,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             builder.setParametersListBuilder(declBuilder.getParametersListBuilder());
             builderContext.push(builder);            
         } else {
-            CharSequence name = declBuilder.getDeclaratorBuilder().getName();
+            CharSequence name = declBuilder.getDeclaratorBuilder().getNameBuilder().getName();
             FunctionBuilder builder;
             if(name != null && !name.toString().contains("::")) { //NOI18N
                 builder = new FunctionDDBuilder();
@@ -2078,6 +2079,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             }
 
             classBuilder.setName(nameBuilder.getName());
+            // FIXME: need to use nameBuilder offsets (now not initialized)
             classBuilder.setNameStartOffset(aToken.getOffset());
             classBuilder.setNameEndOffset(aToken.getEndOffset());
             List<SpecializationParameterBuilder> params = nameBuilder.getNames().get(nameBuilder.getNames().size() - 1).getParams();

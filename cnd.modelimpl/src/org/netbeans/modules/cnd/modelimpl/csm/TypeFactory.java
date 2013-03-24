@@ -409,6 +409,15 @@ public class TypeFactory {
             }
             return TemplateUtils.checkTemplateType(type, scope);
         }
+
+        @Override
+        public String toString() {
+            return "TypeBuilder{" + "nameBuilder=" + nameBuilder + ", specifierBuilder=" + specifierBuilder + //NOI18N
+                    ", pointerDepth=" + pointerDepth + ", arrayDepth=" + arrayDepth + //NOI18N
+                    ", reference=" + reference + ", _const=" + _const + ", typedef=" + typedef + //NOI18N
+                    ", cls=" + cls + ", scope=" + scope + ", instantiationParams=" + instantiationParams + //NOI18N
+                    super.toString() + '}'; //NOI18N
+        }
     }
    
     public static CsmType createType(CsmType type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
