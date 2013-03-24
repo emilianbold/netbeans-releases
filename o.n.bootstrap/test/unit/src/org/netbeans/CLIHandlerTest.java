@@ -281,6 +281,7 @@ public class CLIHandlerTest extends NbTestCase {
         
     }
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9886/testReport/
     public void testFileExistsButTheServerCannotBeContactedAndWeDoNotWantToCleanTheFileOnOtherHost() throws Exception {
         // start the server and block
         InitializeRunner runner = new InitializeRunner(65);
