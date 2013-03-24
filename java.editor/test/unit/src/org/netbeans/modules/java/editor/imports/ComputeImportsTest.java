@@ -96,6 +96,7 @@ public class ComputeImportsTest extends NbTestCase {
         "com.sun.xml.internal.ws.api.server.Adapter.Toolkit",
         "sunw.io.Serializable",
         "sun.rmi.transport.Target",
+        "com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections"
     }));
     
     private static final Set<String> NO_MASKS = new HashSet<String>();
@@ -164,7 +165,7 @@ public class ComputeImportsTest extends NbTestCase {
     }
     
     public void testUnfinishedMethod() throws Exception {
-        doTest("TestUnfinishedMethod", NO_MASKS, NO_MASKS);
+        doTest("TestUnfinishedMethod", JDK16_MASKS, JDK16_MASKS);
     }
     
     public void testUnsupportedOperation1() throws Exception {
@@ -176,7 +177,7 @@ public class ComputeImportsTest extends NbTestCase {
     }
 
     public void testUnfinishedMethod2() throws Exception {
-        doTest("TestUnfinishedMethod2", NO_MASKS, NO_MASKS);
+        doTest("TestUnfinishedMethod2", JDK16_MASKS, JDK16_MASKS);
     }
     
     public void testAnnotation() throws Exception {
