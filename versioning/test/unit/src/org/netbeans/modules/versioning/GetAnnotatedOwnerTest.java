@@ -46,6 +46,7 @@ package org.netbeans.modules.versioning;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -78,6 +79,7 @@ public class GetAnnotatedOwnerTest extends GetOwnerTest {
         return TestAnnotatedVCS.class;
     }
 
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testVCSSystemDoesntAwakeOnUnrelatedGetOwner() throws IOException {
         
         assertNull(TestAnnotatedVCS.INSTANCE);

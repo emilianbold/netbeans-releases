@@ -235,7 +235,8 @@ public final class NbErrorManagerTest extends NbTestCase {
         SAXParseException saxpe = new SAXParseException("msg2", "pub-id", "sys-id", 313, 424);
         err.notify(ErrorManager.INFORMATIONAL, saxpe);
         s = readLog();
-        assertTrue(s.indexOf("org.xml.sax.SAXParseException: msg2") != -1);
+        assertTrue(s.indexOf("org.xml.sax.SAXParseException") != -1);
+        assertTrue(s.indexOf("msg2") != -1);
         assertTrue(s.indexOf("pub-id") != -1);
         assertTrue(s.indexOf("sys-id") != -1);
         assertTrue(s.indexOf("313") != -1);
