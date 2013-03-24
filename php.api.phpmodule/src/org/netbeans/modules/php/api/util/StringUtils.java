@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.Parameters;
 
 /**
@@ -113,16 +114,17 @@ public final class StringUtils {
     /**
      * Explode the string using the delimiter.
      * @param string string to be exploded, can be <code>null</code>
-     * @param delimiter delimiter to be used
+     * @param delimiter delimiter to be used, cannot be empty string
      * @return list of exploded strings using delimiter
      * @see #implode(List, String)
      */
-    public static List<String> explode(String string, String delimiter) {
-        Parameters.notNull("delimiter", delimiter); // NOI18N
+    public static List<String> explode(@NullAllowed String string, String delimiter) {
+        Parameters.notEmpty("delimiter", delimiter); // NOI18N
 
         if (!hasText(string)) {
             return Collections.<String>emptyList();
         }
+        assert string != null;
         return Arrays.asList(string.split(Pattern.quote(delimiter)));
     }
 

@@ -120,6 +120,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -1311,6 +1312,55 @@ public final class GeneratorUtilities {
         return tm.MemberSelect(qualIdentFor(name.substring(0, lastDot)), elements.getName(name.substring(lastDot + 1)));
     }
 
+    private Map<String, Object> createBindings(TypeElement clazz, ExecutableElement element) {
+        Map<String, Object> bindings = new HashMap<String, Object>();
+        bindings.put(CLASS_NAME, clazz.getQualifiedName().toString());
+        bindings.put(SIMPLE_CLASS_NAME, clazz.getSimpleName().toString());
+        bindings.put(METHOD_NAME, element.getSimpleName().toString());
+        bindings.put(METHOD_RETURN_TYPE, element.getReturnType().toString()); //NOI18N
+        Object value;
+        switch(element.getReturnType().getKind()) {
+            case BOOLEAN:
+                value = "false"; //NOI18N
+                break;
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+                value = 0;
+                break;
+            default:
+                value = "null"; //NOI18N
+        }
+        bindings.put(DEFAULT_RETURN_TYPE_VALUE, value);
+        StringBuilder sb = new StringBuilder();
+        if (element.isDefault() && element.getEnclosingElement().getKind().isInterface()) {
+            Types types = copy.getTypes();
+            TypeMirror enclType = element.getEnclosingElement().asType();
+            if (!types.isSubtype(clazz.getSuperclass(), enclType)) {
+                for (TypeMirror iface : clazz.getInterfaces()) {
+                    if (types.isSubtype(iface, enclType)) {
+                        sb.append(((DeclaredType)iface).asElement().getSimpleName()).append('.');
+                        break;
+                    }
+                }
+            }
+        }
+        sb.append("super.").append(element.getSimpleName()).append('('); //NOI18N
+        for (Iterator<? extends VariableElement> it = element.getParameters().iterator(); it.hasNext();) {
+            VariableElement ve = it.next();
+            sb.append(ve.getSimpleName());
+            if (it.hasNext())
+                sb.append(","); //NOI18N
+        }
+        sb.append(')'); //NOI18N
+        bindings.put(SUPER_METHOD_CALL, sb);
+        return bindings;
+    }
+
     private static class ClassMemberComparator implements Comparator<Tree> {
 
         private CodeStyle.MemberGroups groups;
@@ -1424,43 +1474,6 @@ public final class GeneratorUtilities {
     private static final String SCRIPT_ENGINE_ATTR = "javax.script.ScriptEngine"; //NOI18N    
     private static final String STRING_OUTPUT_MODE_ATTR = "com.sun.script.freemarker.stringOut"; //NOI18N
     private static ScriptEngineManager manager;
-
-    private static Map<String, Object> createBindings(TypeElement clazz, ExecutableElement element) {
-        Map<String, Object> bindings = new HashMap<String, Object>();
-        bindings.put(CLASS_NAME, clazz.getQualifiedName().toString());
-        bindings.put(SIMPLE_CLASS_NAME, clazz.getSimpleName().toString());
-        bindings.put(METHOD_NAME, element.getSimpleName().toString());
-        bindings.put(METHOD_RETURN_TYPE, element.getReturnType().toString()); //NOI18N
-        Object value;
-        switch(element.getReturnType().getKind()) {
-            case BOOLEAN:
-                value = "false"; //NOI18N
-                break;
-            case BYTE:
-            case CHAR:
-            case DOUBLE:
-            case FLOAT:
-            case INT:
-            case LONG:
-            case SHORT:
-                value = 0;
-                break;
-            default:
-                value = "null"; //NOI18N
-        }
-        bindings.put(DEFAULT_RETURN_TYPE_VALUE, value);
-        StringBuilder sb = new StringBuilder();
-        sb.append("super.").append(element.getSimpleName()).append('('); //NOI18N
-        for (Iterator<? extends VariableElement> it = element.getParameters().iterator(); it.hasNext();) {
-            VariableElement ve = it.next();
-            sb.append(ve.getSimpleName());
-            if (it.hasNext())
-                sb.append(","); //NOI18N
-        }
-        sb.append(')'); //NOI18N
-        bindings.put(SUPER_METHOD_CALL, sb);
-        return bindings;
-    }
 
     private static String readFromTemplate(String pathToTemplate, Map<String, Object> values) throws IOException, ScriptException {
         FileObject template = FileUtil.getConfigFile(pathToTemplate);

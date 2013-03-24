@@ -1,4 +1,4 @@
-#define A /*this is macro with emtpy body*/
+#define A /*this is macro with empty body*/
 #define B
 
 #if !(A || B || C)

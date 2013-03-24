@@ -146,7 +146,7 @@ public class UsedNamesComputer {
         }
 
         private boolean isInNamespace(ASTNode node) {
-            return offsetRange.containsInclusive(node.getStartOffset()) && offsetRange.containsInclusive(node.getEndOffset());
+            return offsetRange.containsInclusive(node.getStartOffset()) || offsetRange.containsInclusive(node.getEndOffset());
         }
 
         @Override

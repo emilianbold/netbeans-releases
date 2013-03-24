@@ -59,6 +59,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
@@ -69,6 +71,7 @@ import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -215,10 +218,35 @@ public final class WebClientLibraryManager {
      * @throws IOException if any error occurs
      */
     public void updateLibraries() throws NetworkException, IOException {
+        updateLibraries(false);
+    }
+
+    /**
+     * Update web client libraries with possibly showing its progress.
+     * <p>
+     * This method must be called only in a background thread.
+     * @param showProgress whether to show progress or not
+     * @throws NetworkException if any network error occurs
+     * @throws IOException if any error occurs
+     * @since 1.23
+     */
+    @NbBundle.Messages("WebClientLibraryManager.progress.update=Updating JavaScript libraries...")
+    public void updateLibraries(boolean showProgress) throws NetworkException, IOException {
         if (EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Cannot run in UI thread");
         }
-        CDNJSLibrariesProvider.getDefault().updateLibraries();
+        ProgressHandle progressHandle = null;
+        if (showProgress) {
+            progressHandle = ProgressHandleFactory.createHandle(Bundle.WebClientLibraryManager_progress_update());
+            progressHandle.start();
+        }
+        try {
+            CDNJSLibrariesProvider.getDefault().updateLibraries(progressHandle);
+        } finally {
+            if (progressHandle != null) {
+                progressHandle.finish();
+            }
+        }
     }
 
     private void addLibraries(List<Library> libs, LibraryProvider<LibraryImplementation> provider) {

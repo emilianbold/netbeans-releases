@@ -186,7 +186,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         boolean isAnnotate = !managedBeanPanel.isAddBeanToConfig();
         DataObject dobj = null;
 
-        if (isAnnotate && (Utilities.isJavaEE6Plus(wizard) || (JSFUtils.isJSF20Plus(wm) && JSFUtils.isJavaEE5(wizard)))) {
+        if (isAnnotate && (Utilities.isJavaEE6Plus(wizard) || (JSFUtils.isJSF20Plus(wm, true) && JSFUtils.isJavaEE5(wizard)))) {
             Map<String, Object> templateProperties = new HashMap<String, Object>();
             String targetName = Templates.getTargetName(wizard);
             if (JSFUtils.isCDIEnabled(wm)) {

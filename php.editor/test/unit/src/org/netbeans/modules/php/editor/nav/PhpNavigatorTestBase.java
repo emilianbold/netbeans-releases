@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,18 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.nav;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -58,129 +54,16 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.ParserTestBase;
 import org.netbeans.modules.php.editor.parser.TestHtmlFormatter;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Pisl
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PhpStructureScannerTest extends ParserTestBase{
+public abstract class PhpNavigatorTestBase extends ParserTestBase {
 
-    public PhpStructureScannerTest(String testName) {
+    public PhpNavigatorTestBase(String testName) {
         super(testName);
-    }
-
-     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    /**
-     * Test of scan method, of class PhpStructureScanner.
-     */
-
-    public void testNamespace() throws Exception {
-        performTest("structure/php53/namespace");
-
-    }
-    public void testMultiple_namespaces() throws Exception {
-        performTest("structure/php53/multiple_namespaces");
-
-    }
-    public void testBracketedMultipleNamespaces() throws Exception {
-        performTest("structure/php53/bracketed_multiple_namespaces");
-
-    }
-    public void testBracketedMultipleNamespacesWithDefaultOne() throws Exception {
-        performTest("structure/php53/bracketed_multiple_namespaces_with_default_one");
-
-    }
-    public void testScan() throws Exception {
-        performTest("structure/interface_001");
-    }
-
-    public void test133484() throws Exception {
-        performTest("structure/referenceParameter_001");
-    }
-
-    public void testClass() throws Exception {
-        performTest("structure/class005");
-    }
-
-    public void testIssue142644() throws Exception {
-        performTest("structure/issue142644");
-    }
-
-    public void testIssue148558() throws Exception {
-        performTest("structure/issue148558");
-    }
-
-    public void testPHPDocTagProperty() throws Exception {
-        performTest("structure/propertyTag");
-    }
-
-    public void testIssue205886_01() throws Exception {
-        performTest("structure/issue205886_01");
-    }
-
-    public void testTraits_01() throws Exception {
-        performTest("structure/traitsStructure_01");
-    }
-
-    public void testTraits_02() throws Exception {
-        performTest("structure/traitsStructure_02");
-    }
-
-    public void testIssue170712() throws Exception {
-        performTest("structure/issue170712");
-    }
-
-    public void testDeprecatedDeclarations() throws Exception {
-        performTest("structure/deprecatedDeclarations");
-    }
-
-    public void testDeprecatedTypes() throws Exception {
-        performTest("structure/deprecatedTypes");
-    }
-
-    public void testFoldingMethod() throws Exception {
-        checkFolds("testfiles/parser/foldingMethod.php");
-    }
-
-    public void testFoldingConditionalStatements() throws Exception {
-        checkFolds("testfiles/parser/foldingConditionalStatements.php");
-    }
-
-    public void testFoldingCycles() throws Exception {
-        checkFolds("testfiles/parser/foldingCycles.php");
-    }
-
-    public void testFoldingMethod_1() throws Exception {
-        checkFolds("testfiles/parser/foldingMethod_1.php");
-    }
-
-    public void testFoldingConditionalStatements_1() throws Exception {
-        checkFolds("testfiles/parser/foldingConditionalStatements_1.php");
-    }
-
-    public void testFoldingCycles_1() throws Exception {
-        checkFolds("testfiles/parser/foldingCycles_1.php");
-    }
-
-    public void testIssue213616() throws Exception {
-        checkFolds("testfiles/parser/issue213616.php");
-    }
-
-    public void testIssue216088() throws Exception {
-        checkFolds("testfiles/parser/issue216088.php");
     }
 
     @Override
@@ -244,16 +127,6 @@ public class PhpStructureScannerTest extends ParserTestBase{
             text = text + "-";
         }
         return text;
-    }
-
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            PhpSourcePath.SOURCE_CP,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/structure"))
-            })
-        );
     }
 
 }

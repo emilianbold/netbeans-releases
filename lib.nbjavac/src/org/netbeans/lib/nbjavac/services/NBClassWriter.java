@@ -49,8 +49,6 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.TargetType;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.jvm.ClassWriter;
 import com.sun.tools.javac.jvm.Target;
@@ -76,7 +74,6 @@ public class NBClassWriter extends ClassWriter {
     private final NBNames nbNames;
     private final Target target;
     private final Types types;
-    private boolean preserveErrors = false;
 
     protected NBClassWriter(Context context) {
         super(context);
@@ -84,19 +81,6 @@ public class NBClassWriter extends ClassWriter {
         target = Target.instance(context);
         types = Types.instance(context);
     }
-
-    @Override
-    protected void assembleSig(Type type) {
-        Type uType = type.unannotatedType();
-        if (preserveErrors && uType.hasTag(TypeTag.ERROR)) {
-            sigbuf.appendByte('R');
-            assembleClassSig(uType);
-            sigbuf.appendByte(';');
-        } else {
-            super.assembleSig(type);
-        }
-    }
-
     
     @Override
     protected int writeExtraClassAttributes(ClassSymbol c) {

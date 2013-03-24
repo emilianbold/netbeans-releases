@@ -101,38 +101,31 @@ public enum JSFVersion {
     private static final Map<WebModule, PropertyChangeListener> projectListenerCache = new WeakHashMap<WebModule, PropertyChangeListener>();
 
     /**
-     * Gets the JSF version supported by the WebModule. It seeks for the JSF only on the classpath.
+     * Gets the JSF version supported by the WebModule. It seeks for the JSF only on the classpath including the
+     * platform classpath.
      *
      * @param webModule WebModule to seek for JSF version
-     * @param exact whether the JSF version must be exact and investigated synchronously
      * @return JSF version if any found on the WebModule compile classpath, {@code null} otherwise
      */
     @CheckForNull
-    public synchronized static JSFVersion forWebModule(@NonNull final WebModule webModule, boolean exact) {
+    public synchronized static JSFVersion forWebModule(@NonNull final WebModule webModule) {
         JSFVersion version = projectVersionCache.get(webModule);
         if (version == null) {
-            if (exact) {
-                version = getVersion(webModule);
-            }
-            RP.submit(new Runnable() {
+            version = get(webModule, true);
+            Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+            ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+            ClassPath compileCP = cpp.findClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+            PropertyChangeListener listener = WeakListeners.propertyChange(new PropertyChangeListener() {
                 @Override
-                public void run() {
-                    Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
-                    ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
-                    ClassPath compileCP = cpp.findClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-                    PropertyChangeListener listener = WeakListeners.propertyChange(new PropertyChangeListener() {
-                        @Override
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
-                                projectVersionCache.put(webModule, getVersion(webModule));
-                            }
-                        }
-                    }, compileCP);
-                    projectListenerCache.put(webModule, listener);
-                    compileCP.addPropertyChangeListener(listener);
-                    projectVersionCache.put(webModule, getVersion(webModule));
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
+                        projectVersionCache.put(webModule, get(webModule, true));
+                    }
                 }
-            });
+            }, compileCP);
+            compileCP.addPropertyChangeListener(listener);
+            projectListenerCache.put(webModule, listener);
+            projectVersionCache.put(webModule, get(webModule, true));
         }
         return version;
     }
@@ -238,14 +231,25 @@ public enum JSFVersion {
                 || thisMajorVersion == compMajorVersion && thisMinorVersion >= compMinorVersion;
     }
 
-    private static JSFVersion getVersion(WebModule webModule) {
-        if (JSFUtils.isJSF22Plus(webModule)) {
+    /**
+     * Gets version of the JSF on the project classpath. You can specify whether the classpath should include
+     * platform's classpath too. If you don't need to exclude platform classpath use the
+     * {@link #forWebModule(org.netbeans.modules.web.api.webmodule.WebModule)} which caches its results per project.
+     *
+     * @param webModule webModule
+     * @param includingPlatformCP whether to include platform into the JSF version investigation of not
+     * @return JSF version
+     */
+    @CheckForNull
+    public static JSFVersion get(@NonNull WebModule webModule, boolean includingPlatformCP) {
+        Parameters.notNull("webModule", webModule); //NOI18N
+        if (JSFUtils.isJSF22Plus(webModule, includingPlatformCP)) {
             return JSFVersion.JSF_2_2;
-        } else if (JSFUtils.isJSF21Plus(webModule)) {
+        } else if (JSFUtils.isJSF21Plus(webModule, includingPlatformCP)) {
             return JSFVersion.JSF_2_1;
-        } else if (JSFUtils.isJSF20Plus(webModule)) {
+        } else if (JSFUtils.isJSF20Plus(webModule, includingPlatformCP)) {
             return JSFVersion.JSF_2_0;
-        } else if (JSFUtils.isJSF12Plus(webModule)) {
+        } else if (JSFUtils.isJSF12Plus(webModule, includingPlatformCP)) {
             return JSFVersion.JSF_1_2;
         }
         return null;
