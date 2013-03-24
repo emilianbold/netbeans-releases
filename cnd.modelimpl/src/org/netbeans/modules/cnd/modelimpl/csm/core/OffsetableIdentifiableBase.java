@@ -156,10 +156,10 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
             }
         }
         
-        public static class NamePart {
-            CharSequence part;
+        public static final class NamePart {
+            final CharSequence part;
             
-            List<SpecializationDescriptor.SpecializationParameterBuilder> params = new ArrayList<SpecializationDescriptor.SpecializationParameterBuilder>();
+            final List<SpecializationDescriptor.SpecializationParameterBuilder> params = new ArrayList<SpecializationDescriptor.SpecializationParameterBuilder>();
 
             public NamePart(CharSequence part) {
                 this.part = part;
@@ -172,9 +172,17 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
             public List<SpecializationDescriptor.SpecializationParameterBuilder> getParams() {
                 return params;
             }
-            
+
+            @Override
+            public String toString() {
+                return part.toString();
+            }
         }
-        
+
+        @Override
+        public String toString() {
+            return "NameBuilder{" + getName() + super.toString() + '}'; //NOI18N
+        }
     }
     
     public static abstract class OffsetableIdentifiableBuilder extends OffsetableBuilder implements CsmObjectBuilder {
@@ -236,7 +244,13 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         protected void addReference(CsmObject obj) {
             getNameHolder().addReference(getFileContent(), obj);
         }
-        
+
+        @Override
+        public String toString() {
+            return "{" + "name=" + name + ", nameStartOffset=" + nameStartOffset + //NOI18N
+                    ", nameEndOffset=" + nameEndOffset + ", isMacroExpanded=" + //NOI18N
+                    isMacroExpanded + super.toString() + '}'; //NOI18N
+        }
     }    
     
     ////////////////////////////////////////////////////////////////////////////
