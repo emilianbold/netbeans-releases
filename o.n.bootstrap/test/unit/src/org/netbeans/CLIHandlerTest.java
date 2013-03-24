@@ -228,6 +228,7 @@ public class CLIHandlerTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
     public void testHelpIsPassedToRunningServer() throws Exception {
         class UserDir extends CLIHandler implements Runnable {
             private int cnt;
