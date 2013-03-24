@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import junit.framework.Assert;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSVisibilityQuery;
@@ -100,6 +101,7 @@ public class VCSVisibilityQueryTest extends NbTestCase {
         VisibilityQuery.getDefault().removeChangeListener(cl);
     }
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testFireForAll() {
         final boolean [] received = new boolean[] {false};
         VisibilityQuery.getDefault().addChangeListener(new ChangeListener() {

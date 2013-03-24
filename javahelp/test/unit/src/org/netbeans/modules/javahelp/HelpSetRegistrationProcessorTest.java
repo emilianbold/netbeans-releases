@@ -40,6 +40,7 @@ package org.netbeans.modules.javahelp;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Utilities;
 
 /**
@@ -65,6 +66,7 @@ public class HelpSetRegistrationProcessorTest extends NbTestCase {
      *
      * @throws IOException 
      */
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testCreateTempFile() throws IOException {
 
         if (Utilities.isWindows()) {

@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -111,6 +112,7 @@ public class ArchiveTest extends NbTestCase {
         super.tearDown();
     }
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testWrongClassPathElement() throws Exception {
         ClassLoader l = module.getClassLoader();
         assertNotNull("Resource found", l.getResource("fake/org.openide.sample"));

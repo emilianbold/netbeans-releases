@@ -138,7 +138,7 @@ public class CleanCommand extends GitCommand {
             File file = new File(repository.getWorkTree().getAbsolutePath() + File.separator + path);                        
             if(file.isDirectory()) {
                 String[] s = file.list();
-                if(s != null && s.length > 0) { // XXX is there no better way to find out if emtpy?
+                if(s != null && s.length > 0) { // XXX is there no better way to find out if empty?
                     // not empty
                     return; 
                 }

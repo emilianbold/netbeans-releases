@@ -214,6 +214,7 @@ public final class Setup extends AbstractDiffSetup {
      * @param secondRevision second revision
      */
     public Setup(File baseFile, HgRevision firstRevision, HgRevision secondRevision, FileInformation info, final boolean forceNonEditable) {
+        title = baseFile.getName();
         this.baseFile = baseFile;
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;

@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
@@ -116,6 +117,7 @@ public class DataNodeTest extends NbTestCase {
     }
     */
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testDataNodeGetHtmlNameDoesNotInitializeAllFiles () throws Exception {
         org.openide.filesystems.FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
             "F.java", "F.form"

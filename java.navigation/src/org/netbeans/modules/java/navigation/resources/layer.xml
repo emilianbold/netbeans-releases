@@ -119,15 +119,15 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="Window">
-            <folder name="Other">
-            <attr name="position" intvalue="1700"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.navigation.Bundle"/>
+            <folder name="Tools">
                 <file name="JavadocAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-JavadocAction.instance"/>
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
+            </folder>
+            <folder name="Debug">
                 <file name="AnalyzeStackAction.shadow">
-                    <attr name="position" intvalue="1000"/>
+                    <attr name="position" intvalue="1500"/>
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-stackanalyzer-AnalyzeStackAction.instance"/>
                 </file>
             </folder>

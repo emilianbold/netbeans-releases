@@ -349,7 +349,7 @@ class DiffFileTable implements FileViewComponent<DiffNode>, MouseListener, ListS
     @Override
     public void setModel (DiffNode[] nodes, EditorCookie[] editorCookies, Object modelData) {
         this.editorCookies = editorCookies;
-        tableModel.setNodes(nodes);
+        tableModel.setNodes(this.nodes = nodes);
         changeListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {

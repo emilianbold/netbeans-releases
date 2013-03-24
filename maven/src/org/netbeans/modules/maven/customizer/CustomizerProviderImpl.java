@@ -396,7 +396,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 OutputStreamWriter outStr = null;
                 try {
                     Document doc;
-                    if (mapping.getActions().isEmpty()) { //#224450 don't write emtpy nbactions.xml files
+                    if (mapping.getActions().isEmpty()) { //#224450 don't write empty nbactions.xml files
                         FileObject fo = pomDir.getFileObject(path);
                         if (fo != null) {
                             fo.delete();
