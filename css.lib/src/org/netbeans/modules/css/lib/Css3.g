@@ -781,7 +781,7 @@ cp_propertyValue
    //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
     //(the IE allows also just ident as its content)
     (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>sass_declaration_property_value_interpolation_expression
-    | {isCssPreprocessorSource()}? cp_expression
+    | {isCssPreprocessorSource()}? cp_expression_list
     | propertyValue
     ;
 
@@ -868,7 +868,7 @@ function
 		LPAREN ws?
 		(
                     (cp_args_list)=>cp_args_list
-                    | (cp_variable_value)=>cp_variable_value ws?
+                    | (cp_expression_list)=>cp_expression_list ws?
                     | expression ws?
                     | fnAttribute (COMMA ws? fnAttribute )*
                     |
@@ -915,9 +915,9 @@ ws
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
     : 
-        {isLessSource()}? cp_variable ws? COLON ws? cp_variable_value ws? SEMI    
+        {isLessSource()}? cp_variable ws? COLON ws? cp_expression_list ws? SEMI    
         | 
-        {isScssSource()}? cp_variable ws? COLON ws? cp_variable_value ws? (SASS_DEFAULT ws?)? SEMI    
+        {isScssSource()}? cp_variable ws? COLON ws? cp_expression_list ws? (SASS_DEFAULT ws?)? SEMI    
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
@@ -929,16 +929,16 @@ cp_variable
 //        SASS_VAR
     ;
 
-cp_variable_value
+cp_expression_list
     :
-    cp_expression ( COMMA ws? cp_expression)*     
+    cp_expression (ws? COMMA ws? cp_expression)*     
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR
 cp_expression
     :    
     cp_additionExp
-    (ws cp_additionExp)*
+    (ws? cp_additionExp)*
     ;
 
 cp_additionExp
@@ -1032,11 +1032,10 @@ cp_mixin_call_args
     
 cp_mixin_call_arg
     :
-//    term
-    cp_arg
-    | cp_expression ws?
-//    | term
-//    cp_arg | cp_expression /*term*/
+    (
+        cp_variable ws? COLON ws? cp_expression
+        | cp_expression
+    ) ws?
     ;
 
 //.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")

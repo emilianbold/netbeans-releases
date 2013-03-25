@@ -1317,4 +1317,18 @@ public class Css3ParserScssTest extends CssTestBase {
         assertParses("$grid-row-editor-border: $grid-row-editor-border-width solid $grid-row-editor-border-color !important !default;");
     }
     
+    
+    public void testCommaSeparatedPropertyValues() {
+        assertParses(".x { background-size: $majorsteps $majorsteps, $majorsteps $majorsteps, $minorsteps $minorsteps, $minorsteps $minorsteps; }");
+    }
+ 
+    public void testImportantSymbolJustAfterPropertyValue() throws ParseException, BadLocationException {
+        assertParses(".x { z-index: 1000000!important; }");
+        assertParses(".x { z-index: 1000000 !important; }");
+    }
+    
+    public void testInclude() throws ParseException, BadLocationException {
+        assertParses(".x { @include x-slicer($panel-header-ui + '-top'); }");
+    }
+    
 }

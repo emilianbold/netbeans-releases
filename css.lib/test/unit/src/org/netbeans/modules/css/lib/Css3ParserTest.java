@@ -1226,4 +1226,13 @@ public class Css3ParserTest extends CssTestBase {
         assertEquals(0, result.getDiagnostics().size());
 
     }
+    
+    public void testCommaSeparatedPropertyValues() throws ParseException, BadLocationException {
+        assertParses(".x { font-family: \"Myriad Pro\",\"Myriad Web\",\"Tahoma\",\"Helvetica\",\"Arial\",sans-serif; }");
+    }
+    
+    public void testImportantSymbolJustAfterPropertyValue() throws ParseException, BadLocationException {
+        assertParses(".x { z-index: 1000000!important; }");
+    }
+    
 }
