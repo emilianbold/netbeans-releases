@@ -540,6 +540,13 @@ id_expression
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_id_expression(input.LT(0));}}
 
+tilde_class_name
+@init                                                                           {if(state.backtracking == 0){action.tilde_class_name(input.LT(1));}}
+    :
+    TILDE class_name
+    ;
+finally                                                                         {if(state.backtracking == 0){action.end_tilde_class_name(input.LT(0));}}
+
 unqualified_or_qualified_id
 @init {Token t = input.LT(1);}
     :
@@ -550,7 +557,7 @@ unqualified_or_qualified_id
     |
         literal_operator_id
     |
-        TILDE class_name
+        tilde_class_name
     |
         simple_template_id_or_IDENT
         (
@@ -565,7 +572,7 @@ unqualified_or_qualified_id
                 |
                     literal_operator_id
                 |
-                    TILDE class_name
+                    tilde_class_name
                 |
                     simple_template_id_or_IDENT_nested[t]
                 )
@@ -610,7 +617,7 @@ unqualified_id:
     |
         literal_operator_id
     |
-        TILDE class_name
+        tilde_class_name
     |
         TILDE decltype_specifier
     |
