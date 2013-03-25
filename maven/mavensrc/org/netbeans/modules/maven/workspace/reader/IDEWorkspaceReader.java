@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import org.codehaus.plexus.logging.Logger;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.repository.WorkspaceReader;
 import org.sonatype.aether.repository.WorkspaceRepository;
@@ -57,6 +58,8 @@ import org.sonatype.aether.repository.WorkspaceRepository;
  */
 public class IDEWorkspaceReader implements WorkspaceReader {
 
+    private Logger logger;
+    
     private final WorkspaceRepository repo = new WorkspaceRepository("ide");
     private final Map<String, File> mappings;
 
@@ -93,15 +96,15 @@ public class IDEWorkspaceReader implements WorkspaceReader {
         File f = mappings.get(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getBaseVersion());
         if (f != null) {
             if ("pom".equals(artifact.getExtension())) {
-                System.out.println("artifact pom=" + artifact + " " + new File(f, "pom.xml"));
+                logger.debug("[NETBEANS] linking artifact to workspace POM:" + new File(f, "pom.xml"));
                 return new File(f, "pom.xml");
             }
             if ("jar".equals(artifact.getExtension()) && "".equals(artifact.getClassifier())) {
-                System.out.println("artifact jar=" + artifact + " " + new File(f, "target/classes"));
+                logger.debug("[NETBEANS] linking artifact to workspace output folder:" + new File(f, "target/classes"));
                 return new File(new File(f, "target"), "classes");
             }
             if ("jar".equals(artifact.getExtension()) && "tests".equals(artifact.getClassifier())) {
-                System.out.println("artifact test jar=" + artifact + " " + new File(f, "target/test-classes"));
+                logger.debug("[NETBEANS] linking artifact to workspace output folder:" + new File(f, "target/test-classes"));
                 return new File(new File(f, "target"), "test-classes");
             }
         }
@@ -115,7 +118,6 @@ public class IDEWorkspaceReader implements WorkspaceReader {
         for (String s : mappings.keySet()) {
             if (s.startsWith(id)) {
                 toRet.add(s.substring(id.length()));
-                System.out.println("ver=" + s.substring(id.length()));
             }
         }
         return toRet;
