@@ -89,11 +89,11 @@ import org.openide.modules.Places;
  *
  * @author tomas
  */
-public class SynchronizationTest extends AbstractODCSTestCase {
+public class SynchronizationTestCase extends AbstractODCSTestCase {
 
     public static Test suite() {
         return NbModuleSuite.emptyConfiguration()  
-                .addTest(SynchronizationTest.class)
+                .addTest(SynchronizationTestCase.class)
                 .gui(false)
                 .suite();
     }
@@ -107,7 +107,7 @@ public class SynchronizationTest extends AbstractODCSTestCase {
     private TaskDataManager taskDataManager;
 //    private TaskJobFactory taskJobFactory;
     
-    public SynchronizationTest(String arg0) {
+    public SynchronizationTestCase(String arg0) {
         super(arg0);
     }
 
@@ -171,6 +171,7 @@ public class SynchronizationTest extends AbstractODCSTestCase {
         cb.column(QueryParameters.Column.SUMMARY.toString(), Criteria.Operator.EQUALS, summary);
         
         query.setAttribute(CloudDevConstants.QUERY_CRITERIA, cb.toCriteria().toQueryString());
+        query.setUrl(CloudDevConstants.CRITERIA_QUERY);
         
         taskList.deleteQuery(query); // cleanup from previous run
         taskList.addQuery(query);
