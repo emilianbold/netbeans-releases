@@ -175,6 +175,9 @@ public final class WebBrowsers {
         return null;
     }
 
+    /**
+     * Returns all browsers registered in the IDE.
+     */
     public List<WebBrowser> getAll(boolean includeSystemDefaultBrowser,
             boolean includeBrowsersWithNBIntegration,
             boolean includeIDEGlobalBrowserOption,
@@ -189,27 +192,27 @@ public final class WebBrowsers {
     public List<WebBrowser> getAll(boolean includeSystemDefaultBrowser,
             boolean includeBrowsersWithNBIntegration,
             boolean includeIDEGlobalBrowserOption,
-            boolean includeMobileBrowsers,
+            boolean includePhoneGap,
             boolean sortBrowsers) {
         if (sortBrowsers) {
             return getSortedBrowsers(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration, 
-                    includeIDEGlobalBrowserOption, includeMobileBrowsers);
+                    includeIDEGlobalBrowserOption, includePhoneGap);
         } else {
             return getUnsortedBrowsers(includeSystemDefaultBrowser, includeBrowsersWithNBIntegration, 
-                    includeIDEGlobalBrowserOption, includeMobileBrowsers);
+                    includeIDEGlobalBrowserOption, includePhoneGap);
         }
     }
 
     private List<WebBrowser> getSortedBrowsers(boolean includeSystemDefaultBrowser, 
             boolean includeBrowsersWithNBIntegration,
             boolean includeIDEGlobalBrowserOption,
-            boolean includeMobileBrowsers) {
+            boolean includePhoneGap) {
         List<BrowserWrapper> browsers = new ArrayList<BrowserWrapper>();
         int chrome = 200;
         int chromium = 300;
         int others = 400;
         for (WebBrowserFactoryDescriptor desc : getFactories(includeSystemDefaultBrowser)) {
-            if (desc.getBrowserFamily().isMobile() && !includeMobileBrowsers) {
+            if (desc.getBrowserFamily().equals(BrowserFamilyId.PHONEGAP) && !includePhoneGap) {
                 continue;
             }
             WebBrowser browser = new WebBrowser(desc, false);
