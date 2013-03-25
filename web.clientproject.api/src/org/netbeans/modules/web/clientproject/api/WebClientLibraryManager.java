@@ -71,6 +71,7 @@ import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
 
@@ -213,31 +214,41 @@ public final class WebClientLibraryManager {
     /**
      * Update web client libraries.
      * <p>
-     * This method must be called only in a background thread.
+     * This method must be called only in a background thread. To cancel the update, interrupt the current thread.
      * @throws NetworkException if any network error occurs
      * @throws IOException if any error occurs
+     * @throws InterruptedException if the update is cancelled
+     * @since 1.25
      */
-    public void updateLibraries() throws NetworkException, IOException {
+    public void updateLibraries() throws NetworkException, IOException, InterruptedException {
         updateLibraries(false);
     }
 
     /**
      * Update web client libraries with possibly showing its progress.
      * <p>
-     * This method must be called only in a background thread.
+     * This method must be called only in a background thread. To cancel the update, interrupt the current thread.
      * @param showProgress whether to show progress or not
      * @throws NetworkException if any network error occurs
      * @throws IOException if any error occurs
-     * @since 1.23
+     * @throws InterruptedException if the update is cancelled
+     * @since 1.25
      */
     @NbBundle.Messages("WebClientLibraryManager.progress.update=Updating JavaScript libraries...")
-    public void updateLibraries(boolean showProgress) throws NetworkException, IOException {
+    public void updateLibraries(boolean showProgress) throws NetworkException, IOException, InterruptedException {
         if (EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Cannot run in UI thread");
         }
         ProgressHandle progressHandle = null;
         if (showProgress) {
-            progressHandle = ProgressHandleFactory.createHandle(Bundle.WebClientLibraryManager_progress_update());
+            final Thread downloadThread = Thread.currentThread();
+            progressHandle = ProgressHandleFactory.createHandle(Bundle.WebClientLibraryManager_progress_update(), new Cancellable() {
+                @Override
+                public boolean cancel() {
+                    downloadThread.interrupt();
+                    return true;
+                }
+            });
             progressHandle.start();
         }
         try {

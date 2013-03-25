@@ -411,7 +411,7 @@ mediaType
  ;
  
 mediaExpression
-    : LPAREN ws? mediaFeature ws? ( COLON ws? expression )? RPAREN ws?
+    : LPAREN ws? mediaFeature ws? ( COLON ws? expression ws?)? RPAREN ws?
     ;
  
 mediaFeature
@@ -755,7 +755,7 @@ pseudo
                 ( 
                     ( IDENT | GEN )
                     ( // Function
-                        ws? LPAREN ws? ( expression | STAR )? RPAREN
+                        ws? LPAREN ws? ( (expression ws?) | STAR )? RPAREN
                     )?
                 )
                 |
@@ -765,7 +765,8 @@ pseudo
 
 declaration
     : 
-    STAR? property COLON ws? propertyValue (prio ws?)?
+    STAR? property COLON ws? propertyValue ws? (prio ws?)?
+    | {isCssPreprocessorSource()}? STAR? property COLON ws? cp_propertyValue ws? //cp_expression may contain the IMPORT_SYM
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -774,20 +775,23 @@ declaration
         consumeUntil(input, BitSet.of(SEMI, RBRACE)); 
     }
 
+//XXX this is a hack for the IMPORT_SYM inside cp_expression
+cp_propertyValue
+    : 
+    {isCssPreprocessorSource()}? cp_expression_list
+    | propertyValue
+    ;
+
 propertyValue
 	:
-        //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
-        //(the IE allows also just ident as its content)
-        (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>sass_declaration_property_value_interpolation_expression
-        | (expressionPredicate)=>expression
-        | {isCssPreprocessorSource()}? cp_expression
+        expression
 	;
 
 //an expression wich doesn't contain cp expression operators
 expressionPredicate
     options { k = 1; }
     :
-    ( ~ (AT_IDENT | STAR | SOLIDUS | LBRACE | SEMI | RBRACE) )+ ( SEMI | RBRACE )
+    ( ~ (AT_IDENT | STAR | SOLIDUS | LBRACE | SEMI | RBRACE | SASS_VAR) )+ ( SEMI | RBRACE )
     ;
     
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
@@ -828,34 +832,32 @@ prio
     ;
     
 expression
-    : term ( (operator ws?)? term)*
+    : term ( ( ws | (operator ws?)?) term)*
     ;
     
 term
-    : ( unaryOperator ws? )?
-        (
-        ( 
-              NUMBER
-            | PERCENTAGE
-            | LENGTH
-            | EMS
-            | REM
-            | EXS
-            | ANGLE
-            | TIME
-            | FREQ
-            | RESOLUTION
-            | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
-        )
-    | STRING
-    | IDENT
-    | GEN
-    | URI
-    | hexColor
-    | function
-    | {isCssPreprocessorSource()}? cp_variable
+    : 
+    ( unaryOperator ws? )?
+    (
+        (function)=>function
+        | IDENT
+        | NUMBER
+        | PERCENTAGE
+        | LENGTH
+        | EMS
+        | REM
+        | EXS
+        | ANGLE
+        | TIME
+        | FREQ
+        | RESOLUTION
+        | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
+        | STRING
+        | GEN
+        | URI
+        | hexColor
+        | {isCssPreprocessorSource()}? cp_variable
     )
-    ws?
     ;
 
 function
@@ -863,8 +865,8 @@ function
 		LPAREN ws?
 		(
                     (cp_args_list)=>cp_args_list
-                    | (cp_variable_value)=>cp_variable_value
-                    | expression
+                    | (cp_expression_list)=>cp_expression_list ws?
+                    | expression ws?
                     | fnAttribute (COMMA ws? fnAttribute )*
                     |
                     {isCssPreprocessorSource()}? //empty
@@ -880,12 +882,13 @@ functionName
         //css spec allows? here just IDENT, 
         //but due to some nonstandart MS extension like progid:DXImageTransform.Microsoft.gradien
         //the function name can be a bit more complicated
-	: (IDENT COLON)? IDENT (DOT IDENT)*
-//	: IDENT
+	: 
+        (IDENT COLON)? IDENT (DOT IDENT)*
+//	IDENT
     	;
     	
 fnAttribute
-	: fnAttributeName ws? OPEQ ws? fnAttributeValue
+	: fnAttributeName ws? OPEQ ws? fnAttributeValue ws?
 	;
     
 fnAttributeName
@@ -893,7 +896,9 @@ fnAttributeName
 	;
 	
 fnAttributeValue
-	: expression
+	: 
+            expression
+            | {isCssPreprocessorSource()}? cp_expression
 	;
     
 hexColor
@@ -909,9 +914,9 @@ ws
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
     : 
-        {isLessSource()}? cp_variable ws? COLON ws? cp_variable_value SEMI    
+        {isLessSource()}? cp_variable ws? COLON ws? cp_expression_list ws? SEMI    
         | 
-        {isScssSource()}? cp_variable ws? COLON ws? cp_variable_value (SASS_DEFAULT ws?)? SEMI    
+        {isScssSource()}? cp_variable ws? COLON ws? cp_expression_list ws? (SASS_DEFAULT ws?)? SEMI    
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
@@ -923,34 +928,40 @@ cp_variable
 //        SASS_VAR
     ;
 
-cp_variable_value
+cp_expression_list
     :
-    cp_expression ( COMMA ws? cp_expression)*     
+    cp_expression (ws? COMMA ws? cp_expression)*     
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR
 cp_expression
-    :    cp_additionExp
+    :    
+    cp_additionExp
+    (ws? cp_additionExp)*
     ;
 
 cp_additionExp
     :    cp_multiplyExp 
-         ( PLUS ws? cp_multiplyExp
-         | MINUS ws? cp_multiplyExp
+         (
+            (ws? (PLUS | MINUS))=> ws? ( PLUS ws? cp_multiplyExp | MINUS ws? cp_multiplyExp )
          )* 
     ;
 
 cp_multiplyExp
     :    cp_atomExp
-         ( STAR ws? cp_atomExp 
-         | SOLIDUS ws? cp_atomExp
+         ( 
+            (ws? (STAR | SOLIDUS))=> ws? ( STAR ws? cp_atomExp | SOLIDUS ws? cp_atomExp)
          )* 
     ;
 
 cp_atomExp
-    :    term ((term)=>term)* //multiple terms separated just by whitespace
-    |    LPAREN ws? cp_additionExp RPAREN ws?
+    :    
+    term
+    | IMPORTANT_SYM //cp property value may contain any gargabe - TODO - possibly add other garbage tokens
+    | ( unaryOperator ws? )? sass_interpolation_expression_var //SASS interpolation expression also in expressions e.g. variable declaration value
+    | ( unaryOperator ws? )? LPAREN ws? cp_additionExp ws? RPAREN 
     ;
+
 
 //term w/o unary operators
 cp_term
@@ -1020,11 +1031,10 @@ cp_mixin_call_args
     
 cp_mixin_call_arg
     :
-//    term
-    cp_arg
-    | cp_expression
-//    | term
-//    cp_arg | cp_expression /*term*/
+    (
+        cp_variable ws? COLON ws? cp_expression
+        | cp_expression
+    ) ws?
     ;
 
 //.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
@@ -1040,7 +1050,7 @@ cp_args_list
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
 cp_arg
     :
-    cp_variable ws? ( COLON ws? cp_expression )?
+    cp_variable ws? ( COLON ws? cp_expression ws?)?
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {
@@ -1100,14 +1110,14 @@ less_condition_operator
 sass_selector_interpolation_expression
     :
         ( 
-            sass_interpolation_expression_var
+            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER )
         )
         ( 
             ws?
             (
-                sass_interpolation_expression_var
+                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER)
             )
@@ -1118,14 +1128,14 @@ sass_selector_interpolation_expression
 sass_declaration_interpolation_expression
     :
         ( 
-            sass_interpolation_expression_var
+            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
         )
         ( 
             ws?
             (
-                sass_interpolation_expression_var
+                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
             )
@@ -1133,37 +1143,37 @@ sass_declaration_interpolation_expression
 
     ;
 
-sass_declaration_property_value_interpolation_expression
-    :
-        ( 
-            sass_interpolation_expression_var
-            |
-//            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
-        )
-        ( 
-            ws?
-            (
-                sass_interpolation_expression_var
-                |
-//                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
-            )
-        )*
-
-    ;
+//sass_declaration_property_value_interpolation_expression
+//    :
+//        ( 
+//            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
+//            |
+////            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
+//            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
+//        )
+//        ( 
+//            ws?
+//            (
+//                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
+//                |
+////                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
+//                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
+//            )
+//        )*
+//
+//    ;
     
 sass_mq_interpolation_expression
     :
         ( 
-            sass_interpolation_expression_var
+            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
         )
         ( 
             ws?
             (
-                sass_interpolation_expression_var
+                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
             )
@@ -1173,7 +1183,7 @@ sass_mq_interpolation_expression
     
 sass_interpolation_expression_var
     :
-        HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition | IDENT ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
+        HASH_SYMBOL LBRACE cp_expression RBRACE //XXX possibly allow cp_expression inside
     ;
     
 //SASS nested properties:
@@ -1196,7 +1206,7 @@ sass_interpolation_expression_var
 //}
 sass_nested_properties
     :
-    property COLON ws? propertyValue? LBRACE ws? syncToFollow declarations RBRACE
+    property COLON ws? (propertyValue ws?)? LBRACE ws? syncToFollow declarations RBRACE
     ;
 
 sass_extend
@@ -1221,14 +1231,14 @@ sass_control
 
 sass_if
     :
-    SASS_IF ws sass_control_expression sass_control_block (ws? sass_else)?
+    SASS_IF ws sass_control_expression ws? sass_control_block (ws? sass_else)?
     ;
     
 sass_else
     :
     SASS_ELSE ws? sass_control_block 
     |
-    SASS_ELSE ws? {"if".equalsIgnoreCase(input.LT(1).getText())}? IDENT /* if */ ws? sass_control_expression sass_control_block (ws? sass_else)?
+    SASS_ELSE ws? {"if".equalsIgnoreCase(input.LT(1).getText())}? IDENT /* if */ ws? sass_control_expression ws? sass_control_block (ws? sass_else)?
     ;
 
 sass_control_expression
@@ -1238,7 +1248,12 @@ sass_control_expression
 
 cp_full_expression
     :    cp_full_expression_atom 
-         ( ( OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ ) ws? cp_full_expression_atom )* 
+         ( (ws? cp_full_expression_operator)=>ws? cp_full_expression_operator ws? cp_full_expression_atom )* 
+    ;
+    
+cp_full_expression_operator
+    :
+    OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ
     ;
 
 cp_full_expression_atom
@@ -1246,7 +1261,7 @@ cp_full_expression_atom
         (NOT ws?)? 
         (
             (cp_expression)=>cp_expression
-            | LPAREN ws? cp_full_expression RPAREN ws?
+            | LPAREN ws? cp_full_expression ws? RPAREN
         )
     ;
     
@@ -1267,7 +1282,7 @@ sass_each_list
     
 sass_while
     :
-    SASS_WHILE ws sass_control_expression sass_control_block
+    SASS_WHILE ws sass_control_expression ws? sass_control_block
     ;
 
 sass_control_block

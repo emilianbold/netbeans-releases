@@ -721,6 +721,8 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             public void run() {
                 try {
                     WebClientLibraryManager.getDefault().updateLibraries(true);
+                } catch (InterruptedException ex) {
+                    // cancelled
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                     errorOccured(Bundle.JavaScriptLibrarySelectionPanel_error_jsLibs_update());
