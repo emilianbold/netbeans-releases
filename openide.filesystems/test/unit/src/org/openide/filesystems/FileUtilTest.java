@@ -402,6 +402,7 @@ public class FileUtilTest extends NbTestCase {
      * MIME types given in array in FileUtil.getMIMEType(fo, String[]).
      * See issue 137734.
      */
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
     public void testGetMIMETypeConstrained() throws IOException {
         MyResolver resolver = new MyResolver();
         MockLookup.setInstances(resolver);

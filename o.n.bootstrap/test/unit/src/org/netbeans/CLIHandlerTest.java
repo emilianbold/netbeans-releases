@@ -56,6 +56,7 @@ import org.openide.util.RequestProcessor;
  * Test the command-line-interface handler.
  * @author Jaroslav Tulach
  */
+@RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9887/testReport/
 public class CLIHandlerTest extends NbTestCase {
 
     final static ByteArrayInputStream nullInput = new ByteArrayInputStream(new byte[0]);
@@ -121,7 +122,6 @@ public class CLIHandlerTest extends NbTestCase {
         assertEquals("The same file has been allocated", runner.resultFile(), second.resultFile());
     }
     
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testFileExistsButTheServerCannotBeContacted() throws Exception {
         // start the server and block
         InitializeRunner runner = new InitializeRunner(65);
@@ -228,6 +228,7 @@ public class CLIHandlerTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
     public void testHelpIsPassedToRunningServer() throws Exception {
         class UserDir extends CLIHandler implements Runnable {
             private int cnt;
@@ -280,6 +281,7 @@ public class CLIHandlerTest extends NbTestCase {
         
     }
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9886/testReport/
     public void testFileExistsButTheServerCannotBeContactedAndWeDoNotWantToCleanTheFileOnOtherHost() throws Exception {
         // start the server and block
         InitializeRunner runner = new InitializeRunner(65);
