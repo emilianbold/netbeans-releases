@@ -118,7 +118,7 @@ public class ODCS {
     }
 
     public CloudDevClient getCloudDevClient(TaskRepository taskRepository) {
-        return rc.getCloudDevClient(taskRepository);
+        return rc.getCloudDevClientManager().getCloudDevClient(taskRepository);
     }
     
 }

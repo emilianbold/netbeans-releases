@@ -135,7 +135,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
 //    }
 
     public void testSavedQueries() throws IOException, CoreException {
-        RepositoryConfiguration conf = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(true, nullProgressMonitor);
+        RepositoryConfiguration conf = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(true, nullProgressMonitor);
         List<SavedTaskQuery> l = conf.getSavedTaskQueries();
         assertNotNull(l);
         assertFalse(l.isEmpty());

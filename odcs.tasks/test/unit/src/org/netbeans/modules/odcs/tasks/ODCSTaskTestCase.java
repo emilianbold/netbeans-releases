@@ -295,7 +295,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
 
         @Override
         protected String getDifferentValue(String value) throws CoreException {
-            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             for (String t : clientData.getTaskTypes()) {
                 if(!t.equals(value)) {
                     return t;
@@ -313,7 +313,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
 
         @Override
         protected String getDifferentValue(String value) throws CoreException {
-            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             for (Priority p : clientData.getPriorities()) {
                 if(!p.getValue().equals(value)) {
                     return p.getValue();
@@ -331,7 +331,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
 
         @Override
         protected String getDifferentValue(String value) throws CoreException {
-            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             for (TaskSeverity s : clientData.getSeverities()) {
                 if(!s.getValue().equals(value)) {
                     return s.getValue();
@@ -349,7 +349,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
 
         @Override
         protected String getDifferentValue(String value) throws CoreException {
-            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             for (Iteration i : clientData.getIterations()) {
                 if(!i.getValue().equals(value)) {
                     return i.getValue();
@@ -367,7 +367,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
 
         @Override
         protected String getDifferentValue(String value) throws CoreException {
-            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             for (Keyword k : clientData.getKeywords()) {
                 if(!k.getName().equals(value)) {
                     return k.getName();
@@ -385,7 +385,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
 
         @Override
         protected void runTest() throws Throwable {
-            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             
             TaskAttribute rta = taskData.getRoot();
             TaskAttribute ta = rta.getMappedAttribute(IssueField.PRODUCT.getKey());
@@ -433,7 +433,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
         }
         @Override
         public void runTest() throws Throwable {
-            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             
             // change custom field
             TaskAttribute rta = taskData.getRoot();
@@ -464,7 +464,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
 
         @Override
         protected String getDifferentValue(String value) throws CoreException {
-            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             return getDifferentUser(value, clientData.getUsers());
         }
     }
@@ -475,7 +475,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
         }
         @Override
         public void runTest() throws Throwable {
-            RepositoryConfiguration clientData = rc.getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
             
             // reassign
             TaskAttribute rta = taskData.getRoot();
