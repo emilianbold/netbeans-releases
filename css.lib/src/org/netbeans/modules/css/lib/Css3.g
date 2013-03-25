@@ -411,7 +411,7 @@ mediaType
  ;
  
 mediaExpression
-    : LPAREN ws? mediaFeature ws? ( COLON ws? expression )? RPAREN ws?
+    : LPAREN ws? mediaFeature ws? ( COLON ws? expression ws?)? RPAREN ws?
     ;
  
 mediaFeature
@@ -755,7 +755,7 @@ pseudo
                 ( 
                     ( IDENT | GEN )
                     ( // Function
-                        ws? LPAREN ws? ( expression | STAR )? RPAREN
+                        ws? LPAREN ws? ( (expression ws?) | STAR )? RPAREN
                     )?
                 )
                 |
@@ -765,7 +765,7 @@ pseudo
 
 declaration
     : 
-    STAR? property COLON ws? propertyValue (prio ws?)?
+    STAR? property COLON ws? propertyValue ws? (prio ws?)?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -828,34 +828,32 @@ prio
     ;
     
 expression
-    : term ( (operator ws?)? term)*
+    : term ( ( ws | (operator ws?)?) term)*
     ;
     
 term
-    : ( unaryOperator ws? )?
-        (
-        ( 
-              NUMBER
-            | PERCENTAGE
-            | LENGTH
-            | EMS
-            | REM
-            | EXS
-            | ANGLE
-            | TIME
-            | FREQ
-            | RESOLUTION
-            | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
-        )
-    | STRING
-    | IDENT
-    | GEN
-    | URI
-    | hexColor
-    | function
-    | {isCssPreprocessorSource()}? cp_variable
+    : 
+    ( unaryOperator ws? )?
+    (
+        (function)=>function
+        | IDENT
+        | NUMBER
+        | PERCENTAGE
+        | LENGTH
+        | EMS
+        | REM
+        | EXS
+        | ANGLE
+        | TIME
+        | FREQ
+        | RESOLUTION
+        | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
+        | STRING
+        | GEN
+        | URI
+        | hexColor
+        | {isCssPreprocessorSource()}? cp_variable
     )
-    ws?
     ;
 
 function
@@ -863,8 +861,8 @@ function
 		LPAREN ws?
 		(
                     (cp_args_list)=>cp_args_list
-                    | (cp_variable_value)=>cp_variable_value
-                    | expression
+                    | (cp_variable_value)=>cp_variable_value ws?
+                    | expression ws?
                     | fnAttribute (COMMA ws? fnAttribute )*
                     |
                     {isCssPreprocessorSource()}? //empty
@@ -880,12 +878,13 @@ functionName
         //css spec allows? here just IDENT, 
         //but due to some nonstandart MS extension like progid:DXImageTransform.Microsoft.gradien
         //the function name can be a bit more complicated
-	: (IDENT COLON)? IDENT (DOT IDENT)*
-//	: IDENT
+	: 
+        (IDENT COLON)? IDENT (DOT IDENT)*
+//	IDENT
     	;
     	
 fnAttribute
-	: fnAttributeName ws? OPEQ ws? fnAttributeValue
+	: fnAttributeName ws? OPEQ ws? fnAttributeValue ws?
 	;
     
 fnAttributeName
@@ -909,9 +908,9 @@ ws
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
     : 
-        {isLessSource()}? cp_variable ws? COLON ws? cp_variable_value SEMI    
+        {isLessSource()}? cp_variable ws? COLON ws? cp_variable_value ws? SEMI    
         | 
-        {isScssSource()}? cp_variable ws? COLON ws? cp_variable_value (SASS_DEFAULT ws?)? SEMI    
+        {isScssSource()}? cp_variable ws? COLON ws? cp_variable_value ws? (SASS_DEFAULT ws?)? SEMI    
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR    
@@ -930,27 +929,30 @@ cp_variable_value
 
 //ENTRY POINT FROM CSS GRAMMAR
 cp_expression
-    :    cp_additionExp
+    :    
+    cp_additionExp
+    (ws cp_additionExp)*
     ;
 
 cp_additionExp
     :    cp_multiplyExp 
-         ( PLUS ws? cp_multiplyExp
-         | MINUS ws? cp_multiplyExp
+         (
+            (ws? (PLUS | MINUS))=> ws? ( PLUS ws? cp_multiplyExp | MINUS ws? cp_multiplyExp )
          )* 
     ;
 
 cp_multiplyExp
     :    cp_atomExp
-         ( STAR ws? cp_atomExp 
-         | SOLIDUS ws? cp_atomExp
+         ( 
+            (ws? (STAR | SOLIDUS))=> ws? ( STAR ws? cp_atomExp | SOLIDUS ws? cp_atomExp)
          )* 
     ;
 
 cp_atomExp
-    :    term ((term)=>term)* //multiple terms separated just by whitespace
-    |    LPAREN ws? cp_additionExp RPAREN ws?
+    :    term
+    |    LPAREN ws? cp_additionExp ws? RPAREN 
     ;
+
 
 //term w/o unary operators
 cp_term
@@ -1022,7 +1024,7 @@ cp_mixin_call_arg
     :
 //    term
     cp_arg
-    | cp_expression
+    | cp_expression ws?
 //    | term
 //    cp_arg | cp_expression /*term*/
     ;
@@ -1040,7 +1042,7 @@ cp_args_list
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
 cp_arg
     :
-    cp_variable ws? ( COLON ws? cp_expression )?
+    cp_variable ws? ( COLON ws? cp_expression ws?)?
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {
@@ -1196,7 +1198,7 @@ sass_interpolation_expression_var
 //}
 sass_nested_properties
     :
-    property COLON ws? propertyValue? LBRACE ws? syncToFollow declarations RBRACE
+    property COLON ws? (propertyValue ws?)? LBRACE ws? syncToFollow declarations RBRACE
     ;
 
 sass_extend
@@ -1221,14 +1223,14 @@ sass_control
 
 sass_if
     :
-    SASS_IF ws sass_control_expression sass_control_block (ws? sass_else)?
+    SASS_IF ws sass_control_expression ws? sass_control_block (ws? sass_else)?
     ;
     
 sass_else
     :
     SASS_ELSE ws? sass_control_block 
     |
-    SASS_ELSE ws? {"if".equalsIgnoreCase(input.LT(1).getText())}? IDENT /* if */ ws? sass_control_expression sass_control_block (ws? sass_else)?
+    SASS_ELSE ws? {"if".equalsIgnoreCase(input.LT(1).getText())}? IDENT /* if */ ws? sass_control_expression ws? sass_control_block (ws? sass_else)?
     ;
 
 sass_control_expression
@@ -1238,7 +1240,12 @@ sass_control_expression
 
 cp_full_expression
     :    cp_full_expression_atom 
-         ( ( OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ ) ws? cp_full_expression_atom )* 
+         ( (ws? cp_full_expression_operator)=>ws? cp_full_expression_operator ws? cp_full_expression_atom )* 
+    ;
+    
+cp_full_expression_operator
+    :
+    OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ
     ;
 
 cp_full_expression_atom
@@ -1246,7 +1253,7 @@ cp_full_expression_atom
         (NOT ws?)? 
         (
             (cp_expression)=>cp_expression
-            | LPAREN ws? cp_full_expression RPAREN ws?
+            | LPAREN ws? cp_full_expression ws? RPAREN
         )
     ;
     
@@ -1267,7 +1274,7 @@ sass_each_list
     
 sass_while
     :
-    SASS_WHILE ws sass_control_expression sass_control_block
+    SASS_WHILE ws sass_control_expression ws? sass_control_block
     ;
 
 sass_control_block

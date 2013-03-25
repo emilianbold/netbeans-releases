@@ -1244,25 +1244,22 @@ public class Css3ParserScssTest extends CssTestBase {
     //cp_expression (which can contain ( ) pairs)
     public void testLRPARENInPropertyValueInterpolationExpression_fails() {
         assertParses(".clz { $rotation: rotate(#{$angle}deg); }");
-    }
-
-    public void testX7() {
-        assertParses(".clz { background-position: 0 ($accordion-header-tool-size * -17); }");
-    }
-
-    public void testX7_2() {
-        assertParses(".clz { padding: $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2) $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2); }");
-    }
-
-    public void testX7_3() {
-        assertParses(".clz { $fieldset-collapse-tool-background-position-over: 0 (-$fieldset-collapse-tool-size) !default; }");
-    }
-
-    public void testX7_4() {
         assertParses(".clz { background-image: slicer-corner-sprite(btn-#{$ui}-over, 'btn/btn-#{$ui}-over-corners'); }");
     }
 
-    public void testX7_5() {
+    public void testCPExpressionInPropertyValue() {
+        assertParses(".clz { background-position: 0 ($accordion-header-tool-size * -17); }");
+    }
+
+    public void testCPExpressionInPropertyValue2() {
+        assertParses(".clz { padding: $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2) $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2); }");
+    }
+
+    public void testCPExpressionInPropertyValue3() {
+        assertParses(".clz { $fieldset-collapse-tool-background-position-over: 0 (-$fieldset-collapse-tool-size) !default; }");
+    }
+
+    public void testFunctionInsideSASSInterpolationExpression() {
         assertParses(".clz { padding-left: #{left($fieldset-header-padding) - 2}; }");
     }
 
