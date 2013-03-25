@@ -46,6 +46,6 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 
 <group version="2.0">
     <module name="org.netbeans.modules.web.inspect" />
-    <name unique="DomTC" />
+    <name unique="DomTree" />
     <state opened="false" />
 </group>
