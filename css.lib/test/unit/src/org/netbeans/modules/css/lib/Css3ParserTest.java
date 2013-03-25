@@ -645,7 +645,7 @@ public class Css3ParserTest extends CssTestBase {
 
         Node media_query = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "media/mediaQueryList/mediaQuery");
+                + "at_rule/media/mediaQueryList/mediaQuery");
         assertNotNull(media_query);
 
         Node media_type = NodeUtil.query(media_query, "mediaType");
@@ -693,7 +693,7 @@ public class Css3ParserTest extends CssTestBase {
         //test page node
         Node page = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "page");
+                + "at_rule/page");
         assertNotNull(page);
 
         //pseudo page
@@ -752,7 +752,7 @@ public class Css3ParserTest extends CssTestBase {
         //test page node
         Node page = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "page");
+                + "at_rule/page");
         assertNotNull(page);
 
         //declaration
@@ -772,7 +772,7 @@ public class Css3ParserTest extends CssTestBase {
 
         Node counterStyle = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "counterStyle");
+                + "at_rule/counterStyle");
         assertNotNull(counterStyle);
 
         Node ident = NodeUtil.getChildTokenNode(counterStyle, CssTokenId.IDENT);
@@ -802,7 +802,7 @@ public class Css3ParserTest extends CssTestBase {
 
         Node counterStyle = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "fontFace");
+                + "at_rule/fontFace");
         assertNotNull(counterStyle);
 
         Node declaration = NodeUtil.query(counterStyle, "declarations/declaration|0");
@@ -902,7 +902,7 @@ public class Css3ParserTest extends CssTestBase {
 
         assertResultOK(result);
 //        NodeUtil.dumpTree(result.getParseTree());
-        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/vendorAtRule/moz_document"));
+        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/at_rule/vendorAtRule/moz_document"));
     }
 
     //Bug 204128 - CC stops work after # in a color attribute 
@@ -1066,7 +1066,7 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(result);
 
         Node node = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem/vendorAtRule/generic_at_rule");
+                "styleSheet/body/bodyItem/at_rule/vendorAtRule/generic_at_rule");
 
         assertNotNull(node);
 
@@ -1105,7 +1105,7 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(result);
 
         Node wkf = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem/vendorAtRule/webkitKeyframes");
+                "styleSheet/body/bodyItem/at_rule/vendorAtRule/webkitKeyframes");
 
         assertNotNull(wkf);
 
