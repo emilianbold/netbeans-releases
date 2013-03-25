@@ -127,12 +127,6 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
     }
 
     public static class DestructorBuilder extends MethodBuilder {
-        
-        @Override
-        public void setName(CharSequence name) {
-            super.setName("~" + name); // NOI18N
-        }        
-        
         @Override
         public DestructorImpl create() {
             CsmClass cls = (CsmClass) getScope();

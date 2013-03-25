@@ -355,6 +355,10 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     @Override public void end_block_declaration(Token token) {}
     @Override public void id_expression(Token token) {}
     @Override public void end_id_expression(Token token) {}
+    
+    @Override public void tilde_class_name(Token token) {}
+    @Override public void end_tilde_class_name(Token token) {}
+    
     @Override public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {}
     @Override public void end_alias_declaration(Token token) {}
     @Override public void function_specifier(int kind, Token token) {}
