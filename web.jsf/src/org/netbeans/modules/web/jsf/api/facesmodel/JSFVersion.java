@@ -109,6 +109,7 @@ public enum JSFVersion {
      */
     @CheckForNull
     public synchronized static JSFVersion forWebModule(@NonNull final WebModule webModule) {
+        Parameters.notNull("webModule", webModule); //NOI18N
         JSFVersion version = projectVersionCache.get(webModule);
         if (version == null) {
             version = get(webModule, true);
@@ -223,6 +224,7 @@ public enum JSFVersion {
      * @return {@code true} if the current instance is at least of the given version, {@code false} otherwise
      */
     public boolean isAtLeast(@NonNull JSFVersion version) {
+        Parameters.notNull("version", version); //NOI18N
         int thisMajorVersion = Integer.parseInt(this.name().substring(4, 5));
         int thisMinorVersion = Integer.parseInt(this.name().substring(6, 7));
         int compMajorVersion = Integer.parseInt(version.name().substring(4, 5));
