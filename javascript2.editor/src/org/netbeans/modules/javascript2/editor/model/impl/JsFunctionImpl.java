@@ -65,8 +65,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         this.parameters = new ArrayList<JsObject>(parameters.size());
         for (Identifier identifier : parameters) {
             JsObject parameter = new ParameterObject(this, identifier);
-            this.parametersByName.put(identifier.getName(), parameter);
-            this.parameters.add(parameter);
+            addParameter(parameter);
         }
         this.isAnonymous = false;
         this.returnTypes = new HashSet<TypeUsage>();
@@ -99,8 +98,14 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     }
     
     @Override
-    public Collection<? extends JsObject> getParameters() {
+    public final Collection<? extends JsObject> getParameters() {
         return this.parameters;
+    }
+
+    public final void addParameter(JsObject object) {
+        assert object.getParent() == this;
+        this.parametersByName.put(object.getName(), object);
+        this.parameters.add(object);
     }
 
     @Override
@@ -200,6 +205,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         return returns;
     }    
         
+    @Override
     public void addReturnType(TypeUsage type) {
         boolean isThere = false;
         for (TypeUsage typeUsage : this.returnTypes) {
@@ -269,6 +275,10 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             }
         }
     }
-    
+
+//    @Override
+//    public String toString() {
+//        return "JsFunctionImpl{" + "declarationName=" + getDeclarationName() + ", parent=" + getParent() + ", kind=" + kind + ", parameters=" + parameters + ", returnTypes=" + returnTypes + '}';
+//    }
     
 }
