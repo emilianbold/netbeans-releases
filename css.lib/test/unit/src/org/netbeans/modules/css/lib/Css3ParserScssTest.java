@@ -1315,4 +1315,17 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testInclude() throws ParseException, BadLocationException {
         assertParses(".x { @include x-slicer($panel-header-ui + '-top'); }");
     }
+    
+    public void testMSPropertyValueAndInterpolationExpression() throws ParseException, BadLocationException {
+        assertParses(".x { filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=#{$ie-rotation}); }");
+    }
+   
+    public void testLastItemInBlockDoesntNeedToBeTerminatedWithSemicolon_fails() throws ParseException, BadLocationException {
+        assertParses(".x { $image-search-path: '.' !default }"); //doesn't work
+        assertParses(".x { $image-search-path: '.' !default; }"); //works
+    }
+    
+    public void testUnaryOperatorWithIE() throws ParseException, BadLocationException {
+        assertParses(".x { margin-top: -#{top($fieldset-border-width)}; }");
+    }
 }

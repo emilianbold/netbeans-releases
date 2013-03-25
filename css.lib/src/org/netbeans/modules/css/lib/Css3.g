@@ -896,7 +896,9 @@ fnAttributeName
 	;
 	
 fnAttributeValue
-	: expression
+	: 
+            expression
+            | {isCssPreprocessorSource()}? cp_expression
 	;
     
 hexColor
@@ -956,7 +958,7 @@ cp_atomExp
     :    
     term
     | IMPORTANT_SYM //cp property value may contain any gargabe - TODO - possibly add other garbage tokens
-    | sass_interpolation_expression_var //SASS interpolation expression also in expressions e.g. variable declaration value
+    | ( unaryOperator ws? )? sass_interpolation_expression_var //SASS interpolation expression also in expressions e.g. variable declaration value
     | ( unaryOperator ws? )? LPAREN ws? cp_additionExp ws? RPAREN 
     ;
 
