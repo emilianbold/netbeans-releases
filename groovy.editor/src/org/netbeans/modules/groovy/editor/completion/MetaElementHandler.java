@@ -80,26 +80,37 @@ public final class MetaElementHandler {
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
     // FIXME SPI to plug here for Grails dynamic methods
+    public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
+            String prefix, int anchor) {
+
+        final Class clazz = loadClass(className);
+        final MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(clazz);
+
+        if (metaClass != null) {
+            Map<FieldSignature, CompletionItem.FieldItem> result = new HashMap<FieldSignature, CompletionItem.FieldItem>();
+
+            LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
+            for (Object field : metaClass.getProperties()) {
+                LOG.log(Level.FINEST, field.toString());
+                MetaProperty prop = (MetaProperty) field;
+                if (prop.getName().startsWith(prefix)) {
+                    result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
+                            prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
+                }
+            }
+
+            return result;
+        }
+        return Collections.emptyMap();
+    }
+    
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
             String prefix, int anchor, boolean nameOnly) {
 
-        Class clz;
-
-        try {
-            // FIXME should be loaded by classpath classloader
-            clz = Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            LOG.log(Level.FINE, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
-            return Collections.emptyMap();
-        } catch (NoClassDefFoundError err) {
-            LOG.log(Level.FINE, "Class.forName() failed: {0}", err.getMessage()); // NOI18N
-            return Collections.emptyMap();
-        }
-
-        MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
+        final Class clz = loadClass(className);
+        final MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
 
         if (metaClz != null) {
-
             Map<MethodSignature, CompletionItem.MetaMethodItem> result = new HashMap<MethodSignature, CompletionItem.MetaMethodItem>();
 
             LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
@@ -111,43 +122,18 @@ public final class MetaElementHandler {
         }
         return Collections.emptyMap();
     }
-
-    public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
-            String prefix, int anchor) {
-
-        Class clz;
-
+    
+    private Class loadClass(String className) {
         try {
             // FIXME should be loaded by classpath classloader
-            clz = Class.forName(className);
+            return Class.forName(className);
         } catch (ClassNotFoundException e) {
-            LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
-            return Collections.emptyMap();
+            LOG.log(Level.FINE, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+            return null;
         } catch (NoClassDefFoundError err) {
-            LOG.log(Level.FINEST, "Class.forName() failed: {0}", err.getMessage()); // NOI18N
-            return Collections.emptyMap();
+            LOG.log(Level.FINE, "Class.forName() failed: {0}", err.getMessage()); // NOI18N
+            return null;
         }
-
-        MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
-
-        if (metaClz != null) {
-
-            Map<FieldSignature, CompletionItem.FieldItem> result = new HashMap<FieldSignature, CompletionItem.FieldItem>();
-
-            LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
-            for (Object field : metaClz.getProperties()) {
-                LOG.log(Level.FINEST, field.toString());
-                MetaProperty prop = (MetaProperty) field;
-                //System.out.println("META: " + prop.getName() + " " + prop.getType().getSimpleName() + " " + Utilities.reflectionModifiersToModel(prop.getModifiers()));
-                if (prop.getName().startsWith(prefix)) {
-                    result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
-                            prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
-                }
-            }
-
-            return result;
-        }
-        return Collections.emptyMap();
     }
 
     private void populateProposal(Class clz, MetaMethod method, String prefix, int anchor,
