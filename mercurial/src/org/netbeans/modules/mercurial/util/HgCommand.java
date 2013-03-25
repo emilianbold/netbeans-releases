@@ -357,7 +357,7 @@ public class HgCommand {
     private static final String HG_NO_UPDATES_ERR = "0 files updated, 0 files merged, 0 files removed, 0 files unresolved"; // NOI18N
     private static final String HG_NO_VIEW_ERR = "hg: unknown command 'view'"; // NOI18N
     private static final String HG_HGK_NOT_FOUND_ERR = "sh: hgk: not found"; // NOI18N
-    private static final String HG_NO_SUCH_FILE_ERR = "No such file"; // NOI18N
+    private static final String HG_NO_SUCH_FILE_ERR = "no such file"; // NOI18N
 
     private static final String HG_NO_REV_STRIP_ERR = "abort: unknown revision"; // NOI18N
     private static final String HG_LOCAL_CHANGES_STRIP_ERR = "abort: local changes found"; // NOI18N
@@ -4508,7 +4508,7 @@ public class HgCommand {
     }
 
     private static boolean isErrorNoSuchFile(String msg) {
-        return msg.indexOf(HG_NO_SUCH_FILE_ERR) > -1;                               // NOI18N
+        return msg.toLowerCase().indexOf(HG_NO_SUCH_FILE_ERR) > -1;                               // NOI18N
     }
 
     private static boolean isErrorNoResponse(String msg) {
