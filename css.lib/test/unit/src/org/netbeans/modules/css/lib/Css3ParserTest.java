@@ -438,7 +438,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "}";
 
         CssParserResult result = TestUtil.parse(content);
-//        TestUtil.dumpResult(result);
+        TestUtil.dumpResult(result);
 
         assertNotNull(NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath + "rule/declarations/declaration|0/property/filter"));
@@ -609,7 +609,9 @@ public class Css3ParserTest extends CssTestBase {
 
     }
 
-    public void testErrorCase10() throws ParseException, BadLocationException {
+    //due to the syntactic predicate (function)=>function in term rule the parser
+    //won't even enter the function rule hence the error is lower in the parse tree
+    public void testErrorCase10_fails() throws ParseException, BadLocationException {
         String content = "p { color: hsl(10, }";
 
         CssParserResult result = TestUtil.parse(content);
@@ -913,12 +915,12 @@ public class Css3ParserTest extends CssTestBase {
                 + "div { color: red; }\n");
 
 //        TestUtil.dumpResult(result);
-        Node node = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem/"
-                + "rule/declarations/declaration/propertyValue/error");
 //        Node node = NodeUtil.query(result.getParseTree(),
 //                "styleSheet/body/bodyItem/"
-//                + "rule/declarations/declaration/propertyValue/expression/error");
+//                + "rule/declarations/declaration/propertyValue/error");
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/body/bodyItem/"
+                + "rule/declarations/declaration/propertyValue/expression/error");
         assertNotNull(node);
         assertEquals(15, node.from());
         assertEquals(16, node.to());
@@ -1224,4 +1226,13 @@ public class Css3ParserTest extends CssTestBase {
         assertEquals(0, result.getDiagnostics().size());
 
     }
+    
+    public void testCommaSeparatedPropertyValues() throws ParseException, BadLocationException {
+        assertParses(".x { font-family: \"Myriad Pro\",\"Myriad Web\",\"Tahoma\",\"Helvetica\",\"Arial\",sans-serif; }");
+    }
+    
+    public void testImportantSymbolJustAfterPropertyValue() throws ParseException, BadLocationException {
+        assertParses(".x { z-index: 1000000!important; }");
+    }
+    
 }

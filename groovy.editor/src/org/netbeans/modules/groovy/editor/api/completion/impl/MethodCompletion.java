@@ -91,12 +91,11 @@ public class MethodCompletion extends BaseCompletion {
         this.request = request;
         this.anchor = anchor;
 
-        if (request == null ||
-            request.ctx == null ||
-            request.dotContext == null ||
-            request.dotContext.isFieldsOnly() ||
-            request.location == CaretLocation.INSIDE_PARAMETERS) {
-            
+        if (request == null || request.ctx == null || request.location == CaretLocation.INSIDE_PARAMETERS) {
+            return false;
+        }
+        
+        if (request.dotContext != null && request.dotContext.isFieldsOnly()) {
             return false;
         }
 
