@@ -1324,8 +1324,16 @@ public class Css3ParserScssTest extends CssTestBase {
         assertParses(".x { $image-search-path: '.' !default }"); //doesn't work
         assertParses(".x { $image-search-path: '.' !default; }"); //works
     }
-    
+        
     public void testUnaryOperatorWithIE() throws ParseException, BadLocationException {
         assertParses(".x { margin-top: -#{top($fieldset-border-width)}; }");
+    }
+    
+    public void testFunctionArgumentsCanBeBooleanExpression() throws ParseException, BadLocationException {
+        assertParses("$foo: if($direction == top or $direction == bottom, 0, 1);", true);
+    }
+    
+    public void testFunction3() throws ParseException, BadLocationException {
+        assertParses(".clz { @include linear-gradient(#3875d7 20%, #2a62bc 90%); }", true);
     }
 }

@@ -930,7 +930,7 @@ cp_variable
 
 cp_expression_list
     :
-    cp_expression (ws? COMMA ws? cp_expression)*     
+    cp_full_expression (ws? COMMA ws? cp_full_expression)*     
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR
@@ -1032,8 +1032,8 @@ cp_mixin_call_args
 cp_mixin_call_arg
     :
     (
-        cp_variable ws? COLON ws? cp_expression
-        | cp_expression
+        cp_variable ws? COLON ws? cp_full_expression
+        | cp_full_expression
     ) ws?
     ;
 

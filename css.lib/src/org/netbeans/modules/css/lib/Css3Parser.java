@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-03-25 13:23:45
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-03-25 15:57:05
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -205,42 +205,40 @@ public class Css3Parser extends DebugParser {
     // delegators
 
     public static final String[] ruleNames = new String[] {
-        "invalidRule", "sass_each", "combinator", "cp_expression_list", 
-        "pseudoPage", "sass_selector_interpolation_expression", "cp_full_expression", 
-        "cp_full_expression_atom", "moz_document_function", "sass_function_name", 
-        "syncTo_SEMI", "cp_additionExp", "synpred10_Css3", "cssId", "cp_args_list", 
-        "synpred9_Css3", "hexColor", "synpred5_Css3", "cp_mixin_call", "webkitKeyframesBlock", 
-        "less_function_in_condition", "mediaQuery", "simpleSelectorSequence", 
-        "synpred28_Css3", "operator", "typeSelector", "synpred21_Css3", 
-        "synpred12_Css3", "synpred18_Css3", "pseudo", "elementSubsequent", 
-        "synpred26_Css3", "synpred25_Css3", "namespacePrefixName", "synpred27_Css3", 
-        "less_fn_name", "slAttributeName", "propertyValue", "cp_mixin_call_arg", 
-        "mediaQueryOperator", "generic_at_rule", "cp_expression", "synpred20_Css3", 
-        "elementName", "less_mixin_guarded", "moz_document", "mediaQueryList", 
-        "functionName", "margin_sym", "cp_variable_declaration", "synpred11_Css3", 
-        "namespaces", "synpred1_Css3", "mediaFeature", "fnAttribute", "page", 
-        "styleSheet", "syncToFollow", "sass_nested_properties", "esPred", 
-        "declarations", "sass_function_declaration", "synpred14_Css3", "property", 
-        "function", "namespacePrefix", "mediaType", "fnAttributeValue", 
-        "cp_full_expression_operator", "webkitKeyframes", "sass_declaration_interpolation_expression", 
-        "synpred22_Css3", "unaryOperator", "imports", "mediaExpression", 
-        "cp_atomExp", "synpred23_Css3", "sass_control_expression", "less_condition", 
-        "atRuleId", "cp_mixin_name", "slAttributeValue", "fnAttributeName", 
-        "sass_each_list", "cp_term", "term", "slAttribute", "syncToDeclarationsRule", 
-        "importItem", "cp_variable", "sass_interpolation_expression_var", 
-        "sass_extend", "synpred4_Css3", "selector", "expression", "media", 
-        "counterStyle", "rule", "prio", "synpred13_Css3", "synpred7_Css3", 
-        "bodyItem", "webkitKeyframeSelectors", "synpred8_Css3", "synpred3_Css3", 
-        "namespace", "sass_content", "cp_propertyValue", "sass_for", "sass_if", 
-        "synpred24_Css3", "sass_extend_only_selector", "sass_debug", "syncTo_RBRACE", 
-        "sass_control_block", "sass_mq_interpolation_expression", "selectorsGroup", 
-        "margin", "ws", "synpred19_Css3", "synpred29_Css3", "synpred6_Css3", 
-        "cp_mixin_call_args", "charSetValue", "sass_while", "vendorAtRule", 
-        "synpred16_Css3", "fontFace", "sass_function_return", "charSet", 
-        "cp_multiplyExp", "synpred15_Css3", "resourceIdentifier", "body", 
-        "synpred17_Css3", "sass_control", "cp_arg", "expressionPredicate", 
-        "less_condition_operator", "cp_mixin_declaration", "sass_else", 
-        "synpred2_Css3", "declaration", "cssClass"
+        "invalidRule", "synpred25_Css3", "imports", "synpred11_Css3", "atRuleId", 
+        "moz_document_function", "cp_propertyValue", "synpred9_Css3", "function", 
+        "less_condition_operator", "cp_full_expression_atom", "syncTo_RBRACE", 
+        "synpred6_Css3", "typeSelector", "selectorsGroup", "synpred22_Css3", 
+        "cp_atomExp", "cp_arg", "expressionPredicate", "sass_control", "synpred5_Css3", 
+        "sass_else", "synpred18_Css3", "esPred", "moz_document", "pseudo", 
+        "cp_additionExp", "sass_nested_properties", "webkitKeyframeSelectors", 
+        "cp_mixin_declaration", "hexColor", "synpred23_Css3", "page", "sass_if", 
+        "namespacePrefix", "syncTo_SEMI", "cp_mixin_call", "cp_term", "synpred19_Css3", 
+        "cp_expression", "operator", "mediaFeature", "cp_mixin_call_arg", 
+        "mediaType", "synpred26_Css3", "sass_each", "syncToDeclarationsRule", 
+        "simpleSelectorSequence", "declaration", "rule", "synpred20_Css3", 
+        "selector", "synpred4_Css3", "synpred7_Css3", "cp_full_expression", 
+        "namespaces", "term", "slAttribute", "sass_for", "unaryOperator", 
+        "sass_mq_interpolation_expression", "sass_function_declaration", 
+        "sass_extend_only_selector", "fontFace", "importItem", "functionName", 
+        "syncToFollow", "namespacePrefixName", "margin_sym", "resourceIdentifier", 
+        "synpred17_Css3", "less_condition", "slAttributeValue", "expression", 
+        "synpred1_Css3", "prio", "charSet", "synpred12_Css3", "ws", "sass_selector_interpolation_expression", 
+        "synpred29_Css3", "synpred27_Css3", "namespace", "bodyItem", "cp_args_list", 
+        "cp_full_expression_operator", "margin", "sass_each_list", "slAttributeName", 
+        "fnAttribute", "property", "fnAttributeName", "combinator", "sass_interpolation_expression_var", 
+        "mediaExpression", "cp_variable", "sass_control_expression", "counterStyle", 
+        "webkitKeyframesBlock", "sass_extend", "cp_mixin_call_args", "mediaQuery", 
+        "webkitKeyframes", "synpred14_Css3", "synpred13_Css3", "mediaQueryOperator", 
+        "less_fn_name", "mediaQueryList", "charSetValue", "synpred16_Css3", 
+        "synpred21_Css3", "cssId", "sass_debug", "propertyValue", "cp_mixin_name", 
+        "synpred3_Css3", "body", "synpred8_Css3", "fnAttributeValue", "cp_variable_declaration", 
+        "synpred10_Css3", "sass_declaration_interpolation_expression", "pseudoPage", 
+        "sass_content", "sass_function_name", "synpred2_Css3", "declarations", 
+        "sass_control_block", "synpred28_Css3", "sass_while", "cp_expression_list", 
+        "synpred15_Css3", "less_function_in_condition", "styleSheet", "vendorAtRule", 
+        "less_mixin_guarded", "sass_function_return", "cssClass", "synpred24_Css3", 
+        "elementSubsequent", "media", "cp_multiplyExp", "elementName", "generic_at_rule"
     };
     public static final boolean[] decisionCanBacktrack = new boolean[] {
         false, // invalid decision
@@ -11786,7 +11784,7 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "cp_expression_list"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:931:1: cp_expression_list : cp_expression ( ( ws )? COMMA ( ws )? cp_expression )* ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:931:1: cp_expression_list : cp_full_expression ( ( ws )? COMMA ( ws )? cp_full_expression )* ;
     public final void cp_expression_list() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "cp_expression_list");
         if ( getRuleLevel()==0 ) {dbg.commence();}
@@ -11794,19 +11792,19 @@ public class Css3Parser extends DebugParser {
         dbg.location(931, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:932:5: ( cp_expression ( ( ws )? COMMA ( ws )? cp_expression )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:932:5: ( cp_full_expression ( ( ws )? COMMA ( ws )? cp_full_expression )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:5: cp_expression ( ( ws )? COMMA ( ws )? cp_expression )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:5: cp_full_expression ( ( ws )? COMMA ( ws )? cp_full_expression )*
             {
             dbg.location(933,5);
-            pushFollow(FOLLOW_cp_expression_in_cp_expression_list5768);
-            cp_expression();
+            pushFollow(FOLLOW_cp_full_expression_in_cp_expression_list5768);
+            cp_full_expression();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(933,19);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:19: ( ( ws )? COMMA ( ws )? cp_expression )*
+            dbg.location(933,24);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:24: ( ( ws )? COMMA ( ws )? cp_full_expression )*
             try { dbg.enterSubRule(198);
 
             loop198:
@@ -11828,10 +11826,10 @@ public class Css3Parser extends DebugParser {
             	case 1 :
             	    dbg.enterAlt(1);
 
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:20: ( ws )? COMMA ( ws )? cp_expression
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:25: ( ws )? COMMA ( ws )? cp_full_expression
             	    {
-            	    dbg.location(933,20);
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:20: ( ws )?
+            	    dbg.location(933,25);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:25: ( ws )?
             	    int alt196=2;
             	    try { dbg.enterSubRule(196);
             	    try { dbg.enterDecision(196, decisionCanBacktrack[196]);
@@ -11847,9 +11845,9 @@ public class Css3Parser extends DebugParser {
             	        case 1 :
             	            dbg.enterAlt(1);
 
-            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:20: ws
+            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:25: ws
             	            {
-            	            dbg.location(933,20);
+            	            dbg.location(933,25);
             	            pushFollow(FOLLOW_ws_in_cp_expression_list5771);
             	            ws();
 
@@ -11862,10 +11860,10 @@ public class Css3Parser extends DebugParser {
             	    }
             	    } finally {dbg.exitSubRule(196);}
 
-            	    dbg.location(933,24);
+            	    dbg.location(933,29);
             	    match(input,COMMA,FOLLOW_COMMA_in_cp_expression_list5774); if (state.failed) return ;
-            	    dbg.location(933,30);
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:30: ( ws )?
+            	    dbg.location(933,35);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:35: ( ws )?
             	    int alt197=2;
             	    try { dbg.enterSubRule(197);
             	    try { dbg.enterDecision(197, decisionCanBacktrack[197]);
@@ -11881,9 +11879,9 @@ public class Css3Parser extends DebugParser {
             	        case 1 :
             	            dbg.enterAlt(1);
 
-            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:30: ws
+            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:35: ws
             	            {
-            	            dbg.location(933,30);
+            	            dbg.location(933,35);
             	            pushFollow(FOLLOW_ws_in_cp_expression_list5776);
             	            ws();
 
@@ -11896,9 +11894,9 @@ public class Css3Parser extends DebugParser {
             	    }
             	    } finally {dbg.exitSubRule(197);}
 
-            	    dbg.location(933,34);
-            	    pushFollow(FOLLOW_cp_expression_in_cp_expression_list5779);
-            	    cp_expression();
+            	    dbg.location(933,39);
+            	    pushFollow(FOLLOW_cp_full_expression_in_cp_expression_list5779);
+            	    cp_full_expression();
 
             	    state._fsp--;
             	    if (state.failed) return ;
@@ -13657,7 +13655,7 @@ public class Css3Parser extends DebugParser {
 
                     int LA235_0 = input.LA(1);
 
-                    if ( ((LA235_0>=IDENT && LA235_0<=URI)||LA235_0==MEDIA_SYM||(LA235_0>=GEN && LA235_0<=LPAREN)||LA235_0==AT_IDENT||LA235_0==PERCENTAGE||LA235_0==PLUS||(LA235_0>=MINUS && LA235_0<=HASH)||(LA235_0>=SASS_VAR && LA235_0<=DIMENSION)) ) {
+                    if ( ((LA235_0>=IDENT && LA235_0<=URI)||LA235_0==MEDIA_SYM||(LA235_0>=NOT && LA235_0<=LPAREN)||LA235_0==AT_IDENT||LA235_0==PERCENTAGE||LA235_0==PLUS||(LA235_0>=MINUS && LA235_0<=HASH)||(LA235_0>=SASS_VAR && LA235_0<=DIMENSION)) ) {
                         alt235=1;
                     }
                     } finally {dbg.exitDecision(235);}
@@ -13917,7 +13915,7 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "cp_mixin_call_arg"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1032:1: cp_mixin_call_arg : ( cp_variable ( ws )? COLON ( ws )? cp_expression | cp_expression ) ( ws )? ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1032:1: cp_mixin_call_arg : ( cp_variable ( ws )? COLON ( ws )? cp_full_expression | cp_full_expression ) ( ws )? ;
     public final void cp_mixin_call_arg() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "cp_mixin_call_arg");
         if ( getRuleLevel()==0 ) {dbg.commence();}
@@ -13925,13 +13923,13 @@ public class Css3Parser extends DebugParser {
         dbg.location(1032, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1033:5: ( ( cp_variable ( ws )? COLON ( ws )? cp_expression | cp_expression ) ( ws )? )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1033:5: ( ( cp_variable ( ws )? COLON ( ws )? cp_full_expression | cp_full_expression ) ( ws )? )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1034:5: ( cp_variable ( ws )? COLON ( ws )? cp_expression | cp_expression ) ( ws )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1034:5: ( cp_variable ( ws )? COLON ( ws )? cp_full_expression | cp_full_expression ) ( ws )?
             {
             dbg.location(1034,5);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1034:5: ( cp_variable ( ws )? COLON ( ws )? cp_expression | cp_expression )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1034:5: ( cp_variable ( ws )? COLON ( ws )? cp_full_expression | cp_full_expression )
             int alt242=2;
             try { dbg.enterSubRule(242);
             try { dbg.enterDecision(242, decisionCanBacktrack[242]);
@@ -13950,7 +13948,7 @@ public class Css3Parser extends DebugParser {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1035:9: cp_variable ( ws )? COLON ( ws )? cp_expression
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1035:9: cp_variable ( ws )? COLON ( ws )? cp_full_expression
                     {
                     dbg.location(1035,9);
                     pushFollow(FOLLOW_cp_variable_in_cp_mixin_call_arg6705);
@@ -14025,8 +14023,8 @@ public class Css3Parser extends DebugParser {
                     } finally {dbg.exitSubRule(241);}
 
                     dbg.location(1035,35);
-                    pushFollow(FOLLOW_cp_expression_in_cp_mixin_call_arg6715);
-                    cp_expression();
+                    pushFollow(FOLLOW_cp_full_expression_in_cp_mixin_call_arg6715);
+                    cp_full_expression();
 
                     state._fsp--;
                     if (state.failed) return ;
@@ -14036,11 +14034,11 @@ public class Css3Parser extends DebugParser {
                 case 2 :
                     dbg.enterAlt(2);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1036:11: cp_expression
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1036:11: cp_full_expression
                     {
                     dbg.location(1036,11);
-                    pushFollow(FOLLOW_cp_expression_in_cp_mixin_call_arg6727);
-                    cp_expression();
+                    pushFollow(FOLLOW_cp_full_expression_in_cp_mixin_call_arg6727);
+                    cp_full_expression();
 
                     state._fsp--;
                     if (state.failed) return ;
@@ -20186,7 +20184,7 @@ public class Css3Parser extends DebugParser {
     static final String DFA26_acceptS =
         "\1\uffff\1\1\2\uffff\1\2\1\1\3\2\1\uffff\1\1\1\uffff\2\1";
     static final String DFA26_specialS =
-        "\1\3\1\uffff\1\2\1\0\5\uffff\1\1\1\uffff\1\4\2\uffff}>";
+        "\1\1\1\uffff\1\3\1\0\5\uffff\1\4\1\uffff\1\2\2\uffff}>";
     static final String[] DFA26_transitionS = {
             "\1\3\6\uffff\1\10\1\uffff\1\5\1\4\1\2\1\6\1\7\1\5\40\uffff\1"+
             "\5\1\1\2\5",
@@ -20262,52 +20260,6 @@ public class Css3Parser extends DebugParser {
                         if ( s>=0 ) return s;
                         break;
                     case 1 : 
-                        int LA26_9 = input.LA(1);
-
-                         
-                        int index26_9 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA26_9==HASH_SYMBOL) && (synpred1_Css3())) {s = 10;}
-
-                        else if ( (LA26_9==IDENT) ) {s = 11;}
-
-                        else if ( (LA26_9==WS||(LA26_9>=NL && LA26_9<=COMMENT)) ) {s = 9;}
-
-                        else if ( (LA26_9==LBRACE) && (synpred1_Css3())) {s = 12;}
-
-                        else if ( (LA26_9==AND||LA26_9==NOT||LA26_9==COLON||LA26_9==MINUS||(LA26_9>=HASH && LA26_9<=DOT)) && (synpred1_Css3())) {s = 13;}
-
-                        else if ( (LA26_9==GEN) && (synpred2_Css3())) {s = 6;}
-
-                         
-                        input.seek(index26_9);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 2 : 
-                        int LA26_2 = input.LA(1);
-
-                         
-                        int index26_2 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA26_2==WS||(LA26_2>=NL && LA26_2<=COMMENT)) ) {s = 9;}
-
-                        else if ( (LA26_2==HASH_SYMBOL) && (synpred1_Css3())) {s = 10;}
-
-                        else if ( (LA26_2==IDENT) ) {s = 11;}
-
-                        else if ( (LA26_2==LBRACE) && (synpred1_Css3())) {s = 12;}
-
-                        else if ( (LA26_2==AND||LA26_2==NOT||LA26_2==COLON||LA26_2==MINUS||(LA26_2>=HASH && LA26_2<=DOT)) && (synpred1_Css3())) {s = 13;}
-
-                        else if ( (LA26_2==GEN) && (synpred2_Css3())) {s = 6;}
-
-                         
-                        input.seek(index26_2);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 3 : 
                         int LA26_0 = input.LA(1);
 
                          
@@ -20334,7 +20286,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index26_0);
                         if ( s>=0 ) return s;
                         break;
-                    case 4 : 
+                    case 2 : 
                         int LA26_11 = input.LA(1);
 
                          
@@ -20347,6 +20299,52 @@ public class Css3Parser extends DebugParser {
 
                          
                         input.seek(index26_11);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 3 : 
+                        int LA26_2 = input.LA(1);
+
+                         
+                        int index26_2 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA26_2==WS||(LA26_2>=NL && LA26_2<=COMMENT)) ) {s = 9;}
+
+                        else if ( (LA26_2==HASH_SYMBOL) && (synpred1_Css3())) {s = 10;}
+
+                        else if ( (LA26_2==IDENT) ) {s = 11;}
+
+                        else if ( (LA26_2==LBRACE) && (synpred1_Css3())) {s = 12;}
+
+                        else if ( (LA26_2==AND||LA26_2==NOT||LA26_2==COLON||LA26_2==MINUS||(LA26_2>=HASH && LA26_2<=DOT)) && (synpred1_Css3())) {s = 13;}
+
+                        else if ( (LA26_2==GEN) && (synpred2_Css3())) {s = 6;}
+
+                         
+                        input.seek(index26_2);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 4 : 
+                        int LA26_9 = input.LA(1);
+
+                         
+                        int index26_9 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA26_9==HASH_SYMBOL) && (synpred1_Css3())) {s = 10;}
+
+                        else if ( (LA26_9==IDENT) ) {s = 11;}
+
+                        else if ( (LA26_9==WS||(LA26_9>=NL && LA26_9<=COMMENT)) ) {s = 9;}
+
+                        else if ( (LA26_9==LBRACE) && (synpred1_Css3())) {s = 12;}
+
+                        else if ( (LA26_9==AND||LA26_9==NOT||LA26_9==COLON||LA26_9==MINUS||(LA26_9>=HASH && LA26_9<=DOT)) && (synpred1_Css3())) {s = 13;}
+
+                        else if ( (LA26_9==GEN) && (synpred2_Css3())) {s = 6;}
+
+                         
+                        input.seek(index26_9);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -20580,7 +20578,7 @@ public class Css3Parser extends DebugParser {
                         int index38_7 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred3_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred3_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 8;}
+                        if ( (((((synpred3_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred3_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 8;}
 
                         else if ( (true) ) {s = 28;}
 
@@ -20625,7 +20623,7 @@ public class Css3Parser extends DebugParser {
                         int index38_30 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred3_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred3_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 8;}
+                        if ( (((((synpred3_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred3_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 8;}
 
                         else if ( (true) ) {s = 31;}
 
@@ -20792,9 +20790,9 @@ public class Css3Parser extends DebugParser {
                         int index59_16 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (!(evalPredicate((((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))),""))) ) {s = 31;}
+                        if ( (!(evalPredicate((((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))),""))) ) {s = 31;}
 
-                        else if ( ((((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 23;}
+                        else if ( ((((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 23;}
 
                          
                         input.seek(index59_16);
@@ -20807,9 +20805,9 @@ public class Css3Parser extends DebugParser {
                         int index59_22 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (!(evalPredicate((((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))),""))) ) {s = 20;}
+                        if ( (!(evalPredicate((((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))),""))) ) {s = 20;}
 
-                        else if ( ((((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 23;}
+                        else if ( ((((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 23;}
 
                          
                         input.seek(index59_22);
@@ -20889,7 +20887,7 @@ public class Css3Parser extends DebugParser {
     static final String DFA106_acceptS =
         "\2\uffff\1\1\1\2\2\uffff\1\1";
     static final String DFA106_specialS =
-        "\1\1\3\uffff\1\2\1\0\1\uffff}>";
+        "\1\2\3\uffff\1\1\1\0\1\uffff}>";
     static final String[] DFA106_transitionS = {
             "\1\3\4\uffff\1\3\6\uffff\1\3\1\uffff\1\3\36\uffff\1\3\1\uffff"+
             "\3\3\1\1\5\3\1\uffff\1\3\26\uffff\1\2",
@@ -20962,23 +20960,6 @@ public class Css3Parser extends DebugParser {
                         if ( s>=0 ) return s;
                         break;
                     case 1 : 
-                        int LA106_0 = input.LA(1);
-
-                         
-                        int index106_0 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA106_0==DOT) ) {s = 1;}
-
-                        else if ( (LA106_0==SASS_MIXIN) && (synpred6_Css3())) {s = 2;}
-
-                        else if ( (LA106_0==IDENT||LA106_0==COMMA||LA106_0==GEN||LA106_0==COLON||LA106_0==GREATER||(LA106_0>=MINUS && LA106_0<=HASH)||(LA106_0>=LBRACKET && LA106_0<=PIPE)||LA106_0==LESS_AND) ) {s = 3;}
-
-                         
-                        input.seek(index106_0);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 2 : 
                         int LA106_4 = input.LA(1);
 
                          
@@ -20993,6 +20974,23 @@ public class Css3Parser extends DebugParser {
 
                          
                         input.seek(index106_4);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 2 : 
+                        int LA106_0 = input.LA(1);
+
+                         
+                        int index106_0 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA106_0==DOT) ) {s = 1;}
+
+                        else if ( (LA106_0==SASS_MIXIN) && (synpred6_Css3())) {s = 2;}
+
+                        else if ( (LA106_0==IDENT||LA106_0==COMMA||LA106_0==GEN||LA106_0==COLON||LA106_0==GREATER||(LA106_0>=MINUS && LA106_0<=HASH)||(LA106_0>=LBRACKET && LA106_0<=PIPE)||LA106_0==LESS_AND) ) {s = 3;}
+
+                         
+                        input.seek(index106_0);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -21238,7 +21236,7 @@ public class Css3Parser extends DebugParser {
 
                         else if ( (synpred10_Css3()) ) {s = 33;}
 
-                        else if ( (((synpred11_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))||synpred11_Css3())) ) {s = 18;}
+                        else if ( ((synpred11_Css3()||(synpred11_Css3()&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 18;}
 
                         else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 26;}
 
@@ -21276,9 +21274,9 @@ public class Css3Parser extends DebugParser {
                         int index121_6 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred7_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred7_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 34;}
+                        if ( ((((synpred7_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred7_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 34;}
 
-                        else if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 31;}
+                        else if ( ((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 31;}
 
                         else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 32;}
 
@@ -21299,11 +21297,11 @@ public class Css3Parser extends DebugParser {
                         int index121_7 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred7_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred7_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 34;}
+                        if ( ((((synpred7_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred7_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 34;}
 
-                        else if ( ((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||(((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 31;}
+                        else if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 31;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 32;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 32;}
 
                         else if ( (((synpred10_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 33;}
 
@@ -21362,9 +21360,9 @@ public class Css3Parser extends DebugParser {
                         int index121_25 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred7_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred7_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 34;}
+                        if ( ((((synpred7_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred7_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 34;}
 
-                        else if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 31;}
+                        else if ( ((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 31;}
 
                         else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 32;}
 
@@ -21395,8 +21393,8 @@ public class Css3Parser extends DebugParser {
     static final String DFA126_acceptS =
         "\5\uffff\1\2\3\uffff\5\1\1\uffff\1\1\1\uffff";
     static final String DFA126_specialS =
-        "\1\4\1\5\1\2\1\10\1\11\1\uffff\1\6\1\7\1\3\5\uffff\1\1\1\uffff\1"+
-        "\0}>";
+        "\1\2\1\7\1\4\1\6\1\1\1\uffff\1\0\1\5\1\3\5\uffff\1\11\1\uffff\1"+
+        "\10}>";
     static final String[] DFA126_transitionS = {
             "\1\2\4\uffff\1\11\6\uffff\1\5\1\uffff\1\10\36\uffff\1\11\1\uffff"+
             "\1\11\1\1\1\6\1\7\3\5\1\3\1\5\1\uffff\1\4",
@@ -21464,40 +21462,10 @@ public class Css3Parser extends DebugParser {
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA126_16 = input.LA(1);
+                        int LA126_6 = input.LA(1);
 
                          
-                        int index126_16 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred13_Css3()) ) {s = 15;}
-
-                        else if ( (true) ) {s = 5;}
-
-                         
-                        input.seek(index126_16);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 1 : 
-                        int LA126_14 = input.LA(1);
-
-                         
-                        int index126_14 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred13_Css3()) ) {s = 15;}
-
-                        else if ( (true) ) {s = 5;}
-
-                         
-                        input.seek(index126_14);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 2 : 
-                        int LA126_2 = input.LA(1);
-
-                         
-                        int index126_2 = input.index();
+                        int index126_6 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (synpred13_Css3()) ) {s = 13;}
@@ -21505,33 +21473,25 @@ public class Css3Parser extends DebugParser {
                         else if ( (true) ) {s = 5;}
 
                          
-                        input.seek(index126_2);
+                        input.seek(index126_6);
                         if ( s>=0 ) return s;
                         break;
-                    case 3 : 
-                        int LA126_8 = input.LA(1);
+                    case 1 : 
+                        int LA126_4 = input.LA(1);
 
                          
-                        int index126_8 = input.index();
+                        int index126_4 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA126_8==WS||(LA126_8>=NL && LA126_8<=COMMENT)) && (synpred13_Css3())) {s = 11;}
+                        if ( (synpred13_Css3()) ) {s = 13;}
 
-                        else if ( (LA126_8==HASH_SYMBOL) && (synpred13_Css3())) {s = 12;}
-
-                        else if ( (LA126_8==IDENT) ) {s = 16;}
-
-                        else if ( (LA126_8==LBRACE) && (synpred13_Css3())) {s = 15;}
-
-                        else if ( (LA126_8==COMMA||LA126_8==COLON||LA126_8==GREATER||LA126_8==MINUS||(LA126_8>=HASH && LA126_8<=DOT)||LA126_8==STAR||LA126_8==LESS_AND) && (synpred13_Css3())) {s = 13;}
-
-                        else if ( ((LA126_8>=NOT && LA126_8<=GEN)) ) {s = 5;}
+                        else if ( (true) ) {s = 5;}
 
                          
-                        input.seek(index126_8);
+                        input.seek(index126_4);
                         if ( s>=0 ) return s;
                         break;
-                    case 4 : 
+                    case 2 : 
                         int LA126_0 = input.LA(1);
 
                          
@@ -21560,32 +21520,34 @@ public class Css3Parser extends DebugParser {
                         input.seek(index126_0);
                         if ( s>=0 ) return s;
                         break;
-                    case 5 : 
-                        int LA126_1 = input.LA(1);
+                    case 3 : 
+                        int LA126_8 = input.LA(1);
 
                          
-                        int index126_1 = input.index();
+                        int index126_8 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA126_1==LBRACE) && (synpred13_Css3())) {s = 10;}
+                        if ( (LA126_8==WS||(LA126_8>=NL && LA126_8<=COMMENT)) && (synpred13_Css3())) {s = 11;}
 
-                        else if ( (LA126_1==NAME) ) {s = 5;}
+                        else if ( (LA126_8==HASH_SYMBOL) && (synpred13_Css3())) {s = 12;}
 
-                        else if ( (LA126_1==WS||(LA126_1>=NL && LA126_1<=COMMENT)) && (synpred13_Css3())) {s = 11;}
+                        else if ( (LA126_8==IDENT) ) {s = 16;}
 
-                        else if ( (LA126_1==HASH_SYMBOL) && (synpred13_Css3())) {s = 12;}
+                        else if ( (LA126_8==LBRACE) && (synpred13_Css3())) {s = 15;}
 
-                        else if ( (LA126_1==IDENT||LA126_1==COMMA||LA126_1==COLON||LA126_1==GREATER||LA126_1==MINUS||(LA126_1>=HASH && LA126_1<=DOT)||LA126_1==STAR||LA126_1==LESS_AND) && (synpred13_Css3())) {s = 13;}
+                        else if ( (LA126_8==COMMA||LA126_8==COLON||LA126_8==GREATER||LA126_8==MINUS||(LA126_8>=HASH && LA126_8<=DOT)||LA126_8==STAR||LA126_8==LESS_AND) && (synpred13_Css3())) {s = 13;}
+
+                        else if ( ((LA126_8>=NOT && LA126_8<=GEN)) ) {s = 5;}
 
                          
-                        input.seek(index126_1);
+                        input.seek(index126_8);
                         if ( s>=0 ) return s;
                         break;
-                    case 6 : 
-                        int LA126_6 = input.LA(1);
+                    case 4 : 
+                        int LA126_2 = input.LA(1);
 
                          
-                        int index126_6 = input.index();
+                        int index126_2 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (synpred13_Css3()) ) {s = 13;}
@@ -21593,10 +21555,10 @@ public class Css3Parser extends DebugParser {
                         else if ( (true) ) {s = 5;}
 
                          
-                        input.seek(index126_6);
+                        input.seek(index126_2);
                         if ( s>=0 ) return s;
                         break;
-                    case 7 : 
+                    case 5 : 
                         int LA126_7 = input.LA(1);
 
                          
@@ -21619,7 +21581,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index126_7);
                         if ( s>=0 ) return s;
                         break;
-                    case 8 : 
+                    case 6 : 
                         int LA126_3 = input.LA(1);
 
                          
@@ -21634,19 +21596,55 @@ public class Css3Parser extends DebugParser {
                         input.seek(index126_3);
                         if ( s>=0 ) return s;
                         break;
-                    case 9 : 
-                        int LA126_4 = input.LA(1);
+                    case 7 : 
+                        int LA126_1 = input.LA(1);
 
                          
-                        int index126_4 = input.index();
+                        int index126_1 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred13_Css3()) ) {s = 13;}
+                        if ( (LA126_1==LBRACE) && (synpred13_Css3())) {s = 10;}
+
+                        else if ( (LA126_1==NAME) ) {s = 5;}
+
+                        else if ( (LA126_1==WS||(LA126_1>=NL && LA126_1<=COMMENT)) && (synpred13_Css3())) {s = 11;}
+
+                        else if ( (LA126_1==HASH_SYMBOL) && (synpred13_Css3())) {s = 12;}
+
+                        else if ( (LA126_1==IDENT||LA126_1==COMMA||LA126_1==COLON||LA126_1==GREATER||LA126_1==MINUS||(LA126_1>=HASH && LA126_1<=DOT)||LA126_1==STAR||LA126_1==LESS_AND) && (synpred13_Css3())) {s = 13;}
+
+                         
+                        input.seek(index126_1);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 8 : 
+                        int LA126_16 = input.LA(1);
+
+                         
+                        int index126_16 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred13_Css3()) ) {s = 15;}
 
                         else if ( (true) ) {s = 5;}
 
                          
-                        input.seek(index126_4);
+                        input.seek(index126_16);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 9 : 
+                        int LA126_14 = input.LA(1);
+
+                         
+                        int index126_14 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred13_Css3()) ) {s = 15;}
+
+                        else if ( (true) ) {s = 5;}
+
+                         
+                        input.seek(index126_14);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -22073,43 +22071,43 @@ public class Css3Parser extends DebugParser {
     static final String DFA162_eofS =
         "\31\uffff";
     static final String DFA162_minS =
-        "\2\6\22\0\1\uffff\1\6\2\0\1\uffff";
+        "\1\6\1\uffff\1\6\22\0\1\6\2\0\1\uffff";
     static final String DFA162_maxS =
-        "\1\122\1\124\22\0\1\uffff\1\124\2\0\1\uffff";
+        "\1\122\1\uffff\1\124\22\0\1\124\2\0\1\uffff";
     static final String DFA162_acceptS =
-        "\24\uffff\1\1\3\uffff\1\2";
+        "\1\uffff\1\1\26\uffff\1\2";
     static final String DFA162_specialS =
-        "\2\uffff\1\20\1\5\1\3\1\13\1\14\1\7\1\10\1\22\1\23\1\17\1\21\1\4"+
-        "\1\6\1\0\1\1\1\2\1\11\1\15\2\uffff\1\12\1\16\1\uffff}>";
+        "\3\uffff\1\12\1\21\1\17\1\15\1\14\1\13\1\11\1\10\1\7\1\6\1\3\1\2"+
+        "\1\16\1\20\1\22\1\23\1\4\1\0\1\uffff\1\5\1\1\1\uffff}>";
     static final String[] DFA162_transitionS = {
-            "\1\2\1\16\1\20\3\uffff\1\22\5\uffff\1\17\1\24\2\uffff\1\22\6"+
-            "\uffff\1\4\24\uffff\1\1\2\uffff\1\1\1\24\1\21\17\uffff\1\23"+
-            "\1\24\1\3\1\5\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15",
-            "\1\2\1\16\1\20\3\uffff\1\26\5\uffff\1\17\1\24\2\uffff\1\26"+
-            "\1\25\5\uffff\1\4\30\uffff\1\24\1\21\17\uffff\1\27\1\uffff\1"+
-            "\3\1\5\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15\2\25",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
+            "\1\3\1\17\1\21\3\uffff\1\23\4\uffff\1\1\1\20\1\1\2\uffff\1\23"+
+            "\6\uffff\1\5\24\uffff\1\2\2\uffff\1\2\1\1\1\22\17\uffff\1\24"+
+            "\1\1\1\4\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15\1\16",
             "",
-            "\1\2\1\16\1\20\3\uffff\1\26\5\uffff\1\17\1\24\2\uffff\1\26"+
-            "\1\25\5\uffff\1\4\30\uffff\1\24\1\21\17\uffff\1\27\1\uffff\1"+
-            "\3\1\5\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15\2\25",
+            "\1\3\1\17\1\21\3\uffff\1\26\5\uffff\1\20\1\1\2\uffff\1\26\1"+
+            "\25\5\uffff\1\5\30\uffff\1\1\1\22\17\uffff\1\27\1\uffff\1\4"+
+            "\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15\1\16\2\25",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\3\1\17\1\21\3\uffff\1\26\5\uffff\1\20\1\1\2\uffff\1\26\1"+
+            "\25\5\uffff\1\5\30\uffff\1\1\1\22\17\uffff\1\27\1\uffff\1\4"+
+            "\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15\1\16\2\25",
             "\1\uffff",
             "\1\uffff",
             ""
@@ -22155,223 +22153,28 @@ public class Css3Parser extends DebugParser {
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA162_15 = input.LA(1);
+                        int LA162_20 = input.LA(1);
 
                          
-                        int index162_15 = input.index();
+                        int index162_20 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_15);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 1 : 
-                        int LA162_16 = input.LA(1);
-
-                         
-                        int index162_16 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_16);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 2 : 
-                        int LA162_17 = input.LA(1);
-
-                         
-                        int index162_17 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_17);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 3 : 
-                        int LA162_4 = input.LA(1);
-
-                         
-                        int index162_4 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_4);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 4 : 
-                        int LA162_13 = input.LA(1);
-
-                         
-                        int index162_13 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_13);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 5 : 
-                        int LA162_3 = input.LA(1);
-
-                         
-                        int index162_3 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_3);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 6 : 
-                        int LA162_14 = input.LA(1);
-
-                         
-                        int index162_14 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_14);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 7 : 
-                        int LA162_7 = input.LA(1);
-
-                         
-                        int index162_7 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_7);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 8 : 
-                        int LA162_8 = input.LA(1);
-
-                         
-                        int index162_8 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_8);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 9 : 
-                        int LA162_18 = input.LA(1);
-
-                         
-                        int index162_18 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 20;}
-
-                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 24;}
-
-                         
-                        input.seek(index162_18);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 10 : 
-                        int LA162_22 = input.LA(1);
-
-                         
-                        int index162_22 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_22);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 11 : 
-                        int LA162_5 = input.LA(1);
-
-                         
-                        int index162_5 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_5);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 12 : 
-                        int LA162_6 = input.LA(1);
-
-                         
-                        int index162_6 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                        else if ( (true) ) {s = 24;}
-
-                         
-                        input.seek(index162_6);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 13 : 
-                        int LA162_19 = input.LA(1);
-
-                         
-                        int index162_19 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 20;}
+                        if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 1;}
 
                         else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 24;}
 
                          
-                        input.seek(index162_19);
+                        input.seek(index162_20);
                         if ( s>=0 ) return s;
                         break;
-                    case 14 : 
+                    case 1 : 
                         int LA162_23 = input.LA(1);
 
                          
                         int index162_23 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
 
                         else if ( (true) ) {s = 24;}
 
@@ -22379,44 +22182,74 @@ public class Css3Parser extends DebugParser {
                         input.seek(index162_23);
                         if ( s>=0 ) return s;
                         break;
-                    case 15 : 
-                        int LA162_11 = input.LA(1);
+                    case 2 : 
+                        int LA162_14 = input.LA(1);
 
                          
-                        int index162_11 = input.index();
+                        int index162_14 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
 
                         else if ( (true) ) {s = 24;}
 
                          
-                        input.seek(index162_11);
+                        input.seek(index162_14);
                         if ( s>=0 ) return s;
                         break;
-                    case 16 : 
-                        int LA162_2 = input.LA(1);
+                    case 3 : 
+                        int LA162_13 = input.LA(1);
 
                          
-                        int index162_2 = input.index();
+                        int index162_13 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
 
                         else if ( (true) ) {s = 24;}
 
                          
-                        input.seek(index162_2);
+                        input.seek(index162_13);
                         if ( s>=0 ) return s;
                         break;
-                    case 17 : 
+                    case 4 : 
+                        int LA162_19 = input.LA(1);
+
+                         
+                        int index162_19 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 1;}
+
+                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 24;}
+
+                         
+                        input.seek(index162_19);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 5 : 
+                        int LA162_22 = input.LA(1);
+
+                         
+                        int index162_22 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_22);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 6 : 
                         int LA162_12 = input.LA(1);
 
                          
                         int index162_12 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
 
                         else if ( (true) ) {s = 24;}
 
@@ -22424,14 +22257,44 @@ public class Css3Parser extends DebugParser {
                         input.seek(index162_12);
                         if ( s>=0 ) return s;
                         break;
-                    case 18 : 
+                    case 7 : 
+                        int LA162_11 = input.LA(1);
+
+                         
+                        int index162_11 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_11);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 8 : 
+                        int LA162_10 = input.LA(1);
+
+                         
+                        int index162_10 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_10);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 9 : 
                         int LA162_9 = input.LA(1);
 
                          
                         int index162_9 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
 
                         else if ( (true) ) {s = 24;}
 
@@ -22439,19 +22302,154 @@ public class Css3Parser extends DebugParser {
                         input.seek(index162_9);
                         if ( s>=0 ) return s;
                         break;
-                    case 19 : 
-                        int LA162_10 = input.LA(1);
+                    case 10 : 
+                        int LA162_3 = input.LA(1);
 
                          
-                        int index162_10 = input.index();
+                        int index162_3 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
 
                         else if ( (true) ) {s = 24;}
 
                          
-                        input.seek(index162_10);
+                        input.seek(index162_3);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 11 : 
+                        int LA162_8 = input.LA(1);
+
+                         
+                        int index162_8 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_8);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 12 : 
+                        int LA162_7 = input.LA(1);
+
+                         
+                        int index162_7 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_7);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 13 : 
+                        int LA162_6 = input.LA(1);
+
+                         
+                        int index162_6 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_6);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 14 : 
+                        int LA162_15 = input.LA(1);
+
+                         
+                        int index162_15 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_15);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 15 : 
+                        int LA162_5 = input.LA(1);
+
+                         
+                        int index162_5 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_5);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 16 : 
+                        int LA162_16 = input.LA(1);
+
+                         
+                        int index162_16 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_16);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 17 : 
+                        int LA162_4 = input.LA(1);
+
+                         
+                        int index162_4 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_4);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 18 : 
+                        int LA162_17 = input.LA(1);
+
+                         
+                        int index162_17 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_17);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 19 : 
+                        int LA162_18 = input.LA(1);
+
+                         
+                        int index162_18 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 1;}
+
+                        else if ( (true) ) {s = 24;}
+
+                         
+                        input.seek(index162_18);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -22637,57 +22635,59 @@ public class Css3Parser extends DebugParser {
         }
     }
     static final String DFA177_eotS =
-        "\37\uffff";
+        "\41\uffff";
     static final String DFA177_eofS =
-        "\37\uffff";
+        "\41\uffff";
     static final String DFA177_minS =
-        "\1\6\2\0\1\uffff\1\6\1\27\17\0\5\uffff\1\6\3\0\1\uffff";
+        "\1\6\2\0\2\uffff\1\6\1\27\17\0\5\uffff\1\6\3\0\2\uffff";
     static final String DFA177_maxS =
-        "\1\131\2\0\1\uffff\2\124\17\0\5\uffff\1\124\3\0\1\uffff";
+        "\1\131\2\0\2\uffff\2\124\17\0\5\uffff\1\124\3\0\2\uffff";
     static final String DFA177_acceptS =
-        "\3\uffff\1\1\21\uffff\3\2\1\5\1\3\4\uffff\1\4";
+        "\3\uffff\1\1\1\2\21\uffff\3\2\1\5\1\3\4\uffff\1\2\1\4";
     static final String DFA177_specialS =
-        "\1\4\1\25\1\7\1\uffff\1\0\1\15\1\10\1\17\1\14\1\27\1\23\1\26\1\24"+
-        "\1\20\1\16\1\12\1\11\1\6\1\5\1\3\1\22\5\uffff\1\2\1\1\1\21\1\13"+
-        "\1\uffff}>";
+        "\1\12\1\16\1\7\2\uffff\1\1\1\22\1\17\1\26\1\23\1\5\1\3\1\14\1\10"+
+        "\1\15\1\11\1\6\1\4\1\27\1\24\1\21\1\20\5\uffff\1\2\1\13\1\0\1\25"+
+        "\2\uffff}>";
     static final String[] DFA177_transitionS = {
-            "\1\5\1\21\1\23\3\uffff\1\1\5\uffff\1\22\1\27\1\uffff\1\30\1"+
-            "\1\6\uffff\1\7\24\uffff\1\4\2\uffff\1\4\1\26\1\24\17\uffff\1"+
-            "\2\1\25\1\6\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\5\uffff"+
-            "\2\3",
-            "\1\uffff",
-            "\1\uffff",
-            "",
-            "\1\33\1\21\1\23\3\uffff\1\34\5\uffff\1\22\1\27\2\uffff\1\34"+
-            "\1\32\5\uffff\1\7\30\uffff\1\26\1\24\17\uffff\1\35\1\uffff\1"+
-            "\6\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\2\32",
-            "\1\36\40\uffff\1\36\7\uffff\1\36\22\uffff\2\36",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
+            "\1\6\1\22\1\24\3\uffff\1\1\4\uffff\1\4\1\23\1\30\1\uffff\1\31"+
+            "\1\1\6\uffff\1\10\24\uffff\1\5\2\uffff\1\5\1\27\1\25\17\uffff"+
+            "\1\2\1\26\1\7\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\5"+
+            "\uffff\2\3",
             "\1\uffff",
             "\1\uffff",
             "",
             "",
-            "",
-            "",
-            "",
-            "\1\33\1\21\1\23\3\uffff\1\34\5\uffff\1\22\1\27\2\uffff\1\34"+
-            "\1\32\5\uffff\1\7\30\uffff\1\26\1\24\17\uffff\1\35\1\uffff\1"+
-            "\6\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\2\32",
+            "\1\34\1\22\1\24\3\uffff\1\35\5\uffff\1\23\1\37\2\uffff\1\35"+
+            "\1\33\5\uffff\1\10\30\uffff\1\27\1\25\17\uffff\1\36\1\uffff"+
+            "\1\7\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\2\33",
+            "\1\40\40\uffff\1\40\7\uffff\1\40\22\uffff\2\40",
             "\1\uffff",
             "\1\uffff",
             "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "\1\34\1\22\1\24\3\uffff\1\35\5\uffff\1\23\1\37\2\uffff\1\35"+
+            "\1\33\5\uffff\1\10\30\uffff\1\27\1\25\17\uffff\1\36\1\uffff"+
+            "\1\7\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\2\33",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "",
             ""
     };
 
@@ -22731,142 +22731,234 @@ public class Css3Parser extends DebugParser {
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA177_4 = input.LA(1);
+                        int LA177_29 = input.LA(1);
 
                          
-                        int index177_4 = input.index();
+                        int index177_29 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA177_4==WS||(LA177_4>=NL && LA177_4<=COMMENT)) ) {s = 26;}
+                        if ( (synpred19_Css3()) ) {s = 31;}
 
-                        else if ( (LA177_4==IDENT) ) {s = 27;}
-
-                        else if ( (LA177_4==NUMBER) ) {s = 6;}
-
-                        else if ( (LA177_4==PERCENTAGE) ) {s = 7;}
-
-                        else if ( (LA177_4==LENGTH) ) {s = 8;}
-
-                        else if ( (LA177_4==EMS) ) {s = 9;}
-
-                        else if ( (LA177_4==REM) ) {s = 10;}
-
-                        else if ( (LA177_4==EXS) ) {s = 11;}
-
-                        else if ( (LA177_4==ANGLE) ) {s = 12;}
-
-                        else if ( (LA177_4==TIME) ) {s = 13;}
-
-                        else if ( (LA177_4==FREQ) ) {s = 14;}
-
-                        else if ( (LA177_4==RESOLUTION) ) {s = 15;}
-
-                        else if ( (LA177_4==DIMENSION) ) {s = 16;}
-
-                        else if ( (LA177_4==STRING) ) {s = 17;}
-
-                        else if ( (LA177_4==GEN) ) {s = 18;}
-
-                        else if ( (LA177_4==URI) ) {s = 19;}
-
-                        else if ( (LA177_4==HASH) ) {s = 20;}
-
-                        else if ( (LA177_4==MEDIA_SYM||LA177_4==AT_IDENT) ) {s = 28;}
-
-                        else if ( (LA177_4==SASS_VAR) ) {s = 29;}
-
-                        else if ( (LA177_4==HASH_SYMBOL) && (synpred19_Css3())) {s = 22;}
-
-                        else if ( (LA177_4==LPAREN) && (synpred19_Css3())) {s = 23;}
+                        else if ( (true) ) {s = 26;}
 
                          
-                        input.seek(index177_4);
+                        input.seek(index177_29);
                         if ( s>=0 ) return s;
                         break;
                     case 1 : 
+                        int LA177_5 = input.LA(1);
+
+                         
+                        int index177_5 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA177_5==WS||(LA177_5>=NL && LA177_5<=COMMENT)) ) {s = 27;}
+
+                        else if ( (LA177_5==IDENT) ) {s = 28;}
+
+                        else if ( (LA177_5==NUMBER) ) {s = 7;}
+
+                        else if ( (LA177_5==PERCENTAGE) ) {s = 8;}
+
+                        else if ( (LA177_5==LENGTH) ) {s = 9;}
+
+                        else if ( (LA177_5==EMS) ) {s = 10;}
+
+                        else if ( (LA177_5==REM) ) {s = 11;}
+
+                        else if ( (LA177_5==EXS) ) {s = 12;}
+
+                        else if ( (LA177_5==ANGLE) ) {s = 13;}
+
+                        else if ( (LA177_5==TIME) ) {s = 14;}
+
+                        else if ( (LA177_5==FREQ) ) {s = 15;}
+
+                        else if ( (LA177_5==RESOLUTION) ) {s = 16;}
+
+                        else if ( (LA177_5==DIMENSION) ) {s = 17;}
+
+                        else if ( (LA177_5==STRING) ) {s = 18;}
+
+                        else if ( (LA177_5==GEN) ) {s = 19;}
+
+                        else if ( (LA177_5==URI) ) {s = 20;}
+
+                        else if ( (LA177_5==HASH) ) {s = 21;}
+
+                        else if ( (LA177_5==MEDIA_SYM||LA177_5==AT_IDENT) ) {s = 29;}
+
+                        else if ( (LA177_5==SASS_VAR) ) {s = 30;}
+
+                        else if ( (LA177_5==HASH_SYMBOL) && (synpred19_Css3())) {s = 23;}
+
+                        else if ( (LA177_5==LPAREN) && (synpred19_Css3())) {s = 31;}
+
+                         
+                        input.seek(index177_5);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 2 : 
                         int LA177_27 = input.LA(1);
 
                          
                         int index177_27 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
+                        if ( (LA177_27==IDENT) ) {s = 28;}
 
-                        else if ( (true) ) {s = 25;}
+                        else if ( (LA177_27==NUMBER) ) {s = 7;}
+
+                        else if ( (LA177_27==PERCENTAGE) ) {s = 8;}
+
+                        else if ( (LA177_27==LENGTH) ) {s = 9;}
+
+                        else if ( (LA177_27==EMS) ) {s = 10;}
+
+                        else if ( (LA177_27==REM) ) {s = 11;}
+
+                        else if ( (LA177_27==EXS) ) {s = 12;}
+
+                        else if ( (LA177_27==ANGLE) ) {s = 13;}
+
+                        else if ( (LA177_27==TIME) ) {s = 14;}
+
+                        else if ( (LA177_27==FREQ) ) {s = 15;}
+
+                        else if ( (LA177_27==RESOLUTION) ) {s = 16;}
+
+                        else if ( (LA177_27==DIMENSION) ) {s = 17;}
+
+                        else if ( (LA177_27==STRING) ) {s = 18;}
+
+                        else if ( (LA177_27==GEN) ) {s = 19;}
+
+                        else if ( (LA177_27==URI) ) {s = 20;}
+
+                        else if ( (LA177_27==HASH) ) {s = 21;}
+
+                        else if ( (LA177_27==MEDIA_SYM||LA177_27==AT_IDENT) ) {s = 29;}
+
+                        else if ( (LA177_27==SASS_VAR) ) {s = 30;}
+
+                        else if ( (LA177_27==WS||(LA177_27>=NL && LA177_27<=COMMENT)) ) {s = 27;}
+
+                        else if ( (LA177_27==HASH_SYMBOL) && (synpred19_Css3())) {s = 23;}
+
+                        else if ( (LA177_27==LPAREN) && (synpred19_Css3())) {s = 31;}
 
                          
                         input.seek(index177_27);
                         if ( s>=0 ) return s;
                         break;
-                    case 2 : 
-                        int LA177_26 = input.LA(1);
-
-                         
-                        int index177_26 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA177_26==IDENT) ) {s = 27;}
-
-                        else if ( (LA177_26==NUMBER) ) {s = 6;}
-
-                        else if ( (LA177_26==PERCENTAGE) ) {s = 7;}
-
-                        else if ( (LA177_26==LENGTH) ) {s = 8;}
-
-                        else if ( (LA177_26==EMS) ) {s = 9;}
-
-                        else if ( (LA177_26==REM) ) {s = 10;}
-
-                        else if ( (LA177_26==EXS) ) {s = 11;}
-
-                        else if ( (LA177_26==ANGLE) ) {s = 12;}
-
-                        else if ( (LA177_26==TIME) ) {s = 13;}
-
-                        else if ( (LA177_26==FREQ) ) {s = 14;}
-
-                        else if ( (LA177_26==RESOLUTION) ) {s = 15;}
-
-                        else if ( (LA177_26==DIMENSION) ) {s = 16;}
-
-                        else if ( (LA177_26==STRING) ) {s = 17;}
-
-                        else if ( (LA177_26==GEN) ) {s = 18;}
-
-                        else if ( (LA177_26==URI) ) {s = 19;}
-
-                        else if ( (LA177_26==HASH) ) {s = 20;}
-
-                        else if ( (LA177_26==MEDIA_SYM||LA177_26==AT_IDENT) ) {s = 28;}
-
-                        else if ( (LA177_26==SASS_VAR) ) {s = 29;}
-
-                        else if ( (LA177_26==WS||(LA177_26>=NL && LA177_26<=COMMENT)) ) {s = 26;}
-
-                        else if ( (LA177_26==HASH_SYMBOL) && (synpred19_Css3())) {s = 22;}
-
-                        else if ( (LA177_26==LPAREN) && (synpred19_Css3())) {s = 23;}
-
-                         
-                        input.seek(index177_26);
-                        if ( s>=0 ) return s;
-                        break;
                     case 3 : 
-                        int LA177_19 = input.LA(1);
+                        int LA177_11 = input.LA(1);
 
                          
-                        int index177_19 = input.index();
+                        int index177_11 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
+                        if ( (synpred19_Css3()) ) {s = 31;}
 
-                        else if ( (true) ) {s = 25;}
+                        else if ( (true) ) {s = 26;}
 
                          
-                        input.seek(index177_19);
+                        input.seek(index177_11);
                         if ( s>=0 ) return s;
                         break;
                     case 4 : 
+                        int LA177_17 = input.LA(1);
+
+                         
+                        int index177_17 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred19_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 26;}
+
+                         
+                        input.seek(index177_17);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 5 : 
+                        int LA177_10 = input.LA(1);
+
+                         
+                        int index177_10 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred19_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 26;}
+
+                         
+                        input.seek(index177_10);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 6 : 
+                        int LA177_16 = input.LA(1);
+
+                         
+                        int index177_16 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred19_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 26;}
+
+                         
+                        input.seek(index177_16);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 7 : 
+                        int LA177_2 = input.LA(1);
+
+                         
+                        int index177_2 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((synpred18_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 3;}
+
+                        else if ( (((synpred19_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 24;}
+
+                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 26;}
+
+                         
+                        input.seek(index177_2);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 8 : 
+                        int LA177_13 = input.LA(1);
+
+                         
+                        int index177_13 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred19_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 26;}
+
+                         
+                        input.seek(index177_13);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 9 : 
+                        int LA177_15 = input.LA(1);
+
+                         
+                        int index177_15 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred19_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 26;}
+
+                         
+                        input.seek(index177_15);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 10 : 
                         int LA177_0 = input.LA(1);
 
                          
@@ -22879,204 +22971,114 @@ public class Css3Parser extends DebugParser {
 
                         else if ( ((LA177_0>=LESS_DOTS && LA177_0<=LESS_REST)) && (synpred18_Css3())) {s = 3;}
 
-                        else if ( (LA177_0==PLUS||LA177_0==MINUS) ) {s = 4;}
+                        else if ( (LA177_0==NOT) && (synpred19_Css3())) {s = 4;}
 
-                        else if ( (LA177_0==IDENT) ) {s = 5;}
+                        else if ( (LA177_0==PLUS||LA177_0==MINUS) ) {s = 5;}
 
-                        else if ( (LA177_0==NUMBER) ) {s = 6;}
+                        else if ( (LA177_0==IDENT) ) {s = 6;}
 
-                        else if ( (LA177_0==PERCENTAGE) ) {s = 7;}
+                        else if ( (LA177_0==NUMBER) ) {s = 7;}
 
-                        else if ( (LA177_0==LENGTH) ) {s = 8;}
+                        else if ( (LA177_0==PERCENTAGE) ) {s = 8;}
 
-                        else if ( (LA177_0==EMS) ) {s = 9;}
+                        else if ( (LA177_0==LENGTH) ) {s = 9;}
 
-                        else if ( (LA177_0==REM) ) {s = 10;}
+                        else if ( (LA177_0==EMS) ) {s = 10;}
 
-                        else if ( (LA177_0==EXS) ) {s = 11;}
+                        else if ( (LA177_0==REM) ) {s = 11;}
 
-                        else if ( (LA177_0==ANGLE) ) {s = 12;}
+                        else if ( (LA177_0==EXS) ) {s = 12;}
 
-                        else if ( (LA177_0==TIME) ) {s = 13;}
+                        else if ( (LA177_0==ANGLE) ) {s = 13;}
 
-                        else if ( (LA177_0==FREQ) ) {s = 14;}
+                        else if ( (LA177_0==TIME) ) {s = 14;}
 
-                        else if ( (LA177_0==RESOLUTION) ) {s = 15;}
+                        else if ( (LA177_0==FREQ) ) {s = 15;}
 
-                        else if ( (LA177_0==DIMENSION) ) {s = 16;}
+                        else if ( (LA177_0==RESOLUTION) ) {s = 16;}
 
-                        else if ( (LA177_0==STRING) ) {s = 17;}
+                        else if ( (LA177_0==DIMENSION) ) {s = 17;}
 
-                        else if ( (LA177_0==GEN) ) {s = 18;}
+                        else if ( (LA177_0==STRING) ) {s = 18;}
 
-                        else if ( (LA177_0==URI) ) {s = 19;}
+                        else if ( (LA177_0==GEN) ) {s = 19;}
 
-                        else if ( (LA177_0==HASH) ) {s = 20;}
+                        else if ( (LA177_0==URI) ) {s = 20;}
 
-                        else if ( (LA177_0==IMPORTANT_SYM) && (synpred19_Css3())) {s = 21;}
+                        else if ( (LA177_0==HASH) ) {s = 21;}
 
-                        else if ( (LA177_0==HASH_SYMBOL) && (synpred19_Css3())) {s = 22;}
+                        else if ( (LA177_0==IMPORTANT_SYM) && (synpred19_Css3())) {s = 22;}
 
-                        else if ( (LA177_0==LPAREN) && (synpred19_Css3())) {s = 23;}
+                        else if ( (LA177_0==HASH_SYMBOL) && (synpred19_Css3())) {s = 23;}
 
-                        else if ( (LA177_0==RPAREN) ) {s = 24;}
+                        else if ( (LA177_0==LPAREN) && (synpred19_Css3())) {s = 24;}
+
+                        else if ( (LA177_0==RPAREN) ) {s = 25;}
 
                          
                         input.seek(index177_0);
                         if ( s>=0 ) return s;
                         break;
-                    case 5 : 
-                        int LA177_18 = input.LA(1);
-
-                         
-                        int index177_18 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
-
-                        else if ( (true) ) {s = 25;}
-
-                         
-                        input.seek(index177_18);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 6 : 
-                        int LA177_17 = input.LA(1);
-
-                         
-                        int index177_17 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
-
-                        else if ( (true) ) {s = 25;}
-
-                         
-                        input.seek(index177_17);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 7 : 
-                        int LA177_2 = input.LA(1);
-
-                         
-                        int index177_2 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((synpred18_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 3;}
-
-                        else if ( (((synpred19_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 23;}
-
-                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 25;}
-
-                         
-                        input.seek(index177_2);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 8 : 
-                        int LA177_6 = input.LA(1);
-
-                         
-                        int index177_6 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
-
-                        else if ( (true) ) {s = 25;}
-
-                         
-                        input.seek(index177_6);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 9 : 
-                        int LA177_16 = input.LA(1);
-
-                         
-                        int index177_16 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
-
-                        else if ( (true) ) {s = 25;}
-
-                         
-                        input.seek(index177_16);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 10 : 
-                        int LA177_15 = input.LA(1);
-
-                         
-                        int index177_15 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
-
-                        else if ( (true) ) {s = 25;}
-
-                         
-                        input.seek(index177_15);
-                        if ( s>=0 ) return s;
-                        break;
                     case 11 : 
-                        int LA177_29 = input.LA(1);
+                        int LA177_28 = input.LA(1);
 
                          
-                        int index177_29 = input.index();
+                        int index177_28 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
+                        if ( (synpred19_Css3()) ) {s = 31;}
 
-                        else if ( (true) ) {s = 25;}
+                        else if ( (true) ) {s = 26;}
 
                          
-                        input.seek(index177_29);
+                        input.seek(index177_28);
                         if ( s>=0 ) return s;
                         break;
                     case 12 : 
-                        int LA177_8 = input.LA(1);
+                        int LA177_12 = input.LA(1);
 
                          
-                        int index177_8 = input.index();
+                        int index177_12 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
+                        if ( (synpred19_Css3()) ) {s = 31;}
 
-                        else if ( (true) ) {s = 25;}
+                        else if ( (true) ) {s = 26;}
 
                          
-                        input.seek(index177_8);
+                        input.seek(index177_12);
                         if ( s>=0 ) return s;
                         break;
                     case 13 : 
-                        int LA177_5 = input.LA(1);
-
-                         
-                        int index177_5 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA177_5==WS||LA177_5==DOT||LA177_5==OPEQ||(LA177_5>=NL && LA177_5<=COMMENT)) ) {s = 30;}
-
-                        else if ( (synpred19_Css3()) ) {s = 23;}
-
-                        else if ( (true) ) {s = 25;}
-
-                         
-                        input.seek(index177_5);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 14 : 
                         int LA177_14 = input.LA(1);
 
                          
                         int index177_14 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
+                        if ( (synpred19_Css3()) ) {s = 31;}
 
-                        else if ( (true) ) {s = 25;}
+                        else if ( (true) ) {s = 26;}
 
                          
                         input.seek(index177_14);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 14 : 
+                        int LA177_1 = input.LA(1);
+
+                         
+                        int index177_1 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((synpred18_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 3;}
+
+                        else if ( (((synpred19_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 24;}
+
+                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 26;}
+
+                         
+                        input.seek(index177_1);
                         if ( s>=0 ) return s;
                         break;
                     case 15 : 
@@ -23086,134 +23088,134 @@ public class Css3Parser extends DebugParser {
                         int index177_7 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
+                        if ( (synpred19_Css3()) ) {s = 31;}
 
-                        else if ( (true) ) {s = 25;}
+                        else if ( (true) ) {s = 26;}
 
                          
                         input.seek(index177_7);
                         if ( s>=0 ) return s;
                         break;
                     case 16 : 
-                        int LA177_13 = input.LA(1);
+                        int LA177_21 = input.LA(1);
 
                          
-                        int index177_13 = input.index();
+                        int index177_21 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
+                        if ( (synpred19_Css3()) ) {s = 31;}
 
-                        else if ( (true) ) {s = 25;}
+                        else if ( (true) ) {s = 26;}
 
                          
-                        input.seek(index177_13);
+                        input.seek(index177_21);
                         if ( s>=0 ) return s;
                         break;
                     case 17 : 
-                        int LA177_28 = input.LA(1);
-
-                         
-                        int index177_28 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
-
-                        else if ( (true) ) {s = 25;}
-
-                         
-                        input.seek(index177_28);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 18 : 
                         int LA177_20 = input.LA(1);
 
                          
                         int index177_20 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
+                        if ( (synpred19_Css3()) ) {s = 31;}
 
-                        else if ( (true) ) {s = 25;}
+                        else if ( (true) ) {s = 26;}
 
                          
                         input.seek(index177_20);
                         if ( s>=0 ) return s;
                         break;
+                    case 18 : 
+                        int LA177_6 = input.LA(1);
+
+                         
+                        int index177_6 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA177_6==WS||LA177_6==DOT||LA177_6==OPEQ||(LA177_6>=NL && LA177_6<=COMMENT)) ) {s = 32;}
+
+                        else if ( (synpred19_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 26;}
+
+                         
+                        input.seek(index177_6);
+                        if ( s>=0 ) return s;
+                        break;
                     case 19 : 
-                        int LA177_10 = input.LA(1);
-
-                         
-                        int index177_10 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
-
-                        else if ( (true) ) {s = 25;}
-
-                         
-                        input.seek(index177_10);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 20 : 
-                        int LA177_12 = input.LA(1);
-
-                         
-                        int index177_12 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
-
-                        else if ( (true) ) {s = 25;}
-
-                         
-                        input.seek(index177_12);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 21 : 
-                        int LA177_1 = input.LA(1);
-
-                         
-                        int index177_1 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((synpred18_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 3;}
-
-                        else if ( (((synpred19_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 23;}
-
-                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 25;}
-
-                         
-                        input.seek(index177_1);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 22 : 
-                        int LA177_11 = input.LA(1);
-
-                         
-                        int index177_11 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
-
-                        else if ( (true) ) {s = 25;}
-
-                         
-                        input.seek(index177_11);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 23 : 
                         int LA177_9 = input.LA(1);
 
                          
                         int index177_9 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred19_Css3()) ) {s = 23;}
+                        if ( (synpred19_Css3()) ) {s = 31;}
 
-                        else if ( (true) ) {s = 25;}
+                        else if ( (true) ) {s = 26;}
 
                          
                         input.seek(index177_9);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 20 : 
+                        int LA177_19 = input.LA(1);
+
+                         
+                        int index177_19 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred19_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 26;}
+
+                         
+                        input.seek(index177_19);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 21 : 
+                        int LA177_30 = input.LA(1);
+
+                         
+                        int index177_30 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred19_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 26;}
+
+                         
+                        input.seek(index177_30);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 22 : 
+                        int LA177_8 = input.LA(1);
+
+                         
+                        int index177_8 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred19_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 26;}
+
+                         
+                        input.seek(index177_8);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 23 : 
+                        int LA177_18 = input.LA(1);
+
+                         
+                        int index177_18 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred19_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 26;}
+
+                         
+                        input.seek(index177_18);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -23235,11 +23237,11 @@ public class Css3Parser extends DebugParser {
     static final String DFA184_acceptS =
         "\24\uffff\1\2\23\uffff\1\1\22\uffff";
     static final String DFA184_specialS =
-        "\2\uffff\1\34\1\50\1\54\1\60\1\63\1\30\1\36\1\42\1\45\1\11\1\17"+
-        "\1\23\1\26\1\10\1\16\1\53\1\4\1\1\2\uffff\1\33\1\47\1\55\1\61\1"+
-        "\64\1\31\1\37\1\43\1\46\1\12\1\20\1\24\1\27\1\13\1\21\1\56\1\5\1"+
-        "\2\1\uffff\1\35\1\51\1\57\1\62\1\65\1\32\1\40\1\41\1\44\1\7\1\15"+
-        "\1\22\1\25\1\6\1\14\1\52\1\3\1\0}>";
+        "\2\uffff\1\53\1\31\1\36\1\33\1\17\1\14\1\25\1\23\1\4\1\1\1\12\1"+
+        "\7\1\56\1\61\1\64\1\42\1\45\1\50\2\uffff\1\52\1\30\1\37\1\34\1\20"+
+        "\1\15\1\26\1\24\1\5\1\2\1\13\1\10\1\57\1\62\1\65\1\43\1\46\1\51"+
+        "\1\uffff\1\54\1\32\1\40\1\35\1\21\1\16\1\27\1\22\1\3\1\0\1\11\1"+
+        "\6\1\55\1\60\1\63\1\41\1\44\1\47}>";
     static final String[] DFA184_transitionS = {
             "\1\2\1\16\1\20\3\uffff\1\22\5\uffff\1\17\1\24\2\uffff\1\22\6"+
             "\uffff\1\4\24\uffff\1\1\2\uffff\1\1\1\24\1\21\17\uffff\1\23"+
@@ -23348,111 +23350,6 @@ public class Css3Parser extends DebugParser {
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA184_58 = input.LA(1);
-
-                         
-                        int index184_58 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_58);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 1 : 
-                        int LA184_19 = input.LA(1);
-
-                         
-                        int index184_19 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 40;}
-
-                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 20;}
-
-                         
-                        input.seek(index184_19);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 2 : 
-                        int LA184_39 = input.LA(1);
-
-                         
-                        int index184_39 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_39);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 3 : 
-                        int LA184_57 = input.LA(1);
-
-                         
-                        int index184_57 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_57);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 4 : 
-                        int LA184_18 = input.LA(1);
-
-                         
-                        int index184_18 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
-
-                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 20;}
-
-                         
-                        input.seek(index184_18);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 5 : 
-                        int LA184_38 = input.LA(1);
-
-                         
-                        int index184_38 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_38);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 6 : 
-                        int LA184_54 = input.LA(1);
-
-                         
-                        int index184_54 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_54);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 7 : 
                         int LA184_50 = input.LA(1);
 
                          
@@ -23467,22 +23364,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index184_50);
                         if ( s>=0 ) return s;
                         break;
-                    case 8 : 
-                        int LA184_15 = input.LA(1);
-
-                         
-                        int index184_15 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_15);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 9 : 
+                    case 1 : 
                         int LA184_11 = input.LA(1);
 
                          
@@ -23497,7 +23379,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index184_11);
                         if ( s>=0 ) return s;
                         break;
-                    case 10 : 
+                    case 2 : 
                         int LA184_31 = input.LA(1);
 
                          
@@ -23512,382 +23394,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index184_31);
                         if ( s>=0 ) return s;
                         break;
-                    case 11 : 
-                        int LA184_35 = input.LA(1);
-
-                         
-                        int index184_35 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_35);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 12 : 
-                        int LA184_55 = input.LA(1);
-
-                         
-                        int index184_55 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_55);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 13 : 
-                        int LA184_51 = input.LA(1);
-
-                         
-                        int index184_51 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_51);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 14 : 
-                        int LA184_16 = input.LA(1);
-
-                         
-                        int index184_16 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_16);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 15 : 
-                        int LA184_12 = input.LA(1);
-
-                         
-                        int index184_12 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_12);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 16 : 
-                        int LA184_32 = input.LA(1);
-
-                         
-                        int index184_32 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_32);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 17 : 
-                        int LA184_36 = input.LA(1);
-
-                         
-                        int index184_36 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_36);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 18 : 
-                        int LA184_52 = input.LA(1);
-
-                         
-                        int index184_52 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_52);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 19 : 
-                        int LA184_13 = input.LA(1);
-
-                         
-                        int index184_13 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_13);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 20 : 
-                        int LA184_33 = input.LA(1);
-
-                         
-                        int index184_33 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_33);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 21 : 
-                        int LA184_53 = input.LA(1);
-
-                         
-                        int index184_53 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_53);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 22 : 
-                        int LA184_14 = input.LA(1);
-
-                         
-                        int index184_14 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_14);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 23 : 
-                        int LA184_34 = input.LA(1);
-
-                         
-                        int index184_34 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_34);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 24 : 
-                        int LA184_7 = input.LA(1);
-
-                         
-                        int index184_7 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_7);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 25 : 
-                        int LA184_27 = input.LA(1);
-
-                         
-                        int index184_27 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_27);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 26 : 
-                        int LA184_46 = input.LA(1);
-
-                         
-                        int index184_46 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_46);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 27 : 
-                        int LA184_22 = input.LA(1);
-
-                         
-                        int index184_22 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_22);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 28 : 
-                        int LA184_2 = input.LA(1);
-
-                         
-                        int index184_2 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_2);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 29 : 
-                        int LA184_41 = input.LA(1);
-
-                         
-                        int index184_41 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_41);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 30 : 
-                        int LA184_8 = input.LA(1);
-
-                         
-                        int index184_8 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_8);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 31 : 
-                        int LA184_28 = input.LA(1);
-
-                         
-                        int index184_28 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_28);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 32 : 
-                        int LA184_47 = input.LA(1);
-
-                         
-                        int index184_47 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_47);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 33 : 
-                        int LA184_48 = input.LA(1);
-
-                         
-                        int index184_48 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_48);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 34 : 
-                        int LA184_9 = input.LA(1);
-
-                         
-                        int index184_9 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_9);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 35 : 
-                        int LA184_29 = input.LA(1);
-
-                         
-                        int index184_29 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_29);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 36 : 
+                    case 3 : 
                         int LA184_49 = input.LA(1);
 
                          
@@ -23902,7 +23409,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index184_49);
                         if ( s>=0 ) return s;
                         break;
-                    case 37 : 
+                    case 4 : 
                         int LA184_10 = input.LA(1);
 
                          
@@ -23917,7 +23424,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index184_10);
                         if ( s>=0 ) return s;
                         break;
-                    case 38 : 
+                    case 5 : 
                         int LA184_30 = input.LA(1);
 
                          
@@ -23932,11 +23439,11 @@ public class Css3Parser extends DebugParser {
                         input.seek(index184_30);
                         if ( s>=0 ) return s;
                         break;
-                    case 39 : 
-                        int LA184_23 = input.LA(1);
+                    case 6 : 
+                        int LA184_52 = input.LA(1);
 
                          
-                        int index184_23 = input.index();
+                        int index184_52 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
@@ -23944,14 +23451,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
 
                          
-                        input.seek(index184_23);
+                        input.seek(index184_52);
                         if ( s>=0 ) return s;
                         break;
-                    case 40 : 
-                        int LA184_3 = input.LA(1);
+                    case 7 : 
+                        int LA184_13 = input.LA(1);
 
                          
-                        int index184_3 = input.index();
+                        int index184_13 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
@@ -23959,14 +23466,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
 
                          
-                        input.seek(index184_3);
+                        input.seek(index184_13);
                         if ( s>=0 ) return s;
                         break;
-                    case 41 : 
-                        int LA184_42 = input.LA(1);
+                    case 8 : 
+                        int LA184_33 = input.LA(1);
 
                          
-                        int index184_42 = input.index();
+                        int index184_33 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
@@ -23974,14 +23481,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
 
                          
-                        input.seek(index184_42);
+                        input.seek(index184_33);
                         if ( s>=0 ) return s;
                         break;
-                    case 42 : 
-                        int LA184_56 = input.LA(1);
+                    case 9 : 
+                        int LA184_51 = input.LA(1);
 
                          
-                        int index184_56 = input.index();
+                        int index184_51 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
@@ -23989,14 +23496,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
 
                          
-                        input.seek(index184_56);
+                        input.seek(index184_51);
                         if ( s>=0 ) return s;
                         break;
-                    case 43 : 
-                        int LA184_17 = input.LA(1);
+                    case 10 : 
+                        int LA184_12 = input.LA(1);
 
                          
-                        int index184_17 = input.index();
+                        int index184_12 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
@@ -24004,14 +23511,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
 
                          
-                        input.seek(index184_17);
+                        input.seek(index184_12);
                         if ( s>=0 ) return s;
                         break;
-                    case 44 : 
-                        int LA184_4 = input.LA(1);
+                    case 11 : 
+                        int LA184_32 = input.LA(1);
 
                          
-                        int index184_4 = input.index();
+                        int index184_32 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
@@ -24019,14 +23526,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
 
                          
-                        input.seek(index184_4);
+                        input.seek(index184_32);
                         if ( s>=0 ) return s;
                         break;
-                    case 45 : 
-                        int LA184_24 = input.LA(1);
+                    case 12 : 
+                        int LA184_7 = input.LA(1);
 
                          
-                        int index184_24 = input.index();
+                        int index184_7 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
@@ -24034,14 +23541,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
 
                          
-                        input.seek(index184_24);
+                        input.seek(index184_7);
                         if ( s>=0 ) return s;
                         break;
-                    case 46 : 
-                        int LA184_37 = input.LA(1);
+                    case 13 : 
+                        int LA184_27 = input.LA(1);
 
                          
-                        int index184_37 = input.index();
+                        int index184_27 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
@@ -24049,14 +23556,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
 
                          
-                        input.seek(index184_37);
+                        input.seek(index184_27);
                         if ( s>=0 ) return s;
                         break;
-                    case 47 : 
-                        int LA184_43 = input.LA(1);
+                    case 14 : 
+                        int LA184_46 = input.LA(1);
 
                          
-                        int index184_43 = input.index();
+                        int index184_46 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
@@ -24064,55 +23571,10 @@ public class Css3Parser extends DebugParser {
                         else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
 
                          
-                        input.seek(index184_43);
+                        input.seek(index184_46);
                         if ( s>=0 ) return s;
                         break;
-                    case 48 : 
-                        int LA184_5 = input.LA(1);
-
-                         
-                        int index184_5 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_5);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 49 : 
-                        int LA184_25 = input.LA(1);
-
-                         
-                        int index184_25 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_25);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 50 : 
-                        int LA184_44 = input.LA(1);
-
-                         
-                        int index184_44 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
-
-                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
-
-                         
-                        input.seek(index184_44);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 51 : 
+                    case 15 : 
                         int LA184_6 = input.LA(1);
 
                          
@@ -24127,7 +23589,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index184_6);
                         if ( s>=0 ) return s;
                         break;
-                    case 52 : 
+                    case 16 : 
                         int LA184_26 = input.LA(1);
 
                          
@@ -24142,7 +23604,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index184_26);
                         if ( s>=0 ) return s;
                         break;
-                    case 53 : 
+                    case 17 : 
                         int LA184_45 = input.LA(1);
 
                          
@@ -24155,6 +23617,546 @@ public class Css3Parser extends DebugParser {
 
                          
                         input.seek(index184_45);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 18 : 
+                        int LA184_48 = input.LA(1);
+
+                         
+                        int index184_48 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_48);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 19 : 
+                        int LA184_9 = input.LA(1);
+
+                         
+                        int index184_9 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_9);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 20 : 
+                        int LA184_29 = input.LA(1);
+
+                         
+                        int index184_29 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_29);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 21 : 
+                        int LA184_8 = input.LA(1);
+
+                         
+                        int index184_8 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_8);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 22 : 
+                        int LA184_28 = input.LA(1);
+
+                         
+                        int index184_28 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_28);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 23 : 
+                        int LA184_47 = input.LA(1);
+
+                         
+                        int index184_47 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_47);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 24 : 
+                        int LA184_23 = input.LA(1);
+
+                         
+                        int index184_23 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_23);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 25 : 
+                        int LA184_3 = input.LA(1);
+
+                         
+                        int index184_3 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_3);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 26 : 
+                        int LA184_42 = input.LA(1);
+
+                         
+                        int index184_42 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_42);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 27 : 
+                        int LA184_5 = input.LA(1);
+
+                         
+                        int index184_5 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_5);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 28 : 
+                        int LA184_25 = input.LA(1);
+
+                         
+                        int index184_25 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_25);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 29 : 
+                        int LA184_44 = input.LA(1);
+
+                         
+                        int index184_44 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_44);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 30 : 
+                        int LA184_4 = input.LA(1);
+
+                         
+                        int index184_4 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_4);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 31 : 
+                        int LA184_24 = input.LA(1);
+
+                         
+                        int index184_24 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_24);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 32 : 
+                        int LA184_43 = input.LA(1);
+
+                         
+                        int index184_43 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_43);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 33 : 
+                        int LA184_56 = input.LA(1);
+
+                         
+                        int index184_56 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_56);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 34 : 
+                        int LA184_17 = input.LA(1);
+
+                         
+                        int index184_17 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_17);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 35 : 
+                        int LA184_37 = input.LA(1);
+
+                         
+                        int index184_37 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_37);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 36 : 
+                        int LA184_57 = input.LA(1);
+
+                         
+                        int index184_57 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_57);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 37 : 
+                        int LA184_18 = input.LA(1);
+
+                         
+                        int index184_18 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
+
+                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 20;}
+
+                         
+                        input.seek(index184_18);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 38 : 
+                        int LA184_38 = input.LA(1);
+
+                         
+                        int index184_38 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_38);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 39 : 
+                        int LA184_58 = input.LA(1);
+
+                         
+                        int index184_58 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_58);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 40 : 
+                        int LA184_19 = input.LA(1);
+
+                         
+                        int index184_19 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 40;}
+
+                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 20;}
+
+                         
+                        input.seek(index184_19);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 41 : 
+                        int LA184_39 = input.LA(1);
+
+                         
+                        int index184_39 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_39);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 42 : 
+                        int LA184_22 = input.LA(1);
+
+                         
+                        int index184_22 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_22);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 43 : 
+                        int LA184_2 = input.LA(1);
+
+                         
+                        int index184_2 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_2);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 44 : 
+                        int LA184_41 = input.LA(1);
+
+                         
+                        int index184_41 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_41);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 45 : 
+                        int LA184_53 = input.LA(1);
+
+                         
+                        int index184_53 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_53);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 46 : 
+                        int LA184_14 = input.LA(1);
+
+                         
+                        int index184_14 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_14);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 47 : 
+                        int LA184_34 = input.LA(1);
+
+                         
+                        int index184_34 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_34);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 48 : 
+                        int LA184_54 = input.LA(1);
+
+                         
+                        int index184_54 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_54);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 49 : 
+                        int LA184_15 = input.LA(1);
+
+                         
+                        int index184_15 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_15);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 50 : 
+                        int LA184_35 = input.LA(1);
+
+                         
+                        int index184_35 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_35);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 51 : 
+                        int LA184_55 = input.LA(1);
+
+                         
+                        int index184_55 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_55);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 52 : 
+                        int LA184_16 = input.LA(1);
+
+                         
+                        int index184_16 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_16);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 53 : 
+                        int LA184_36 = input.LA(1);
+
+                         
+                        int index184_36 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (!(evalPredicate(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"),""))) ) {s = 40;}
+
+                        else if ( (evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")) ) {s = 20;}
+
+                         
+                        input.seek(index184_36);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -24216,7 +24218,7 @@ public class Css3Parser extends DebugParser {
             this.transition = DFA198_transition;
         }
         public String getDescription() {
-            return "()* loopback of 933:19: ( ( ws )? COMMA ( ws )? cp_expression )*";
+            return "()* loopback of 933:24: ( ( ws )? COMMA ( ws )? cp_full_expression )*";
         }
         public void error(NoViableAltException nvae) {
             dbg.recognitionException(nvae);
@@ -24721,24 +24723,28 @@ public class Css3Parser extends DebugParser {
     static final String DFA242_minS =
         "\1\6\2\5\1\uffff\1\5\1\uffff\1\5";
     static final String DFA242_maxS =
-        "\1\122\2\124\1\uffff\1\124\1\uffff\1\124";
+        "\1\122\2\146\1\uffff\1\146\1\uffff\1\146";
     static final String DFA242_acceptS =
         "\3\uffff\1\2\1\uffff\1\1\1\uffff";
     static final String DFA242_specialS =
         "\7\uffff}>";
     static final String[] DFA242_transitionS = {
-            "\3\3\3\uffff\1\1\5\uffff\2\3\2\uffff\1\1\6\uffff\1\3\24\uffff"+
+            "\3\3\3\uffff\1\1\4\uffff\3\3\2\uffff\1\1\6\uffff\1\3\24\uffff"+
             "\1\3\2\uffff\3\3\17\uffff\1\2\13\3",
-            "\4\3\2\uffff\2\3\5\uffff\2\3\1\5\2\3\1\4\5\uffff\1\3\23\uffff"+
-            "\2\3\2\uffff\3\3\4\uffff\1\3\12\uffff\14\3\2\4",
-            "\4\3\2\uffff\2\3\5\uffff\2\3\1\5\2\3\1\6\5\uffff\1\3\23\uffff"+
-            "\2\3\2\uffff\3\3\4\uffff\1\3\12\uffff\14\3\2\6",
+            "\4\3\2\uffff\2\3\2\uffff\1\3\2\uffff\2\3\1\5\2\3\1\4\5\uffff"+
+            "\1\3\23\uffff\3\3\1\uffff\3\3\4\uffff\1\3\12\uffff\14\3\2\4"+
+            "\6\uffff\3\3\6\uffff\3\3",
+            "\4\3\2\uffff\2\3\2\uffff\1\3\2\uffff\2\3\1\5\2\3\1\6\5\uffff"+
+            "\1\3\23\uffff\3\3\1\uffff\3\3\4\uffff\1\3\12\uffff\14\3\2\6"+
+            "\6\uffff\3\3\6\uffff\3\3",
             "",
-            "\4\3\2\uffff\2\3\5\uffff\2\3\1\5\2\3\1\4\5\uffff\1\3\23\uffff"+
-            "\2\3\2\uffff\3\3\4\uffff\1\3\12\uffff\14\3\2\4",
+            "\4\3\2\uffff\2\3\2\uffff\1\3\2\uffff\2\3\1\5\2\3\1\4\5\uffff"+
+            "\1\3\23\uffff\3\3\1\uffff\3\3\4\uffff\1\3\12\uffff\14\3\2\4"+
+            "\6\uffff\3\3\6\uffff\3\3",
             "",
-            "\4\3\2\uffff\2\3\5\uffff\2\3\1\5\2\3\1\6\5\uffff\1\3\23\uffff"+
-            "\2\3\2\uffff\3\3\4\uffff\1\3\12\uffff\14\3\2\6"
+            "\4\3\2\uffff\2\3\2\uffff\1\3\2\uffff\2\3\1\5\2\3\1\6\5\uffff"+
+            "\1\3\23\uffff\3\3\1\uffff\3\3\4\uffff\1\3\12\uffff\14\3\2\6"+
+            "\6\uffff\3\3\6\uffff\3\3"
     };
 
     static final short[] DFA242_eot = DFA.unpackEncodedString(DFA242_eotS);
@@ -24771,7 +24777,7 @@ public class Css3Parser extends DebugParser {
             this.transition = DFA242_transition;
         }
         public String getDescription() {
-            return "1034:5: ( cp_variable ( ws )? COLON ( ws )? cp_expression | cp_expression )";
+            return "1034:5: ( cp_variable ( ws )? COLON ( ws )? cp_full_expression | cp_full_expression )";
         }
         public void error(NoViableAltException nvae) {
             dbg.recognitionException(nvae);
@@ -25183,21 +25189,21 @@ public class Css3Parser extends DebugParser {
     static final String DFA298_eotS =
         "\4\uffff";
     static final String DFA298_eofS =
-        "\4\uffff";
+        "\1\2\3\uffff";
     static final String DFA298_minS =
-        "\1\5\1\uffff\1\15\1\uffff";
+        "\2\5\2\uffff";
     static final String DFA298_maxS =
-        "\1\146\1\uffff\1\146\1\uffff";
+        "\2\146\2\uffff";
     static final String DFA298_acceptS =
-        "\1\uffff\1\2\1\uffff\1\1";
+        "\2\uffff\1\2\1\1";
     static final String DFA298_specialS =
-        "\1\1\1\uffff\1\0\1\uffff}>";
+        "\1\1\1\0\2\uffff}>";
     static final String[] DFA298_transitionS = {
-            "\1\1\7\uffff\1\1\1\uffff\1\3\5\uffff\1\1\1\uffff\1\2\33\uffff"+
-            "\1\3\37\uffff\2\2\6\uffff\3\3\6\uffff\3\3",
+            "\1\2\5\uffff\1\2\1\uffff\2\2\1\3\5\uffff\1\2\1\uffff\1\1\33"+
+            "\uffff\1\3\37\uffff\2\1\1\2\5\uffff\3\3\6\uffff\3\3",
+            "\1\2\5\uffff\1\2\1\uffff\2\2\1\3\5\uffff\1\2\1\uffff\1\1\33"+
+            "\uffff\1\3\37\uffff\2\1\1\2\5\uffff\3\3\6\uffff\3\3",
             "",
-            "\1\1\1\uffff\1\3\5\uffff\1\1\1\uffff\1\2\33\uffff\1\3\37\uffff"+
-            "\2\2\6\uffff\3\3\6\uffff\3\3",
             ""
     };
 
@@ -25241,20 +25247,20 @@ public class Css3Parser extends DebugParser {
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA298_2 = input.LA(1);
+                        int LA298_1 = input.LA(1);
 
                          
-                        int index298_2 = input.index();
+                        int index298_1 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA298_2==LBRACE||LA298_2==RPAREN) ) {s = 1;}
+                        if ( (LA298_1==SEMI||LA298_1==COMMA||(LA298_1>=LBRACE && LA298_1<=RBRACE)||LA298_1==RPAREN||LA298_1==SASS_DEFAULT) ) {s = 2;}
 
-                        else if ( (LA298_2==WS||(LA298_2>=NL && LA298_2<=COMMENT)) ) {s = 2;}
+                        else if ( (LA298_1==WS||(LA298_1>=NL && LA298_1<=COMMENT)) ) {s = 1;}
 
-                        else if ( (LA298_2==AND||LA298_2==GREATER||(LA298_2>=GREATER_OR_EQ && LA298_2<=LESS_OR_EQ)||(LA298_2>=OR && LA298_2<=CP_NOT_EQ)) && (synpred28_Css3())) {s = 3;}
+                        else if ( (LA298_1==AND||LA298_1==GREATER||(LA298_1>=GREATER_OR_EQ && LA298_1<=LESS_OR_EQ)||(LA298_1>=OR && LA298_1<=CP_NOT_EQ)) && (synpred28_Css3())) {s = 3;}
 
                          
-                        input.seek(index298_2);
+                        input.seek(index298_1);
                         if ( s>=0 ) return s;
                         break;
                     case 1 : 
@@ -25264,9 +25270,9 @@ public class Css3Parser extends DebugParser {
                         int index298_0 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (LA298_0==SEMI||LA298_0==LBRACE||LA298_0==RPAREN) ) {s = 1;}
+                        if ( (LA298_0==WS||(LA298_0>=NL && LA298_0<=COMMENT)) ) {s = 1;}
 
-                        else if ( (LA298_0==WS||(LA298_0>=NL && LA298_0<=COMMENT)) ) {s = 2;}
+                        else if ( (LA298_0==EOF||LA298_0==SEMI||LA298_0==COMMA||(LA298_0>=LBRACE && LA298_0<=RBRACE)||LA298_0==RPAREN||LA298_0==SASS_DEFAULT) ) {s = 2;}
 
                         else if ( (LA298_0==AND||LA298_0==GREATER||(LA298_0>=GREATER_OR_EQ && LA298_0<=LESS_OR_EQ)||(LA298_0>=OR && LA298_0<=CP_NOT_EQ)) && (synpred28_Css3())) {s = 3;}
 
@@ -25829,8 +25835,8 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_ws_in_declaration4511 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_STAR_in_declaration4524 = new BitSet(new long[]{0x11E0000000441040L,0x0000000000000080L});
     public static final BitSet FOLLOW_property_in_declaration4527 = new BitSet(new long[]{0x0000000000100000L});
-    public static final BitSet FOLLOW_COLON_in_declaration4529 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
-    public static final BitSet FOLLOW_ws_in_declaration4531 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_COLON_in_declaration4529 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_ws_in_declaration4531 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
     public static final BitSet FOLLOW_cp_propertyValue_in_declaration4534 = new BitSet(new long[]{0x0000000000800002L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_declaration4536 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_cp_expression_list_in_cp_propertyValue4572 = new BitSet(new long[]{0x0000000000000002L});
@@ -25867,8 +25873,8 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_cp_variable_in_term5151 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_functionName_in_function5172 = new BitSet(new long[]{0x0000000000880000L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_function5174 = new BitSet(new long[]{0x0000000000080000L});
-    public static final BitSet FOLLOW_LPAREN_in_function5179 = new BitSet(new long[]{0x00E4000020EC11C0L,0x00000000031FFF80L});
-    public static final BitSet FOLLOW_ws_in_function5181 = new BitSet(new long[]{0x00E4000020EC11C0L,0x00000000031FFF80L});
+    public static final BitSet FOLLOW_LPAREN_in_function5179 = new BitSet(new long[]{0x00E4000020EE11C0L,0x00000000031FFF80L});
+    public static final BitSet FOLLOW_ws_in_function5181 = new BitSet(new long[]{0x00E4000020EE11C0L,0x00000000031FFF80L});
     public static final BitSet FOLLOW_cp_args_list_in_function5212 = new BitSet(new long[]{0x0000000000200000L});
     public static final BitSet FOLLOW_cp_expression_list_in_function5240 = new BitSet(new long[]{0x0000000000A00000L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_function5242 = new BitSet(new long[]{0x0000000000200000L});
@@ -25899,15 +25905,15 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_set_in_ws5566 = new BitSet(new long[]{0x0000000000800002L,0x0000000000180000L});
     public static final BitSet FOLLOW_cp_variable_in_cp_variable_declaration5614 = new BitSet(new long[]{0x0000000000900000L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_cp_variable_declaration5616 = new BitSet(new long[]{0x0000000000100000L});
-    public static final BitSet FOLLOW_COLON_in_cp_variable_declaration5619 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
-    public static final BitSet FOLLOW_ws_in_cp_variable_declaration5621 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_COLON_in_cp_variable_declaration5619 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_ws_in_cp_variable_declaration5621 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
     public static final BitSet FOLLOW_cp_expression_list_in_cp_variable_declaration5624 = new BitSet(new long[]{0x0000000000800020L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_cp_variable_declaration5626 = new BitSet(new long[]{0x0000000000000020L});
     public static final BitSet FOLLOW_SEMI_in_cp_variable_declaration5629 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_cp_variable_in_cp_variable_declaration5656 = new BitSet(new long[]{0x0000000000900000L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_cp_variable_declaration5658 = new BitSet(new long[]{0x0000000000100000L});
-    public static final BitSet FOLLOW_COLON_in_cp_variable_declaration5661 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
-    public static final BitSet FOLLOW_ws_in_cp_variable_declaration5663 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_COLON_in_cp_variable_declaration5661 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_ws_in_cp_variable_declaration5663 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
     public static final BitSet FOLLOW_cp_expression_list_in_cp_variable_declaration5666 = new BitSet(new long[]{0x0000000000800020L,0x0000000000380000L});
     public static final BitSet FOLLOW_ws_in_cp_variable_declaration5668 = new BitSet(new long[]{0x0000000000000020L,0x0000000000200000L});
     public static final BitSet FOLLOW_SASS_DEFAULT_in_cp_variable_declaration5672 = new BitSet(new long[]{0x0000000000800020L,0x0000000000180000L});
@@ -25915,11 +25921,11 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_SEMI_in_cp_variable_declaration5679 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_cp_variable5712 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_SASS_VAR_in_cp_variable5744 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_cp_expression_in_cp_expression_list5768 = new BitSet(new long[]{0x0000000000800802L,0x0000000000180000L});
+    public static final BitSet FOLLOW_cp_full_expression_in_cp_expression_list5768 = new BitSet(new long[]{0x0000000000800802L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_cp_expression_list5771 = new BitSet(new long[]{0x0000000000000800L});
-    public static final BitSet FOLLOW_COMMA_in_cp_expression_list5774 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
-    public static final BitSet FOLLOW_ws_in_cp_expression_list5776 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
-    public static final BitSet FOLLOW_cp_expression_in_cp_expression_list5779 = new BitSet(new long[]{0x0000000000800802L,0x0000000000180000L});
+    public static final BitSet FOLLOW_COMMA_in_cp_expression_list5774 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_ws_in_cp_expression_list5776 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_cp_full_expression_in_cp_expression_list5779 = new BitSet(new long[]{0x0000000000800802L,0x0000000000180000L});
     public static final BitSet FOLLOW_cp_additionExp_in_cp_expression5812 = new BitSet(new long[]{0x00E4000020CC11C2L,0x00000000001FFF80L});
     public static final BitSet FOLLOW_ws_in_cp_expression5819 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
     public static final BitSet FOLLOW_cp_additionExp_in_cp_expression5822 = new BitSet(new long[]{0x00E4000020CC11C2L,0x00000000001FFF80L});
@@ -25985,23 +25991,23 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_ws_in_cp_mixin_call6550 = new BitSet(new long[]{0x0000000000000040L});
     public static final BitSet FOLLOW_cp_mixin_name_in_cp_mixin_call6552 = new BitSet(new long[]{0x0000000000880020L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_cp_mixin_call6565 = new BitSet(new long[]{0x0000000000080000L});
-    public static final BitSet FOLLOW_LPAREN_in_cp_mixin_call6568 = new BitSet(new long[]{0x00E4000020EC11C0L,0x00000000001FFF80L});
-    public static final BitSet FOLLOW_ws_in_cp_mixin_call6570 = new BitSet(new long[]{0x00E4000020EC11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_LPAREN_in_cp_mixin_call6568 = new BitSet(new long[]{0x00E4000020EE11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_ws_in_cp_mixin_call6570 = new BitSet(new long[]{0x00E4000020EE11C0L,0x00000000001FFF80L});
     public static final BitSet FOLLOW_cp_mixin_call_args_in_cp_mixin_call6573 = new BitSet(new long[]{0x0000000000200000L});
     public static final BitSet FOLLOW_RPAREN_in_cp_mixin_call6576 = new BitSet(new long[]{0x0000000000800020L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_cp_mixin_call6580 = new BitSet(new long[]{0x0000000000000020L});
     public static final BitSet FOLLOW_SEMI_in_cp_mixin_call6583 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_IDENT_in_cp_mixin_name6612 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_cp_mixin_call_arg_in_cp_mixin_call_args6648 = new BitSet(new long[]{0x0000000000000822L});
-    public static final BitSet FOLLOW_set_in_cp_mixin_call_args6652 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
-    public static final BitSet FOLLOW_ws_in_cp_mixin_call_args6660 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_set_in_cp_mixin_call_args6652 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_ws_in_cp_mixin_call_args6660 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
     public static final BitSet FOLLOW_cp_mixin_call_arg_in_cp_mixin_call_args6663 = new BitSet(new long[]{0x0000000000000822L});
     public static final BitSet FOLLOW_cp_variable_in_cp_mixin_call_arg6705 = new BitSet(new long[]{0x0000000000900000L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_cp_mixin_call_arg6707 = new BitSet(new long[]{0x0000000000100000L});
-    public static final BitSet FOLLOW_COLON_in_cp_mixin_call_arg6710 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
-    public static final BitSet FOLLOW_ws_in_cp_mixin_call_arg6712 = new BitSet(new long[]{0x00E4000020CC11C0L,0x00000000001FFF80L});
-    public static final BitSet FOLLOW_cp_expression_in_cp_mixin_call_arg6715 = new BitSet(new long[]{0x0000000000800002L,0x0000000000180000L});
-    public static final BitSet FOLLOW_cp_expression_in_cp_mixin_call_arg6727 = new BitSet(new long[]{0x0000000000800002L,0x0000000000180000L});
+    public static final BitSet FOLLOW_COLON_in_cp_mixin_call_arg6710 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_ws_in_cp_mixin_call_arg6712 = new BitSet(new long[]{0x00E4000020CE11C0L,0x00000000001FFF80L});
+    public static final BitSet FOLLOW_cp_full_expression_in_cp_mixin_call_arg6715 = new BitSet(new long[]{0x0000000000800002L,0x0000000000180000L});
+    public static final BitSet FOLLOW_cp_full_expression_in_cp_mixin_call_arg6727 = new BitSet(new long[]{0x0000000000800002L,0x0000000000180000L});
     public static final BitSet FOLLOW_ws_in_cp_mixin_call_arg6735 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_cp_arg_in_cp_args_list6771 = new BitSet(new long[]{0x0000000000000822L});
     public static final BitSet FOLLOW_set_in_cp_args_list6775 = new BitSet(new long[]{0x0000000000C01000L,0x0000000000180080L});
