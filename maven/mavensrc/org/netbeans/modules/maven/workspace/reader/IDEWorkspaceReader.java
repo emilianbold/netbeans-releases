@@ -52,7 +52,7 @@ import org.sonatype.aether.repository.WorkspaceReader;
 import org.sonatype.aether.repository.WorkspaceRepository;
 
 /**
- *
+ * netbeansProjectMappings comma separated list of <GAV>=<path> where gav is G:A:V
  * @author mkleint
  */
 public class IDEWorkspaceReader implements WorkspaceReader {
@@ -62,7 +62,7 @@ public class IDEWorkspaceReader implements WorkspaceReader {
 
     public IDEWorkspaceReader() {
         mappings = new HashMap<String, File>();
-        String mapp = System.getenv("netbeansProjectMappings");
+        String mapp = System.getProperty("netbeansProjectMappings");
         if (mapp != null) {
             StringTokenizer st = new StringTokenizer(mapp, ",");
             while (st.hasMoreTokens()) {
@@ -83,10 +83,12 @@ public class IDEWorkspaceReader implements WorkspaceReader {
 
     }
 
+    @Override
     public WorkspaceRepository getRepository() {
         return repo;
     }
 
+    @Override
     public File findArtifact(Artifact artifact) {
         File f = mappings.get(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getBaseVersion());
         if (f != null) {
@@ -106,6 +108,7 @@ public class IDEWorkspaceReader implements WorkspaceReader {
         return null;
     }
 
+    @Override
     public List<String> findVersions(Artifact artifact) {
         String id = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":";
         List<String> toRet = new ArrayList<String>();

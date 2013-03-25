@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
@@ -63,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.maven.DependencyProviderImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -84,6 +86,7 @@ import org.openide.awt.NotificationDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -196,6 +199,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                         }
                         if (processedGoals.size() > 0) {
                             brc.setGoals(processedGoals);
+                            assignDependencyProjectsIntoMAVEN_OPTS(brc, false);
                             return true;
                         }
                     } else {
@@ -275,6 +279,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     }
                     if (processedGoals.size() > 0) {
                         brc.setGoals(processedGoals);
+                        assignDependencyProjectsIntoMAVEN_OPTS(brc, true);
                         return true;
                     }
                 } else {
@@ -606,6 +611,45 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 //                }
 //            }, false, Color.BLUE.darker());
 //        }
+    }
+
+    private void assignDependencyProjectsIntoMAVEN_OPTS(BeanRunConfig brc, boolean test) {
+        if (brc.getProject() == null) {
+            return;
+        }
+        File jar = InstalledFileLocator.getDefault().locate("maven/nblib/org-netbeans-modules-maven.jar", "org.netbeans.modules.maven", false);
+        assert jar != null;
+        
+        DependencyProviderImpl dep = brc.getProject().getLookup().lookup(DependencyProviderImpl.class);
+        assert dep != null;
+        StringBuilder value = new StringBuilder();
+        for (DependencyProviderImpl.Pair pair : dep.getDependencyProjects()) {
+            if (!test && "test".equals(pair.getArtifact().getScope())) {
+                continue;
+            }
+            Artifact a = pair.getArtifact();
+            if (!pair.getArtifact().hasClassifier() && RunUtils.hasApplicationCompileOnSaveEnabled(pair.getProject())) {
+                if (value.length() != 0) {
+                    value.append(",");
+                }
+                value.append(a.getGroupId()).append(":").append(a.getArtifactId()).append(":").append(a.getBaseVersion());
+                File f = FileUtil.toFile(pair.getProject().getProjectDirectory());
+                value.append("=").append(FileUtil.normalizeFile(new File(f, "target" + File.separator + "classes")));
+            }
+            //TODO how to make sure to enable -tests jar and test cos? we need just one setting apparently.
+            if (!pair.getArtifact().hasClassifier() && RunUtils.hasApplicationCompileOnSaveEnabled(pair.getProject())) {
+                if (value.length() != 0) {
+                    value.append(",");
+                }
+                value.append(a.getGroupId()).append(":").append(a.getArtifactId()).append(":").append(a.getBaseVersion());
+                File f = FileUtil.toFile(pair.getProject().getProjectDirectory());
+                value.append("=").append(f.getAbsolutePath());
+            }
+        }
+        if (value.length() > 0) {
+            brc.setProperty("maven.ext.class.path", jar.getAbsolutePath());
+            brc.setProperty("netbeansProjectMappings", value.toString());
+        }
     }
 
     
