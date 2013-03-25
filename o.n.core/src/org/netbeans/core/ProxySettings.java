@@ -115,7 +115,7 @@ public class ProxySettings {
     }
     
     public static String getSystemPac() {
-        return getPreferences().get(SYSTEM_PAC, "");
+        return getPreferences().get(SYSTEM_PAC, null);
     }
     
     

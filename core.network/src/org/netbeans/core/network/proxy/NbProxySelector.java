@@ -159,11 +159,6 @@ public final class NbProxySelector extends ProxySelector {
                 break;
             case ProxySettings.AUTO_DETECT_PAC:
                 if (!useSystemProxies ()) {
-                    // handling nonProxyHosts first
-                    if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
-                        res.add (Proxy.NO_PROXY);
-                        break;
-                    }
                     ProxyAutoConfig pac = ProxyAutoConfig.get(getPacFile());
                     assert pac != null : "Instance of ProxyAutoConfig found for " + getPacFile();
                     if (pac == null) {
@@ -191,11 +186,8 @@ public final class NbProxySelector extends ProxySelector {
                 res.add (Proxy.NO_PROXY);
                 break;
             case ProxySettings.MANUAL_SET_PAC:
-                // handling nonProxyHosts first
-                if (dontUseProxy (ProxySettings.getNonProxyHosts (), uri.getHost ())) {
-                    res.add (Proxy.NO_PROXY);
-                    break;
-                }
+                // unused branch - never can setup PAC file from NetBeans
+                
                 ProxyAutoConfig pac = ProxyAutoConfig.get(getPacFile());
                 assert pac != null : "Instance of ProxyAutoConfig found for " + getPacFile();
                 if (pac == null) {
