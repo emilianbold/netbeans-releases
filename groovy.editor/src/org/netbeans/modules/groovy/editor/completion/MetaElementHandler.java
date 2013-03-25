@@ -84,23 +84,26 @@ public final class MetaElementHandler {
             String prefix, int anchor) {
 
         final Class clazz = loadClass(className);
-        final MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(clazz);
+        if (clazz != null) {
+            final MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(clazz);
 
-        if (metaClass != null) {
-            Map<FieldSignature, CompletionItem.FieldItem> result = new HashMap<FieldSignature, CompletionItem.FieldItem>();
+            if (metaClass != null) {
+                Map<FieldSignature, CompletionItem.FieldItem> result = new HashMap<FieldSignature, CompletionItem.FieldItem>();
 
-            LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
-            for (Object field : metaClass.getProperties()) {
-                LOG.log(Level.FINEST, field.toString());
-                MetaProperty prop = (MetaProperty) field;
-                if (prop.getName().startsWith(prefix)) {
-                    result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
-                            prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
+                LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
+                for (Object field : metaClass.getProperties()) {
+                    LOG.log(Level.FINEST, field.toString());
+                    MetaProperty prop = (MetaProperty) field;
+                    if (prop.getName().startsWith(prefix)) {
+                        result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
+                                prop.getName(), prop.getModifiers(), anchor, info, prop.getType().getSimpleName()));
+                    }
                 }
-            }
 
-            return result;
+                return result;
+            }
         }
+        
         return Collections.emptyMap();
     }
     
@@ -108,17 +111,20 @@ public final class MetaElementHandler {
             String prefix, int anchor, boolean nameOnly) {
 
         final Class clz = loadClass(className);
-        final MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
+        if (clz != null) {
+            final MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
 
-        if (metaClz != null) {
-            Map<MethodSignature, CompletionItem.MetaMethodItem> result = new HashMap<MethodSignature, CompletionItem.MetaMethodItem>();
+            if (metaClz != null) {
+                Map<MethodSignature, CompletionItem.MetaMethodItem> result = new HashMap<MethodSignature, CompletionItem.MetaMethodItem>();
 
-            LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
-            for (MetaMethod method : metaClz.getMetaMethods()) {
-                populateProposal(clz, method, prefix, anchor, result, nameOnly);
+                LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
+                for (MetaMethod method : metaClz.getMetaMethods()) {
+                    populateProposal(clz, method, prefix, anchor, result, nameOnly);
+                }
+
+                return result;
             }
-
-            return result;
+        
         }
         return Collections.emptyMap();
     }
@@ -214,6 +220,17 @@ public final class MetaElementHandler {
     }
     
     private boolean isBetterDistance(MetaMethod currentMethod, MetaMethod methodToStore) {
+        // In some cases (e.g. #206610) there is the same distance between java.lang.Object and some
+        // other interface java.util.Map and in such cases we always want to prefer the interface over
+        // the java.lang.Object
+        if ("java.lang.Object".equals(currentMethod.getDeclaringClass().getName())) {
+            return true;
+        }
+        if ("java.lang.Object".equals(methodToStore.getDeclaringClass().getName())) {
+            return false;
+        }
+        
+        
         if (currentMethod.getDeclaringClass().getSuperClassDistance() <= methodToStore.getDeclaringClass().getSuperClassDistance()) {
             return true;
         }
