@@ -422,9 +422,9 @@ public enum NodeType {
     cp_full_expression,
     cp_full_expression_operator,
     
-    cp_propertyValue
+    cp_propertyValue,
             
-
+    cp_expression_list
 
     ;
     
