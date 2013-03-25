@@ -127,8 +127,6 @@ public class CordovaPerformer implements BuildPerformer {
     }
 
     private Properties properties(Project p) {
-        ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
-        ProjectConfiguration  activeConfiguration = provider.getActiveConfiguration();
         Properties props = new Properties();
         final CordovaPlatform phoneGap = CordovaPlatform.getDefault();
         props.put(PROP_CORDOVA_HOME, phoneGap.getSdkLocation());//NOI18N
@@ -153,12 +151,17 @@ public class CordovaPerformer implements BuildPerformer {
         props.put(PROP_DEBUG_ENABLE, debug);//NOI18N
         //workaround for some strange behavior of ant execution in netbeans
         props.put(PROP_ENV_DISPLAY, ":0.0");//NOI18N
-        if (activeConfiguration instanceof MobileConfigurationImpl) {
-            props.put(PROP_CONFIG, ((MobileConfigurationImpl) activeConfiguration).getId());
-            ((MobileConfigurationImpl) activeConfiguration).getDevice().addProperties(props);
+        props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
+
+        ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
+        if (provider != null) {
+            ProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
+            if (activeConfiguration instanceof MobileConfigurationImpl) {
+                props.put(PROP_CONFIG, ((MobileConfigurationImpl) activeConfiguration).getId());
+                ((MobileConfigurationImpl) activeConfiguration).getDevice().addProperties(props);
+            }
         }
         
-        props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
         return props;
     }
 
