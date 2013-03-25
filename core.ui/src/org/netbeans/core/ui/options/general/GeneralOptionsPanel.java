@@ -176,13 +176,6 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
             lblUsageInfo.setVisible(false);
             lblLearnMore.setVisible(false);
         }
-        
-        // if system proxy setting is not detectable, disable this radio
-        // button
-        // do not disable this radio button at all
-        // it could use JDK detection sometime
-        //if (System.getProperty("netbeans.system_http_proxy") == null) // NOI18N
-            //rbUseSystemProxy.setEnabled(false);
     }
     
     /** This method is called from within the constructor to

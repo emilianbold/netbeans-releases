@@ -52,25 +52,23 @@ made subject to such option by the copyright holder.
     <apidef name="launcher-proxy-property">Startup Proxy System Property Devel API</apidef>
   </apidefs>
 
-<!-- ACTUAL CHANGES BEGIN HERE: -->
-
   <changes>
-<!--     <change id="module-system-check">
-        <api name="bridge"/>
-        <summary>Main.getModuleSystem(false)</summary>
-        <version major="1" minor="47"/>
-        <date day="10" month="1" year="2013"/>
-        <author login="jtulach"/>
-        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+     <change id="system-proxy-reload">
+        <api name="launcher-proxy-property"/>
+        <summary>Launcher does not provide proxy setting properties.</summary>
+        <version major="2" minor="59"/>
+        <date day="2" month="4" year="2013"/>
+        <author login="lfischme"/>
+        <compatibility addition="no" binary="compatible" semantic="compatible" />
         <description>
         <p>
-            Method <code>getModuleSystem(false)</code> to get existing module
-            system without initializing it.
+            Launcher does not provide <code>netbeans.system_http_proxy</code> and
+            <code>netbeans.system_http_non_proxy_hosts</code> properties anymore.
+            Proxy settings are now detected in Core Network module.
         </p>
         </description>
-        <class package="org.netbeans.core.startup" name="Main"/>
-        <issue number="224479"/>
-    </change>-->
+        <issue number="201731"/>
+    </change>
   </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->
