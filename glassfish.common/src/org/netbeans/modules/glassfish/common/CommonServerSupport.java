@@ -231,7 +231,7 @@ public class CommonServerSupport
     // prevent j2eeserver from stopping an authenticated domain that
     // the IDE did not start.
     private boolean stopDisabled = false;
-    
+
     private Process localStartProcess;
 
     CommonServerSupport(GlassfishInstance instance) {
