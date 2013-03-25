@@ -44,18 +44,15 @@ package org.netbeans.modules.web.clientproject.sites;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -63,6 +60,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
+import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -95,33 +93,15 @@ public final class SiteHelper {
      * @param progressHandle progress handle, can be {@code null}
      * @throws NetworkException if any network error occurs
      * @throws IOException if any error occurs
+     * @deprecated Use any download method from {@link NetworkSupport}.
      */
-    @NbBundle.Messages({
-        "# {0} - file name",
-        "SiteHelper.progress.download=Downloading file {0}"
-    })
+    @Deprecated
     public static void download(String url, File target, @NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException {
         assert !EventQueue.isDispatchThread();
         if (progressHandle != null) {
-            progressHandle.progress(Bundle.SiteHelper_progress_download(target.getName()));
-        }
-        InputStream is;
-        try {
-            is = new URL(url).openStream();
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            throw new NetworkException(url, ex);
-        }
-        try {
-            copyToFile(is, target);
-        } catch (IOException ex) {
-            // error => ensure file is deleted
-            if (!target.delete()) {
-                // nothing we can do about it
-            }
-            throw ex;
-        } finally {
-            is.close();
+            NetworkSupport.downloadWithProgress(url, target, progressHandle);
+        } else {
+            NetworkSupport.download(url, target);
         }
     }
 
@@ -242,16 +222,6 @@ public final class SiteHelper {
         } finally {
             out.close();
         }
-    }
-
-    private static File copyToFile(InputStream is, File target) throws IOException {
-        OutputStream os = new FileOutputStream(target);
-        try {
-            FileUtil.copy(is, os);
-        } finally {
-            os.close();
-        }
-        return target;
     }
 
     private static String getZipRootFolder(InputStream source) throws IOException {

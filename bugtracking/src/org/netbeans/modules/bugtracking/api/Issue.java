@@ -45,9 +45,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 
 /**
  *
@@ -56,15 +55,29 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 public final class Issue {
     
     public enum Status {
+        /**
+         * the user hasn't seen this issue yet
+         */
         NEW,
+        /**
+         * the issue was modified since the issue was seen the last time
+         */
         MODIFIED,
-        UPTODATE
+        /**
+         * the user has seen the issue and there haven't been any changes since then
+         */
+        SEEN
     }
     
     /**
      * issue data were refreshed
      */
     public static final String EVENT_ISSUE_REFRESHED = IssueProvider.EVENT_ISSUE_REFRESHED;
+    
+    /**
+     * issues seen flag has changed 
+     */
+    public static final String EVENT_SEEN_CHANGED = IssueStatusProvider.EVENT_SEEN_CHANGED;
     
     private final IssueImpl impl;
 
@@ -191,14 +204,17 @@ public final class Issue {
     }
     
     public Status getStatus() {
-        // XXX this is hacked
-        int status = IssueCacheUtils.getStatus(impl);
+        IssueStatusProvider.Status status = impl.getStatus();
+        if(status == null) {
+            // no status provided -> lets handle as if it was seen (uptodate)
+            return Status.SEEN;
+        }
         switch(status) {
-            case IssueCache.ISSUE_STATUS_SEEN:
-                return Status.UPTODATE;
-            case IssueCache.ISSUE_STATUS_NEW:
+            case SEEN:
+                return Status.SEEN;
+            case NEW:
                 return Status.NEW;
-            case IssueCache.ISSUE_STATUS_MODIFIED:
+            case MODIFIED:
                 return Status.MODIFIED;
             default:
                 throw new IllegalStateException("Unexpected status value " + status);

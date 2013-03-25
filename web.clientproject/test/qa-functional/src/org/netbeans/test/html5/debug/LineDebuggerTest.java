@@ -52,7 +52,8 @@ import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.html5.EmbeddedBrowserOperator;
+import org.netbeans.test.html5.Browser;
+import org.netbeans.test.html5.GeneralHTMLProject;
 
 /**
  *
@@ -74,6 +75,15 @@ public class LineDebuggerTest extends JavaScriptDebugger {
                 "testDeleteBreakpoint").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
+    public void testOpenProjectChromeNB() throws Exception {
+        startTest();
+        setProxy();
+        LineDebuggerTest.current_project = "simpleProject";
+        openProject("simpleProject");
+        setRunConfiguration("Chrome with NetBeans Integration", true, true);
+        endTest();
+    }
+
     public void testOpenProject() throws Exception {
         startTest();
         setProxy();
@@ -91,7 +101,6 @@ public class LineDebuggerTest extends JavaScriptDebugger {
      */
     public void testDebugNoModifications() throws Exception {
         startTest();
-        cleanBreakpoints();
         openFile("debug.html", LineDebuggerTest.current_project);
         EditorOperator eo = new EditorOperator("debug.html");
         setLineBreakpoint(eo, "window.console.log(a);");
@@ -103,8 +112,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         setLineBreakpoint(eo, "var d = new Date();");
         eo.close();
         runFile(LineDebuggerTest.current_project, "debug.html");
-        runFile(LineDebuggerTest.current_project, "debug.html"); // issue 225407 workaround
-        evt.waitNoEvent(1000);
+        evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
         EditorOperator currentFile = EditorWindowOperator.getEditor();
         VariablesOperator vo = new VariablesOperator("Variables");
 
@@ -157,12 +165,14 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         new StepIntoAction().performMenu();
         new StepIntoAction().performMenu();
         evt.waitNoEvent(1000);
-        currentFile = EditorWindowOperator.getEditor();
         vo = new VariablesOperator("Variables");
-        assertEquals("Debugger stopped at wrong line", 25, currentFile.getLineNumber());
         evt.waitNoEvent(1000);
         waitForVariable("step");
-        assertEquals("Step variable is unexpected", "5", ((Map<String, Variable>) vo.getVariables()).get("step").value);
+        if(GeneralHTMLProject.inEmbeddedBrowser){ // embedded browser stops on line with function(){
+            assertEquals("Step variable is unexpected", "5", ((Map<String, Variable>) vo.getVariables()).get("step").value);
+        }else{
+            assertEquals("Step variable is unexpected", "6", ((Map<String, Variable>) vo.getVariables()).get("step").value);    
+        }
 
         endTest();
     }
@@ -182,20 +192,20 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         setLineBreakpoint(eo, "console.log(\"start\");");
         eo.close();
         runFile(LineDebuggerTest.current_project, "debugMod.html");
-        runFile(LineDebuggerTest.current_project, "debugMod.html"); // issue 225407 workaround
+        evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
         new ContinueAction().performMenu();
         evt.waitNoEvent(1000);
         EditorOperator currentFile = EditorWindowOperator.getEditor();
         currentFile.setCaretPositionToEndOfLine(3);
         type(currentFile, "\nconsole.log(\"1js\");\nconsole.log(\"2js\");\nconsole.log(\"3js\");");
 
-        if (LineDebuggerTest.inEmbeddedBrowser) { // workaround for 226022
-            (new EmbeddedBrowserOperator("Web Browser")).close();
-            saveAndWait(currentFile, 1000);
-            runFile(LineDebuggerTest.current_project, "debugMod.html");
-        } else {
-            saveAndWait(currentFile, 1000);
-        }
+//        if (LineDebuggerTest.inEmbeddedBrowser) { // workaround for 226022
+//            (new EmbeddedBrowserOperator("Web Browser")).close();
+//            saveAndWait(currentFile, 1000);
+//            runFile(LineDebuggerTest.current_project, "debugMod.html");
+//            evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
+//        } else {
+        saveAndWait(currentFile, 1000);
 
         new ContinueAction().performMenu();
         evt.waitNoEvent(1000);
@@ -205,13 +215,13 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         currentFile.deleteLine(4);
         currentFile.deleteLine(4);
 
-        if (LineDebuggerTest.inEmbeddedBrowser) {
-            (new EmbeddedBrowserOperator("Web Browser")).close();
-            saveAndWait(currentFile, 1000);
-            runFile(LineDebuggerTest.current_project, "debugMod.html");
-        } else {
-            saveAndWait(currentFile, 1000);
-        }
+//        if (LineDebuggerTest.inEmbeddedBrowser) {
+//            (new EmbeddedBrowserOperator("Web Browser")).close();
+//            saveAndWait(currentFile, 1000);
+//            runFile(LineDebuggerTest.current_project, "debugMod.html");
+//            evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
+//        } else {
+        saveAndWait(currentFile, 1000);
 
         new ContinueAction().performMenu();
         evt.waitNoEvent(1000);
@@ -223,13 +233,13 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         currentFile.setCaretPositionToEndOfLine(3);
         type(currentFile, "\nconsole.log(\"1js\");\nconsole.log(\"2js\");\nconsole.log(\"3js\");");
 
-        if (LineDebuggerTest.inEmbeddedBrowser) {
-            (new EmbeddedBrowserOperator("Web Browser")).close();
-            saveAndWait(currentFile, 1000);
-            runFile(LineDebuggerTest.current_project, "debugMod.html");
-        } else {
-            saveAndWait(currentFile, 1000);
-        }
+//        if (LineDebuggerTest.inEmbeddedBrowser) {
+//            (new EmbeddedBrowserOperator("Web Browser")).close();
+//            saveAndWait(currentFile, 1000);
+//            runFile(LineDebuggerTest.current_project, "debugMod.html");
+//            evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
+//        } else {
+        saveAndWait(currentFile, 1000);
 
         new ContinueAction().performMenu();
         evt.waitNoEvent(1000);
@@ -253,9 +263,9 @@ public class LineDebuggerTest extends JavaScriptDebugger {
     @Override
     public void tearDown() {
         try {
-            (new EmbeddedBrowserOperator("Web Browser")).close();
-        } catch (TimeoutExpiredException e) {
-            LOGGER.log(Level.INFO, "Embedded browse was not opened");
+            (new Browser()).closeBrowser("Web Browser");
+        } catch (Exception e) {
+            LOGGER.log(Level.INFO, "Unable to close browser " + e.getMessage());
         }
     }
 
@@ -273,19 +283,19 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         setLineBreakpoint(eo, "console.log(\"start\");");
         eo.close();
         runFile(LineDebuggerTest.current_project, "debug.html");
-        runFile(LineDebuggerTest.current_project, "debug.html"); // issue 225407 workaround
+        evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
         new ContinueAction().performMenu();
         evt.waitNoEvent(1000);
         EditorOperator currentFile = EditorWindowOperator.getEditor();
-        if (LineDebuggerTest.inEmbeddedBrowser) { // workaround for 226022
-            (new EmbeddedBrowserOperator("Web Browser")).close();
-        }
+//        if (LineDebuggerTest.inEmbeddedBrowser) { // workaround for 226022
+//            (new EmbeddedBrowserOperator("Web Browser")).close();
+//        }
         currentFile.select("console.log(\"start\");"); // NOI18N
         new ToggleBreakpointAction().perform(currentFile.txtEditorPane());
 
         currentFile.close();
         runFile(LineDebuggerTest.current_project, "debug.html");
-        evt.waitNoEvent(1000);
+        evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
         new ContinueAction().performMenu();
         evt.waitNoEvent(1000);
         currentFile = EditorWindowOperator.getEditor();
@@ -305,11 +315,12 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         openRemoteFile("common.js", LineDebuggerTest.current_project);
         openFile("debug.html", LineDebuggerTest.current_project);
         runFile(LineDebuggerTest.current_project, "debug.html");
+        evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
         EditorOperator eo = new EditorOperator("common.js");
         setLineBreakpoint(eo, "document.write(msg);");
         eo.close();
         runFile(LineDebuggerTest.current_project, "debug.html"); // issue 225407 workaround
-        evt.waitNoEvent(1000);
+        evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
         EditorOperator currentFile = EditorWindowOperator.getEditor();
         assertEquals("Unexpected file opened at breakpoint", "common.js [r/o]", currentFile.getName());
         assertEquals("Debugger stopped at wrong line", 424, currentFile.getLineNumber());

@@ -84,9 +84,7 @@ import javax.swing.text.View;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
-import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -2105,190 +2103,83 @@ public class ActionFactory {
         }
     }
 
-
-    /** Returns the fold that should be collapsed/expanded in the caret row
-     *  @param hierarchy hierarchy under which all folds should be collapsed/expanded.
-     *  @param dot caret position offset
-     *  @param lineStart offset of the start of line
-     *  @param lineEnd offset of the end of line
-     *  @return the fold that meet common criteria in accordance with the caret position
-     */
-    private static Fold getLineFold(FoldHierarchy hierarchy, int dot, int lineStart, int lineEnd){
-        Fold caretOffsetFold = FoldUtilities.findOffsetFold(hierarchy, dot);
-
-        // beginning searching from the lineStart
-        Fold fold = FoldUtilities.findNearestFold(hierarchy, lineStart);  
+    /* package */ static abstract class DeprecatedFoldAction extends LocalBaseAction {
+        private String delegateId;
         
-        while (fold!=null && 
-                  (fold.getEndOffset()<=dot || // find next available fold if the 'fold' is one-line
-                      // or it has children and the caret is in the fold body
-                      // i.e. class A{ |public void method foo(){}}
-                      (!fold.isCollapsed() && fold.getFoldCount() > 0  && fold.getStartOffset()+1<dot) 
-                   )
-               ){
-
-                   // look for next fold in forward direction
-                   Fold nextFold = FoldUtilities.findNearestFold(hierarchy,
-                       (fold.getFoldCount()>0) ? fold.getStartOffset()+1 : fold.getEndOffset());
-                   if (nextFold!=null && nextFold.getStartOffset()<lineEnd){
-                       if (nextFold == fold) return fold;
-                       fold = nextFold;
-                   }else{
-                       break;
-                   }
-        }
-
-        
-        // a fold on the next line was found, returning fold at offset (in most cases inner class)
-        if (fold == null || fold.getStartOffset()>lineEnd) {
-
-            // in the case:
-            // class A{
-            // }     |
-            // try to find an offset fold on the offset of the line beginning
-            if (caretOffsetFold == null){
-                caretOffsetFold = FoldUtilities.findOffsetFold(hierarchy, lineStart);
-            }
+        DeprecatedFoldAction(String id) {
+            this.delegateId = id;
             
-            return caretOffsetFold;
         }
         
-        // no fold at offset found, in this case return the fold
-        if (caretOffsetFold == null) return fold;
-        
-        // skip possible inner class members validating if the innerclass fold is collapsed
-        if (caretOffsetFold.isCollapsed()) return caretOffsetFold;
-        
-        // in the case:
-        // class A{
-        // public vo|id foo(){} }
-        // 'fold' (in this case fold of the method foo) will be returned
-        if ( caretOffsetFold.getEndOffset()>fold.getEndOffset() && 
-             fold.getEndOffset()>dot){
-            return fold;
-        }
-        
-        // class A{
-        // |} public void method foo(){}
-        // inner class fold will be returned
-        if (fold.getStartOffset()>caretOffsetFold.getEndOffset()) return caretOffsetFold;
-        
-        // class A{
-        // public void foo(){} |}
-        // returning innerclass fold
-        if (fold.getEndOffset()<dot) return caretOffsetFold;
-        
-        return fold;
-    }
-    
-    /** Collapse a fold. Depends on the current caret position. */
-    @EditorActionRegistration(name = BaseKit.collapseFoldAction,
-            menuText = "#" + BaseKit.collapseFoldAction + "_menu_text")
-    public static class CollapseFold extends LocalBaseAction {
-        public CollapseFold(){
-        }
-        
-        private boolean dotInFoldArea(JTextComponent target, Fold fold, int dot) throws BadLocationException{
-            int foldStart = fold.getStartOffset();
-            int foldEnd = fold.getEndOffset();
-            int foldRowStart = javax.swing.text.Utilities.getRowStart(target, foldStart);
-            int foldRowEnd = javax.swing.text.Utilities.getRowEnd(target, foldEnd);
-            if (foldRowStart > dot || foldRowEnd < dot) return false; // it's not fold encapsulating dot
-            return true;
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+            BaseKit kit = (target == null) ? BaseKit.getKit(BaseKit.class) : Utilities.getKit(target);
+            if (kit != null) {
+                Action a = kit.getActionByName(delegateId);
+                if ((a instanceof BaseAction) && a != this) {
+                    ((BaseAction)a).actionPerformed(evt, target);
+                    return;
+                } else {
+                    a.actionPerformed(evt);
+                    return;
+                }
             }
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
+    
+    /** Collapse a fold. Depends on the current caret position. 
+     * 
+     * @deprecated Implementation was adopted into editor.fold.nbui module. This implementation is kept for backward compatibility only
+     */
+    @Deprecated
+    public static class CollapseFold extends DeprecatedFoldAction {
+        public CollapseFold(){
+            super(BaseKit.collapseFoldAction);
+        }
+        
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+            super.actionPerformed(evt, target);
+        }
+    }
+    
+    /** Expand a fold. Depends on the current caret position. 
+     * @deprecated Implementation was adopted into editor.fold.nbui module. This implementation is kept for backward compatibility only
+     */
+    public static class ExpandFold extends DeprecatedFoldAction {
+        public ExpandFold() {
+            super(BaseKit.expandFoldAction);
+        }
 
-        
         public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-            Document doc = target.getDocument();
-            doc.render(new Runnable() {
-                @Override
-                public void run() {
-                    FoldHierarchy hierarchy = FoldHierarchy.get(target);
-                    int dot = target.getCaret().getDot();
-                    hierarchy.lock();
-                    try{
-                        try{
-                            int rowStart = javax.swing.text.Utilities.getRowStart(target, dot);
-                            int rowEnd = javax.swing.text.Utilities.getRowEnd(target, dot);
-                            Fold fold = FoldUtilities.findNearestFold(hierarchy, rowStart);
-                            fold = getLineFold(hierarchy, dot, rowStart, rowEnd);
-                            if (fold==null){
-                                return; // no success
-                            }
-                            // ensure we' got the right fold
-                            if (dotInFoldArea(target, fold, dot)){
-                                hierarchy.collapse(fold);
-                            }
-                        }catch(BadLocationException ble){
-                            ble.printStackTrace();
-                        }
-                    }finally {
-                        hierarchy.unlock();
-                    }
-                }
-            });
+            super.actionPerformed(evt, target);
         }
     }
     
-    /** Expand a fold. Depends on the current caret position. */
-    @EditorActionRegistration(name = BaseKit.expandFoldAction,
-            menuText = "#" + BaseKit.expandFoldAction + "_menu_text")
-    public static class ExpandFold extends LocalBaseAction {
-        public ExpandFold(){
-        }
-        
-        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-            Document doc = target.getDocument();
-            doc.render(new Runnable() {
-                @Override
-                public void run() {
-                    FoldHierarchy hierarchy = FoldHierarchy.get(target);
-                    int dot = target.getCaret().getDot();
-                    hierarchy.lock();
-                    try {
-                        try {
-                            int rowStart = javax.swing.text.Utilities.getRowStart(target, dot);
-                            int rowEnd = javax.swing.text.Utilities.getRowEnd(target, dot);
-                            Fold fold = getLineFold(hierarchy, dot, rowStart, rowEnd);
-                            if (fold != null) {
-                                hierarchy.expand(fold);
-                            }
-                        } catch (BadLocationException ble) {
-                            ble.printStackTrace();
-                        }
-                    } finally {
-                        hierarchy.unlock();
-                    }
-                }
-            });
-        }
-    }
-    
-    /** Collapse all existing folds in the document. */
-    @EditorActionRegistration(name = BaseKit.collapseAllFoldsAction,
-            menuText = "#" + BaseKit.collapseAllFoldsAction + "_menu_text")
-    public static class CollapseAllFolds extends LocalBaseAction {
+    /** Collapse all existing folds in the document. 
+     * @deprecated Implementation was adopted into editor.fold.nbui module. This implementation is kept for backward compatibility only
+     */
+    @Deprecated
+    public static class CollapseAllFolds extends DeprecatedFoldAction {
         public CollapseAllFolds(){
+            super(BaseKit.collapseAllFoldsAction);
         }
-        
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            FoldHierarchy hierarchy = FoldHierarchy.get(target);
-            // Hierarchy locking done in the utility method
-            FoldUtilities.collapseAll(hierarchy);
+
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+            super.actionPerformed(evt, target);
         }
     }
 
-    /** Expand all existing folds in the document. */
-    @EditorActionRegistration(name = BaseKit.expandAllFoldsAction,
-            menuText = "#" + BaseKit.expandAllFoldsAction + "_menu_text")
-    public static class ExpandAllFolds extends LocalBaseAction {
+    /** Expand all existing folds in the document. 
+     * @deprecated Implementation was adopted into editor.fold.nbui module. This implementation is kept for backward compatibility only
+     */
+    @Deprecated
+    public static class ExpandAllFolds extends DeprecatedFoldAction {
         public ExpandAllFolds(){
+            super(BaseKit.expandAllFoldsAction);
         }
-        
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            FoldHierarchy hierarchy = FoldHierarchy.get(target);
-            // Hierarchy locking done in the utility method
-            FoldUtilities.expandAll(hierarchy);
+
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+            super.actionPerformed(evt, target);
         }
     }
 

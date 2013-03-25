@@ -54,6 +54,7 @@ import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.util.lookup.ServiceProvider;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Extension of grammar for pom.xml completion for felix bundle plugin instructions.
@@ -73,6 +74,7 @@ public class FelixPluginGrammarExtension implements GrammarExtensionProvider {
             };
 
     @Override
+    @NonNull 
     public List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, Element parent) {
         //TODO also plugin/executions/execution/configuration should apply
         if (path.endsWith("plugins/plugin/configuration") && isFelixPlugin(hintCtx.getParentNode())) { //NOI18N

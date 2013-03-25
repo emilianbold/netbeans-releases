@@ -280,8 +280,8 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     }
     
     private void setupProjectDestinationsOption() {
-        EjbJar ejbJar = EjbJar.getEjbJar(project.getProjectDirectory());
-        if (Util.isAtLeastJavaEE5(ejbJar.getJ2eeProfile())) {
+        if (J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType())
+                || (ejbJar != null && Util.isAtLeastJavaEE6Web(ejbJar.getJ2eeProfile()))) {
             projectDestinationsRadio.setEnabled(true);
             setupAddButton();
             projectDestinationsRadio.setSelected(true);

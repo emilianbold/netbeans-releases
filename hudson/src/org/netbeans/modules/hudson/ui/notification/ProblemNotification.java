@@ -59,6 +59,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.hudson.ui.notification.Bundle.*;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Build failed or was unstable.
@@ -109,13 +110,16 @@ class ProblemNotification {
                         if (failed) {
                             UI.showConsoleAction(b).actionPerformed(null);
                         } else if (b.getMavenModules().isEmpty()) {
-                            UI.showFailuresAction(b).actionPerformed(null);
+                            UI.showFailuresAction().createContextAwareInstance(
+                                    Lookups.singleton(b)).actionPerformed(null);
                         } else {
                             for (HudsonMavenModuleBuild module : b.getMavenModules()) {
                                 switch (module.getColor()) {
                                 case yellow:
                                 case yellow_anime:
-                                    UI.showFailuresAction(module).actionPerformed(null);
+                                    UI.showFailuresAction()
+                                            .createContextAwareInstance(Lookups.singleton(module))
+                                            .actionPerformed(null);
                                 }
                             }
                         }

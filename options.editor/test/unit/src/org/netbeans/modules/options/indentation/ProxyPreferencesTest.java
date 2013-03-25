@@ -305,7 +305,8 @@ public class ProxyPreferencesTest extends NbTestCase {
         test = null;
         assertGC("Tree token was not GCed", treeTokenRef, Collections.singleton(this));
         // touch the WeakHashMap to expungeStaleEntries
-        ProxyPreferences.Tree.trees.size();
+        Object dummyToken = new Object();
+        ProxyPreferences dummyPrefs = ProxyPreferences.getProxyPreferences(dummyToken, orig);
         assertGC("Test preferences were not GCed", testRef, Collections.singleton(this));
         
     }

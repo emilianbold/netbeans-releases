@@ -53,7 +53,6 @@ import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import static org.netbeans.modules.groovy.gsp.GspLanguage.ACTIONS;
 import static org.netbeans.modules.groovy.gsp.GspLanguage.GSP_ICON;
 import static org.netbeans.modules.groovy.gsp.GspLanguage.GSP_MIME_TYPE;
@@ -64,6 +63,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 
@@ -71,6 +71,7 @@ import org.openide.windows.TopComponent;
     mimeType = GSP_MIME_TYPE,
     useMultiview = true
 )
+@NbBundle.Messages("GspResolver=Gsp Files")
 @MIMEResolver.ExtensionRegistration(
     mimeType = GSP_MIME_TYPE,
     displayName = "#GspResolver",
@@ -149,6 +150,7 @@ public class GspLanguage extends DefaultLanguageConfig {
         return Collections.singleton(ClassPath.SOURCE);
     }
 
+    @NbBundle.Messages("CTL_SourceTabCaption=&Source")
     @MultiViewElement.Registration(
         iconBase = GSP_ICON,
         mimeType = GSP_MIME_TYPE,

@@ -161,7 +161,7 @@ public class TreeFactory {
         return make.at(NOPOS).TypeAnnotation((JCTree)type, lb.toList());
     }
     
-    public AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations, ExpressionTree underlyingType) {
+    public AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations, Tree underlyingType) {
         ListBuffer<JCAnnotation> lb = new ListBuffer<JCAnnotation>();
         for (AnnotationTree t : annotations)
             lb.append((JCAnnotation)t);

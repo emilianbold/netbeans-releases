@@ -135,6 +135,7 @@ public class FmtOptions {
     public static final String redundantWhileBraces = "redundantWhileBraces"; //NOI18N
     public static final String redundantDoWhileBraces = "redundantDoWhileBraces"; //NOI18N
     public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
+    public static final String alignMultilineLambdaParams = "alignMultilineLambdaParams"; //NOI18N
     public static final String alignMultilineCallArgs = "alignMultilineCallArgs"; //NOI18N
     public static final String alignMultilineAnnotationArgs = "alignMultilineAnnotationArgs"; //NOI18N
     public static final String alignMultilineImplements = "alignMultilineImplements"; //NOI18N
@@ -156,6 +157,9 @@ public class FmtOptions {
     public static final String wrapExtendsImplementsKeyword = "wrapExtendsImplementsKeyword"; //NOI18N
     public static final String wrapExtendsImplementsList = "wrapExtendsImplementsList"; //NOI18N
     public static final String wrapMethodParams = "wrapMethodParams"; //NOI18N
+    public static final String wrapLambdaParams = "wrapLambdaParams"; //NOI18N
+    public static final String wrapLambdaArrow = "wrapLambdaArrow"; //NOI18N
+    public static final String wrapAfterLambdaArrow = "wrapAfterLambdaArrow"; //NOI18N
     public static final String wrapThrowsKeyword = "wrapThrowsKeyword"; //NOI18N
     public static final String wrapThrowsList = "wrapThrowsList"; //NOI18N
     public static final String wrapMethodCallArgs = "wrapMethodCallArgs"; //NOI18N
@@ -213,6 +217,8 @@ public class FmtOptions {
     public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
     public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
     public static final String spaceAroundAnnotationValueAssignOps = "spaceAroundAnnotationValueAssignOps"; //NOI18N
+    public static final String spaceAroundLambdaArrow = "spaceAroundLambdaArrow"; //NOI18N
+    public static final String spaceAroundMethodReferenceDoubleColon = "spaceAroundMethodReferenceDoubleColon"; //NOI18N
     public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeIfLeftBrace = "spaceBeforeIfLeftBrace"; //NOI18N
@@ -229,6 +235,7 @@ public class FmtOptions {
     public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
     public static final String spaceWithinParens = "spaceWithinParens"; //NOI18N
     public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
+    public static final String spaceWithinLambdaParens = "spaceWithinLambdaParens"; //NOI18N
     public static final String spaceWithinMethodCallParens = "spaceWithinMethodCallParens"; //NOI18N
     public static final String spaceWithinIfParens = "spaceWithinIfParens"; //NOI18N
     public static final String spaceWithinForParens = "spaceWithinForParens"; //NOI18N
@@ -405,6 +412,7 @@ public class FmtOptions {
             { redundantWhileBraces, BGS_GENERATE}, //NOI18N
             { redundantDoWhileBraces, BGS_GENERATE}, //NOI18N
             { alignMultilineMethodParams, FALSE}, //NOI18N
+            { alignMultilineLambdaParams, FALSE}, //NOI18N
             { alignMultilineCallArgs, FALSE}, //NOI18N
             { alignMultilineAnnotationArgs, FALSE}, //NOI18N
             { alignMultilineImplements, FALSE}, //NOI18N
@@ -426,6 +434,9 @@ public class FmtOptions {
             { wrapExtendsImplementsKeyword, WRAP_NEVER}, //NOI18N
             { wrapExtendsImplementsList, WRAP_NEVER}, //NOI18N
             { wrapMethodParams, WRAP_NEVER}, //NOI18N
+            { wrapLambdaParams, WRAP_NEVER}, //NOI18N
+            { wrapLambdaArrow, WRAP_NEVER}, //NOI18N
+            { wrapAfterLambdaArrow, FALSE}, //NOI18N
             { wrapThrowsKeyword, WRAP_NEVER}, //NOI18N
             { wrapThrowsList, WRAP_NEVER}, //NOI18N
             { wrapMethodCallArgs, WRAP_NEVER}, //NOI18N
@@ -483,6 +494,8 @@ public class FmtOptions {
             { spaceAroundTernaryOps, TRUE}, //NOI18N
             { spaceAroundAssignOps, TRUE}, //NOI18N
             { spaceAroundAnnotationValueAssignOps, TRUE}, //NOI18N
+            { spaceAroundLambdaArrow, TRUE}, //NOI18N
+            { spaceAroundMethodReferenceDoubleColon, FALSE}, //NOI18N
             { spaceBeforeClassDeclLeftBrace, TRUE}, //NOI18N
             { spaceBeforeMethodDeclLeftBrace, TRUE}, //NOI18N
             { spaceBeforeIfLeftBrace, TRUE}, //NOI18N
@@ -499,6 +512,7 @@ public class FmtOptions {
             { spaceBeforeArrayInitLeftBrace, FALSE}, //NOI18N
             { spaceWithinParens, FALSE}, //NOI18N
             { spaceWithinMethodDeclParens, FALSE}, //NOI18N
+            { spaceWithinLambdaParens, FALSE}, //NOI18N
             { spaceWithinMethodCallParens, FALSE}, //NOI18N
             { spaceWithinIfParens, FALSE}, //NOI18N
             { spaceWithinForParens, FALSE}, //NOI18N

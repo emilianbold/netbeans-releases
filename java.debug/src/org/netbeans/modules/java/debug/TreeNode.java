@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.debug;
 
 import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -69,6 +70,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -749,6 +751,20 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         }
 
         @Override
+        public Void visitAnnotatedType(AnnotatedTypeTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+            
+            addCorrespondingElement(below);
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            
+            super.visitAnnotatedType(tree, below);
+
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
         public Void visitParameterizedType(ParameterizedTypeTree tree, List<Node> d) {
             List<Node> below = new ArrayList<Node>();
             
@@ -783,6 +799,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingType(below);
             addCorrespondingComments(below);
             super.visitTypeCast(tree, below);
+            
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitIntersectionType(IntersectionTypeTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+            
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitIntersectionType(tree, below);
             
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;

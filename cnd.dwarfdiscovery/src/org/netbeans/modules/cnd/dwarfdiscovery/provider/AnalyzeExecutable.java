@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
+import org.netbeans.modules.cnd.dwarfdiscovery.RemoteJavaExecution;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -334,6 +335,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                                 System.arraycopy(add, 0, all, 1, add.length);
                                 myFileProperties = getSourceFileProperties(all,null, project, myDependencies, null, new CompileLineStorage());
                             }
+                            store(project);
                         }
                     }
                     return myFileProperties;

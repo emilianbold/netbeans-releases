@@ -59,7 +59,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -507,7 +506,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             params.put("managedBeanName", managedBean);
             // see issue #215703 - JSF 2.1 and CDI are not integrated enough
             // can be probably enabled again for JSF 2.2+ where it should work
-            // params.put("cdiEnabled", isCdiEnabled(project));
+            params.put("cdiEnabled", isCdiEnabled(project));
             params.put("controllerPackageName", controllerPkg);
             params.put("controllerClassName", controllerClassName);
             params.put("entityFullClassName", entityClass);
@@ -759,7 +758,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
-        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL) || JSFUtils.isJSF20Plus(wm)) {    //NOI18N
+        if (org.netbeans.modules.j2ee.common.Util.isAtLeastJavaEE6Web(wm.getJ2eeProfile()) || JSFUtils.isJSF20Plus(wm, true)) {
             wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
             helpCtx = new HelpCtx("persistence_entity_selection_javaee6");  //NOI18N
         } else {

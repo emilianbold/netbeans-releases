@@ -118,8 +118,14 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
         if (getContainingFile() == null) {
             error = "<NO CONTAINER INFO> "; // NOI18N
         }
-        return error + beg + getIncludeName() + end + 
-                (getIncludeFile() == null ? " <FAILED inclusion>" : "") + // NOI18N
+        IncludeState includeState = getIncludeState();
+        String state = "";
+        if (includeState == IncludeState.Recursive) {
+            state = " <RECURSIVE inclusion>";// NOI18N
+        } else if (includeState == IncludeState.Fail) {
+            state = " <FAILED inclusion>";// NOI18N
+        }
+        return error + beg + getIncludeName() + end + state + 
                 " [" + getStartPosition() + "-" + getEndPosition() + "]"; // NOI18N
     }
 

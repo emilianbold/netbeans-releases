@@ -58,53 +58,6 @@ import org.openide.util.NbBundle;
 public class IssueCacheUtils {
 
     /**
-     * Returns if the given issue was seen
-     * @param issue issue
-     * @return true if issue was seen otherwise false
-     */
-    public static boolean wasSeen(IssueImpl issue) {
-        IssueCache cache = getCache(issue);
-        return cache != null ? cache.wasSeen(issue.getID()) : true;
-    }
-
-    /**
-     * Changes the given issues seen value to ist opposite value
-     * @param issue
-     */
-    public static void switchSeen(IssueImpl issue) {
-        try {
-            IssueCache cache = getCache(issue);
-            if(cache != null) {
-                String id = issue.getID();
-                cache.setSeen(id, !cache.wasSeen(id));
-            }
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-        }
-    }
-
-    /**
-     * Sets the given issues seen status
-     * @param issue issue
-     * @param seen value to be set
-     */
-    public static void setSeen(IssueImpl issue, boolean seen) {
-        try {
-            IssueCache cache = getCache(issue);
-            if(cache != null) {
-                cache.setSeen(issue.getID(), seen);
-            }
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    public static int getStatus(IssueImpl issue) {
-        IssueCache cache = getCache(issue);
-        return cache != null ? cache.getStatus(issue.getID()) : IssueCache.ISSUE_STATUS_UNKNOWN; 
-    }    
-
-    /**
      * Returns a description summarizing the changes made
      * in the given issue since the last time it was as seen.
      *
@@ -124,30 +77,6 @@ public class IssueCacheUtils {
             changes = NbBundle.getMessage(IssueCacheUtils.class, "LBL_IssueModified");
         }
         return changes;
-    }
-
-    /**
-     * Registers the given listener with the given issue
-     * @param issue
-     * @param l
-     */
-    public static void addCacheListener (IssueImpl issue, PropertyChangeListener l) {
-        IssueCache cache = getCache(issue);
-        if(cache != null) {
-            cache.addPropertyChangeListener(issue.getIssue(), l);
-        }
-    }
-
-    /**
-     * Unregisters the given listener with the given issue
-     * @param issue
-     * @param l
-     */
-    public static void removeCacheListener (IssueImpl issue, PropertyChangeListener l) {
-        IssueCache cache = getCache(issue);
-        if(cache != null) {
-            cache.removePropertyChangeListener(issue.getIssue(), l);
-        }
     }
 
     private static IssueCache getCache(IssueImpl issue) {

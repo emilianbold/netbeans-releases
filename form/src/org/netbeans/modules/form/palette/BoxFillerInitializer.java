@@ -124,9 +124,8 @@ class BoxFillerInitializer implements PaletteItem.ComponentInitializer {
                 NbBundle.getMessage(BoxFillerInitializer.class, titleKey),
                 true,
                 null);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        // setting the help id on the panel after creating the dialog will avoid the help button
         HelpCtx.setHelpIDString(panel, "f1_gui_filler_html"); // NOI18N
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
         return (dd.getValue() == DialogDescriptor.OK_OPTION);
     }

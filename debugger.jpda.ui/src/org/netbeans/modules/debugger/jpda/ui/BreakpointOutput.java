@@ -144,10 +144,12 @@ PropertyChangeListener {
         if (breakpoint.getSuspend() != JPDABreakpoint.SUSPEND_NONE) {
             getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
         }
+        /*
         System.err.println("BP variable = "+event.getVariable());
         if (event.getVariable() != null) {
             System.err.println("  value = "+event.getVariable().getValue());
         }
+        */
         String printText = breakpoint.getPrintText ();
         substituteAndPrintText(printText, event);
     }

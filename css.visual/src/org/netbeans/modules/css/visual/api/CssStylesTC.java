@@ -76,7 +76,7 @@ openAtStartup = false)
 id = "org.netbeans.modules.css.visual.api.CssStylesTC.OpenAction") // NOI18N
 @ActionReference(
         path = "Menu/Window/Web", // NOI18N
-position = 180)
+position = 200)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_CssStylesAction", // NOI18N
 preferredID = CssStylesTC.ID)

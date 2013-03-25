@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport.DeployOnSaveListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -61,21 +62,35 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
-@ProjectServiceProvider(service = CopyOnSave.class, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
-public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener {
+@ProjectServiceProvider(
+    service = {
+        CopyOnSave.class,
+        DeployOnSaveListener.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR
+    }
+)
+public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener, DeployOnSaveListener {
 
     private static final RequestProcessor COS_PROCESSOR = new RequestProcessor("Maven Copy on Save", 5);
-    private FileChangeListener listener = new FileListenerImpl();
-    private FileObject docBase = null;
-    private boolean active = false;
+    private final Project project;
+    private final FileChangeListener listener;
+    
+    private FileObject docBase;
+    private FileObject webInf;
+    private boolean active;
 
 
     public WebCopyOnSave(Project project) {
         super(project);
+        this.project = project;
+        this.listener = new FileListenerImpl();
+        this.active = false;
     }
 
     private WebModule getWebModule() {
@@ -105,43 +120,53 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     @Override
     public void initialize() {
         if (!active) {
-            smallinitialize();
+            initializeListeners();
             NbMavenProject.addPropertyChangeListener(getProject(), this);
             active = true;
+        }
+    }
+    
+    private void initializeListeners() {
+        WebModule webModule = getWebModule();
+        if (webModule != null) {
+            docBase = webModule.getDocumentBase();
+            if (docBase != null) {
+                docBase.addRecursiveListener(listener);
+            }
+
+            webInf = webModule.getWebInf();
+            if (webInf != null) {
+                webInf.addRecursiveListener(listener);
+            }
+        }
+
+        J2eeModuleProvider moduleProvider = getJ2eeModuleProvider();
+        if (moduleProvider != null) {
+            moduleProvider.getConfigSupport().addDeployOnSaveListener(this);
         }
     }
 
     @Override
     public void cleanup() {
         if (active) {
-            smallcleanup();
+            cleanUpListeners();
             NbMavenProject.removePropertyChangeListener(getProject(), this);
             active = false;
         }
     }
-
-    private void smallinitialize() {
-        WebModule webModule = getWebModule();
-
-        if (webModule != null) {
-            docBase = webModule.getDocumentBase();
-            if (docBase != null) {
-                try {
-                    docBase.getFileSystem().addFileChangeListener(listener);
-                } catch (FileStateInvalidException ex) {
-                    // doc base is invalid --> just do nothing
-                }
-            }
-        }
-    }
-
-    private void smallcleanup() {
+    
+    private void cleanUpListeners() {
         if (docBase != null) {
-            try {
-                docBase.getFileSystem().removeFileChangeListener(listener);
-            } catch (FileStateInvalidException ex) {
-                // doc base is invalid --> just do nothing
-            }
+            docBase.removeRecursiveListener(listener);
+        }
+
+        if (webInf != null) {
+            webInf.removeRecursiveListener(listener);
+        }
+
+        J2eeModuleProvider moduleProvider = getJ2eeModuleProvider();
+        if (moduleProvider != null) {
+            moduleProvider.getConfigSupport().removeDeployOnSaveListener(this);
         }
     }
 
@@ -150,10 +175,56 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
         if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
             //TODO reduce cleanup to cases where the actual directory locations change..
             if (active) {
-                smallcleanup();
-                smallinitialize();
+                cleanUpListeners();
+                initializeListeners();
             }
         }
+    }
+
+    @Override
+    public void deployed(Iterable<ArtifactListener.Artifact> artifacts) {
+        ClientSideDevelopmentSupport easelSupport = project.getLookup().lookup(ClientSideDevelopmentSupport.class);
+        
+        if (easelSupport == null || !easelSupport.canReload()) {
+            return;
+        }
+        for (ArtifactListener.Artifact artifact : artifacts) {
+            FileObject fileObject = getReloadFileObject(artifact);
+            if (fileObject != null) {
+                easelSupport.reload(fileObject);
+            }
+        }
+    }
+    
+    private FileObject getReloadFileObject(ArtifactListener.Artifact artifact) {
+        File file = artifact.getFile();
+        FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        if (fileObject == null) {
+            return null;
+        }
+        return getWebDocFileObject(fileObject);
+    }
+
+    private FileObject getWebDocFileObject(FileObject artifact) {
+        J2eeModule j2eeModule = getJ2eeModule();
+        if (j2eeModule != null) {
+            try {
+                FileObject webBuildBase = j2eeModule.getContentDirectory();
+                
+                if (docBase != null && webBuildBase != null) {
+                    if (!FileUtil.isParentOf(webBuildBase, artifact)) {
+                        return null;
+                    } else {
+                        String path = FileUtil.getRelativePath(webBuildBase, artifact);
+                        return docBase.getFileObject(path);
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return null;
     }
 
     private class FileListenerImpl extends FileChangeAdapter {

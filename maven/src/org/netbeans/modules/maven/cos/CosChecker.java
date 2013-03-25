@@ -410,6 +410,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     LOG.log(Level.INFO, "could not strip phase goals from RunConfig subclass {0}", config.getClass().getName());
                     return true;
                 }
+                //now attempt to create links between projects using the surefire's parameters
+                //classpathDependencyExcludes since 2.6
+                //additionalClasspathElements since 2.4
+                //unfortunately none of these can be injected using properties
+                //https://jira.codehaus.org/browse/MNG-5059 could be of value here as well.
+                
             }
             
             // #######################################################

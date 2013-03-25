@@ -173,6 +173,50 @@ public class RegexpUtilsTest extends TestCase {
                         pattern.matcher(string).matches());
         }
     }
+
+    public void testTestsuiteStatsRegex() throws Exception {
+        Pattern pattern = getPattern("TESTSUITE_STATS_REGEX");
+
+        String[] matchingStrings = new String[] {
+            "Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.066 sec",
+        };
+        String[] nonMatchingStrings = new String[] {
+            "Tests run: 1, Failures: 0, Errors: 0, Time elapse: 0.066 sec",
+        };
+
+        for (int i = 0; i < matchingStrings.length; i++) {
+            String string = matchingStrings[i];
+	    Matcher matcher = pattern.matcher(string);
+            assertTrue("should match: " + string, matcher.matches());
+	    assertTrue("matcher.group(4) should be durationn of test", matcher.group(4).trim().equals("0.066"));
+        }
+        for (int i = 0; i < nonMatchingStrings.length; i++) {
+            String string = nonMatchingStrings[i];
+            assertFalse("should not match: " + string,
+                        pattern.matcher(string).matches());
+        }
+
+	pattern = getPattern("TESTSUITE_STATS_190_REGEX");
+
+        matchingStrings = new String[] {
+            "Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.066 sec",
+        };
+        nonMatchingStrings = new String[] {
+            "Tests run: 1, Failures: 0, Errors: 0, Skippe: 1, Time elapsed: 0.066 sec",
+        };
+
+        for (int i = 0; i < matchingStrings.length; i++) {
+            String string = matchingStrings[i];
+	    Matcher matcher = pattern.matcher(string);
+            assertTrue("should match: " + string, matcher.matches());
+	    assertTrue("matcher.group(6) should be durationn of test", matcher.group(6).trim().equals("0.066"));
+        }
+        for (int i = 0; i < nonMatchingStrings.length; i++) {
+            String string = nonMatchingStrings[i];
+            assertFalse("should not match: " + string,
+                        pattern.matcher(string).matches());
+        }
+    }
     
     public void testTestcaseHeaderPlainRegex() throws Exception {
         Pattern pattern = getPattern("TESTCASE_HEADER_PLAIN_REGEX");

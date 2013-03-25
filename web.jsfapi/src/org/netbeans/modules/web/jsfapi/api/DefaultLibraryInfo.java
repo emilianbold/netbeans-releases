@@ -49,7 +49,10 @@ public enum DefaultLibraryInfo implements LibraryInfo {
     JSTL_CORE_FUNCTIONS("http://java.sun.com/jsp/jstl/functions", "Jstl Core Functions", "fn"), //NOI18N
     FACELETS("http://java.sun.com/jsf/facelets", "Facelets", "ui"), //NOI18N
     COMPOSITE("http://java.sun.com/jsf/composite", "Composite Components", "cc"), //NOI18N
-    PRIMEFACES("http://primefaces.org/ui", "PrimeFaces", "p"); //NOI18N
+    PRIMEFACES("http://primefaces.org/ui", "PrimeFaces", "p"), //NOI18N
+    FLOW("http://java.sun.com/jsf/flow", "Faces Flow", "j"), //NOI18N
+    JSF("http://java.sun.com/jsf", "Jsf", "jsf"), //NOI18N
+    PASSTHROUGH("http://java.sun.com/jsf/passthrough", "Passthrough", "p"); //NOI18N
     
     private String namespace;
     private String displayName;

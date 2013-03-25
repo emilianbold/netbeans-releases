@@ -162,7 +162,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="1200"/>
             <file name="SwitchToRecentDocumentAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
-                <attr name="position" intvalue="1800"/>
+                <attr name="position" intvalue="900"/>
             </file>
             <file name="Separator3.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

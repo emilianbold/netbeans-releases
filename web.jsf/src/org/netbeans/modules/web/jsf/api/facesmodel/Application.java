@@ -138,7 +138,12 @@ public interface Application extends FacesConfigElement, IdentifiableElement {
      * Property name of &lt;default-validators&gt; element.
      */ 
     String DEFAULT_VALIDATORS = JSFConfigQNames.DEFAULT_VALIDATORS.getLocalName();
-    
+
+    /**
+     * Property name of &lt;resource-library-contracts&gt; element.
+     */
+    String RESOURCE_LIBRARY_CONTRACTS = JSFConfigQNames.RESOURCE_LIBRARY_CONTRACTS.getLocalName();
+
     /**
      * This property doesn't present in XML file. It aggregates
      * all possible children for Application.
@@ -215,7 +220,11 @@ public interface Application extends FacesConfigElement, IdentifiableElement {
     List<DefaultValidators> getDefaultValidators();
     void addDefaultValidators( DefaultValidators validators );
     void removeDefaultValidators( DefaultValidators validators );
-    
+
+    List<ResourceLibraryContracts> getResourceLibraryContracts();
+    void addResourceLibraryContract(ResourceLibraryContracts resourceLibraryContracts);
+    void removeResourceLibraryContract(ResourceLibraryContracts resourceLibraryContracts);
+
     List<ApplicationElement> getApplicationElements();
     void addApplicationElement( int index , ApplicationElement element );
 }

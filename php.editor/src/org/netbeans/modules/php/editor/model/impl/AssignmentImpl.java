@@ -195,7 +195,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
 
     public boolean isArrayAccess() {
         final String tpName = typeNameFromUnion();
-        return arrayAccess || (tpName != null && tpName.equals("array")); //NOI18N
+        return arrayAccess || (tpName != null && tpName.equals(Type.ARRAY));
     }
 
     public void setAsArrayAccess(boolean arrayAccess) {

@@ -57,6 +57,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -113,7 +114,7 @@ final class OutputUtils {
      * @return  the trimmed string, or the passed string if no trimming
      *          was necessary
      */
-    static String specialTrim(String string) {
+    static String specialTrim( @NonNull String string) {
 
         /* Handle the trivial case: */
         final int len = string.length();
@@ -202,7 +203,7 @@ final class OutputUtils {
         }
     }
 
-    static void openCallstackFrame(Node node, String frameInfo) {
+    static void openCallstackFrame(Node node, @NonNull String frameInfo) {
             JUnitTestMethodNode methodNode = getTestMethodNode(node);
             FileLocator locator =  methodNode.getTestcase().getSession().getFileLocator();
             if (locator == null) {
@@ -278,7 +279,7 @@ final class OutputUtils {
      * @param  callstackLine  string representation of a callstack window
      *                        returned by the JUnit framework
      */
-    private static FileObject getFile(final String callstackLine,
+    private static FileObject getFile(@NonNull final String callstackLine,
                                       final int[] lineNumStorage,
                                       final FileLocator locator) {
         String line = specialTrim(callstackLine);

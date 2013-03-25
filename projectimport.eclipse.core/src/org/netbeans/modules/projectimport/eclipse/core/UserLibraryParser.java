@@ -58,7 +58,7 @@ import org.xml.sax.SAXException;
  */
 final class UserLibraryParser {
     
-    private UserLibraryParser() {/* emtpy constructor */}
+    private UserLibraryParser() {/* empty constructor */}
     
     /** Returns jars contained in the given user library. */
     static boolean getJars(String libName, String xmlDoc, List<String> jars, List<String> javadocs, List<String> sources) throws IOException {

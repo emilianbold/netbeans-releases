@@ -49,6 +49,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -58,6 +59,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
@@ -223,7 +225,21 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         // action on this project involving Run, Build, Debug, etc.
         FileObject readmeFO = null;
         try {
-            readmeFO = JFXProjectUtils.updateJfxImpl(prj);
+            final AntBuildExtender extender = prj.getLookup().lookup(AntBuildExtender.class);
+            if (extender == null) {
+                LOGGER.log(
+                    Level.WARNING,
+                    "The project {0} ({1}) does not support AntBuildExtender.",     //NOI18N
+                    new Object[] {
+                        ProjectUtils.getInformation(prj).getDisplayName(),
+                        FileUtil.getFileDisplayName(prj.getProjectDirectory())
+                    });
+            } else {
+                // update jfx-impl.xml on project open only if build-impl extension version is compatible
+                if (extender.getExtension(JFXProjectUtils.getCurrentExtensionName()) != null) {
+                    readmeFO = JFXProjectUtils.updateJfxImpl(prj);
+                }
+            }
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Can't update JavaFX specific build script jfx-impl.xml: {0}", ex); // NOI18N
         }

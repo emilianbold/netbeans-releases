@@ -540,7 +540,7 @@ class OutWriter extends PrintWriter {
     private int ansiBackgroundCode = 9;
     private boolean ansiBright;
     private boolean ansiFaint;
-    private static final Pattern ANSI_CSI_SGR = Pattern.compile("\u001B\\[(\\d+(;\\d+)*)?m"); // XXX or x9B for single-char CSI?
+    private static final Pattern ANSI_CSI = Pattern.compile("\u001B\\[(\\d+(;\\d+)*)?(\\p{Alpha})"); // XXX or x9B for single-char CSI?
     private static final Color[] COLORS = { // xterm from http://en.wikipedia.org/wiki/ANSI_escape_code#Colors
         null, // default color (black for stdout)
         new Color(205, 0, 0),
@@ -572,7 +572,7 @@ class OutWriter extends PrintWriter {
         if (!hasEscape) {
             return false;
         }
-        Matcher m = ANSI_CSI_SGR.matcher(s);
+        Matcher m = ANSI_CSI.matcher(s);
         int text = 0;
         while (m.find()) {
             int esc = m.start();
@@ -580,6 +580,9 @@ class OutWriter extends PrintWriter {
                 print(s.subSequence(text, esc), null, important, ansiColor, ansiBackground, err, false);
             }
             text = m.end();
+            if (!"m".equals(m.group(3))) {                              //NOI18N
+                continue; // not a SGR ANSI sequence
+            }
             String paramsS = m.group(1);
             if (Controller.VERBOSE) {
                 Controller.log("ANSI CSI+SGR: " + paramsS);

@@ -148,7 +148,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     private boolean populated = false;
         
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, boolean urlDef) {
-        this(repository, query, urlParameters, false, true);
+        this(repository, query, urlParameters, urlDef, true);
     }
 
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, boolean urlDef, boolean populate) {
@@ -246,13 +246,13 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             setAsSaved();
         }
         
-        querySemaphore.acquireUninterruptibly();
-        Bugzilla.LOG.log(Level.FINE, "lock aquired because populating {0}", query.getDisplayName()); // NOI18N
-        
         if(urlDef) {
             panel.switchQueryFields(false);
             panel.urlTextField.setText(urlParameters);
+            populated = true;
         } else {
+            querySemaphore.acquireUninterruptibly();
+            Bugzilla.LOG.log(Level.FINE, "lock aquired because populating {0}", query.getDisplayName()); // NOI18N
             postPopulate(urlParameters, false);
         }
     }

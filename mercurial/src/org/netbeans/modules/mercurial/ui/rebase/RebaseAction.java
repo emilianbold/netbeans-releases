@@ -197,9 +197,13 @@ public class RebaseAction extends ContextAction {
                     if (baseRev == null) {
                         baseRev = HgCommand.getParent(root, null, null).getChangesetId();
                     }
-                    sourceRev = HgCommand.getRevisionInfo(root, Collections.<String>singletonList(
-                            MessageFormat.format("last(limit(ancestor({0},{1})::{1}, 2), 1)", //NOI18N
-                            destRev, baseRev)), null)[0].getCSetShortID();
+                    String revPattern = MessageFormat.format("last(limit(ancestor({0},{1})::{1}, 2), 1)", destRev, baseRev); //NOI18N
+                    HgLogMessage[] revs = HgCommand.getRevisionInfo(root, Collections.<String>singletonList(revPattern), null);
+                    if (revs.length == 0) {
+                        LOG.log(Level.FINE, "doRebase: no revision returned for {0}", revPattern); //NOI18N
+                    } else {
+                        sourceRev = revs[0].getCSetShortID();
+                    }
                 }
             } catch (HgException.HgCommandCanceledException ex) {
             } catch (HgException ex) {

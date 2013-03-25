@@ -95,7 +95,7 @@ public final class JavaElementHandler {
 
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
-    public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
+    public Map<MethodSignature, CompletionItem> getMethods(String className,
             String prefix, int anchor, String[] typeParameters, boolean emphasise, Set<AccessLevel> levels, boolean nameOnly) {
         JavaSource javaSource = createJavaSource();
 
@@ -123,7 +123,7 @@ public final class JavaElementHandler {
         return result;
     }
 
-    public Map<FieldSignature, ? extends CompletionItem> getFields(String className,
+    public Map<FieldSignature, CompletionItem> getFields(String className,
             String prefix, int anchor, boolean emphasise) {
         JavaSource javaSource = createJavaSource();
 

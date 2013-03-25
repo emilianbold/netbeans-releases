@@ -106,11 +106,11 @@ public final class SettingsProvider implements MimeDataProvider {
             this.ic = ic;
             
             // Start listening
-            MimePath [] allPaths = computeInheritedMimePaths(mimePath);
-            this.allCtsi = new CodeTemplateSettingsImpl[allPaths.length];
+            List<MimePath> allPaths = mimePath.getIncludedPaths();
+            this.allCtsi = new CodeTemplateSettingsImpl[allPaths.size()];
             
-            for(int i = 0; i < allPaths.length; i++) {
-                this.allCtsi[i] = CodeTemplateSettingsImpl.get(allPaths[i]);
+            for(int i = 0; i < allPaths.size(); i++) {
+                this.allCtsi[i] = CodeTemplateSettingsImpl.get(allPaths.get(i));
                 this.allCtsi[i].addPropertyChangeListener(WeakListeners.propertyChange(this, this.allCtsi[i]));
             }
         }
@@ -170,30 +170,4 @@ public final class SettingsProvider implements MimeDataProvider {
         }
         
     } // End of CompositeCTS class
-    
-    private static MimePath [] computeInheritedMimePaths(MimePath mimePath) {
-        List<String> paths = null;
-        try {
-            Method m = MimePath.class.getDeclaredMethod("getInheritedPaths", String.class, String.class); //NOI18N
-            m.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            List<String> ret = (List<String>) m.invoke(mimePath, null, null);
-            paths = ret;
-        } catch (Exception e) {
-            LOG.log(Level.WARNING, "Can't call org.netbeans.api.editor.mimelookup.MimePath.getInheritedPaths method.", e); //NOI18N
-        }
-
-        if (paths != null) {
-            ArrayList<MimePath> mimePaths = new ArrayList<MimePath>(paths.size());
-
-            for (String path : paths) {
-                mimePaths.add(MimePath.parse(path));
-            }
-
-            return mimePaths.toArray(new MimePath[mimePaths.size()]);
-        } else {
-            return new MimePath [] { mimePath, MimePath.EMPTY };
-        }
-    }
-    
 }

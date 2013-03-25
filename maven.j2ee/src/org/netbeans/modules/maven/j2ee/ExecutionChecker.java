@@ -194,7 +194,13 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     URL url = new URL(clientUrl);
                     URLDisplayerImplementation urlDisplayer = project.getLookup().lookup(URLDisplayerImplementation.class);
                     if (urlDisplayer != null) {
-                        urlDisplayer.showURL(url, url, fo);
+                        URL appRoot = url;
+                        if (clientUrlPart != null && clientUrlPart.length() > 0) {
+                            if (clientUrl.endsWith(clientUrlPart)) {
+                                appRoot = new URL(clientUrl.substring(0, clientUrl.length() - clientUrlPart.length()));
+                            }
+                        }
+                        urlDisplayer.showURL(appRoot, url, fo);
                     } else {
                         HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                     }
@@ -224,7 +230,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             Logger.getLogger(ExecutionChecker.class.getName()).log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
         }
     }
-
+    
     public static boolean showServerSelectionDialog(Project project, J2eeModuleProvider provider, RunConfig config) {
         if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
             boolean isDefaultGoal = config == null ? true : neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?

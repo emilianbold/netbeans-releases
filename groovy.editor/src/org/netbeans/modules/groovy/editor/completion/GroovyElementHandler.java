@@ -59,6 +59,7 @@ import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**
@@ -81,7 +82,7 @@ public final class GroovyElementHandler {
 
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
-    public Map<MethodSignature, ? extends CompletionItem> getMethods(GroovyIndex index, String className,
+    public Map<MethodSignature, CompletionItem> getMethods(GroovyIndex index, String className,
             String prefix, int anchor, boolean emphasise, Set<AccessLevel> levels, boolean nameOnly) {
 
         if (index == null) {
@@ -101,7 +102,7 @@ public final class GroovyElementHandler {
             methods = index.getMethods(methodName, className, QuerySupport.Kind.PREFIX);
         }
 
-        if (methods.size() == 0) {
+        if (methods.isEmpty()) {
             LOGGER.log(Level.FINEST, "Nothing found in GroovyIndex");
             return Collections.emptyMap();
         }
@@ -118,7 +119,7 @@ public final class GroovyElementHandler {
 
             // FIXME move sig to method item
             List<String> params = indexedMethod.getParameters();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             for (String string : params) {
                 if (sb.length() > 0) {
@@ -129,13 +130,13 @@ public final class GroovyElementHandler {
 
             // FIXME return type
             result.put(getSignature(indexedMethod), CompletionItem.forJavaMethod(className, indexedMethod.getName(), sb.toString(), indexedMethod.getReturnType(),
-                    org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, emphasise, nameOnly));
+                    Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, emphasise, nameOnly));
         }
 
         return result;
     }
 
-    public Map<FieldSignature, ? extends CompletionItem> getFields(GroovyIndex index, String className,
+    public Map<FieldSignature, CompletionItem> getFields(GroovyIndex index, String className,
             String prefix, int anchor, boolean emphasise) {
 
         if (index == null) {
@@ -155,20 +156,19 @@ public final class GroovyElementHandler {
             fields = index.getFields(methodName, className, QuerySupport.Kind.PREFIX);
         }
 
-        if (fields.size() == 0) {
+        if (fields.isEmpty()) {
             LOGGER.log(Level.FINEST, "Nothing found in GroovyIndex");
             return Collections.emptyMap();
         }
 
         LOGGER.log(Level.FINEST, "Found this number of fields : {0} ", fields.size());
 
-        Map<FieldSignature, CompletionItem.JavaFieldItem> result = new HashMap<FieldSignature, CompletionItem.JavaFieldItem>();
+        Map<FieldSignature, CompletionItem> result = new HashMap<FieldSignature, CompletionItem>();
         for (IndexedField indexedField : fields) {
             LOGGER.log(Level.FINEST, "field from index : {0} ", indexedField.getName());
 
-            //System.out.println("INDEX: " + indexedField.getName() + " " + indexedField.getType() + " " + org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedField.getModifiers(), Modifier.PRIVATE));
             result.put(getSignature(indexedField), new CompletionItem.JavaFieldItem(
-                    className, indexedField.getName(), null, org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedField.getModifiers(), Modifier.PRIVATE), anchor, emphasise));
+                    className, indexedField.getName(), null, Utilities.gsfModifiersToModel(indexedField.getModifiers(), Modifier.PRIVATE), anchor, emphasise));
         }
 
         return result;

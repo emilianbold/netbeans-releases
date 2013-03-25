@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.Location;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
@@ -67,6 +68,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
@@ -289,12 +291,16 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 boolean filterSyntheticMethods = useStepFilters && p.getBoolean("FilterSyntheticMethods", true);
                 boolean filterStaticInitializers = useStepFilters && p.getBoolean("FilterStaticInitializers", false);
                 boolean filterConstructors = useStepFilters && p.getBoolean("FilterConstructors", false);
-                com.sun.jdi.Method m = LocationWrapper.method(StackFrameWrapper.location(
-                        ThreadReferenceWrapper.frame(tr, 0)));
-                if (filterSyntheticMethods && TypeComponentWrapper.isSynthetic(m)) {
+                Location loc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0));
+                com.sun.jdi.Method m = LocationWrapper.method(loc);
+                int syntheticStep = JPDAStepImpl.isSyntheticMethod(m, loc);
+                if (filterSyntheticMethods && syntheticStep != 0) {
                     //S ystem.out.println("In synthetic method -> STEP INTO again");
                     smartLogger.finer(" stoped in a synthetic method.");
-                    StepRequest newSR = setStepRequest (StepRequest.STEP_INTO);
+                    if (syntheticStep < 0) {
+                        syntheticStep = StepRequest.STEP_INTO;
+                    }
+                    StepRequest newSR = setStepRequest (syntheticStep);
                     return newSR != null;
                 }
                 if (filterStaticInitializers && MethodWrapper.isStaticInitializer(m) ||

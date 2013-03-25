@@ -39,18 +39,18 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.indexing;
 
 import java.util.Collection;
+import java.util.Iterator;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
+import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.refactoring.api.Entry;
-import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -58,7 +58,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
  *
  * @author mfukala@netbeans.org
  */
-public class CssFileModelTest extends CslTestBase {
+public class CssFileModelTest extends CssTestBase {
 
     private static final CssLanguage CSS_LANGUAGE = new CssLanguage();
 
@@ -71,8 +71,6 @@ public class CssFileModelTest extends CslTestBase {
         super.setUp();
         CssParserResult.IN_UNIT_TESTS = true;
     }
-    
-    
 
     public void testBasic() throws ParseException {
         String code = ".myclass { color: red }  #myid { color: blue }";
@@ -98,8 +96,8 @@ public class CssFileModelTest extends CslTestBase {
         assertNotNull(e);
         assertEquals("myclass", e.getName());
         assertTrue(e.isValidInSourceDocument());
-        assertEquals(new OffsetRange(9,23), e.getBodyRange());
-        assertEquals(new OffsetRange(9,23), e.getDocumentBodyRange());
+        assertEquals(new OffsetRange(9, 23), e.getBodyRange());
+        assertEquals(new OffsetRange(9, 23), e.getDocumentBodyRange());
         assertEquals(0, e.getLineOffset());
         assertFalse(e.isVirtual());
         assertEquals(code, e.getLineText());
@@ -115,11 +113,11 @@ public class CssFileModelTest extends CslTestBase {
         assertEquals("myid", e.getName());
     }
 
-     public void testBasicInEmbeddedCss() throws ParseException {
+    public void testBasicInEmbeddedCss() throws ParseException {
         String code = "<html><head><title>x</title><style>.myclass { color: red }  #myid { color: blue }</style></head></html>";
         //             0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
         //             0         1         2         3         4         5         6         7         8         9
-        
+
         Document doc = getDocument(code, "text/html");
         assertNotNull(doc);
 
@@ -139,8 +137,8 @@ public class CssFileModelTest extends CslTestBase {
         assertNotNull(e);
         assertEquals("myclass", e.getName());
         assertTrue(e.isValidInSourceDocument());
-        assertEquals(new OffsetRange(9,23), e.getBodyRange());
-        assertEquals(new OffsetRange(44,58), e.getDocumentBodyRange());
+        assertEquals(new OffsetRange(9, 23), e.getBodyRange());
+        assertEquals(new OffsetRange(44, 58), e.getDocumentBodyRange());
         assertEquals(0, e.getLineOffset());
         assertFalse(e.isVirtual());
         assertEquals(".myclass { color: red }  #myid { color: blue }", e.getLineText());
@@ -174,7 +172,40 @@ public class CssFileModelTest extends CslTestBase {
         assertNotNull(ids);
         assertTrue(ids.isEmpty());
     }
-    
+
+    public void testImports() throws ParseException {
+        //SASS import allows multiple resources in one import
+        try {
+            setScssSource();
+
+            String code = "@import \"file1\", \"file2\";";
+            CssParserResult result = TestUtil.parse(code);
+            assertResultOK(result);
+                    
+            CssFileModel model = CssFileModel.create(result);
+            assertNotNull(model);
+
+            Collection<Entry> imports = model.getImports();
+            assertNotNull(imports);
+
+            assertEquals(2, imports.size());
+
+            Iterator<Entry> entries = imports.iterator();
+
+            assertTrue(entries.hasNext());
+            Entry i1 = entries.next();
+            assertNotNull(i1);
+            assertEquals("file1", i1.getName());
+
+            assertTrue(entries.hasNext());
+            Entry i2 = entries.next();
+            assertNotNull(i2);
+            assertEquals("file2", i2.getName());
+        } finally {
+            setPlainSource();
+        }
+    }
+
     @Override
     protected String getPreferredMimeType() {
         return CssLanguage.CSS_MIME_TYPE;
@@ -184,8 +215,4 @@ public class CssFileModelTest extends CslTestBase {
     protected DefaultLanguageConfig getPreferredLanguage() {
         return CSS_LANGUAGE;
     }
-
-
-
-
 }

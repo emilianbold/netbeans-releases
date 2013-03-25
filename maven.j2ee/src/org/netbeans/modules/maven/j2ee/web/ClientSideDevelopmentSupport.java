@@ -41,26 +41,14 @@
  */
 package org.netbeans.modules.maven.j2ee.web;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.BaseClientSideDevelopmentSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
-import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
-import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.awt.HtmlBrowser;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -76,137 +64,15 @@ import org.openide.util.Exceptions;
         "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR
     }
 )
-public final class ClientSideDevelopmentSupport implements
-        ServerURLMappingImplementation,
-        URLDisplayerImplementation,
-        PageInspectorCustomizer,
-        PropertyChangeListener {
-
-    private final Project project;
-    private volatile String projectRootURL;
-    private volatile FileObject webDocumentRoot;
-    // @GuardedBy("this")
-    private BrowserSupport browserSupport = null;
-    // @GuardedBy("this")
-    private boolean browserSupportInitialized = false;
+public final class ClientSideDevelopmentSupport extends BaseClientSideDevelopmentSupport {
 
     public ClientSideDevelopmentSupport(Project project) {
-        assert project != null;
-        this.project = project;
+        super(project);
     }
 
     @Override
-    public void showURL(URL applicationRootURL, URL urlToOpenInBrowser, FileObject context) {
-        projectRootURL = WebUtils.urlToString(applicationRootURL);
-        if (projectRootURL != null && !projectRootURL.endsWith("/")) {
-            projectRootURL += "/";
-        }
-        BrowserSupport bs = getBrowserSupport();
-        if (bs != null) {
-            bs.load(urlToOpenInBrowser, context);
-        } else {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(urlToOpenInBrowser);
-        }
+    protected String getBrowserID() {
+        return MavenProjectSupport.getBrowserID(project);
     }
 
-    @Override
-    public URL toServer(int projectContext, FileObject projectFile) {
-        init();
-        if (projectRootURL == null || webDocumentRoot == null) {
-            return null;
-        }
-        String relPath = FileUtil.getRelativePath(webDocumentRoot, projectFile);
-        try {
-            return new URL(projectRootURL + relPath);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
-    }
-
-    @Override
-    public FileObject fromServer(int projectContext, URL serverURL) {
-        init();
-        if (projectRootURL == null || webDocumentRoot == null) {
-            return null;
-        }
-        String u = WebUtils.urlToString(serverURL);
-        if (u.startsWith(projectRootURL)) {
-            return webDocumentRoot.getFileObject(u.substring(projectRootURL.length()));
-        }
-        return null;
-    }
-
-    @Override
-    public boolean isHighlightSelectionEnabled() {
-        return true;
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        // noop
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        // noop
-    }
-
-    private void init() {
-        if (webDocumentRoot == null) {
-            webDocumentRoot = getWebRoot();
-        }
-    }
-
-    private FileObject getWebRoot() {
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        return webModule != null ? webModule.getDocumentBase() : null;
-    }
-
-    public boolean canReload() {
-        return WebBrowserSupport.isIntegratedBrowser(getSelectedBrowser());
-    }
-
-    public void reload() {
-        BrowserSupport support = getBrowserSupport();
-        if (support == null) {
-            return;
-        }
-        support.reload();
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (CustomizerRunWeb.PROP_SELECTED_BROWSER.equals(evt.getPropertyName())) {
-            resetBrowserSupport();
-        }
-    }
-
-    private synchronized void resetBrowserSupport() {
-        if (browserSupport != null) {
-            browserSupport.close(false);
-        }
-        browserSupport = null;
-        browserSupportInitialized = false;
-    }
-
-    private synchronized BrowserSupport getBrowserSupport() {
-        if (browserSupportInitialized) {
-            return browserSupport;
-        }
-        browserSupportInitialized = true;
-        String selectedBrowser = getSelectedBrowser();
-        WebBrowser browser = WebBrowserSupport.getBrowser(selectedBrowser);
-        if (browser == null) {
-            browserSupport = null;
-            return null;
-        }
-        boolean integrated = WebBrowserSupport.isIntegratedBrowser(selectedBrowser);
-        browserSupport = BrowserSupport.create(browser, !integrated);
-        return browserSupport;
-    }
-
-    private String getSelectedBrowser() {
-        return (String) project.getProjectDirectory().getAttribute(CustomizerRunWeb.PROP_SELECTED_BROWSER);
-    }
 }

@@ -81,6 +81,7 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -225,8 +226,8 @@ public final class TreeUtilities {
         return Collections.unmodifiableList(comments);
     }
 
-    static void ensureCommentsMapped(CompilationInfo info, Tree tree, CommentSetImpl set) {
-        if (!set.areCommentsMapped()) {
+    static void ensureCommentsMapped(CompilationInfo info, @NullAllowed Tree tree, CommentSetImpl set) {
+        if (!set.areCommentsMapped() && tree != null) {
             boolean assertsEnabled = false;
             boolean automap = true;
 
@@ -333,7 +334,8 @@ public final class TreeUtilities {
                 case GTGTGT:
                 case GTGT:
                 case GT:
-                    if (path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT || TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) || path.getLeaf().getKind() == Tree.Kind.GREATER_THAN)
+                    if (path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT || TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) ||
+                            path.getLeaf().getKind() == Tree.Kind.MEMBER_REFERENCE || path.getLeaf().getKind() == Tree.Kind.GREATER_THAN)
                         break;
                 case RPAREN:
                     if (path.getLeaf().getKind() == Tree.Kind.ENHANCED_FOR_LOOP || path.getLeaf().getKind() == Tree.Kind.FOR_LOOP ||

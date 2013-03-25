@@ -88,7 +88,7 @@ public class APITestConnector extends BugtrackingConnector {
         for (DelegatingConnector dc : cons) {
             if(ID_CONNECTOR.equals(dc.getID())) {
                 // init repos
-                RepositoryRegistry.getInstance().putRepository(dc, getInfo());
+                RepositoryRegistry.getInstance().addRepository(dc.createRepository(getInfo()).getImpl());
             }
         }
     }
@@ -231,12 +231,12 @@ public class APITestConnector extends BugtrackingConnector {
 
         @Override
         public APITestQuery createQuery(APITestRepository r) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.createQuery();
         }
 
         @Override
         public APITestIssue createIssue(APITestRepository r) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.createIssue();
         }
 
         @Override

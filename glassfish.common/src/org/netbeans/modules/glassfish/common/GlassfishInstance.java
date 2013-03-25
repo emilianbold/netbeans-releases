@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Future;
@@ -58,6 +59,8 @@ import org.glassfish.tools.ide.data.GlassFishAdminInterface;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
@@ -99,9 +102,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public class Props implements Map<String, String> {
 
         private final Map<String, String> delegate;
-//        private transient Collection<String> values = null;
-//        private transient Set<String> keySet = null;
-//        private transient Set<Map.Entry<String, String>> entrySet = null;
 
         /**
          * Constructs a new properties map with the same mappings as the
@@ -240,6 +240,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(GlassfishInstance.class);
 
     // Reasonable default values for various server parameters.  Note, don't use
     // these unless the server's actual setting cannot be determined in any way.
@@ -423,6 +427,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         } finally {
             untagUnderConstruction(deployerUri);
         }
+        LOGGER.log(Level.INFO,
+                "Created GlassFish Server {0} instance with name {1}",
+                new String[] {version != null ? version.toString() : "null",
+                    instance != null ? instance.getName() : "null"});
         return instance;
     }
 
@@ -762,7 +770,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * @return Value of <code>true</code> when this GlassFish server instance
      *         is remote or <code>false</code> otherwise.
      */
-    boolean isRemote() {
+    public boolean isRemote() {
         return properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
     }
 
@@ -857,6 +865,66 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         return properties.get(GlassfishModule.USERNAME_ATTR);
     }
 
+    /**
+     * Returns Java SE platform home configured for GlassFfish server.
+     * <p/>
+     * @return Java SE platform configured for GlassFfish server or null
+     *         if no such platform was configured.
+     */
+    public String getJavaHome() {
+        return properties.get(GlassfishModule.JAVA_PLATFORM_ATTR);
+    }
+
+    /**
+     * Sets Java SE platform home configured for GlassFfish server.
+     * <p/>
+     * Java SE platform home value is cleared when <code>javahome</code>
+     * is <code>null</code>.
+     * <p/>
+     * @param javahome Java SE platform home to be set for GlassFfish server.
+     */
+    public void setJavaHome(String javahome) {
+        if (javahome != null)
+            properties.put(GlassfishModule.JAVA_PLATFORM_ATTR, javahome);
+        else
+            properties.remove(GlassfishModule.JAVA_PLATFORM_ATTR);
+    }
+
+    /**
+     * Returns Java SE platform {@see JavaPlatform} object configured
+     * for GlassFfish server.
+     * <p/>
+     * Current code is not optimal. It does full scan of installed platforms
+     * to search for platform installation folder matching java home folder
+     * from GlassFfish server instance object.
+     * <p/>
+     * @return Returns Java SE platform {@see JavaPlatform} object configured
+     *         for GlassFfish server or null if no such platform was configured.
+     */
+    public JavaPlatform getJavaPlatform() {
+        String javaHome = getJavaHome();
+        if (javaHome == null || javaHome.length() == 0) {
+            return null;
+        }
+        JavaPlatform[] platforms
+                = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        File javaHomeFile = new File(javaHome);
+        JavaPlatform javaPlatform = null;
+        for (JavaPlatform platform : platforms) {
+            for (FileObject fo : platform.getInstallFolders()) {
+                if (javaHomeFile.equals(FileUtil.toFile(fo))) {
+                    javaPlatform = platform;
+                    break;
+                }
+            }
+            if (javaPlatform != null) {
+                break;
+            }
+        }
+        return javaPlatform;
+    }
+    
+
     public synchronized String getDomainsRoot() {
         String retVal = getDomainsFolder();
         if (null == retVal) {
@@ -870,7 +938,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             try {
                 destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
             } catch (IOException ex) {
-                Logger.getLogger("glassfish").log(Level.INFO,"could not create a writable domain dir",ex); // NOI18N
+                LOGGER.log(Level.INFO,"could not create a writable domain dir",ex); // NOI18N
             }
             if (null != destdir) {
                 candidate = new File(candidate, getDomainName());
@@ -886,7 +954,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     try {
                         destdir = FileUtil.createFolder(FileUtil.getConfigRoot(), foldername);
                     } catch (IOException ioe) {
-                        Logger.getLogger("glassfish").log(Level.INFO,"could not create a writable second domain dir",ioe); // NOI18N
+                        LOGGER.log(Level.INFO,"could not create a writable second domain dir",ioe); // NOI18N
                         return retVal;
                     }
                     File destdirFile = FileUtil.toFile(destdir);
@@ -997,9 +1065,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                         }
                     }
                 } catch(TimeoutException ex) {
-                    Logger.getLogger("glassfish").log(Level.FINE, "Server {0} timed out sending stop-domain command.", getDeployerUri()); // NOI18N
+                    LOGGER.log(Level.FINE, "Server {0} timed out sending stop-domain command.", getDeployerUri()); // NOI18N
                 } catch(Exception ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
+                    LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                 }
             }
         } else {
@@ -1096,14 +1164,14 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     private int intProperty(String name) {
         String property = properties.get(name);
         if (property == null) {
-            Logger.getLogger("glassfish").log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Cannot convert null value to a number");
             return -1;
         }
         try {
             return Integer.parseInt(property);
         } catch (NumberFormatException nfe) {
-            Logger.getLogger("glassfish").log(Level.WARNING, "Cannot convert "+
+            LOGGER.log(Level.WARNING, "Cannot convert "+
                     property +" to a number: ", nfe);
             return -1;
         }
@@ -1120,9 +1188,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 is = new BufferedInputStream(new FileInputStream(asenvConf));
                 asenvProps.load(is);
             } catch(FileNotFoundException ex) {
-                Logger.getLogger("glassfish").log(Level.WARNING, null, ex); // NOI18N
+                LOGGER.log(Level.WARNING, null, ex); // NOI18N
             } catch(IOException ex) {
-                Logger.getLogger("glassfish").log(Level.WARNING, null, ex); // NOI18N
+                LOGGER.log(Level.WARNING, null, ex); // NOI18N
                 asenvProps.clear();
             } finally {
                 if(is != null) {
@@ -1130,7 +1198,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 }
             }
         } else {
-            Logger.getLogger("glassfish").log(Level.WARNING, "{0} does not exist", asenvConf.getAbsolutePath()); // NOI18N
+            LOGGER.log(Level.WARNING, "{0} does not exist", asenvConf.getAbsolutePath()); // NOI18N
         }
         Set<GlassfishModuleFactory> added = new HashSet<GlassfishModuleFactory>();
         //Set<GlassfishModuleFactory> removed = new HashSet<GlassfishModuleFactory>();
@@ -1146,7 +1214,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
                     Object t = moduleFactory.createModule(localLookup);
                     if (null == t) {
-                        Logger.getLogger("glassfish").log(Level.WARNING, "{0} created a null module", moduleFactory); // NOI18N
+                        LOGGER.log(Level.WARNING, "{0} created a null module", moduleFactory); // NOI18N
                     } else {
                         ic.add(t);
                         if (t instanceof Lookup.Provider) {
@@ -1208,7 +1276,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         // But this should be made independent on CommonServerSupport object.
         CommonServerSupport commonSupport = getCommonSupport();
         JPanel commonCustomizer = new InstanceCustomizer(commonSupport);
-        JPanel vmCustomizer = new VmCustomizer(commonSupport);
+        JPanel vmCustomizer = new VmCustomizer(this);
 
         Collection<JPanel> pages = new LinkedList<JPanel>();
         Collection<? extends CustomizerCookie> lookupAll

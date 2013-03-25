@@ -115,6 +115,7 @@ import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.options.CodeCompletionPanel.VariablesScope;
@@ -1068,7 +1069,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         continue;
                     }
                     final Collection<? extends String> typeNames = varName.getTypeNames(request.anchor);
-                    String typeName = typeNames.size() > 1 ? "mixed" : ModelUtils.getFirst(typeNames); //NOI18N
+                    String typeName = typeNames.size() > 1 ? Type.MIXED : ModelUtils.getFirst(typeNames);
                     final Set<QualifiedName> qualifiedNames = typeName != null
                             ? Collections.singleton(QualifiedName.create(typeName))
                             : Collections.<QualifiedName>emptySet();

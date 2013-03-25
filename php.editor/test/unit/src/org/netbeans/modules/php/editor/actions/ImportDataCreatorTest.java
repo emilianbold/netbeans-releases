@@ -126,6 +126,10 @@ public class ImportDataCreatorTest extends PHPCodeCompletionTestBase {
         performTest("class ^ClassName");
     }
 
+    public void testImportData_issue227304() throws Exception {
+        performTest("class Your^Class extends MyClass {");
+    }
+
     private void performTest(String caretLine) throws Exception {
         performTest(caretLine, null);
     }

@@ -71,7 +71,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     @NbBundle.Messages({
         "CompositePanelProviderImpl.sources.title=Sources",
-        "CompositePanelProviderImpl.run.title=Run",
+        "CompositePanelProviderImpl.run.title=Run"
     })
     @Override
     public Category createCategory(Lookup context) {
@@ -107,7 +107,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (JS_FILES.equals(categoryName)) {
             return new JavaScriptLibraryCustomizerPanel(category, new JavaScriptLibraryCustomizerPanel.CustomizerSupport() {
                 @Override
-                public File getLibrariesFolderRoot() {
+                public File getWebRoot() {
                     return uiProperties.getResolvedSiteRootFolder();
                 }
                 @Override

@@ -56,6 +56,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
@@ -146,15 +147,8 @@ public class UI {
     /**
      * Action to show test failures of a build.
      */
-    public static Action showFailuresAction(HudsonJobBuild build) {
-        return new ShowFailures(build);
-    }
-
-    /**
-     * Action to show test failures of a Maven module build.
-     */
-    public static Action showFailuresAction(HudsonMavenModuleBuild build) {
-        return new ShowFailures(build);
+    public static ContextAwareAction showFailuresAction() {
+        return ShowFailures.getInstance();
     }
 
     /**

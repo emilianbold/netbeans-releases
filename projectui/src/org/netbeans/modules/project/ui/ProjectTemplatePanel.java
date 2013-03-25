@@ -208,9 +208,11 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
     private static class CategoriesChildren extends Children.Keys<DataObject> {
         
         private DataFolder root;
+        private final String filterText;
                 
-        public CategoriesChildren (DataFolder folder) {
+        public CategoriesChildren (DataFolder folder, String filterText) {
             this.root = folder;
+            this.filterText = filterText;
         }
         
         @Override
@@ -236,12 +238,21 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
                     }
                 }
                 if (type == 1) {
-                    return new Node[] {
-                        new FilterNode(dobj.getNodeDelegate(), Children.LEAF)
-                    };
+                    Node categoryNode = new FilterNode(dobj.getNodeDelegate(), Children.LEAF);
+                    boolean hasFilteredChildren = false;
+                    for( DataObject child : folder.getChildren() ) {
+                        if( child.isTemplate() ) {
+                            if( null == filterText || child.getNodeDelegate().getDisplayName().toLowerCase().contains( filterText.toLowerCase() ) ) {
+                                hasFilteredChildren = true;
+                                break;
+                            }
+                        }
+                    }
+                    if( hasFilteredChildren )
+                        return new Node[] { categoryNode };
                 } else if (type == 2) {
                     return new Node[] {
-                        new FilterNode(dobj.getNodeDelegate(), new CategoriesChildren((DataFolder)dobj))
+                        new FilterNode(dobj.getNodeDelegate(), new CategoriesChildren((DataFolder)dobj, filterText))
                     };
                 }
             }
@@ -252,9 +263,11 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
     private static class TemplateChildren extends Children.Keys<DataObject> {
         
         private DataFolder folder;
+        private final String filterText;
                 
-        public TemplateChildren (DataFolder folder) {
+        public TemplateChildren (DataFolder folder, String filterText) {
             this.folder = folder;
+            this.filterText = filterText;
         }
         
         @Override
@@ -270,12 +283,11 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
         @Override
         protected Node[] createNodes(DataObject dobj) {
             if (dobj.isTemplate()) {
-                return new Node[] {
-                    new FilterNode(dobj.getNodeDelegate(), Children.LEAF)
-                };
-            } else {
-                return new Node[0];
+                Node templateNode = new FilterNode(dobj.getNodeDelegate(), Children.LEAF);
+                if( null == filterText || templateNode.getDisplayName().toLowerCase().contains( filterText.toLowerCase() ) )
+                    return new Node[] { templateNode };
             }
+            return new Node[0];
         }        
         
     }
@@ -324,14 +336,14 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
     private class Builder implements TemplatesPanelGUI.Builder {
 
         @Override
-        public org.openide.nodes.Children createCategoriesChildren (DataFolder folder) {
+        public org.openide.nodes.Children createCategoriesChildren (DataFolder folder, String filterText) {
             assert folder != null : "Folder cannot be null.";  //NOI18N
-            return new CategoriesChildren (folder);
+            return new CategoriesChildren (folder, filterText);
         }
 
         @Override
-        public org.openide.nodes.Children createTemplatesChildren(DataFolder folder) {
-            return new TemplateChildren (folder);
+        public org.openide.nodes.Children createTemplatesChildren(DataFolder folder, String filterText) {
+            return new TemplateChildren (folder, filterText);
         }
 
 

@@ -87,13 +87,6 @@ public class NewProjectWizardsTest extends J2eeTestCase {
     private String version;
     private Reporter reporter;
 
-    public static class NewProjectWizardsTest4 extends NewProjectWizardsTest {
-
-        public NewProjectWizardsTest4(String testName) {
-            super(testName, "1.4");
-        }
-    }
-
     public static class NewProjectWizardsTest5 extends NewProjectWizardsTest {
 
         public NewProjectWizardsTest5(String testName) {
@@ -105,6 +98,13 @@ public class NewProjectWizardsTest extends J2eeTestCase {
 
         public NewProjectWizardsTest6(String testName) {
             super(testName, "6");
+        }
+    }
+
+    public static class NewProjectWizardsTest7 extends NewProjectWizardsTest {
+
+        public NewProjectWizardsTest7(String testName) {
+            super(testName, "7");
         }
     }
 
@@ -131,9 +131,9 @@ public class NewProjectWizardsTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = emptyConfiguration();
-        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest4.class);
         conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest5.class);
         conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest6.class);
+        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest7.class);
         return conf.suite();
     }
 

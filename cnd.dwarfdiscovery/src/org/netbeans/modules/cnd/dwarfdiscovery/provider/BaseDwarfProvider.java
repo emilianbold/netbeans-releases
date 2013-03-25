@@ -125,6 +125,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         mapper = new RelocatablePathMapperImpl(project);
     }
 
+    public final void store(ProjectProxy project) {
+        mapper.save();
+    }
+
     @Override
     public boolean isApplicable(ProjectProxy project) {
         return true;
@@ -198,6 +202,18 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     return true;
                 }
                 return false;
+            }
+
+            @Override
+            public List<String> list(String path) {
+                List<String> res = new ArrayList<String>();
+                FileObject fo = fileSystem.findResource(path);
+                if (fo != null && fo.isValid() && fo.isFolder()) {
+                    for (FileObject f : fo.getChildren()) {
+                        res.add(f.getPath());
+                    }
+                }
+                return res;
             }
         };
         String sourceRoot = null;

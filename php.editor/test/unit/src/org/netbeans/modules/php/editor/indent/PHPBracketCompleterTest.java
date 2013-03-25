@@ -654,7 +654,7 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
     }
 
     public void testContComment() throws Exception {
-        if (PHPBracketCompleter.CONTINUE_COMMENTS) {
+        if (PhpTypedBreakInterceptor.CONTINUE_COMMENTS) {
             insertBreak("// ^", "// \n// ^");
         } else {
             insertBreak("// ^", "// \n^");
@@ -1325,6 +1325,21 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
     public void testStringConcatination_23() throws Exception {
         String original = "$checks[] = new G_Check(\"PHP version\", \"a\"^);";
         String expected = "$checks[] = new G_Check(\"PHP version\", \"a\"\n        ^);";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue227105() throws Exception {
+        String original = "switch(true)\n" +
+                "{\n" +
+                "    case 1: if(true) break;\n" +
+                "    default:^\n" +
+                "}";
+        String expected = "switch(true)\n" +
+                "{\n" +
+                "    case 1: if(true) break;\n" +
+                "    default:\n" +
+                "        ^\n" +
+                "}";
         insertBreak(original, expected);
     }
 

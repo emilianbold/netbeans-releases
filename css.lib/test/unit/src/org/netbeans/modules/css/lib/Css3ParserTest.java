@@ -63,7 +63,7 @@ import org.openide.filesystems.FileObject;
  * @author marekfukala
  */
 public class Css3ParserTest extends CssTestBase {
-    
+
     public Css3ParserTest(String testName) {
         super(testName);
     }
@@ -80,7 +80,7 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult.IN_UNIT_TESTS = true;
     }
 
-   public void testAllANTLRRulesHaveNodeTypes() {
+    public void testAllANTLRRulesHaveNodeTypes() {
         for (String rule : Css3Parser.ruleNames) {
             if (!rule.startsWith("synpred") && !rule.toLowerCase().endsWith("predicate")) {
                 assertNotNull(NodeType.valueOf(rule));
@@ -110,7 +110,7 @@ public class Css3ParserTest extends CssTestBase {
 
         //one error: 
         //DefaultError[Unexpected token IDENT found, Unexpected token IDENT found, ERROR] (file:null, from:8, to:11)
-        assertResult(res, 1); 
+        assertResult(res, 1);
 //        TestUtil.dumpResult(res);
 
         //the background: red; declaration is properly parsed even if the previous declaration is broken
@@ -844,7 +844,7 @@ public class Css3ParserTest extends CssTestBase {
         assertFalse(NodeUtil.containsError(node));
 
     }
-    
+
     public void testParserRecovery_Issue203579_class_fails() throws BadLocationException, ParseException {
         String code = ".{} ";
         CssParserResult result = TestUtil.parse(code);
@@ -869,7 +869,7 @@ public class Css3ParserTest extends CssTestBase {
         //the semantic predicate looking for "#{"
         //Can possibly be fixed by extending the predicate by #{$ as AFAIK the SASS variable is always
         //present in the interpolation expression
-        
+
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
                 + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssClass");
@@ -1026,7 +1026,8 @@ public class Css3ParserTest extends CssTestBase {
     public void testIssue_207080() {
         String code = "#wrapper {\n"
                 + "   height: 100%;\n"
-                + "#z-index: 200; \n"
+                + "   #z-index: 200; \n"
+                + "   color: red;\n"
                 + "}\n"
                 + "\n"
                 + "#header {\n"
@@ -1038,8 +1039,15 @@ public class Css3ParserTest extends CssTestBase {
         assertResult(result, 1); //ProblemDescription{from=28, to=36, description=Unexpected token HASH found, key=PARSING, type=ERROR}
 
 
-        //check if the #header rule is properly parsed
+        //check if the color: red; is properly parsed, e.g. whether the error recover works
+        //in the preceding erroneous declaration
         Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/body/bodyItem/"
+                + "rule/declarations/declaration|2");
+        assertNotNull(node);
+
+        //check if the #header rule is properly parsed
+        node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem|1/"
                 + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
         assertNotNull(node);
@@ -1200,4 +1208,20 @@ public class Css3ParserTest extends CssTestBase {
 
     }
 
+    //Just a partial hotfix for nested MQ
+    //complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
+    public void testNestedMediaQuery() throws ParseException, BadLocationException {
+        String source = "@media print { // rule (1)\n"
+                + "  #navigation { display: none }\n"
+                + "  @media (max-width: 12cm) { // rule (2)\n"
+                + "    .note { float: none }\n"
+                + "  }\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertEquals(0, result.getDiagnostics().size());
+
+    }
 }

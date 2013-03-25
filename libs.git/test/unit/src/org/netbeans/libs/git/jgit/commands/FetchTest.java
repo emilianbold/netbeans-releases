@@ -68,7 +68,6 @@ import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.jgit.DelegatingProgressMonitor;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -274,7 +273,8 @@ public class FetchTest extends AbstractGitTestCase {
         cmd.setMessage("new tag message");
         cmd.setName("new.tag");
         cmd.setObjectId(new RevWalk(repo).parseCommit(repo.resolve(masterInfo.getRevision())));
-        RevTag tag = cmd.call();
+        Ref ref = cmd.call();
+        RevTag tag = new RevWalk(repo).parseTag(ref.getObjectId());
         
         Map<String, GitTransportUpdate> updates = client.fetch("origin", NULL_PROGRESS_MONITOR);
         Map<String, Ref> tags = repository.getTags();

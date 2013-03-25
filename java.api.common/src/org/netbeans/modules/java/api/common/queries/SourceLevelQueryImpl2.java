@@ -44,10 +44,14 @@ package org.netbeans.modules.java.api.common.queries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Parameters;
@@ -58,6 +62,12 @@ import org.openide.util.WeakListeners;
  */
 class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
     
+    private static final String PLATFORM_ACTIVE = "platform.active";    //NOI18N
+    private static final String JAVAC_SOURCE = "javac.source";  //NOI18N
+    private static final String DEFAULT_SOURCE_LEVEL = "default.javac.source";  //NOI18N
+    private static final String JAVAC_PROFILE = "javac.profile";    //NOI18N
+    private static final Pattern SUPPORTS_PROFILES = Pattern.compile("(1\\.)?8");    //NOI18N
+
     private final PropertyEvaluator eval;
     private final Result result;
 
@@ -72,7 +82,42 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
         return this.result;
     }
 
-    private class R implements Result, PropertyChangeListener {
+    static String findSourceLevel (
+            @NonNull final PropertyEvaluator eval) {
+        final String activePlatform = eval.getProperty(PLATFORM_ACTIVE);
+        if (CommonProjectUtils.getActivePlatform(activePlatform) != null) {
+            String sl = eval.getProperty(JAVAC_SOURCE);
+            if (sl != null && sl.length() > 0) {
+                return sl;
+            }
+            return null;
+        }
+        final EditableProperties props = PropertyUtils.getGlobalProperties();
+        String sl = props.get(DEFAULT_SOURCE_LEVEL);
+        if (sl != null && sl.length() > 0) {
+            return sl;
+        }
+        return null;
+    }
+
+    private static String findProfile(
+            @NonNull final PropertyEvaluator eval) {
+        if (supportsProfiles(findSourceLevel(eval))) {
+            final String profile = eval.getProperty(JAVAC_PROFILE);
+            if (profile != null && profile.length() > 0) {
+                return profile;
+            }
+        }
+        return null;
+    }
+
+    private static boolean supportsProfiles(
+            @NonNull final String sl) {
+        return sl != null &&
+            SUPPORTS_PROFILES.matcher(sl).matches();
+    }
+
+    private class R implements Result2, PropertyChangeListener {
         
         private final ChangeSupport cs = new ChangeSupport(this);
 
@@ -83,7 +128,12 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
 
         @Override
         public String getSourceLevel() {
-            return SourceLevelQueryImpl.findSourceLevel(eval);
+            return findSourceLevel(eval);
+        }
+
+        @Override
+        public String getProfile() {
+            return findProfile(eval);
         }
 
         @Override
@@ -100,8 +150,9 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
         public void propertyChange(PropertyChangeEvent evt) {
             final String name = evt.getPropertyName();
             if (name == null ||
-                "javac.source".equals(name) ||     //NOI18N
-                "platform.active".equals(name)) {  //NOI18N
+                JAVAC_SOURCE.equals(name) ||
+                JAVAC_PROFILE.equals(name) ||
+                PLATFORM_ACTIVE.equals(name)) {
                 this.cs.fireChange();
             }
         }

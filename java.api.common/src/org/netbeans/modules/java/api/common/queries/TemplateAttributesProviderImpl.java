@@ -89,13 +89,15 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
         }
         if (licensePath != null) {
             licensePath = helper.getStandardPropertyEvaluator().evaluate(licensePath);
-            File path = FileUtil.normalizeFile(new File(licensePath));
-            if (path.exists() && path.isAbsolute()) { //is this necessary? should prevent failed license header inclusion
-                URI uri = Utilities.toURI(path);
-                licensePath = uri.toString();
-                values.put("licensePath", licensePath);
-            } else {
-                LOG.log(Level.INFO, "project.licensePath value not accepted - " + licensePath);
+            if (licensePath != null) {
+                File path = FileUtil.normalizeFile(helper.resolveFile(licensePath));
+                if (path.exists() && path.isAbsolute()) { //is this necessary? should prevent failed license header inclusion
+                    URI uri = Utilities.toURI(path);
+                    licensePath = uri.toString();
+                    values.put("licensePath", licensePath);
+                } else {
+                    LOG.log(Level.INFO, "project.licensePath value not accepted - " + licensePath);
+                }
             }
         }
         String license = priv.getProperty("project.license"); // NOI18N

@@ -180,7 +180,7 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     //firePropertyChange("enabled", null, null);
-                    setEnabled(ScreenshotUIManager.ACTION_TAKE_SCREENSHOT, RemoteServices.getServiceClass(debugger) != null);
+                    setEnabled(ScreenshotUIManager.ACTION_TAKE_SCREENSHOT, RemoteServices.hasServiceAccess(debugger));
                 }
             };
         

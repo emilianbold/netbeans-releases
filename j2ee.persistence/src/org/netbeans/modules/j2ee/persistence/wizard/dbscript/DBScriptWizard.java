@@ -55,10 +55,8 @@ import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
@@ -75,7 +73,7 @@ import org.openide.util.NbBundle;
 
 /**
  */
-public final class DBScriptWizard implements WizardDescriptor.InstantiatingIterator {
+public final class DBScriptWizard implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
@@ -110,17 +108,28 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
     }
 
     @Override
-    public Set instantiate() throws IOException {
+    public Set instantiate() throws java.io.IOException {
+        assert true : "should never be called, instantiate(ProgressHandle) should be called instead";
+        return null;
+    }
+
+    @Override
+    public Set instantiate(ProgressHandle handle) throws IOException {
         Project project = Templates.getProject(wiz);
         FileObject tFolder = Templates.getTargetFolder(wiz);
-        FileObject sqlFile = tFolder.createData(Templates.getTargetName(wiz), EXTENSION);//NOI18N
-        PersistenceEnvironment pe = project.getLookup().lookup(PersistenceEnvironment.class);
+        try {
+            handle.start(100);
+            handle.progress(NbBundle.getMessage(DBScriptWizard.class, "MSG_CreateFile"),5);
+            FileObject sqlFile = tFolder.createData(Templates.getTargetName(wiz), EXTENSION);//NOI18N
+            PersistenceEnvironment pe = project.getLookup().lookup(PersistenceEnvironment.class);
             if (sqlFile != null) {
                 //execution
-                run(project, sqlFile, pe);
+                run(project, sqlFile, pe, handle, false);
             }
-
-        return Collections.singleton(sqlFile);
+            return Collections.singleton(sqlFile);
+        } finally {
+            handle.finish();
+        }
     }
 
     @Override
@@ -162,42 +171,25 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
         return panels[index];
     }
 
-    /**
-     * A panel which checks whether the target project has a valid server set,
-     * otherwise it delegates to the real panel.
-     */
-    private static final class ValidatingPanel extends DelegatingWizardDescriptorPanel {
-
-        public ValidatingPanel(WizardDescriptor.Panel delegate) {
-            super(delegate);
-        }
-
-        @Override
-        public boolean isValid() {
-            boolean valid = super.isValid();
-            if (!ProviderUtil.isValidServerInstanceOrNone(getProject())) {
-                getWizardDescriptor().putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                        NbBundle.getMessage(DBScriptWizardDescriptor.class, "ERR_MissingServer")); // NOI18N
-            }
-            return valid;
-        }
-    }
-    private void run(final Project project, final FileObject sFile, final PersistenceEnvironment pe) {
+    static List<String> run(final Project project, final FileObject sFile, final PersistenceEnvironment pe, final ProgressHandle handle, final boolean validateOnly) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
         //
         final HashMap<String, String> props = new HashMap<String, String>();
         final List<String> initialProblems = new ArrayList<String>();
         PersistenceUnit[] pus = null;
+        if(handle!=null) {
+            handle.progress(NbBundle.getMessage(DBScriptWizard.class, "MSG_CollectConfig"),10);
+        }
         try {
             pus = Util.getPersistenceUnits(project);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         if (pus == null || pus.length == 0) {
-            initialProblems.add( NbBundle.getMessage(DBScriptWizard.class, "ERR_NoPU"));
+            initialProblems.add(NbBundle.getMessage(DBScriptWizard.class, "ERR_NoPU"));
 
-            return;
+            return initialProblems;
         }
         final PersistenceUnit pu = pus[0];
         //connection open
@@ -231,9 +223,9 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
                 @Override
                 public void run() {
                     if (initialProblems.isEmpty()) {
-                        new GenerateScriptExecutor().execute(project, sFile, pe, pu, initialProblems);
-                    } 
-                    if(!initialProblems.isEmpty()){
+                        new GenerateScriptExecutor().execute(project, sFile, pe, pu, props, initialProblems, handle, validateOnly);
+                    }
+                    if (!initialProblems.isEmpty()) {
                         StringBuilder sb = new StringBuilder();
                         for (String txt : initialProblems) {
                             sb.append(txt).append("\n");
@@ -245,10 +237,12 @@ public final class DBScriptWizard implements WizardDescriptor.InstantiatingItera
             };
             t.setContextClassLoader(customClassLoader);
             t.start();
+            t.join(30000);//I don't want to block forever even if in some cases empty file will be opened
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         } finally {
             Thread.currentThread().setContextClassLoader(defClassLoader);
         }
+        return initialProblems;
     }
 }

@@ -63,8 +63,6 @@ import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /**
  * Class encapsulating a modification
@@ -242,7 +240,7 @@ public final class FoldHierarchyTransactionImpl {
                 updateAffectedOffsets(fold);
                 int startOffset = change.getOriginalStartOffset();
                 int endOffset = change.getOriginalEndOffset();
-                assert (startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N;
+                assert (endOffset < 0 || startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N;
                 if (startOffset != -1) {
                     updateAffectedStartOffset(startOffset);
                 }
@@ -843,12 +841,8 @@ public final class FoldHierarchyTransactionImpl {
     
     private String findFilePath(Document doc) {
         Object o = doc.getProperty(Document.StreamDescriptionProperty);
-        if (o instanceof FileObject) {
-            return ((FileObject) o).getPath();
-        } else if (o instanceof DataObject) {
-            return ((DataObject) o).getPrimaryFile().getPath();
-        } else if (o != null) {
-            return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
+        if (o != null) {
+            return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)) + ":" + o.toString(); //NOI18N
         } else {
             return "null"; //NOI18N
         }

@@ -63,7 +63,6 @@ import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
-import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
@@ -74,6 +73,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.openide.loaders.DataObject;
 
 /**
@@ -90,8 +90,9 @@ public class CordovaPerformer implements BuildPerformer {
     public static final String DEFAULT_DESCRIPTION = "PhoneGap Application";
     public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version";
 
-    private NetBeansJavaScriptDebuggerFactory javascriptDebuggerFactory;
     private Session debuggerSession;
+    private Lookup consoleLogger;
+    private Lookup networkMonitor;
     private WebKitDebugging webKitDebugging;
     private MobileDebugTransport transport;
     private final int BUILD_SCRIPT_VERSION = 2;
@@ -248,8 +249,10 @@ public class CordovaPerformer implements BuildPerformer {
         }
         webKitDebugging = Factory.createWebKitDebugging(transport);
         webKitDebugging.getDebugger().enable();
-        javascriptDebuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
-        debuggerSession = javascriptDebuggerFactory.createDebuggingSession(webKitDebugging, Lookups.singleton(p));
+        Lookup projectContext = Lookups.singleton(p);
+        debuggerSession = WebKitUIManager.getDefault().createDebuggingSession(webKitDebugging, projectContext);
+        consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
+        networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
         PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p));
     }
 
@@ -259,9 +262,17 @@ public class CordovaPerformer implements BuildPerformer {
             return;
         }
         if (debuggerSession != null) {
-            javascriptDebuggerFactory.stopDebuggingSession(debuggerSession);
+            WebKitUIManager.getDefault().stopDebuggingSession(debuggerSession);
         }
         debuggerSession = null;
+        if (consoleLogger != null) {
+            WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
+        }
+        consoleLogger = null;
+        if (networkMonitor != null) {
+            WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
+        }
+        networkMonitor = null;
         if (webKitDebugging.getDebugger().isEnabled()) {
             webKitDebugging.getDebugger().disable();
         }
@@ -269,7 +280,6 @@ public class CordovaPerformer implements BuildPerformer {
         transport.detach();
         transport = null;
         webKitDebugging = null;
-        javascriptDebuggerFactory = null;
         PageInspector.getDefault().inspectPage(Lookup.EMPTY);
     }
 

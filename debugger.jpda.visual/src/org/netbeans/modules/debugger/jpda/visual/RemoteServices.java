@@ -129,6 +129,7 @@ public class RemoteServices {
     private static final String REMOTE_CLASSES_ZIPFILE = "/org/netbeans/modules/debugger/jpda/visual/resources/debugger-remote.zip";
     
     private static final Map<JPDADebugger, ClassObjectReference> remoteServiceClasses = new WeakHashMap<JPDADebugger, ClassObjectReference>();
+    private static final Map<JPDADebugger, Boolean> remoteServiceAccess = new WeakHashMap<JPDADebugger, Boolean>();
     
     private static final RequestProcessor AUTORESUME_AFTER_SUSPEND_RP = new RequestProcessor("Autoresume after suspend", 1);
     
@@ -142,7 +143,7 @@ public class RemoteServices {
         }
     }
 
-    private static void fireServiceClass(JPDADebuggerImpl debugger) {
+    private static void fireServiceClass(JPDADebugger debugger) {
         PropertyChangeEvent pche = new PropertyChangeEvent(RemoteServices.class, "serviceClass", null, debugger);
         PropertyChangeListener[] listeners;
         synchronized (serviceListeners) {
@@ -1011,6 +1012,26 @@ public class RemoteServices {
                 } catch (PropertyVetoException ex) {
                 }
             }
+        }
+    }
+    
+    static void setAccessLoopStarted(JPDADebugger debugger, boolean success) {
+        synchronized (remoteServiceAccess) {
+            remoteServiceAccess.put(debugger, success);
+        }
+        fireServiceClass(debugger);
+    }
+    
+    public static boolean hasServiceAccess(JPDADebugger debugger) {
+        ClassObjectReference serviceClass = getServiceClass(debugger);
+        if (serviceClass != null) {
+            Boolean has;
+            synchronized (remoteServiceAccess) {
+                has = remoteServiceAccess.get(debugger);
+            }
+            return has != null && has.booleanValue();
+        } else {
+            return false;
         }
     }
     

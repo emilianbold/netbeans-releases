@@ -121,6 +121,7 @@ public class CLIHandlerTest extends NbTestCase {
         assertEquals("The same file has been allocated", runner.resultFile(), second.resultFile());
     }
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testFileExistsButTheServerCannotBeContacted() throws Exception {
         // start the server and block
         InitializeRunner runner = new InitializeRunner(65);

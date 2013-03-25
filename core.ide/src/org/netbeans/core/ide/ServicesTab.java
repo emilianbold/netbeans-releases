@@ -77,7 +77,7 @@ import org.openide.windows.WindowManager;
 @TopComponent.Description(preferredID=ServicesTab.ID, iconBase="org/netbeans/core/ide/resources/services.gif", persistenceType=TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode="explorer", position=500, openAtStartup=false)
 @ActionID(category="Window", id="org.netbeans.core.ide.ServicesTabAction")
-@ActionReference(path="Menu/Window", position=400)
+@ActionReference(path="Menu/Window", position=500)
 @TopComponent.OpenActionRegistration(displayName="#CTL_ServicesTabAction", preferredID=ServicesTab.ID)
 public class ServicesTab extends TopComponent implements ExplorerManager.Provider {
 

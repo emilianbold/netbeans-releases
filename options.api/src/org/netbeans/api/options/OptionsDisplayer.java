@@ -92,6 +92,7 @@ public final class OptionsDisplayer {
     public static final String GENERAL = "General"; // NOI18N
     private String currentCategoryID = null;
     private AtomicBoolean operationCancelled;
+    private CategoryModel categoryModel;
         
     private OptionsDisplayer() {}    
     /**
@@ -111,8 +112,7 @@ public final class OptionsDisplayer {
     @NbBundle.Messages("CTL_Loading_Options_Waiting=Loading Options Settings")
     public boolean open() {
         showWaitCursor();
-        
-        if (operationCancelled == null || operationCancelled.get()) {
+        if (categoryModel == null || operationCancelled == null || operationCancelled.get()) {
             if (operationCancelled == null) {
                 operationCancelled = new AtomicBoolean();
             }
@@ -124,13 +124,14 @@ public final class OptionsDisplayer {
 
                 @Override
                 public void run() {
-                    currentCategoryID = CategoryModel.getInstance().getCurrentCategoryID();
+		    categoryModel = CategoryModel.getInstance();
+                    currentCategoryID = categoryModel.getCurrentCategoryID();
                 }
             }, Bundle.CTL_Loading_Options_Waiting(), operationCancelled, false, 0 , 3000);
             return open(currentCategoryID);
         }
             
-        return open(CategoryModel.getInstance().getCurrentCategoryID());
+        return open(categoryModel.getCurrentCategoryID());
     }
     
     /**
@@ -158,7 +159,7 @@ public final class OptionsDisplayer {
         log.fine("Open Options Dialog: " + path); //NOI18N
         showWaitCursor();
         try {
-            if (path != null && (operationCancelled == null || operationCancelled.get())) {
+	    if (path != null && (categoryModel == null || operationCancelled == null || operationCancelled.get())) {
                 if (operationCancelled == null) {
                     operationCancelled = new AtomicBoolean();
                 }
@@ -169,7 +170,8 @@ public final class OptionsDisplayer {
 
                     @Override
                     public void run() {
-                        CategoryModel.getInstance().getCategoryIDs();
+			categoryModel = CategoryModel.getInstance();
+                        categoryModel.getCategoryIDs();
                     }
                 }, Bundle.CTL_Loading_Options_Waiting(), operationCancelled, false, 0, 3000);
                 if(operationCancelled.get()) {
@@ -234,7 +236,7 @@ public final class OptionsDisplayer {
                 Boolean r = impl.isOpen();
                 boolean retvalForRun = !r;
                 if (retvalForRun) {
-                    retvalForRun = Arrays.asList(CategoryModel.getInstance().getCategoryIDs()).contains(categoryId);
+                    retvalForRun = Arrays.asList(categoryModel.getCategoryIDs()).contains(categoryId);
                     if (!retvalForRun) {
                         log.warning("Unknown categoryId: " + categoryId); //NOI18N
                     }
@@ -243,9 +245,11 @@ public final class OptionsDisplayer {
                 }
                 if (retvalForRun) {
                     log.fine("openImpl:impl.showOptionsDialog(" + categoryId+ ", " + subpath+ ")");
-                    impl.showOptionsDialog(categoryId, subpath);
+                    impl.showOptionsDialog(categoryId, subpath, categoryModel);
                 }
                 log.fine("openImpl return " + Boolean.valueOf(retvalForRun));
+		categoryModel = null;
+		operationCancelled = null;
                 return Boolean.valueOf(retvalForRun);
             }
         });

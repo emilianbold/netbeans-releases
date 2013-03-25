@@ -365,12 +365,12 @@ public enum NodeType {
     /**
      * .box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
      */
-    less_args_list,
+    cp_args_list,
     
     /**
      * .box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
      */
-    less_arg,
+    cp_arg,
     
     less_mixin_guarded,
     less_condition,
@@ -383,26 +383,46 @@ public enum NodeType {
     cp_mixin_call_args,
     cp_mixin_name,
     
-    scss_selector_interpolation_expression,
-    scss_declaration_interpolation_expression,
-    scss_mq_interpolation_expression,
+    sass_selector_interpolation_expression,
+    sass_declaration_interpolation_expression,
+    sass_mq_interpolation_expression,
     
-    scss_interpolation_expression_var,
+    sass_interpolation_expression_var,
     
-    scss_nested_properties,
+    sass_nested_properties,
     sass_extend,
     sass_extend_only_selector,
     sass_debug,
     
     sass_control,
     sass_if,
+    sass_else,
     sass_for,
     sass_each,
     sass_each_list,
     sass_while,
     sass_control_block,
-    sass_control_expression
+    sass_control_expression,
     
+    sass_declaration_property_value_interpolation_expression,
+    
+    sass_function_declaration,
+    sass_function_name,
+    sass_function_return,
+    
+    cp_variable_value,
+    
+    sass_content,
+    
+    cp_mixin_call_arg,
+    
+    sass_control_expression_condition,
+    
+    cp_full_expression_atom,
+    cp_full_expression
+            
+
+
     ;
     
     

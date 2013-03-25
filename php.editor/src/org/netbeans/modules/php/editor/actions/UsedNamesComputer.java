@@ -53,7 +53,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.UseScope;
-import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
@@ -146,7 +146,7 @@ public class UsedNamesComputer {
         }
 
         private boolean isInNamespace(ASTNode node) {
-            return offsetRange.containsInclusive(node.getStartOffset()) && offsetRange.containsInclusive(node.getEndOffset());
+            return offsetRange.containsInclusive(node.getStartOffset()) || offsetRange.containsInclusive(node.getEndOffset());
         }
 
         @Override
@@ -182,7 +182,7 @@ public class UsedNamesComputer {
         }
 
         private boolean isValidTypeName(final String typeName) {
-            return !SPECIAL_NAMES.contains(typeName) && !VariousUtils.isPrimitiveType(typeName);
+            return !SPECIAL_NAMES.contains(typeName) && !Type.isPrimitive(typeName);
         }
 
         private void processUsedName(final UsedNamespaceName usedName) {

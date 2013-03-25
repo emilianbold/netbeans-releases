@@ -1552,23 +1552,23 @@ public class ReindenterTest extends NbTestCase {
 
     public void testNewLineIndentationBeforeHalfIndentedNewClassTreeBody() throws Exception {
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
-        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         try {
             performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()| {\n    }\n}\n",
                     "package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()\n          {\n    }\n}\n");
         } finally {
-            preferences.remove("otherBracePlacement");
+            preferences.remove("classDeclBracePlacement");
         }
     }
 
     public void testLineIndentationBeforeHalfIndentedNewClassTreeBody() throws Exception {
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
-        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         try {
             performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()\n|                {\n    }\n}\n",
                     "package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()\n          {\n    }\n}\n");
         } finally {
-            preferences.remove("otherBracePlacement");
+            preferences.remove("classDeclBracePlacement");
         }
     }
 

@@ -94,11 +94,11 @@ public class TemplatesPanelGUITest extends NbTestCase implements TemplatesPanelG
         return null;
     }
     
-    public Children createCategoriesChildren(DataFolder folder) {
+    public Children createCategoriesChildren(DataFolder folder, String filterText) {
         return Children.LEAF;
     }
 
-    public Children createTemplatesChildren(DataFolder folder) {
+    public Children createTemplatesChildren(DataFolder folder, String filterText) {
         return Children.LEAF;
     }
 

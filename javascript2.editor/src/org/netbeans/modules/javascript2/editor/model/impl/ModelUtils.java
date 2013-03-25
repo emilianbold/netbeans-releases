@@ -91,6 +91,9 @@ import org.openide.filesystems.FileObject;
  */
 public class ModelUtils {
       
+    private static String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
+    private static String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
+    
     public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName, boolean isLHS) {
         JsObject result = builder.getCurrentObject();
         JsObject tmpObject = null;
@@ -1112,5 +1115,56 @@ public class ModelUtils {
                 ((JsObjectImpl)jsObject).addOccurrence(offsetRange);
             }
         }
+    }
+    
+    public static String getDisplayName(String typeName) {
+        String displayName = typeName;
+        if (displayName.contains(GENERATED_FUNCTION_PREFIX)) {
+            displayName = removeGeneratedFromFQN(displayName, GENERATED_FUNCTION_PREFIX);
+        }
+        if (displayName.contains(GENERATED_ANONYM_PREFIX)) {
+            displayName = removeGeneratedFromFQN(displayName, GENERATED_ANONYM_PREFIX);
+        }
+        return displayName;
+    }
+
+    /**
+     * 
+     * @param fqn fully qualified name of the type
+     * @param generated the generated prefix
+     * @return the fully qualified name without the generated part or empty string if the generated name is the last one.
+     * 
+     */
+    private static String removeGeneratedFromFQN(String fqn, String generated) {
+        String[] parts = fqn.split("\\."); //NOI18N
+        String part = parts[parts.length - 1];
+        if(part.contains(generated)) {
+            try {
+                Integer.parseInt(part.substring(generated.length()));
+                return ""; // return empty name if the last name is generated
+            } catch (NumberFormatException nfe) {
+                // do nothing
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            part = parts[i];
+            boolean add = true;
+            if (part.startsWith(generated)) {
+                try {
+                    Integer.parseInt(part.substring(generated.length()));
+                    add = false;
+                } catch (NumberFormatException nfe) {
+                    // do nothing
+                }
+            }
+            if (add) {
+                sb.append(part);
+                if (i < (parts.length - 1)) {
+                    sb.append(".");
+                }
+            }
+        }
+        return sb.toString();
     }
 }

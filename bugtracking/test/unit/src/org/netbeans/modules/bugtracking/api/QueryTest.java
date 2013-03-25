@@ -128,7 +128,11 @@ public class QueryTest extends NbTestCase {
         assertEquals(apiQuery.getIssues().size(), query.getIssues().size());
     }
     
-    public void testOpen() throws InterruptedException {
+    /**
+     * invoked from BugtrackingViewsTest
+     * @throws InterruptedException 
+     */
+    public void _testOpen() throws InterruptedException {
         APITestQuery apiQuery = getAPIQuery();
         Query query = getQuery();
         

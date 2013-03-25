@@ -375,7 +375,8 @@ public class HgLogMessage {
     
     @NbBundle.Messages({
         "MSG_HgRevision.name.BASE=Working Directory Parent",
-        "MSG_HgRevision.name.LOCAL=Local Changes"
+        "MSG_HgRevision.name.LOCAL=Local Changes",
+        "MSG_HgRevision.name.QDIFFBASE=QDiff Base"
     })
     public static class HgRevision {
         private final String changesetId;
@@ -397,6 +398,12 @@ public class HgLogMessage {
             @Override
             public String toString () {
                 return Bundle.MSG_HgRevision_name_LOCAL();
+            }
+        };
+        public static final HgRevision QDIFF_BASE = new HgRevision("qtip~1", "qtip~1") { //NOI18N
+            @Override
+            public String toString () {
+                return Bundle.MSG_HgRevision_name_QDIFFBASE();
             }
         };
 

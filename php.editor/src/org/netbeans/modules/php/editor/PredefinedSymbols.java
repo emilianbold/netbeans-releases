@@ -62,7 +62,6 @@ import org.openide.util.Utilities;
  * @author tomslot
  */
 public final class PredefinedSymbols {
-    public static final String MIXED_TYPE = "mixed"; //NOI18N
 
     // see http://www.php.net/manual/en/reserved.variables.php
     public static final Collection<String> SUPERGLOBALS = new TreeSet<String>(Arrays.asList(

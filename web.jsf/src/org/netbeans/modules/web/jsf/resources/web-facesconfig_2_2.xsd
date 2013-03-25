@@ -1,10 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<?xml version="1.0" encoding="utf-8" ?>
+<xsd:schema xmlns:javaee="http://xmlns.jcp.org/xml/ns/javaee" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://xmlns.jcp.org/xml/ns/javaee" version="2.2" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:include schemaLocation="javaee_7.xsd" />
+    <xsd:annotation>
+        <xsd:documentation>
 
       DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-      
-      Copyright (c) 2011 - 2012 Oracle and/or its affiliates. All rights reserved.
-      
+
+      Copyright (c) 2011 - 2013 Oracle and/or its affiliates. All rights reserved.
+
       The contents of this file are subject to the terms of either the GNU
       General Public License Version 2 only ("GPL") or the Common Development
       and Distribution License("CDDL") (collectively, the "License").  You
@@ -13,20 +16,20 @@
       https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
       or packager/legal/LICENSE.txt.  See the License for the specific
       language governing permissions and limitations under the License.
-      
+
       When distributing the software, include this License Header Notice in each
       file and include the License file at packager/legal/LICENSE.txt.
-      
+
       GPL Classpath Exception:
       Oracle designates this particular file as subject to the "Classpath"
       exception as provided by Oracle in the GPL Version 2 section of the License
       file that accompanied this code.
-      
+
       Modifications:
       If applicable, add the following below the License Header, with the fields
       enclosed by brackets [] replaced by your own identifying information:
       "Portions Copyright [year] [name of copyright owner]"
-      
+
       Contributor(s):
       If you wish your version of this file to be governed by only the CDDL or
       only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -39,14 +42,8 @@
       only if the new code is made subject to such option by the copyright
       holder.
 
--->
-<xsd:schema xmlns:javaee="http://java.sun.com/xml/ns/javaee"
-            attributeFormDefault="unqualified"
-            elementFormDefault="qualified"
-            targetNamespace="http://java.sun.com/xml/ns/javaee"
-            version="2.2"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <xsd:include schemaLocation="javaee_6.xsd"/>
+    </xsd:documentation>
+    </xsd:annotation>
 
   <xsd:annotation>
     <xsd:documentation>
@@ -54,29 +51,29 @@
 
       <p>The XML Schema for the JavaServer Faces Application
       Configuration File (Version 2.2).</p>
-      
+
       <p>All JavaServer Faces configuration files must indicate
       the JavaServer Faces schema by indicating the JavaServer
       Faces namespace:</p>
-      
-      <p>http://java.sun.com/xml/ns/javaee</p>
-      
+
+      <p>http://xmlns.jcp.org/xml/ns/javaee</p>
+
       <p>and by indicating the version of the schema by
       using the version element as shown below:</p>
-      
-      <pre>&lt;faces-config xmlns="http://java.sun.com/xml/ns/javaee"
+
+      <pre>&lt;faces-config xmlns="http://xmlns.jcp.org/xml/ns/javaee"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="..."
       version="2.2"&gt;
       ...
       &lt;/faces-config&gt;</pre>
-      
+
       <p>The instance documents may indicate the published
       version of the schema using xsi:schemaLocation attribute
       for javaee namespace with the following location:</p>
-      
-      <p>http://java.sun.com/xml/ns/javaee/web-facesconfig_2_2.xsd</p>
-      
+
+      <p>http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd</p>
+
       ]]>
     </xsd:documentation>
   </xsd:annotation>
@@ -92,7 +89,7 @@
         <p>The "faces-config" element is the root of the configuration
         information hierarchy, and contains nested elements for all
         of the other configuration settings.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:unique name="faces-config-behavior-ID-uniqueness">
@@ -100,7 +97,7 @@
         <xsd:documentation><![CDATA[
 
           <p>Behavior IDs must be unique within a document.</p>
-          
+
         ]]></xsd:documentation>
       </xsd:annotation>
       <xsd:selector xpath="javaee:behavior"/>
@@ -111,7 +108,7 @@
         <xsd:documentation><![CDATA[
 
           <p>Converter IDs must be unique within a document.</p>
-          
+
         ]]></xsd:documentation>
       </xsd:annotation>
       <xsd:selector xpath="javaee:converter"/>
@@ -123,7 +120,7 @@
 
           <p>'converter-for-class' element values must be unique
           within a document.</p>
-          
+
         ]]></xsd:documentation>
       </xsd:annotation>
       <xsd:selector xpath="javaee:converter"/>
@@ -134,7 +131,7 @@
         <xsd:documentation><![CDATA[
 
          <p> Validator IDs must be unique within a document.</p>
-          
+
         ]]></xsd:documentation>
       </xsd:annotation>
       <xsd:selector xpath="javaee:validator"/>
@@ -145,7 +142,7 @@
         <xsd:documentation><![CDATA[
 
          <p> Managed bean names must be unique within a document.</p>
-          
+
         ]]></xsd:documentation>
       </xsd:annotation>
       <xsd:selector xpath="javaee:managed-bean"/>
@@ -163,7 +160,7 @@
        <p> The "faces-config" element is the root of the configuration
         information hierarchy, and contains nested elements for all
         of the other configuration settings.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:choice minOccurs="0"
@@ -175,7 +172,7 @@
       <xsd:element name="absolute-ordering"
                    type="javaee:faces-config-absoluteOrderingType"
                    minOccurs="0"
-                   maxOccurs="1"/>
+                   />
       <xsd:element name="factory"
                    type="javaee:faces-config-factoryType"/>
       <xsd:element name="component"
@@ -184,21 +181,28 @@
                    type="javaee:faces-config-converterType"/>
       <xsd:element name="managed-bean"
                    type="javaee:faces-config-managed-beanType"/>
-      <xsd:element name="faces-flow-definition"
-                   type="javaee:faces-config-faces-flow-definitionType"/>
+      <xsd:element name="flow-definition"
+                   type="javaee:faces-config-flow-definitionType"/>
       <xsd:element name="name"
                    type="javaee:java-identifierType"
                    minOccurs="0"
-                   maxOccurs="1">
+                   >
         <xsd:annotation>
           <xsd:documentation><![CDATA[
 
-           <p> The "name" element within the top level "faces-config"
+           <p> <span class="changed_modified_2_2">The</span> "name" element
+           within the top level "faces-config"
             element declares the name of this application
             configuration resource.  Such names are used
             in the document ordering scheme specified in section
             JSF.11.4.6.</p>
-            
+
+            <p class="changed_added_2_2">This value is taken to be the
+            defining document id of any &lt;flow-definition&gt; elements
+            defined in this Application Configuration Resource file.  If this
+            element is not specified, the runtime must take the empty string
+            as its value.</p>
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -234,31 +238,31 @@
           the class files available to this module and packaged with
           this application should be examined for annotations
           that specify configuration information.
-          
-          This attribute is only inspected on the application 
+
+          This attribute is only inspected on the application
           configuration resource file located at "WEB-INF/faces-config.xml".
           The presence of this attribute on any application configuration
           resource other than the one located at "WEB-INF/faces-config.xml",
           including any files named using the javax.faces.CONFIG_FILES
           attribute, must be ignored.
-          
+
           If metadata-complete is set to "true", the JavaServer Faces
           runtime must ignore any annotations that specify configuration
           information, which might be present in the class files
           of the application.
-          
+
           If metadata-complete is not specified or is set to
           "false", the JavaServer Faces runtime must examine the class
           files of the application for annotations, as specified by
           the specification.
-          
+
           If "WEB-INF/faces-config.xml" is not present, the JavaServer
           Faces runtime will assume metadata-complete to be "false".
-          
+
           The value of this attribute will have no impact on
           runtime annotations such as @ResourceDependency or
           @ListenerFor.
-          
+
         ]]></xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
@@ -278,7 +282,7 @@
 
        <p> Extension element for faces-config.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -299,18 +303,18 @@
       <xsd:documentation><![CDATA[
 
        <p> Please see section JSF.11.4.6 for the specification of this element.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="after"
                    type="javaee:faces-config-ordering-orderingType"
                    minOccurs="0"
-                   maxOccurs="1"/>
+                   />
       <xsd:element name="before"
                    type="javaee:faces-config-ordering-orderingType"
                    minOccurs="0"
-                   maxOccurs="1"/>
+                   />
     </xsd:sequence>
     <xsd:attribute name="id"
                    type="xsd:ID"/>
@@ -328,7 +332,7 @@
         declared on its faces-config element.  This element can also contain
         a single "others" element which specifies that this document comes
         before or after other documents within the application.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -339,7 +343,7 @@
       <xsd:element name="others"
                    type="javaee:faces-config-ordering-othersType"
                    minOccurs="0"
-                   maxOccurs="1"/>
+                   />
     </xsd:sequence>
     <xsd:attribute name="id"
                    type="xsd:ID"/>
@@ -357,7 +361,7 @@
         of this application resource relative to other
         application configuration resources.  See section JSF.11.4.6
         for the complete specification.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:attribute name="id"
@@ -373,7 +377,7 @@
 
        <p> Only relevant if this is placed within the /WEB-INF/faces-config.xml.
         Please see section JSF.11.4.6 for the specification for details.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:choice minOccurs="0"
@@ -385,7 +389,7 @@
       <xsd:element name="others"
                    type="javaee:faces-config-ordering-othersType"
                    minOccurs="0"
-                   maxOccurs="1"/>
+                   />
     </xsd:choice>
     <xsd:attribute name="id"
                    type="xsd:ID"/>
@@ -403,7 +407,7 @@
         a particular web application that is utilizing
         JavaServer Faces.  For nested elements that are not specified,
         the JSF implementation must provide a suitable default.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:choice minOccurs="0"
@@ -418,7 +422,7 @@
             ActionListener implementation class that will be
             called during the Invoke Application phase of the
             request processing lifecycle.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -430,7 +434,7 @@
            <p> The "default-render-kit-id" element allows the
             application to define a renderkit to be used other
             than the standard one.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -444,7 +448,7 @@
             the JavaDocs for the "java.util.ResourceBundle"
             class for more information on the syntax of
             resource bundle names.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -460,7 +464,7 @@
             of the request processing lifecycle, if the
             default ActionListener (provided by the JSF
             implementation) is used.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -476,7 +480,7 @@
             request processing lifecycle.  The faces
             implementation must provide a default
             implementation of this class.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -492,7 +496,7 @@
             request processing lifecycle.  The faces
             implementation must provide a default
             implementation of this class.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -506,7 +510,7 @@
             javax.el.ELResolver implementation class
             that will be used during the processing of
             EL expressions.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -520,7 +524,7 @@
             PropertyResolver implementation class that will
             be used during the processing of value binding
             expressions.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -534,7 +538,7 @@
             VariableResolver implementation class that will
             be used during the processing of value binding
             expressions.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -551,7 +555,7 @@
             constructor based decorator pattern used for
             other application singletons will be
             honored.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -565,7 +569,7 @@
            library contracts that, if present in the application, must be made
            available for use as templates of the specified views.
            </p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -602,7 +606,7 @@
         Application.getResourceBundle() passing the current
         FacesContext for this request and the value of the var
         element below.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -614,7 +618,7 @@
 
            <p> The fully qualified class name of the
             java.util.ResourceBundle instance.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -626,7 +630,7 @@
            <p> The name by which this ResourceBundle instance
             is retrieved by a call to
             Application.getResourceBundle().</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -644,20 +648,22 @@
            library contracts that, if present in the application, must be made
            available for use as templates of the specified views.
            </p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
       <xsd:group ref="javaee:descriptionGroup"/>
       <xsd:element name="contract-mapping"
-                   type="javaee:faces-config-application-resource-library-contracts-contract-mappingType">
+                   type="javaee:faces-config-application-resource-library-contracts-contract-mappingType"
+
+                   maxOccurs="unbounded">
         <xsd:annotation>
           <xsd:documentation><![CDATA[
 
            <p classes="changed_added_2_2">Declare a mapping between a collection
            of views in the application and the list of contracts (if present in the application)
            that may be used as a source for templates and resources for those views.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -675,7 +681,7 @@
            library contracts that, if present in the application, must be made
            available for use as templates of the specified views.
            </p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -687,10 +693,10 @@
           <xsd:documentation><![CDATA[
 
            <p class="changed_added_2_2">The "url-pattern" element
-           specifies the collection of views in this application that 
+           specifies the collection of views in this application that
            are allowed to use the corresponding contracts.
            </p>
-        
+
            ]]></xsd:documentation>
          </xsd:annotation>
       </xsd:element>
@@ -706,7 +712,7 @@
            if available to the application, may be used by the views
            matched by the corresponding "url-pattern"
            </p>
-        
+
            ]]></xsd:documentation>
          </xsd:annotation>
       </xsd:element>
@@ -723,7 +729,7 @@
 
        <p> Extension element for application.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -748,7 +754,7 @@
         of JavaServer Faces.  For nested elements that are not
         specified, the JSF implementation must provide a suitable
         default.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:choice minOccurs="0"
@@ -764,7 +770,7 @@
             be called when
             FactoryFinder.getFactory(APPLICATION_FACTORY) is
             called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -779,7 +785,7 @@
             be called when
             FactoryFinder.getFactory(EXCEPTION_HANDLER_FACTORY)
             is called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -794,7 +800,7 @@
             be called when
             FactoryFinder.getFactory(EXTERNAL_CONTEXT_FACTORY)
             is called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -809,7 +815,7 @@
             be called when
             FactoryFinder.getFactory(FACES_CONTEXT_FACTORY)
             is called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -824,7 +830,7 @@
             be called when
             FactoryFinder.getFactory(FACELET_CACHE_FACTORY)
             is called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -838,7 +844,7 @@
             PartialViewContextFactory implementation class that will
             be called when FactoryFinder.getFactory
             (FactoryFinder.PARTIAL_VIEW_CONTEXT_FACTORY) is called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -851,7 +857,7 @@
             qualified class name of the concrete LifecycleFactory
             implementation class that will be called when
             FactoryFinder.getFactory(LIFECYCLE_FACTORY) is called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -865,7 +871,7 @@
             ViewDeclarationLanguageFactory
             implementation class that will be called when
             FactoryFinder.getFactory(VIEW_DECLARATION_FACTORY) is called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -879,7 +885,7 @@
             ViewDeclarationLanguageFactory
             implementation class that will be called when
             FactoryFinder.getFactory(TAG_HANDLER_DELEGATE_FACTORY) is called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -893,7 +899,7 @@
             implementation class that will be called when
             FactoryFinder.getFactory(RENDER_KIT_FACTORY) is
             called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -907,7 +913,7 @@
             implementation class that will be called when
             FactoryFinder.getFactory(VISIT_CONTEXT_FACTORY) is
             called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -922,7 +928,7 @@
             be called when
             FactoryFinder.getFactory(FLASH_FACTORY) is
             called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -937,7 +943,7 @@
             be called when
             FactoryFinder.getFactory(FLOW_HANDLER_FACTORY) is
             called.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -959,7 +965,7 @@
 
        <p> Extension element for factory.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -982,10 +988,10 @@
        <p> The "attribute" element represents a named, typed, value
         associated with the parent UIComponent via the generic
         attributes mechanism.</p>
-        
+
         <p>Attribute names must be unique within the scope of the parent
         (or related) component.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -999,7 +1005,7 @@
             which the corresponding value will be stored, in the
             generic attributes of the UIComponent we are related
             to.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1010,7 +1016,7 @@
 
            <p> The "attribute-class" element represents the Java type
             of the value associated with this attribute name.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1038,7 +1044,7 @@
 
        <p> Extension element for attribute.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1063,13 +1069,13 @@
         specified type identifier, along with its associated
         properties and attributes.  Component types must be unique
         within the entire web application.</p>
-        
+
         <p>Nested "attribute" elements identify generic attributes that
         are recognized by the implementation logic of this component.
         Nested "property" elements identify JavaBeans properties of
         the component class that may be exposed for manipulation
         via tools.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1082,7 +1088,7 @@
            <p> The "component-type" element represents the name under
             which the corresponding UIComponent class should be
             registered.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1094,7 +1100,7 @@
            <p> The "component-class" element represents the fully
             qualified class name of a concrete UIComponent
             implementation class.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1128,7 +1134,7 @@
 
        <p> Extension element for component.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1150,11 +1156,11 @@
 
        <p> The "default-locale" element declares the default locale
         for this application instance.</p>
-        
+
         <p>It must be specified as :language:[_:country:[_:variant:]]
         without the colons, for example "ja_JP_SJIS".  The
         separators between the segments may be '-' or '_'.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -1177,7 +1183,7 @@
         from the "suggested-value" in that the property or attribute
         must take the value, whereas in "suggested-value" taking the
         value is optional.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -1195,7 +1201,7 @@
        <p> EL expressions present within a faces config file
         must start with the character sequence of '#{' and
         end with '}'.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:restriction base="xsd:string">
@@ -1212,7 +1218,7 @@
 
        <p> Define the name and other design-time information for a facet
         that is associated with a renderer or a component.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1225,7 +1231,7 @@
            <p> The "facet-name" element represents the facet name
             under which a UIComponent will be added to its parent.
             It must be of type "Identifier".</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1247,7 +1253,7 @@
 
        <p> Extension element for facet.  It may contain implementation
         specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1270,28 +1276,28 @@
        <p><span class="changed_modified_2_2">The</span>
        value of from-view-id must contain one of the following
         values:</p>
-        
+
         <ul>
 
         <li><p>The exact match for a view identifier that is recognized
         by the the ViewHandler implementation being used (such as
         "/index.jsp" if you are using the default ViewHandler).</p></li>
-        
+
         <li><p class="changed_added_2_2">The exact match of a flow node id
         in the current flow, or a flow id of another flow.</p></li>
-        
+
          <li><p> A proper prefix of a view identifier, plus a trailing
          "*" character.  This pattern indicates that all view
          identifiers that match the portion of the pattern up to the
          asterisk will match the surrounding rule.  When more than one
          match exists, the match with the longest pattern is selected.
          </p></li>
-        
+
         <li><p>An "*" character, which means that this pattern applies
         to all view identifiers.  </p></li>
 
        </ul>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -1315,7 +1321,7 @@
         in order to select the navigation rule.  If not specified,
         this rule will be relevant no matter which action reference
         was executed (or if no action reference was executed).</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -1354,8 +1360,8 @@ the id of the node in the flow graph to which control must be
 passed.</p>
 
 </div>
-        
-        
+
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -1368,7 +1374,7 @@ passed.</p>
 
 <!-- **************************************************** -->
 
-  <xsd:complexType name="faces-config-faces-flow-definition-parameter-valueType">
+  <xsd:complexType name="faces-config-flow-definition-parameter-valueType">
     <xsd:annotation>
       <xsd:documentation><![CDATA[
 
@@ -1379,8 +1385,8 @@ passed.</p>
 
 
 </div>
-        
-        
+
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -1402,7 +1408,7 @@ passed.</p>
         implementation class that should be registered under the
         specified converter identifier.  Converter identifiers must
         be unique within the entire web application.</p>
-        
+
         <p>Nested "attribute" elements identify generic attributes that
         may be configured on the corresponding UIComponent in order
         to affect the operation of the Converter.  Nested "property"
@@ -1412,7 +1418,7 @@ passed.</p>
         elements are intended to allow component developers to
         more completely describe their components to tools and users.
         These elements have no required runtime semantics.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1426,7 +1432,7 @@ passed.</p>
              <p> The "converter-id" element represents the
               identifier under which the corresponding
               Converter class should be registered.</p>
-              
+
             ]]></xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -1438,7 +1444,7 @@ passed.</p>
              <p> The "converter-for-class" element represents the
               fully qualified class name for which a Converter
               class will be registered.</p>
-              
+
             ]]></xsd:documentation>
           </xsd:annotation>
         </xsd:element>
@@ -1451,7 +1457,7 @@ passed.</p>
            <p> The "converter-class" element represents the fully
             qualified class name of a concrete Converter
             implementation class.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1468,7 +1474,7 @@ passed.</p>
             operation of the Converter.  This attribute is
             primarily for design-time tools and is not
             specified to have any meaning at runtime.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1485,7 +1491,7 @@ passed.</p>
             the Converter.  This attribute is primarily for
             design-time tools and is not specified to have
             any meaning at runtime.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1507,7 +1513,7 @@ passed.</p>
 
        <p> Extension element for converter.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1530,7 +1536,7 @@ passed.</p>
        <p> The "lifecycle" element provides a mechanism to specify
         modifications to the behaviour of the default Lifecycle
         implementation for this web application.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1545,7 +1551,7 @@ passed.</p>
             qualified class name of the concrete PhaseListener
             implementation class that will be registered on
             the Lifecycle.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1567,7 +1573,7 @@ passed.</p>
 
        <p> Extension element for lifecycle.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1586,7 +1592,7 @@ passed.</p>
 
        <p> The localeType defines valid locale defined by ISO-639-1
         and ISO-3166.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:restriction base="xsd:string">
@@ -1603,7 +1609,7 @@ passed.</p>
 
        <p> The "locale-config" element allows the app developer to
         declare the supported locales for this application.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1630,7 +1636,7 @@ passed.</p>
         register a set of validators, referenced by identifier, that
         are automatically assigned to any EditableValueHolder component
         in the application, unless overridden or disabled locally.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1643,7 +1649,7 @@ passed.</p>
 
            <p> The "validator-id" element represents the identifier
             of a registered validator.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1669,7 +1675,7 @@ passed.</p>
         the nested managed-property elements can be used to
         initialize the contents of settable JavaBeans properties of
         the created instance.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -1683,7 +1689,7 @@ passed.</p>
             attribute name under which a managed bean will
             be searched for, as well as stored (unless the
             "managed-bean-scope" value is "none").</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1696,12 +1702,12 @@ passed.</p>
             qualified class name of the Java class that will be
             used`to instantiate a new instance if creation of the
             specified`managed bean is requested.</p>
-            
+
             <p>The specified class must conform to standard JavaBeans
             conventions.  In particular, it must have a public
             zero-arguments constructor, and zero or more public
             property setters.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1714,7 +1720,7 @@ passed.</p>
             into which a newly created instance of the specified
             managed bean will be stored (unless the value is
             "none").</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1744,11 +1750,11 @@ passed.</p>
           attribute is true the runtime must instantiate this class
           and store the instance within the application scope when the
           application starts.</p>
-          
+
           <p>If eager is unspecified or is false, the default "lazy"
           instantiation and scoped storage of the managed bean
           will occur.</p>
-          
+
         ]]></xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
@@ -1758,61 +1764,18 @@ passed.</p>
 
 <!-- **************************************************** -->
 
-  <xsd:complexType name="faces-config-faces-flow-definitionType">
+  <xsd:complexType name="faces-config-flow-definitionType">
     <xsd:annotation>
       <xsd:documentation>
 <![CDATA[
 
         <p class="changed_added_2_2">Top level element for a flow
-        definition.  If an <code>id</code> attribute is present on this
-        element, it must be identical to <code>flowName</code>.</p>
+        definition.</p>
 
 <div class="changed_added_2_2">
 
 <p>If there is no <code>&lt;start-node&gt;</code> element declared, it
 is assumed to be <code>&lt;flowName&gt;.xhtml</code>.</p>
-
-
-<p>Usage example</p>
-
-<div class="xml" style="font-family:monospace;"><ol>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;faces-flow-definition<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;start-node<span style="color: #000000; font-weight: bold;">&gt;</span></span></span>router1<span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/start-node<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; </div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;flow-return</span> <span style="color: #000066;">id</span>=<span style="color: #ff0000;">&quot;success&quot;</span><span style="color: #000000; font-weight: bold;">&gt;</span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;navigation-case<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;from-outcome<span style="color: #000000; font-weight: bold;">&gt;</span></span></span>/complete<span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/from-outcome<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/navigation-case<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/flow-return<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;flow-return</span> <span style="color: #000066;">id</span>=<span style="color: #ff0000;">&quot;errorOccurred&quot;</span><span style="color: #000000; font-weight: bold;">&gt;</span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;navigation-case<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;from-outcome<span style="color: #000000; font-weight: bold;">&gt;</span></span></span>error<span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/from-outcome<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/navigation-case<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/flow-return<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; </div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #808080; font-style: italic;">&lt;!-- If a customerId was specified then we'll edit it, otherwise create a new customer. --&gt;</span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;switch</span> <span style="color: #000066;">id</span>=<span style="color: #ff0000;">&quot;router1&quot;</span><span style="color: #000000; font-weight: bold;">&gt;</span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;navigation-case<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;if<span style="color: #000000; font-weight: bold;">&gt;</span></span></span>#{flowScope.customerId == null}<span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/if<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;from-outcome<span style="color: #000000; font-weight: bold;">&gt;</span></span></span>create-customer<span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/from-outcome<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/navigation-case<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/switch<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; </div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;view</span> <span style="color: #000066;">id</span>=<span style="color: #ff0000;">&quot;create-customer&quot;</span><span style="color: #000000; font-weight: bold;">&gt;</span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;vdl-document<span style="color: #000000; font-weight: bold;">&gt;</span></span></span>create-customer.xhtml<span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/vdl-document<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/view<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp;</div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;view</span> <span style="color: #000066;">id</span>=<span style="color: #ff0000;">&quot;maintain-customer-record&quot;</span><span style="color: #000000; font-weight: bold;">&gt;</span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;vdl-document<span style="color: #000000; font-weight: bold;">&gt;</span></span></span>maintain-customer-record.xhtml<span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/vdl-document<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/view<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; </div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; </div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;initializer<span style="color: #000000; font-weight: bold;">&gt;</span></span></span>#{maintainCustomerBean.initializeFlow}<span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/initializer<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;finalizer<span style="color: #000000; font-weight: bold;">&gt;</span></span></span>#{maintainCustomerBean.cleanUpFlow}<span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/finalizer<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; &nbsp; &nbsp; </div></li>
-<li style="background: #fcfcfc;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp; &nbsp; <span style="color: #009900;"><span style="color: #000000; font-weight: bold;">&lt;/faces-flow-definition<span style="color: #000000; font-weight: bold;">&gt;</span></span></span></div></li>
-<li style="background: #f0f0f0;"><div style="font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;">&nbsp;</div></li>
-</ol></div>		</div>
 
 </div>
 
@@ -1824,7 +1787,7 @@ is assumed to be <code>&lt;flowName&gt;.xhtml</code>.</p>
       <xsd:element name="start-node"
                    type="javaee:java-identifierType"
                    minOccurs="0"
-                   maxOccurs="1">
+                   >
         <xsd:annotation>
           <xsd:documentation>
 
@@ -1842,15 +1805,15 @@ href="javax/faces/flow/FlowHandler.html">FlowHandler</a></code>.</p>
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="view"
-                   type="javaee:faces-config-faces-flow-definition-viewType"
+                   type="javaee:faces-config-flow-definition-viewType"
                    minOccurs="0"
                    maxOccurs="unbounded" />
       <xsd:element name="switch"
-                   type="javaee:faces-config-faces-flow-definition-switchType"
+                   type="javaee:faces-config-flow-definition-switchType"
                    minOccurs="0"
                    maxOccurs="unbounded" />
       <xsd:element name="flow-return"
-                   type="javaee:faces-config-faces-flow-definition-flow-returnType"
+                   type="javaee:faces-config-flow-definition-flow-returnType"
                    minOccurs="0"
                    maxOccurs="unbounded"/>
       <xsd:element name="navigation-rule"
@@ -1858,38 +1821,39 @@ href="javax/faces/flow/FlowHandler.html">FlowHandler</a></code>.</p>
                    minOccurs="0"
                    maxOccurs="unbounded"/>
       <xsd:element name="flow-call"
-                   type="javaee:faces-config-faces-flow-definition-flow-callType"
+                   type="javaee:faces-config-flow-definition-flow-callType"
                    minOccurs="0"
                    maxOccurs="unbounded"/>
       <xsd:element name="method-call"
-                   type="javaee:faces-config-faces-flow-definition-faces-method-callType"
+                   type="javaee:faces-config-flow-definition-faces-method-callType"
                    minOccurs="0"
                    maxOccurs="unbounded"/>
       <xsd:element name="initializer"
-                   type="javaee:faces-config-faces-flow-definition-initializerType"
+                   type="javaee:faces-config-flow-definition-initializerType"
                    minOccurs="0"
-                   maxOccurs="1"/>
+                   />
       <xsd:element name="finalizer"
-                   type="javaee:faces-config-faces-flow-definition-finalizerType"
+                   type="javaee:faces-config-flow-definition-finalizerType"
                    minOccurs="0"
-                   maxOccurs="1"/>
+                   />
       <xsd:element name="inbound-parameter"
-                   type="javaee:faces-config-faces-flow-definition-inbound-parameterType"
+                   type="javaee:faces-config-flow-definition-inbound-parameterType"
                    minOccurs="0"
                    maxOccurs="unbounded"/>
 
     </xsd:sequence>
     <xsd:attribute name="id"
-                   type="xsd:ID">
+                   type="xsd:ID" use="required">
         <xsd:annotation>
           <xsd:documentation>
 
         <![CDATA[
 
-         <p class="changed_added_2_2">The id of this flow.  If this flow
-         is defined in the Application Configuration Resources, the id
+         <p class="changed_added_2_2">The id of this flow.  The id
          must be unique within the Application configuration Resource
-         file in which this flow is defined.<p> ]]>
+         file in which this flow is defined.  The value of this attribute,
+         combined with the value of the &lt;faces-config&gt;&lt;name&gt; element
+         must globally identify the flow within the application.<p> ]]>
 
 
           </xsd:documentation>
@@ -1897,32 +1861,106 @@ href="javax/faces/flow/FlowHandler.html">FlowHandler</a></code>.</p>
 
     </xsd:attribute>
   </xsd:complexType>
-  
-  <xsd:complexType name="faces-config-faces-flow-definition-faces-method-callType">
+
+  <xsd:complexType name="faces-config-flow-definition-faces-method-callType">
+      <xsd:annotation>
+        <xsd:documentation>
+        <![CDATA[
+
+         <p class="changed_added_2_2">Invoke a method, passing parameters if necessary.
+         The return from the method is used as the outcome for where to go next in the
+         flow.  If the method is a void method, the default outcome is used.<p> ]]>
+
+
+        </xsd:documentation>
+      </xsd:annotation>
+
       <xsd:sequence>
           <xsd:element name="method"
-                       type="javaee:faces-config-faces-flow-definition-faces-method-call-methodType"
-                       minOccurs="1"
-                       maxOccurs="1"/>
+                       type="javaee:faces-config-flow-definition-faces-method-call-methodType"
+
+                       />
           <xsd:element name="default-outcome"
                        type="javaee:string"
-                       minOccurs="1"
-                       maxOccurs="1"/>
-          
+
+                       />
+          <xsd:element name="parameter"
+                       type="javaee:faces-config-flow-definition-flow-call-parameterType"
+                       minOccurs="0" maxOccurs="unbounded">
+            <xsd:annotation>
+              <xsd:documentation>
+
+        <![CDATA[
+
+         <p class="changed_added_2_2">A parameter to pass when calling the method
+         identified in the "method" element that is a sibling of this element.<p>
+
+         ]]>
+
+              </xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
       </xsd:sequence>
   </xsd:complexType>
-  
-  <xsd:complexType name="faces-config-faces-flow-definition-faces-method-call-methodType">
+
+  <xsd:complexType name="faces-config-flow-definition-faces-method-call-methodType">
     <xsd:simpleContent>
       <xsd:extension base="javaee:faces-config-el-expressionType">
         <xsd:attribute name="id"
                        type="xsd:ID"/>
       </xsd:extension>
     </xsd:simpleContent>
-      
+
   </xsd:complexType>
 
-  <xsd:complexType name="faces-config-faces-flow-definition-viewType">
+  <xsd:complexType name="faces-config-flow-definition-flow-call-parameterType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        <![CDATA[
+
+         <p class="changed_added_2_2">A parameter to pass when calling the method
+         identified in the "method" element that is a sibling of this element.<p>
+
+]]>
+
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="class"
+                   type="javaee:string"
+                   minOccurs="0"
+                   >
+        <xsd:annotation>
+          <xsd:documentation><![CDATA[
+
+           <p class="changed_added_2_2"> The optional "class" element within a "parameter" element
+            will be interpreted as the fully qualified class name for the type
+            of the "value" element.</p>
+
+          ]]></xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="value"
+                   type="javaee:faces-config-flow-definition-parameter-valueType"
+
+                   >
+        <xsd:annotation>
+          <xsd:documentation><![CDATA[
+
+           <p class="changed_added_2_2"> The "value" element within an "parameter"
+            must be a literal string or an EL Expression whose "get" will be called when the "method"
+            associated with this element is invoked.</p>
+
+          ]]></xsd:documentation>
+        </xsd:annotation>
+
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+  <xsd:complexType name="faces-config-flow-definition-viewType">
     <xsd:annotation>
       <xsd:documentation>
 
@@ -1959,7 +1997,7 @@ href="javax/faces/flow/FlowHandler.html">FlowHandler</a></code>.</p>
         <xsd:annotation>
           <xsd:documentation>
 <![CDATA[
-         
+
          <p class="changed_added_2_2">The id of this view.  It must be
          unique within the flow.</p>
 
@@ -1969,7 +2007,7 @@ href="javax/faces/flow/FlowHandler.html">FlowHandler</a></code>.</p>
     </xsd:attribute>
   </xsd:complexType>
 
-  <xsd:complexType name="faces-config-faces-flow-definition-switchType">
+  <xsd:complexType name="faces-config-flow-definition-switchType">
     <xsd:annotation>
       <xsd:documentation>
 
@@ -1980,12 +2018,10 @@ href="javax/faces/flow/FlowHandler.html">FlowHandler</a></code>.</p>
 <div class="changed_added_2_2">
 
 <p>This element must contain one or more
-<code>&lt;navigation-case&gt;</code> elements, each of which must
-contain exactly one <code>&lt;if&gt;</code> and one
-<code>&lt;from-outcome&gt;</code> element.  When control passes to the
+<code>&lt;case&gt;</code> elements.  When control passes to the
 <code>&lt;switch&gt;</code> node, each of the cases must be considered
 in order and control must past to the <code>&lt;from-outcome&gt;</code>
-of the first one whose <code>&lt;if&gt;</code> expression evaluates to 
+of the first one whose <code>&lt;if&gt;</code> expression evaluates to
 <code>true</code>.</p>
 
 </div>
@@ -1995,8 +2031,8 @@ of the first one whose <code>&lt;if&gt;</code> expression evaluates to
       </xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
-      <xsd:element name="navigation-case"
-                   type="javaee:faces-config-navigation-caseType"
+      <xsd:element name="case"
+                   type="javaee:faces-config-flow-definition-switch-caseType"
                    minOccurs="0"
                    maxOccurs="unbounded">
         <xsd:annotation>
@@ -2014,9 +2050,9 @@ of the first one whose <code>&lt;if&gt;</code> expression evaluates to
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="default-outcome"
-                   type="javaee:faces-config-faces-flow-definition-switch-default-outcomeType"
+                   type="javaee:string"
                    minOccurs="0"
-                   maxOccurs="1">
+                   >
         <xsd:annotation>
           <xsd:documentation>
 
@@ -2038,7 +2074,7 @@ of the first one whose <code>&lt;if&gt;</code> expression evaluates to
         <xsd:annotation>
           <xsd:documentation>
 <![CDATA[
-         
+
          <p class="changed_added_2_2">The id of this switch.  It must be
          unique within the flow.</p>
 
@@ -2048,19 +2084,31 @@ of the first one whose <code>&lt;if&gt;</code> expression evaluates to
     </xsd:attribute>
   </xsd:complexType>
 
-  <xsd:complexType name="faces-config-faces-flow-definition-switch-default-outcomeType">
+  <xsd:complexType name="faces-config-flow-definition-switch-caseType">
     <xsd:annotation>
       <xsd:documentation><![CDATA[
 
-         <p class="changed_added_2_2">Defines the default case that will
-         be taken if none of the other cases the
-         <code>&lt;switch&gt;</code> are taken.</p>
+         <p class="changed_added_2_2">Defines a case that will
+         be considered in the <code>&lt;switch&gt;</code>.</p>
 
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
       <xsd:group ref="javaee:descriptionGroup"/>
+      <xsd:element name="if"
+                   type="javaee:faces-config-ifType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation><![CDATA[
+
+           <p class="changed_added_2_2">If this EL expression evaluates to
+           <code>true</code>, the corresponding <code>from-outcome</code> will
+           be the outcome taken by the enclosing <code>&lt;switch&gt;</code></p>
+
+          ]]></xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
       <xsd:element name="from-outcome"
                    type="javaee:string"
                    minOccurs="0">
@@ -2085,7 +2133,7 @@ represents the node id to which control will be passed.</p>
 
 
 ]]>
-            
+
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2095,7 +2143,7 @@ represents the node id to which control will be passed.</p>
     </xsd:attribute>
   </xsd:complexType>
 
-  <xsd:complexType name="faces-config-faces-flow-definition-flow-returnType">
+  <xsd:complexType name="faces-config-flow-definition-flow-returnType">
     <xsd:annotation>
       <xsd:documentation>
 
@@ -2105,8 +2153,7 @@ represents the node id to which control will be passed.</p>
 
 <div class="changed_added_2_2">
 
-<p>This element must contain exactly one <code>&lt;navigation-case&gt;</code> element, 
-which must contain exactly one <code>&lt;from-outcome&gt;</code> element.</p>
+<p>This element must contain exactly one <code>&lt;from-outcome&gt;</code> element.</p>
 </div>
 
 ]]>
@@ -2115,18 +2162,15 @@ which must contain exactly one <code>&lt;from-outcome&gt;</code> element.</p>
     </xsd:annotation>
 
     <xsd:sequence>
-      <xsd:element name="navigation-case"
-                   type="javaee:faces-config-navigation-caseType"
-                   minOccurs="1" maxOccurs="1">
+      <xsd:element name="from-outcome"
+                   type="javaee:string"
+                   >
         <xsd:annotation>
-          <xsd:documentation>
+          <xsd:documentation><![CDATA[
 
-        <![CDATA[
+<p class="changed_added_2_2">This element
+represents the node id to which control will be passed.</p>
 
-         <p class="changed_added_2_2">Define a navigation case for a
-         faces flow.  This element is used within
-         <code>&lt;flow-return&gt;</code> and
-         <code>&lt;switch&gt;</code> elements.<p>
 
 ]]>
 
@@ -2141,7 +2185,7 @@ which must contain exactly one <code>&lt;from-outcome&gt;</code> element.</p>
         <xsd:annotation>
           <xsd:documentation>
 <![CDATA[
-         
+
          <p class="changed_added_2_2">The id of this flow-return.</p>
 
          ]]>
@@ -2151,7 +2195,7 @@ which must contain exactly one <code>&lt;from-outcome&gt;</code> element.</p>
 
   </xsd:complexType>
 
-  <xsd:complexType name="faces-config-faces-flow-definition-flow-callType">
+  <xsd:complexType name="faces-config-flow-definition-flow-callType">
     <xsd:annotation>
       <xsd:documentation>
 
@@ -2161,8 +2205,8 @@ which must contain exactly one <code>&lt;from-outcome&gt;</code> element.</p>
 
 <div class="changed_added_2_2">
 
-<p>This element must contain exactly one <code>&lt;faces-flow-reference&gt;</code> element, 
-which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
+<p>This element must contain exactly one <code>&lt;flow-reference&gt;</code> element,
+which must contain exactly one <code>&lt;flow-id&gt;</code> element.</p>
 </div>
 
 ]]>
@@ -2171,9 +2215,9 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
     </xsd:annotation>
 
     <xsd:sequence>
-      <xsd:element name="faces-flow-reference"
-                   type="javaee:faces-config-faces-flow-definition-flow-call-faces-flow-referenceType"
-                   minOccurs="1" maxOccurs="1">
+      <xsd:element name="flow-reference"
+                   type="javaee:faces-config-flow-definition-flow-call-flow-referenceType"
+                    >
         <xsd:annotation>
           <xsd:documentation>
 
@@ -2187,7 +2231,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="outbound-parameter"
-                   type="javaee:faces-config-faces-flow-definition-flow-call-outbound-parameterType"
+                   type="javaee:faces-config-flow-definition-flow-call-outbound-parameterType"
                    minOccurs="0" maxOccurs="unbounded">
         <xsd:annotation>
           <xsd:documentation>
@@ -2195,7 +2239,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
         <![CDATA[
 
          <p class="changed_added_2_2">A parameter to pass when calling the flow
-         identified in the "faces-flow-reference" element that is a sibling of this element.<p>
+         identified in the "flow-reference" element that is a sibling of this element.<p>
 
 ]]>
 
@@ -2210,7 +2254,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
         <xsd:annotation>
           <xsd:documentation>
 <![CDATA[
-         
+
          <p class="changed_added_2_2">The id of this flow-return.</p>
 
          ]]>
@@ -2219,8 +2263,8 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
     </xsd:attribute>
 
   </xsd:complexType>
-  
-  <xsd:complexType name="faces-config-faces-flow-definition-flow-call-faces-flow-referenceType">
+
+  <xsd:complexType name="faces-config-flow-definition-flow-call-flow-referenceType">
     <xsd:annotation>
       <xsd:documentation>
 
@@ -2236,24 +2280,35 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
       </xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
-      <xsd:element name="faces-flow-id"
+      <xsd:element name="flow-document-id"
                    type="javaee:java-identifierType"
                    minOccurs="0"
-                   maxOccurs="1">
+                   >
         <xsd:annotation>
           <xsd:documentation><![CDATA[
 
-           <p>The id of the called flow.</p>
-            
+           <p>The document id of the called flow.</p>
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
 
-        
+      <xsd:element name="flow-id"
+                   type="javaee:java-identifierType"
+                   >
+        <xsd:annotation>
+          <xsd:documentation><![CDATA[
+
+           <p>The id of the called flow.</p>
+
+          ]]></xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+
     </xsd:sequence>
   </xsd:complexType>
 
-  <xsd:complexType name="faces-config-faces-flow-definition-initializerType">
+  <xsd:complexType name="faces-config-flow-definition-initializerType">
     <xsd:annotation>
       <xsd:documentation>
 
@@ -2273,7 +2328,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
     </xsd:simpleContent>
   </xsd:complexType>
 
-  <xsd:complexType name="faces-config-faces-flow-definition-finalizerType">
+  <xsd:complexType name="faces-config-flow-definition-finalizerType">
     <xsd:annotation>
       <xsd:documentation>
 
@@ -2293,7 +2348,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
     </xsd:simpleContent>
   </xsd:complexType>
 
-  <xsd:complexType name="faces-config-faces-flow-definition-inbound-parameterType">
+  <xsd:complexType name="faces-config-flow-definition-inbound-parameterType">
     <xsd:annotation>
       <xsd:documentation>
 
@@ -2309,45 +2364,45 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
     <xsd:sequence>
       <xsd:element name="name"
                    type="javaee:java-identifierType"
-                   minOccurs="1"
-                   maxOccurs="1">
+
+                   >
         <xsd:annotation>
           <xsd:documentation><![CDATA[
 
            <p class="changed_added_2_2"> The "name" element within an "inbound-parameter"
             element declares the name of this parameter
-            to be passed into a flow.  There must be 
+            to be passed into a flow.  There must be
             a sibling "value" element in the same parent as this element.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="value"
-                   type="javaee:faces-config-faces-flow-definition-parameter-valueType"
-                   minOccurs="1"
-                   maxOccurs="1">
+                   type="javaee:faces-config-flow-definition-parameter-valueType"
+
+                   >
         <xsd:annotation>
           <xsd:documentation><![CDATA[
 
            <p class="changed_added_2_2"> The "value" element within an "inbound-parameter"
             must be an EL Expression whose value will be set with the correspondingly
-            named "outbound-parameter" when this flow is entered, if such a 
+            named "outbound-parameter" when this flow is entered, if such a
             parameter exists.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
-                       
+
       </xsd:element>
     </xsd:sequence>
   </xsd:complexType>
 
-  <xsd:complexType name="faces-config-faces-flow-definition-flow-call-outbound-parameterType">
+  <xsd:complexType name="faces-config-flow-definition-flow-call-outbound-parameterType">
     <xsd:annotation>
       <xsd:documentation>
 
         <![CDATA[
 
-         <p class="changed_added_2_2">A named parameter whose value will be 
+         <p class="changed_added_2_2">A named parameter whose value will be
          passed to a correspondingly named parameter within an "inbound-parameter" element
          on the target flow.<p>
 
@@ -2358,32 +2413,32 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
     <xsd:sequence>
       <xsd:element name="name"
                    type="javaee:java-identifierType"
-                   minOccurs="1"
-                   maxOccurs="1">
+
+                   >
         <xsd:annotation>
           <xsd:documentation><![CDATA[
 
-           <p class="changed_added_2_2"> The "name" element within an "outbound-parameter" element 
-            declares the name of this parameter to be passed out of a flow.  There must be 
+           <p class="changed_added_2_2"> The "name" element within an "outbound-parameter" element
+            declares the name of this parameter to be passed out of a flow.  There must be
             a sibling "value" element in the same parent as this element.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="value"
-                   type="javaee:faces-config-faces-flow-definition-parameter-valueType"
-                   minOccurs="1"
-                   maxOccurs="1">
+                   type="javaee:faces-config-flow-definition-parameter-valueType"
+
+                   >
         <xsd:annotation>
           <xsd:documentation><![CDATA[
 
            <p class="changed_added_2_2"> The "value" element within an "outbound-parameter"
-            must be an EL Expression whose "get" will be called when the "flow-call"
+            must be a literal string or an EL Expression whose "get" will be called when the "flow-call"
             containing this element is traversed to go to a new flow.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
-                       
+
       </xsd:element>
     </xsd:sequence>
   </xsd:complexType>
@@ -2396,7 +2451,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
 
        <p> Extension element for managed-bean.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -2424,7 +2479,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
         any scope.  Alternatively, an EL expression may be used
         as the value of this element.  The result of evaluating this
         expression must by of type java.util.Map.</p>
-        
+
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -2446,7 +2501,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
         property of a managed bean that will be configured to the
         specified value (or value set) if the corresponding
         managed bean is automatically created.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -2459,7 +2514,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
            <p> The "property-name" element represents the JavaBeans
             property name under which the corresponding value may
             be stored.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2475,7 +2530,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
             classes; however, this element should be specified
             if the configuration file is going to be the source
             for generating the corresponding classes.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2504,7 +2559,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
        <p> The "map-entry" element reprsents a single key-entry pair
         that will be added to the computed value of a managed
         property of type java.util.Map.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -2516,7 +2571,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
            <p> The "key" element is the String representation of a
             map key that will be stored in a managed property of
             type java.util.Map.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2542,7 +2597,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
         that will be added to the computed value of a managed property
         of type java.util.Map.  In addition, the Java class types
         of the key and entry values may be optionally declared.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -2556,7 +2611,7 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
             each "key" element in a set of "map-entry" elements
             will be converted to.  If omitted, "java.lang.String"
             is assumed.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2579,11 +2634,12 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
     <xsd:annotation>
       <xsd:documentation><![CDATA[
 
-       <p> The "navigation-case" element describes a particular
+       <p> <span class="changed_modified_2_2">The</span>
+       "navigation-case" element describes a particular
         combination of conditions that must match for this case to
         be executed, and the view id of the component tree that
         should be selected next.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -2610,12 +2666,8 @@ which must contain exactly one <code>&lt;faces-flow-id&gt;</code> element.</p>
             condition specified in the "if" element ultimately
             determines if this rule is a match.</p>
 
-<p class="changed_added_2_2">If used in a faces flow, this element
-represents the node id to which control will be passed.</p>
-
-
 ]]>
-            
+
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2626,7 +2678,7 @@ represents the node id to which control will be passed.</p>
           <xsd:documentation><![CDATA[
 
            <p> Please see section JSF.7.4.2 for the specification of this element.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2635,19 +2687,35 @@ represents the node id to which control will be passed.</p>
         <xsd:annotation>
           <xsd:documentation><![CDATA[
 
-           <p><span class="changed_modified_2_2">The "to-view-id" element 
-            contains the view identifier (<span class="changed_added_2_2">or 
+           <p><span class="changed_modified_2_2">The "to-view-id" element
+            contains the view identifier (<span class="changed_added_2_2">or
             flow node id, or flow id</span>)
-            of the next view (<span class="changed_added_2_2">or flow node or 
+            of the next view (<span class="changed_added_2_2">or flow node or
             flow</span>) that should be displayed if this
             navigation rule is matched. If the contents is a
             value expression, it should be resolved by the
             navigation handler to obtain the view (
-            <span class="changed_added_2_2">or flow node or flow</span>) 
+            <span class="changed_added_2_2">or flow node or flow</span>)
             identifier.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="to-flow-document-id"
+                     type="javaee:java-identifierType"
+                     minOccurs="0"
+                     >
+          <xsd:annotation>
+            <xsd:documentation><![CDATA[
+
+             <p class="changed_added_2_2">The document id of the called flow.
+             If this element appears in a &lt;navigation-case&gt; nested within
+             a &lt;flow-definition&gt;, it must be ignored because navigation
+             cases within flows may only navigate among the view nodes of that
+             flow.</p>
+
+            ]]></xsd:documentation>
+          </xsd:annotation>
       </xsd:element>
       <xsd:element name="redirect"
                    type="javaee:faces-config-redirectType"
@@ -2669,14 +2737,14 @@ represents the node id to which control will be passed.</p>
         NavigationHandler implementation to make decisions on
         what view should be displayed next, based on the
         view id being processed.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
       <xsd:group ref="javaee:descriptionGroup"/>
       <xsd:element name="from-view-id"
                    type="javaee:faces-config-from-view-idType"
-                   minOccurs="0"/>
+                   />
       <xsd:element name="navigation-case"
                    type="javaee:faces-config-navigation-caseType"
                    minOccurs="0"
@@ -2699,7 +2767,7 @@ represents the node id to which control will be passed.</p>
 
        <p> Extension element for navigation-rule.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -2725,11 +2793,11 @@ represents the node id to which control will be passed.</p>
         created.  This is different from omitting the managed
         property element entirely, which will cause no
         property setter to be called for this property.</p>
-        
+
         <p>The "null-value" element can only be used when the
         associated "property-class" identifies a Java class,
         not a Java primitive.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:attribute name="id"
@@ -2745,13 +2813,13 @@ represents the node id to which control will be passed.</p>
 
        <p> The "property" element represents a JavaBean property of the
         Java class represented by our parent element.</p>
-        
+
         <p>Property names must be unique within the scope of the Java
         class that is represented by the parent element, and must
         correspond to property names that will be recognized when
         performing introspection against that class via
         java.beans.Introspector.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -2764,7 +2832,7 @@ represents the node id to which control will be passed.</p>
            <p> The "property-name" element represents the JavaBeans
             property name under which the corresponding value
             may be stored.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2779,7 +2847,7 @@ represents the node id to which control will be passed.</p>
             classes; however, this element should be specified if
             the configuration file is going to be the source for
             generating the corresponding classes.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2811,7 +2879,7 @@ represents the node id to which control will be passed.</p>
        which views are protected, any navigation from an unprotected
        view to a protected view is automatically subject to
        protection.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -2830,7 +2898,7 @@ represents the node id to which control will be passed.</p>
 
        <p> Extension element for property.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -2854,14 +2922,10 @@ represents the node id to which control will be passed.</p>
         specified "to-view-id" should be accomplished by
         performing an HTTP redirect rather than the usual
         ViewHandler mechanisms.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
-      <xsd:element name="view-param"
-                   type="javaee:faces-config-redirect-viewParamType"
-                   minOccurs="0"
-                   maxOccurs="unbounded"/>
       <xsd:element name="redirect-param"
                    type="javaee:faces-config-redirect-redirectParamType"
                    minOccurs="0"
@@ -2888,18 +2952,18 @@ represents the node id to which control will be passed.</p>
         maintained to preserve backwards compatibility.
         Implementations must treat this element the same as
         "redirect-param".</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="name"
                    type="javaee:string"
-                   minOccurs="1"
-                   maxOccurs="1"/>
+
+                   />
       <xsd:element name="value"
                    type="javaee:string"
-                   minOccurs="1"
-                   maxOccurs="1"/>
+
+                   />
     </xsd:sequence>
     <xsd:attribute name="id"
                    type="xsd:ID"/>
@@ -2916,18 +2980,18 @@ represents the node id to which control will be passed.</p>
         a "redirect" element, contains child "name"
         and "value" elements that must be included in the
         redirect url when the redirect is performed.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
       <xsd:element name="name"
                    type="javaee:string"
-                   minOccurs="1"
-                   maxOccurs="1"/>
+
+                   />
       <xsd:element name="value"
                    type="javaee:string"
-                   minOccurs="1"
-                   maxOccurs="1"/>
+
+                   />
     </xsd:sequence>
     <xsd:attribute name="id"
                    type="xsd:ID"/>
@@ -2947,7 +3011,7 @@ represents the node id to which control will be passed.</p>
         based on the properties of the specified class.  The presence
         or absence of a referenced bean element has no impact on the
         JavaServer Faces runtime environment inside a web application.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -2962,7 +3026,7 @@ represents the node id to which control will be passed.</p>
             referenced bean may be assumed to be stored, in one
             of 'request', 'session', 'view', 'application'
             or a custom scope.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2975,7 +3039,7 @@ represents the node id to which control will be passed.</p>
             fully qualified class name of the Java class
             (either abstract or concrete) or Java interface
             implemented by the corresponding referenced bean.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -2996,7 +3060,7 @@ represents the node id to which control will be passed.</p>
         render-kit-id.  If no render-kit-id is specified, the
         identifier of the default RenderKit
         (RenderKitFactory.DEFAULT_RENDER_KIT) is assumed.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3010,7 +3074,7 @@ represents the node id to which control will be passed.</p>
            <p> The "render-kit-id" element represents an identifier
             for the RenderKit represented by the parent
             "render-kit" element.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3023,7 +3087,7 @@ represents the node id to which control will be passed.</p>
            <p> The "render-kit-class" element represents the fully
             qualified class name of a concrete RenderKit
             implementation class.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3057,10 +3121,10 @@ represents the node id to which control will be passed.</p>
         in the RenderKit associated with the parent "render-kit"
         element.  Client Behavior renderer type must be unique within the RenderKit
         associated with the parent "render-kit" element.</p>
-        
+
         <p>Nested "attribute" elements identify generic component
         attributes that are recognized by this renderer.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3072,7 +3136,7 @@ represents the node id to which control will be passed.</p>
            <p> The "client-behavior-renderer-type" element represents a renderer type
             identifier for the Client Behavior Renderer represented by the parent
             "client-behavior-renderer" element.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3084,7 +3148,7 @@ represents the node id to which control will be passed.</p>
            <p> The "client-behavior-renderer-class" element represents the fully
             qualified class name of a concrete Client Behavior Renderer
             implementation class.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3107,10 +3171,10 @@ represents the node id to which control will be passed.</p>
         element.  Combinations of component family and
         renderer type must be unique within the RenderKit
         associated with the parent "render-kit" element.</p>
-        
+
         <p>Nested "attribute" elements identify generic component
         attributes that are recognized by this renderer.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3123,7 +3187,7 @@ represents the node id to which control will be passed.</p>
            <p> The "component-family" element represents the
             component family for which the Renderer represented
             by the parent "renderer" element will be used.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3135,7 +3199,7 @@ represents the node id to which control will be passed.</p>
            <p> The "renderer-type" element represents a renderer type
             identifier for the Renderer represented by the parent
             "renderer" element.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3147,7 +3211,7 @@ represents the node id to which control will be passed.</p>
            <p> The "renderer-class" element represents the fully
             qualified class name of a concrete Renderer
             implementation class.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3177,7 +3241,7 @@ represents the node id to which control will be passed.</p>
 
        <p> Extension element for renderer.  It may contain implementation
         specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3199,7 +3263,7 @@ represents the node id to which control will be passed.</p>
 
        <p> Extension element for render-kit.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3223,7 +3287,7 @@ represents the node id to which control will be passed.</p>
         attribute in which this element resides.  This value is
         advisory only and is intended for tools to use when
         populating pallettes.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -3240,11 +3304,11 @@ represents the node id to which control will be passed.</p>
 
        <p> The "supported-locale" element allows authors to declare
         which locales are supported in this application instance.</p>
-        
+
         <p>It must be specified as :language:[_:country:[_:variant:]]
         without the colons, for example "ja_JP_SJIS".  The
         separators between the segments may be '-' or '_'.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -3266,7 +3330,7 @@ represents the node id to which control will be passed.</p>
         implementation class that should be registered under the
         specified behavior identifier.  Behavior identifiers must
         be unique within the entire web application.</p>
-        
+
         <p>Nested "attribute" elements identify generic attributes that
         may be configured on the corresponding UIComponent in order
         to affect the operation of the Behavior.  Nested "property"
@@ -3276,7 +3340,7 @@ represents the node id to which control will be passed.</p>
         elements are intended to allow component developers to
         more completely describe their components to tools and users.
         These elements have no required runtime semantics.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3289,7 +3353,7 @@ represents the node id to which control will be passed.</p>
            <p> The "behavior-id" element represents the identifier
             under which the corresponding Behavior class should
             be registered.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3301,7 +3365,7 @@ represents the node id to which control will be passed.</p>
            <p> The "behavior-class" element represents the fully
             qualified class name of a concrete Behavior
             implementation class.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3318,7 +3382,7 @@ represents the node id to which control will be passed.</p>
             operation of the Behavior.  This attribute is
             primarily for design-time tools and is not
             specified to have any meaning at runtime.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3335,7 +3399,7 @@ represents the node id to which control will be passed.</p>
             the Behavior.  This attribute is primarily for
             design-time tools and is not specified to have
             any meaning at runtime.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3357,7 +3421,7 @@ represents the node id to which control will be passed.</p>
 
        <p> Extension element for behavior.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3381,7 +3445,7 @@ represents the node id to which control will be passed.</p>
         implementation class that should be registered under the
         specified validator identifier.  Validator identifiers must
         be unique within the entire web application.</p>
-        
+
         <p>Nested "attribute" elements identify generic attributes that
         may be configured on the corresponding UIComponent in order
         to affect the operation of the Validator.  Nested "property"
@@ -3391,7 +3455,7 @@ represents the node id to which control will be passed.</p>
         elements are intended to allow component developers to
         more completely describe their components to tools and users.
         These elements have no required runtime semantics.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3404,7 +3468,7 @@ represents the node id to which control will be passed.</p>
            <p> The "validator-id" element represents the identifier
             under which the corresponding Validator class should
             be registered.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3416,7 +3480,7 @@ represents the node id to which control will be passed.</p>
            <p> The "validator-class" element represents the fully
             qualified class name of a concrete Validator
             implementation class.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3433,7 +3497,7 @@ represents the node id to which control will be passed.</p>
             operation of the Validator.  This attribute is
             primarily for design-time tools and is not
             specified to have any meaning at runtime.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3450,7 +3514,7 @@ represents the node id to which control will be passed.</p>
             the Validator.  This attribute is primarily for
             design-time tools and is not specified to have
             any meaning at runtime.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3472,7 +3536,7 @@ represents the node id to which control will be passed.</p>
 
        <p> Extension element for validator.  It may contain
         implementation specific content.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3495,7 +3559,7 @@ represents the node id to which control will be passed.</p>
         that will be used to calculate the required value.
         It will be converted as specified for the actual
         property type.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:union memberTypes="javaee:faces-config-el-expressionType xsd:string"/>
@@ -3513,7 +3577,7 @@ represents the node id to which control will be passed.</p>
         it to the "list-entries" list for a managed property that is
         a java.util.List, or a "map-entries" map for a managed
         property that is a java.util.Map.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -3536,7 +3600,7 @@ represents the node id to which control will be passed.</p>
         array.  In the former case, the "value-class" element can
         optionally be used to declare the Java type to which each
         value should be converted before adding it to the Collection.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3570,7 +3634,7 @@ represents the node id to which control will be passed.</p>
         listener instance, and allow selecting the kinds of classes that
         can be the source of events that are delivered to the listener
         instance.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -3584,7 +3648,7 @@ represents the node id to which control will be passed.</p>
             SystemEventListener implementation class that will be
             called when events of the type specified by the
             "system-event-class" are sent by the runtime.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3598,7 +3662,7 @@ represents the node id to which control will be passed.</p>
             which events will be delivered to the class whose fully
             qualified class name is given by the
             "system-event-listener-class" element.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3613,7 +3677,7 @@ represents the node id to which control will be passed.</p>
             source for the event to be delivered to the class whose
             fully qualified class name is given by the
             "system-event-listener-class" element.</p>
-            
+
           ]]></xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -3628,7 +3692,7 @@ represents the node id to which control will be passed.</p>
 
        <p> This type contains the recognized versions of
         faces-config supported.</p>
-        
+
       ]]></xsd:documentation>
     </xsd:annotation>
     <xsd:restriction base="xsd:token">
