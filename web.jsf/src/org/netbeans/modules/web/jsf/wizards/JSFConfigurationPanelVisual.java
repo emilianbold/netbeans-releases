@@ -1304,7 +1304,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
 
     @Messages("JSFConfigurationPanelVisual.lbl.searching.libraries=Searching Libraries...")
-    private static ComboBoxModel<String> getLibrariesComboBoxModel() {
+    private static ComboBoxModel getLibrariesComboBoxModel() {
         return new DefaultComboBoxModel(new String[] {Bundle.JSFConfigurationPanelVisual_lbl_searching_libraries()});
     }
 
