@@ -915,12 +915,12 @@ public class Css3ParserTest extends CssTestBase {
                 + "div { color: red; }\n");
 
 //        TestUtil.dumpResult(result);
-        Node node = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem/"
-                + "rule/declarations/declaration/propertyValue/error");
 //        Node node = NodeUtil.query(result.getParseTree(),
 //                "styleSheet/body/bodyItem/"
-//                + "rule/declarations/declaration/propertyValue/expression/error");
+//                + "rule/declarations/declaration/propertyValue/error");
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/body/bodyItem/"
+                + "rule/declarations/declaration/propertyValue/expression/error");
         assertNotNull(node);
         assertEquals(15, node.from());
         assertEquals(16, node.to());

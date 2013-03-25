@@ -766,6 +766,7 @@ pseudo
 declaration
     : 
     STAR? property COLON ws? propertyValue ws? (prio ws?)?
+    | {isCssPreprocessorSource()}? STAR? property COLON ws? cp_propertyValue ws? //cp_expression may contain the IMPORT_SYM
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -774,20 +775,26 @@ declaration
         consumeUntil(input, BitSet.of(SEMI, RBRACE)); 
     }
 
+//XXX this is a hack for the IMPORT_SYM inside cp_expression
+cp_propertyValue
+    : 
+   //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
+    //(the IE allows also just ident as its content)
+    (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>sass_declaration_property_value_interpolation_expression
+    | {isCssPreprocessorSource()}? cp_expression
+    | propertyValue
+    ;
+
 propertyValue
 	:
-        //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
-        //(the IE allows also just ident as its content)
-        (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>sass_declaration_property_value_interpolation_expression
-        | (expressionPredicate)=>expression
-        | {isCssPreprocessorSource()}? cp_expression
+        expression
 	;
 
 //an expression wich doesn't contain cp expression operators
 expressionPredicate
     options { k = 1; }
     :
-    ( ~ (AT_IDENT | STAR | SOLIDUS | LBRACE | SEMI | RBRACE) )+ ( SEMI | RBRACE )
+    ( ~ (AT_IDENT | STAR | SOLIDUS | LBRACE | SEMI | RBRACE | SASS_VAR) )+ ( SEMI | RBRACE )
     ;
     
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
@@ -949,8 +956,11 @@ cp_multiplyExp
     ;
 
 cp_atomExp
-    :    term
-    |    LPAREN ws? cp_additionExp ws? RPAREN 
+    :    
+    term
+    | IMPORTANT_SYM //cp property value may contain any gargabe - TODO - possibly add other garbage tokens
+    | sass_interpolation_expression_var //SASS interpolation expression also in expressions e.g. variable declaration value
+    | ( unaryOperator ws? )? LPAREN ws? cp_additionExp ws? RPAREN 
     ;
 
 
