@@ -1102,14 +1102,14 @@ less_condition_operator
 sass_selector_interpolation_expression
     :
         ( 
-            sass_interpolation_expression_var
+            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER )
         )
         ( 
             ws?
             (
-                sass_interpolation_expression_var
+                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER)
             )
@@ -1120,14 +1120,14 @@ sass_selector_interpolation_expression
 sass_declaration_interpolation_expression
     :
         ( 
-            sass_interpolation_expression_var
+            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
         )
         ( 
             ws?
             (
-                sass_interpolation_expression_var
+                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
             )
@@ -1138,7 +1138,7 @@ sass_declaration_interpolation_expression
 sass_declaration_property_value_interpolation_expression
     :
         ( 
-            sass_interpolation_expression_var
+            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
             |
 //            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
@@ -1146,7 +1146,7 @@ sass_declaration_property_value_interpolation_expression
         ( 
             ws?
             (
-                sass_interpolation_expression_var
+                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
                 |
 //                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
@@ -1158,14 +1158,14 @@ sass_declaration_property_value_interpolation_expression
 sass_mq_interpolation_expression
     :
         ( 
-            sass_interpolation_expression_var
+            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
         )
         ( 
             ws?
             (
-                sass_interpolation_expression_var
+                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
                 |
                 (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | AND | NOT)
             )
@@ -1175,7 +1175,7 @@ sass_mq_interpolation_expression
     
 sass_interpolation_expression_var
     :
-        HASH_SYMBOL LBRACE ws? ( cp_variable | less_function_in_condition | IDENT ) ws? RBRACE //XXX possibly allow cp_ecp_expression inside
+        HASH_SYMBOL LBRACE cp_expression RBRACE //XXX possibly allow cp_expression inside
     ;
     
 //SASS nested properties:
