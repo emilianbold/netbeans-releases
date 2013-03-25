@@ -196,7 +196,9 @@ public class ClassFileUtil {
             final StringBuilder retType = new StringBuilder ();
             if (kind == ElementKind.METHOD) {
                 result[1] = ee.getSimpleName().toString();
-                encodeType(ee.getReturnType(), retType);
+                if (ee.asType().getKind() == TypeKind.EXECUTABLE) {
+                    encodeType(ee.getReturnType(), retType);
+                }
             }
             else {
                 result[1] = "<init>";   // NOI18N
