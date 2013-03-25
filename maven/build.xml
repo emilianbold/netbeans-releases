@@ -59,7 +59,7 @@ made subject to such option by the copyright holder.
             <fileset dir="mavensrc" excludes="${jar-excludes}"/>
         </copy>
         <mkdir dir="${cluster}/maven/nblib"/>
-        <jar jarfile="${cluster}/maven/nblib/${code.name.base.dashes}.jar" compress="false">
+        <jar jarfile="${cluster}/maven/nblib/netbeans-cos.jar" compress="false">
             <fileset dir="build/mavenclasses"/>
         </jar>
     </target>

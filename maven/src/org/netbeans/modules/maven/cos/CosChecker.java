@@ -617,7 +617,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         if (brc.getProject() == null) {
             return;
         }
-        File jar = InstalledFileLocator.getDefault().locate("maven/nblib/org-netbeans-modules-maven.jar", "org.netbeans.modules.maven", false);
+        File jar = InstalledFileLocator.getDefault().locate("maven/nblib/netbeans-cos.jar", "org.netbeans.modules.maven", false);
         assert jar != null;
         
         DependencyProviderImpl dep = brc.getProject().getLookup().lookup(DependencyProviderImpl.class);
