@@ -160,7 +160,7 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         return libs.toArray(new LibraryImplementation[libs.size()]);
     }
 
-    public void updateLibraries(@NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException {
+    public void updateLibraries(@NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException, InterruptedException {
         File tmpZip = getCachedZip(true);
         // download to tmp
         if (progressHandle != null) {
