@@ -462,7 +462,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                         
                         setParserResult((HtmlParserResult) it.getParserResult());
                         //inspectedFileObject = getInspectedFileFromPageModel();
-                        refreshDOM();
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                refreshDOM();
+                            }
+                        });
                     }
                 });
             } catch (ParseException ex) {
