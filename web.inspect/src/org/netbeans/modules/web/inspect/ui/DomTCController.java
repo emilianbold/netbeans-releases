@@ -206,7 +206,7 @@ public class DomTCController implements PropertyChangeListener {
                     boolean wasOpened = tc.isOpened();
                     group.open();
                     if (!wasOpened && tc.isOpened()) {
-                        tc.requestActive();
+                        tc.requestVisible();
                     }
                 }
                 if ((lastMimeType == null) || NAVIGATOR_MIME_TYPES.contains(lastMimeType)) {
@@ -214,7 +214,7 @@ public class DomTCController implements PropertyChangeListener {
                     if (navigator != null && navigator.isOpened()) {
                         // Close DOM Tree view and activate Navigator instead
                         group.close();
-                        navigator.requestActive();
+                        navigator.requestVisible();
                     }
                 }
             } else {
