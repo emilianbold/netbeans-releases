@@ -428,11 +428,7 @@ bodyItem
 //        | {isCssPreprocessorSource()}? (cp_mixin_call)=>cp_mixin_call
         (cp_mixin_call)=>cp_mixin_call
     	| rule
-        | media
-        | page
-        | counterStyle
-        | fontFace
-        | vendorAtRule
+        | at_rule
         | {isCssPreprocessorSource()}? cp_variable_declaration
         | {isCssPreprocessorSource()}? importItem //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
         | {isScssSource()}? sass_debug
@@ -442,6 +438,15 @@ bodyItem
         reportError(rce);
         consumeUntil(input, BitSet.of(NL)); 
     }
+    
+at_rule
+    :
+    media
+    | page
+    | counterStyle
+    | fontFace
+    | vendorAtRule
+    ;
     
 vendorAtRule
 : moz_document | webkitKeyframes | generic_at_rule;
@@ -578,24 +583,27 @@ property
     }
     
 rule 
-    :   ( 
-             
-//            ( {isCssPreprocessorSource()}? (cp_mixin_declaration)=>cp_mixin_declaration )
-            (cp_mixin_declaration)=>cp_mixin_declaration 
-            | 
-            selectorsGroup 
-        )
-//        LBRACE ws? syncToDeclarationsRule
-        LBRACE ws? syncToFollow
-            declarations
-        RBRACE
+    :   
+    ( 
+        (cp_mixin_declaration)=>cp_mixin_declaration  //ws: (cp_mixin_declaration)=>cp_mixin_declaration
+        | selectorsGroup
+    )
+    LBRACE ws? syncToFollow //was: syncToDeclarationsRule
+        declarations        
+    RBRACE
     ;
-    	catch[ RecognitionException rce] {
+    catch[ RecognitionException rce] {
         reportError(rce);
         consumeUntil(input, BitSet.of(RBRACE));
         input.consume(); //consume the RBRACE as well   
-        }
+    }
 
+//cp_mixin
+//    :
+//    cp_mixin_declaration LBRACE ws? syncToFollow 
+//    (at_rule ws? | declarations)
+//    RBRACE
+//    ;
     
 declarations
     :
@@ -614,7 +622,11 @@ declarations
 		|
 		(sass_nested_properties)=>sass_nested_properties ws?
 		|
+//                cp_mixin ws?
+//                | 
                 (rule)=>rule ws?
+                |
+                {isCssPreprocessorSource()}? at_rule ws?
                 |
                 {isScssSource()}? sass_extend ws?
                 |
@@ -930,7 +942,7 @@ cp_variable
 
 cp_expression_list
     :
-    cp_expression (ws? COMMA ws? cp_expression)*     
+    cp_full_expression (ws? COMMA ws? cp_full_expression)*     
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR
@@ -1032,8 +1044,8 @@ cp_mixin_call_args
 cp_mixin_call_arg
     :
     (
-        cp_variable ws? COLON ws? cp_expression
-        | cp_expression
+        cp_variable ws? COLON ws? cp_full_expression
+        | cp_full_expression
     ) ws?
     ;
 
