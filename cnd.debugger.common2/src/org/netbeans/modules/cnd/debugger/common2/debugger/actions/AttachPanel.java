@@ -939,7 +939,7 @@ public final class AttachPanel extends TopComponent {
 
                     String pid = processModel.getValueAt(selectedRow, getPsData().pidColumnIdx()).toString();
                     String hostName = getHostName();
-                    int index = hostName.indexOf(":");
+                    int index = hostName.indexOf(":");      // NOI18N
                     if (index != -1) {
                         hostName = hostName.substring(0, index);
                     }
