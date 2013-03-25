@@ -118,8 +118,10 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     private com.sun.jdi.Type valueType;
     private String           valueTypeName;
     private final boolean[]  valueTypeLoaded = new boolean[] { false };
+    private boolean          valueTypeLoading = false;
     private Super            superClass;
     private final boolean[]  superClassLoaded = new boolean[] { false };
+    private boolean          superClassLoading = false;
     
     private DebuggetStateListener stateChangeListener = new DebuggetStateListener();
 
@@ -317,40 +319,53 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
 
     public Super getSuper () {
         synchronized (superClassLoaded) {
-            if (!superClassLoaded[0]) {
-                try {
-                    Type t = getCachedType();
-                    if (t instanceof ClassType) {
-                        ClassType superType;
-                        //assert !java.awt.EventQueue.isDispatchThread();
-                        superType = ClassTypeWrapper.superclass((ClassType) t);
-                        if (superType != null) {
-                            Super s = new SuperVariable(
-                                    getDebugger(),
-                                    (ObjectReference) this.getInnerValue(),
-                                    superType,
-                                    getID()
-                                    );
-                            superClass = s;
-                        } else {
-                            superClass = null;
-                        }
-                    } else {
-                        superClass = null;
-                    }
-                } catch (ObjectCollectedExceptionWrapper ocex) {
-                    superClass = null;
-                } catch (InternalExceptionWrapper ex) {
-                    superClass = null;
-                } catch (VMDisconnectedExceptionWrapper e) {
-                    superClass = null;
-                } finally {
-                    superClassLoaded[0] = true;
-                }
-
+            if (superClassLoaded[0]) {
+                return superClass;
             }
-            return superClass;
+            if (superClassLoading) {
+                try {
+                    superClassLoaded.wait();
+                } catch (InterruptedException ex) {
+                    return null;
+                }
+                if (superClassLoaded[0]) {
+                    return superClass;
+                }
+            } else {
+                superClassLoading = true;
+            }
         }
+        Super sup = null;
+        try {
+            Type t = getCachedType();
+            if (t instanceof ClassType) {
+                ClassType superType;
+                //assert !java.awt.EventQueue.isDispatchThread();
+                superType = ClassTypeWrapper.superclass((ClassType) t);
+                if (superType != null) {
+                    Super s = new SuperVariable(
+                            getDebugger(),
+                            (ObjectReference) this.getInnerValue(),
+                            superType,
+                            getID()
+                            );
+                    sup = s;
+                }
+            }
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+        } catch (InternalExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper e) {
+        } finally {
+            synchronized (superClassLoaded) {
+                if (superClassLoading) {
+                    superClass = sup;
+                    superClassLoading = false;
+                    superClassLoaded[0] = true;
+                    superClassLoaded.notifyAll();
+                }
+            }
+        }
+        return sup;
     }
 
     public boolean hasAllTypes() {
@@ -633,22 +648,64 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         return getDebugger().evaluate(expression, this);
     }
 
-    private com.sun.jdi.Type getCachedType() throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+    private com.sun.jdi.Type getCachedType() throws InternalExceptionWrapper,
+                                                    VMDisconnectedExceptionWrapper,
+                                                    ObjectCollectedExceptionWrapper {
+        return getCachedType(null);
+    }
+    
+    private com.sun.jdi.Type getCachedType(String[] namePtr) throws InternalExceptionWrapper,
+                                                                    VMDisconnectedExceptionWrapper,
+                                                                    ObjectCollectedExceptionWrapper {
         synchronized (valueTypeLoaded) {
-            if (!valueTypeLoaded[0]) {
-                Value v = getInnerValue();
-                if (v != null) {
-                    //assert !java.awt.EventQueue.isDispatchThread();
-                    valueType = ValueWrapper.type(v);
-                    valueTypeName = TypeWrapper.name(valueType);
-                } else {
-                    valueType = null;
-                    valueTypeName = "";
+            if (valueTypeLoaded[0]) {
+                if (namePtr != null) {
+                    namePtr[0] = valueTypeName;
                 }
-                valueTypeLoaded[0] = true;
+                return valueType;
             }
-            return valueType;
+            if (valueTypeLoading) {
+                try {
+                    valueTypeLoaded.wait();
+                } catch (InterruptedException ex) {
+                    return null;
+                }
+                if (valueTypeLoaded[0]) { // Check if it was really loaded
+                    if (namePtr != null) {
+                        namePtr[0] = valueTypeName;
+                    }
+                    return valueType;
+                } else {
+                    return null;
+                }
+            } else {
+                valueTypeLoading = true;
+            }
         }
+        Value v = getInnerValue();
+        Type type = null;
+        String typeName = "";
+        try {
+            if (v != null) {
+                //assert !java.awt.EventQueue.isDispatchThread();
+                type = ValueWrapper.type(v);
+                typeName = TypeWrapper.name(type);
+            }
+        } finally {
+            synchronized (valueTypeLoaded) {
+                if (valueTypeLoading) { // While we're sill interested in it
+                    valueType = type;
+                    valueTypeName = typeName;
+                    valueTypeLoading = false;
+                    valueTypeLoaded[0] = true;
+                    valueTypeLoaded.notifyAll();
+                }
+            }
+        }
+        if (namePtr != null) {
+            namePtr[0] = typeName;
+        }
+        return type;
     }
     
     /**
@@ -660,10 +717,9 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     public String getType () {
         if (genericType != null) return genericType;
         try {
-            synchronized (valueTypeLoaded) {
-                getCachedType();
-                return valueTypeName;
-            }
+            String[] typeNamePtr = new String[1];
+            getCachedType(typeNamePtr);
+            return typeNamePtr[0];
         } catch (InternalExceptionWrapper ex) {
             return ex.getLocalizedMessage();
         } catch (VMDisconnectedExceptionWrapper vmdex) {
@@ -726,10 +782,14 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             inheritedFields = null;
         }
         synchronized (superClassLoaded) {
+            superClassLoading = false;
             superClassLoaded[0] = false;
+            superClassLoaded.notifyAll();
         }
         synchronized (valueTypeLoaded) {
+            valueTypeLoading = false;
             valueTypeLoaded[0] = false;
+            valueTypeLoaded.notifyAll();
         }
     }
     
