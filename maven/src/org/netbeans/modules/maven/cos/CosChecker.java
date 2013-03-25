@@ -107,19 +107,24 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     static final RequestProcessor RP = new RequestProcessor(CosChecker.class);
     // a maven property name denoting that the old, javarunner based execution is to be used.    
     public static final String USE_OLD_COS_EXECUTION = "use.old.cos.execution";
+    public static final String NETBEANS_PROJECT_MAPPINGS = "netbeansProjectMappings";
+    public static final String MAVENEXTCLASSPATH = "maven.ext.class.path";
     
     @Override
     public boolean checkRunConfig(RunConfig config) {
         if (config.getProject() == null) {
             return true;
         }
+        Properties javarunnerCheckprops = config.getMavenProject().getProperties();
+        if ((javarunnerCheckprops != null && javarunnerCheckprops.containsKey(USE_OLD_COS_EXECUTION)) || config.getProperties().containsKey(USE_OLD_COS_EXECUTION)) {
+            //old style Compile on Save
+            if (!OldJavaRunnerCOS.checkRunMainClass(config)) {
+                return false;
+            }
 
-        if (!checkRunMainClass(config)) {
-            return false;
-        }
-
-        if (!checkRunTest(config)) {
-            return false;
+            if (!OldJavaRunnerCOS.checkRunTest(config)) {
+                return false;
+            }
         }
 
         return true;
@@ -153,11 +158,14 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             for (Project openprj : opened) {
                 touchProject(openprj);
             }
-        }
+            //new style Compile on Save
+            checkRunMainClass(config);
+            checkRunTest(config);
+        } 
         return true;
     }
 
-    private boolean checkRunMainClass(final RunConfig config) {
+    private void checkRunMainClass(final RunConfig config) {
         final String actionName = config.getActionName();
         //compile on save stuff
         if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
@@ -173,13 +181,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
                 if (checkImportantFiles(stamp, config)) {
-                    return true;
+                    return;
                 }
                 //check the COS timestamp against resources etc.
                 //if changed, perform part of the maven build. (or skip COS)
                 for (CompileOnSaveSkipper skipper : Lookup.getDefault().lookupAll(CompileOnSaveSkipper.class)) {
                     if (skipper.skip(config, false, stamp)) {
-                        return true;
+                        return;
                     }
                 }
                 
@@ -199,27 +207,22 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                         }
                         if (processedGoals.size() > 0) {
                             brc.setGoals(processedGoals);
-                            assignDependencyProjectsIntoMAVEN_OPTS(brc, false);
-                            return true;
+                            injectDependencyProjects(brc, false);
                         }
                     } else {
                         LOG.log(Level.INFO, "could not strip phase goals from RunConfig subclass {0}", config.getClass().getName());
-                        return true;
                     }
                 }
-
-                return OldJavaRunnerCOS.deprecatedJavaRunnerApproach(config, actionName);
             }
         }
-        return true;
     }
 
-    private boolean checkRunTest(final RunConfig config) {
+    private void checkRunTest(final RunConfig config) {
         String actionName = config.getActionName();
         if (!(ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName))) {
-            return true;
+            return;
         }
         if (RunUtils.hasTestCompileOnSaveEnabled(config)) {
             String testng = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
@@ -240,19 +243,14 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             }
             if (haveJUnit && haveTestNG && new ComparableVersion("6.5.1").compareTo(new ComparableVersion(testngVersion)) >= 0) {
                 //CoS requires at least TestNG 6.5.2-SNAPSHOT if JUnit is present
-                return true;
-            }
-            String test = config.getProperties().get("test"); //NOI18N
-            if (test == null) {
-                //user somehow configured mapping in unknown way.
-                return true;
+                return;
             }
 
             long stamp = getLastCoSLastTouch(config, true);
             //check the COS timestamp against critical files (pom.xml)
             // if changed, don't do COS.
             if (checkImportantFiles(stamp, config)) {
-                return true;
+                return;
             }
 
             //check the COS timestamp against resources etc.
@@ -260,13 +258,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             
             for (CompileOnSaveSkipper skipper : Lookup.getDefault().lookupAll(CompileOnSaveSkipper.class)) {
                 if (skipper.skip(config, true, stamp)) {
-                    return true;
+                    return;
                 }
             }
-            Properties javarunnerCheckprops = config.getMavenProject().getProperties();
-            if ((javarunnerCheckprops != null && javarunnerCheckprops.containsKey(USE_OLD_COS_EXECUTION)) || config.getProperties().containsKey(USE_OLD_COS_EXECUTION) ) {
-                LOG.fine("use.old.cos.execution found, using JavaRunner to execute.");
-            } else {
                 //now attempt to extract
                 if (config instanceof BeanRunConfig) {
                     BeanRunConfig brc = (BeanRunConfig) config;
@@ -279,24 +273,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     }
                     if (processedGoals.size() > 0) {
                         brc.setGoals(processedGoals);
-                        assignDependencyProjectsIntoMAVEN_OPTS(brc, true);
-                        return true;
+                        injectDependencyProjects(brc, true);
                     }
                 } else {
                     LOG.log(Level.INFO, "could not strip phase goals from RunConfig subclass {0}", config.getClass().getName());
-                    return true;
                 }
-                //now attempt to create links between projects using the surefire's parameters
-                //classpathDependencyExcludes since 2.6
-                //additionalClasspathElements since 2.4
-                //unfortunately none of these can be injected using properties
-                //https://jira.codehaus.org/browse/MNG-5059 could be of value here as well.
-                
-            }
-            return OldJavaRunnerCOS.deprecatedJavaRunnerApproachTest(config, actionName);
         } else {
             warnNoTestCoS(config);
-            return true;
         }
     }
 
@@ -319,7 +302,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
     }
 
-    private boolean checkImportantFiles(long stamp, RunConfig rc) {
+    static boolean checkImportantFiles(long stamp, RunConfig rc) {
         assert rc.getProject() != null;
         FileObject prjDir = rc.getProject().getProjectDirectory();
         if (isNewer(stamp, prjDir.getFileObject("pom.xml"))) { //NOI18N
@@ -343,7 +326,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         return false;
     }
 
-    private boolean isNewer(long stamp, FileObject fo) {
+    private static boolean isNewer(long stamp, FileObject fo) {
         if (fo != null) {
             File fl = FileUtil.toFile(fo);
             if (fl.lastModified() >= stamp) {
@@ -385,7 +368,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
      * @param test
      * @return
      */
-    private static long getLastCoSLastTouch(RunConfig rc, boolean test) {
+    static long getLastCoSLastTouch(RunConfig rc, boolean test) {
         File fl = getCoSFile(rc, test);
         if (fl == null) {
             return 0;
@@ -613,7 +596,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 //        }
     }
 
-    private void assignDependencyProjectsIntoMAVEN_OPTS(BeanRunConfig brc, boolean test) {
+    private void injectDependencyProjects(BeanRunConfig brc, boolean test) {
         if (brc.getProject() == null) {
             return;
         }
@@ -647,8 +630,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             }
         }
         if (value.length() > 0) {
-            brc.setProperty("maven.ext.class.path", jar.getAbsolutePath());
-            brc.setProperty("netbeansProjectMappings", value.toString());
+            brc.setProperty(MAVENEXTCLASSPATH, jar.getAbsolutePath());
+            brc.setProperty(NETBEANS_PROJECT_MAPPINGS, value.toString());
         }
     }
 

@@ -60,6 +60,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -70,6 +72,7 @@ import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
@@ -80,6 +83,7 @@ import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
 import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
+import org.netbeans.modules.maven.spi.cos.CompileOnSaveSkipper;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
@@ -89,6 +93,7 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -102,6 +107,95 @@ public class OldJavaRunnerCOS {
     private static final String STARTUP_ARGS_KEY = "run.jvmargs.ide"; // NOI18N
 
 
+    
+    static boolean checkRunMainClass(final RunConfig config) {
+        final String actionName = config.getActionName();
+        //compile on save stuff
+        if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+            if ((NbMavenProject.TYPE_JAR.equals(
+                    config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType()) &&
+                    (ActionProvider.COMMAND_RUN.equals(actionName) ||
+                    ActionProvider.COMMAND_DEBUG.equals(actionName) ||
+                    ActionProvider.COMMAND_PROFILE.equals(actionName))) ||
+                    CosChecker.RUN_MAIN.equals(actionName) ||
+                    CosChecker.DEBUG_MAIN.equals(actionName) ||
+                    CosChecker.PROFILE_MAIN.equals(actionName)) {
+                long stamp = CosChecker.getLastCoSLastTouch(config, false);
+                //check the COS timestamp against critical files (pom.xml)
+                // if changed, don't do COS.
+                if (CosChecker.checkImportantFiles(stamp, config)) {
+                    return true;
+                }
+                //check the COS timestamp against resources etc.
+                //if changed, perform part of the maven build. (or skip COS)
+                for (CompileOnSaveSkipper skipper : Lookup.getDefault().lookupAll(CompileOnSaveSkipper.class)) {
+                    if (skipper.skip(config, false, stamp)) {
+                        return true;
+                    }
+                }
+                return deprecatedJavaRunnerApproach(config, actionName);
+            }
+        }
+        return true;
+    }
+    
+   static boolean checkRunTest(final RunConfig config) {
+        String actionName = config.getActionName();
+        if (!(ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
+                ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) ||
+                ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName))) {
+            return true;
+        }
+        if (RunUtils.hasTestCompileOnSaveEnabled(config)) {
+            String testng = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
+                    Constants.PLUGIN_SUREFIRE, "testNGArtifactName", "test", "testNGArtifactName"); //NOI18N
+            if (testng == null) {
+                testng = "org.testng:testng"; //NOI18N
+            }
+            List<Dependency> deps = config.getMavenProject().getTestDependencies();
+            boolean haveJUnit = false, haveTestNG = false;
+            String testngVersion = null;
+            for (Dependency d : deps) {
+                if (d.getManagementKey().startsWith(testng)) {
+                    testngVersion = d.getVersion();
+                    haveTestNG = true;
+                } else if (d.getManagementKey().startsWith("junit:junit")) { //NOI18N
+                    haveJUnit = true;
+                }
+            }
+            if (haveJUnit && haveTestNG && new ComparableVersion("6.5.1").compareTo(new ComparableVersion(testngVersion)) >= 0) {
+                //CoS requires at least TestNG 6.5.2-SNAPSHOT if JUnit is present
+                return true;
+            }
+            String test = config.getProperties().get("test"); //NOI18N
+            if (test == null) {
+                //user somehow configured mapping in unknown way.
+                return true;
+            }
+
+            long stamp = CosChecker.getLastCoSLastTouch(config, true);
+            //check the COS timestamp against critical files (pom.xml)
+            // if changed, don't do COS.
+            if (CosChecker.checkImportantFiles(stamp, config)) {
+                return true;
+            }
+
+            //check the COS timestamp against resources etc.
+            //if changed, perform part of the maven build. (or skip COS)
+            
+            for (CompileOnSaveSkipper skipper : Lookup.getDefault().lookupAll(CompileOnSaveSkipper.class)) {
+                if (skipper.skip(config, true, stamp)) {
+                    return true;
+                }
+            }
+            return OldJavaRunnerCOS.deprecatedJavaRunnerApproachTest(config, actionName);
+        } else {
+            CosChecker.warnNoTestCoS(config);
+            return true;
+        }
+    }    
+    
+    
     static  boolean deprecatedJavaRunnerApproachTest(final RunConfig config, String actionName) {
         String test = config.getProperties().get("test");
         final Map<String, Object> params = new HashMap<String, Object>();
