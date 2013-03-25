@@ -98,6 +98,11 @@ public class SQLStatementGeneratorTest extends NbTestCase {
         DbUtil.dropTable();
     }
 
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+
     public void testGenerateWhereConditionWithPK() throws SQLException {
         DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
         Statement s = conn.createStatement();
