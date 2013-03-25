@@ -1684,6 +1684,10 @@ public class HgCommand {
             command.add(HG_FLAG_REV_CMD);
             command.add(revStr);
         }
+        if (branchName != null) {
+            command.add(HG_PARAM_BRANCH);
+            command.add(branchName);
+        }
         if (limit > 0) {
             command.add(HG_LOG_LIMIT_CMD);
             command.add(Integer.toString(limit));
