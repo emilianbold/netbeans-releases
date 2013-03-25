@@ -778,10 +778,7 @@ declaration
 //XXX this is a hack for the IMPORT_SYM inside cp_expression
 cp_propertyValue
     : 
-   //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
-    //(the IE allows also just ident as its content)
-    (~(HASH_SYMBOL|SEMI|RBRACE|LBRACE)* HASH_SYMBOL LBRACE)=>sass_declaration_property_value_interpolation_expression
-    | {isCssPreprocessorSource()}? cp_expression_list
+    {isCssPreprocessorSource()}? cp_expression_list
     | propertyValue
     ;
 
@@ -1144,25 +1141,25 @@ sass_declaration_interpolation_expression
 
     ;
 
-sass_declaration_property_value_interpolation_expression
-    :
-        ( 
-            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
-            |
-//            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
-        )
-        ( 
-            ws?
-            (
-                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
-                |
-//                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
-            )
-        )*
-
-    ;
+//sass_declaration_property_value_interpolation_expression
+//    :
+//        ( 
+//            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
+//            |
+////            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
+//            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
+//        )
+//        ( 
+//            ws?
+//            (
+//                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
+//                |
+////                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS | RPAREN | LPAREN )
+//                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | SOLIDUS )
+//            )
+//        )*
+//
+//    ;
     
 sass_mq_interpolation_expression
     :
