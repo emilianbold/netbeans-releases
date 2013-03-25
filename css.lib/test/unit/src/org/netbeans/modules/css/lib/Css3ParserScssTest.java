@@ -1244,46 +1244,52 @@ public class Css3ParserScssTest extends CssTestBase {
     //cp_expression (which can contain ( ) pairs)
     public void testLRPARENInPropertyValueInterpolationExpression_fails() {
         assertParses(".clz { $rotation: rotate(#{$angle}deg); }");
-    }
-
-    public void testX7() {
-        assertParses(".clz { background-position: 0 ($accordion-header-tool-size * -17); }");
-    }
-
-    public void testX7_2() {
-        assertParses(".clz { padding: $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2) $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2); }");
-    }
-
-    public void testX7_3() {
-        assertParses(".clz { $fieldset-collapse-tool-background-position-over: 0 (-$fieldset-collapse-tool-size) !default; }");
-    }
-
-    public void testX7_4() {
         assertParses(".clz { background-image: slicer-corner-sprite(btn-#{$ui}-over, 'btn/btn-#{$ui}-over-corners'); }");
     }
 
-    public void testX7_5() {
+    public void testCPExpressionInPropertyValue() {
+        assertParses(".clz { background-position: 0 ($accordion-header-tool-size * -17); }");
+    }
+
+    public void testCPExpressionInPropertyValue2() {
+        assertParses(".clz { padding: $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2) $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2); }");
+    }
+
+    public void testCPExpressionInPropertyValue3() {
+        assertParses(".clz { $fieldset-collapse-tool-background-position-over: 0 (-$fieldset-collapse-tool-size) !default; }");
+    }
+
+    public void testFunctionInsideSASSInterpolationExpression() {
         assertParses(".clz { padding-left: #{left($fieldset-header-padding) - 2}; }");
     }
 
-    public void testX7_6() {
-        assertParses(".clz { padding-left: padding: top($form-error-under-padding) right($form-error-under-padding) bottom($form-error-under-padding) (left($form-error-under-padding) + $form-error-icon-width + $form-error-under-icon-spacing); }");
+    public void testPropertyValue2() {
+        assertParses(".clz { padding-left: "
+                + "top($form-error-under-padding) "
+                + "right($form-error-under-padding) "
+                + "bottom($form-error-under-padding) "
+                + "(left($form-error-under-padding) + $form-error-icon-width + $form-error-under-icon-spacing); "
+                + "}");
     }
 
-    public void testX7_7() {
-        assertParses(".clz { padding-left: background-position: 0 (0 - $form-checkbox-size); }");
+    public void testPropertyValue3() {
+        assertParses(".clz { background-position: 0 (0 - $form-checkbox-size); }");
     }
 
-    public void testX7_8() {
+    public void testPropertyValue4() {
         assertParses(".clz { background-position: (-$html-editor-toolbar-icon-size) 0; }");
+        assertParses(".clz { background-position: 0 (-$spinner-btn-height); }");
     }
-
-    public void testX7_9() {
-        assertParses(".clz { background-position: -($form-trigger-width * 3) (-$spinner-btn-height); }");
+    
+    public void testPropertyValue5() {
         assertParses(".clz { background-position: 0 (-$spinner-btn-height); }");
     }
 
-    public void testX8() {
+    public void testPropertyValueUnaryOperatorBeforeBrace() {
+        assertParses(".clz { background-position: -($form-trigger-width * 3) (-$spinner-btn-height); }");
+    }
+
+    public void testCPVariableDeclaration() {
         assertParses("$panel-frame-header-padding:\n"
                 + "    (top($panel-header-padding) - top($panel-frame-border-width))\n"
                 + "    (right($panel-header-padding) - right($panel-frame-border-width))\n"
@@ -1292,7 +1298,7 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    !default;");
     }
 
-    public void testX10() {
+    public void testX10_fails() {
         assertParses("@if not $supports-gradients or $compile-all {\n"
                 + "    .#{$prefix}nlg & {\n"
                 + "        background-image: slicer-background-image(tab-#{$ui}-top, 'tab/tab-#{$ui}-top-bg');\n"
@@ -1300,11 +1306,15 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "}");
     }
 
-    public void testX11() {
+    public void testSASSInterpolationExpressionInCPVariableDeclaration() {
         assertParses("$fieldset-header-font: #{$fieldset-header-font-size}/#{$fieldset-header-line-height} $fieldset-header-font-weight $fieldset-header-font-family !default;");
         assertParses("$form-label-font: $form-label-font-weight #{$form-label-font-size}/#{$form-label-line-height} $form-label-font-family !default;");
         assertParses("$grid-editor-font: normal #{$grid-row-cell-font-size}/#{$grid-editor-line-height} $font-family !default;");
-        assertParses("$grid-row-editor-border: $grid-row-editor-border-width solid $grid-row-editor-border-color !important !default;");
         assertParses("$grid-row-cell-font: normal #{$grid-row-cell-font-size}/#{$grid-row-cell-line-height} $font-family !default;");
     }
+    
+    public void testImportantKeywordInCPVariableDeclaration() {
+        assertParses("$grid-row-editor-border: $grid-row-editor-border-width solid $grid-row-editor-border-color !important !default;");
+    }
+    
 }
