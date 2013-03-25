@@ -108,7 +108,7 @@ public final class RunUtils {
         ExecutorTask task = executeMavenImpl(config.getTaskDisplayName(), exec);
         // fire project change on when finishing maven execution, to update the classpath etc. -MEVENIDE-83
         task.addTaskListener(new TaskListener() {
-            @Override public void taskFinished(Task _) {
+            @Override public void taskFinished(Task t) {
                 // fireMavenProjectReload is done in executors
                 MavenProject mp = config.getMavenProject();
                 if (mp == null) {
