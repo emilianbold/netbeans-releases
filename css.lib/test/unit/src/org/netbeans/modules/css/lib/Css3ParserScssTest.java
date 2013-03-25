@@ -1315,25 +1315,35 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testInclude() throws ParseException, BadLocationException {
         assertParses(".x { @include x-slicer($panel-header-ui + '-top'); }");
     }
-    
+
     public void testMSPropertyValueAndInterpolationExpression() throws ParseException, BadLocationException {
         assertParses(".x { filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=#{$ie-rotation}); }");
     }
-   
+
     public void testLastItemInBlockDoesntNeedToBeTerminatedWithSemicolon_fails() throws ParseException, BadLocationException {
         assertParses(".x { $image-search-path: '.' !default }"); //doesn't work
         assertParses(".x { $image-search-path: '.' !default; }"); //works
     }
-        
+
     public void testUnaryOperatorWithIE() throws ParseException, BadLocationException {
         assertParses(".x { margin-top: -#{top($fieldset-border-width)}; }");
     }
-    
+
     public void testFunctionArgumentsCanBeBooleanExpression() throws ParseException, BadLocationException {
-        assertParses("$foo: if($direction == top or $direction == bottom, 0, 1);", true);
+        assertParses("$foo: if($direction == top or $direction == bottom, 0, 1);");
+    }
+
+    public void testFunction3() throws ParseException, BadLocationException {
+        assertParses(".clz { @include linear-gradient(#3875d7 20%, #2a62bc 90%); }");
+    }
+
+    public void testFont_FaceInMixin() throws ParseException, BadLocationException {
+        assertParses("@mixin font-face($name){\n"
+                + "    @font-face {\n"
+                + "        font-family: $name;\n"
+                + "    }\n"
+                + "}");
     }
     
-    public void testFunction3() throws ParseException, BadLocationException {
-        assertParses(".clz { @include linear-gradient(#3875d7 20%, #2a62bc 90%); }", true);
-    }
+    
 }
