@@ -290,6 +290,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         
     }
 
+    @NbBundle.Messages({
+        "MSG_DOM_BRKP_Resolved=Successfully resolved on current node.",
+        "MSG_DOM_BRKP_Unresolved=Not resolved/inactive on current node."
+    })
     private static final class WebKitDOMBreakpointManager extends WebKitBreakpointManager implements ChangeListener {
         
         private final WebKitDebugging wd;
@@ -347,12 +351,19 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 return ;
             }
             bps = new HashMap<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint, DOMBreakpoint.Type>(types.size());
+            boolean added = false;
             for (DOMBreakpoint.Type type : types) {
                 org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
                         d.addDOMBreakpoint(node, type.getTypeString());
                 if (b != null) {
+                    added = true;
                     bps.put(b, type);
                 }
+            }
+            if (added) {
+                db.setValid(Bundle.MSG_DOM_BRKP_Resolved());
+            } else {
+                db.setInvalid(Bundle.MSG_DOM_BRKP_Unresolved());
             }
         }
 
@@ -384,6 +395,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                         d.removeDOMBreakpoint(theNode, bps.get(b).getTypeString());
                     }
                 }
+                db.resetValidity();
             }
             bps = null;
         }

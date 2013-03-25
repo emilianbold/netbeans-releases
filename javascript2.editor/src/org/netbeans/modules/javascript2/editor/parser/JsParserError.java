@@ -37,7 +37,6 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import java.util.Comparator;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.openide.filesystems.FileObject;
@@ -48,43 +47,28 @@ import org.openide.filesystems.FileObject;
  */
 public class JsParserError implements Error.Badging {
 
-    public static final Comparator<JsParserError> POSITION_COMPARATOR = new Comparator<JsParserError>() {
-
-        @Override
-        public int compare(JsParserError o1, JsParserError o2) {
-            if (o1.startPosition < o2.startPosition) {
-                return -1;
-            }
-            if (o1.startPosition > o2.startPosition) {
-                return 1;
-            }
-            return 0;
-        }
-    };
-
-    private final String displayName;
+    private final JsErrorManager.SimpleError error;
     private final FileObject file;
-    private final int startPosition;
-    private final int endPosition;
     private final boolean wholeLine;
     private final Severity severity;
     private final Object[] parameters;
+    private final boolean showExplorerBadge;
 
-    public JsParserError(String displayName, FileObject file, int startPosition,
-            int endPosition, Severity severity, Object[] parameters, boolean wholeLine) {
+    public JsParserError(JsErrorManager.SimpleError error, FileObject file,
+            Severity severity, Object[] parameters, boolean wholeLine,
+            boolean showExplorerBadge) {
 
-        this.displayName = displayName;
+        this.error = error;
         this.file = file;
-        this.startPosition = startPosition;
-        this.endPosition = endPosition;
         this.severity = severity;
         this.parameters = parameters != null ? parameters.clone() : new Object[] {};
         this.wholeLine = wholeLine;
+        this.showExplorerBadge = showExplorerBadge;
     }
 
     @Override
     public String getDisplayName() {
-        return displayName;
+        return error.getMessage();
     }
 
     @Override
@@ -94,7 +78,8 @@ public class JsParserError implements Error.Badging {
 
     @Override
     public String getKey() {
-        return "[" + startPosition + "," + endPosition + "]-" + displayName ;
+        int position = error.getPosition();
+        return "[" + position + "," + position + "]-" + error.getMessage();
     }
 
     @Override
@@ -104,12 +89,12 @@ public class JsParserError implements Error.Badging {
 
     @Override
     public int getStartPosition() {
-        return startPosition;
+        return error.getPosition();
     }
 
     @Override
     public int getEndPosition() {
-        return endPosition;
+        return error.getPosition();
     }
 
     @Override
@@ -129,6 +114,6 @@ public class JsParserError implements Error.Badging {
 
     @Override
     public boolean showExplorerBadge() {
-        return true;
+        return showExplorerBadge;
     }
 }

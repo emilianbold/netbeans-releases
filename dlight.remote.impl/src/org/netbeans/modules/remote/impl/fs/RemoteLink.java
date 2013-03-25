@@ -49,6 +49,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -56,8 +57,6 @@ import org.openide.filesystems.FileObject;
  */
 public final class RemoteLink extends RemoteLinkBase {
     
-    private static final int MAXSYMLINKS = Integer.getInteger("remote.max.sym.links", 20); // NOI18N
-
     private String normalizedTargetPath;
 
     /*package*/ RemoteLink(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath, String link) {
@@ -84,20 +83,11 @@ public final class RemoteLink extends RemoteLinkBase {
 
     @Override
     public RemoteFileObjectBase getCanonicalDelegate() {
-        RemoteFileObjectBase fileObject = getDelegateImpl();
-        int level = 0;
-        while (fileObject instanceof RemoteLinkBase) {
-            if (++level > MAXSYMLINKS) {
-                return null;
-            }
-            RemoteFileObjectBase delegate = ((RemoteLinkBase) fileObject).getDelegateImpl();
-            if (delegate == null) {
-                return null;
-            } else {
-                fileObject = delegate;
-            }
+        try {
+            return RemoteFileSystemUtils.getCanonicalFileObject(this);
+        } catch (IOException ex) {
+            return null;
         }
-        return fileObject;        
     }
 
     @Override

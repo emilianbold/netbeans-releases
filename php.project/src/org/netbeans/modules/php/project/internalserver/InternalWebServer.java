@@ -275,6 +275,8 @@ public final class InternalWebServer implements PropertyChangeListener {
 
     private ExecutionDescriptor getDescriptor() {
         return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                // #225093
+                .showProgress(false)
                 .optionsPath(UiUtils.OPTIONS_PATH + "/" + UiUtils.GENERAL_OPTIONS_SUBCATEGORY) // NOI18N
                 .preExecution(new Runnable() {
                     @Override
@@ -283,7 +285,6 @@ public final class InternalWebServer implements PropertyChangeListener {
                         startingInstance(InternalWebServer.this);
                     }
                 });
-
     }
 
 }

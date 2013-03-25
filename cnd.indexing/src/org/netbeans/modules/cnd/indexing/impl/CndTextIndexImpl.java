@@ -82,7 +82,7 @@ public final class CndTextIndexImpl {
         this.unitCodec = unitCodec;
     }
 
-    public void put(CndTextIndexKey key, Collection<String> values) {
+    public void put(CndTextIndexKey key, Collection<CharSequence> values) {
         if (LOG.isLoggable(Level.FINE)) {
             if (key.getFileNameIndex() < 2) {
                 LOG.log(Level.FINE, "Cnd Text Index put for {0}:\n\t{1}", new Object[]{key, values});
@@ -96,9 +96,9 @@ public final class CndTextIndexImpl {
     
     private static class StoreQueueEntry {
         private final CndTextIndexKey key;
-        private final Collection<String> ids;
+        private final Collection<CharSequence> ids;
 
-        public StoreQueueEntry(CndTextIndexKey key, Collection<String> ids) {
+        public StoreQueueEntry(CndTextIndexKey key, Collection<CharSequence> ids) {
             this.key = key;
             this.ids = ids;
         }
@@ -114,8 +114,8 @@ public final class CndTextIndexImpl {
             final CndTextIndexKey key = entry.key;
             // use unitID+fileID for primary key, otherwise indexed files from different projects overwrite each others
             IndexDocument doc = IndexManager.createDocument(toPrimaryKey(key));
-            for (String id : entry.ids) {
-                doc.addPair(CndTextIndexManager.FIELD_IDS, id, true, false);
+            for (CharSequence id : entry.ids) {
+                doc.addPair(CndTextIndexManager.FIELD_IDS, id.toString(), true, false);
             }
             index.addDocument(doc);
             entry = unsavedQueue.poll();

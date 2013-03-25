@@ -325,7 +325,7 @@ public class CreateDependencies implements PropertyChangeListener {
         String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
         String projectName = ProjectGenerator.getValidProjectName(projectParentFolder, new File(executablePath).getName());
         String baseDir = projectParentFolder + File.separator + projectName;
-        MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
+        MakeConfiguration conf =  MakeConfiguration.createDefaultHostMakefileConfiguration(baseDir, "Default"); // NOI18N
         // Working dir
         String wd = new File(executablePath).getParentFile().getPath();
         wd = CndPathUtilitities.toRelativePath(baseDir, wd);

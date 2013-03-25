@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.AlternativePath;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolDescriptor;
@@ -855,15 +856,20 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         for(CompilerSet cs : sets) {
             aliases.addAll(Arrays.asList(cs.getCompilerFlavor().getToolchainDescriptor().getAliases()));
         }
+        List<ToolchainDescriptor> platfomToolCollections = ToolchainManagerImpl.getImpl().getToolchains(platform);
         for(String alias : aliases) {
             if (getCompilerSet(alias) != null) {
                 continue;
             }
             CompilerSetImpl bestCandidate = null;
-            for(CompilerSet cs : sets) {
-                if (Arrays.asList(cs.getCompilerFlavor().getToolchainDescriptor().getAliases()).contains(alias)) {
-                    bestCandidate = (CompilerSetImpl) cs;
-                    break;
+            loop:for(ToolchainDescriptor tc : platfomToolCollections) {
+                if (Arrays.asList(tc.getAliases()).contains(alias)) {
+                    for(CompilerSet cs : sets) {
+                        if (cs.getCompilerFlavor().getToolchainDescriptor().equals(tc)) {
+                            bestCandidate = (CompilerSetImpl) cs;
+                            break loop;
+                        }
+                    }
                 }
             }
             if (bestCandidate == null) {

@@ -400,22 +400,33 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             } else if (prj != null && CLASSIFIER_TESTS.equals(classifier)) {
                 toRet = getProjectTestSrcRoots(prj);
             } else {
+                 //either no project or a classifier present
                 URL root = FileUtil.isArchiveFile(binary) ? FileUtil.getArchiveRoot(binary) : binary;
                 File[] f = SourceJavadocByHash.find(root, false);
                 if (f != null) {
+                     //hashes are processed separately, should not mesh with other means of discovery.
                     List<FileObject> accum = new ArrayList<FileObject>();
                     for (File ff : f) {
-                        FileObject[] fo = getSourceJarRoot(ff);
-                        if (fo != null) {
-                            accum.addAll(Arrays.asList(fo));
-                        }
+                         accum.addAll(Arrays.asList(getSourceJarRoot(ff)));
                     }
                     toRet = accum.toArray(new FileObject[0]);
                 }
-                else if (sourceJarFile != null && sourceJarFile.exists()) {
-                    toRet = getSourceJarRoot(sourceJarFile);
-                } else {
-                    toRet = checkShadedMultiJars();
+                 else {
+                     //now comes the magic.
+                     //all this should always come with preferSources == false
+                     List<FileObject> fos = new ArrayList<FileObject>();
+                     
+                     if (prj != null) { // have project here means we also have classifier
+                         add(fos, getProjectSrcRoots(prj));
+                     }
+                     //ordering of source jar file and project roots is hard to guess.
+                     // both can fail dependending on how the jar was created.
+                     // the only way to let user decide would be some sort of stamp file inside maven local repository.
+                     if (sourceJarFile != null && sourceJarFile.exists()) {
+                         add(fos, getSourceJarRoot(sourceJarFile));
+                     } 
+                     add(fos, getShadedJarSources());
+                     toRet = fos.toArray(new FileObject[0]);
                 }
             }
             synchronized (this) {
@@ -439,7 +450,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             return toRet;
         }        
         
-        private static FileObject[] getSourceJarRoot(File sourceJar) {
+        private @NonNull static FileObject[] getSourceJarRoot(File sourceJar) {
             FileObject fo = FileUtil.toFileObject(sourceJar);
             if (fo != null) {
                 FileObject jarRoot = FileUtil.getArchiveRoot(fo);
@@ -484,25 +495,30 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             
             return false;
         }
+        
+        private void add(List<FileObject> to, FileObject[] add) {
+            for (FileObject a : add) {
+                if (!to.contains(a)) {
+                    to.add(a);
+                }
+            }
+        }
 
-        private synchronized FileObject[] checkShadedMultiJars() {
+        private @NonNull synchronized FileObject[] getShadedJarSources() {
             try {
                 List<Coordinates> coordinates = getShadedCoordinates(Utilities.toFile(binary.toURI()));
                 File lrf = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
                 List<FileObject> fos = new ArrayList<FileObject>();
                 if (coordinates != null) {
                     for (Coordinates coord : coordinates) {
-                            File sourceJar = new File(lrf, coord.groupId.replace(".", File.separator) + File.separator + coord.artifactId + File.separator + coord.version + File.separator + coord.artifactId + "-" + coord.version + "-sources.jar");
-                            FileObject[] fo = getSourceJarRoot(sourceJar);
-                            if (fo.length == 1) {
-                                fos.add(fo[0]);
-                            }
+                        if (coord.artifactId.equals(artifactId) && coord.groupId.equals(groupId) && coord.version.equals(version)) {
+                            continue; //skip the current jar, we've catered to in other ways.
+                        }
+                        File sourceJar = new File(lrf, coord.groupId.replace(".", File.separator) + File.separator + coord.artifactId + File.separator + coord.version + File.separator + coord.artifactId + "-" + coord.version + "-sources.jar");
+                        fos.addAll(Arrays.asList(getSourceJarRoot(sourceJar)));
                     }
                 }
-                if (fos.size() > 1) {
-                    FileObject[] shaded = fos.toArray(new FileObject[0]);
-                    return shaded;
-                }
+                return fos.toArray(new FileObject[0]);
             } catch (Exception ex) {
                 LOG.log(Level.INFO, "error while examining binary " + binary, ex);
             }

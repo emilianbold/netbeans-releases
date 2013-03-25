@@ -217,7 +217,7 @@ public final class ProjectActionEvent {
         }
 
         if (configuration.getPlatformInfo().isLocalhost()) {
-            command = CndPathUtilitities.expandAllMacroses(command, "${OUTPUT_PATH}", outputValue); // NOI18N
+            command = CndPathUtilitities.expandAllMacroses(command, MakeConfiguration.CND_OUTPUT_PATH_MACRO, outputValue); // NOI18N
         } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
             if (!outputValue.isEmpty()) {
                 if (mapper != null) {

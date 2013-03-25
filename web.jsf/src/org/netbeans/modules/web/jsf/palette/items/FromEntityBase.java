@@ -325,7 +325,7 @@ public abstract class FromEntityBase {
         String keyTypeValue = "UNDEFINED_PK_TYPE";
         Boolean keyEmbeddedValue = Boolean.FALSE;        //
         Boolean keyDerivedValue = Boolean.FALSE;
-        EmbeddedDesc embeddedField = null;
+        List<EmbeddedDesc> embeddedFields = new ArrayList<EmbeddedDesc>();
         if(primaryGetter != null) {
             TypeMirror idType = primaryGetter.getReturnType();
             ExecutableElement primaryGetterDerived = null;
@@ -362,9 +362,9 @@ public abstract class FromEntityBase {
                         Set<ExecutableElement> methods = embeddedPkSupport.getPkAccessorMethods(bean);
                         for (ExecutableElement pkMethod : methods) {
                             if (embeddedPkSupport.isRedundantWithRelationshipField(bean, pkMethod)) {
-                                embeddedField = new EmbeddedDesc(
+                                embeddedFields.add(new EmbeddedDesc(
                                         "s" + pkMethod.getSimpleName().toString().substring(1),
-                                        embeddedPkSupport.getCodeToPopulatePkField(bean, pkMethod));
+                                        embeddedPkSupport.getCodeToPopulatePkField(bean, pkMethod)));
                             }
                         }
 
@@ -411,7 +411,7 @@ public abstract class FromEntityBase {
         params.put("keyType", keyTypeValue);//NOI18N
         params.put("keyEmbedded", keyEmbeddedValue);//NOI18N
         params.put("keyDerived", keyDerivedValue);//NOI18N
-        params.put("embeddedIdField", embeddedField); //NOI18N
+        params.put("embeddedIdFields", embeddedFields); //NOI18N
     }
 
     private static void addParam(StringBuffer key, StringBuffer stringKey, String setter,

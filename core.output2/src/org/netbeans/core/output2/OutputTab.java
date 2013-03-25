@@ -51,15 +51,12 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.FileDialog;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
@@ -81,23 +78,23 @@ import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.output2.Controller.ControllerOutputEvent;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.IOContainer;
 import org.openide.windows.OutputListener;
 import org.openide.windows.WindowManager;
@@ -147,9 +144,24 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             lines.setDefColor(IOColors.OutputType.HYPERLINK_IMPORTANT,
                     opts.getColorLinkImportant());
             Color bg = io.getOptions().getColorBackground();
-            getOutputPane().getTextView().setBackground(bg);
+            setTextViewBackground(getOutputPane().getTextView(), bg);
             getOutputPane().setViewFont(
                     io.getOptions().getFont(getOutputPane().isWrapped()));
+        }
+    }
+
+    /**
+     * Set text view background color correctly. See bug #225829.
+     */
+    private void setTextViewBackground(JTextComponent textView, Color bg) {
+        getOutputPane().getTextView().setBackground(bg);
+        if ("Nimbus".equals(UIManager.getLookAndFeel().getName())) { //NOI18N
+            UIDefaults defaults = new UIDefaults();
+            defaults.put("EditorPane[Enabled].backgroundPainter", bg);  //NOI18N
+            textView.putClientProperty("Nimbus.Overrides", defaults);   //NOI18N
+            textView.putClientProperty(
+                    "Nimbus.Overrides.InheritDefaults", true);          //NOI18N
+            textView.setBackground(bg);
         }
     }
 
@@ -775,7 +787,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     opts.getColorLinkImportant());
         } else if (OutputOptions.PROP_COLOR_BACKGROUND.equals(pn)) {
             Color bg = opts.getColorBackground();
-            getOutputPane().getTextView().setBackground(bg);
+            setTextViewBackground(getOutputPane().getTextView(), bg);
         } else if (OutputOptions.PROP_FONT.equals(pn)) {
             if (!getOutputPane().isWrapped()) {
                 getOutputPane().setViewFont(opts.getFont());

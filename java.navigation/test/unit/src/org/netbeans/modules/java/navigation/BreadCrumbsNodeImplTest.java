@@ -94,6 +94,10 @@ public class BreadCrumbsNodeImplTest extends NbTestCase {
         performBreadcrumbsSelectionTest("package test; public class Test { t(int i) { if (i == 1) ; else if (i == 2) ; else if (i =|= 3) ; }", "Test>>>>t>>>>if <font color=#707070>(i == 1)</font> else if <font color=#707070>(i == 2)</font> else if <font color=#707070>(i == 3)</font>>>>>");
     }
     
+    public void testInfiniteForLoop() throws Exception {
+        performBreadcrumbsSelectionTest("package test; public class Test { t() { for (;;) { | } }", "Test>>>>t>>>>for <font color=#707070>(; ; )</font>>>>>");
+    }
+    
     private void performBreadcrumbsSelectionTest(String code, String golden) throws Exception {
         int caret = code.indexOf('|');
         

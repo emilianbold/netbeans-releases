@@ -287,7 +287,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         String aHostUID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
-        MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, aHostUID, toolchain, defaultToolchain); // NOI18N
+        MakeConfiguration extConf = MakeConfiguration.createMakefileConfiguration(projectFolder, "Default", aHostUID, toolchain, defaultToolchain); // NOI18N
         int platform = CompilerSetManager.get(executionEnvironment).getPlatform();
         extConf.getDevelopmentHost().setBuildPlatform(platform);
         String workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(workingDir), pathMode);
@@ -301,7 +301,8 @@ public class ImportRemoteProject implements PropertyChangeListener {
             buildResult = CndPathUtilitities.normalizeSlashes(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
-        extConf.getProfile().setRunDirectory(workingDirRel);        
+        extConf.getProfile().setRunDirectory(workingDirRel);
+        extConf.getProfile().setBuildFirst(false);
         // Include directories
         if (includeDirectories != null && includeDirectories.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(includeDirectories, ";"); // NOI18N

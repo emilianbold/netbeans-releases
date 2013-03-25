@@ -50,7 +50,6 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -66,32 +65,42 @@ final class LinkListener implements HyperlinkListener {
     
     private static final Logger LOGGER = Logger.getLogger(LinkListener.class.getName());
 
+    private final RequestProcessor myProcessor = new RequestProcessor(LinkListener.class);
+
     @Override
     public void hyperlinkUpdate( HyperlinkEvent e ) {
         if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-            URL url = e.getURL();
+            final URL url = e.getURL();
             if (url.getProtocol().equals("file")) { // NOI18N
                 // first, try java api
                 try {
-                    Desktop desktop = Desktop.getDesktop();
+                    final Desktop desktop = Desktop.getDesktop();
                     if (desktop.isSupported(Desktop.Action.OPEN)) {
-                        desktop.open(Utilities.toFile(url.toURI()));
+                        // #225130
+                        myProcessor.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    desktop.open(Utilities.toFile(url.toURI()));
+                                }
+                                catch (IOException ex) {
+                                    LOGGER.log(Level.FINE, null, ex);
+                                    openNativeFileManager(url);
+                                }
+                                catch (URISyntaxException ex) {
+                                    LOGGER.log(Level.FINE, null, ex);
+                                    openNativeFileManager(url);
+                                }
+                            }
+                        });
                     }
                     else {
                         openNativeFileManager(url);
                     }
                 }
-                catch (IOException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                    openNativeFileManager(url);
-                }
                 // Fix for BZ#218782 - UnsupportedOperationException: Desktop API is not supported on the current platform
                 catch (UnsupportedOperationException ex) {
                     LOGGER.log(Level.FINE, null, ex);
-                    openNativeFileManager(url);
-                }
-                catch (URISyntaxException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
                     openNativeFileManager(url);
                 }
             } else {
@@ -118,21 +127,12 @@ final class LinkListener implements HyperlinkListener {
             InputReaderTask task = InputReaderTask.newTask(
                     InputReaders.forStream(process.getInputStream(), 
                             Charset.defaultCharset()), null);
-            getRequestProcessor().post(task);
+            myProcessor.post(task);
         } catch (URISyntaxException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
     }
-    
-    RequestProcessor getRequestProcessor(){
-        assert SwingUtilities.isEventDispatchThread();
-        if ( myProcessor == null ){
-            myProcessor = new RequestProcessor(LinkListener.class);
-        }
-        return myProcessor;
-    }
-    
-    private RequestProcessor myProcessor;
+
 }

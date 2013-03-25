@@ -474,9 +474,12 @@ public class OutputOptions {
     static Color getDefaultColorBackground() {
         Color back = UIManager.getColor("nb.output.backgorund");        //NOI18N
         if (back == null) {
-            back = UIManager.getColor("text");                          //NOI18N
+            back = UIManager.getColor("TextField.background");          //NOI18N
             if (back == null) {
                 back = Color.WHITE;
+            } else if ("Nimbus".equals( //NOI18N
+                    UIManager.getLookAndFeel().getName())) {
+                back = new Color(back.getRGB()); // #225829
             }
         }
         return back;

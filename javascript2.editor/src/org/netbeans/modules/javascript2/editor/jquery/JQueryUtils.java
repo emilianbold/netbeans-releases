@@ -63,6 +63,10 @@ public class JQueryUtils {
         if (!ts.moveNext() && !ts.movePrevious()) {
             return false;
         }
+        
+        if (ts.token().id() == JsTokenId.EOL || ts.token().id() == JsTokenId.WHITESPACE) {
+            ts.movePrevious();
+        }
         Token<? extends JsTokenId> lastToken = ts.token();
         Token<? extends JsTokenId> token = lastToken;
         JsTokenId tokenId = token.id();

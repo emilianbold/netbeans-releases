@@ -551,7 +551,8 @@ public class RefactoringUtils {
                 }
             }
             if (cp != null && ownerRoot != null && FileUtil.getArchiveFile(ownerRoot) == null) {
-                URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
+                for (FileObject src : cp.getRoots()) { // Keep all source roots from cp. Needed if project has multiple source roots.
+                URL sourceRoot = URLMapper.findURL(src, URLMapper.INTERNAL);
                 if (dependencies) {
                     Set<URL> urls = SourceUtils.getDependentRoots(sourceRoot, false);
                     Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
@@ -573,6 +574,7 @@ public class RefactoringUtils {
                     for (FileObject f : cp.getRoots()) {
                         dependentCompileRoots.add(URLMapper.findURL(f, URLMapper.INTERNAL));
                     }
+                }
                 }
             } else {
                 for (ClassPath scp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {

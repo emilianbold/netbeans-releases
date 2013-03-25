@@ -88,7 +88,7 @@ public class ClassParser extends Parser {
 
     ClassParser() {
         this.changeSupport = new ChangeSupport(this);
-        this.cpInfoListener = new ClasspathInfoListener(this.changeSupport);
+        this.cpInfoListener = new ClasspathInfoListener(this.changeSupport, null);
     }
 
     @Override

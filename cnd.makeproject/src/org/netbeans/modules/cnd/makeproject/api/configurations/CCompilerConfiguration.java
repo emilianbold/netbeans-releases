@@ -332,7 +332,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
             if (folder == null) {
                 Sheet.Set bset = getBasicSet();
                 sheet.put(bset);
-                bset.put(standardProp);
+                if (STANDARDS_SUPPORT) {
+                    bset.put(standardProp);
+                }
                 if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
                     Sheet.Set set2 = new Sheet.Set();
                     set2.setName("OtherOptions"); // NOI18N
@@ -381,7 +383,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
                 }
             }
         } 
-        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE && STANDARDS_SUPPORT) {
             set0.put(standardProp);
         }
         
