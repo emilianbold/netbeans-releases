@@ -184,9 +184,12 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     *
     * @return string representation of type of this variable.
     */
+    @Override
     public int getFieldsCount () {
         Value v = getInnerValue ();
-        if (v == null) return 0;
+        if (v == null) {
+            return 0;
+        }
         if (v instanceof ArrayReference) {
             return ArrayReferenceWrapper.length0((ArrayReference) v);
         } else {
@@ -206,9 +209,12 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
      *
      * @return field defined in this object
      */
+    @Override
     public Field getField (String name) {
         Value v = getInnerValue();
-        if (v == null) return null;
+        if (v == null) {
+            return null;
+        }
         com.sun.jdi.Field f;
         try {
             f = ReferenceTypeWrapper.fieldByName((ReferenceType) ValueWrapper.type(v), name);
@@ -221,7 +227,9 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         } catch (VMDisconnectedExceptionWrapper e) {
             return null;
         }
-        if (f == null) return null;
+        if (f == null) {
+            return null;
+        }
         return this.getField (
             f, 
             (ObjectReference) getInnerValue (),
@@ -233,15 +241,20 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
      * Returns all fields declared in this type that are in interval
      * &lt;<code>from</code>, <code>to</code>).
      */
+    @Override
     public Field[] getFields (int from, int to) {
         Value v = getInnerValue ();
-        if (v == null) return new Field[] {};
+        if (v == null) {
+            return new Field[] {};
+        }
         try {
             if (v instanceof ArrayReference && (from > 0 || to < ArrayReferenceWrapper.length((ArrayReference) v))) {
                 // compute only requested elements
                 Type type = ValueWrapper.type(v);
                 ReferenceType rt = (ReferenceType) type;
-                if (to == 0) to = ArrayReferenceWrapper.length((ArrayReference) v);
+                if (to == 0) {
+                    to = ArrayReferenceWrapper.length((ArrayReference) v);
+                }
                 Field[] elements = getFieldsOfArray (
                         (ArrayReference) v, 
                         ArrayTypeWrapper.componentTypeName((ArrayType) rt),
@@ -271,6 +284,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
      *
      * @return all static fields
      */
+    @Override
     public Field[] getAllStaticFields (int from, int to) {
         Value v = getInnerValue ();
         if (v == null || v instanceof ArrayReference) {
@@ -289,6 +303,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
      * 
      * @return all inherited fields
      */
+    @Override
     public Field[] getInheritedFields (int from, int to) {
         Value v = getInnerValue ();
         if (v == null || v instanceof ArrayReference) {
@@ -317,6 +332,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         
     }
 
+    @Override
     public Super getSuper () {
         synchronized (superClassLoaded) {
             if (superClassLoaded[0]) {
@@ -369,8 +385,9 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     }
 
     public boolean hasAllTypes() {
-        if (getInnerValue () == null)
+        if (getInnerValue () == null) {
             return true;
+        }
         Type t;
         synchronized (valueTypeLoaded) {
             if (!valueTypeLoaded[0]) {
@@ -401,12 +418,14 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     }
     
     public List<JPDAClassType> getAllInterfaces() {
-        if (getInnerValue () == null)
+        if (getInnerValue () == null) {
             return null;
+        }
         try {
             Type t = getCachedType();
-            if (!(t instanceof ClassType))
+            if (!(t instanceof ClassType)) {
                 return null;
+            }
             ClassType ct = (ClassType) t;
             return getDebugger().getAllInterfaces(ct);
         } catch (ObjectCollectedExceptionWrapper ocex) {
@@ -424,6 +443,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
      *
      * @return toString () value of this instance
      */
+    @Override
     public String getToStringValue () throws InvalidExpressionException {
         Value v = getInnerValue ();
         return getToStringValue(v, getDebugger(), 0);
@@ -449,7 +469,9 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     }
 
     static String getToStringValue (Value v, JPDADebuggerImpl debugger, int maxLength) throws InvalidExpressionException {
-        if (v == null) return null;
+        if (v == null) {
+            return null;
+        }
         com.sun.jdi.Type type;
         try {
             type = ValueWrapper.type(v);
@@ -464,13 +486,17 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     }
     
     static String getToStringValue (Value v, com.sun.jdi.Type type, JPDADebuggerImpl debugger, int maxLength) throws InvalidExpressionException {
-        if (v == null) return null;
+        if (v == null) {
+            return null;
+        }
         try {
-            if (!(type instanceof ClassType))
+            if (!(type instanceof ClassType)) {
                 return AbstractVariable.getValue (v);
+            }
             ClassType ct = (ClassType) type;
-            if (v instanceof CharValue)
+            if (v instanceof CharValue) {
                 return "\'" + v.toString () + "\'";
+            }
             /*JPDAThread ct = debugger.getCurrentThread();
             if (ct != null) { For the case that toString() should be blocked by pending actions
                 Object pendingAction = ((JPDAThreadImpl) ct).getPendingAction();
@@ -542,6 +568,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
      *
      * @return value of given method call on this instance
      */
+    @Override
     public Variable invokeMethod (
         String methodName,
         String signature,
@@ -571,25 +598,28 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
              
             // 1) find corrent method
             Value v = this.getInnerValue ();
-            if (v == null) return null;
+            if (v == null) {
+                return null;
+            }
             ClassType ct = (ClassType) getCachedType();
             Method method = null;
-            if (signature != null)
+            if (signature != null) {
                 method = ClassTypeWrapper.concreteMethodByName(
                         ct,
                         methodName, signature);
-            else {
+            } else {
                 List l = ReferenceTypeWrapper.methodsByName(
                         ct,
                         methodName);
                 int j, jj = l.size ();
-                for (j = 0; j < jj; j++)
+                for (j = 0; j < jj; j++) {
                     if ( !MethodWrapper.isAbstract((Method) l.get (j)) &&
-                         MethodWrapper.argumentTypeNames((Method) l.get (j)).size () == 0
+                         MethodWrapper.argumentTypeNames((Method) l.get (j)).isEmpty()
                     ) {
                         method = (Method) l.get (j);
                         break;
                     }
+                }
             }
             
             // 2) method not found => print all method signatures
@@ -597,8 +627,12 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                 List l = ReferenceTypeWrapper.methodsByName(
                         ct, methodName);
                 int j, jj = l.size ();
-                for (j = 0; j < jj; j++)
-                    System.out.println (TypeComponentWrapper.signature((Method) l.get (j)));
+                logger.log(Level.INFO, "No method {0}.{1} with signature {2}",
+                           new Object[]{ TypeWrapper.name(ct), methodName, signature });
+                logger.info("Found following methods with signatures:");
+                for (j = 0; j < jj; j++) {
+                    logger.info (TypeComponentWrapper.signature((Method) l.get (j)));
+                }
                 throw new NoSuchMethodException (
                     TypeWrapper.name(ct) + "." +
                         methodName + " : " + signature
@@ -608,8 +642,9 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             // 3) call this method
             Value[] vs = new Value [arguments.length];
             int i, k = arguments.length;
-            for (i = 0; i < k; i++)
+            for (i = 0; i < k; i++) {
                 vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
+            }
             v = getDebugger().invokeMethod (
                 (JPDAThreadImpl) thread,
                 (ObjectReference) v,
@@ -618,12 +653,13 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             );
             
             // 4) encapsulate result
-            if (v instanceof ObjectReference)
+            if (v instanceof ObjectReference) {
                 return new AbstractObjectVariable ( // It's also ObjectVariable
                         getDebugger(),
                         (ObjectReference) v,
                         getID() + method + "^"
                     );
+            }
             return new AbstractVariable (getDebugger(), v, getID() + method);
         } catch (InternalExceptionWrapper ex) {
             return null;
@@ -715,7 +751,9 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
      */
     @Override
     public String getType () {
-        if (genericType != null) return genericType;
+        if (genericType != null) {
+            return genericType;
+        }
         try {
             String[] typeNamePtr = new String[1];
             getCachedType(typeNamePtr);
@@ -826,7 +864,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         }
         case 'L':
         {
-            StringBuffer typeName = new StringBuffer(50);
+            StringBuilder typeName = new StringBuilder(50);
             for (;;) {
                 c = signature.read();
                 if (c == ';') {
@@ -836,13 +874,17 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                 }
                 else if (c == '<') {
                     int idx = typeName.lastIndexOf("/");
-                    if (idx != -1) typeName.delete(0, idx + 1);
+                    if (idx != -1) {
+                        typeName.delete(0, idx + 1);
+                    }
                     typeName.append("<");
                     for (;;) {
                         String td = getTypeDescription(signature);
                         typeName.append(td);
                         c = signature.read();
-                        if (c == '>') break;
+                        if (c == '>') {
+                            break;
+                        }
                         signature.unread(c);
                         typeName.append(',');
                     }
@@ -858,7 +900,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     }
 
     private static String brackets (int arrayCount) {
-        StringBuffer sb = new StringBuffer (arrayCount * 2);
+        StringBuilder sb = new StringBuilder (arrayCount * 2);
         do {
             sb.append ("[]");
         } while (--arrayCount > 0);
@@ -978,13 +1020,14 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             for (i = 0; i < k; i++) {
                 com.sun.jdi.Field f = l.get (i);
                 Field field = this.getField (f, or, this.getID());
-                if (TypeComponentWrapper.isStatic(f))
+                if (TypeComponentWrapper.isStatic(f)) {
                     classStaticFields.add(field);
-                else {
-                    if (s.contains (f))
+                } else {
+                    if (s.contains (f)) {
                         classFields.add(field);
-                    else
+                    } else {
                         allInheretedFields.add(field);
+                    }
                 }
             }
         } catch (ClassNotPreparedExceptionWrapper e) {
@@ -1030,6 +1073,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         }
     }
     
+    @Override
     public List<ObjectVariable> getReferringObjects(long maxReferrers) {
         Value v = getJDIValue();
         if (v instanceof ObjectReference) {
@@ -1045,6 +1089,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                     return Collections.emptyList();
                 }
                 return new AbstractList<ObjectVariable>() {
+                    @Override
                     public ObjectVariable get(int i) {
                         ObjectReference obj = referrers.get(i);
                         if (obj instanceof ClassObjectReference) {
@@ -1055,6 +1100,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                         }
                     }
 
+                    @Override
                     public int size() {
                         return referrers.size();
                     }
@@ -1064,6 +1110,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         }
     }
     
+    @Override
     public long getUniqueID() {
         Value value = getJDIValue();
         if (!(value instanceof ObjectReference)) { // null or anything else than Object
@@ -1175,6 +1222,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     
     private class DebuggetStateListener extends Object implements PropertyChangeListener {
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (JPDADebugger.PROP_STATE.equals(evt.getPropertyName())) {
                 Object newValue = evt.getNewValue();
