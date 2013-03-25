@@ -806,12 +806,7 @@ class SQLExecutionHelper {
             stmt = conn.createStatement(resultSetScrollType, ResultSet.CONCUR_READ_ONLY);
 
             // set a reasonable fetchsize
-            try {
-                stmt.setFetchSize(50);
-            } catch (SQLException e) {
-                // ignore -  used only as a hint to the driver to optimize
-                LOGGER.log(Level.WARNING, "Unable to set Fetch size", e); // NOI18N
-            }
+            setFetchSize(stmt, 50);
 
             // hint to only query a certain number of rows -> potentially
             // improve performance for low page numbers
@@ -921,5 +916,22 @@ class SQLExecutionHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Guarded version of setFetchSize. See #227756.
+     */
+    private static void setFetchSize(Statement stmt, int fetchSize) {
+        try {
+            stmt.setFetchSize(fetchSize);
+        } catch (SQLException e) {
+            // ignore -  used only as a hint to the driver to optimize
+            LOGGER.log(Level.INFO, "Unable to set Fetch size", e); // NOI18N
+            // But try to reset to default behaviour
+            try {
+                stmt.setFetchSize(0);
+            } catch (SQLException ex) {
+            }
+        }
     }
 }
