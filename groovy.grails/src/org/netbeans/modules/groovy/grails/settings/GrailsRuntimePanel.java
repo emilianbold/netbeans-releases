@@ -46,13 +46,12 @@ import java.awt.Cursor;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -146,22 +145,17 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooseDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDirActionPerformed
-        
-            JFileChooser chooser = new JFileChooser (grailsHomeLocation.getText ());
-            chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
-            int r = chooser.showDialog (
-                SwingUtilities.getWindowAncestor (this), NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Select_Directory"));
-            if (r == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile ();
-                if (!RuntimeHelper.isValidRuntime(file)) {
-                    displayGrailsHomeWarning();
-                    return;
-                }
-                grailsHomeLocation.setText (file.getAbsolutePath ());
-
-            }
-        
-        
+        File file = new FileChooserBuilder(GrailsRuntimePanel.class)
+                .setDirectoriesOnly(true)
+                .setDefaultWorkingDirectory(new File(System.getProperty("user.home")))
+                .setApproveText(NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Select_Directory"))
+                .setTitle(NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Select_Directory"))
+                .showOpenDialog();
+        if (file != null && RuntimeHelper.isValidRuntime(file)) {
+            grailsHomeLocation.setText(file.getAbsolutePath());
+        } else if (file != null) {
+            displayGrailsHomeWarning();
+        }
     }//GEN-LAST:event_chooseDirActionPerformed
 
     private void jLabel2MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseEntered

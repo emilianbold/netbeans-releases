@@ -54,6 +54,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.openide.DialogDescriptor;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -140,6 +141,7 @@ public class NbPresenterTest extends NbTestCase {
         presenter.dispose ();
     }
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
     public void testNbPresenterComparator () {
         JButton erase = new JButton ("Erase all my data");
         JButton rescue = new JButton ("Rescue");

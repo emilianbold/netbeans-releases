@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.Collection;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.Repository.LayerProvider;
 import org.openide.util.Lookup;
 
@@ -57,6 +58,7 @@ public class ContentProviderTest extends NbTestCase {
         super(name);
     }
 
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
     public void testCheckAFileFromOurLayer() {
         FileObject fo = FileUtil.getConfigFile("foo/bar");
         assertNotNull("foo/bar is provided", fo);

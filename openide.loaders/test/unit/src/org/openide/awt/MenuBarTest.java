@@ -320,6 +320,7 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         doActionIsCreatedOnlyOnce_13195("MenuWithNew");
     }
 
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
     public void testActionFactoryCanReturnNull() throws Exception {
         CharSequence log = Log.enable("", Level.WARNING);
         doActionIsCreatedOnlyOnce_13195("ReturnsNull");
