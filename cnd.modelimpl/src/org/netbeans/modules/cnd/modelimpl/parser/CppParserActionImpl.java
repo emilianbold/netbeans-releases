@@ -945,13 +945,8 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override
     public void simple_template_id_or_ident(Token token) {
-        CsmObjectBuilder top = builderContext.top();
-        if(top instanceof NameBuilder /*&& (templateLevel == 0 || builderContext.top(4) instanceof TemplateParameterBuilder)*/) {
-            NameBuilder nameBuilder = (NameBuilder) top;
-            APTToken aToken = (APTToken) token;
-            CharSequence part = aToken.getTextID();
-            nameBuilder.addNamePart(part);
-        }
+        addNamePart(token);
+        
         CsmObjectBuilder top2 = builderContext.top(2);
         if(top2 instanceof SimpleDeclarationBuilder && ((SimpleDeclarationBuilder)top2).hasTypedefSpecifier() && !((SimpleDeclarationBuilder)top2).isInDeclSpecifiers()) {
             APTToken aToken = (APTToken) token;
@@ -1139,8 +1134,8 @@ public class CppParserActionImpl implements CppParserActionEx {
             if(top instanceof NameBuilder) {
                 NameBuilder nameBuilder = (NameBuilder) top;
                 nameBuilder.setGlobal();
-            }
-        }        
+            }        
+        }    
     }    
     
     
@@ -1195,13 +1190,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override
     public void using_directive(int kind, Token token) {
         if(kind == USING_DIRECTIVE__IDENT) {
-            CsmObjectBuilder top = builderContext.top();
-            if(top instanceof NameBuilder) {
-                NameBuilder nameBuilder = (NameBuilder) top;
-                APTToken aToken = (APTToken) token;
-                CharSequence part = aToken.getTextID();
-                nameBuilder.addNamePart(part);
-            }
+            addNamePart(token);
         } else if(kind == USING_DIRECTIVE__SCOPE) {
             CsmObjectBuilder top = builderContext.top();
             if(top instanceof NameBuilder) {
@@ -1584,6 +1573,19 @@ public class CppParserActionImpl implements CppParserActionEx {
             nameBuilder2.addParameterBuilder(paramBuilder);
         }
     }
+
+    @Override public void tilde_class_name(Token token) {
+        assert token.getType() == APTTokenTypes.TILDE;
+        addNamePart(token);
+    }
+    
+    @Override public void end_tilde_class_name(Token token) {
+        if (builderContext.top(2) instanceof SimpleDeclarationBuilder) {
+            SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top(2);
+            declBuilder.setDestructor();
+        }
+    }
+    
     @Override public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {}
     @Override public void end_alias_declaration(Token token) {}
     @Override public void function_specifier(int kind, Token token) {}
@@ -1768,6 +1770,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             declaratorBuilder.setNameBuilder(nameBuilder);
             declBuilder.setTypeBuilder(null);
             if(newName != null && newName.toString().contains("~")) { // NOI18N
+                assert false : "Unexpected name for DeclBuilder " + declBuilder + " - " + newName;
                 declBuilder.setDestructor();
             } else {
                 declBuilder.setConstructor();
@@ -2416,6 +2419,14 @@ public class CppParserActionImpl implements CppParserActionEx {
             builder.addBodyToken(token);
         }
     }    
+    
+    private void addNamePart(Token token) {
+        CsmObjectBuilder top = builderContext.top();
+        if (top instanceof NameBuilder) {
+            NameBuilder nameBuilder = (NameBuilder) top;
+            nameBuilder.addNamePart(((APTToken)token).getTextID());
+        }
+    }
     
     private static final boolean TRACE = false;
     private void addReference(Token token, final CsmObject definition, final CsmReferenceKind kind) {

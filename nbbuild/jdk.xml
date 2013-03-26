@@ -102,7 +102,7 @@ made subject to such option by the copyright holder.
         <condition property="nbjdk.bootclasspath" value="${nbjdk.home}/../Classes/classes.jar:${nbjdk.home}/../Classes/jsse.jar:${nbjdk.home}/../Classes/jce.jar:${nbjdk.home}/../Classes/ui.jar:${nbjdk.home}/../Classes/laf.jar:${nbjdk.home}/../Classes/sunrsasign.jar:${nbjdk.home}/../Classes/charsets.jar">
             <and>
                 <equals arg1="${nbjdk.bootclasspath.tmp}" arg2="$${platforms.${nbjdk.active}.bootclasspath}"/>
-                <os family="mac"/>
+                <available file="${nbjdk.home}/../Classes/classes.jar" type="file"/>
             </and>
         </condition>
         <pathconvert property="nbjdk.bootclasspath.standard">
