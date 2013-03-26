@@ -54,7 +54,7 @@ public final class TwigOptions {
     private static final String TOGGLE_COMMENT = "twig-toggle-comment"; //NOI18N
     private static final String TWIG_OPTIONS = "twig-options"; //NOI18N
 
-    private static Preferences getPreferences() {
+    private Preferences getPreferences() {
         return NbPreferences.forModule(TwigOptions.class).node(TWIG_OPTIONS);
     }
 
@@ -65,11 +65,11 @@ public final class TwigOptions {
         return INSTANCE;
     }
 
-    public static void setToggleCommentType(ToggleBlockCommentAction.ToggleCommentType toggleComment) {
-        getPreferences().put(TOGGLE_COMMENT, ToggleBlockCommentAction.ToggleCommentType.LINE_BY_TWIG.name());
+    public void setToggleCommentType(ToggleBlockCommentAction.ToggleCommentType toggleComment) {
+        getPreferences().put(TOGGLE_COMMENT, toggleComment.name());
     }
 
-    public static ToggleBlockCommentAction.ToggleCommentType getToggleCommentType() {
+    public ToggleBlockCommentAction.ToggleCommentType getToggleCommentType() {
         String toggleCommentName = getPreferences().get(TOGGLE_COMMENT, ToggleBlockCommentAction.ToggleCommentType.LINE_BY_TWIG.name());
         return ToggleBlockCommentAction.ToggleCommentType.valueOf(toggleCommentName);
     }

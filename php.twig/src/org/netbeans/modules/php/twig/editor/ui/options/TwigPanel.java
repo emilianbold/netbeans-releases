@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.twig.editor.ui.options;
 
+import org.netbeans.modules.php.twig.editor.actions.ToggleBlockCommentAction;
+
 final class TwigPanel extends javax.swing.JPanel {
 
     private final TwigOptionsPanelController controller;
@@ -59,36 +61,72 @@ final class TwigPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        toggleCommentButtonGroup = new javax.swing.ButtonGroup();
+        jLabel1 = new javax.swing.JLabel();
+        asTwigEverywhereRadioButton = new javax.swing.JRadioButton();
+        languageSensitiveRadioButton = new javax.swing.JRadioButton();
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(TwigPanel.class, "TwigPanel.jLabel1.text")); // NOI18N
+
+        toggleCommentButtonGroup.add(asTwigEverywhereRadioButton);
+        asTwigEverywhereRadioButton.setMnemonic('t');
+        org.openide.awt.Mnemonics.setLocalizedText(asTwigEverywhereRadioButton, org.openide.util.NbBundle.getMessage(TwigPanel.class, "TwigPanel.asTwigEverywhereRadioButton.text")); // NOI18N
+        asTwigEverywhereRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                asTwigEverywhereRadioButtonActionPerformed(evt);
+            }
+        });
+
+        toggleCommentButtonGroup.add(languageSensitiveRadioButton);
+        languageSensitiveRadioButton.setMnemonic('l');
+        org.openide.awt.Mnemonics.setLocalizedText(languageSensitiveRadioButton, org.openide.util.NbBundle.getMessage(TwigPanel.class, "TwigPanel.languageSensitiveRadioButton.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 202, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(asTwigEverywhereRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(languageSensitiveRadioButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 68, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(asTwigEverywhereRadioButton)
+                    .addComponent(languageSensitiveRadioButton))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void asTwigEverywhereRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asTwigEverywhereRadioButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_asTwigEverywhereRadioButtonActionPerformed
+
     void load() {
-        // TODO read settings and initialize GUI
-        // Example:
-        // someCheckBox.setSelected(Preferences.userNodeForPackage(TwigPanel.class).getBoolean("someFlag", false));
-        // or for org.openide.util with API spec. version >= 7.4:
-        // someCheckBox.setSelected(NbPreferences.forModule(TwigPanel.class).getBoolean("someFlag", false));
-        // or:
-        // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
+        ToggleBlockCommentAction.ToggleCommentType toggleCommentType = TwigOptions.getInstance().getToggleCommentType();
+        if (toggleCommentType == ToggleBlockCommentAction.ToggleCommentType.LINE_BY_TWIG) {
+            asTwigEverywhereRadioButton.setSelected(true);
+        } else {
+            languageSensitiveRadioButton.setSelected(true);
+        }
     }
 
     void store() {
-        // TODO store modified settings
-        // Example:
-        // Preferences.userNodeForPackage(TwigPanel.class).putBoolean("someFlag", someCheckBox.isSelected());
-        // or for org.openide.util with API spec. version >= 7.4:
-        // NbPreferences.forModule(TwigPanel.class).putBoolean("someFlag", someCheckBox.isSelected());
-        // or:
-        // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
+        ToggleBlockCommentAction.ToggleCommentType toggleCommentType;
+        if (asTwigEverywhereRadioButton.isSelected()) {
+            toggleCommentType = ToggleBlockCommentAction.ToggleCommentType.LINE_BY_TWIG;
+        } else {
+            toggleCommentType = ToggleBlockCommentAction.ToggleCommentType.FOCUSED_TWIG_PART;
+        }
+        TwigOptions.getInstance().setToggleCommentType(toggleCommentType);
     }
 
     boolean valid() {
@@ -96,5 +134,9 @@ final class TwigPanel extends javax.swing.JPanel {
         return true;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton asTwigEverywhereRadioButton;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JRadioButton languageSensitiveRadioButton;
+    private javax.swing.ButtonGroup toggleCommentButtonGroup;
     // End of variables declaration//GEN-END:variables
 }

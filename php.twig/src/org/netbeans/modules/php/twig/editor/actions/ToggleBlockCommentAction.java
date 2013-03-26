@@ -107,7 +107,7 @@ public class ToggleBlockCommentAction extends BaseAction {
         ts.move(caretOffset);
         ts.moveNext();
         try {
-            ToggleCommentType toggleCommentType = TwigOptions.getToggleCommentType();
+            ToggleCommentType toggleCommentType = TwigOptions.getInstance().getToggleCommentType();
             toggleCommentType.comment(ts, baseDocument, caretOffset);
         } catch (BadLocationException ex) {
             LOGGER.log(Level.WARNING, null, ex);
