@@ -88,6 +88,9 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/J2EE/org-netbeans-modules-j2ee-deployment-impl-bridge-ErgonomicsAction.instance"/>
                 <attr name="position" intvalue="1000"/>
                 <attr name="config-J2EE/InstalledServers/" boolvalue="true"/>
+                <!-- More appropriate place would be GF module, but that would need another action-->
+                <attr name="config-GlassFishEE6/Instances/" boolvalue="true"/>
+                <attr name="config-GlassFishEE6WC/Instances/" boolvalue="true"/>
             </file>
         </folder>
     </folder>
