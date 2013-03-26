@@ -453,7 +453,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     int startPos = lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset;
                     List<Tree> argTypes = getArgumentsUpToPos(env, mi.getArguments(), (int)sourcePositions.getEndPosition(root, mi.getMethodSelect()), startPos, false);
                     if (argTypes != null) {
-                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        controller.toPhase(Phase.RESOLVED);
                         TypeMirror[] types = new TypeMirror[argTypes.size()];
                         int j = 0;
                         for (Tree t : argTypes)
@@ -532,7 +532,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     int pos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
                     List<Tree> argTypes = getArgumentsUpToPos(env, nc.getArguments(), pos, startPos, false);
                     if (argTypes != null) {
-                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        controller.toPhase(Phase.RESOLVED);
                         TypeMirror[] types = new TypeMirror[argTypes.size()];
                         int j = 0;
                         for (Tree t : argTypes)

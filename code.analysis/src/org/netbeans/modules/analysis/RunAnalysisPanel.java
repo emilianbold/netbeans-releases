@@ -262,6 +262,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                     configurationCombo.setSelectedItem(currentItem);
                 } else {
                     currentItem = tempItem;
+                    updateEnableDisable();
                 }
             }
         });
@@ -634,11 +635,12 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
 
     @Messages("LBL_Configurations=Configurations")
     private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
-        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, null, null);
+        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, null, null, (Configuration) configurationCombo.getSelectedItem());
         DialogDescriptor nd = new DialogDescriptor(panel, Bundle.LBL_Configurations(), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             panel.save();
+            configurationCombo.setSelectedItem(panel.getSelectedConfiguration());
         }
     }//GEN-LAST:event_manageActionPerformed
 
@@ -664,7 +666,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             warningToSelect = "";
         }
 
-        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, analyzerToSelect, warningToSelect);
+        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, analyzerToSelect, warningToSelect, null);
         DialogDescriptor nd = new DialogDescriptor(panel, Bundle.LBL_Browse(), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
@@ -691,7 +693,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         boolean configuration = configurationRadio.isSelected();
 
         configurationCombo.setEnabled(configuration);
-        manage.setEnabled(configuration);
+        manage.setEnabled(configuration && configurationCombo.getSelectedItem() instanceof Configuration);
         inspectionCombo.setEnabled(!configuration);
         browse.setEnabled(!configuration);
         

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -66,16 +66,24 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="1560"/>
                     </file>
                 </folder>
-                    <folder name="RefactoringActions">
-                        <file name="separator-in-java-refactoring.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="470"/>
-                        </file>
-                        <file name="SecondSeparator.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="930"/>
-                        </file>
+                <folder name="RefactoringActions">
+                    <file name="separator-in-java-refactoring.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="470"/>
+                    </file>
+                    <file name="SecondSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="930"/>
+                    </file>
+                    <folder name="Introduce">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.refactoring.java.Bundle#Editors/text/x-java/RefactoringActions/Introduce"/>
+                        <attr name="position" intvalue="960"/>
                     </folder>
+                    <file name="ThirdSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="990"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>
