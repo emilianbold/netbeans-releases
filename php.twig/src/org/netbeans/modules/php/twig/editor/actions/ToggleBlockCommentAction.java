@@ -43,6 +43,8 @@ package org.netbeans.modules.php.twig.editor.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenSequence;
@@ -53,6 +55,7 @@ import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
+import org.netbeans.modules.php.twig.editor.lexer.TwigTopLexer;
 import org.openide.util.Exceptions;
 
 /**
@@ -61,6 +64,7 @@ import org.openide.util.Exceptions;
  */
 public class ToggleBlockCommentAction extends BaseAction {
     static final long serialVersionUID = -1L;
+    private static final Logger LOGGER = Logger.getLogger(ToggleBlockCommentAction.class.getName());
     private static final String FORCE_COMMENT = "force-comment"; //NOI18N
     private static final String FORCE_UNCOMMENT = "force-uncomment"; //NOI18N
 
@@ -111,22 +115,18 @@ public class ToggleBlockCommentAction extends BaseAction {
     }
 
     private void commentLineByTwig(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument, int caretOffset) {
-        boolean comment = true;
-        if (ts.token().id() == TwigTokenId.T_TWIG_COMMENT) {
-            comment = false;
-        }
         try {
-            if (comment) {
-                baseDocument.insertString(Utilities.getRowStart(baseDocument, caretOffset), "{#", null);
-                baseDocument.insertString(Utilities.getRowEnd(baseDocument, caretOffset), "#}", null);
-            } else {
+            if (ts.token().id() == TwigTokenId.T_TWIG_COMMENT) {
                 int start = ts.offset();
-                int end = ts.offset() + ts.token().text().length() - "{##}".length();
-                baseDocument.remove(start, "{#".length());
-                baseDocument.remove(end, "#}".length());
+                int end = ts.offset() + ts.token().text().length() - TwigTopLexer.OPEN_COMMENT.length() - TwigTopLexer.CLOSE_COMMENT.length();
+                baseDocument.remove(start, TwigTopLexer.OPEN_COMMENT.length());
+                baseDocument.remove(end, TwigTopLexer.CLOSE_COMMENT.length());
+            } else {
+                baseDocument.insertString(Utilities.getRowStart(baseDocument, caretOffset), TwigTopLexer.OPEN_COMMENT, null);
+                baseDocument.insertString(Utilities.getRowEnd(baseDocument, caretOffset), TwigTopLexer.CLOSE_COMMENT, null);
             }
         } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
