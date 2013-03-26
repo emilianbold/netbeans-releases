@@ -200,10 +200,19 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
         "TemplateClientPanelVisual.lbl.document.root=Document root"
     })
     private void jbBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbBrowseActionPerformed
+        String projectDirPath = Templates.getProject(wizardDescriptor).getProjectDirectory().getPath();
+        final boolean projectNamedContracts = projectDirPath.contains(JsfConstants.CONTRACTS_FOLDER);
         BrowseFolders bf = new BrowseFolders(getFaceletTemplateRoots(), new BrowseFolders.Naming() {
             @Override
             public String getName(String path, String folderName) {
-                if (path.contains(JsfConstants.CONTRACTS_FOLDER)) {
+                boolean isContract;
+                if (projectNamedContracts) {
+                    String[] split = path.split(JsfConstants.CONTRACTS_FOLDER);
+                    isContract = split.length > 2;
+                } else {
+                    isContract = path.contains(JsfConstants.CONTRACTS_FOLDER);
+                }
+                if (isContract) {
                     return folderName + " :" + Bundle.TemplateClientPanelVisual_lbl_resource_library_contract(); //NOI18N
                 } else {
                     return folderName + " :" + Bundle.TemplateClientPanelVisual_lbl_document_root(); //NOI18N
@@ -302,7 +311,7 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
         if (!fullPath.contains(JsfConstants.CONTRACTS_FOLDER)) {
             return fullPath;
         }
-        int rootIndex = fullPath.indexOf(JsfConstants.CONTRACTS_FOLDER) + JsfConstants.CONTRACTS_FOLDER.length() + 1;
+        int rootIndex = fullPath.lastIndexOf(JsfConstants.CONTRACTS_FOLDER) + JsfConstants.CONTRACTS_FOLDER.length() + 1;
         int nextSlashOffset = fullPath.indexOf("/", rootIndex); //NOI18N
         // root folder selected
         if (nextSlashOffset != -1) {
