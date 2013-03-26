@@ -76,12 +76,14 @@ class KeywordCompletion extends BaseCompletion {
         LOG.log(Level.FINEST, "-> completeKeywords"); // NOI18N
         String prefix = request.prefix;
 
-        if (request.dotContext == null ||
-            request.dotContext.isFieldsOnly() ||
-            request.dotContext.isMethodsOnly() ||
-            request.location == CaretLocation.INSIDE_PARAMETERS) {
-            
+        if (request.location == CaretLocation.INSIDE_PARAMETERS) {
             return false;
+        }
+        
+        if (request.dotContext != null) {
+            if (request.dotContext.isFieldsOnly() || request.dotContext.isMethodsOnly()) {
+                return false;
+            }
         }
 
         // We are after either implements or extends keyword

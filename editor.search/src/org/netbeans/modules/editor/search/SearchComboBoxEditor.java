@@ -203,7 +203,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {
         int height;
         Dimension prefSize = sp.getPreferredSize();
-        Insets borderInsets = sp.getBorder().getBorderInsets(sp); //sp.getInsets();
+        Insets borderInsets = sp.getBorder() != null ? sp.getBorder().getBorderInsets(sp) : sp.getInsets();
         int vBorder = borderInsets.bottom + borderInsets.top;
         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
         if (eui != null) {

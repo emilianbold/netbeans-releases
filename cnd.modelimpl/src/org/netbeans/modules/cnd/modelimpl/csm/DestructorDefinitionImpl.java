@@ -125,12 +125,6 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
     }
     
     public static class DestructorDefinitionBuilder extends FunctionDefinitionBuilder implements StatementBuilderContainer {
-
-        @Override
-        public void setName(CharSequence name) {
-            super.setName("~" + name); // NOI18N
-        }        
-        
         @Override
         public DestructorDefinitionImpl create() {
             CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), true);

@@ -834,12 +834,12 @@ public class ModelVisitor extends PathNodeVisitor {
                             String iName = iNode.getName();
                             JsObjectImpl param = (JsObjectImpl)function.getParameter(iName);
                             if(param != null) {
-                                param.addOccurrence(ModelUtils.documentOffsetRange(parserResult, LexUtilities.getLexerOffset(parserResult, iNode.getStart()), iNode.getFinish()));
+                                param.addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
                             } else {
                                 Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)function);
                                 for (JsObject variable : variables) {
                                     if (iName.equals(variable.getName())) {
-                                        ((JsObjectImpl)variable).addOccurrence(ModelUtils.documentOffsetRange(parserResult, LexUtilities.getLexerOffset(parserResult, iNode.getStart()), iNode.getFinish()));
+                                        ((JsObjectImpl)variable).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
                                         break;
                                     }
                                 }

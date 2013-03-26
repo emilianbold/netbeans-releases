@@ -404,7 +404,7 @@ public enum NodeType {
     sass_control_block,
     sass_control_expression,
     
-    sass_declaration_property_value_interpolation_expression,
+//    sass_declaration_property_value_interpolation_expression,
     
     sass_function_declaration,
     sass_function_name,
@@ -419,9 +419,16 @@ public enum NodeType {
     sass_control_expression_condition,
     
     cp_full_expression_atom,
-    cp_full_expression
+    cp_full_expression,
+    cp_full_expression_operator,
+    
+    cp_propertyValue,
             
-
+    cp_expression_list,
+    
+//    cp_mixin,
+    
+    at_rule
 
     ;
     

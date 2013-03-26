@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -98,10 +99,15 @@ public final class SiteHelper {
     @Deprecated
     public static void download(String url, File target, @NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException {
         assert !EventQueue.isDispatchThread();
-        if (progressHandle != null) {
-            NetworkSupport.downloadWithProgress(url, target, progressHandle);
-        } else {
-            NetworkSupport.download(url, target);
+        try {
+            if (progressHandle != null) {
+                NetworkSupport.downloadWithProgress(url, target, progressHandle);
+            } else {
+                NetworkSupport.download(url, target);
+            }
+        } catch (InterruptedException ex) {
+            // cancelled - what to do?
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
