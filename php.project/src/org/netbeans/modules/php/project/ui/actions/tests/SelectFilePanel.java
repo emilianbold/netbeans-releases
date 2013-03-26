@@ -82,7 +82,7 @@ public final class SelectFilePanel extends JPanel {
 
         initComponents();
 
-        model = new DefaultListModel();
+        model = new DefaultListModel<FileObject>();
         for (FileObject fo : files) {
             assert FileUtil.isParentOf(sourceRoot, fo);
             model.addElement(fo);
@@ -179,19 +179,21 @@ public final class SelectFilePanel extends JPanel {
     private JScrollPane selectFileScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    private final class FileListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 219632875612323L;
+    private final class FileListCellRenderer extends JLabel implements ListCellRenderer<FileObject>, UIResource {
+
+        private static final long serialVersionUID = 987974324657654541L;
+
 
         public FileListCellRenderer() {
             setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends FileObject> list, FileObject value, int index, boolean isSelected, boolean cellHasFocus) {
             // #93658: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
 
-            String relativePath = FileUtil.getRelativePath(sourceRoot, (FileObject) value);
+            String relativePath = FileUtil.getRelativePath(sourceRoot, value);
             setText(relativePath);
             setToolTipText(relativePath);
 

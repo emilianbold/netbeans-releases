@@ -248,7 +248,7 @@ public final class FrameworkCommandChooser extends JPanel {
 
     void initTaskParameters() {
         FrameworkCommand task = getSelectedTask();
-        List<? super Object> params = new ArrayList<Object>();
+        List<String> params = new ArrayList<String>();
         // no param option for convenience
         params.add(""); //NOI18N
         params.addAll(getStoredParams(task));
@@ -435,7 +435,7 @@ public final class FrameworkCommandChooser extends JPanel {
 
     private void refreshTaskList() {
         String filter = taskField.getText().trim();
-        DefaultListModel model = new DefaultListModel();
+        DefaultListModel<Object> model = new DefaultListModel<Object>();
         List<FrameworkCommand> matching = Filter.getFilteredTasks(allTasks, filter);
 
         for (FrameworkCommand task : matching) {
@@ -683,8 +683,7 @@ public final class FrameworkCommandChooser extends JPanel {
 
 
         int selectedIndex = matchingTaskList.getSelectedIndex();
-        ListModel model = matchingTaskList.getModel();
-        int modelSize = model.getSize();
+        int modelSize = matchingTaskList.getModel().getSize();
 
         // Wrap around
         if ("selectNextRow".equals(actionKey) && selectedIndex == modelSize - 1) { // NOI18N
@@ -715,15 +714,17 @@ public final class FrameworkCommandChooser extends JPanel {
         }
     }//GEN-LAST:event_matchingTaskListMouseClicked
 
-    private static class FrameworkCommandRenderer extends JLabel implements ListCellRenderer {
-        private static final long serialVersionUID = -6180208903089211882L;
+    private static class FrameworkCommandRenderer extends JLabel implements ListCellRenderer<Object> {
+
+        private static final long serialVersionUID = -132456132469679879L;
+
 
         public FrameworkCommandRenderer() {
             setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends Object> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             // #93658: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
 

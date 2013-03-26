@@ -61,28 +61,28 @@ import org.openide.util.NbBundle;
  */
 public final class LocalServerController {
 
-    private final JComboBox localServerComboBox;
+    private final JComboBox<LocalServer> localServerComboBox;
     private final JButton localServerBrowseButton;
     private final SourcesFolderProvider sourcesFolderProvider; // can be null
     private final String browseDialogTitle;
     final ChangeSupport changeSupport = new ChangeSupport(this);
-    private /*final*/ MutableComboBoxModel localServerComboBoxModel;
+    private /*final*/ MutableComboBoxModel<LocalServer> localServerComboBoxModel;
     private final LocalServer.ComboBoxEditor localServerComboBoxEditor;
     private final BrowseHandler browseHandler;
 
-    public static LocalServerController create(JComboBox localServerComboBox, JButton localServerBrowseButton,
+    public static LocalServerController create(JComboBox<LocalServer> localServerComboBox, JButton localServerBrowseButton,
             SourcesFolderProvider sourcesFolderProvider, BrowseHandler browseHandler, String browseDialogTitle, LocalServer... defaultLocalServers) {
         return new LocalServerController(localServerComboBox, localServerBrowseButton, sourcesFolderProvider, browseHandler,
                 browseDialogTitle, defaultLocalServers);
     }
 
-    public static LocalServerController create(JComboBox localServerComboBox, JButton localServerBrowseButton, BrowseHandler browseHandler,
+    public static LocalServerController create(JComboBox<LocalServer> localServerComboBox, JButton localServerBrowseButton, BrowseHandler browseHandler,
             String browseDialogTitle, LocalServer... defaultLocalServers) {
         return new LocalServerController(localServerComboBox, localServerBrowseButton, null, browseHandler, browseDialogTitle,
                 defaultLocalServers);
     }
 
-    private LocalServerController(JComboBox localServerComboBox, JButton localServerBrowseButton,
+    private LocalServerController(JComboBox<LocalServer> localServerComboBox, JButton localServerBrowseButton,
             SourcesFolderProvider sourcesFolderProvider, BrowseHandler browseHandler, String browseDialogTitle, LocalServer... defaultLocalServers) {
         assert localServerComboBox != null;
         assert localServerBrowseButton != null;
@@ -140,11 +140,11 @@ public final class LocalServerController {
         return (LocalServer) localServerComboBox.getSelectedItem();
     }
 
-    public MutableComboBoxModel getLocalServerModel() {
+    public MutableComboBoxModel<LocalServer> getLocalServerModel() {
         return localServerComboBoxModel;
     }
 
-    public void setLocalServerModel(MutableComboBoxModel localServers) {
+    public void setLocalServerModel(MutableComboBoxModel<LocalServer> localServers) {
         localServerComboBoxModel = localServers;
         localServerComboBox.setModel(localServerComboBoxModel);
     }
