@@ -58,7 +58,6 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.browser.ClientProjectEnhancedBrowserImpl;
-import org.netbeans.modules.web.clientproject.browser.ClientProjectEnhancedBrowserImpl.BrowserIntegration;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
